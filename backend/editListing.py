@@ -1,5 +1,5 @@
 # Port: 5002
-# Routes: /updateListing/<id> (PUT), /deleteListing/<id> (DELETE)
+# Routes: /updateListing/<id> (PUT), /deleteListing/<id> (DELETE), /getDistance/<origins>/<destinations>/<key> (GET)
 # Dataclass: listings
 # -----------------------------------------------------------------------------------------
 

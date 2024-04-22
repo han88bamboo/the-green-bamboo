@@ -1,7 +1,9 @@
 # Port: 5000
-# Routes: /getCountries (GET), /getListings (GET), /getListing/<id> (GET), /getProducers (GET), /getProducer/<id> (GET),
-#           /getReviews (GET), /getUsers (GET), /getUser/<id> (GET), /getVenues (GET), /getVenue/<id> (GET), /getVenuesAPI (GET),
-#           /getDrinkTypes (GET), /getRequestListings (GET), /getRequestEdits (GET), /getModRequests (GET), /getFlavourTags (GET), /getLanguages (GET)
+# Routes: /getAccountRequests (GET), /getCountries (GET), /getListings (GET), /getListing/<id> (GET), /getProducers (GET), /getProducer/<id> (GET),
+#           /getReviews (GET), /getReviewByTarget/<id> (GET), /getUsers (GET), /getUser/<id> (GET), /getUserByUsername/<username> (GET), /getVenues (GET), 
+#           /getVenue/<id> (GET), /getVenuesAPI (GET), /getDrinkTypes (GET), /getRequestListings (GET), /getRequestListing/<id> (GET), /getRequestEdits (GET), 
+#           /getRequestEdit/<id> (GET), /getModRequests (GET), /getFlavourTags (GET), /getSubTags (GET), /getObservationTags (GET), /getColours (GET), 
+#           /getSpecialColours (GET), /getLanguages (GET), /getServingTypes (GET), /getProducersProfileViews (GET), /getVenuesProfileViewsByVenue/<id> (GET), /getRequestInaccuracyByVenue/<id> (GET)
 # -----------------------------------------------------------------------------------------
 
 # pip install python-bsonjs

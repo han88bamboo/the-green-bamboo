@@ -1,5 +1,13 @@
 <!-- Component for drinks display. Used in all profile pages. -->
 
+<!-- Include this code in script tag of the parent component  
+
+handleIconClick(data) {
+    this.bookmarkListingID = data
+},
+
+ -->
+
 <template>
     <svg v-if="checkBookmarkStatus(listing._id.$oid)" xmlns="http://www.w3.org/2000/svg" :width="size" :height="size" fill="currentColor" class="bi bi-bookmark-fill" :class="{ 'overlay-icon': overlay }" viewBox="0 0 16 16"
         data-bs-toggle="modal" data-bs-target="#bookmarkModal" @click="iconClicked">
