@@ -16,13 +16,16 @@ from bson import json_util
 from flask import Flask
 from flask_pymongo import PyMongo
 from flask_cors import CORS
-
 from bson.objectid import ObjectId
+
+from dotenv import load_dotenv
+import os
 
 app = Flask(__name__)
 CORS(app)  # Allow all requests
-# app.config["MONGO_URI"] = "mongodb+srv://jwleong2020:uOfXCrxLPCjgyA92@greenbamboo.wbiambw.mongodb.net/GreenBamboo?retryWrites=true&w=majority"
-app.config["MONGO_URI"] = "mongodb+srv://jwleong2020:uOfXCrxLPCjgyA92@drinkx.eskadzx.mongodb.net/DrinkX?retryWrites=true&w=majority"
+
+load_dotenv()
+app.config["MONGO_URI"] = os.getenv('MONGO_DB_URL')
 db = PyMongo(app).db
 
 #This is to parse BSON data from Mongo so that we can parse it as JSON

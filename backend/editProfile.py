@@ -17,10 +17,14 @@ import pytz
 from gridfs import GridFS
 import os
 
+from dotenv import load_dotenv
+import os
+
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
-# app.config["MONGO_URI"] = "mongodb+srv://jwleong2020:uOfXCrxLPCjgyA92@greenbamboo.wbiambw.mongodb.net/GreenBamboo?retryWrites=true&w=majority"
-app.config["MONGO_URI"] = "mongodb+srv://jwleong2020:uOfXCrxLPCjgyA92@drinkx.eskadzx.mongodb.net/DrinkX?retryWrites=true&w=majority"
+CORS(app)  # Allow all requests
+
+load_dotenv()
+app.config["MONGO_URI"] = os.getenv('MONGO_DB_URL')
 db = PyMongo(app).db
 
 mongo = PyMongo(app)

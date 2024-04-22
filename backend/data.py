@@ -6,10 +6,12 @@ import pymongo
 import json
 from datetime import datetime
 
+
+from dotenv import load_dotenv
+import os
+
 # Connect to MongoDB
-# client = pymongo.MongoClient("mongodb+srv://jwleong2020:uOfXCrxLPCjgyA92@greenbamboo.wbiambw.mongodb.net/GreenBamboo?retryWrites=true&w=majority")
-# database = client["GreenBamboo"]
-client = pymongo.MongoClient("mongodb+srv://jwleong2020:uOfXCrxLPCjgyA92@drinkx.eskadzx.mongodb.net/DrinkX?retryWrites=true&w=majority")
+client = pymongo.MongoClient(os.getenv('MONGO_DB_URL'))
 database = client["DrinkX"]
 
 # collection = database['your_collection']
