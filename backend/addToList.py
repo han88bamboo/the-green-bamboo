@@ -1,4 +1,4 @@
-# Port: 5005
+# Port: 5070
 # Routes: /updateListing/<id> (PUT), /deleteListing/<id> (DELETE)
 # Dataclass: listings
 # -----------------------------------------------------------------------------------------
@@ -110,4 +110,4 @@ def addToWant():
 
 # -----------------------------------------------------------------------------------------
 if __name__ == "__main__":
-    app.run(debug=True, port = 5070)
+    app.run(host='0.0.0.0', debug=True, port = 5070)

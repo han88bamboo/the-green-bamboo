@@ -1,3 +1,9 @@
+# ==== COMMANDS TO RUN FILE ===
+# Open integrated terminal for Dockerfile
+# docker build -t backend ./
+# docker run -p 5000:5000 -p 5001:5001 -p 5002:5002 -p 5011:5011 -p 5021:5021 -p 5022:5022 -p 5023:5023 -p 5030:5030 -p 5031:5031 -p 5051:5051 -p 5052:5052 -p 5070:5070 -p 5100:5100 -p 5101:5101 -p 5200:5200 -p 5300:5300 backend
+# =============================
+
 # Use a base image with Python pre-installed
 FROM python:latest
 
@@ -6,16 +12,13 @@ WORKDIR /app/backend
 
 # Copy all Python files and requirements.txt into the container
 COPY requirements.txt ./
-COPY ./getData.py .
+COPY ./ .
 
+# Install dependencies from requirements.txt and supervisord
+RUN pip install --verbose --no-cache-dir -r requirements.txt supervisor
 
-# Install dependencies from requirements.txt
-RUN pip install --verbose --no-cache-dir -r requirements.txt
+# # Expose ports for each backend service
+EXPOSE 5000 5001 5002 5011 5021 5022 5023 5030 5031 5051 5052 5070 5100 5101 5200 5300
 
-# Expose ports for each backend service
-EXPOSE 5000 
-
-# Add more EXPOSE directives for additional services if needed
-
-# Command to run each backend service individually
-CMD ["python", "getData.py"]
+# Command to run supervisord
+CMD ["supervisord", "-c", "supervisord.conf"]
