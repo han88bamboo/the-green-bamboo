@@ -1,5 +1,5 @@
 # Port: 5022
-# Routes: /voteReview (POST)
+# Routes: /voteReview (POST), /updateReview/<id> (PUT)
 # -----------------------------------------------------------------------------------------
 
 import bson

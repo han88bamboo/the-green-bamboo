@@ -1,5 +1,5 @@
 # Port: 5100
-# Routes: /editDetails (POST), /updateBookmark (POST), /submitModRequest (POST)
+# Routes: /editDetails (POST), /updateBookmark (POST), /updateFollowLists (POST), /updateModType (POST), /removeModType (POST)
 # -----------------------------------------------------------------------------------------
 
 import bson

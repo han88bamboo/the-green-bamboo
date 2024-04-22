@@ -1,5 +1,5 @@
 # Port: 5031
-# Routes: /createAccount (POST)
+# Routes: /createAccount (POST), /createAccountRequest (POST), /updateAccountRequest (POST), /createProducerAccount (POST), /createVenueAccount (POST)
 # -----------------------------------------------------------------------------------------
 
 import bson

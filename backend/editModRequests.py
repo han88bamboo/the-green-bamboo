@@ -1,5 +1,5 @@
 # Port: 5101
-# Routes: 
+# Routes: /submitModRequest (POST), /updateModRequest (POST)
 # -----------------------------------------------------------------------------------------
 
 import bson

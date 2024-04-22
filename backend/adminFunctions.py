@@ -1,5 +1,5 @@
 # Port: 5052
-# Routes: /updateObservationTag (PUT)
+# Routes: /createObservationTag (POST), /updateObservationTag (PUT), /deleteObservationTag/<id> (DELETE), /updateFamilyTag (POST), /updateSubTag (PUT), /deleteFamilyTag/<id> (DELETE), /deleteSubTag/<id> (DELETE), /importListings (POST), /createFamilyTag (POST), /createSubTag (POST), /importListings (POST), /readCSV (GET)
 # -----------------------------------------------------------------------------------------
 
 import bson

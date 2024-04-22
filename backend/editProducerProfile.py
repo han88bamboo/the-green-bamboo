@@ -1,5 +1,5 @@
 # Port: 5200
-# Routes: /editDetails (POST), /addUpdates (POST), /sendQuestions (POST), /sendAnswers (POST), /likeUpdates (POST), /unlikeUpdates (POST)
+# Routes: /editDetails (POST), /addUpdates (POST), /sendQuestions (POST), /sendAnswers (POST), /likeUpdates (POST), /unlikeUpdates (POST), /updateProducerStatus (POST), /addProfileCount (POST), /addNewProfileCount (POST), /editUpdate (POST), /deleteUpdate (POST), /editQA (POST), /deleteQA (POST)
 # -----------------------------------------------------------------------------------------
 
 import bson
