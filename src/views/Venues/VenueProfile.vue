@@ -1988,7 +1988,7 @@
                         const mapResponse = await this.$axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
                             params: {
                                 address: this.targetVenue["address"],
-                                key: 'AIzaSyD5aukdDYDbnc8BKjFF_YjApx-fUe515Hs'
+                                key: process.env.VUE_APP_API_KEY
                             }
                         });
 

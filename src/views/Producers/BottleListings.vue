@@ -1167,7 +1167,6 @@
     import BookmarkIcon from '@/components/BookmarkIcon.vue';
     import BookmarkModal from '@/components/BookmarkModal.vue';
     
-    
     export default {
         // setup(){
 
@@ -1681,8 +1680,8 @@
                 }
 
                 if (this.currentLocation.lat != 0 | this.currentLocation.lng != 0){
-                    
-                    const apiKey = 'AIzaSyD5aukdDYDbnc8BKjFF_YjApx-fUe515Hs'; // Replace with your Google Places API key
+                    const apiKey = process.env.VUE_APP_API_KEY;
+                    // const apiKey = 'AIzaSyD5aukdDYDbnc8BKjFF_YjApx-fUe515Hs'; // Replace with your Google Places API key
                     // const maxDistance = 5000
 
                     // create an object to store the distance of each venue from the current location
