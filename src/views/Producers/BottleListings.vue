@@ -12,8 +12,22 @@
     </div>
 
     <!-- Display when data fails to load -->
-    <div class="text-danger fst-italic fw-bold fs-3 pt-5" v-if="dataLoaded == null"> 
+    <div class="text-danger fst-italic fw-bold fs-3 pt-5" v-if="dataLoaded == null && listingExists == true"> 
         <span>An error occurred while loading this page, please try again!</span>
+        <br>
+        <button class="btn primary-btn btn-sm" @click="this.$router.go(-1)">
+            <span class="fs-5 fst-italic"> Return to previous page </span>
+        </button>
+        <router-link :to="'/'" class="mx-1">
+            <button class="btn primary-btn btn-sm">
+                <span class="fs-5 fst-italic"> Go to Home page </span>
+            </button>
+        </router-link>
+    </div>
+
+    <!-- Display when listing does not exist -->
+    <div class="text-danger fst-italic fw-bold fs-3 pt-5" v-if="dataLoaded == null && listingExists == false"> 
+        <span>This listing does not exist! Please try another listing!</span>
         <br>
         <button class="btn primary-btn btn-sm" @click="this.$router.go(-1)">
             <span class="fs-5 fst-italic"> Return to previous page </span>
@@ -1235,6 +1249,7 @@
         data() {
             return {
                 dataLoaded: false,
+                listingExists: true,
                 // data from database
                 countries: [],
                 listings: [],
@@ -1430,8 +1445,8 @@
                         this.getCurrentLocation();
                     }
                     else {
-                        // dataLoaded is null
                         this.dataLoaded = null;
+                        this.listingExists = false;
                     }
                 } 
                 catch (error) {
