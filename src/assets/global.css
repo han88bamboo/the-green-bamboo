@@ -584,6 +584,14 @@ body {
     background-color: #DD9E54;
 }
 
+.rounded-circle-no-results {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    color: whitesmoke;
+    background-color: #747D92;
+}
+
 .rounded-circle-no-bg {
     width: 30px;
     height: 30px;

@@ -207,6 +207,9 @@
                         if(this.user_id == this.venue_id && this.userType == "venue"){
                             this.correctVenue = true;
                         }
+                        else {
+                            this.$router.push('/');
+                        }
                     }
                 // venues
                 // _id, venueName, venueDesc, originCountry, address, openingHours

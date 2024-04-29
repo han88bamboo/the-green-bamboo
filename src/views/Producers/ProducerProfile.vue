@@ -1473,10 +1473,12 @@
                             'Content-Type': 'application/json'
                         }
                     });
+                    alert("Your question has been successfully sent!");
                     console.log(response.data);
                 } 
                 catch (error) {
                     console.error(error);
+                    alert("An error occurred while attempting to send your question, please try again!");
                 }
 
                 // force page to reload

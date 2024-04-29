@@ -207,6 +207,9 @@
                         if(this.user_id == this.producer_id && this.userType == "producer"){
                             this.correctProducer = true;
                         }
+                        else {
+                            this.$router.push('/');
+                        }
                     }
                 // producers
                 // _id, producerName, producerDesc, originCountry, statusOB, mainDrinks
