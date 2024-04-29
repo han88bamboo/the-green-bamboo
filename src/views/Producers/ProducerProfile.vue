@@ -1474,6 +1474,7 @@
                         }
                     });
                     alert("Your question has been successfully sent!");
+                    console.log(response.data);
                 } 
                 catch (error) {
                     console.error(error);
