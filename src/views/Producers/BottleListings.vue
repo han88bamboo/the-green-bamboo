@@ -1428,26 +1428,7 @@
                         this.$router.push('/');
                     }
                     // Check if listing exists in database
-                    if (this.checkListingExists() == true) {
-                        // Load data
-                        this.loadData();
-                        // Load local storage variables
-                        const accID = localStorage.getItem("88B_accID");
-                        if(accID !== null){
-                            this.userID = localStorage.getItem('88B_accID')
-                        }
-                        //     this.loggedIn = true
-                        // }
-                        const accType = localStorage.getItem("88B_accType");
-                        if(accType !==null){
-                            this.userType = accType
-                        }
-                        this.getCurrentLocation();
-                    }
-                    else {
-                        this.dataLoaded = null;
-                        this.listingExists = false;
-                    }
+                    this.checkListingExists();
                 } 
                 catch (error) {
                     console.error(error);
@@ -2767,8 +2748,32 @@
 
             // Check whether listing exists
             async checkListingExists() {
-                const listing = await this.$axios.get('http://127.0.0.1:5000/getListing/'+ this.listing_id);
-                return listing.data.length !== 0;
+                try {
+                    const listing = await this.$axios.get('http://127.0.0.1:5000/getListing/'+ this.listing_id);
+                    if (listing.data.length !== 0) {
+                        this.loadData();
+                        // Load local storage variables
+                        const accID = localStorage.getItem("88B_accID");
+                        if(accID !== null){
+                            this.userID = localStorage.getItem('88B_accID')
+                        }
+                        //     this.loggedIn = true
+                        // }
+                        const accType = localStorage.getItem("88B_accType");
+                        if(accType !==null){
+                            this.userType = accType
+                        }
+                        this.getCurrentLocation();
+                    }
+                    else {
+                        this.dataLoaded = null;
+                        this.listingExists = false;
+                    }
+                }
+                catch (error) {
+                    console.error(error);
+                    this.dataLoaded = null;
+                }
             },
         }
     };
