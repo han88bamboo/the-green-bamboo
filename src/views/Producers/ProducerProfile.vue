@@ -690,7 +690,7 @@
                                     <div id="carouselExample" class="carousel slide">
                                         <div class="carousel-inner px-4">
                                             <!-- [if] user type is producer -->
-                                            <div v-if="correctProducer || isAdmin">
+                                            <div v-if="correctProducer">
                                                 <!-- show answered questions -->
                                                 <div v-if="answerStatus">
                                                     <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
@@ -752,7 +752,7 @@
                                                     </div>
                                                 </div>
                                                 <div v-if="answeredQuestions.length === 0" class="input-group centered pt-2">
-                                                    <textarea class="search-bar form-control rounded fst-italic question-box" type="text" placeholder="Ask your question!" v-model="question"></textarea>
+                                                    <textarea class="search-bar form-control rounded fst-italic question-box" type="text" placeholder="Ask a question!" v-model="question"></textarea>
                                                     <div v-on:click="sendQuestion" class="send-icon ps-1">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
                                                             <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>

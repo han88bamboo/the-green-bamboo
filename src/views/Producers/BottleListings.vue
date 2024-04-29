@@ -99,10 +99,16 @@
                                             <router-link :to="`/listing/edit/${specified_listing._id.$oid}`" class="reverse-clickable-text">
                                                 Edit Listing
                                             </router-link>
-                                                
-                                            
+                                        </button>
+                                        <!-- delete listing -->
+                                        <button type="button" class="btn btn-danger reverse-clickable-text p-1" data-bs-toggle="modal" data-bs-target="#deleteListingModal">
+                                            <!-- v-on:click="deleteListings(specified_listing)" -->
+                                            <a class="reverse-clickable-text">
+                                                Delete Listing
+                                            </a>
                                         </button>
                                     </div>
+
                                     <!-- [else] not correct producer -->
                                     <div v-else>
                                         <router-link :to="{ path: '/request/modify/edit/' + this.listing_id }">
@@ -225,6 +231,55 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Delete listing modal -->
+                    <div class="modal fade" id="deleteListingModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            
+                            <!-- DELETE SUCCESS -->
+                            <div class="text-success fst-italic fw-bold fs-3 modal-content" v-if='successDeleteListing'>
+                                <span>Your listing has successfully been deleted!</span>
+                                <div class="modal-footer">
+                                    <button type="button" @click="reloadRouteHome" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                            <!-- DELETE ERROR -->
+                            <div class="text-danger fst-italic fw-bold fs-3 modal-content" v-if="errorDeleteListing"> 
+                                <div v-if="errorDeleteMessage" class="row"> 
+                                    <span >An error occurred while attempting to delete, please try again!</span>
+                                    <br>
+                                    <button class="btn primary-btn btn-sm" @click="reloadRoute">
+                                        <span class="fs-5 fst-italic"> Retry your delete request here! </span>
+                                    </button>
+                                </div>
+                                
+                                <span v-if="listingNotExist">There is no review by you for this bottle listing!</span>
+                                <br>
+
+                            
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+
+                            <!-- DELETE IN PROGRESS MODAL -->
+                            <div v-if="deletingListing" class="modal-content">
+                                <div class="modal-header" style="background-color: #535C72">
+                                    <h5 class="modal-title" id="deleteListing" style="color: white;">Delete Listing</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    Are you sure you want to delete this listing?
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-danger" @click="deleteListings(specified_listing)">Delete Listing</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- END of delete review modal -->
+
 
                     <!-- add your review -->
                     <!-- Display Add review or Review already added accordingly to whether user already left review -->
@@ -760,9 +815,9 @@
                                     <span v-if="checkModFromUserID(review.userID)" class="badge rounded-pill ms-3" style="color: black; background-color: white;">Moderator</span>
                                     
                                     <!-- Insert Edit modal here -->
-                                    <div v-if="review.userID['$oid'] === userID" class="mt-2">
-                                        <button class="btn btn-warning me-1 py-1" @click="setUpdateID(review)" data-bs-toggle="modal" data-bs-target="#reviewModal">Edit</button>
-                                        <button class="btn btn-danger ms-1 py-1" @click="setDeleteID(review)" data-bs-toggle="modal" data-bs-target="#deleteReview">Delete</button>
+                                    <div class="mt-2">
+                                        <button v-if="review.userID['$oid'] === userID"  class="btn btn-warning me-1 py-1" @click="setUpdateID(review)" data-bs-toggle="modal" data-bs-target="#reviewModal">Edit</button>
+                                        <button v-if="review.userID['$oid'] === userID || correctModerator" class="btn btn-danger py-1" @click="setDeleteID(review)" data-bs-toggle="modal" data-bs-target="#deleteReview">Delete</button>
                                     </div>
                                 </div>
                                 <div class="text-start mb-2">
@@ -1301,6 +1356,14 @@
                 errorDelete:false,
                 errorDeleteMessage:false,
 
+                // To delete listing
+                deleteListingCode: null,
+                successDeleteListing:false,
+                deletingListing:true,
+                errorDeleteListing:false,
+                // errorDeleteMessage:false,
+                listingNotExist:false,
+
                 // To edit review
                 inEdit:false,
                 specificReview:[],
@@ -1349,24 +1412,31 @@
                         // redirect to page
                         this.$router.push('/');
                     }
+                    // Check if listing exists in database
+                    if (this.checkListingExists() == true) {
+                        // Load data
+                        this.loadData();
+                        // Load local storage variables
+                        const accID = localStorage.getItem("88B_accID");
+                        if(accID !== null){
+                            this.userID = localStorage.getItem('88B_accID')
+                        }
+                        //     this.loggedIn = true
+                        // }
+                        const accType = localStorage.getItem("88B_accType");
+                        if(accType !==null){
+                            this.userType = accType
+                        }
+                        this.getCurrentLocation();
+                    }
+                    else {
+                        // dataLoaded is null
+                        this.dataLoaded = null;
+                    }
                 } 
                 catch (error) {
                     console.error(error);
                 }
-            
-            this.loadData();
-            // Load local storage variables
-            const accID = localStorage.getItem("88B_accID");
-            if(accID !== null){
-                this.userID = localStorage.getItem('88B_accID')
-            }
-            //     this.loggedIn = true
-            // }
-            const accType = localStorage.getItem("88B_accType");
-            if(accType !==null){
-                this.userType = accType
-            }
-            this.getCurrentLocation();
         },
         computed: {
             filteredOptions() {
@@ -2285,6 +2355,10 @@
             reloadRoute() {
                 this.$router.go(); // Reloads the current route
             },
+
+            reloadRouteHome() {
+                this.$router.push('/'); // Navigate to root 
+            },
             getTagName(tag) {
                 const subTag = this.subTags.find(subTag=>subTag._id.$oid === tag.$oid)
                 if(subTag){
@@ -2646,7 +2720,41 @@
                     // After navigation is complete, reload the window
                     window.location.reload(true);
                 });
-            }
+            },
+
+            // delete bottle listing
+            async deleteListings(listing) {
+                let deleteAPI = "http://127.0.0.1:5002/deleteListing/" + listing._id.$oid
+                const response = await this.$axios.delete(deleteAPI)
+                .then((response)=>{
+                    this.deleteListingCode = response.data.code
+                })
+                .catch((error)=>{
+                    console.error(error);
+                    this.deleteListingCode = error.response.data.code
+                });
+                if(this.deleteListingCode==201){
+                    this.successDeleteListing=true; // Display success message
+                    this.deletingListing=false; // Hide submission in progress message
+
+                }else{
+                    this.errorDeleteListing=true; // Display error message
+                    this.deletingListing=false; // Hide submission in progress message
+                    if(this.deleteListingCode==400){
+                        this.listingNotExist = true // Display duplicate entry message
+                    }else{
+                        this.errorDeleteMessage = true // Display generic error message
+                    }
+
+                }
+                return response
+            },
+
+            // Check whether listing exists
+            async checkListingExists() {
+                const listing = await this.$axios.get('http://127.0.0.1:5000/getListing/'+ this.listing_id);
+                return listing.data.length !== 0;
+            },
         }
     };
 </script>
