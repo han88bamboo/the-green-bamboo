@@ -145,6 +145,9 @@
                             Listings
                             <span v-if="resultListings.length > 0" class="rounded-circle mx-3 d-flex align-items-center justify-content-center"> 
                                 <p class="m-0">{{ resultListings.length }}</p>
+                            </span>
+                            <span v-else class="rounded-circle-no-results mx-3 d-flex align-items-center justify-content-center"> 
+                                <p class="m-0">{{ resultListings.length }}</p>
                             </span> 
                         </span>
                     </button>
@@ -154,7 +157,10 @@
                             Producers
                             <span v-if="producerListings.length > 0" class="rounded-circle mx-3 d-flex align-items-center justify-content-center"> 
                                 <p class="m-0">{{ producerListings.length }}</p>
-                            </span> 
+                            </span>
+                            <span v-else class="rounded-circle-no-results mx-3 d-flex align-items-center justify-content-center"> 
+                                <p class="m-0">{{ producerListings.length }}</p>
+                            </span>
                         </span>
                     </button>
                     <!-- Venues -->
@@ -162,6 +168,9 @@
                         <span class="d-flex align-items-center justify-content-center mb-0">
                             Venues
                             <span v-if="venueListings.length > 0" class="rounded-circle mx-3 d-flex align-items-center justify-content-center"> 
+                                <p class="m-0">{{ venueListings.length }}</p>
+                            </span>
+                            <span v-else class="rounded-circle-no-results mx-3 d-flex align-items-center justify-content-center"> 
                                 <p class="m-0">{{ venueListings.length }}</p>
                             </span> 
                         </span>
