@@ -143,7 +143,7 @@
                     <button class="nav-link active col-lg-3 col-12" id="nav-listings-tab" data-bs-toggle="tab" data-bs-target="#nav-listings" type="button" role="tab" aria-controls="nav-listings" aria-selected="true" @click="changeActiveTabStatus('listings')"> 
                         <span class="d-flex align-items-center justify-content-center mb-0">
                             Listings
-                            <span class="rounded-circle mx-3 d-flex align-items-center justify-content-center"> 
+                            <span v-if="resultListings.length > 0" class="rounded-circle mx-3 d-flex align-items-center justify-content-center"> 
                                 <p class="m-0">{{ resultListings.length }}</p>
                             </span> 
                         </span>
@@ -152,7 +152,7 @@
                     <button class="nav-link col-lg-3 col-12" id="nav-producers-tab" data-bs-toggle="tab" data-bs-target="#nav-producers" type="button" role="tab" aria-controls="nav-producers" aria-selected="false" @click="changeActiveTabStatus('producers')">
                         <span class="d-flex align-items-center justify-content-center mb-0">
                             Producers
-                            <span class="rounded-circle mx-3 d-flex align-items-center justify-content-center"> 
+                            <span v-if="producerListings.length > 0" class="rounded-circle mx-3 d-flex align-items-center justify-content-center"> 
                                 <p class="m-0">{{ producerListings.length }}</p>
                             </span> 
                         </span>
@@ -161,7 +161,7 @@
                     <button class="nav-link col-lg-3 col-12" id="nav-venues-tab" data-bs-toggle="tab" data-bs-target="#nav-venues" type="button" role="tab" aria-controls="nav-venues" aria-selected="false" @click="changeActiveTabStatus('venues')">
                         <span class="d-flex align-items-center justify-content-center mb-0">
                             Venues
-                            <span class="rounded-circle mx-3 d-flex align-items-center justify-content-center"> 
+                            <span v-if="venueListings.length > 0" class="rounded-circle mx-3 d-flex align-items-center justify-content-center"> 
                                 <p class="m-0">{{ venueListings.length }}</p>
                             </span> 
                         </span>
