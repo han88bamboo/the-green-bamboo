@@ -690,7 +690,7 @@
                                     <div id="carouselExample" class="carousel slide">
                                         <div class="carousel-inner px-4">
                                             <!-- [if] user type is producer -->
-                                            <div v-if="correctProducer || isAdmin">
+                                            <div v-if="correctProducer">
                                                 <!-- show answered questions -->
                                                 <div v-if="answerStatus">
                                                     <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
@@ -1473,10 +1473,11 @@
                             'Content-Type': 'application/json'
                         }
                     });
-                    console.log(response.data);
+                    alert("Your question has been successfully sent!");
                 } 
                 catch (error) {
                     console.error(error);
+                    alert("An error occurred while attempting to send your question, please try again!");
                 }
 
                 // force page to reload

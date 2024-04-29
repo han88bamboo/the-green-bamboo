@@ -3074,11 +3074,13 @@
                             'Content-Type': 'application/json'
                         }
                     });
+
+                    alert("Your question has been successfully sent!");
                 } 
                 catch (error) {
                     alert("An error occurred while attempting to send your question, please try again!\nWe have tried to copy your question's text to your clipboard.");
                     // Copy answer text to clipboard
-                    this.copyToClipboard(this.qaAnswer);
+                    this.copyToClipboard(this.qaQuestion);
                 }
 
                 // Reload page
