@@ -421,10 +421,19 @@
                                             </p>     
                                             <!-- Link filteredOptions to venues location -->
                                             <div v-if="locationOnWebsite" class="input-group mb-2">
-                                                <select class="form-control" v-model="selectedLocation" @input="filterOptions($event)">
+
+                                                <!-- Changed to datalist for search dropdown -->
+                                                <input list="locationOptions" v-model="tagLocation" class="form-control" id="tagLocation" placeholder="Enter Location" v-on:change="updateTagLocation">
+                                                <datalist id="locationOptions">
+                                                    <option v-for="location in locationOptions" :key="location.id.$oid" :value="location.name" :label="location.address">
+                                                        {{location.name}}
+                                                    </option>
+                                                </datalist>
+
+                                                <!-- <select class="form-control" v-model="selectedLocation" @input="filterOptions($event)">
                                                     <option value="" disabled selected>Select a location</option>
                                                     <option v-for="option in filteredOptions" :key="option.id" :value="option.name">{{ option.name }}</option>
-                                                </select>
+                                                </select> -->
                                                 
                                             </div>
                                             <div v-else class="input-group mb-2">
@@ -436,6 +445,9 @@
                                                     :value="selectedLocation"
                                                 >
                                                 </GMapAutocomplete>
+                                            </div>
+                                            <div>
+                                                <p v-show="tagLocation.length > 0" class="text-start mb-1 text-danger" id="tagLocationError"></p>
                                             </div>
                                             <div class="row">
                                                 <div class="col-6 col-md-12 d-flex justify-content-start">
@@ -1346,6 +1358,7 @@
                 extendReview:false,
                 locationOptions: [], // Your list of options
                 locationSearchTerm: "",
+                tagLocation:"",
                 selectedLocation: "",
                 selectedLocationId: "",
                 extendObservation: false,
@@ -1548,7 +1561,7 @@
                         try {
                             const response = await this.$axios.get('http://127.0.0.1:5000/getVenues');
                             this.venues = response.data;
-                            this.locationOptions = response.data.map(item => ({name: item.venueName, id:item._id}));
+                            this.locationOptions = response.data.map(item => ({name: item.venueName, id:item._id, address:item.address}));
                             this.getVenuesWithMenu(); // extract venues with menu
                         } 
                         catch (error) {
@@ -2264,6 +2277,7 @@
             },
 
             clearLocation(){
+                this.tagLocation = ''
                 this.selectedLocation = ''
                 if(!this.locationOnWebsite){
                     this.$refs.autocomplete.$el.value = "";
@@ -2773,6 +2787,21 @@
                 catch (error) {
                     console.error(error);
                     this.dataLoaded = null;
+                }
+            },
+
+            updateTagLocation(){
+                // get error message element
+                let tagLocationError = document.getElementById("tagLocationError")
+                // find listing based on bottle name
+                let locationTag = this.locationOptions.find(location => location.name === this.tagLocation)
+                if (locationTag) {
+                    this.selectedLocation = locationTag.name
+                    tagLocationError.innerHTML = ""
+                }
+                else {
+                    this.selectedLocation = ""
+                    tagLocationError.innerHTML = "Please enter a valid location, if not location will be left empty"
                 }
             },
         }
