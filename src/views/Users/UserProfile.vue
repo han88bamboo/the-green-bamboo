@@ -84,6 +84,7 @@
                         </span>
                         
                         <a v-if="user && !user.isAdmin" href="#" class="mt-3" data-bs-toggle="modal" data-bs-target="#applyModerator" style="color: black">Want to be a moderator? Apply here!</a>
+                        <button v-if="ownProfile && user" type="button" class="btn secondary-btn-less-round mt-3" data-bs-toggle="modal" data-bs-target="#changePasswordModal">Change/Reset Password</button>
                     </div>
 
 
@@ -269,6 +270,65 @@
                         </div>
                     </div>
                     <!-- applyModerator end -->
+
+                    <!-- Change Password start -->
+                    <div v-if="user" class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header" style="background-color: #535C72">
+                                    <h1 class="modal-title fs-5" id="exampleModalLabel" style="color: white;">Change Password</h1>
+                                    <button type="button" @click="resetChangePassword" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <!-- Initial select mode, change or reset password -->
+                                <div v-if="changingPassword==''" class="modal-body">
+                                    <button class="btn tertiary-btn reverse-clickable-text m-1" type="button" @click="changePasswordMode('change')">
+                                        Change Password
+                                    </button>      
+                                    <button class="btn tertiary-btn reverse-clickable-text m-1" type="button" @click="changePasswordMode('reset')">
+                                        Reset Password
+                                    </button>      
+                                </div>
+                                <div class="modal-body text-center">
+                                    <div v-if="changingPassword =='change' && !(confirmChangePassword||passwordError||passwordSuccess||passwordMismatch)">
+                                        <p class="text-start mb-1"> Old Password: <span class="text-danger">*</span></p>
+                                        <input type='password' v-model="oldPassword" class="form-control" id="oldPassword" placeholder="Enter Previous Password">
+                                        <p class="text-start mt-3 mb-1"> New Password: <span class="text-danger">*</span></p>
+                                        <input type='password' v-model="newPassword" class="form-control" id="newPassword" placeholder="Enter New Password">
+                                    </div>  
+                                    <div v-if="confirmChangePassword && !(passwordError||passwordSuccess||passwordMismatch)">
+                                        <b>Are you sure you want to change password?</b>
+                                    </div>
+                                    <div v-if="changingPassword =='reset'">
+                                        <p>Please key in OTP sent to your email:</p>
+                                    </div>  
+                                    
+                                    <!-- if password change/reset is successful -->
+                                    <p v-if="passwordSuccess" class="text-success fst-italic fw-bold fs-3">Password {{ changingPassword }} is successful</p>    
+                                    
+                                    <!-- if password change/reset faces error -->
+                                    <p v-if="passwordError" class ="text-danger fst-italic fw-bold fs-3">There is an error during password {{ changingPassword }}, please try again!</p>
+                                    <p v-if="passwordMismatch" class ="text-danger fst-italic fw-bold fs-3">Old password do not match, please try again</p>
+                                </div>
+
+                                <div class="modal-footer">
+                                    <!-- To return to previous select change password or reset password -->
+                                    <button v-if="changingPassword!=''" type="button" @click="selectPasswordMode" class="btn btn-secondary">Return</button>
+
+                                    <!-- Close modal-->
+                                    <button type="button" @click="resetChangePassword" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+                                    <!-- Change password first confirmation and second confirmation -->
+                                    <button v-if="changingPassword == 'change' && !(confirmChangePassword||passwordError||passwordSuccess||passwordMismatch)" type="button" @click="updatePassword" class="btn btn-primary">Change Password</button>
+                                    <button v-if="confirmChangePassword && !(passwordError||passwordSuccess||passwordMismatch)" type="button" @click="confirmUpdatePassword" class="btn btn-primary">Update Password</button>
+                                    
+                                    <!-- Reset password first confirmation and second confirmation -->
+                                    <button v-if="changingPassword == 'reset' && !(passwordError||passwordSuccess||passwordMismatch)" type="button" @click="resetPassword" class="btn btn-primary">Reset Password</button>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Change password end -->
 
 
                     <!-- badges -->
@@ -738,7 +798,17 @@ export default {
             selectedRemoveType:null,
             chooseMod:"",
             doubleConfirmMod:false,
-        };
+
+            // flags and variables for changing/resetting password
+            oldPassword:"",
+            newPassword:"",
+            changingPassword:"",
+            confirmChangePassword: false,
+            confirmResetPassword: false,
+            passwordError: false,
+            passwordSuccess: false,
+            passwordMismatch: false,
+        };  
     },
     computed: {
         formattedModTypes() {
@@ -1543,7 +1613,81 @@ export default {
                 }
             }
         },
-        
+        // To handle change and reset password
+        changePasswordMode(mode){
+            this.changingPassword = mode
+        },
+        selectPasswordMode(){
+            if(this.confirmChangePassword){
+                this.passwordError = false
+                this.passwordMismatch = false
+                this.passwordSuccess = false
+                this.confirmChangePassword = false
+                this.confirmResetPassword = false
+            }
+            else{
+                this.changingPassword = ""
+            }
+        },
+        resetChangePassword(){
+            if(this.passwordError||this.passwordSuccess||this.passwordMismatch){
+                this.passwordError = false
+                this.passwordMismatch = false
+                this.passwordSuccess = false
+                this.confirmChangePassword = false
+                this.confirmResetPassword = false
+                this.changingPassword = ""
+            }
+        },
+        updatePassword(){
+            if(this.oldPassword=="" || this.newPassword==""){
+                alert("One of the passwords is empty, please check again")
+                return null
+            }
+            this.confirmChangePassword = true
+        },
+        // Function to hash password
+        // create unique hash based on username and password
+        hashPassword(username, password) {
+            const combinedString = username.toString() + password;
+            let hash = 0;
+
+            for (let i = 0; i < combinedString.length; i++) {
+                const char = combinedString.charCodeAt(i);
+                hash = (hash << 5) - hash + char;
+                hash |= 0; // convert to 32-bit integer
+            }
+
+            return hash;
+        },
+        async confirmUpdatePassword(){
+            let oldHash = this.hashPassword(this.user.username, this.oldPassword)
+            let newHash = this.hashPassword(this.user.username, this.newPassword)
+            let submitURL = 'http://127.0.0.1:5100/editPassword/' + this.user._id.$oid 
+            let submitData = {
+                oldHash: oldHash.toString(),
+                newHash: newHash.toString(),
+            }
+            // Send request over
+            let responseCode = ''
+            await this.$axios.post(submitURL,submitData)
+                .then((response)=>{
+                    responseCode = response.data.code
+                })
+                .catch((error)=>{
+                    console.error(error);
+                    responseCode = error.response.data.code
+                });
+            console.log(responseCode)
+            if(responseCode==201){
+                this.passwordSuccess=true; // Display success message
+            }else if(responseCode==401){
+                this.passwordMismatch = true // Display duplicate entry message
+            }else{
+                this.passwordError = true // Display generic error message
+            }
+        },
+
     },
 };
 </script>
