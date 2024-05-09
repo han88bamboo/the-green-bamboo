@@ -1663,10 +1663,11 @@ export default {
         async confirmUpdatePassword(){
             let oldHash = this.hashPassword(this.user.username, this.oldPassword)
             let newHash = this.hashPassword(this.user.username, this.newPassword)
-            let submitURL = 'http://127.0.0.1:5100/editPassword/' + this.user._id.$oid 
+            let submitURL = 'http://127.0.0.1:5030/editPassword/' + this.user._id.$oid 
             let submitData = {
                 oldHash: oldHash.toString(),
                 newHash: newHash.toString(),
+                userType: "user",
             }
             // Send request over
             let responseCode = ''

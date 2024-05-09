@@ -261,58 +261,6 @@ def removeModType():
         ), 500
 
 # -----------------------------------------------------------------------------------------
-
-# [POST] Edit user password
-# - Update user password with new password
-# - Possible return codes: 201 (Updated), 401(Passwords do not match) , 404(User not exist), 500 (Error during update)
-@app.route('/editPassword/<id>', methods=['POST'])
-def editPassword(id):
-    data = request.get_json()
-    print(data)
-    # if data contains image64
-    userRaw = db.users.find_one({"_id": ObjectId(id)})
-    if userRaw is None:
-        return jsonify(
-            {   
-                "code": 404,
-                "data": {
-                    "userID": id
-                }
-            }
-        ), 404
-    try: 
-        if data['oldHash'] != userRaw['hashedPassword']:
-            return jsonify(
-                {   
-                    "code": 401,
-                    "data": {
-                        "userID": id
-                    }
-                }
-            ), 401
-        else:
-            updatePassword = db.users.update_one({'_id': ObjectId(id)}, {'$set': {'hashedPassword': data['newHash']}})
-
-            return jsonify(
-                {   
-                    "code": 201,
-                    "data": {
-                        "userID": id,
-                    }
-                }
-            ), 201
-    except Exception as e:
-        print(str(e))
-        return jsonify(
-            {
-                "code": 500,
-                "data": {
-                    "userID": id
-                },
-                "message": "An error occurred updating the password."
-            }
-        ), 500
-# -----------------------------------------------------------------------------------------
     
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True, port=5100)
