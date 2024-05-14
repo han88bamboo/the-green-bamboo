@@ -1350,12 +1350,28 @@
                                 <div v-if="confirmChangePassword && !(passwordError||passwordSuccess||passwordMismatch)">
                                     <b>Are you sure you want to change password?</b>
                                 </div>
-                                <div v-if="changingPassword =='reset'">
+                                <div v-if="changingPassword =='reset' && !(confirmResetPassword||passwordError||passwordSuccess)">
                                     <p>Please key in OTP sent to your email:</p>
+                                    <div class = "input-group">
+                                        <input type='text' class="form-control" placeholder="Enter OTP" v-model="resetPin">
+                                        <button :disabled="isButtonDisabled" class="btn btn-outline-secondary" type="button" id="resendPin" @click="sendResetPin">Send Pin</button>
+                                    </div>
+                                    <p v-show="isButtonDisabled" class="text-start mb-1 text-success" id="sendPinSuccess"></p>
+                                    <p v-show="isButtonDisabled" class="text-start mb-1 text-danger" id="sendPinError"></p>
+                                    <p v-show="verifyErrorMessage.length>0" class="text-start mb-1 text-danger">{{ verifyErrorMessage }}</p>
                                 </div>  
+
+                                <!-- Confirm if want to reset password-->
+                                <div v-if="confirmResetPassword && !(passwordError||passwordSuccess||resettingPassword)">
+                                    <b>Are you sure you want to reset your password? A new password will be sent to you.</b>
+                                </div>
+                                <div v-if="confirmResetPassword && resettingPassword && !(passwordError||passwordSuccess)">
+                                    <b>Please wait while password is being resetted.</b>
+                                </div>
                                 
                                 <!-- if password change/reset is successful -->
                                 <p v-if="passwordSuccess" class="text-success fst-italic fw-bold fs-3">Password {{ changingPassword }} is successful</p>    
+                                <p v-if="passwordSuccess && confirmResetPassword" class="text-success fst-italic fw-bold fs-3">An email has been sent to you containing the password.</p>
                                 
                                 <!-- if password change/reset faces error -->
                                 <p v-if="passwordError" class ="text-danger fst-italic fw-bold fs-3">There is an error during password {{ changingPassword }}, please try again!</p>
@@ -1364,17 +1380,18 @@
 
                             <div class="modal-footer">
                                 <!-- To return to previous select change password or reset password -->
-                                <button v-if="changingPassword!=''" type="button" @click="selectPasswordMode" class="btn btn-secondary">Return</button>
+                                <button v-if="changingPassword!='' && !resettingPassword" type="button" @click="selectPasswordMode" class="btn btn-secondary">Return</button>
 
                                 <!-- Close modal-->
-                                <button type="button" @click="resetChangePassword" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button v-if="!resettingPassword" type="button" @click="resetChangePassword" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
 
                                 <!-- Change password first confirmation and second confirmation -->
-                                <button v-if="changingPassword == 'change' && !(confirmChangePassword||passwordError||passwordSuccess||passwordMismatch)" type="button" @click="updatePassword" class="btn btn-primary">Change Password</button>
-                                <button v-if="confirmChangePassword && !(passwordError||passwordSuccess||passwordMismatch)" type="button" @click="confirmUpdatePassword" class="btn btn-primary">Update Password</button>
+                                <button v-if="changingPassword == 'change' && !(confirmChangePassword||passwordError||passwordSuccess||passwordMismatch||resettingPassword)" type="button" @click="updatePassword" class="btn btn-primary">Change Password</button>
+                                <button v-if="confirmChangePassword && !(passwordError||passwordSuccess||passwordMismatch||resettingPassword)" type="button" @click="confirmUpdatePassword" class="btn btn-primary">Update Password</button>
                                 
                                 <!-- Reset password first confirmation and second confirmation -->
-                                <button v-if="changingPassword == 'reset' && !(passwordError||passwordSuccess||passwordMismatch)" type="button" @click="resetPassword" class="btn btn-primary">Reset Password</button>
+                                <button v-if="changingPassword == 'reset' && !(confirmResetPassword||passwordError||passwordSuccess||resettingPassword)" type="button" @click="verifyOTP" class="btn btn-primary">Verify OTP</button>
+                                <button v-if="confirmResetPassword && !(passwordError||passwordSuccess||resettingPassword)" type="button" @click="resetPassword" class="btn btn-primary">Reset Password</button>
                                 
                             </div>
                         </div>
@@ -1944,6 +1961,10 @@
                 passwordError: false,
                 passwordSuccess: false,
                 passwordMismatch: false,
+                resetPin: "",
+                isButtonDisabled: false,
+                verifyErrorMessage:"",
+                resettingPassword:false,
 
             }
         },
@@ -3403,12 +3424,13 @@
                 this.changingPassword = mode
             },
             selectPasswordMode(){
-                if(this.confirmChangePassword){
+                if(this.confirmChangePassword||this.confirmResetPassword){
                     this.passwordError = false
                     this.passwordMismatch = false
                     this.passwordSuccess = false
                     this.confirmChangePassword = false
                     this.confirmResetPassword = false
+                    this.verifyErrorMessage = ""
                 }
                 else{
                     this.changingPassword = ""
@@ -3422,6 +3444,7 @@
                     this.confirmChangePassword = false
                     this.confirmResetPassword = false
                     this.changingPassword = ""
+                    this.verifyErrorMessage = ""
                 }
             },
             updatePassword(){
@@ -3464,7 +3487,6 @@
                         console.error(error);
                         responseCode = error.response.data.code
                     });
-                console.log(responseCode)
                 if(responseCode==201){
                     this.passwordSuccess=true; // Display success message
                 }else if(responseCode==401){
@@ -3474,6 +3496,90 @@
                 }
             },
 
+            async sendResetPin(){
+            // call api to send pin
+            this.isButtonDisabled = true;
+                setTimeout(() => {
+                    this.isButtonDisabled = false;
+                }, 60000);
+            let submitURL = 'http://127.0.0.1:5030/sendResetPin/' + this.targetVenue._id.$oid
+            let submitData = {
+                userType: "venue",
+            }
+            let responseCode = ''
+            await this.$axios.post(submitURL,submitData)
+                .then((response)=>{
+                    responseCode = response.data.code
+                })
+                .catch((error)=>{
+                    console.error(error);
+                    responseCode = error.response.data.code
+                });
+            let sendPinSuccess = document.getElementById("sendPinSuccess")
+            let sendPinError = document.getElementById("sendPinError")
+            if(responseCode == 201){
+                sendPinSuccess.innerHTML = "OTP has been sent!"
+                sendPinError.innerHTML = ""
+            }
+            else{
+                sendPinSuccess.innerHTML = ""
+                sendPinError.innerHTML = "Error sending OTP, please try again in 60 seconds"
+            }
+        },
+
+        async verifyOTP(){
+            // call api to verify the pin
+            let submitURL = "http://127.0.0.1:5030/verifyPin/" + this.targetVenue._id.$oid
+            let submitData ={
+                userType:"venue",
+                pin:this.resetPin
+            }
+            let responseCode = ''
+            await this.$axios.post(submitURL,submitData)
+                .then((response)=>{
+                    responseCode = response.data.code
+                })
+                .catch((error)=>{
+                    console.error(error);
+                    responseCode = error.response.data.code
+                });
+            if(responseCode == 201){
+                this.confirmResetPassword = true
+                this.verifyErrorMessage = ""
+            }
+            else if(responseCode == 400){
+                this.verifyErrorMessage = "OTP is wrong or expired."
+            }else{
+                this.verifyErrorMessage = "An error verifying the OTP. Please resend OTP or try again."
+            }
+            
+        },
+
+        async resetPassword(){
+            this.resettingPassword=true
+            let submitURL = "http://127.0.0.1:5030/resetPassword/" + this.targetVenue._id.$oid
+            let submitData = {
+                userType:"venue",
+                pin:this.resetPin
+            }
+            // Send request over
+            let responseCode = ''
+            await this.$axios.post(submitURL,submitData)
+                .then((response)=>{
+                    responseCode = response.data.code
+                })
+                .catch((error)=>{
+                    console.error(error);
+                    responseCode = error.response.data.code
+                });
+            console.log(responseCode)
+            this.resettingPassword= false
+            if(responseCode==201){
+                this.passwordSuccess=true; // Display success message
+            }else{
+                this.passwordError = true // Display generic error message
+            }
+        },
 
         }
     }
