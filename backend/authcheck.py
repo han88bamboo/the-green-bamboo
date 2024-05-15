@@ -401,6 +401,7 @@ def sendResetPin(id):
         message = 'Subject: Drink-X Reset Password\n\n Your pin is {} and expires in 1 hour, please ignore this message if you did not try to reset your password, alternatively, you can email us'.format(pin)
         server.sendmail(email_address, email_address, message)
         server.quit()
+        print(email_address)
         print("Success: Email sent!")
         
         return jsonify(
@@ -466,7 +467,7 @@ def verifyPin(id):
         datetime_obj2 = datetime.strptime(time, "%Y-%m-%d %H:%M:%S")
         time_difference = datetime_obj2 - datetime_obj1
 
-        if str(actualPin) == str(data['pin']) and time_difference.total_seconds()<=3600.0:
+        if str(actualPin) == str(data['pin']) and time_difference.total_seconds()<=7200.0:
 
             return jsonify(
                     {   
