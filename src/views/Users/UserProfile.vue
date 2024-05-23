@@ -67,6 +67,14 @@
                                 <span v-else>{{ drinkChoice }}</span>
                             </div>
                         </div>
+                        <div class="row">
+                            <div class="col-5">
+                                <b> Points Earned </b>
+                            </div>
+                            <div class="col-7 text-end">
+                                <span> pts </span>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- buttons -->
@@ -352,37 +360,17 @@
                         <h3>Badges Unlocked</h3>
                         <hr>
 
-                        <div v-if="true">
+                        <div v-if="topCategoriesReviewed.length == 0">
                             You have no badges yet.
                         </div>
 
                         <div v-else class="container text-center mb-3">
                             <div class="row">
-                                <div class="col">
-                                    <img src="https://img.freepik.com/free-vector/realistic-vector-icon-golden-king-queen-crown-isolated-white-background_134830-2012.jpg" 
+                                <div class="col-4 p-2" v-for="drinkTypeDetails in matchedDrinkTypes" :key="drinkTypeDetails._id">
+                                    <img :src="'data:image/png;base64,'+ (drinkTypeDetails.badgePhoto || defaultProfilePhoto)" 
+                                        style="width: 100px; height: 100px;" 
                                         alt="" class="rounded-circle border border-dark badge-img">
-                                </div>
-                                <div class="col">
-                                    <img src="https://img.freepik.com/free-vector/realistic-vector-icon-golden-king-queen-crown-isolated-white-background_134830-2012.jpg" 
-                                        alt="" class="rounded-circle border border-dark badge-img">
-                                </div>
-                                <div class="col">
-                                    <img src="https://img.freepik.com/free-vector/realistic-vector-icon-golden-king-queen-crown-isolated-white-background_134830-2012.jpg" 
-                                        alt="" class="rounded-circle border border-dark badge-img">
-                                </div>
-                            </div>
-                            <div class="row mt-3">
-                                <div class="col">
-                                    <img src="https://img.freepik.com/free-vector/realistic-vector-icon-golden-king-queen-crown-isolated-white-background_134830-2012.jpg" 
-                                        alt="" class="rounded-circle border border-dark badge-img">
-                                </div>
-                                <div class="col">
-                                    <img src="https://img.freepik.com/free-vector/realistic-vector-icon-golden-king-queen-crown-isolated-white-background_134830-2012.jpg" 
-                                        alt="" class="rounded-circle border border-dark badge-img">
-                                </div>
-                                <div class="col">
-                                    <img src="https://img.freepik.com/free-vector/realistic-vector-icon-golden-king-queen-crown-isolated-white-background_134830-2012.jpg" 
-                                        alt="" class="rounded-circle border border-dark badge-img">
+                                        <p class="pt-1" style="line-height: 1;"> <small> {{ drinkTypeDetails.drinkType }} </small> </p>
                                 </div>
                             </div>
                         </div>
@@ -655,7 +643,8 @@
                                         <div v-if="ownProfile" style="display: flex; margin-top: auto" class="mb-0">
                                             <a href="#" style="text-decoration: none; color: #535C72;" data-bs-toggle="modal" :data-bs-target="`#deleteFromListModal${index}`">
                                                 <!-- cross icon -->
-                                                <svg class=mb-1 xmlns="http://www.w3.org/2000/svg" height="16" width="12" viewBox="0 0 384 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+                                                <svg class=mb-1 xmlns="http://www.w3.org/2000/svg" height="16" width="12" viewBox="0 0 384 512">
+                                                    <!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc. -->
                                                     <path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/>
                                                 </svg>
                                                 Delete from list
@@ -667,7 +656,8 @@
                                 <div class="col-2 text-end">
                                     <h2>
                                         {{ getAverageReview(listingID[1]) }}
-                                        <svg class="mb-2" xmlns="http://www.w3.org/2000/svg" height="18" width="20.25" viewBox="0 0 576 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+                                        <svg class="mb-2" xmlns="http://www.w3.org/2000/svg" height="18" width="20.25" viewBox="0 0 576 512">
+                                            <!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc. -->
                                             <path d="M287.9 0c9.2 0 17.6 5.2 21.6 13.5l68.6 141.3 153.2 22.6c9 1.3 16.5 7.6 19.3 16.3s.5 18.1-5.9 24.5L433.6 328.4l26.2 155.6c1.5 9-2.2 18.1-9.7 23.5s-17.3 6-25.3 1.7l-137-73.2L151 509.1c-8.1 4.3-17.9 3.7-25.3-1.7s-11.2-14.5-9.7-23.5l26.2-155.6L31.1 218.2c-6.5-6.4-8.7-15.9-5.9-24.5s10.3-14.9 19.3-16.3l153.2-22.6L266.3 13.5C270.4 5.2 278.7 0 287.9 0zm0 79L235.4 187.2c-3.5 7.1-10.2 12.1-18.1 13.3L99 217.9 184.9 303c5.5 5.5 8.1 13.3 6.8 21L171.4 443.7l105.2-56.2c7.1-3.8 15.6-3.8 22.6 0l105.2 56.2L384.2 324.1c-1.3-7.7 1.2-15.5 6.8-21l85.9-85.1L358.6 200.5c-7.8-1.2-14.6-6.1-18.1-13.3L287.9 79z"/>
                                         </svg>
                                     </h2>
@@ -828,6 +818,13 @@ export default {
             isButtonDisabled: false,
             verifyErrorMessage:"",
             resettingPassword:false,
+
+            // for badges
+            allListingsReviewedByUser: [],
+            allCategoriesReviewedByUser: {},
+            matchedDrinkTypes: [],
+            topCategoriesReviewed: [],
+            badgeReviewMinNumber: 3 // CHANGE THIS! if there is a change in criterion for minimum # of reviews that a user needs to gain a badge
         };  
     },
     computed: {
@@ -886,6 +883,7 @@ export default {
                 this.reviews = response.data;
                 this.reversedReviews = this.reviews.reverse();
                 this.recentReviews = this.reversedReviews.filter(review => review.userID?.$oid === this.displayUserID && review.reviewType === 'Listing');
+                console.log(this.recentReviews)
             }
             catch (error) {
                 console.error(error);
@@ -931,6 +929,11 @@ export default {
                 this.displayUserBookmarks = this.displayUser.drinkLists;
                 this.getUserFavourite();
                 this.getRecentActivity();
+
+                // ==== for badges ====
+                this.getAllListingsReviewed();
+                this.getAllCategoriesReviewed();
+
             } 
             catch (error) {
                 console.error(error);
@@ -969,6 +972,11 @@ export default {
                         return !currentMod.includes(drinkType.drinkType);
                     })
                 }
+
+                // ==== for badges ====
+                this.getTopCategoriesReviewed();
+                this.getMatchedDrinkType();
+
             } 
             catch (error) {
                 console.error(error);
@@ -1794,6 +1802,42 @@ export default {
                 this.passwordError = true // Display generic error message
             }
         },
+
+        // ------------------- Badges -------------------
+
+        // get all listings reviewed by the user
+        getAllListingsReviewed() {
+            this.allListingsReviewedByUser = this.recentReviews.map(review => this.listings.find(listing => listing._id.$oid === review.reviewTarget.$oid));
+        },
+
+        // get all categories reviewed by the user
+        getAllCategoriesReviewed() {
+            for (let listing of this.allListingsReviewedByUser) {
+                // check if this.allCategoriesReviewedByUser already contains the count for listing.drinkType
+                // [if] no, assign the count as 1
+                // [else] yes, add 1 to the count
+                this.allCategoriesReviewedByUser[listing.drinkType] = (this.allCategoriesReviewedByUser[listing.drinkType] || 0) + 1;
+            }
+        },
+
+        // extract out only the drink categories that the user has >= this.badgeReviewMinNumber reviews for
+        // CHANGE! this.badgeReviewMinNumber if the criterion for minimum # of reviews to get a badge changes
+        getTopCategoriesReviewed() {
+            console.log(this.allCategoriesReviewedByUser)
+            this.topCategoriesReviewed = Object.keys(this.allCategoriesReviewedByUser).reduce((acc, category) => {
+                if (this.allCategoriesReviewedByUser[category] >= this.badgeReviewMinNumber) {
+                    acc[category] = this.allCategoriesReviewedByUser[category];
+                }
+                return acc;
+            }, {});
+        },
+
+        // match categories to "drinkType" database
+        // currently all "drinkTypes" in the reviews are hardcoded, so there is a need to map the objects so that all the badgePhoto can be retrieved
+        getMatchedDrinkType() {
+            this.matchedDrinkTypes = Object.keys(this.topCategoriesReviewed).map(category => this.drinkTypes.find(drinkType => drinkType.drinkType === category));
+        },
+
     },
 };
 </script>
