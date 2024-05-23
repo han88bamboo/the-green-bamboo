@@ -3163,7 +3163,8 @@
                             venueID: this.targetVenue['_id']['$oid'],
                             question: this.qaQuestion,
                             answer: "",
-                            date: new Date().toISOString()
+                            date: new Date().toISOString(),
+                            userID: this.viewerID,
                         },
                         {
                         headers: {

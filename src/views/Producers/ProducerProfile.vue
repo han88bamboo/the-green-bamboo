@@ -1561,7 +1561,8 @@
                             producerID: this.producer_id,
                             question: this.question,
                             answer: "",
-                            date: this.currDate
+                            date: this.currDate,
+                            userID: this.user_id
                         },
                         {
                         headers: {

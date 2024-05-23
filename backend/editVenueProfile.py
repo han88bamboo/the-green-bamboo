@@ -138,6 +138,7 @@ def sendQuestions():
     question = data['question']
     answer = data['answer']
     date = datetime.strptime(data['date'], "%Y-%m-%dT%H:%M:%S.%fZ")
+    userID = data['userID']
 
     try:
         submitReq = db.venues.update_one(
@@ -148,6 +149,7 @@ def sendQuestions():
                             'question': question,
                             'answer': answer,
                             'date': date,
+                            'userID': ObjectId(userID)
                         }
                     }
             }

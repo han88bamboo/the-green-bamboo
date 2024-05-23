@@ -39,7 +39,7 @@
                             <h3>{{ displayUser.displayName }}</h3> 
                             <b>@{{ displayUser.username }}</b> 
                             <br/>
-                            {{ drinkCount }} Drinks tasted 
+                            {{ drinkCount }} Drinks Tasted 
                             <br/>
                         </div>
                         <!-- profile picture -->
@@ -52,7 +52,7 @@
                     <div class="mt-3">
                         <div class="row">
                             <div class="col-5">
-                                <b>Member since</b>
+                                <b>Member Since</b>
                             </div>
                             <div class="col-7 text-end">
                                 {{ joinDate }}
@@ -72,7 +72,7 @@
                                 <b> Points Earned </b>
                             </div>
                             <div class="col-7 text-end">
-                                <span> pts </span>
+                                <span> {{ totalPoints }} pts </span>
                             </div>
                         </div>
                     </div>
@@ -744,6 +744,7 @@ export default {
             // data from database
             listings: [],
             producers: [],
+            venues: [],
             reviews: [],
             reversedReviews: [],
             users: [],
@@ -824,7 +825,17 @@ export default {
             allCategoriesReviewedByUser: {},
             matchedDrinkTypes: [],
             topCategoriesReviewed: [],
-            badgeReviewMinNumber: 3 // CHANGE THIS! if there is a change in criterion for minimum # of reviews that a user needs to gain a badge
+            badgeReviewMinNumber: 3, // CHANGE THIS! if there is a change in criterion for minimum # of reviews that a user needs to gain a badge
+
+            // for points
+            pointSystem: { // CHANGE THIS! if there is a change in the point system (just change this.pointsDefault to a numerical value for the corresponding criteria)
+                // format: { action: [count, points] }
+                logReview: [0, 50], // log a review
+                tagFriend: [0, 50], // tag a friend
+                askProducer: [0, 50], // ask a producer a question
+                askVenue: [0, 50], // ask a venue a question
+            },
+            totalPoints: 0,
         };  
     },
     computed: {
@@ -883,8 +894,27 @@ export default {
                 this.reviews = response.data;
                 this.reversedReviews = this.reviews.reverse();
                 this.recentReviews = this.reversedReviews.filter(review => review.userID?.$oid === this.displayUserID && review.reviewType === 'Listing');
-                console.log(this.recentReviews)
             }
+            catch (error) {
+                console.error(error);
+                this.dataLoaded = null;
+            }
+            // Producers
+            try {
+                const response = await this.$axios.get('http://127.0.0.1:5000/getProducers');
+                this.producers = response.data;
+                this.dataLoaded = true;
+            } 
+            catch (error) {
+                console.error(error);
+                this.dataLoaded = null;
+            }
+            // Venues
+            try {
+                const response = await this.$axios.get('http://127.0.0.1:5000/getVenues');
+                this.venues = response.data;
+                this.dataLoaded = true;
+            } 
             catch (error) {
                 console.error(error);
                 this.dataLoaded = null;
@@ -933,6 +963,13 @@ export default {
                 // ==== for badges ====
                 this.getAllListingsReviewed();
                 this.getAllCategoriesReviewed();
+
+                // ==== for points ====
+                this.pointSystem.logReview[0] = this.allListingsReviewedByUser.length;
+                this.getTotalFriendsTagged();
+                this.getAskedProducerQuestions();
+                this.getAskedVenueQuestions();
+                this.calculateTotalPoints();
 
             } 
             catch (error) {
@@ -1836,6 +1873,36 @@ export default {
         // currently all "drinkTypes" in the reviews are hardcoded, so there is a need to map the objects so that all the badgePhoto can be retrieved
         getMatchedDrinkType() {
             this.matchedDrinkTypes = Object.keys(this.topCategoriesReviewed).map(category => this.drinkTypes.find(drinkType => drinkType.drinkType === category));
+        },
+
+        // ------------------- Points -------------------
+
+        // get the total number of friends tagged
+        getTotalFriendsTagged() {
+            // loop through all reviews and get the number of friends tagged for each review
+            // add up all the friends tagged
+            this.pointSystem.tagFriend[0] = this.recentReviews.reduce((sum, review) => sum + review.taggedUsers.length, 0);
+        },
+
+        // get total number of questions asked by user to producers
+        getAskedProducerQuestions() {
+            this.pointSystem.askProducer[0] = this.producers.reduce((totalQuestions, producer) => {
+                return totalQuestions + producer.questionsAnswers.filter(qa => qa.userID.$oid === this.displayUserID).length;
+            }, 0);
+        },
+
+        // get total number of questions asked by user to venues
+        getAskedVenueQuestions() {
+            this.pointSystem.askVenue[0] = this.venues.reduce((totalQuestions, venue) => {
+                return totalQuestions + venue.questionsAnswers.filter(qa => qa.userID.$oid === this.displayUserID).length;
+            }, 0);
+        },
+
+        // calculate the total points
+        calculateTotalPoints() {
+            // in this.pointSystem, the key is the action, and the value is an array of [points, count]
+            // to calculate total points, take value[0] = points | value[1] = count, and sum up all points * count
+            this.totalPoints = Object.values(this.pointSystem).reduce((sum, value) => sum + (value[0] * value[1]), 0);
         },
 
     },
