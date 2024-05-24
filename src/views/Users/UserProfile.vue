@@ -838,9 +838,9 @@ export default {
             matchedDrinkTypes: [],
             topCategoriesReviewed: [],
             badgeLevels: { // CHANGE THIS! if there is a change in criterion for minimum # of reviews that a user needs to gain a badge level
-                novice: 1,
-                lover: 2,
-                master: 3,
+                novice: 3,
+                lover: 10,
+                master: 30,
             },
             categoryBadges: {},
 
@@ -849,6 +849,7 @@ export default {
                 // format: { action: [count, points] }
                 logReview: [0, 50], // log a review
                 tagFriend: [0, 50], // tag a friend
+                tagLocation: [0, 50], // tag a location
                 askProducer: [0, 50], // ask a producer a question
                 askVenue: [0, 50], // ask a venue a question
             },
@@ -984,6 +985,7 @@ export default {
                 // ==== for points ====
                 this.pointSystem.logReview[0] = this.allListingsReviewedByUser.length;
                 this.getTotalFriendsTagged();
+                this.getTotalLocationsTagged();
                 this.getAskedProducerQuestions();
                 this.getAskedVenueQuestions();
                 this.calculateTotalPoints();
@@ -1920,11 +1922,18 @@ export default {
 
         // ------------------- Points -------------------
 
-        // get the total number of friends tagged
+        // get total number of friends tagged
         getTotalFriendsTagged() {
             // loop through all reviews and get the number of friends tagged for each review
             // add up all the friends tagged
             this.pointSystem.tagFriend[0] = this.recentReviews.reduce((sum, review) => sum + review.taggedUsers.length, 0);
+        },
+
+        // get total number of locations tagged in reviews
+        getTotalLocationsTagged() {
+            // loop through all reviews and get the number of locations tagged for each review
+            // add up all the locations tagged
+            this.pointSystem.tagLocation[0] = this.recentReviews.reduce((sum, review) => sum + (review.location.length !== 0 ? 1 : 0), 0);
         },
 
         // get total number of questions asked by user to producers
@@ -1941,7 +1950,7 @@ export default {
             }, 0);
         },
 
-        // calculate the total points
+        // calculate total points
         calculateTotalPoints() {
             // in this.pointSystem, the key is the action, and the value is an array of [points, count]
             // to calculate total points, take value[0] = points | value[1] = count, and sum up all points * count
