@@ -366,11 +366,23 @@
 
                         <div v-else class="container text-center mb-3">
                             <div class="row">
-                                <div class="col-4 p-2" v-for="drinkTypeDetails in matchedDrinkTypes" :key="drinkTypeDetails._id">
+                                <div class="col-12 col-sm-4 col-md-6 col-xl-4 p-2" v-for="drinkTypeDetails in matchedDrinkTypes" :key="drinkTypeDetails._id">
+                                    <!-- star icon -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" :fill="getBadgeColor(categoryBadges[drinkTypeDetails.drinkType])" class="bi bi-stars mb-1" viewBox="0 0 16 16">
+                                        <path d="M7.657 6.247c.11-.33.576-.33.686 0l.645 1.937a2.89 2.89 0 0 0 1.829 1.828l1.936.645c.33.11.33.576 0 .686l-1.937.645a2.89 2.89 0 0 0-1.828 1.829l-.645 1.936a.361.361 0 0 1-.686 0l-.645-1.937a2.89 2.89 0 0 0-1.828-1.828l-1.937-.645a.361.361 0 0 1 0-.686l1.937-.645a2.89 2.89 0 0 0 1.828-1.828zM3.794 1.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387A1.73 1.73 0 0 0 4.593 5.69l-.387 1.162a.217.217 0 0 1-.412 0L3.407 5.69A1.73 1.73 0 0 0 2.31 4.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387A1.73 1.73 0 0 0 3.407 2.31zM10.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.16 1.16 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.16 1.16 0 0 0-.732-.732L9.1 2.137a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732z"/>
+                                    </svg>
+                                    <!-- image of actual badge -->
                                     <img :src="'data:image/png;base64,'+ (drinkTypeDetails.badgePhoto || defaultProfilePhoto)" 
                                         style="width: 100px; height: 100px;" 
                                         alt="" class="rounded-circle border border-dark badge-img">
-                                        <p class="pt-1" style="line-height: 1;"> <small> {{ drinkTypeDetails.drinkType }} </small> </p>
+                                    <!-- badge description -->
+                                    <p class="pt-1" style="line-height: 1;"> 
+                                        <small> 
+                                            {{ drinkTypeDetails.drinkType }} 
+                                            <br>
+                                            {{ categoryBadges[drinkTypeDetails.drinkType] }}
+                                        </small> 
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -825,7 +837,12 @@ export default {
             allCategoriesReviewedByUser: {},
             matchedDrinkTypes: [],
             topCategoriesReviewed: [],
-            badgeReviewMinNumber: 3, // CHANGE THIS! if there is a change in criterion for minimum # of reviews that a user needs to gain a badge
+            badgeLevels: { // CHANGE THIS! if there is a change in criterion for minimum # of reviews that a user needs to gain a badge level
+                novice: 1,
+                lover: 2,
+                master: 3,
+            },
+            categoryBadges: {},
 
             // for points
             pointSystem: { // CHANGE THIS! if there is a change in the point system (just change this.pointsDefault to a numerical value for the corresponding criteria)
@@ -1857,13 +1874,26 @@ export default {
             }
         },
 
-        // extract out only the drink categories that the user has >= this.badgeReviewMinNumber reviews for
-        // CHANGE! this.badgeReviewMinNumber if the criterion for minimum # of reviews to get a badge changes
+        // extract out only the drink categories that the user has >= this.badgeLevels.novice (most basic level) reviews for
+        // assign this.categoryBadges[category] to user based on # of reviews for that category
+        // CHANGE! name of this.categoryBadges[category] if the criterion for minimum # of reviews to get a badge changes
         getTopCategoriesReviewed() {
             console.log(this.allCategoriesReviewedByUser)
             this.topCategoriesReviewed = Object.keys(this.allCategoriesReviewedByUser).reduce((acc, category) => {
-                if (this.allCategoriesReviewedByUser[category] >= this.badgeReviewMinNumber) {
+                // --> HIGHEST TIER : MASTER (>= 30 reviews)
+                if (this.allCategoriesReviewedByUser[category] >= this.badgeLevels.master) {
                     acc[category] = this.allCategoriesReviewedByUser[category];
+                    this.categoryBadges[category] = "Master"
+                }
+                // --> MIDDLE TIER: LOVER (>= 10 reviews)
+                else if (this.allCategoriesReviewedByUser[category] >= this.badgeLevels.lover) {
+                    acc[category] = this.allCategoriesReviewedByUser[category];
+                    this.categoryBadges[category] = "Lover"
+                }
+                // --> LOWEST TIER: NOVICE (>= 3 reviews)
+                else if (this.allCategoriesReviewedByUser[category] >= this.badgeLevels.novice) {
+                    acc[category] = this.allCategoriesReviewedByUser[category];
+                    this.categoryBadges[category] = "Novice"
                 }
                 return acc;
             }, {});
@@ -1874,6 +1904,19 @@ export default {
         getMatchedDrinkType() {
             this.matchedDrinkTypes = Object.keys(this.topCategoriesReviewed).map(category => this.drinkTypes.find(drinkType => drinkType.drinkType === category));
         },
+
+        // get colour of badge to render on frontend
+        getBadgeColor(badgeLevel) {
+            if (badgeLevel === "Master") {
+                return "#E5B80B" // gold
+            }
+            else if (badgeLevel === "Lover") {
+                return "#A6A6A6"; // silver
+            }
+            else if (badgeLevel === "Novice") {
+                return "#CD7F32"; // bronze
+            }
+        },  
 
         // ------------------- Points -------------------
 
