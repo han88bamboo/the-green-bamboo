@@ -457,5 +457,21 @@ def getRequestInaccuracyByVenue(id):
     return allRequestInaccuracy
 
 # -----------------------------------------------------------------------------------------
+# [GET] Badges
+@app.route("/getBadges")
+def getBadges():
+    #this step finds all the items in the collection, specifying Badges
+    data = db.badges.find({})
+    #have to use data.clone so that cursor is not used up
+    print(len(list(data.clone())))
+    allBadges = []
+    #parse bson as json
+    dataEncode = parse_json(data)
+    for doc in dataEncode:
+        # print(doc)
+        allBadges.append(doc)
+    return allBadges
+
+# -----------------------------------------------------------------------------------------
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=True, port = 5000)

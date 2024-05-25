@@ -215,12 +215,12 @@ class specialColours:
     hexList: list
     colour: str
 
+# Dataclass (badges)
+@dataclass
+class badges:
+    badgeName: str
+    badgePhoto: str
+    badgeDesc: str
+
 def convert_to_json(data):
     return json.dumps(data.__dict__)
-
-
-
-
-
-
-

@@ -360,23 +360,47 @@
                         <h3>Badges Unlocked</h3>
                         <hr>
 
-                        <div v-if="topCategoriesReviewed.length == 0">
+                        <div v-if="topCategoriesReviewed.length == 0 && otherBadges.length == 0">
                             You have no badges yet.
                         </div>
 
                         <div v-else class="container text-center mb-3">
+                            <!-- badges for different drink types -->
                             <div class="row">
                                 <div class="col-12 col-sm-4 col-md-6 col-xl-4 p-2" v-for="drinkTypeDetails in matchedDrinkTypes" :key="drinkTypeDetails._id">
                                     <!-- image of actual badge -->
                                     <img :src="'data:image/png;base64,'+ (drinkTypeDetails.badgePhoto || defaultProfilePhoto)" 
                                         style="width: 100px; height: 100px;" 
-                                        alt="" class="rounded-circle border border-dark badge-img">
+                                        alt="" class="rounded-circle-white-bg border border-dark badge-img">
+                                    <!-- badge description -->
+                                    <div class="pt-1" style="line-height: 1;"> 
+                                        <small> 
+                                            <b> {{ drinkTypeDetails.drinkType }} {{ categoryBadges[drinkTypeDetails.drinkType] }} </b>
+                                        </small>
+                                        <br>
+                                        <small class="xs-text" v-for="(subcategory, category) of topSubcategoriesReviewed" :key="category">
+                                            <span v-if="category === drinkTypeDetails.drinkType">
+                                                <i>
+                                                    (Power: <span v-for="item in subcategory" :key="item">
+                                                        {{ item }}<span v-if="subcategory.indexOf(item) !== subcategory.length - 1">, </span>
+                                                    </span>)
+                                                </i>
+                                            </span>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- badges based on other user activities -->
+                            <div class="row">
+                                <div class="col-12 col-sm-4 col-md-6 col-xl-4 p-2" v-for="badge in otherBadges" :key="badge">
+                                    <!-- image of actual badge -->
+                                    <img :src="'data:image/png;base64,'+ (getBadgeInfo(badge).badgePhoto)" 
+                                        style="width: 100px; height: 100px;" 
+                                        alt="" class="rounded-circle-white-bg border border-dark badge-img">
                                     <!-- badge description -->
                                     <p class="pt-1" style="line-height: 1;"> 
                                         <small> 
-                                            {{ drinkTypeDetails.drinkType }} 
-                                            <br>
-                                            {{ categoryBadges[drinkTypeDetails.drinkType] }}
+                                            <b> {{ getBadgeInfo(badge).badgeDesc }} </b>
                                         </small> 
                                     </p>
                                 </div>
@@ -758,6 +782,7 @@ export default {
             users: [],
             drinkCategories: [],
             drinkTypes: [],
+            badges: [],
             drinkType: [],
             subTags: null,
             flavourTags: null,
@@ -831,14 +856,23 @@ export default {
             // for badges
             allListingsReviewedByUser: [],
             allCategoriesReviewedByUser: {},
+            allSubCategoriesReviewedByUser: {},
             matchedDrinkTypes: [],
             topCategoriesReviewed: [],
+            topSubcategoriesReviewed: {},
             badgeLevels: { // CHANGE THIS! if there is a change in criterion for minimum # of reviews that a user needs to gain a badge level
                 novice: 3,
                 lover: 10,
                 master: 30,
             },
             categoryBadges: {},
+            otherBadgesLimit: { // CHANGE THIS! if there is a change in minimum # that a user needs to gain a badge level
+                reviewDrinkCategory: 10,
+                tagFriend: 3,
+                tagLocation: 5,
+                upvotes: 10
+            },
+            otherBadges: [],
 
             // for points
             pointSystem: { // CHANGE THIS! if there is a change in the point system (just change this.pointsDefault to a numerical value for the corresponding criteria)
@@ -933,6 +967,16 @@ export default {
                 console.error(error);
                 this.dataLoaded = null;
             }
+            // Badges
+            try {
+                const response = await this.$axios.get('http://127.0.0.1:5000/getBadges');
+                this.badges = response.data;
+                this.dataLoaded = true;
+            } 
+            catch (error) {
+                console.error(error);
+                this.dataLoaded = null;
+            }
             // Users
             try {
                 const response = await this.$axios.get('http://127.0.0.1:5000/getUsers');
@@ -985,6 +1029,12 @@ export default {
                 this.getAskedProducerQuestions();
                 this.getAskedVenueQuestions();
                 this.calculateTotalPoints();
+
+                // ==== for badges (others) ====
+                this.checkEnoughLocationTagged();
+                this.checkEnoughFriendsTagged();
+                this.getTotalUpvotes();
+                this.checkEnoughUpvotes();
 
             } 
             catch (error) {
@@ -1862,22 +1912,40 @@ export default {
             this.allListingsReviewedByUser = this.recentReviews.map(review => this.listings.find(listing => listing._id.$oid === review.reviewTarget.$oid));
         },
 
-        // get all categories reviewed by the user
+        // get all drinkType and typeCategory reviewed by the user
         getAllCategoriesReviewed() {
             for (let listing of this.allListingsReviewedByUser) {
                 // check if this.allCategoriesReviewedByUser already contains the count for listing.drinkType
                 // [if] no, assign the count as 1
                 // [else] yes, add 1 to the count
                 this.allCategoriesReviewedByUser[listing.drinkType] = (this.allCategoriesReviewedByUser[listing.drinkType] || 0) + 1;
+                // check if this.allSubCategoriesReviewedByUser already contains the count for listing.typeCategory for that listing.drinkType
+                // [if] no, assign the count as 1
+                // [else] yes, add 1 to the count
+                if (!this.allSubCategoriesReviewedByUser[listing.drinkType]) {
+                    this.allSubCategoriesReviewedByUser[listing.drinkType] = {};
+                }
+                this.allSubCategoriesReviewedByUser[listing.drinkType][listing.typeCategory] = (this.allSubCategoriesReviewedByUser[listing.drinkType][listing.typeCategory] || 0) + 1;
             }
+            console.log(this.allSubCategoriesReviewedByUser)
         },
 
         // extract out only the drink categories that the user has >= this.badgeLevels.novice (most basic level) reviews for
         // assign this.categoryBadges[category] to user based on # of reviews for that category
         // CHANGE! name of this.categoryBadges[category] if the criterion for minimum # of reviews to get a badge changes
         getTopCategoriesReviewed() {
-            console.log(this.allCategoriesReviewedByUser)
             this.topCategoriesReviewed = Object.keys(this.allCategoriesReviewedByUser).reduce((acc, category) => {
+                // check if user has reviewed enough subcategories for this category
+                for (let subcategory in this.allSubCategoriesReviewedByUser[category]) {
+                    let count = this.allSubCategoriesReviewedByUser[category][subcategory];
+                    if (count >= this.otherBadgesLimit.reviewDrinkCategory) {
+                        if (!this.topSubcategoriesReviewed[category]) {
+                            this.topSubcategoriesReviewed[category] = [];
+                        }
+                        this.topSubcategoriesReviewed[category].push(subcategory);
+                    }
+                }
+                console.log(this.topSubcategoriesReviewed)
                 // --> HIGHEST TIER : MASTER (>= 30 reviews)
                 if (this.allCategoriesReviewedByUser[category] >= this.badgeLevels.master) {
                     acc[category] = this.allCategoriesReviewedByUser[category];
@@ -1901,6 +1969,45 @@ export default {
         // currently all "drinkTypes" in the reviews are hardcoded, so there is a need to map the objects so that all the badgePhoto can be retrieved
         getMatchedDrinkType() {
             this.matchedDrinkTypes = Object.keys(this.topCategoriesReviewed).map(category => this.drinkTypes.find(drinkType => drinkType.drinkType === category));
+        },
+
+        // check if user has tagged locations in reviews
+        checkEnoughLocationTagged() {
+            if (this.pointSystem.tagLocation[0] >= this.otherBadgesLimit.tagLocation) {
+                this.otherBadges.push("tagLocation")
+            }
+        },
+
+        // check if user has tagged friends in reviews
+        checkEnoughFriendsTagged() {
+            if (this.pointSystem.tagFriend[0] >= this.otherBadgesLimit.tagFriend) {
+                this.otherBadges.push("tagFriend")
+            }
+        },
+
+        // get total number of upvotes received
+        getTotalUpvotes() {
+            let totalUpvotes = this.recentReviews.reduce((count, review) => {
+                if (review.userVotes.upvotes.some(vote => vote.userID.$oid === this.displayUserID)) {
+                    count += 1;
+                }
+                return count;
+            }, 0);
+            return totalUpvotes;
+        },
+
+        // check if user has upvotes from reviews
+        checkEnoughUpvotes() {
+            if (this.getTotalUpvotes() >= this.otherBadgesLimit.upvotes) {
+                this.otherBadges.push("upvotes")
+            }
+        },
+
+        getBadgeInfo(badgeName) {
+            if (badgeName) {
+                const badge = this.badges.find(badge => badge.badgeName === badgeName);
+                return badge ? badge : null;
+            }
         },
 
         // ------------------- Points -------------------

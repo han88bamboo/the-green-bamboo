@@ -599,6 +599,14 @@ body {
     color: whitesmoke;
 }
 
+.rounded-circle-white-bg {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    color: whitesmoke;
+    background-color: whitesmoke
+}
+
 .qa-card-body {
     background-color:whitesmoke;
     border: 1px solid #535C72;
@@ -640,4 +648,8 @@ body {
 .dropdown-item.active, .dropdown-item:hover, .dropdown-item:focus {
     background-color: #747D92;
     color: whitesmoke;
+}
+
+.xs-text {
+    font-size: 0.7rem;
 }
