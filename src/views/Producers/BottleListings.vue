@@ -404,7 +404,7 @@
                                         <div class="col-6 col-md-12 justify-content-start form-group mb-3">
                                             <p class="text-start mb-1 fw-bold me-1" style="display: flex; align-items: center;">Location 
                                                 &nbsp;
-                                                <a @click="changeLocationInput('find')" :class="{ 'false-clickable-text': !isActive['find'], 'true-clickable-text': isActive['find'] }">
+                                                <!-- <a @click="changeLocationInput('find')" :class="{ 'false-clickable-text': !isActive['find'], 'true-clickable-text': isActive['find'] }">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
                                                         <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
                                                     </svg>
@@ -417,12 +417,12 @@
                                                         <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
                                                     </svg>
                                                     Add new
-                                                </a> 
+                                                </a>  -->
                                             </p>     
                                             <!-- Link filteredOptions to venues location -->
-                                            <div v-if="locationOnWebsite" class="input-group mb-2">
+                                            <!-- <div v-if="locationOnWebsite" class="input-group mb-2">
 
-                                                <!-- Changed to datalist for search dropdown -->
+                                                
                                                 <input list="locationOptions" v-model="tagLocation" class="form-control" id="tagLocation" placeholder="Enter Location" v-on:change="updateTagLocation">
                                                 <datalist id="locationOptions">
                                                     <option v-for="location in locationOptions" :key="location.id.$oid" :value="location.name" :label="location.address">
@@ -430,13 +430,10 @@
                                                     </option>
                                                 </datalist>
 
-                                                <!-- <select class="form-control" v-model="selectedLocation" @input="filterOptions($event)">
-                                                    <option value="" disabled selected>Select a location</option>
-                                                    <option v-for="option in filteredOptions" :key="option.id" :value="option.name">{{ option.name }}</option>
-                                                </select> -->
                                                 
-                                            </div>
-                                            <div v-else class="input-group mb-2">
+                                                
+                                            </div> -->
+                                            <div class="input-group mb-2">
                                                 <GMapAutocomplete
                                                     placeholder="Search for location"
                                                     @place_changed="setPlace"
@@ -453,6 +450,7 @@
                                                 <div class="col-6 col-md-12 d-flex justify-content-start">
                                                     <button v-if="selectedLocation!==''" class="btn text-start mb-1" style="background-color: #535C72;color: white;" @click="clearLocation">Clear Selection</button>
                                                 </div>
+                                                {{ selectedLocationAddress }}
                                             </div>
                                         </div>
                                     </div>
@@ -1360,6 +1358,7 @@
                 locationSearchTerm: "",
                 tagLocation:"",
                 selectedLocation: "",
+                selectedLocationAddress:"",
                 selectedLocationId: "",
                 extendObservation: false,
                 loggedIn:false,
@@ -2003,6 +2002,7 @@
                     }
                     if(selectedLocation.length !=0){
                         this.selectedLocation = selectedLocation[0].name
+                        // this.selectedLocationaddress=selectedLocation[0].address 
                     }
                 }
 
@@ -2062,6 +2062,7 @@
             // Function to add review
             addReview(){
                 // TODO Combine with editReview because using the same variables
+                
 
                 // let errorPhrase = "Your completion is incomplete"
                 // form validation
@@ -2109,6 +2110,7 @@
                     "taste" : this.taste,
                     "finish" : this.finish,
                     "location" :this.selectedLocation,
+                    "address":this.selectedLocationAddress,
                     "willRecommend": this.wouldRecommend,
                     "taggedUsers": this.friendTagList,
                     "wouldBuyAgain": this.wouldBuyAgain,
@@ -2118,6 +2120,7 @@
                         "downvotes":[],
                         "upvotes":[]
                     }
+                    
                 }
                 this.writeReview(submitAPI, submitData)
                 
@@ -2164,6 +2167,7 @@
                     "taste" : this.taste,
                     "finish" : this.finish,
                     "location" :this.selectedLocation,
+                    "address":this.selectedLocationAddress,
                     "taggedUsers": this.friendTagList,
                     "willRecommend": this.wouldRecommend,
                     "wouldBuyAgain": this.wouldBuyAgain,
@@ -2658,6 +2662,7 @@
 
             setPlace(place){
                 this.selectedLocation=place.name
+                this.selectedLocationAddress=place.formatted_address
             },
 
             // return place id

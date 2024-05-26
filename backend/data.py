@@ -83,6 +83,7 @@ class reviews:
     taggedUsers: Optional[list] = None
     flavorTag: Optional[list] = None
     observationTag: Optional[list] = None
+    address: Optional[str] = None
     
 
 # Dataclass (users)

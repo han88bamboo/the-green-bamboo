@@ -1570,14 +1570,14 @@
                             <!-- Header -->
                             <h4 class="text-start"> Venue Location </h4>
 
-                            <!-- Buttons -->
-                            <div class="pb-1 text-start" v-if="selfView || powerView">
-                                <!-- [if] not editing -->
+                            
+                            <!-- <div class="pb-1 text-start" v-if="selfView || powerView">
+                                
                                 <button v-if="!editAddress" type="button" class="btn tertiary-btn rounded-0 reverse-clickable-text" @click="editAddress = true">
                                     Edit
                                 </button>
                                 
-                                <!-- [else] if editing -->
+                                
                                 <button v-if="editAddress" type="button" class="btn success-btn rounded-0 reverse-clickable-text" @click="saveAddress" :disabled="!(newAddress.trim().length > 0)">
                                     Save
                                 </button>
@@ -1587,15 +1587,15 @@
                                 <button v-if="editAddress" type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1" @click="newAddress = targetVenue['address']">
                                     Reset
                                 </button>
-                            </div>
+                            </div> -->
 
                             <!-- Section Content (Edit Mode) -->
-                            <div v-if="editAddress">
+                            <!-- <div v-if="editAddress">
                                 <textarea v-model="newAddress" class="form-control" id="addressTextArea" rows="3" placeholder="Enter venue address"></textarea>
-                            </div>
+                            </div> -->
 
                             <!-- Section Content (View Mode) -->
-                            <div v-else>
+                            <div>
                                 <p class="text-start mb-1 fst-italic">{{ targetVenue["address"] }}</p>
                             </div>
 
