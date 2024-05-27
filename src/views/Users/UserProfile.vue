@@ -871,7 +871,7 @@ export default {
                 reviewDrinkCategory: 10,
                 tagFriend: 3,
                 tagLocation: 5,
-                tagCountry: 1,
+                tagCountry: 3,
                 upvotes: 10
             },
             otherBadges: [],
