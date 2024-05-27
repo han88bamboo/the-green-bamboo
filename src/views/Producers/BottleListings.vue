@@ -450,7 +450,7 @@
                                                 <div class="col-6 col-md-12 d-flex justify-content-start">
                                                     <button v-if="selectedLocation!==''" class="btn text-start mb-1" style="background-color: #535C72;color: white;" @click="clearLocation">Clear Selection</button>
                                                 </div>
-                                                {{ selectedLocationAddress }}
+                                                
                                             </div>
                                         </div>
                                     </div>
@@ -816,10 +816,11 @@
                                     </svg>
                                     
                                     <!-- location -->
-                                    <span v-if="review.location !== '' && checkVenue(review.location)">
+                                    
+                                    <span v-if="review.location !== '' && checkVenue(review.address)">
                                         <a style="color: inherit" > 
                                             at 
-                                            <router-link :to="'/profile/venue/' + checkVenue(review.location)" style="color: inherit">
+                                            <router-link :to="'/profile/venue/' + checkVenue(review.address)" style="color: inherit">
                                                 <b>{{ review.location }}</b>
                                             </router-link>
                                         </a>
@@ -982,9 +983,10 @@
                                         <b>Location</b>
                                     </div>
                                     <div class="col-9">
-                                        <span v-if="detailedReview.location !== '' && checkVenue(detailedReview.location)">
+                                        
+                                        <span v-if="detailedReview.location !== '' && checkVenue(detailedReview.address)">
                                             <a style="color: inherit" >
-                                                <router-link :to="'/profile/venue/' + checkVenue(detailedReview.location)" style="color: inherit">
+                                                <router-link :to="'/profile/venue/' + checkVenue(detailedReview.address)" style="color: inherit">
                                                     <b>{{ detailedReview.location }}</b>
                                                 </router-link>
                                             </a>
@@ -1188,6 +1190,9 @@
                         </div>
                     </div>
                 </div>
+                
+                
+                
                 <!-- 88 bamboo's review -->
                 <div class="row">
                     <div class="square secondary-square rounded p-3 mb-3">
@@ -1426,6 +1431,9 @@
                     find: true,
                     add: false
                 },
+
+                // to check if venue exsist
+                addressDict: null
         
         };
 
@@ -1561,6 +1569,10 @@
                             const response = await this.$axios.get('http://127.0.0.1:5000/getVenues');
                             this.venues = response.data;
                             this.locationOptions = response.data.map(item => ({name: item.venueName, id:item._id, address:item.address}));
+                            this.addressDict = this.venues.reduce((dict, venue) => {
+                                dict[venue.address] = venue._id.$oid;
+                                return dict;
+                            }, {});
                             this.getVenuesWithMenu(); // extract venues with menu
                         } 
                         catch (error) {
@@ -2678,20 +2690,25 @@
                 //     // Place does not exist as a key in filtered options
                 //     console.log("Place does not exist");
                 // }
-                const selectedPlace = this.filteredOptions.find(option => option.name === place);
-                if(selectedPlace){
-                    return selectedPlace.id.$oid;
+                // const selectedPlace = this.filteredOptions.find(option => option.name === place);
+                // if(selectedPlace){
+                //     return selectedPlace.id.$oid;
+                // }
+                // else{
+                //     return false;
+                // }
+                
+                if (place in this.addressDict){
+
+                    // have to get the id of the address
+                    return this.addressDict[place];
                 }
                 else{
-                    return false;
+                    return null;
                 }
 
 
-            
-                
-                
-                
-                
+
             },
 
             // to get webscrapped image data

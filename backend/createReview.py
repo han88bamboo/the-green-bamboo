@@ -19,6 +19,8 @@ import data
 from dotenv import load_dotenv
 import os
 
+from adminFunctions import hash_password
+
 app = Flask(__name__)
 CORS(app)  # Allow all requests
 
@@ -28,6 +30,9 @@ db = PyMongo(app).db
 
 def parse_json(data):
     return json.loads(json_util.dumps(data))
+
+
+
 
 # -----------------------------------------------------------------------------------------
 # [POST] Creates a review
@@ -40,6 +45,68 @@ def createReviews():
     rawReview['reviewTarget'] = ObjectId(rawReview['reviewTarget'])  # Convert reviewTarget to ObjectId
     rawReview['userID'] = ObjectId(rawReview['userID'])  # Convert userID to ObjectId
     rawReview['createdDate'] = datetime.strptime(rawReview['createdDate'], "%Y-%m-%dT%H:%M:%S.%fZ")# convert date to datetime object
+
+    # get review address
+    locationAddress=rawReview['address']
+    # create a dictionary of addresses from venue documents
+    # Create a dict to store all the id and name of producer in producer collection 
+    address_dict={}
+    for doc in db.venues.find({}):
+        address_dict[doc["address"]]=1
+
+    # see if address is in the dict
+    if locationAddress != "" and address_dict.get(locationAddress) is None:
+        venue_to_insert = {
+            "venueName": rawReview["location"],
+            "address": locationAddress,
+            "venueType": "",
+            "originLocation": "",
+            "venueDesc": "",
+            "menu": [],
+            "hashedPassword": hash_password(rawReview["location"],"admin1234"),
+            "claimStatus": False,
+            "openingHours": {
+            "Monday": [
+                "",
+                ""
+            ],
+            "Tuesday": [
+                "",
+                ""
+            ],
+            "Wednesday": [
+                "",
+                ""
+            ],
+            "Thursday": [
+                "",
+                ""
+            ],
+            "Friday": [
+                "",
+                ""
+            ],
+            "Saturday": [
+                "",
+                ""
+            ],
+            "Sunday": [
+                "",
+                ""
+            ]
+            },
+            "photo": "",
+            "updates": [],
+            "questionsAnswers": [],
+            "reservationDetails": "",
+            "publicHolidays": ""
+        }
+
+        db.venues.insert_one(venue_to_insert)
+
+    # if not, add create a new venue document and add the address to the dict
+
+
 
     if len(rawReview['taggedUsers']) >0:
         temp_tag_id =[]
