@@ -860,6 +860,7 @@ export default {
             matchedDrinkTypes: [],
             topCategoriesReviewed: [],
             topSubcategoriesReviewed: {},
+            reviewCountriesTagged: [],
             badgeLevels: { // CHANGE THIS! if there is a change in criterion for minimum # of reviews that a user needs to gain a badge level
                 novice: 3,
                 lover: 10,
@@ -870,6 +871,7 @@ export default {
                 reviewDrinkCategory: 10,
                 tagFriend: 3,
                 tagLocation: 5,
+                tagCountry: 1,
                 upvotes: 10
             },
             otherBadges: [],
@@ -880,6 +882,7 @@ export default {
                 logReview: [0, 50], // log a review
                 tagFriend: [0, 50], // tag a friend
                 tagLocation: [0, 50], // tag a location
+                tagCountry: [0, 50], // tag a country
                 askProducer: [0, 50], // ask a producer a question
                 askVenue: [0, 50], // ask a venue a question
             },
@@ -1021,17 +1024,20 @@ export default {
                 // ==== for badges ====
                 this.getAllListingsReviewed();
                 this.getAllCategoriesReviewed();
+                await this.getAllCountriesTagged();
 
                 // ==== for points ====
                 this.pointSystem.logReview[0] = this.allListingsReviewedByUser.length;
                 this.getTotalFriendsTagged();
                 this.getTotalLocationsTagged();
+                this.getTotalCountriesTagged();
                 this.getAskedProducerQuestions();
                 this.getAskedVenueQuestions();
                 this.calculateTotalPoints();
 
                 // ==== for badges (others) ====
                 this.checkEnoughLocationTagged();
+                this.checkEnoughCountriesTagged();
                 this.checkEnoughFriendsTagged();
                 this.getTotalUpvotes();
                 this.checkEnoughUpvotes();
@@ -1927,7 +1933,6 @@ export default {
                 }
                 this.allSubCategoriesReviewedByUser[listing.drinkType][listing.typeCategory] = (this.allSubCategoriesReviewedByUser[listing.drinkType][listing.typeCategory] || 0) + 1;
             }
-            console.log(this.allSubCategoriesReviewedByUser)
         },
 
         // extract out only the drink categories that the user has >= this.badgeLevels.novice (most basic level) reviews for
@@ -1939,13 +1944,10 @@ export default {
                 for (let subcategory in this.allSubCategoriesReviewedByUser[category]) {
                     let count = this.allSubCategoriesReviewedByUser[category][subcategory];
                     if (count >= this.otherBadgesLimit.reviewDrinkCategory) {
-                        if (!this.topSubcategoriesReviewed[category]) {
-                            this.topSubcategoriesReviewed[category] = [];
-                        }
+                        this.topSubcategoriesReviewed[category] = this.topSubcategoriesReviewed[category] || [];
                         this.topSubcategoriesReviewed[category].push(subcategory);
                     }
                 }
-                console.log(this.topSubcategoriesReviewed)
                 // --> HIGHEST TIER : MASTER (>= 30 reviews)
                 if (this.allCategoriesReviewedByUser[category] >= this.badgeLevels.master) {
                     acc[category] = this.allCategoriesReviewedByUser[category];
@@ -1971,10 +1973,40 @@ export default {
             this.matchedDrinkTypes = Object.keys(this.topCategoriesReviewed).map(category => this.drinkTypes.find(drinkType => drinkType.drinkType === category));
         },
 
+        // get all countries user has tagged location in reviews
+        async getAllCountriesTagged() {
+            const apiKey = process.env.VUE_APP_API_KEY;
+            const promises = this.recentReviews.map(async (review) => {
+                const address = encodeURIComponent(review.address);
+                if (address) {
+                    const response = await this.$axios.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${apiKey}`);
+                    const { results } = response.data;
+                    if (results[0]) {
+                        const countryComponent = results[0].address_components.find(component => component.types.includes('country'));
+                        if (countryComponent) {
+                            const country = countryComponent.long_name;
+                            if (!this.reviewCountriesTagged.includes(country)) {
+                                this.reviewCountriesTagged.push(country);
+                            }
+                        }
+                    }
+                }
+            });
+
+            await Promise.all(promises);
+        },
+
         // check if user has tagged locations in reviews
         checkEnoughLocationTagged() {
             if (this.pointSystem.tagLocation[0] >= this.otherBadgesLimit.tagLocation) {
                 this.otherBadges.push("tagLocation")
+            }
+        },
+
+        // check if user has tagged locations in reviews
+        checkEnoughCountriesTagged() {
+            if (this.pointSystem.tagCountry[0] >= this.otherBadgesLimit.tagCountry) {
+                this.otherBadges.push("tagCountry")
             }
         },
 
@@ -2024,6 +2056,12 @@ export default {
             // loop through all reviews and get the number of locations tagged for each review
             // add up all the locations tagged
             this.pointSystem.tagLocation[0] = this.recentReviews.reduce((sum, review) => sum + (review.location.length !== 0 ? 1 : 0), 0);
+        },
+
+        // get total number of countries user tagged in reviews
+        getTotalCountriesTagged() {
+            // loop through all reviews and get the number of countries tagged
+            this.pointSystem.tagCountry[0] = this.reviewCountriesTagged.length;
         },
 
         // get total number of questions asked by user to producers
