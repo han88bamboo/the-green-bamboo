@@ -91,6 +91,14 @@ def getListing(id):
         return []
     return parse_json(data)
 
+# [GET] Specific Listings By Producer
+@app.route("/getListingsByProducer/<id>")
+def getListingsByProducer(id):
+    data = db.listings.find({"producerID": ObjectId(id)})
+    if data is None:
+        return []
+    return parse_json(data)
+
 # -----------------------------------------------------------------------------------------
 # [GET] Producers
 @app.route("/getProducers")

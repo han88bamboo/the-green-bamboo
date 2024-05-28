@@ -540,10 +540,10 @@
                             </div>
                         </div>
                     </div>
-                    <div class="row scrollable-expressions">
+                    <div class="row scrollable-expressions-none">
                         <!-- v-loop for each listing -->
                         <div class="container text-start">
-                            <div v-for="listing in filteredListings" v-bind:key="listing._id" class="p-3">
+                            <div v-for="listing in lazyListings" v-bind:key="listing._id" class="p-3">
                                 <div class="row">
                                     <!-- image -->
                                     <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0">
@@ -631,6 +631,10 @@
                                         </div> -->
                                     </div>
                                 </div>
+                            </div>
+                            <!-- load more button -->
+                            <div class="d-flex justify-content-center align-items-center" v-if="lazyListings.length < filteredListings.length">
+                                <button class="btn primary-btn-less-round btn-lg mt-2 mb-3" @click="loadMoreListings">Load More</button>
                             </div>
                         </div>
                     </div> <!-- end of listings -->
@@ -945,11 +949,10 @@
                 // data from database
                 // countries: [],
                 listings: [],
-                producers: [],
+                lazyListings: [],
+                // producers: [],
                 reviews: [],
-                users: [],
-                venues: [],
-                venuesAPI: [],
+                // users: [],
                 drinkTypes: [],
                 requestListings: [],
                 requestEdits: [],
@@ -1148,9 +1151,9 @@
                 // producers
                 // _id, producerName, producerDesc, originCountry, statusOB, mainDrinks
                 try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getProducers');
-                        this.producers = response.data;
-                        this.specified_producer = this.producers.find(producer => producer["_id"]["$oid"] == this.producer_id); // find specified producer
+                        const response = await this.$axios.get(`http://127.0.0.1:5000/getProducer/${this.producer_id}`);
+                        this.specified_producer = response.data
+
                         this.claimStatus = this.specified_producer.claimStatus // get claim status of producer
                         this.getLatestUpdates()
                         this.checkProducerAnswered()
@@ -1160,12 +1163,12 @@
                         console.error(error);
                         this.dataLoaded = null;
                     }
-                // listings
+                // producer listings
                 // _id, listingName, producerID, bottler, originCountry, drinkType, typeCategory, age, abv, reviewLink, officialDesc, sourceLink, photo
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getListings');
+                        const response = await this.$axios.get(`http://127.0.0.1:5000/getListingsByProducer/${this.producer_id}`);
                         this.listings = response.data;
-                        // get all drinks
+
                         this.getAllDrinks()
                         this.getCountsByType()
                         this.getTotalCounts()
@@ -1194,23 +1197,13 @@
                 // users
                 // _id, username, displayName, choiceDrinks, drinkLists, modType, photo
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getUsers');
-                        this.users = response.data;
+                        const response = await this.$axios.get(`http://127.0.0.1:5000/getUser/${this.user_id}`);
+                        this.user = response.data;
                         if (this.userType == "user") {
-                            this.user = this.users.find(user => user["_id"]["$oid"] == this.user_id);
+                            // this.user = this.users.find(user => user["_id"]["$oid"] == this.user_id);
                             this.following = JSON.stringify(this.user.followLists.producers).includes(JSON.stringify({$oid: this.producer_id}));
                             this.isAdmin = this.user.isAdmin // check if user is admin
                         }
-                    } 
-                    catch (error) {
-                        console.error(error);
-                        this.dataLoaded = null;
-                    }
-                // venues
-                // _id, venueName, venueDesc, originCountry, address, openingHours
-                    try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getVenues');
-                        this.venues = response.data;
                     } 
                     catch (error) {
                         console.error(error);
@@ -1399,6 +1392,7 @@
             showAllListings() {
                 this.showListings = true;
                 this.filteredListings = this.allDrinks; // initially set filtered drinks to all drinks
+                this.lazyListings = this.filteredListings.slice(0, 10);
             },
 
             // show all reviews that a producer has
@@ -1467,9 +1461,11 @@
                 // if nothing found
                 if (searchResults.length == 0) {
                     this.filteredListings = [];
+                    this.lazyListings = [];
                 } 
                 else {
                     this.filteredListings = searchResults;
+                    this.lazyListings = this.filteredListings.slice(0, 10);
                 }
 
                 // if there is nothing searched
@@ -1482,6 +1478,7 @@
             resetListings() {
                 this.searchExpressions = '';
                 this.filteredListings = this.allDrinks;
+                this.lazyListings = this.filteredListings.slice(0, 10);
                 this.sortByCategory("")
             },
 
@@ -1903,6 +1900,7 @@
                     this.filteredListings.sort((a, b) => {
                         return a.listingName.localeCompare(b.listingName);
                     });
+                    this.lazyListings = this.filteredListings.slice(0, 10);
                 }
 
                 // #2: Alphabetical (Z - A)
@@ -1910,6 +1908,7 @@
                     this.filteredListings.sort((a, b) => {
                         return b.listingName.localeCompare(a.listingName);
                     });
+                    this.lazyListings = this.filteredListings.slice(0, 10);
                 }
 
                 // #3: Date (Newest - Oldest)
@@ -1917,6 +1916,7 @@
                     this.filteredListings.sort((a, b) => {
                         return new Date(b.addedDate.$date) - new Date(a.addedDate.$date);
                     });
+                    this.lazyListings = this.filteredListings.slice(0, 10);
                 }
 
                 // [DEFAULT] #4: Date (Oldest - Newest)
@@ -1924,6 +1924,7 @@
                     this.filteredListings.sort((a, b) => {
                         return new Date(a.addedDate.$date) - new Date(b.addedDate.$date);
                     });
+                    this.lazyListings = this.filteredListings.slice(0, 10);
                 }
 
                 // #5: Ratings (Highest - Lowest)
@@ -1931,6 +1932,7 @@
                     this.filteredListings.sort((a, b) => {
                         return this.getRatingsSearch(b) - this.getRatingsSearch(a);
                     });
+                    this.lazyListings = this.filteredListings.slice(0, 10);
                 }
 
                 // #6: Ratings (Lowest - Highest)
@@ -1938,6 +1940,7 @@
                     this.filteredListings.sort((a, b) => {
                         return this.getRatingsSearch(a) - this.getRatingsSearch(b);
                     });
+                    this.lazyListings = this.filteredListings.slice(0, 10);
                 }
             },
 
@@ -2442,6 +2445,11 @@
             }else{
                 this.passwordError = true // Display generic error message
             }
+        },
+
+        loadMoreListings() {
+            const listingsLength = this.lazyListings.length;
+            this.lazyListings = this.filteredListings.slice(0, listingsLength + 10);
         },
 
         }
