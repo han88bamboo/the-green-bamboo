@@ -18,6 +18,9 @@ from datetime import datetime
 from dotenv import load_dotenv
 import os
 
+from adminFunctions import hash_password
+
+
 app = Flask(__name__)
 CORS(app)  # Allow all requests
 
@@ -80,6 +83,67 @@ def updateReview(id):
     existingReview = db.reviews.find_one({'_id': ObjectId(id)})
     data['reviewTarget'] = ObjectId(data['reviewTarget'])  # Convert reviewTarget to ObjectId
     data['userID'] = ObjectId(data['userID'])  # Convert userID to ObjectId
+
+    # get review address
+    locationAddress=data['address']
+    
+    # create a dictionary of addresses from venue documents and store thier ids
+    
+    address_dict={}
+    for doc in db.venues.find({}):
+        address_dict[doc["address"]]=doc["_id"]
+
+    # see if address is in the dictionary, if not insert a new venue
+    if locationAddress != "" and address_dict.get(locationAddress) is None:
+        venue_to_insert = {
+            "venueName": data["location"],
+            "address": locationAddress,
+            "venueType": "",
+            "originLocation": "",
+            "venueDesc": "",
+            "menu": [],
+            "hashedPassword": hash_password(data["location"],"admin1234"),
+            "claimStatus": False,
+            "openingHours": {
+            "Monday": [
+                "",
+                ""
+            ],
+            "Tuesday": [
+                "",
+                ""
+            ],
+            "Wednesday": [
+                "",
+                ""
+            ],
+            "Thursday": [
+                "",
+                ""
+            ],
+            "Friday": [
+                "",
+                ""
+            ],
+            "Saturday": [
+                "",
+                ""
+            ],
+            "Sunday": [
+                "",
+                ""
+            ]
+            },
+            "photo": "",
+            "updates": [],
+            "questionsAnswers": [],
+            "reservationDetails": "",
+            "publicHolidays": ""
+        }
+
+        new_venue_result=db.venues.insert_one(venue_to_insert)
+        venue_id = new_venue_result.inserted_id
+        address_dict[locationAddress]=venue_id
 
     if len(data['taggedUsers']) >0:
         temp_tag_id =[]

@@ -46,68 +46,68 @@ def createReviews():
     rawReview['userID'] = ObjectId(rawReview['userID'])  # Convert userID to ObjectId
     rawReview['createdDate'] = datetime.strptime(rawReview['createdDate'], "%Y-%m-%dT%H:%M:%S.%fZ")# convert date to datetime object
 
-    # # get review address
-    # locationAddress=rawReview['address']
-    # # create a dictionary of addresses from venue documents
-    # # Create a dict to store all the id and name of producer in producer collection 
-    # address_dict={}
-    # for doc in db.venues.find({}):
-    #     address_dict[doc["address"]]=1
+    # get review address
+    locationAddress=rawReview['address']
+    
+    # create a dictionary of addresses from venue documents and store thier ids
+    
+    address_dict={}
+    for doc in db.venues.find({}):
+        address_dict[doc["address"]]=doc["_id"]
 
-    # # see if address is in the dict
-    # if locationAddress != "" and address_dict.get(locationAddress) is None:
-    #     venue_to_insert = {
-    #         "venueName": rawReview["location"],
-    #         "address": locationAddress,
-    #         "venueType": "",
-    #         "originLocation": "",
-    #         "venueDesc": "",
-    #         "menu": [],
-    #         "hashedPassword": hash_password(rawReview["location"],"admin1234"),
-    #         "claimStatus": False,
-    #         "openingHours": {
-    #         "Monday": [
-    #             "",
-    #             ""
-    #         ],
-    #         "Tuesday": [
-    #             "",
-    #             ""
-    #         ],
-    #         "Wednesday": [
-    #             "",
-    #             ""
-    #         ],
-    #         "Thursday": [
-    #             "",
-    #             ""
-    #         ],
-    #         "Friday": [
-    #             "",
-    #             ""
-    #         ],
-    #         "Saturday": [
-    #             "",
-    #             ""
-    #         ],
-    #         "Sunday": [
-    #             "",
-    #             ""
-    #         ]
-    #         },
-    #         "photo": "",
-    #         "updates": [],
-    #         "questionsAnswers": [],
-    #         "reservationDetails": "",
-    #         "publicHolidays": ""
-    #     }
+    # see if address is in the dictionary, if not insert a new venue
+    if locationAddress != "" and address_dict.get(locationAddress) is None:
+        venue_to_insert = {
+            "venueName": rawReview["location"],
+            "address": locationAddress,
+            "venueType": "",
+            "originLocation": "",
+            "venueDesc": "",
+            "menu": [],
+            "hashedPassword": hash_password(rawReview["location"],"admin1234"),
+            "claimStatus": False,
+            "openingHours": {
+            "Monday": [
+                "",
+                ""
+            ],
+            "Tuesday": [
+                "",
+                ""
+            ],
+            "Wednesday": [
+                "",
+                ""
+            ],
+            "Thursday": [
+                "",
+                ""
+            ],
+            "Friday": [
+                "",
+                ""
+            ],
+            "Saturday": [
+                "",
+                ""
+            ],
+            "Sunday": [
+                "",
+                ""
+            ]
+            },
+            "photo": "",
+            "updates": [],
+            "questionsAnswers": [],
+            "reservationDetails": "",
+            "publicHolidays": ""
+        }
 
-    #     db.venues.insert_one(venue_to_insert)
+        new_venue_result=db.venues.insert_one(venue_to_insert)
+        venue_id = new_venue_result.inserted_id
+        address_dict[locationAddress]=venue_id
 
-    # if not, add create a new venue document and add the address to the dict
-
-
-
+    
     if len(rawReview['taggedUsers']) >0:
         temp_tag_id =[]
         for id in rawReview['taggedUsers']:
