@@ -1,0 +1,42 @@
+============ OVERVIEW OF BADGES & POINTS SYSTEM ============
+* Note: This is subjected to changes!
+
+------------------------- BADGES -------------------------
+
+1. Multiple levels based on # of reviews for each `drinkType`
+   --> 3 reviews: Novice
+   --> 10 reviews: Lover
+   --> 30 reviews: Master
+
+2. Based on # of reviews for each `typeCategory`
+   --> 10 reviews: Power
+
+3. Based on total # of unique tagged `address` (tagged locations)
+   --> 5 unique locations: Wanderer Drinker
+   --> 3 unique countries: Worldwide Drinker
+
+4. Based on total # of `taggedUsers`
+   --> 3x across all reviews: Social Drinker
+
+5. Based on total # of `upvotes`
+   --> 10x across all reviews: Drink-Fluencer
+
+------------------------- POINTS -------------------------
+
+1. Logging a review 
+   --> 50 pts
+
+2. Tagging a friend
+   --> 50 pts
+
+3. Tagging a unique venue
+   --> 50 pts
+
+4. Tagging a unique country
+   --> 50 pts
+
+5. Asking a producer a question
+   --> 50 pts
+
+6. Asking a venue a question
+   --> 50 pts
