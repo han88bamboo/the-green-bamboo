@@ -377,11 +377,12 @@ def sendResetPin(id):
             userRaw = db.producers.find_one({"_id": ObjectId(id)})
             if userRaw != None:
                 updatePin = db.producers.update_one({'_id': ObjectId(id)}, {'$set': {'pin': updatePin}})
-
+            # Need to get the email from producers and assign to variable to send email
         if data["userType"] == "venue":
             userRaw = db.venues.find_one({"_id": ObjectId(id)})
             if userRaw != None:
                 updatePin = db.venues.update_one({'_id': ObjectId(id)}, {'$set': {'pin': updatePin}})
+            # Need to get the email from venues and assign to variable to send email
             
         if userRaw is None:
             return jsonify(

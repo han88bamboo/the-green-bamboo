@@ -65,8 +65,11 @@
                                 <div class="col">
                                     <button v-if="authPending" type="submit" class="btn secondary-btn-border-thick btn-lg" disabled>Loading...</button>
                                     <button v-else type="submit" class="btn secondary-btn-border-thick btn-lg px-5">Log In</button>
+                                    <GoogleSignIn />
                                 </div>
                             </div>
+
+
 
                             <div class="row py-2">
                                 <div class="col-6 mx-auto">
@@ -111,12 +114,14 @@
 <script>
     // import components used
     import NavBar from '@/components/NavBar.vue';
+    import GoogleSignIn from '@/components/GoogleSignIn.vue';
 
     // specify components used
     export default {
         name: 'LoginPage',
         components: {
-            NavBar
+            NavBar,
+            GoogleSignIn
         },
 
         data() {
