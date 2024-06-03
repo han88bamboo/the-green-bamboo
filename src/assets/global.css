@@ -662,11 +662,11 @@ body {
     background-color: #747D92;
     color: whitesmoke;
 }
-<<<<<<< HEAD
 
 .xs-text {
     font-size: 0.7rem;
-=======
+}
+
 /* below styles added by TZH */
 .btn-close {
     color: white !important; 
@@ -944,5 +944,4 @@ button.primary-btn:hover{
 .container {
     transform: scale(0.85); /* Scales down everything within the container to 90% */
     transform-origin: top center;
->>>>>>> TZH-1st-draft-13-May
 }
