@@ -227,10 +227,10 @@
                             </div>
                         </div>
 
-                        <!-- ------- END Producer / START Description ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+                        <!-- ------- END Producer / START Description tzh to edit ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
                         <!-- Description -->
-                        <div class="row">
+                        <div class="row scrollable">
                             <div class="col-12">
                                 <!-- [if] editing -->
                                 <div v-if="editProfile">
@@ -238,7 +238,21 @@
                                     <textarea type="text" class="form-control" id="venueDescInput" aria-describedby="venueDesc" v-model="editVenueDesc"></textarea>
                                 </div>
                                 <!-- [else] not editing -->
-                                <p v-else class="text-body-secondary fs m-0"> {{ targetVenue["venueDesc"] }} </p>
+                                <div v-else class="text-body-secondary fs m-0"> 
+                                    <div v-if="targetVenue.venueDesc.length > 250">
+                                        <p v-if="!showFullDescription">
+                                            {{ targetVenue["venueDesc"].slice(0, 250) + (targetVenue["venueDesc"].length > 250 ? '...' : '')}}
+                                            <a @click="showFullDescription = true" style="font-weight: bold;">(Read More)</a>
+                                        </p>
+                                        <p v-else>
+                                            {{ targetVenue["venueDesc"]}}
+                                            <a @click="showFullDescription = false" style="font-weight: bold;">(Read Less)</a>
+                                        </p>
+                                    </div>
+                                    <div v-else>
+                                        {{ targetVenue["venueDesc"]}}
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -256,16 +270,16 @@
                 <div class="row mt-3">
                     <div class="col-8 d-flex justify-content-start">
                         <!-- Toggle Bar Overview -->
-                        <button v-if="contentMode == 'overview'" class="btn btn-lg primary-btn-less-round mx-1" @click="contentMode = 'overview'"> Bar Overview </button>
-                        <button v-else class="btn btn-lg primary-btn-outline-less-round mx-1" @click="contentMode = 'overview'"> Bar Overview </button>
+                        <button v-if="contentMode == 'overview'" class="btn active-toggle-button mx-1" @click="contentMode = 'overview'"> Bar Overview </button>
+                        <button v-else class="btn inactive-toggle-button mx-1" @click="contentMode = 'overview'"> Bar Overview </button>
                         <!-- Toggle Bar Menu -->
-                        <button v-if="contentMode == 'menu'" class="btn btn-lg primary-btn-less-round mx-1" @click="contentMode = 'menu'"> Bar Menu </button>
-                        <button v-else class="btn btn-lg primary-btn-outline-less-round mx-1" @click="contentMode = 'menu'"> Bar Menu </button>
+                        <button v-if="contentMode == 'menu'" class="btn active-toggle-button mx-1" @click="contentMode = 'menu'"> Bar Menu </button>
+                        <button v-else class="btn inactive-toggle-button mx-1" @click="contentMode = 'menu'"> Bar Menu </button>
                     </div>
                     <!-- Follow Venue -->
                     <div v-if="viewerType == 'user'" class="col-4 d-flex justify-content-end">
-                        <button v-if="!userFollowing" class="btn btn-lg primary-btn-less-round mx-1" @click="editFollow('follow')"> + Follow Venue </button>
-                        <button v-else class="btn btn-lg primary-btn-outline-less-round mx-1" @click="editFollow('unfollow')"> Following </button>
+                        <button v-if="!userFollowing" class="btn btn-lg primary-btn-less-round mx-1" @click="editFollow('follow')" style="font-weight: bold;" > + Follow Venue </button>
+                        <button v-else class="btn btn-lg primary-btn-outline-less-round mx-1" @click="editFollow('unfollow')" style="font-weight: bold;" > Following </button>
                     </div>
                 </div>
 
@@ -288,7 +302,7 @@
 
                     <!-- Latest Updates Lock Message (Venue Unclaimed) -->
                     <div class="row text-center py-2 mx-1 default-text-no-background" v-if="!targetVenue['claimStatus']" style="background-color:#DDC8A9;">
-                        <p class="fs-3 fw-bold fst-italic mt-3" style="font-family: Radley, serif;">
+                        <p class="fs-3 fw-bold fst-italic mt-3" >
                             Do you own this business?
                         </p>
                         <p> Sign up for a venue account to share your latest updates with your fans! </p>
@@ -316,15 +330,15 @@
                                 </button>
                                 
                                 <!-- [else] if editing -->
-                                <button v-if="editUpdateTarget == targetVenue['updates'][0]._id['$oid']" type="button" class="btn success-btn rounded-0 reverse-clickable-text" @click="saveUpdate(targetVenue['updates'][0])" :disabled="!(editUpdateContent[targetVenue['updates'][0]._id['$oid']].newText.length > 0)">
+                                <button v-if="editUpdateTarget == targetVenue['updates'][0]._id['$oid']" type="button" class="btn btn-success rounded-0 reverse-clickable-text" @click="saveUpdate(targetVenue['updates'][0])" :disabled="!(editUpdateContent[targetVenue['updates'][0]._id['$oid']].newText.length > 0)">
                                     Save
                                 </button>
-                                <button v-if="editUpdateTarget == targetVenue['updates'][0]._id['$oid']" type="button" class="btn secondary-btn rounded-0 reverse-clickable-text ms-1" @click="editUpdateTarget = null">
+                                <button v-if="editUpdateTarget == targetVenue['updates'][0]._id['$oid']" type="button" class="btn btn-warning rounded-0 reverse-clickable-text ms-1" @click="editUpdateTarget = null">
                                     Cancel
                                 </button>
-                                <button v-if="editUpdateTarget == targetVenue['updates'][0]._id['$oid']" type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1" @click="editUpdateContent[targetVenue['updates'][0]._id['$oid']] = {newText: targetVenue['updates'][0].text, newPhoto: targetVenue['updates'][0].photo}">
+                               <!--<button v-if="editUpdateTarget == targetVenue['updates'][0]._id['$oid']" type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1" @click="editUpdateContent[targetVenue['updates'][0]._id['$oid']] = {newText: targetVenue['updates'][0].text, newPhoto: targetVenue['updates'][0].photo}">
                                     Reset
-                                </button>
+                                </button>-->
                             </div>
                         </div>
 
@@ -342,7 +356,7 @@
                                     <label :for="'fileSelectEditUpdate' + targetVenue['updates'][0]._id['$oid']" class="btn primary-light-dropdown" style="position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%); z-index: 2;">Choose</label>
                                     <input :id="'fileSelectEditUpdate' + targetVenue['updates'][0]._id['$oid']" type="file" @change="handleFileSelectEditUpdate" ref="fileInput" style="width: 0px; height: 0px;">
                                     <!-- reset image option -->
-                                    <button class="btn primary-light-dropdown m-1" @click="editUpdateContent[targetVenue['updates'][0]._id['$oid']].newPhoto = targetVenue['updates'][0].photo">Revert</button>
+                                    <!--<button class="btn primary-light-dropdown m-1" @click="editUpdateContent[targetVenue['updates'][0]._id['$oid']].newPhoto = targetVenue['updates'][0].photo">Revert</button>-->
                                     <!-- remove image option -->
                                     <button class="btn primary-light-dropdown m-1" @click="editUpdateContent[targetVenue['updates'][0]._id['$oid']].newPhoto = ''">Remove</button>
                                     
@@ -493,10 +507,10 @@
                                             </button>
                                             
                                             <!-- [else] if editing -->
-                                            <button v-if="editUpdateTarget == updateMore._id['$oid']" type="button" class="btn success-btn rounded-0 reverse-clickable-text" @click="saveUpdate(updateMore)" :disabled="!(editUpdateContent[updateMore._id['$oid']].newText.length > 0)">
+                                            <button v-if="editUpdateTarget == updateMore._id['$oid']" type="button" class="btn btn-success rounded-0 reverse-clickable-text" @click="saveUpdate(updateMore)" :disabled="!(editUpdateContent[updateMore._id['$oid']].newText.length > 0)">
                                                 Save
                                             </button>
-                                            <button v-if="editUpdateTarget == updateMore._id['$oid']" type="button" class="btn secondary-btn rounded-0 reverse-clickable-text ms-1" @click="editUpdateTarget = null">
+                                            <button v-if="editUpdateTarget == updateMore._id['$oid']" type="button" class="btn btn-warning rounded-0 reverse-clickable-text ms-1" @click="editUpdateTarget = null">
                                                 Cancel
                                             </button>
                                             <button v-if="editUpdateTarget == updateMore._id['$oid']" type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1" @click="editUpdateContent[updateMore._id['$oid']] = {newText: updateMore.text, newPhoto: updateMore.photo}">
@@ -626,7 +640,7 @@
 
                     <!-- Menu Lock Message (Venue Unclaimed) -->
                     <div class="row text-center py-2 mx-1 default-text-no-background" v-if="!targetVenue['claimStatus']" style="background-color:#DDC8A9;">
-                        <p class="fs-3 fw-bold fst-italic mt-3" style="font-family: Radley, serif;">
+                        <p class="fs-3 fw-bold fst-italic mt-3" >
                             Do you own this business?
                         </p>
                         <p> Sign up for a venue account to share your bar's menu with your fans! </p>
@@ -719,23 +733,23 @@
                         </div>
 
                         <!-- Edit Menu Options: Reset Section Order / Add New Section / Add Menu Item / Save Menu / Reset / Exit -->
+                        <!--<div v-if="editMenuMode" class="col-2 d-grid px-1">
+                            <button type="button" class="btn secondary-btn-border-thick rounded-0 reverse-clickable-text px-0" @click="editMenu.sort((a, b) => (a.sectionOrder > b.sectionOrder) ? 1 : -1);"  style="color:black;"> Reset Section Order </button>
+                        </div>-->
                         <div v-if="editMenuMode" class="col-2 d-grid px-1">
-                            <button type="button" class="btn secondary-btn-border-thick rounded-0 reverse-clickable-text px-0" @click="editMenu.sort((a, b) => (a.sectionOrder > b.sectionOrder) ? 1 : -1);"> Reset Section Order </button>
-                        </div>
-                        <div v-if="editMenuMode" class="col-2 d-grid px-1">
-                            <button type="button" class="btn primary-btn-outline-thick rounded-0 reverse-clickable-text px-0" @click="addMenuSection"> Add New Section </button>
-                        </div>
-                        <div v-if="editMenuMode" class="col-2 d-grid px-1">
-                            <button type="button" class="btn primary-btn-outline-thick rounded-0 reverse-clickable-text px-0" data-bs-toggle="modal" data-bs-target="#addMenuItemModal"> Add Menu Item </button>
+                            <button type="button" class="btn primary-btn-outline-thick rounded-0 reverse-clickable-text px-0" data-bs-toggle="modal" data-bs-target="#addMenuItemModal"> Add Item </button>
                         </div>
                         <div v-if="editMenuMode" class="col-2 d-grid px-1">
-                            <button type="button" class="btn success-btn rounded-0 reverse-clickable-text px-0" @click="updateMenu"> Save Menu </button>
+                            <button type="button" class="btn primary-btn-outline-thick rounded-0 reverse-clickable-text px-0" @click="addMenuSection"> Add Section </button>
                         </div>
-                        <div v-if="editMenuMode" class="col-1 d-grid px-1">
-                            <button type="button" class="btn secondary-btn-border-thick rounded-0 reverse-clickable-text px-0" @click="resetEditMenu"> Reset </button>
+                        <div v-if="editMenuMode" class="col-2 d-grid px-1">
+                            <button type="button" class="btn btn-warning rounded-0 reverse-clickable-text px-0"  @click="resetEditMenu"> Reset </button>
                         </div>
-                        <div v-if="editMenuMode" class="col-1 d-grid px-1">
-                            <button type="button" class="btn primary-btn-outline-thick rounded-0 reverse-clickable-text px-0" @click="editMenuMode = false"> Exit </button>
+                        <div v-if="editMenuMode" class="col-2 d-grid px-1">
+                            <button type="button" class="btn btn-success rounded-0 reverse-clickable-text px-0" @click="updateMenu"> Save </button>
+                        </div>
+                        <div v-if="editMenuMode" class="col-2 d-grid px-1">
+                            <button type="button" class="btn btn-danger rounded-0 reverse-clickable-text px-0" @click="editMenuMode = false"> Exit </button>
                         </div>
 
                         <!-- Sort Menu -->
@@ -759,7 +773,7 @@
                     <!-- ------- END Search + Edit Menu Options + Sort / START Menu View (Not Editing) ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
                     <!-- Menu View (Not Editing) -->
-                    <div v-if="!editMenuMode && targetVenue['claimStatus']" class="container text-start scrollable-listings">
+                    <div v-if="!editMenuMode && targetVenue['claimStatus']" class="container text-start "> <!--tzh removed scrollable-listings-->
 
                         <!-- No Menu Sections to Show -->
                         <div v-if="searchMenuResults.length == 0" class="row my-4">
@@ -772,7 +786,7 @@
                         </div>
 
                         <!-- Menu Sections -->
-                        <div class="row mb-4" v-for="(menuSection, index) in searchMenuResults" v-bind:key="menuSection">
+                        <div class="row mb-2" v-for="(menuSection, index) in searchMenuResults" v-bind:key="menuSection">
 
                             <!-- Section Name -->
                             <div class="col-12 d-grid">
@@ -800,7 +814,7 @@
                                         </div>
 
                                         <!-- Item Information -->
-                                        <div class="col-lg-10 col-12 ps-5">
+                                        <div class="col-lg-10 col-12 ps-4">
 
                                             <!-- ------- START Item Info Header ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
@@ -843,7 +857,7 @@
                                             <div class="row">
 
                                                 <!-- Item Producer / Drink Type / Type Category / ABV / Country / Description -->
-                                                <div class="col-10">
+                                                <div class="col-10 pe-lg-0">
                                                     <p class="text-start mb-1" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
                                                         <router-link v-if="sectionItem.itemDetails['itemProducerID']" style="color: #2c3e50;" class="text-decoration-none" :to="{ path: '/profile/producer/' + sectionItem.itemDetails['itemProducerID'] }">
                                                             <span v-if="sectionItem.itemDetails['itemProducer']">{{ sectionItem.itemDetails['itemProducer'] }} | </span>
@@ -853,10 +867,18 @@
                                                         <span v-if="sectionItem.itemDetails['itemABV']">{{ sectionItem.itemDetails['itemABV'] }} ABV | </span>
                                                         <span v-if="sectionItem.itemDetails['itemCountry']">{{ sectionItem.itemDetails['itemCountry'] }}</span>
                                                     </p>
-
-                                                    <p class="text-start fst-italic mb-1" style="height: 50px; max-height: 50px; overflow-y: auto;">
-                                                        <span v-if="sectionItem.itemDetails['itemDesc']">{{ sectionItem.itemDetails['itemDesc'] }}</span>
-                                                    </p>
+                                                    <div v-if="!showFullItemDescription"> <!--tzh needs help with ._id.$oid code -->
+                                                        <p class="text-start fst-italic mb-1" style="height: 50px; max-height: 50px; overflow-y: auto;">
+                                                            <span v-if="sectionItem.itemDetails['itemDesc']">{{ sectionItem.itemDetails['itemDesc'].slice(0, 140) + (sectionItem.itemDetails['itemDesc'].length > 140 ? '...' : '') }}</span>
+                                                            <a @click="showFullItemDescription = true"  style="font-weight: bold;">(Read More)</a>
+                                                        </p>
+                                                    </div>
+                                                    <div v-else>
+                                                        <p class="text-start fst-italic mb-1" style="height: 50px; max-height: 50px; overflow-y: auto;">
+                                                            <span v-if="sectionItem.itemDetails['itemDesc']">{{ sectionItem.itemDetails['itemDesc'] }}</span>
+                                                            <a @click="showFullItemDescription = false"  style="font-weight: bold;">(Read Less)</a>
+                                                        </p>
+                                                    </div>
                                                 </div>
 
                                                 <!-- Item Rating -->
@@ -920,7 +942,7 @@
                     </div>
                     
                     <!-- Menu View (Editing) -->
-                    <div v-if="editMenuMode && editMenuDataLoaded" class="container text-start scrollable-listings">
+                    <div v-if="editMenuMode && editMenuDataLoaded" class="container text-start "> <!--tzh removed scrollable-listings-->
 
                         <!-- No Menu Sections to Show -->
                         <div v-if="editMenu.length == 0" class="row my-4">
@@ -940,7 +962,7 @@
                         <draggable v-model="editMenu" item-key="sectionOrder" @start="drag=true" @end="drag=false" v-bind="dragOptions">
                             <template #item="{element: menuSection}">
 
-                                <div class="row mb-4">
+                                <div class="row mb-2">
 
                                     <!-- Section Name -->
                                     <div class="col-7 d-grid pe-0">
@@ -1236,7 +1258,7 @@
 
                                                         <!-- See User Reviews -->
                                                         <div class="col-4">
-                                                            <button type="button" class="btn primary-btn-outline-thick p-1 px-2"> See User Reviews </button>
+                                                            <button type="button" class="btn primary-btn-outline-thick p-1 px-2" style="font-size:80%;" > See User Reviews </button>
                                                         </div>
 
                                                     </div>
@@ -1314,7 +1336,7 @@
                 <!-- View Analytics Button (Venue) -->
                 <div v-if="selfView" class="row">
                     <router-link class="d-grid pb-3 text-decoration-none" :to="{ path: '/dashboard/venue' }">
-                        <button type="button" class="btn secondary-btn-not-rounded rounded-0"> View My Analytics </button>
+                        <button type="button" class="btn secondary-btn-not-rounded rounded-0" style=" font-weight: bold;"> View My Analytics </button>
                     </router-link>
 
                     <!-- Button for change/reset password -->
@@ -1445,7 +1467,7 @@
 
                             <!-- Q & A Lock Message (Venue Unclaimed) -->
                             <div class="row text-center py-2 mx-1 default-text-no-background" v-if="!targetVenue['claimStatus']" style="background-color:#DDC8A9;">
-                                <p class="fs-3 fw-bold fst-italic mt-3" style="font-family: Radley, serif;">
+                                <p class="fs-3 fw-bold fst-italic mt-3" >
                                     Do you own this business?
                                 </p>
                                 <p> Sign up for a venue account to answer questions from your fans! </p>
@@ -1570,6 +1592,7 @@
                             <!-- Header -->
                             <h4 class="text-start"> Venue Location </h4>
 
+<<<<<<< HEAD
                             
                             <!-- <div class="pb-1 text-start" v-if="selfView || powerView">
                                 
@@ -1588,6 +1611,27 @@
                                     Reset
                                 </button>
                             </div> -->
+=======
+                            <!-- Buttons -->
+                            <div class="pb-1 text-start" v-if="selfView || powerView">
+                                <!-- [if] not editing -->
+                                <button v-if="!editAddress" type="button" class="btn btn-warning rounded-0 reverse-clickable-text" @click="editAddress = true">
+                                    Edit
+                                </button>
+                                
+                                <!-- [else] if editing -->
+                                <button v-if="editAddress" type="button" class="btn btn-warning rounded-0 reverse-clickable-text ms-1" @click="newAddress = targetVenue['address']">
+                                    Reset
+                                </button>
+                                <button v-if="editAddress" type="button" class="btn btn-success rounded-0 reverse-clickable-text ms-1" @click="saveAddress" :disabled="!(newAddress.trim().length > 0)">
+                                    Save
+                                </button>
+                                <button v-if="editAddress" type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1" @click="editAddress = false">
+                                    Cancel
+                                </button>
+                                
+                            </div>
+>>>>>>> TZH-1st-draft-13-May
 
                             <!-- Section Content (Edit Mode) -->
                             <!-- <div v-if="editAddress">
@@ -1631,7 +1675,7 @@
 
                             <!-- Opening Hours + Reservation Details Lock Message (Venue Unclaimed) -->
                             <div class="row text-center py-2 mx-1 default-text-no-background" v-if="!targetVenue['claimStatus']" style="background-color:#DDC8A9;">
-                                <p class="fs-3 fw-bold fst-italic mt-3" style="font-family: Radley, serif;">
+                                <p class="fs-3 fw-bold fst-italic mt-3" >
                                     Do you own this business?
                                 </p>
                                 <p> Sign up for a venue account to share your opening hours and reservation details with your fans! </p>
@@ -1654,20 +1698,20 @@
                                 <!-- Buttons -->
                                 <div class="pb-1" v-if="selfView || powerView">
                                     <!-- [if] not editing -->
-                                    <button v-if="!editOpeningHours" type="button" class="btn tertiary-btn rounded-0 reverse-clickable-text" @click="editOpeningHours = true; checkOpeningHours()">
+                                    <button v-if="!editOpeningHours" type="button" class="btn btn-warning rounded-0 reverse-clickable-text" @click="editOpeningHours = true; checkOpeningHours()">
                                         Edit
                                     </button>
-                                    
                                     <!-- [else] if editing -->
-                                    <button v-if="editOpeningHours" type="button" class="btn success-btn rounded-0 reverse-clickable-text" @click="saveOpeningHours" :disabled="editOpeningHoursError">
-                                        Save
-                                    </button>
-                                    <button v-if="editOpeningHours" type="button" class="btn secondary-btn rounded-0 reverse-clickable-text ms-1" @click="editOpeningHours = false">
-                                        Cancel
-                                    </button>
-                                    <button v-if="editOpeningHours" type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1" @click="newOpeningHours = JSON.parse(JSON.stringify(openingHours)); checkOpeningHours()">
+                                    <button v-if="editOpeningHours" type="button" class="btn btn-warning rounded-0 reverse-clickable-text ms-1" @click="newOpeningHours = JSON.parse(JSON.stringify(openingHours)); checkOpeningHours()">
                                         Reset
                                     </button>
+                                    <button v-if="editOpeningHours" type="button" class="btn btn-success rounded-0 reverse-clickable-text ms-1" @click="saveOpeningHours" :disabled="editOpeningHoursError">
+                                        Save
+                                    </button>
+                                    <button v-if="editOpeningHours" type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1" @click="editOpeningHours = false">
+                                        Cancel
+                                    </button>
+                                    
                                 </div>
 
                                 <!-- Section Content (Edit Mode) -->
@@ -1709,20 +1753,21 @@
                                 <!-- Buttons -->
                                 <div class="pb-1" v-if="selfView || powerView">
                                     <!-- [if] not editing -->
-                                    <button v-if="!editPublicHolidays" type="button" class="btn tertiary-btn rounded-0 reverse-clickable-text" @click="editPublicHolidays = true">
+                                    <button v-if="!editPublicHolidays" type="button" class="btn btn-warning rounded-0 reverse-clickable-text" @click="editPublicHolidays = true">
                                         Edit
                                     </button>
                                     
                                     <!-- [else] if editing -->
-                                    <button v-if="editPublicHolidays" type="button" class="btn success-btn rounded-0 reverse-clickable-text" @click="savePublicHolidays">
-                                        Save
-                                    </button>
-                                    <button v-if="editPublicHolidays" type="button" class="btn secondary-btn rounded-0 reverse-clickable-text ms-1" @click="editPublicHolidays = false">
-                                        Cancel
-                                    </button>
-                                    <button v-if="editPublicHolidays" type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1" @click="newPublicHolidays = targetVenue['publicHolidays']">
+                                    <button v-if="editPublicHolidays" type="button" class="btn btn-warning rounded-0 reverse-clickable-text ms-1" @click="newPublicHolidays = targetVenue['publicHolidays']">
                                         Reset
                                     </button>
+                                    <button v-if="editPublicHolidays" type="button" class="btn btn-success rounded-0 reverse-clickable-text ms-1" @click="savePublicHolidays">
+                                        Save
+                                    </button>
+                                    <button v-if="editPublicHolidays" type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1" @click="editPublicHolidays = false">
+                                        Cancel
+                                    </button>
+                                    
                                 </div>
 
                                 <!-- Section Content (Edit Mode) -->
@@ -1757,20 +1802,21 @@
                                 <!-- Buttons -->
                                 <div class="pb-1" v-if="selfView || powerView">
                                     <!-- [if] not editing -->
-                                    <button v-if="!editReservationDetails" type="button" class="btn tertiary-btn rounded-0 reverse-clickable-text" @click="editReservationDetails = true">
+                                    <button v-if="!editReservationDetails" type="button" class="btn btn-warning rounded-0 reverse-clickable-text" @click="editReservationDetails = true">
                                         Edit
                                     </button>
                                     
                                     <!-- [else] if editing -->
-                                    <button v-if="editReservationDetails" type="button" class="btn success-btn rounded-0 reverse-clickable-text" @click="saveReservationDetails">
-                                        Save
-                                    </button>
-                                    <button v-if="editReservationDetails" type="button" class="btn secondary-btn rounded-0 reverse-clickable-text ms-1" @click="editReservationDetails = false">
-                                        Cancel
-                                    </button>
-                                    <button v-if="editReservationDetails" type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1" @click="newReservationDetails = targetVenue['reservationDetails']">
+                                    <button v-if="editReservationDetails" type="button" class="btn btn-warning rounded-0 reverse-clickable-text ms-1" @click="newReservationDetails = targetVenue['reservationDetails']">
                                         Reset
                                     </button>
+                                    <button v-if="editReservationDetails" type="button" class="btn btn-success rounded-0 reverse-clickable-text ms-1" @click="saveReservationDetails">
+                                        Save
+                                    </button>
+                                    <button v-if="editReservationDetails" type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1" @click="editReservationDetails = false">
+                                        Cancel
+                                    </button>
+                                    
                                 </div>
 
                                 <!-- Section Content (Edit Mode) -->
@@ -1952,6 +1998,7 @@
                 // for bookmark component
                 bookmarkListingID: {},
                 
+<<<<<<< HEAD
                 // for change/reset password
                 oldPassword:"",
                 newPassword:"",
@@ -1966,6 +2013,13 @@
                 verifyErrorMessage:"",
                 resettingPassword:false,
 
+=======
+                // truncation of official description <!-- tzh added  --->
+                showFullDescription: false,
+
+                // truncation of official description <!-- tzh added  --->
+                showFullItemDescription: false
+>>>>>>> TZH-1st-draft-13-May
             }
         },
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
