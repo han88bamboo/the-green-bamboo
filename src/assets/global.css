@@ -2,7 +2,7 @@
 
 body {
     color: black;
-    background-color: #D9D9D9;
+    background-color: #F2F2F2 !important;
     overflow: overlay;
 }
 
@@ -24,7 +24,7 @@ body {
     top: 0;
     left: 0;
     width: 100%; 
-    background-color: #D9D9D9;
+    background-color: #F2F2F2;
     z-index: 99;
 }
 
@@ -38,7 +38,7 @@ body {
 
 .default-text {
     color: black;
-    background-color: #D9D9D9;
+
 }
 
 .default-text-no-background {
@@ -116,7 +116,7 @@ body {
 
 .primary-square {
     color: whitesmoke;
-    background-color: #535C72;
+    background-color: #495264; /* color changed by TZH */
 }
 
 .primary-square-btn {
@@ -197,16 +197,18 @@ body {
 
 .secondary-btn-border-thick {
     color: whitesmoke;
-    background-color: #DD9E54;
-    border-radius: 30px;
-    border: 2px solid whitesmoke;
+    background-color: #D58D2D;
+    border-radius: 100px;
+    border: 2.5px solid whitesmoke;
+    font-weight: bold;
 }
 
 .secondary-btn-border-thick:hover  {
     color: whitesmoke;
     background-color: #c27e30;
-    border-radius: 30px;
-    border: 2px solid whitesmoke;
+    border-radius: 100px;
+    border: 2.5px solid whitesmoke;
+    font-weight: bold;
 }
 
 .secondary-btn-less-round,
@@ -326,7 +328,7 @@ body {
 }
 
 .img-border {
-    border: 4px solid #535C72;
+    border: 2.5px solid #868fa7;
     border-radius: 30px;
 }
 
@@ -394,10 +396,10 @@ body {
     position: relative;
     margin: 20px;
 }
-
+/* tzh adjusted sizings from 150 to 175*/  
 .drink-photo-container-row {
-    width: 150px;
-    height: 150px;
+    width: 175px;
+    height: 175px;
     position: relative;
 }
 
@@ -419,9 +421,10 @@ body {
     margin: 10px;
 }
 
+/* tzh adjusted sizings from 150 to 175*/  
 .add-drink-photo-background {
-    width: 150px;
-    height: 150px;            
+    width: 175px;
+    height: 175px;            
     position: absolute;
     top: 0;
     left: 0;
@@ -443,7 +446,8 @@ body {
 }
 
 .scrollable {
-    height: 120px;
+    /* height: 120px; */
+    min-height: 10px;
     max-height: 120px;
     overflow-y: auto;
 }
@@ -468,8 +472,7 @@ body {
 }
 
 .scrollable-expressions {
-    height: 600px;
-    max-height: 600px;
+    height: 95%;
     overflow-y: auto;
 }
 
@@ -632,4 +635,278 @@ body {
 .dropdown-item.active, .dropdown-item:hover, .dropdown-item:focus {
     background-color: #747D92;
     color: whitesmoke;
+}
+/* below styles added by TZH */
+.btn-close {
+    color: white !important; 
+    filter: invert(1) !important;
+}
+button.primary-square:hover {
+    color: whitesmoke;
+    background-color: #6d768d;
+}
+
+button.primary-btn{
+    background-color: #495264 !important;
+}
+
+button.primary-btn:hover{
+    background-color: #909cba !important;
+}
+
+.btn-secondary {
+    color: whitesmoke;
+    background-color: #838A97 !important;
+    border: none !important;
+}
+
+
+.btn-secondary:hover {
+    color: whitesmoke;
+    background-color: #a1a9b3 !important;
+    border: none !important;
+}
+
+.btn-danger {
+    background-color: #AE3E3E !important;
+}
+
+.btn-danger:hover {
+    background-color: #833131 !important;
+}
+
+.btn-success {
+    background-color: #608163 !important;
+}
+
+.btn-success:hover {
+    background-color: #4b644d !important;
+}
+
+.btn-warning {
+    color: black !important;
+    background-color: #FBBA49 !important;
+}
+.btn-warning:hover {
+    color: black !important;
+    background-color: #d09a3e !important;
+}
+
+.primary-btn-not-round,
+.primary-btn-outline-not-round:hover {
+    color: whitesmoke;
+    background-color: #535C72;
+    border-radius: 0px;
+    border: 4px solid #535C72;
+}
+
+.primary-btn-not-round:hover,
+.primary-btn-outline-not-round {
+    color: #535C72;
+    background-color: whitesmoke;
+    border-radius: 0px;
+    border: 4px solid #535C72;
+}
+
+.text-warning {
+    color: #D58D2D;
+}
+
+.active-toggle-button {
+    color: #495264  !important; /* Active state text color */
+    background-color: white !important; /* Active state background color */
+    border-bottom: 3px solid #495264 !important; /* Underline for active tab */
+    border-radius: 0px !important;
+    font-weight: bold !important;
+  
+}
+.active-toggle-button:hover {
+    color: #495264  !important; /* Active state text color */
+    background-color: white !important; /* Active state background color */
+    border-bottom: 4px solid #495264 !important; /* Underline for active tab */
+    border-radius: 0px !important;
+    font-weight: bold !important;
+}
+
+.inactive-toggle-button {
+    color: black  !important; /* Active state text color */
+    background-color: white !important; /* Active state background color */
+    border: none !important; /* Underline for active tab */
+    border-radius: 0px !important;
+    font-weight: bold !important;
+}
+
+
+.inactive-toggle-button:hover {
+    color:  #495264  !important; /* Active state text color */
+    background-color: white !important; /* Active state background color */
+    border-bottom: 3px solid #8593af !important; 
+    border-radius: 0px !important;
+    font-weight: bold !important;
+}
+.navbar-toggler-icon {
+    min-width: 2.0em;
+    min-height: 2.0em;
+}
+
+.custom-drink-list-btn.disabled {
+    background-color:#F2F2F2;
+    opacity: 1 !important;
+}
+
+.rounded-pill{
+    font-size: 19px;
+}
+
+.col-5x{
+    position: relative;
+    width: 100%;
+    padding-right: 15px;
+    padding-left: 15px;
+    flex: 0 0 auto;
+    max-width: 37.5%;
+    box-sizing: border-box;
+}
+
+@media (min-width: 992px) {
+    .padding-for-addyourreviewbutton-large-screen {
+      padding-right: 35px;
+      padding-left: 0px;
+    }
+  }
+@media (min-width: 992px) {
+    .padding-right-for-suggesteditslink-large-screen {
+        padding-right: 56px;
+    }
+}
+@media (min-width: 992px) {
+    .padding-left-for-suggesteditslink-large-screen {
+        padding-left: 60px;
+    }
+}
+@media (min-width: 992px) {
+    .padding-top-for-suggesteditslink-large-screen {
+        padding-top: 40px;
+    }
+}
+
+@media (min-width: 992px) {
+    .edit-listing-report-duplicate-btn {
+        position: absolute; bottom: 10px;
+    }
+}
+@media (min-width: 992px) {
+    .no-right-padding-large-screen{
+        padding-right: 0px !important;
+    }
+}
+
+.scrollable-user-bottle-listings-description-box {
+    /* height: 120px; */
+    min-height: 10px;
+    max-height: 152px;
+    overflow-y: auto;
+}
+@media (min-width: 992px) {
+    .producer-profile-no-left-padding-large-screen {
+        padding-left: 0px !important;
+    }
+}
+
+@media (min-width: 992px) {
+    .padding-for-followthisbusinessbutton-large-screen{
+        padding-right: 56px;
+    }
+}
+@media (min-width: 992px) {
+    .padding-for-hr-below-followthisbusinessbutton-large-screen{
+        padding-right: 44px;
+    }
+}
+/* tzh changed 44 to 36*/
+@media (min-width: 992px) {
+    .padding-for-latestupdatesNmostpopularcontainer-large-screen{
+        padding-right: 36px;
+    }
+}
+
+/*not used */
+.nowrap-container {
+    white-space: nowrap !important;
+    overflow: hidden;
+  }
+
+@media (max-width: 1199px) and (min-width: 991px) {
+    .shrink-width-on-dashboard {
+        max-width:12em;
+    }
+}  
+
+@media (max-width: 575px){
+    .make-bookmark-bigger {
+        padding-left:10px !important;
+        padding-right:0px !important;
+    }
+}
+
+
+/* tzh added these changes for mobile */
+
+
+.primary-light-dropdown-homepage {
+    color: whitesmoke;
+    background-color: #747D92;
+    border-radius: 10px;
+}
+
+.primary-light-dropdown-homepage:hover,
+.primary-light-dropdown-homepage:focus,
+.primary-light-dropdown-homepage:active {
+    color: whitesmoke;
+    background-color: #535C72;
+    border-radius: 10px;
+}
+
+@media (max-width: 991px){
+    .primary-light-dropdown-homepage {
+        color: black;
+        padding: 0; /* Remove padding */
+        background-color: transparent; /* Make background transparent */
+        border: none; /* Remove border */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+.primary-light-dropdown-homepage:hover,
+.primary-light-dropdown-homepage:focus,
+.primary-light-dropdown-homepage:active {
+    color: black;
+    background-color:transparent;
+    border:none;
+    border-radius: 10px;
+}
+}
+@media (max-width: 991px){
+    .mobile-view-hide {
+        display: none;
+}
+}  
+@media (max-width: 991px){
+    .mobile-view-no-padding {
+        padding-left: 0px !important;
+        padding-right: 0px !important;
+}
+}
+@media (max-width: 991px){
+.mobile-col-1 {
+    flex: 0 0 auto;
+    width: 16.666666666666%;
+}
+}
+
+@media (min-width: 992px){
+    .mobile-view-show {
+        display: none;
+    }
 }
