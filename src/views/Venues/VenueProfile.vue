@@ -1592,7 +1592,6 @@
                             <!-- Header -->
                             <h4 class="text-start"> Venue Location </h4>
 
-<<<<<<< HEAD
                             
                             <!-- <div class="pb-1 text-start" v-if="selfView || powerView">
                                 
@@ -1611,7 +1610,6 @@
                                     Reset
                                 </button>
                             </div> -->
-=======
                             <!-- Buttons -->
                             <div class="pb-1 text-start" v-if="selfView || powerView">
                                 <!-- [if] not editing -->
@@ -1631,7 +1629,6 @@
                                 </button>
                                 
                             </div>
->>>>>>> TZH-1st-draft-13-May
 
                             <!-- Section Content (Edit Mode) -->
                             <!-- <div v-if="editAddress">
@@ -1998,7 +1995,6 @@
                 // for bookmark component
                 bookmarkListingID: {},
                 
-<<<<<<< HEAD
                 // for change/reset password
                 oldPassword:"",
                 newPassword:"",
@@ -2013,13 +2009,11 @@
                 verifyErrorMessage:"",
                 resettingPassword:false,
 
-=======
                 // truncation of official description <!-- tzh added  --->
                 showFullDescription: false,
 
                 // truncation of official description <!-- tzh added  --->
                 showFullItemDescription: false
->>>>>>> TZH-1st-draft-13-May
             }
         },
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
