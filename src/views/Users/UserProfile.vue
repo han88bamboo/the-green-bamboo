@@ -381,7 +381,7 @@
                                         </p>
                                         <!-- flavor tag -->
                                         <span v-for="(tag, index) in review.flavorTag" :key="index" class="badge rounded-pill me-2" :style="{ backgroundColor: getTagColor(tag) }"> {{ getTagName(tag) }}</span>
-                                        <span v-for="(tag, index) in review.observationTag" :key="index" class="badge rounded-pill me-2" style="backgroundColor: grey;">{{ tag }}</span>
+                                        <span v-for="(tag, index) in review.observationTag" :key="index" class="badge rounded-pill me-2" style="background-color: grey;">{{ tag }}</span>
                                     </div>
                                 </div>
                             </div>

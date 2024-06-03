@@ -581,7 +581,7 @@
                                                     </p> 
                                                 </div>
                                             </div>
-
+                                            
                                             <!-- have tried button -->
                                             <div class="col-2 pe-0">
                                                 <div v-html="checkDrinkLists(listing).buttons.haveTried" class="d-grid"> </div>
@@ -2226,4 +2226,8 @@
 
         }
     };
+
+    
+
+
 </script>

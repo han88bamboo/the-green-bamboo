@@ -38,7 +38,6 @@ body {
 
 .default-text {
     color: black;
-
 }
 
 .default-text-no-background {
@@ -252,7 +251,6 @@ body {
     color: whitesmoke;
     background-color: #c27e30;
 }
-
 
 .tertiary-btn,
 .tertiary-btn-qa {
@@ -909,4 +907,8 @@ button.primary-btn:hover{
     .mobile-view-show {
         display: none;
     }
+}
+.container {
+    transform: scale(0.85); /* Scales down everything within the container to 90% */
+    transform-origin: top center;
 }
