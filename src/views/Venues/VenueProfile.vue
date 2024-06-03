@@ -58,7 +58,7 @@
                                 alt="" style="width: 200px; height: 200px; z-index: 1; opacity: 50%">
                             <!-- change option -->
                             <label for="fileSelectPFP" class="btn primary-light-dropdown" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2;">Choose File</label>
-                            <input id="fileSelectPFP" type="file" @change="handleFileSelectPFP" ref="fileInput" style="width: 0px; height: 0px;">
+                            <input id="fileSelectPFP" type="file" @change="handleFileSelectPFP" ref="fileInput" style="width: 0px; height: 0px; display: none;">
                             <!-- reset image option -->
                             <button class="btn primary-light-dropdown m-1" @click="editProfilePhoto = targetVenue['photo']">Revert</button>
                             <!-- remove image option -->
@@ -354,7 +354,7 @@
                                     <img :src="'data:image/jpeg;base64,' + (editUpdateContent[targetVenue['updates'][0]._id['$oid']].newPhoto || defaultProfilePhoto)" alt="" style="width: 128px; height: 128px; z-index: 1; opacity: 50%">
                                     <!-- change option -->
                                     <label :for="'fileSelectEditUpdate' + targetVenue['updates'][0]._id['$oid']" class="btn primary-light-dropdown" style="position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%); z-index: 2;">Choose</label>
-                                    <input :id="'fileSelectEditUpdate' + targetVenue['updates'][0]._id['$oid']" type="file" @change="handleFileSelectEditUpdate" ref="fileInput" style="width: 0px; height: 0px;">
+                                    <input :id="'fileSelectEditUpdate' + targetVenue['updates'][0]._id['$oid']" type="file" @change="handleFileSelectEditUpdate" ref="fileInput" style="width: 0px; height: 0px; display: none;">">
                                     <!-- reset image option -->
                                     <!--<button class="btn primary-light-dropdown m-1" @click="editUpdateContent[targetVenue['updates'][0]._id['$oid']].newPhoto = targetVenue['updates'][0].photo">Revert</button>-->
                                     <!-- remove image option -->
@@ -430,7 +430,7 @@
                                     <path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5m0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0"/>
                                 </svg>
                             </label>
-                            <input id="fileSelectUpdate" type="file" @change="handleFileSelectUpdate" ref="fileInput" style="width: 0px; height: 0px;">
+                            <input id="fileSelectUpdate" type="file" @change="handleFileSelectUpdate" ref="fileInput" style="width: 0px; height: 0px; display: none;">
 
                             <!-- Submit Button -->
                             <button class="btn send-icon p-0 mx-1" @click="submitNewUpdate">
@@ -531,7 +531,7 @@
                                                 <img :src="'data:image/jpeg;base64,' + (editUpdateContent[updateMore._id['$oid']].newPhoto || defaultProfilePhoto)" alt="" style="width: 128px; height: 128px; z-index: 1; opacity: 50%">
                                                 <!-- change option -->
                                                 <label :for="'fileSelectEditUpdate' + updateMore._id['$oid']" class="btn primary-light-dropdown" style="position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%); z-index: 2;">Choose</label>
-                                                <input :id="'fileSelectEditUpdate' + updateMore._id['$oid']" type="file" @change="handleFileSelectEditUpdate" ref="fileInput" style="width: 0px; height: 0px;">
+                                                <input :id="'fileSelectEditUpdate' + updateMore._id['$oid']" type="file" @change="handleFileSelectEditUpdate" ref="fileInput" style="width: 0px; height: 0px; display: none;">
                                                 <!-- reset image option -->
                                                 <button class="btn primary-light-dropdown m-1" @click="editUpdateContent[updateMore._id['$oid']].newPhoto = updateMore.photo">Revert</button>
                                                 <!-- remove image option -->
