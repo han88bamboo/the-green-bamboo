@@ -477,7 +477,7 @@
                     <hr>
 
                     <!-- most popular (highest ratings) -->
-                    <h3 class="text-body-secondary text-start pt-2"> 
+                    <h3 class="text-body-secondary text-start pt-1"> 
                         <b> Most Popular </b> 
                     </h3>
                     <div class="container">
@@ -507,7 +507,7 @@
                     </div>
 
                     <!-- most discussed (most number of reviews) -->
-                    <h3 class="text-body-secondary text-start pt-4"> 
+                    <h3 class="text-body-secondary text-start pt-2"> 
                         <b> Most Discussed </b> 
                     </h3>
                     <div class="container">
@@ -537,7 +537,7 @@
                     </div>
 
                     <!-- recently added -->
-                    <h3 class="text-body-secondary text-start pt-4"> 
+                    <h3 class="text-body-secondary text-start pt-2"> 
                         <b> Recently Added </b> 
                     </h3>
                     <div class="container">

@@ -26,7 +26,7 @@
     <!-- [if] no search input -->
     <div v-if="search == false && dataLoaded == true">
         <!-- header -->
-        <div class="container pt-5">
+        <div class="container pt-5 mobile-view-hide">
             <div class="row">
                 <!-- tagline -->
                 <div class="col-8">
@@ -38,7 +38,7 @@
                 <div v-if="!userID" class="col-4">
                     <div class="d-grid gap-2">
                         <router-link :to="{ path: '/signUp' }">
-                            <button class="btn secondary-btn btn-lg"> 
+                            <button class="btn secondary-btn-border-thick btn-lg" style="font-weight: bold;"> 
                                 Sign Up to Start Pouring 
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
                                     <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/>
@@ -54,7 +54,7 @@
         <div class="container pt-3">
             <div class="row">
                 <!-- left pane -->
-                <div class="col-lg-3 col-md-4 col-12">
+                <div class="col-lg-3 col-md-4 col-12 mobile-view-hide">
                     <div class="container p-lg-0 p-md-0 p-4">
                         <!-- [user] your drinks shelf & brands you follow -->
                         <div v-if="userType == 'user' || userType == ''" class="row">
@@ -81,7 +81,7 @@
                                                 <span class="title-card-text"> {{requestDupes.length}} </span> Duplicate Reports
                                             </p>
                                             <router-link :to="{ path: '/request/view' }">
-                                                <button class="btn secondary-btn-border btn-sm py-2 px-3"> View all requests </button>
+                                                <button class="btn secondary-btn-border btn-sm py-2 px-3" style="font-weight: bold;"> View all requests </button>
                                             </router-link>
                                         </div>
                                     </div>
@@ -122,7 +122,7 @@
                                         </div>
                                         <div v-else-if="!userID" style="display: flex; align-items: center; justify-content: center; height: 100%;">
                                             <router-link :to="{ path: '/login' }">
-                                                <button class="btn secondary-btn-border btn-sm py-2 px-3"> Log in to add a drink to shelf </button>
+                                                <button class="btn secondary-btn-border-thick py-2 px-3" style="font-weight: bold;"> Log in to add a drink to shelf </button>
                                             </router-link>
                                         </div>
                                     </div>
@@ -161,7 +161,7 @@
                                         </div>
                                         <div v-else style="display: flex; align-items: center; justify-content: center; height: 100%;">
                                             <router-link :to="{ path: '/login' }">
-                                                <button class="btn secondary-btn-border btn-sm py-2 px-3"> Log in to follow your favourite brand</button>
+                                                <button class="btn secondary-btn-border-thick btn-sm py-2 px-3" style="font-weight: bold;"> Log in to follow your favourite brand</button>
                                             </router-link>
                                         </div>
                                     </div>
@@ -194,7 +194,7 @@
                                                 <span class="title-card-text"> {{requestDupes.length}} </span> Duplicate Reports
                                             </p>
                                             <router-link :to="{ path: '/request/view' }">
-                                                <button class="btn secondary-btn-border btn-sm py-2 px-3"> View all requests </button>
+                                                <button class="btn secondary-btn-border btn-sm py-2 px-3" style="font-weight: bold;"> View all requests </button>
                                             </router-link>
                                         </div>
                                     </div>
@@ -216,7 +216,7 @@
                                     <div v-if="unansweredQuestions.length != 0">
                                         <div style="display: flex; align-items: center; justify-content: center;">
                                             <router-link :to="{ path: '/Producers/ProducersQA/' + userID }">
-                                                <button class="btn secondary-btn-border btn-sm py-2 px-3"> Respond to Q&A </button>
+                                                <button class="btn secondary-btn-border btn-sm py-2 px-3"  style="font-weight: bold;"> Respond to Q&A </button>
                                             </router-link>
                                         </div>
                                     </div>
@@ -233,7 +233,7 @@
                                     <div>
                                         <div style="display: flex; align-items: center; justify-content: center;">
                                             <router-link :to="{ path: '/profile/producer/' + userID }">
-                                                <button class="btn secondary-btn-border btn-sm py-2 px-3"> View Dashboard </button>
+                                                <button class="btn secondary-btn-border btn-sm py-2 px-3" style="font-weight: bold;"> View Dashboard </button>
                                             </router-link>
                                         </div>
                                     </div>
@@ -259,7 +259,7 @@
                                     <div v-if="unansweredQuestions.length != 0">
                                         <div style="display: flex; align-items: center; justify-content: center;">
                                             <router-link :to="{ path: '/Venues/VenuesQA/' + userID }">
-                                                <button class="btn secondary-btn-border btn-sm py-2 px-3"> Respond to Q&A </button>
+                                                <button class="btn secondary-btn-border btn-sm py-2 px-3" style="font-weight: bold;"> Respond to Q&A </button>
                                             </router-link>
                                         </div>
                                     </div>
@@ -276,7 +276,7 @@
                                     <div>
                                         <div style="display: flex; align-items: center; justify-content: center;">
                                             <router-link :to="{ path: '/profile/venue/' + userID }">
-                                                <button class="btn secondary-btn-border btn-sm py-2 px-3"> View Dashboard </button>
+                                                <button class="btn secondary-btn-border btn-sm py-2 px-3" style="font-weight: bold;"> View Dashboard </button>
                                             </router-link>
                                         </div>
                                     </div>
@@ -289,9 +289,9 @@
                 <!-- discover, following & filter by drink type -->
                 <div class="col-lg-9 col-md-8 col-12">
                     <div class="container">
-                        <div class="row">
-                            <!-- discover -->
-                            <div class="col-xl-3 col-lg-4 col-12 mb-3">
+                        <div class="row ps-lg-4 pe-lg-4">
+                            <!-- discover  tzh changed col-12 to col-4 -->
+                            <div class="col-xl-3 col-lg-4 col-4 mb-3 mobile-view-no-padding">
                                 <div class="d-grid gap-2">
                                     <button class="btn btn-sm" 
                                         :class="{ 'primary-btn': discovery, 'primary-btn-outline': !discovery }"
@@ -300,8 +300,8 @@
                                     </button>
                                 </div>
                             </div>
-                            <!-- following -->
-                            <div class="col-xl-3 col-lg-4 col-12 mb-3">
+                            <!-- following tzh changed col-12 to col-4 -->
+                            <div class="col-xl-3 col-lg-4 col-4 mb-3 mobile-view-no-padding">
                                 <div class="d-grid gap-2">
                                     <button class="btn btn-sm"
                                         :class="{ 'primary-btn': following, 'primary-btn-outline': !following }"
@@ -310,16 +310,18 @@
                                     </button>
                                 </div>
                             </div>
-                            <!-- filter by drink type / category -->
-                            <div class="dropdown col-xl-3 col-lg-4 col-12 mb-3">
+                            <!-- filter by drink type / category tzh changed col-12 to col-4 -->
+                            <div class="dropdown col-xl-3 col-lg-4 col-4 mb-3  mobile-col-1">
                                 <div class="d-grid gap-2">
-                                    <button class="btn primary-light-dropdown btn-lg dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="white-space: nowrap; overflow:hidden; text-overflow: ellipsis;">
+                                    <!-- tzh - added -homepage and some changes for mobile-->
+                                    <button class="btn primary-light-dropdown-homepage btn-lg dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="white-space: nowrap; overflow:hidden; text-overflow: ellipsis;">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-funnel" viewBox="0 0 16 16">
                                             <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2z"/>
                                         </svg>
-                                        <span style="margin-left: 5px;">{{ selectedDrinkType ? selectedDrinkType['drinkType'] : 'Filter: Drink Type' }}</span>
+                                        <span class="mobile-view-hide" style="margin-left: 5px;">{{ selectedDrinkType ? selectedDrinkType['drinkType'] : 'Filter: Drink Type' }}</span>
                                         <span v-if="selectedDrinkType != ''" class="cross-icon" @click="clearSelection">&#10005;</span>
                                     </button>
+                                    <!-- tzh - above to be replaced for mobile-->
                                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" @click.stop>
                                         <div class="d-flex">
                                             <div class="dropdown-column ms-2 mt-2">
@@ -352,14 +354,14 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- sort by drink type -->
-                            <div class="dropdown col-xl-3 col-lg-4 col-12 mb-3">
+                            <!-- sort by drink type - tzh changed col-12 to col-4-->
+                            <div class="dropdown col-xl-3 col-lg-4 col-4 mb-3 mobile-col-1">
                                 <div class="d-grid gap-2">
-                                    <button class="btn primary-light-dropdown btn-lg dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="white-space: nowrap; overflow:hidden; text-overflow: ellipsis;">
+                                    <button class="btn primary-light-dropdown-homepage btn-lg dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="white-space: nowrap; overflow:hidden; text-overflow: ellipsis;">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-sort-down" viewBox="0 0 16 16">
                                             <path d="M3.5 2.5a.5.5 0 0 0-1 0v8.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L3.5 11.293zm3.5 1a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5M7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1z"/>
                                         </svg>
-                                        <span style="margin-left: 5px;"> Sort: {{ sortSelection.category != '' ? sortSelection.category : 'Category' }} </span>
+                                        <span class="mobile-view-hide" style="margin-left: 5px;"> Sort: {{ sortSelection.category != '' ? sortSelection.category : 'Category' }} </span>
                                     </button>
                                     <ul class="dropdown-menu">
                                         <li><span class="dropdown-item" @click="sortByCategory('')"> Clear Sort </span></li>
@@ -373,8 +375,8 @@
                             </div> 
                         </div>
                         
-                        <!-- listings -->
-                        <div class="row scrollable-listings">
+                        <!-- listings  TZH removed class scrollable-listings--->
+                        <div class="row">
 
                             <!-- [if] discovery & following not clicked -->
                             <div v-if="discovery == false && following == false">
@@ -386,7 +388,7 @@
 
                                         <div class="row">
                                             <!-- image -->
-                                            <div class="col-xl-5 col-12">
+                                            <div class="col-xl-5 col-12 ">
                                                 <div class="image-container mb-3" style="height: 300px; width: 300px;">
                                                     <img v-if="listing['photo']" :src="'data:image/png;base64,'+listing['photo']" style="width: 300px; height: 300px;" class="img-border">
                                                     <img v-else src="../../../Images/Drinks/Placeholder.png" style="width: 300px; height: 300px;" class="img-border">
@@ -400,7 +402,7 @@
                                                 </div>
                                             </div>
                                             <!-- details -->
-                                            <div class="col-xl-7 col-12">
+                                            <div class="col-xl-7 col-12  ps-lg-0">
                                                 <!-- expression name -->
                                                 <div class="row pt-1">
                                                     <router-link :to="{ path: '/listing/view/' +listing._id.$oid }" class="primary-clickable-text">
@@ -413,10 +415,15 @@
                                                         <h5> <b> {{ getProducerName(listing) }} </b> </h5>
                                                     </router-link>
                                                 </div>
-                                                <!-- review -->
+                                                <!-- review tzh shortened description if above 270 characters -->
                                                 <div class="row pt-3">
-                                                    <router-link :to="{ path: '/listing/view/' +listing._id.$oid }" class="default-clickable-text fst-italic scrollable">
-                                                        <h5> {{ listing["officialDesc"] }}. </h5>
+                                                    <router-link :to="{ path: '/listing/view/' +listing._id.$oid }" class="default-clickable-text fst-italic scrollable-user-bottle-listings-description-box">
+                                                        <div v-if="listing.officialDesc.length > 300">  
+                                                            <h5> {{ listing["officialDesc"].slice(0, 300) + (listing["officialDesc"].length > 300 ? '...' : '') }} </h5>
+                                                        </div>
+                                                        <div v-else>  
+                                                            <h5> {{ listing["officialDesc"] }}. </h5>
+                                                        </div>
                                                     </router-link>
                                                 </div>
                                                 <!-- rating -->
@@ -432,7 +439,7 @@
                                                     <div class="col-6">
                                                         <div class="d-grid gap-5">
                                                             <router-link :to="{ path: '/listing/view/' +listing._id.$oid }" class="primary-clickable-text">
-                                                                <a class="btn secondary-btn btn-md"> Read what the crowd thinks </a>
+                                                                <a class="btn secondary-btn btn-md" style="font-weight: bold;"> Read what the crowd thinks </a>
                                                             </router-link>
                                                         </div>
                                                     </div>

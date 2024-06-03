@@ -350,11 +350,11 @@
                     
                     <!-- Submission Buttons -->
                     <div v-if="formType == 'req'">
-                        <button type="submit" class="btn secondary-btn mx-1 mb-3" v-if="formMode == 'new'">Submit Listing Request</button>
-                        <button type="submit" class="btn secondary-btn mx-1 mb-3" v-if="formMode == 'edit'">Submit Edit Request</button>
-                        <button type="submit" class="btn secondary-btn mx-1 mb-3" v-if="formMode == 'dup'">Submit Duplicate Report</button>
-
-                        <button type="button" class="btn primary-btn mx-1 mb-3" @click="goBack">Return</button>
+                        <button type="button" class="btn btn-secondary mx-1 mb-3" @click="goBack">Return</button>
+                        <button type="submit" class="btn primary-square mx-1 mb-3" v-if="formMode == 'new'">Submit Listing Request</button>
+                        <button type="submit" class="btn primary-square mx-1 mb-3" v-if="formMode == 'edit'">Submit Edit Request</button>
+                        <button type="submit" class="btn primary-square mx-1 mb-3" v-if="formMode == 'dup'">Submit Duplicate Report</button>
+                        
                     </div>
                     <div v-if="formType == 'power'">
                         <button type="submit" class="btn secondary-btn mx-1 mb-3" v-if="formMode == 'new'">Create New Listing</button>
