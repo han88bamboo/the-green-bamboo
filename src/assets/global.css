@@ -941,7 +941,3 @@ button.primary-btn:hover{
         display: none;
     }
 }
-.container {
-    transform: scale(0.85); /* Scales down everything within the container to 90% */
-    transform-origin: top center;
-}
