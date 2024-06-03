@@ -11,7 +11,7 @@
                     <div class="pt-5">
                         <form id="login" v-on:submit.prevent="checkLogin" style="background-color:#DDC8A9;" class="rounded">
                             <!-- login header text -->
-                            <p class="fw-bold fs-1 pt-3 mx-3" style="font-style: italic; font-family: Radley, serif;">
+                            <p class="fw-bold fs-1 pt-4 mx-3" style="font-style: italic; ">
                                 Join a community of drink lovers.
                             </p>
 
@@ -75,7 +75,7 @@
                             </div>
 
                             <!-- Prompt sign up -->
-                            <p class="mt-2 fw-bold fs-3" style="font-style: italic; font-family: Radley, serif;">
+                            <p class="mt-2 fw-bold fs-3" style="font-style: italic; ">
                                 Don't have an account?
                             </p>
                             <div class="row">

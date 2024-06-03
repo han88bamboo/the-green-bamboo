@@ -32,7 +32,7 @@
         <div class="row">
 
             <!-- left pane -->
-            <div class="col-lg-3 col-md-12 col-sm-12">
+            <div class="col-lg-4 col-md-12 col-sm-12">
 
                 <!-- row 1: producer info -->
                 <div class="row">
@@ -94,11 +94,11 @@
                                                     Edit answer
                                                 </button>
                                                 <!-- [else] if editing -->
-                                                <button v-if="correctProducer && editingQAID == qa._id.$oid" type="button" class="btn success-btn rounded-0 me-1" v-on:click="saveQAEdit(qa)">
+                                                <button v-if="correctProducer && editingQAID == qa._id.$oid" type="button" class="btn btn-success rounded-0 me-1" v-on:click="saveQAEdit(qa)">
                                                     Save
                                                 </button>
                                                 <!-- [else] if editing -->
-                                                <button v-if="correctProducer && editingQAID == qa._id.$oid" type="button" class="btn secondary-btn rounded-0 me-1" v-on:click="cancelQAEdit(qa)">
+                                                <button v-if="correctProducer && editingQAID == qa._id.$oid" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="cancelQAEdit(qa)">
                                                     Cancel
                                                 </button>
                                                 <!-- delete -->
@@ -203,19 +203,19 @@
             </div>
 
             <!-- right pane -->
-            <div class="col-lg-9 col-md-12 col-sm-12 ps-5">
+            <div class="col-lg-8 col-md-12 col-sm-12 ps-5">
 
                 <!-- row 1: review of your expressions & profile visits -->
                 <div class="row">
 
                     <!-- col 1: review of your expressions -->
-                    <div class="col text-start pt-5 mx-3">
+                    <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-3 ps-lg-0 pe-lg-0">
                         <h3> Review of Your Expressions </h3>
                         <Line :data="reviewsData" :options="chartOptions"></Line>
                     </div>
 
                     <!-- col 2: profile visits -->
-                    <div class="col text-start pt-5 mx-3">
+                    <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-3 ps-lg-0 pe-lg-0">
                         <h3> Profile Visits </h3>
                         <Line :data="profileData" :options="chartOptions"></Line>
                     </div>
@@ -226,7 +226,7 @@
                 <div class="row">
 
                     <!-- col 1: your best rated expressions -->
-                    <div class="col text-start pt-5 mx-3">
+                    <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-3 ps-lg-0 pe-lg-0">
                         <h3> Your Best Rated Expressions </h3>
                         <div class="text-start pb-2" v-for="listing in mostPopular" v-bind:key="listing._id">
                             <router-link :to="{ path: '/listing/view/' + listing._id.$oid }" class="reverse-clickable-text">
@@ -246,7 +246,7 @@
                     </div>
 
                     <!-- col 2: your most reviewed expressions -->
-                    <div class="col text-start pt-5 mx-3">
+                    <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-3 ps-lg-0 pe-lg-0">
                         <h3> Your Most Reviewed Expressions </h3>
                         <div class="text-start pb-2" v-for="listing in mostDiscussed" v-bind:key="listing._id">
                             <router-link :to="{ path: '/listing/view/' + listing._id.$oid }" class="reverse-clickable-text">
@@ -268,20 +268,20 @@
                 <div class="row">
 
                     <!-- col 1: spread of ratings -->
-                    <div class="col text-start pt-5 mx-3">
+                    <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-3 ps-lg-0 pe-lg-0">
                         <h3> Spread of Ratings </h3>
                         <Bar :data="ratingsData" :options="chartOptions" />
                     </div>
 
                     <!-- col 2: your most reviewed categories -->
-                    <div class="col text-start pt-5 mx-3">
+                    <div class="col text-start pt-5 mx-3 ps-lg-0 pe-lg-0">
                         <h3> Your Most Reviewed Categories </h3>
                         <div class="text-start pb-2" v-for="(category, index) in mostDiscussedCategories" v-bind:key="category">
-                            <div class="row ms-3 default-clickable-text"> 
+                            <div class="row ms-0 default-clickable-text"> 
                                 <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
                                     <h5 class="my-auto"> {{ index + 1 }} </h5>
                                 </div>
-                                <div class="col-10">
+                                <div class="col-10 shrink-width-on-dashboard">
                                     <b> {{ category[0] }} </b> 
                                     <br>
                                     {{ category[1] || "-" }} reviews

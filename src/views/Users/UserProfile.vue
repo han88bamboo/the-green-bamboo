@@ -71,10 +71,10 @@
 
                     <!-- buttons -->
                     <div class="row mt-3">
-                        <button v-if="ownProfile && user" type="button" class="btn primary-btn-outline-less-round" data-bs-toggle="modal" data-bs-target="#editProfileModal">Edit Profile</button>
+                        <button v-if="ownProfile && user" type="button" class="btn primary-btn-outline-not-round" data-bs-toggle="modal" data-bs-target="#editProfileModal" style="font-weight:bold;">Edit Profile</button>
                         <button v-else-if="following && user" type="button" class="btn primary-btn-outline-less-round" @click="editFollow('unfollow')">Following</button>
-                        <button v-else-if="user" type="button" class="btn primary-btn-less-round" @click="editFollow('follow')">+ Follow User</button>
-                        <router-link v-if="ownProfile && user" :to="{ path: '/dashboard/user' }" class="btn btn-warning mt-3 default-clickable-text">
+                        <button v-else-if="user" type="button" class="btn primary-btn-less-round" @click="editFollow('follow')"  style="font-weight:bold;">+ Follow User</button>
+                        <router-link v-if="ownProfile && user" :to="{ path: '/dashboard/user' }" class="btn secondary-btn-not-rounded rounded-0 mt-3" style=" font-weight: bold;">
                             View My Analytics
                         </router-link>
                         <span style="position: relative; display: inline-block" class="m-0 p-0">
@@ -250,7 +250,7 @@
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body text-center px-5">
-                                    <h3 style="font-family: Radley;">Want to become a moderator and help shape the global drinks community?</h3>
+                                    <h2> Shape the global drinks community!</h2>
                                     <a href="#" class="m-2" style="font-style: italic; color: inherit">Click here to learn more about being a moderator</a>
                                     <br/>
                                     <div class="px-5">
@@ -332,17 +332,17 @@
                         <a v-if="ownProfile" class="nav-link" data-bs-toggle="pill" href="#lists">My Drink Lists</a>
                         <a v-else class="nav-link" data-bs-toggle="pill" href="#lists">Drink Lists</a>
                     </li>
-                </ul> -->
+                </ul> --> <!-- tzh made changes-->
                 <div class="nav">
-                    <button id="reviewsButton" class="btn active" aria-current="page" data-bs-toggle="pill" data-bs-target="#reviews" style="color: whitesmoke; background-color: #535C72; border-radius: 30px; border: 4px solid #535C72" @click="switchTab('reviews')">Reviews</button>
-                    <button id="ownListsButton" v-if="ownProfile" class="btn primary-btn ms-2" data-bs-toggle="pill" data-bs-target="#lists" style="color: #535C72; background-color: whitesmoke; border-radius: 30px; border: 4px solid #535C72;" @click="switchTab('lists')">My Drink Lists</button>
-                    <button id="listsButton" v-else class="btn primary-btn ms-2" data-bs-toggle="pill" data-bs-target="#lists" style="color: #535C72; background-color: whitesmoke; border-radius: 30px; border: 4px solid #535C72;" @click="switchTab('lists')">Drink Lists</button>
+                    <button id="reviewsButton" class="btn active active-toggle-button mx-1" aria-current="page" data-bs-toggle="pill" data-bs-target="#reviews"  >Reviews</button>
+                    <button id="ownListsButton" v-if="ownProfile" class="btn inactive-toggle-button mx-1" data-bs-toggle="pill" data-bs-target="#lists"  >My Drink Lists</button>
+                    <button id="listsButton" v-else class="btn inactive-toggle-button mx-1" data-bs-toggle="pill" data-bs-target="#lists"  >Drink Lists</button>
                 </div>
 
                 <div class="tab-content container mt-2">
                     <!-- reviews tab -->
                     <div class="tab-pane fade show active" id="reviews">
-                        <ListingRowDisplay 
+                        <ListingRowDisplayUserProfile 
                             :listingArr="favouriteListings" 
                             displayName="Favourite Listings" 
                             :user="user" 
@@ -350,7 +350,7 @@
                             columnWidth="165px"
                             @icon-clicked="handleIconClick"/>
 
-                        <ListingRowDisplay 
+                        <ListingRowDisplayUserProfile 
                             :listingArr="recentActivity" 
                             displayName="Recent Activity" 
                             :user="user" 
@@ -641,7 +641,7 @@
 
 <script>
 import NavBar from '@/components/NavBar.vue';
-import ListingRowDisplay from '@/components/ListingRowDisplay.vue';
+import ListingRowDisplayUserProfile from '@/components/ListingRowDisplayUserProfile.vue';
 import BookmarkModal from '@/components/BookmarkModal.vue';
 
 
@@ -650,7 +650,7 @@ import BookmarkModal from '@/components/BookmarkModal.vue';
 export default {
     components: {
         NavBar, 
-        ListingRowDisplay, 
+        ListingRowDisplayUserProfile, 
         BookmarkModal
     },
     data() {
@@ -1361,30 +1361,24 @@ export default {
             this.showCurrentContent = !this.showCurrentContent; // Toggle the value
             this.currentList = name;
         },
-        // css for review and drink list tab
+        // css for review and drink list tab - tzh made changes 
         switchTab(currentTab) {
             if (currentTab === "lists") {
-                document.getElementById("reviewsButton").style.color = "#535C72";
-                document.getElementById("reviewsButton").style.backgroundColor = "whitesmoke";
+                document.getElementById("reviewsButton").className = "btn inactive-toggle-button mx-1";
                 if (this.ownProfile) {
-                    document.getElementById("ownListsButton").style.color = "whitesmoke";
-                    document.getElementById("ownListsButton").style.backgroundColor = "#535C72";
+                    document.getElementById("ownListsButton").className = "btn active-toggle-button mx-1";
                 }
                 else {
-                    document.getElementById("listsButton").style.color = "whitesmoke";
-                    document.getElementById("listsButton").style.backgroundColor = "#535C72";
+                    document.getElementById("listsButton").className = "btn active-toggle-button mx-1";
                 }
             }
             else {
-                document.getElementById("reviewsButton").style.color = "whitesmoke";
-                document.getElementById("reviewsButton").style.backgroundColor = "#535C72";
+                document.getElementById("reviewsButton").className = "btn active-toggle-button mx-1";
                 if (this.ownProfile) {
-                    document.getElementById("ownListsButton").style.color = "#535C72";
-                    document.getElementById("ownListsButton").style.backgroundColor = "whitesmoke";
+                    document.getElementById("ownListsButton").className = "btn inactive-toggle-button mx-1";
                 }
                 else {
-                    document.getElementById("listsButton").style.color = "#535C72";
-                    document.getElementById("listsButton").style.backgroundColor = "whitesmoke";
+                    document.getElementById("listsButton").className = "btn inactive-toggle-button mx-1";
                 }
             }
         }, 

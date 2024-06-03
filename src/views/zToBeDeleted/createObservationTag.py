@@ -15,7 +15,7 @@ import data
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
-app.config["MONGO_URI"] = "mongodb+srv://jwleong2020:uOfXCrxLPCjgyA92@greenbamboo.wbiambw.mongodb.net/GreenBamboo?retryWrites=true&w=majority"
+app.config["MONGO_URI"] = "mongodb+srv://jwleong2020:uOfXCrxLPCjgyA92@greenbamboo.wbiambw.mongodb.net/GreenBamboo?retryWrites=true&w=majority" 
 db = PyMongo(app).db
 
 def parse_json(data):

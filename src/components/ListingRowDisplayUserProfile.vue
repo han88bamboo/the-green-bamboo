@@ -6,7 +6,7 @@
     </h3>
     <div class="container pe-lg-0">
         <div class="row" v-if="Object.keys(listingArr).length > 0">
-            <div v-for="(listing, index) in listingArr" :key="index" class="col-12 col-sm-6 col-md-6 col-lg-3 col-xl-2 align-items-center p-lg-0" :style="{ display: 'flex', flexDirection: 'column', width: columnWidth }">
+            <div v-for="(listing, index) in listingArr" :key="index" class="col-12 col-sm-6 col-md-6 col-lg-3 col-xl-2 align-items-center p-lg-0 me-4" :style="{ display: 'flex', flexDirection: 'column', width: columnWidth }">
                 <div class="drink-photo-container-row image-container-150">
                     <router-link :to="{ path: '/listing/view/' + listing._id.$oid }" class="default-text-no-background">
                         <img v-if="listing.photo !== '' && listing.photo !== null" :src="'data:image/jpeg;base64,' + listing.photo" class="add-drink-photo-background centered rounded"> 

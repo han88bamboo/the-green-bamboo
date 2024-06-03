@@ -8,7 +8,7 @@
 
         <!-- Main NavBar -->
         <nav class="navbar pb-0">
-            <div class="container-fluid align-items-center col-xxl-8 col-xl-9 col-lg-10 col-md-11 col-sm-12">
+            <div class="container-fluid align-items-center col-xxl-11 col-xl-11 col-lg-11 col-md-12 col-sm-12">
 
                 <!-- logo -->
                 <div class="align-items-center col-3">
@@ -17,8 +17,8 @@
                     </router-link>
                 </div>
 
-                <!-- search bar -->
-                <div class="col-6">
+                <!-- search bar tzh added mobile-view-hide -->
+                <div class="col-6 mobile-view-hide">
                     <input class="search-bar form-control rounded fst-italic" type="text" placeholder="What are you drinking today?" style="height: 50px;" v-model="searchInput" v-on:keyup.enter="goSearch">
                 </div>
 
@@ -26,19 +26,19 @@
 
                     <!-- profile icon -->
                     <button v-if="onProfile" type="button" class="btn p-0 me-1" @click="forceLoad(profileURL)">
-                        <svg v-if="photo == ''" xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                        <svg v-if="photo == ''" xmlns="http://www.w3.org/2000/svg" width="45" height="45" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
                             <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
                             <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
                         </svg>
-                        <img v-else :src="'data:image/png;base64,'+ photo"  style="width: 30px; height: 30px;" class="img-border">
+                        <img v-else :src="'data:image/png;base64,'+ photo"  style="width: 45px; height: 45px;" class="img-border">
                     </button>
                     <router-link v-if="!onProfile" :to="profileURL" class="me-1">
                         <button type="button" class="btn p-0">
-                            <svg v-if="photo == ''" xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                            <svg v-if="photo == ''" xmlns="http://www.w3.org/2000/svg" width="45" height="45" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
                                 <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
                                 <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
                             </svg>
-                            <img v-else :src="'data:image/png;base64,'+ photo"  style="width: 30px; height: 30px;" class="img-border">
+                            <img v-else :src="'data:image/png;base64,'+ photo"  style="width: 45px; height: 45px;" class="img-border">
                         </button>
                     </router-link>
 
@@ -64,11 +64,24 @@
 
                         <li v-if="isAdmin"><router-link :to="'/admin/dashboard'" class="dropdown-item">Admin Dashboard</router-link></li>
                         <li v-if="isAdmin"><router-link :to="'/admin/importListings'" class="dropdown-item">Import Listings</router-link></li>
+                        
+                        <div class="mobile-view-show">
+                            <li><router-link :to="'/'" class="dropdown-item">Explore</router-link></li>
+                            <li><router-link :to="'/'" class="dropdown-item">Best Of</router-link></li>
+                            <li><router-link :to="dashboardURL" class="dropdown-item">My {{ dashboardWord }} Stats</router-link></li>
+                            <li><span  @click="externalURL('https://88bamboo.co/')" class="dropdown-item">Latest Drink News</span></li>
+                            <li v-if="onRequest && accType == 'user'"><span style="color:#D58D2D !important;" @click="forceLoad('/request/new')" class="dropdown-item">Submit A Drink</span></li>
+                            <li v-if="!onRequest && accType == 'user'"><router-link  :to="'/request/new'"><span class="dropdown-item" style="color:#D58D2D !important;">Submit A Drink</span></router-link></li>
+                            <li v-if="onCreate && (accType == 'producer' || isAdmin || isModerator)" ><span style="color:#D58D2D !important;" class="dropdown-item" @click="forceLoad('/listing/create')">Add A New Drink</span></li>
+                            <li v-if="!onCreate && (accType == 'producer' || isAdmin || isModerator)" :to="'/listing/create'" ><span style="color:#D58D2D !important;" class="dropdown-item">Add A New Drink</span></li>
+                        </div>
 
                         <li><hr class="dropdown-divider"></li>
                         <li v-if="profileURL == '/login'"><router-link :to="'/login'" class="dropdown-item">Login</router-link></li>
                         <li v-if="profileURL == '/login'"><router-link :to="'/signup'" class="dropdown-item">Sign Up</router-link></li>
                         <li v-if="profileURL != '/login'"><span class="dropdown-item" @click="logout">Log Out</span></li>
+
+
                     </ul>
 
                 </div>
@@ -76,9 +89,12 @@
             </div>
         </nav>
 
-        <!-- secondary nav bar -->
-        <div class="col-12 primary-square mt-2 py-1">
-            <div class="container-fluid align-items-center col-xxl-8 col-xl-9 col-lg-10 col-md-11 col-sm-12">
+        <!-- secondary nav bar -tzh added mobile-view-hide -->
+        <div class="col-12 primary-square mt-2 py-1 ">
+            <div class="mobile-view-show col-12 ps-4 pe-4">
+                <input class="search-bar form-control rounded fst-italic " type="text" placeholder="What are you drinking today?" style="height: 50px;" v-model="searchInput" v-on:keyup.enter="goSearch">
+            </div>
+            <div class="mobile-view-hide container-fluid align-items-center col-xxl-8 col-xl-9 col-lg-10 col-md-11 col-sm-12">
 
                 <router-link :to="'/'">
                     <button class="btn primary-btn border-0 fw-bold" type="button">
@@ -102,20 +118,20 @@
                     Latest Drink News
                 </button>
 
-                <button @click="forceLoad('/request/new')" v-if="onRequest && accType == 'user'" class="btn primary-btn border-0 fw-bold text-warning" type="button">
+                <button @click="forceLoad('/request/new')" v-if="onRequest && accType == 'user'" class="btn primary-btn border-0 fw-bold text-warning" type="button" style="color:#D58D2D !important;">
                     Submit A Drink
                 </button>
                 <router-link v-if="!onRequest && accType == 'user'" :to="'/request/new'">
-                    <button class="btn primary-btn border-0 fw-bold text-warning" type="button">
+                    <button class="btn primary-btn border-0 fw-bold text-warning" type="button"  style="color:#D58D2D !important;">
                         Submit A Drink
                     </button>
                 </router-link>
 
-                <button @click="forceLoad('/listing/create')" v-if="onCreate && (accType == 'producer' || isAdmin || isModerator)" class="btn primary-btn border-0 fw-bold text-warning" type="button">
+                <button @click="forceLoad('/listing/create')" v-if="onCreate && (accType == 'producer' || isAdmin || isModerator)" class="btn primary-btn border-0 fw-bold text-warning" type="button" style="color:#D58D2D !important;">
                     Add A New Drink
                 </button>
-                <router-link v-if="!onCreate && (accType == 'producer' || isAdmin || isModerator)" :to="'/listing/create'">
-                    <button class="btn primary-btn border-0 fw-bold text-warning" type="button">
+                <router-link v-if="!onCreate && (accType == 'producer' || isAdmin || isModerator)" :to="'/listing/create'" >
+                    <button class="btn primary-btn border-0 fw-bold text-warning" type="button" style="color:#D58D2D !important;">
                         Add A New Drink
                     </button>
                 </router-link>
