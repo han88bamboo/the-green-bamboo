@@ -593,7 +593,7 @@
                                             <!-- bookmark button -->
                                             <div class="col-1 text-start p-0">
                                                 <BookmarkIcon 
-                                                    v-if="user" 
+                                                    v-if="user && Object.keys(user).length > 0" 
                                                     :user="user" 
                                                     :listing="listing" 
                                                     :overlay="false"
