@@ -941,3 +941,16 @@ button.primary-btn:hover{
         display: none;
     }
 }
+
+@media (max-width: 991px){
+.dropdown-toggle.mobile-view-remove-toggle::after {
+    content: none !important;
+}
+}
+
+@media (max-width: 991px){
+    .mobile-col-4 {
+        flex: 0 0 auto;
+        width: 33.333333333333%;
+    }
+}

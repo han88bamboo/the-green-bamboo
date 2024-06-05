@@ -22,7 +22,7 @@
                     <input class="search-bar form-control rounded fst-italic" type="text" placeholder="What are you drinking today?" style="height: 50px;" v-model="searchInput" v-on:keyup.enter="goSearch">
                 </div>
 
-                <div class="col-3 dropdown">
+                <div class="col-3 dropdown mobile-col-4">
 
                     <!-- profile icon -->
                     <button v-if="onProfile" type="button" class="btn p-0 me-1" @click="forceLoad(profileURL)">
