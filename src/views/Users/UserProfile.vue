@@ -420,24 +420,24 @@
             <!-- reviews and lists -->
             <div class="col-12 col-md-8">
 
-                <!-- <ul class="nav nav-pills">
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" data-bs-toggle="pill" href="#reviews">Reviews</a>
-                    </li>
-                    <li class="nav-item ms-2">
-                        <a v-if="ownProfile" class="nav-link" data-bs-toggle="pill" href="#lists">My Drink Lists</a>
-                        <a v-else class="nav-link" data-bs-toggle="pill" href="#lists">Drink Lists</a>
-                    </li>
-                </ul> --> <!-- tzh made changes-->
-                <div class="nav">
-                    <button id="reviewsButton" class="btn active active-toggle-button mx-1" aria-current="page" data-bs-toggle="pill" data-bs-target="#reviews"  >Reviews</button>
-                    <button id="ownListsButton" v-if="ownProfile" class="btn inactive-toggle-button mx-1" data-bs-toggle="pill" data-bs-target="#lists"  >My Drink Lists</button>
-                    <button id="listsButton" v-else class="btn inactive-toggle-button mx-1" data-bs-toggle="pill" data-bs-target="#lists"  >Drink Lists</button>
-                </div>
+                <!-- reviews button -->
+                <button 
+                    class="btn mx-1"
+                    :class="{ 'active-toggle-button': activeTab === 'reviews', 'inactive-toggle-button': activeTab !== 'reviews' }"
+                    @click="switchTab('reviews')"> 
+                    Reviews 
+                </button>
+                <button 
+                    class="btn mx-1"
+                    :class="{ 'active-toggle-button': activeTab !== 'reviews', 'inactive-toggle-button': activeTab === 'reviews' }"
+                    @click="switchTab('lists')"> 
+                    <span v-if="ownProfile">My Drink List</span>
+                    <span v-if="!ownProfile">Drink List</span> 
+                </button>
 
                 <div class="tab-content container mt-2">
                     <!-- reviews tab -->
-                    <div class="tab-pane fade show active" id="reviews">
+                    <div v-if="activeTab == 'reviews'" id="reviews">
                         <ListingRowDisplayUserProfile 
                             :listingArr="favouriteListings" 
                             displayName="Favourite Listings" 
@@ -490,237 +490,237 @@
                     </div>
 
                     <!-- lists tab -->
-                    <div class="tab-pane fade" id="lists">
-                        <!-- drink lists -->
-                        <div v-if="showCurrentContent" class="mt-3">
+                    <div v-if="activeTab == 'lists'" id="lists">
+                        <button v-if="ownProfile" type="button" class="btn primary-btn-outline-less-round mb-3" data-bs-toggle="modal" data-bs-target="#createNewListModal" >Create New List</button>
 
-                            <button v-if="ownProfile" type="button" class="btn primary-btn-outline-less-round mb-3" data-bs-toggle="modal" data-bs-target="#createNewListModal" >Create New List</button>
+                        <!-- create new list modal -->
+                        <div class="modal fade" id="createNewListModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="exampleModalLabel">Create New List</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label for="basic-url" class="form-label">List Name</label>
+                                        <div class="input-group mb-3">
+                                            <input v-model="newListName" type="text" class="form-control" placeholder="List Name" aria-label="Username" aria-describedby="basic-addon1">
+                                        </div>
+                                        <div v-if="newListNameError" class="text-danger text-sm">
+                                            *{{ newListNameError }}
+                                        </div>
+                                    </div>
 
-                            <!-- create new list modal -->
-                            <div class="modal fade" id="createNewListModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                    <div class="mb-3">
+                                        <label for="basic-url" class="form-label">List Description</label>
+                                        <div class="input-group mb-3">
+                                            <textarea v-model="newListDesc" type="text" class="form-control" placeholder="List Description (Optional)" aria-label="Username" aria-describedby="basic-addon1" rows="5"></textarea>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary" @click="addNewList">Save changes</button>
+                                </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- display all lists -->
+                        <div v-for="(bookmarkList, name, index) in displayUserBookmarks" :key="name" style="display: flex" class="mb-5">
+                            <img :src=" 'data:image/png;base64,' + (photo || defaultDrinkImage)" alt="" class="bottle-img me-3">
+                            <div style="height: 150px; display: flex; flex-direction: column;" >
+                                <h3 class="mt-1" @click="viewList(name)" style="cursor: pointer"> {{ name }} </h3>
+                                <span v-if="bookmarkList.listItems.length > 1"> {{ bookmarkList.listItems.length }} items in list </span>
+                                <span v-else> {{ bookmarkList.listItems.length }} item in list </span>
+                                <div style="max-height: 48px; overflow-y: auto; font-style: italic;">
+                                    {{ bookmarkList.listDesc }}
+                                </div>
+                                <div style="display: flex; margin-top: auto;" class="mb-1">
+                                    <a class="me-4" @click="viewList(name)" href="#" style="color: #535C72;">View List</a>
+                                    <a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')" class="me-4" href="#" style="color: #535C72;" data-bs-toggle="modal" :data-bs-target="`#editListModal${index}`" @click="resetEditList(name, bookmarkList.listDesc)">Edit List</a>
+                                    <a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')" href="#" style="color: #535C72;" data-bs-toggle="modal" :data-bs-target="`#deleteListModal${index}`">Delete List</a>
+                                </div>
+                            </div>
+
+                            <!-- edit list modal start -->
+                            <div class="modal fade" :id="`editListModal${index}`" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="exampleModalLabel">Edit List</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label for="basic-url" class="form-label">List Name</label>
+                                        <div class="input-group mb-3">
+                                            <input v-model="editListName" type="text" class="form-control" :placeholder="name" aria-label="Username" aria-describedby="basic-addon1">
+                                        </div>
+                                        <div v-if="editListNameError" class="text-danger text-sm">
+                                            *{{ editListNameError }}
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="basic-url" class="form-label">List Description</label>
+                                        <div class="input-group mb-3">
+                                            <textarea v-model="editListDesc" type="text" class="form-control" :placeholder="bookmarkList.listDesc" aria-label="Username" aria-describedby="basic-addon1" rows="5"></textarea>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary" @click="editList(name)">Save changes</button>
+                                </div>
+                                </div>
+                            </div>
+                            </div>
+                            <!-- modal end -->
+
+                            <!-- delete list modal start -->
+                            <div class="modal fade" :id="`deleteListModal${index}`" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                                 <div class="modal-dialog modal-dialog-centered">
                                     <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h1 class="modal-title fs-5" id="exampleModalLabel">Create New List</h1>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <div class="mb-3">
-                                            <label for="basic-url" class="form-label">List Name</label>
-                                            <div class="input-group mb-3">
-                                                <input v-model="newListName" type="text" class="form-control" placeholder="List Name" aria-label="Username" aria-describedby="basic-addon1">
-                                            </div>
-                                            <div v-if="newListNameError" class="text-danger text-sm">
-                                                *{{ newListNameError }}
-                                            </div>
+                                        <div class="text-end mt-2 me-2">
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                         </div>
 
-                                        <div class="mb-3">
-                                            <label for="basic-url" class="form-label">List Description</label>
-                                            <div class="input-group mb-3">
-                                                <textarea v-model="newListDesc" type="text" class="form-control" placeholder="List Description (Optional)" aria-label="Username" aria-describedby="basic-addon1" rows="5"></textarea>
-                                            </div>
+                                        <div class="text-center">
+                                            <img src="../../../Images/Others/cancel.png" alt="" class="rounded-circle border border-dark text-center" style="width: 100px; height: 100px;">
+                                            <h3>Are you sure?</h3>
+                                            <br>
+                                            <p>Do you really want to delete <b><i>{{ name }}</i></b>? </p>
                                         </div>
-
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                        <button type="button" class="btn btn-primary" @click="addNewList">Save changes</button>
-                                    </div>
+                                        <div style="display: inline" class="text-center mb-4">
+                                            <button type="button" class="btn btn-secondary me-3" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="button" class="btn btn-danger" data-bs-dismiss="modal" @click="deleteList(name)">Delete</button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+                            <!-- modal end -->
+                        </div>
+                    </div>
 
-                            <div v-for="(bookmarkList, name, index) in displayUserBookmarks" :key="name" style="display: flex" class="mb-5">
-                                <img :src=" 'data:image/png;base64,' + (photo || defaultDrinkImage)" alt="" class="bottle-img me-3">
-                                <div style="height: 150px; display: flex; flex-direction: column;" >
-                                    <h3 class="mt-1" @click="toggleView(name)" style="cursor: pointer"> {{ name }} </h3>
-                                    <span v-if="bookmarkList.listItems.length > 1"> {{ bookmarkList.listItems.length }} items in list </span>
-                                    <span v-else> {{ bookmarkList.listItems.length }} item in list </span>
-                                    <div style="max-height: 48px; overflow-y: auto; font-style: italic;">
-                                        {{ bookmarkList.listDesc }}
-                                    </div>
-                                    <div style="display: flex; margin-top: auto;" class="mb-1">
-                                        <a class="me-4" @click="toggleView(name)" href="#" style="color: #535C72;">View List</a>
-                                        <a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')" class="me-4" href="#" style="color: #535C72;" data-bs-toggle="modal" :data-bs-target="`#editListModal${index}`" @click="resetEditList(name, bookmarkList.listDesc)">Edit List</a>
-                                        <a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')" href="#" style="color: #535C72;" data-bs-toggle="modal" :data-bs-target="`#deleteListModal${index}`">Delete List</a>
-                                    </div>
-                                </div>
+                    <!-- individual list tab -->
+                    <div v-if="activeTab == 'list' && displayUser.drinkLists" id="list">
 
-                                <!-- edit list modal start -->
-                                <div class="modal fade" :id="`editListModal${index}`" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                    <div class="modal-dialog modal-dialog-centered">
-                                    <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h1 class="modal-title fs-5" id="exampleModalLabel">Edit List</h1>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <div class="mb-3">
-                                            <label for="basic-url" class="form-label">List Name</label>
-                                            <div class="input-group mb-3">
-                                                <input v-model="editListName" type="text" class="form-control" :placeholder="name" aria-label="Username" aria-describedby="basic-addon1">
-                                            </div>
-                                            <div v-if="editListNameError" class="text-danger text-sm">
-                                                *{{ editListNameError }}
-                                            </div>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label for="basic-url" class="form-label">List Description</label>
-                                            <div class="input-group mb-3">
-                                                <textarea v-model="editListDesc" type="text" class="form-control" :placeholder="bookmarkList.listDesc" aria-label="Username" aria-describedby="basic-addon1" rows="5"></textarea>
-                                            </div>
-                                        </div>
-
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                        <button type="button" class="btn btn-primary" @click="editList(name)">Save changes</button>
-                                    </div>
-                                    </div>
-                                </div>
-                                </div>
-                                <!-- modal end -->
-
-                                <!-- delete list modal start -->
-                                <div class="modal fade" :id="`deleteListModal${index}`" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                    <div class="modal-dialog modal-dialog-centered">
-                                        <div class="modal-content">
-                                            <div class="text-end mt-2 me-2">
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-
-                                            <div class="text-center">
-                                                <img src="../../../Images/Others/cancel.png" alt="" class="rounded-circle border border-dark text-center" style="width: 100px; height: 100px;">
-                                                <h3>Are you sure?</h3>
-                                                <br>
-                                                <p>Do you really want to delete <b><i>{{ name }}</i></b>? </p>
-                                            </div>
-                                            <div style="display: inline" class="text-center mb-4">
-                                                <button type="button" class="btn btn-secondary me-3" data-bs-dismiss="modal">Cancel</button>
-                                                <button type="button" class="btn btn-danger" data-bs-dismiss="modal" @click="deleteList(name)">Delete</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- modal end -->
+                        <!-- list name, back to lists & add drink to list button -->
+                        <div class="row mb-4">
+                            <div class="col-12 col-md-6">
+                                <h3>{{currentList}}</h3>
                             </div>
+                            <div class="col-12 col-md-6 text-end">
+                                <button @click="viewList('lists')" type="button" class="btn primary-btn-outline-less-round">Back to Lists</button>
+                                <button v-if="ownProfile" type="button" class="btn primary-btn-outline-less-round ms-3" data-bs-toggle="modal" data-bs-target="#exampleModal">Add Drink to List</button>
+                            </div>
+                        </div>
 
-                            
+                        <!-- add drink modal -->
+                        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                                <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5>Add Drink to List: {{currentList}}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body" style="height: 400px;">
+                                    <!-- search -->
+                                    <div>
+                                        <!-- search bar  -->
+                                        <div class="input-group mb-3">
+                                            <input type="text" class="form-control" placeholder="Search for drink" aria-label="Recipient's username" aria-describedby="button-addon2" v-model="drinkSearch" @keyup="searchResult">
+                                        </div>
+                                        <!-- search results -->
+                                        <div class="overflow-auto" :style="{ height: drinksToAdd.length > 0 ? '200px' : '300px' }">
+                                            <div class="form-check" v-for="(drinkName, index) in drinkSearchResults" :key="index">
+                                                <input class="form-check-input" type="checkbox" :value="drinkName" :id="'drinkCheckbox' + index" v-model="drinksToAdd">
+                                                <label class="form-check-label" :for="'drinkCheckbox' + index">
+                                                    {{ drinkName }}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- selected results -->
+                                    <div v-if="drinksToAdd.length > 0" class="mt-2">
+                                        <hr>
+                                        <div class="overflow-auto" style="height: 75px">
+                                            <b>Selected Drinks: </b>
+                                            {{ drinksToAdd.join(', ') }}
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-primary" @click="addDrinkToList(currentList)">Add to List</button>
+                                </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- list details -->
-                        <div v-else>
-                            <div class="row mb-4">
-                                <div class="col-12 col-md-6">
-                                    <h3>{{currentList}}</h3>
-                                </div>
-                                <div class="col-12 col-md-6 text-end">
-                                    <button @click="toggleView" type="button" class="btn primary-btn-outline-less-round">Back to Lists</button>
-                                    <button v-if="ownProfile" type="button" class="btn primary-btn-outline-less-round ms-3" data-bs-toggle="modal" data-bs-target="#exampleModal">Add Drink to List</button>
-                                </div>
-                            </div>
-                            <!-- add drink modal -->
-                            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-                                    <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5>Add Drink to List: {{currentList}}</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body" style="height: 400px;">
-                                        <!-- search -->
-                                        <div>
-                                            <!-- search bar  -->
-                                            <div class="input-group mb-3">
-                                                <input type="text" class="form-control" placeholder="Search for drink" aria-label="Recipient's username" aria-describedby="button-addon2" v-model="drinkSearch" @keyup="searchResult">
-                                            </div>
-                                            <!-- search results -->
-                                            <div class="overflow-auto" :style="{ height: drinksToAdd.length > 0 ? '200px' : '300px' }">
-                                                <div class="form-check" v-for="(drinkName, index) in drinkSearchResults" :key="index">
-                                                    <input class="form-check-input" type="checkbox" :value="drinkName" :id="'drinkCheckbox' + index" v-model="drinksToAdd">
-                                                    <label class="form-check-label" :for="'drinkCheckbox' + index">
-                                                        {{ drinkName }}
-                                                    </label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <!-- selected results -->
-                                        <div v-if="drinksToAdd.length > 0" class="mt-2">
-                                            <hr>
-                                            <div class="overflow-auto" style="height: 75px">
-                                                <b>Selected Drinks: </b>
-                                                {{ drinksToAdd.join(', ') }}
-                                            </div>
-                                        </div>
-
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-primary" @click="addDrinkToList(currentList)">Add to List</button>
-                                    </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- display drink information -->
-                            <div class="row mb-3" v-for="(listingID, index) in displayUser.drinkLists[currentList].listItems" :key="index">
-                                <div class="col-10" style="display: flex">
-                                    <img :src=" 'data:image/png;base64,' + ( getListingFromID(listingID[1].$oid).photo || defaultDrinkImage )" alt="" class="bottle-img me-3">
-                                    <div style="min-height: 150px; display: flex; flex-direction: column;">
-                                        <a :href="'/listing/view/' + listingID[1].$oid" style="text-decoration: none; color: inherit;">
-                                            <h4>{{ getListingFromID(listingID[1].$oid).listingName }}</h4>
+                        <div class="row mb-3" v-for="(listingID, index) in displayUser.drinkLists[currentList].listItems" :key="index">
+                            <div class="col-10" style="display: flex">
+                                <img :src=" 'data:image/png;base64,' + ( getListingFromID(listingID[1].$oid).photo || defaultDrinkImage )" alt="" class="bottle-img me-3">
+                                <div style="min-height: 150px; display: flex; flex-direction: column;">
+                                    <a :href="'/listing/view/' + listingID[1].$oid" style="text-decoration: none; color: inherit;">
+                                        <h4>{{ getListingFromID(listingID[1].$oid).listingName }}</h4>
+                                    </a>
+                                    <p style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;"> {{ getListingFromID(listingID[1].$oid).officialDesc }} </p>
+                                    <div v-if="ownProfile" style="display: flex; margin-top: auto" class="mb-0">
+                                        <a href="#" style="text-decoration: none; color: #535C72;" data-bs-toggle="modal" :data-bs-target="`#deleteFromListModal${index}`">
+                                            <!-- cross icon -->
+                                            <svg class=mb-1 xmlns="http://www.w3.org/2000/svg" height="16" width="12" viewBox="0 0 384 512">
+                                                <!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc. -->
+                                                <path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/>
+                                            </svg>
+                                            Delete from list
                                         </a>
-                                        <p style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;"> {{ getListingFromID(listingID[1].$oid).officialDesc }} </p>
-                                        <div v-if="ownProfile" style="display: flex; margin-top: auto" class="mb-0">
-                                            <a href="#" style="text-decoration: none; color: #535C72;" data-bs-toggle="modal" :data-bs-target="`#deleteFromListModal${index}`">
-                                                <!-- cross icon -->
-                                                <svg class=mb-1 xmlns="http://www.w3.org/2000/svg" height="16" width="12" viewBox="0 0 384 512">
-                                                    <!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc. -->
-                                                    <path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/>
-                                                </svg>
-                                                Delete from list
-                                            </a>
-                                        </div>
-
                                     </div>
-                                </div>
-                                <div class="col-2 text-end">
-                                    <h2>
-                                        {{ getAverageReview(listingID[1]) }}
-                                        <svg class="mb-2" xmlns="http://www.w3.org/2000/svg" height="18" width="20.25" viewBox="0 0 576 512">
-                                            <!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc. -->
-                                            <path d="M287.9 0c9.2 0 17.6 5.2 21.6 13.5l68.6 141.3 153.2 22.6c9 1.3 16.5 7.6 19.3 16.3s.5 18.1-5.9 24.5L433.6 328.4l26.2 155.6c1.5 9-2.2 18.1-9.7 23.5s-17.3 6-25.3 1.7l-137-73.2L151 509.1c-8.1 4.3-17.9 3.7-25.3-1.7s-11.2-14.5-9.7-23.5l26.2-155.6L31.1 218.2c-6.5-6.4-8.7-15.9-5.9-24.5s10.3-14.9 19.3-16.3l153.2-22.6L266.3 13.5C270.4 5.2 278.7 0 287.9 0zm0 79L235.4 187.2c-3.5 7.1-10.2 12.1-18.1 13.3L99 217.9 184.9 303c5.5 5.5 8.1 13.3 6.8 21L171.4 443.7l105.2-56.2c7.1-3.8 15.6-3.8 22.6 0l105.2 56.2L384.2 324.1c-1.3-7.7 1.2-15.5 6.8-21l85.9-85.1L358.6 200.5c-7.8-1.2-14.6-6.1-18.1-13.3L287.9 79z"/>
-                                        </svg>
-                                    </h2>
-                                </div>
 
-                                <!-- delete from list modal start -->
-                                <div class="modal fade" :id="`deleteFromListModal${index}`" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                    <div class="modal-dialog modal-dialog-centered">
-                                        <div class="modal-content">
-                                            <div class="text-end mt-2 me-2">
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-
-                                            <div class="text-center mx-2">
-                                                <img src="../../../Images/Others/cancel.png" alt="" class="rounded-circle border border-dark text-center" style="width: 100px; height: 100px;">
-                                                <h3>Are you sure?</h3>
-                                                <br>
-                                                <p>Do you really want to delete <b><i>{{ getListingFromID(listingID[1].$oid).listingName }}</i></b> from <b><i>{{ currentList }}</i></b>? </p>
-                                            </div>
-                                            <div style="display: inline" class="text-center mb-4">
-                                                <button type="button" class="btn btn-secondary me-3" data-bs-dismiss="modal">Cancel</button>
-                                                <button type="button" class="btn btn-danger" data-bs-dismiss="modal" @click="deleteFromList(currentList, listingID)">Delete</button>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
-                                <!-- modal end -->
                             </div>
+                            <div class="col-2 text-end">
+                                <h2>
+                                    {{ getAverageReview(listingID[1]) }}
+                                    <svg class="mb-2" xmlns="http://www.w3.org/2000/svg" height="18" width="20.25" viewBox="0 0 576 512">
+                                        <!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc. -->
+                                        <path d="M287.9 0c9.2 0 17.6 5.2 21.6 13.5l68.6 141.3 153.2 22.6c9 1.3 16.5 7.6 19.3 16.3s.5 18.1-5.9 24.5L433.6 328.4l26.2 155.6c1.5 9-2.2 18.1-9.7 23.5s-17.3 6-25.3 1.7l-137-73.2L151 509.1c-8.1 4.3-17.9 3.7-25.3-1.7s-11.2-14.5-9.7-23.5l26.2-155.6L31.1 218.2c-6.5-6.4-8.7-15.9-5.9-24.5s10.3-14.9 19.3-16.3l153.2-22.6L266.3 13.5C270.4 5.2 278.7 0 287.9 0zm0 79L235.4 187.2c-3.5 7.1-10.2 12.1-18.1 13.3L99 217.9 184.9 303c5.5 5.5 8.1 13.3 6.8 21L171.4 443.7l105.2-56.2c7.1-3.8 15.6-3.8 22.6 0l105.2 56.2L384.2 324.1c-1.3-7.7 1.2-15.5 6.8-21l85.9-85.1L358.6 200.5c-7.8-1.2-14.6-6.1-18.1-13.3L287.9 79z"/>
+                                    </svg>
+                                </h2>
+                            </div>
+
+                            <!-- delete from list modal start -->
+                            <div class="modal fade" :id="`deleteFromListModal${index}`" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="text-end mt-2 me-2">
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+
+                                        <div class="text-center mx-2">
+                                            <img src="../../../Images/Others/cancel.png" alt="" class="rounded-circle border border-dark text-center" style="width: 100px; height: 100px;">
+                                            <h3>Are you sure?</h3>
+                                            <br>
+                                            <p>Do you really want to delete <b><i>{{ getListingFromID(listingID[1].$oid).listingName }}</i></b> from <b><i>{{ currentList }}</i></b>? </p>
+                                        </div>
+                                        <div style="display: inline" class="text-center mb-4">
+                                            <button type="button" class="btn btn-secondary me-3" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="button" class="btn btn-danger" data-bs-dismiss="modal" @click="deleteFromList(currentList, listingID)">Delete</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- modal end -->
                         </div>
+                    
                     </div>
                 </div>
+
             </div>
         </div>
         <BookmarkModal 
@@ -791,6 +791,7 @@ export default {
 
             // data for tab
             showCurrentContent: true, 
+            activeTab: 'reviews',
 
             // image upload
             selectedImage: null,
@@ -916,6 +917,20 @@ export default {
             }
             else if (!this.displayUserID) {
                 this.displayUserID = this.userID;
+            }
+        }
+        catch (error) {
+            console.error(error);
+        }
+
+        // get list name from URL
+        try {
+            if (this.$route.params.listName) {
+                this.currentList = this.$route.params.listName;
+                this.activeTab = 'list';
+            } else {
+                this.currentList = "";
+            
             }
         }
         catch (error) {
@@ -1563,31 +1578,21 @@ export default {
 
         // ------------------- UI -------------------
         // review and drink list toggle
-        toggleView(name) {
-            this.showCurrentContent = !this.showCurrentContent; // Toggle the value
-            this.currentList = name;
+        viewList(name) {
+            if (name == "lists") {
+                this.activeTab = 'lists';
+                this.$router.push('/profile/user/' + this.displayUserID);
+            } else {
+                this.activeTab = 'list';
+                this.currentList = name;
+                this.$router.push('/profile/user/' + this.displayUserID + '/' + name);
+            }
         },
-        // css for review and drink list tab - tzh made changes 
-        switchTab(currentTab) {
-            if (currentTab === "lists") {
-                document.getElementById("reviewsButton").className = "btn inactive-toggle-button mx-1";
-                if (this.ownProfile) {
-                    document.getElementById("ownListsButton").className = "btn active-toggle-button mx-1";
-                }
-                else {
-                    document.getElementById("listsButton").className = "btn active-toggle-button mx-1";
-                }
-            }
-            else {
-                document.getElementById("reviewsButton").className = "btn active-toggle-button mx-1";
-                if (this.ownProfile) {
-                    document.getElementById("ownListsButton").className = "btn inactive-toggle-button mx-1";
-                }
-                else {
-                    document.getElementById("listsButton").className = "btn inactive-toggle-button mx-1";
-                }
-            }
-        }, 
+        switchTab(tab) {
+            this.activeTab = tab;
+            this.$router.push('/profile/user/' + this.displayUserID);
+        },
+        
         // for bookmark component
         handleIconClick(data) {
             this.bookmarkListingID = data

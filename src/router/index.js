@@ -37,7 +37,7 @@ const routes = [
 
   // ----------------- PROFILE PAGES -----------------
   {
-    path: '/profile/user/:userID?',
+    path: '/profile/user/:userID?/:listName?',
     name: 'profileuser',
 
     // OLD LINK FOR REFERENECE
