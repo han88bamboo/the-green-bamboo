@@ -48,15 +48,15 @@
                 <!-- header -->
                 <div class="row container">
                     <!-- image -->
-                    <div class="col-12 col-lg-4 col-xl-3 image-container text-start">
-                        <img :src=" 'data:image/jpeg;base64,' + ( specified_listing['photo'] || defaultProfilePhoto )" style="max-width: 230px; height: 230px;">
+                    <div class="col-12 col-lg-4 col-xl-3 image-container text-start mobile-col-5">
+                        <img :src=" 'data:image/jpeg;base64,' + ( specified_listing['photo'] || defaultProfilePhoto )" class="producer-bottle-listing-page-image" >
                     </div>
                     <!-- details -->
-                    <div class="col-12 col-lg-8 col-xl-9 text-start">
-                        <div class="container text-start">
+                    <div class="col-12 col-lg-8 col-xl-9 text-start mobile-col-7 mobile-ps-0 mobile-pe-0">
+                        <div class="container text-start mobile-ps-0 mobile-pe-0">
                             <!-- drink category -->
                             <div class="row">
-                                <div class="col-9">
+                                <div class="col-9 mobile-view-hide">
                                     <h5 class="text-body-secondary fst-italic"> {{ specified_listing["drinkType"] }} </h5>
                                 </div>
                                 <div v-if="correctProducer" class="col-3">
@@ -106,16 +106,16 @@
                                     <div class="row pt-1">
                                 <!-- producer -->
                                 <div class="col-12 col-lg-6">
-                                    <h6 class="text-body-secondary">
+                                    <h6 class="text-body-secondary producer-page">
                                         <router-link :to="{ path: '/profile/producer/' + this.producer_id }" class="default-text-no-background">
-                                            <p> {{ getProducerName(specified_listing["producerID"]) }} </p>
+                                            <p class="mobile-mb-0"> {{ getProducerName(specified_listing["producerID"]) }} </p>
                                         </router-link>
                                     </h6>
                                 </div>
                                 <!-- bottler -->
                                 <div class="col-12 col-lg-6">
-                                    <h6 v-if="specified_listing['bottler'] != 'OB'" class="text-body-secondary"> Bottler: <u> {{ specified_listing["bottler"] }} </u>  </h6>
-                                        <h6 v-else class="text-body-secondary"> Bottler:
+                                    <h6 v-if="specified_listing['bottler'] != 'OB'" class="text-body-secondary producer-page"> Bottler: <u> {{ specified_listing["bottler"] }} </u>  </h6>
+                                        <h6 v-else class="text-body-secondary producer-page"> Bottler:
                                             <router-link :to="{ path: '/profile/producer/' + this.producer_id }" class="default-text-no-background"> 
                                                 <u style="color:black;"> {{ getProducerName(specified_listing["producerID"]) }} </u>  
                                             </router-link>
@@ -124,7 +124,7 @@
                             </div>
                                 </div>
                                 <!-- tzh edited classes suggest edit & report duplicate padding-top-for-suggesteditslink-large-screen-->
-                                <div class="col-12 col-md-4 col-lg-4 text-end padding-left-for-suggesteditslink-large-screen padding-right-for-suggesteditslink-large-screen" style="position: relative;">
+                                <div class="col-12 col-md-4 col-lg-4 text-end padding-left-for-suggesteditslink-large-screen padding-right-for-suggesteditslink-large-screen mobile-view-hide" style="position: relative;">
                                     <!-- [if] correct producer-->
                                     <!-- TODO: check if moderator type is for the listing -->
                                     <div v-if="correctProducer || correctModerator" class="edit-listing-report-duplicate-btn" >
@@ -176,19 +176,38 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- more information (category, age, country of origin, abv, list buttons & bookmark)-->
-                <div class="row pt-4 container">
+                <div class="row pt-4 container mobile-view-show">
+                <p class="text-start mb-1 col-10" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis; font-size:15px; font-weight:bold;">
+                                                        <span v-if="specified_listing.drinkType === 'Whiskey / Whisky'">
+                                                            <span style="color: #2c3e50;" class="text-decoration-none">Whisky | </span>
+                                                        </span>
+                                                        <span v-else>{{ specified_listing["drinkType"] }} | </span>
+                                                        <span style="color: #2c3e50;" class="text-decoration-none">{{ specified_listing["typeCategory"] }} | </span>
+                                                        <span style="color: #2c3e50;" class="text-decoration-none">{{ specified_listing["abv"] }} | </span>
+                                                        <span style="color: #2c3e50;" class="text-decoration-none">{{ specified_listing["originCountry"] }}</span>
+                </p>
+                <div class="col-2 d-flex justify-content-end make-bookmark-bigger" >
+                        <BookmarkIcon 
+                            v-if="user" 
+                            :user="user" 
+                            :listing="specified_listing" 
+                            :overlay="false"
+                            size="30"
+                            @icon-clicked="handleIconClick" />
+                </div>
+                </div>                                    
+                <!-- more information (category, age, country of origin, abv, list buttons & bookmark) -->
+                <div class="row pt-4 container mobile-view-hide">
                     <div class="col-7 col-lg-7">
                         <div class="row">
                             <!-- category -->
-                            <div class="col-6 col-lg-3 text-start">
+                            <div class="col-6 col-lg-3 text-start mobile-view-hide">
                                 <h5 class="text-body-secondary" style="margin-bottom:0;"> <b> {{ specified_listing["typeCategory"] }} </b> </h5>
                                 <p class="mb-2"> <u> Category </u> </p>
                                 
                             </div>
                             <!-- age --> 
-                            <div class="col-6 col-lg-3 text-start">
+                            <div class="col-6 col-lg-3 text-start mobile-view-hide">
                                 <!-- for wine listings -->
                                 <div v-if="specified_listing['drinkType'] == 'Wine'">
                                     <h5 class="text-body-secondary" style="margin-bottom:0;"> <b>  {{ specified_listing["age"] }} </b> </h5>
@@ -203,13 +222,13 @@
                                 </div>
                             </div>
                             <!-- country of origin -->
-                            <div class="col-6 col-lg-4 text-start">
+                            <div class="col-6 col-lg-4 text-start mobile-view-hide">
                                 <h5 class="text-body-secondary" style="margin-bottom:0;"> <b> {{ specified_listing["originCountry"] }} </b> </h5>
                                 <p class="mb-2"> <u> Country of Origin </u> </p>
                                 
                             </div>
                             <!-- abv -->
-                            <div class="col-6 col-lg-2 text-start">
+                            <div class="col-6 col-lg-2 text-start mobile-view-hide">
                                 <h5 class="text-body-secondary" style="margin-bottom:0;"> <b> {{ specified_listing["abv"] }} </b> </h5>
                                 <p class="mb-1"> <u> ABV </u> </p>
                                 
@@ -240,6 +259,7 @@
 
                 <!-- more information (average rating, would recommend, would drink again) -->
                 <div class="row pt-3 container">
+                    <!-- xyz -->
                     <div class="col-12 col-lg-7">
                         <div class="row">
                             <!-- average rating -->

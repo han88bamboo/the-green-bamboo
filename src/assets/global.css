@@ -807,7 +807,7 @@ button.primary-btn:hover{
   }
 @media (min-width: 992px) {
     .padding-right-for-suggesteditslink-large-screen {
-        padding-right: 56px;
+        padding-right: 23px;
     }
 }
 @media (min-width: 992px) {
@@ -827,11 +827,15 @@ button.primary-btn:hover{
     }
 }
 @media (min-width: 992px) {
-    .no-right-padding-large-screen{
+    .no-right-padding-large-screen-bottle-listing{
         padding-right: 0px !important;
     }
 }
-
+@media (min-width: 992px) {
+    .right-padding-large-screen-bottle-listing{
+        padding-right: 60px !important;
+    }
+}
 .scrollable-user-bottle-listings-description-box {
     /* height: 120px; */
     min-height: 10px;
@@ -902,9 +906,22 @@ button.primary-btn:hover{
     object-fit: cover; /* Ensures the image covers the entire area without stretching */
 }
 
+.homepage-bottle-listing-description {
+    font-size: 1.25rem;
+    font-weight: 500;
+    line-height: 1.2;
+    margin-top: 0;
+    margin-bottom:0.5rem;
+}
+
+
+
 /* tzh added below changes for mobile */
-
-
+@media (max-width: 991px){
+    .homepage-bottle-listing-description{
+        font-size: 0.8rem;
+    }
+}
 .primary-light-dropdown-homepage {
     color: whitesmoke;
     background-color: #747D92;
@@ -941,9 +958,16 @@ button.primary-btn:hover{
 }
 @media (max-width: 991px){
     .mobile-view-hide {
-        display: none;
-}
+        display: none !important;
+    }
 }  
+
+@media (min-width: 992px){
+    .mobile-view-show {
+        display: none !important;
+    }
+}
+
 @media (max-width: 991px){
     .mobile-view-no-padding {
         padding-left: 0px !important;
@@ -958,30 +982,77 @@ button.primary-btn:hover{
 }
 
 @media (max-width: 991px){
-.mobile-col-1 {
-    flex: 0 0 auto;
-    width: 16.666666666666%;
-}
-}
-
-@media (min-width: 992px){
-    .mobile-view-show {
-        display: none;
+    .mobile-col-1 {
+        flex: 0 0 auto;
+        width: 8.333333333333333%;
+        display:block;
+    }
+    .mobile-col-2 {
+        flex: 0 0 auto;
+        width: 16.666666666666%;
+        display:block;
+    }
+    .mobile-col-3 {
+        flex: 0 0 auto;
+        width: 25%;
+        display:block;
+    }
+    .mobile-col-4 {
+        flex: 0 0 auto;
+        width: 33.333333333333%;
+        display:block;
+    }
+    .mobile-col-5 {
+        flex: 0 0 auto;
+        width: 41.6666666666% !important;
+        display:block;
+    }
+    .mobile-col-6 {
+        flex: 0 0 auto;
+        width: 50%;
+        display:block;
+    }
+    .mobile-col-7 {
+        flex: 0 0 auto;
+        width: 58.33333333333%;
+        display:block;
+    }
+    .mobile-col-8 {
+        flex: 0 0 auto;
+        width: 66.666666666666%;
+        display:block;
+    }
+    .mobile-col-9 {
+        flex: 0 0 auto;
+        width: 75%;
+        display:block;
+    }
+    .mobile-col-10 {
+        flex: 0 0 auto;
+        width: 83.333333333333%;
+        display:block;
+    }
+    .mobile-col-11 {
+        flex: 0 0 auto;
+        width: 91.66666666666%;
+        display:block;
+    }
+    .mobile-col-12 {
+        flex: 0 0 auto;
+        width: 100%;
+        display:block;
     }
 }
 
+
+    
 @media (max-width: 991px){
 .dropdown-toggle.mobile-view-remove-toggle::after {
     content: none !important;
 }
 }
 
-@media (max-width: 991px){
-    .mobile-col-4 {
-        flex: 0 0 auto;
-        width: 33.333333333333%;
-    }
-}
+
 
 @media (max-width: 991px){
     .primary-btn.mobile-convert-to-toggle-button {
@@ -1042,6 +1113,38 @@ button.primary-btn:hover{
         padding-right:1.5rem;
     }
 }
+@media (max-width: 991px){
+    .mobile-px-0{
+        padding-right: 0rem !important;
+        padding-left: 0rem !important;
+    }
+    .mobile-px-1{
+        padding-right: 0.25rem !important;
+        padding-left: 0.25rem !important;
+    }
+    .mobile-px-2{
+        padding-right: 0.5rem !important;
+        padding-left: 0.5rem !important;
+    }
+    .mobile-px-3{
+        padding-right: 1rem !important;
+        padding-left: 1rem !important;
+    }
+    .mobile-px-4{
+        padding-right: 1.5rem !important;
+        padding-left: 1.5rem !important;
+    }
+    .mobile-px-5{
+        padding-right: 3rem !important;
+        padding-left: 3rem !important;
+    }
+}
+@media (max-width: 991px){
+    .mobile-pt-0 {
+        padding-top:0 !important;
+    }
+}
+
 
 @media (max-width: 991px){
 .funnel-svg-dimensions{
@@ -1053,12 +1156,22 @@ button.primary-btn:hover{
 @media (max-width: 991px){
     .mobile-mb-0{
         margin-bottom:0px !important;
-}
+    }
+    .mobile-mb-1{
+        margin-bottom:0.25rem !important;
+    }
+    .mobile-mb-2{
+        margin-bottom:0.5rem !important;
+    }
+    .mobile-mx-0{
+        margin-left:0 !important;
+        margin-right:0 !important;
+    }
 }
 
 @media (max-width: 991px){
     .mobile-pt-2{
-        padding-top:0.5rem;
+        padding-top:0.5rem !important;
     }
     .mobile-pb-0{
         padding-bottom:0;
@@ -1079,3 +1192,40 @@ button.primary-btn:hover{
     }
 }
 
+
+.producer-bottle-listing-page-image {
+    max-width: 230px; 
+    height: 230px;
+}
+
+@media (max-width: 991px){
+    .producer-bottle-listing-page-image {
+        width:100%; 
+        height:auto;
+        aspect-ratio: 1 / 1; /* Ensures the image remains a square */
+        object-fit: cover; /* Ensures the image covers the entire area without stretching */
+    }
+}    
+
+@media (max-width: 991px){
+    .mobile-fs-4 {
+        font-size: calc(1.275rem + 0.3vw) !important;
+    }
+    .mobile-fs-5 {
+        font-size: 1.25rem !important;
+    }
+    .mobile-fs-6 {
+        font-size: 1rem !important;
+    }
+}
+
+@media (max-width: 991px){
+    .mobile-text-align-left {
+        text-align:left !important;
+    }
+}
+@media (max-width: 991px){
+.text-body-secondary.producer-page{
+    font-size: 14px !important;
+}
+}

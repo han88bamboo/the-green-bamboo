@@ -70,17 +70,20 @@
         </div>
 
     <div class="body-login" v-if="fillForm && dataLoaded">
-        <div class="container rounded">
+        <div class="container rounded mobile-ps-0 mobile-pe-0">
             <div class="row">
                 <div class="col-12 col-sm-10 col-md-8 m-auto">
-                    <div class="py-5">
+                    <div class="py-5 mobile-pt-0">
                         <div>
                             <div class="container rounded pt-3 pb-5" style="background-color:#DDC8A9;">
                                 <div class="d-grid gap-2" style="position: relative;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="ms-5 bi bi-arrow-left-circle" viewBox="0 0 16 16" style="position: absolute; top: 10; left: 0;" v-on:click="goBack">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="ms-5 bi bi-arrow-left-circle mobile-view-hide" viewBox="0 0 16 16" style="position: absolute; top: 10; left: 0;" v-on:click="goBack">
                                         <path fill-rule="evenodd" d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8m15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-4.5-.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5z"/>
                                     </svg>
-                                    <p class="fw-bold fs-1" style="font-style: italic; ">Create an Account</p>
+                                    <p class="fw-bold fs-1 mobile-fs-4 mobile-mb-1" style="font-style: italic; ">Create an Account</p>
+                                    <p class="fw-bold  mx-4 mobile-fs-6 mobile-view-show" style="font-style: italic; ">
+                                        Discover new juice and log your tasting notes!
+                                    </p>
                                 </div>
 
                             <!-- <div class="row pt-5">
@@ -196,7 +199,7 @@
                                                 <span class="input-group-text" id="basic-addon1">Birthday</span>
                                                 <input type="date" class="form-control form-box-outline" v-model="birthday" id="birthday" placeholder="Birthday">
                                             </div>
-                                            <div class="text-center mb-3">
+                                            <div class="text-center mb-3 ">
                                                 <span v-if="missingBirthday" class="text-danger mt-0 mb-3">Please enter your birthday.</span>
                                                 <span v-if="underAge" class="text-danger mt-0 mb-3">You are underage, creation of account is not allowed.</span>
                                                 <span v-if="illegalCountry" class="text-danger mt-0 mb-3">It is illegal to drink in your country, creation of account is not allowed.</span>
@@ -205,7 +208,7 @@
                                     </div>
                                 </div>
 
-                                <div class="text-center mt-3">
+                                <div class="text-center mt-3 col mx-3">
                                     <div class="form-check form-check-inline">
                                         <label class="form-check-label">I verify I am above legal drinking age in my country of location</label>
                                         <input class="form-check-input" type="checkbox" v-model="ageCheck">
@@ -219,18 +222,20 @@
                                 <!-- <button type="button" class="btn primary-btn mx-1 mb-3" @click="goBack">Return</button> -->
                             
                             </form>
-                            <b>
-                                <i>
-                                    <p class="mb-2">
-                                        If you are a drinks brand, bottler or venue owner trying to create an account, 
-                                        <router-link :to="{ path: '/businessSignup' }"  class="default-body-text-no-background">click here</router-link>.
-                                    </p>
-                                    <p>
-                                        If you already have an account and would like to login,
-                                    <router-link :to="{ path: '/login' }"  class="default-body-text-no-background">click here</router-link>.
-                                    </p>
-                                </i>
-                            </b>
+                            <div class="col mx-3">
+                                <b>
+                                    <i>
+                                        <p class="mb-2">
+                                            If you are a drinks brand, bottler or venue owner trying to create an account, 
+                                            <router-link :to="{ path: '/businessSignup' }"  class="default-body-text-no-background">click here</router-link>.
+                                        </p>
+                                        <p>
+                                            If you already have an account and would like to login,
+                                        <router-link :to="{ path: '/login' }"  class="default-body-text-no-background">click here</router-link>.
+                                        </p>
+                                    </i>
+                                </b>
+                            </div>
                             <!-- End of Form -->
                             <!-- ------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
                             </div>

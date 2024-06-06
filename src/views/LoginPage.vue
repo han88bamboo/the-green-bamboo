@@ -7,16 +7,18 @@
         <!-- <div class="container row" style="width: 50%"> -->
         <div class="container">
             <div class="row">
-                <div class="col-12 col-sm-10 col-md-8 m-auto">
-                    <div class="pt-5">
+                <div class="col-12 col-sm-10 col-md-8 m-auto mobile-ps-0 mobile-pe-0">
+                    <div class="pt-5 mobile-pt-0">
                         <form id="login" v-on:submit.prevent="checkLogin" style="background-color:#DDC8A9;" class="rounded">
                             <!-- login header text -->
-                            <p class="fw-bold fs-1 pt-4 mx-3" style="font-style: italic; ">
+                            <p class="fw-bold fs-1 pt-4 mx-3 mobile-fs-4 mobile-mb-1" style="font-style: italic; ">
                                 Join a community of drink lovers.
                             </p>
-
+                            <p class="fw-bold  mx-4 mobile-fs-6 mobile-view-show" style="font-style: italic; ">
+                                Discover new juice and log your tasting notes!
+                            </p>
                             <!-- username -->
-                            <div class="row pt-5">
+                            <div class="row pt-5 mobile-pt-2">
                                 <div class="d-grid gap-2 col-xl-5 col-md-7 col-9 mx-auto">
                                     <div class="form-floating">
                                         <input type="text" class="form-control form-box-outline" id="id" placeholder="Username" v-model="ID">

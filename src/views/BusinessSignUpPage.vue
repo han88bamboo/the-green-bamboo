@@ -55,9 +55,9 @@
     </div>
 
     <div class="body-login" v-if="dataLoaded">
-        <div class="container py-5">
+        <div class="container py-5 mobile-ps-0 mobile-pe-0 mobile-pt-0">
 
-            <div class="rounded px-5 py-2" v-if="fillForm" style="background-color: #DDC8A9;">
+            <div class="rounded px-5 py-2 mobile-px-4" v-if="fillForm" style="background-color: #DDC8A9;">
 
                 <div class="row">
 
@@ -65,13 +65,13 @@
                     <div class="col-lg-8 col-md-12" style="background-color:#DDC8A9;">
 
                         <div class="d-grid gap-2" style="position: relative;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="ms-1 mt-2 bi bi-arrow-left-circle" viewBox="0 0 16 16" style="position: absolute; top: 10; left: 0;" v-on:click="goBack">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="ms-1 mt-2 bi bi-arrow-left-circle mobile-view-hide" viewBox="0 0 16 16" style="position: absolute; top: 10; left: 0;" v-on:click="goBack">
                                 <path fill-rule="evenodd" d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8m15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-4.5-.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5z"/>
                             </svg>
-                            <p class="fw-bold fs-2 mb-0 mx-5 mt-2" style="font-style: italic; ">Are you a distiller, brewery or bar owner?</p>
+                            <p class="fw-bold fs-3 mb-0 mx-5 mt-2 mobile-mx-0 mobile-text-align-left" style="font-style: italic; ">Are you a distiller, brewery or bar owner?</p>
                         </div>
 
-                        <h3 class="text-start my-3">Apply for a Business Account</h3>
+                        <h3 class="text-start my-3">Apply for a Business Account to connect to a community of drink lovers!</h3>
 
 
                         <!-- Start of form -->
@@ -175,7 +175,7 @@
                         <div class="d-grid gap-2 mt-3">
                             <p class="fs-3">Subscribe to a Business Account to connect directly with your fans and grow your business.</p>
                         </div>
-                        <div class="row justify-content-center">
+                        <div class="row justify-content-center mobile-view-hide">
                             <!-- <div class="col-xl-2 col-lg-1 col-md-1"></div> -->
                             <button class="btn rounded p-3 text-start mx-3 mb-3 col-8" @click="toggleMonthlyPricing" :style="{ backgroundColor: selectedMonthlyPricing ? '#DD9E54' :'white', 
                                                                                                                                 color: selectedMonthlyPricing ? 'white' :'black', 
@@ -188,7 +188,7 @@
                                 </span>
                             </button>
                         </div>
-                        <div class="row justify-content-center">
+                        <div class="row justify-content-center mobile-view-hide">
                             <!-- <div class="col-xl-2 col-lg-1 col-md-1"></div> -->
                             <button class="btn rounded p-3 text-start mx-3 mb-3 col-8" @click="toggleYearlyPricing" :style="{ backgroundColor: selectedYearlyPricing ? '#DD9E54' :'white', 
                                                                                                                                 color: selectedYearlyPricing ? 'white' :'black', 
@@ -205,6 +205,32 @@
                             
                             </button>
                         </div>
+                        <div class="row justify-content-center mobile-view-show">
+                            <button class="btn rounded p-3 text-start mx-3 mb-3 col-8" @click="toggleMonthlyPricing" :style="{ backgroundColor: selectedMonthlyPricing ? '#DD9E54' :'white', 
+                                                                                                                                color: selectedMonthlyPricing ? 'white' :'black', 
+                                                                                                                                borderColor: '#DD9E54', 
+                                                                                                                                borderWidth:'3px' }">
+                                <span>
+                                    <h6> <b> Monthly plan </b> </h6>
+                                    <p class="m-0"> $65 / Month </p> 
+                                    <small class="fst-italic p-0"> Billed monthly </small>
+                                </span>
+                            </button>
+                            <button class="btn rounded p-3 text-start mx-3 mb-3 col-8" @click="toggleYearlyPricing" :style="{ backgroundColor: selectedYearlyPricing ? '#DD9E54' :'white', 
+                                                                                                                                color: selectedYearlyPricing ? 'white' :'black', 
+                                                                                                                                borderColor: '#DD9E54', 
+                                                                                                                                borderWidth:'3px' }">
+                                <div class="row">
+                                    <div class="col-7"> <h6> <b> Yearly plan </b> </h6> </div> 
+                                    <div class="rounded col-5 text-center" style="background-color: green; color: white;">Save 23%</div>
+                                </div>
+                                <span>
+                                    <p class="m-0"> $50 / Month </p> 
+                                    <small class="fst-italic p-0"> $600 Billed annually </small>
+                                </span>
+                            
+                            </button>
+                        </div>    
                         <span v-if="missingPlan" class="text-danger">Please select a plan.</span>
                     </div>
 
