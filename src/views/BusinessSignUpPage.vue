@@ -206,7 +206,7 @@
                             </button>
                         </div>
                         <div class="row justify-content-center mobile-view-show">
-                            <button class="btn rounded p-3 text-start mx-3 mb-3 col-8" @click="toggleMonthlyPricing" :style="{ backgroundColor: selectedMonthlyPricing ? '#DD9E54' :'white', 
+                            <button class="btn rounded p-3 text-start mx-0 mb-3 col-6" @click="toggleMonthlyPricing" :style="{ backgroundColor: selectedMonthlyPricing ? '#DD9E54' :'white', 
                                                                                                                                 color: selectedMonthlyPricing ? 'white' :'black', 
                                                                                                                                 borderColor: '#DD9E54', 
                                                                                                                                 borderWidth:'3px' }">
@@ -216,7 +216,7 @@
                                     <small class="fst-italic p-0"> Billed monthly </small>
                                 </span>
                             </button>
-                            <button class="btn rounded p-3 text-start mx-3 mb-3 col-8" @click="toggleYearlyPricing" :style="{ backgroundColor: selectedYearlyPricing ? '#DD9E54' :'white', 
+                            <button class="btn rounded p-3 text-start mx-0 mb-3 col-6" @click="toggleYearlyPricing" :style="{ backgroundColor: selectedYearlyPricing ? '#DD9E54' :'white', 
                                                                                                                                 color: selectedYearlyPricing ? 'white' :'black', 
                                                                                                                                 borderColor: '#DD9E54', 
                                                                                                                                 borderWidth:'3px' }">

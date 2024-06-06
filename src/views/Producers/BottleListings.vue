@@ -40,7 +40,7 @@
     </div>
 
     <!-- main content -->
-    <div class="container pt-5" v-if="dataLoaded">
+    <div class="container pt-5 mobile-pt-4" v-if="dataLoaded">
         <div class="row">
             <!-- producer information -->
             <div class="col-12 col-md-9 no-margin no-right-padding-large-screen">
@@ -155,20 +155,20 @@
                             </div>
                             
                             <!-- description -->
-                            <div class="row scrollable" >
+                            <div class="row scrollable mobile-view-hide">
                                 <div class="col-lg-12 padding-right-for-suggesteditslink-large-screen">
                                     <!--<div class="py-2"></div>-->
                                     <div v-if="specified_listing.officialDesc.length > 250">
-                                        <p v-if="!showFullDescription" style="margin-bottom:0.2rem;"><!-- tzh added truncated description --->
+                                        <p v-if="!showFullDescription" class="mobile-rating-smaller-text-2" style="margin-bottom:0.2rem;"><!-- tzh added truncated description --->
                                             <em>{{ specified_listing["officialDesc"].slice(0, 250) + (specified_listing["officialDesc"].length > 250 ? '...' : '') }}</em>
                                             <a @click="showFullDescription = true" style="font-weight: bold;">(Read More)</a>
                                         </p>
-                                        <p v-else style="margin-bottom:0.2rem;"> <!-- tzh added full description --->
+                                        <p v-else style="margin-bottom:0.2rem;" class="mobile-rating-smaller-text-2"> <!-- tzh added full description --->
                                             <em>{{ specified_listing["officialDesc"] }}</em>
                                             <a @click="showFullDescription = false" style="font-weight: bold;">(Read Less)</a>
                                         </p>
                                     </div>
-                                    <p v-else style="margin-bottom:0.2rem;">
+                                    <p v-else style="margin-bottom:0.2rem;" class="mobile-rating-smaller-text-2">
                                         <em>{{ specified_listing["officialDesc"] }}</em>
                                     </p>    
                                 </div>
@@ -176,7 +176,25 @@
                         </div>
                     </div>
                 </div>
-                <div class="row pt-4 container mobile-view-show">
+                <div class="row scrollable mobile-view-show text-start">
+                                <div class="col-lg-12 padding-right-for-suggesteditslink-large-screen">
+                                    <!--<div class="py-2"></div>-->
+                                    <div v-if="specified_listing.officialDesc.length > 250">
+                                        <p v-if="!showFullDescription" class="mobile-rating-smaller-text-2 " style="margin-bottom:0.2rem; padding-left:0.8rem !important;"><!-- tzh added truncated description --->
+                                            <em>{{ specified_listing["officialDesc"].slice(0, 250) + (specified_listing["officialDesc"].length > 250 ? '...' : '') }}</em>
+                                            <a @click="showFullDescription = true" style="font-weight: bold;">(Read More)</a>
+                                        </p>
+                                        <p v-else style="margin-bottom:0.2rem; padding-left:0.8rem !important;" class="mobile-rating-smaller-text-2"> <!-- tzh added full description --->
+                                            <em>{{ specified_listing["officialDesc"] }}</em>
+                                            <a @click="showFullDescription = false" style="font-weight: bold;">(Read Less)</a>
+                                        </p>
+                                    </div>
+                                    <p v-else style="margin-bottom:0.2rem; padding-left:0.8rem !important;" class="mobile-rating-smaller-text-2">
+                                        <em>{{ specified_listing["officialDesc"] }}</em>
+                                    </p>    
+                                </div>
+                </div>
+                <div class="row pt-2 container mobile-view-show">
                 <p class="text-start mb-1 col-10" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis; font-size:15px; font-weight:bold;">
                                                         <span v-if="specified_listing.drinkType === 'Whiskey / Whisky'">
                                                             <span style="color: #2c3e50;" class="text-decoration-none">Whisky | </span>
@@ -263,26 +281,54 @@
                     <div class="col-12 col-lg-7">
                         <div class="row">
                             <!-- average rating -->
-                            <div class="col-4 text-start">
+                            <div class="col-4 text-start mobile-col-3 mobile-pe-0 ">
                                 
-                                <h3 class="text-body-secondary rating-text" style="margin-bottom:0;"> 
+                                <h3 class="mobile-rating-smaller-text text-body-secondary rating-text" style="margin-bottom:0;"> 
                                     <b>{{ specificReviewRating }}</b>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="30" height="1em" fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16">
                                         <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
                                     </svg>
                                 </h3>
-                                <p class="mb-2"> <u> Average Rating </u> </p>
+                                <p class="mb-2 mobile-view-hide mobile-rating-smaller-text-2"> <u> Average Rating </u> </p>
+                                <p class="mb-2 mobile-view-show mobile-rating-smaller-text-2"> <u> Rating </u> </p>
                             </div>
                             <!-- would recommend -->
-                            <div class="col-4 text-start">
-                                <h3 class="text-body-secondary rating-text" style="margin-bottom:0;"> <b> {{ willRecommend }}% </b> </h3>
-                                <p class="mb-2"> <u> Would Recommend </u> </p>
+                            <div class="col-4 text-start mobile-col-3 mobile-ps-0 mobile-pe-0 ">
+                                <h3 class="mobile-rating-smaller-text text-body-secondary rating-text" style="margin-bottom:0;"> <b> {{ willRecommend }}% </b> </h3>
+                                <p class="mb-2 mobile-rating-smaller-text-2"> <u> Would Recommend </u> </p>
                                 
                             </div>
                             <!-- would drink again -->
-                            <div class="col-4 text-start">
-                                    <h3 class="text-body-secondary rating-text" style="margin-bottom:0;"> <b> {{ willDrinkAgain }}% </b> </h3>
-                                    <p class="mb-2"> <u> Would Drink Again </u> </p>
+                            <div class="col-4 text-start mobile-col-3 mobile-ps-0 ">
+                                    <h3 class="mobile-rating-smaller-text text-body-secondary rating-text" style="margin-bottom:0;"> <b> {{ willDrinkAgain }}% </b> </h3>
+                                    <p class="mb-2 mobile-rating-smaller-text-2"> <u> Would Drink Again </u> </p>
+                                    
+                            </div>
+                            <div class="mobile-col-3 mobile-view-show">
+                                            <div v-if="userType == 'user' && userID !== 'defaultUser'" class="padding-for-addyourreviewbutton-large-screen mobile-view-show">
+                                                <div v-if="!inEdit" class="d-grid gap-2">
+                                                    <button class="btn primary-btn-less-round btn-lg" data-bs-toggle="modal" data-bs-target="#reviewModal" style="font-weight:bold;"> 
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 16">
+                                                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                                <div v-else class="d-grid gap-2">
+                                                    <button class="btn primary-btn-less-round btn-lg mobile-rating-smaller-text-2"> 
+                                                        Review already added
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div v-else-if="userType == 'user'" class="col-5 mobile-view-hide">
+                                                <div class="d-grid gap-2">
+                                                    <router-link :to="{ path: '/login' }" class="reverse-clickable-text">
+                                                        <button class="btn primary-btn-less-round btn-lg mobile-rating-smaller-text-2"> 
+                                                            Login to leave Review
+                                                        </button>
+
+                                                    </router-link>
+                                                </div>
+                                            </div>
                                     
                             </div>
                         </div>
@@ -339,7 +385,7 @@
 
                     <!-- add your review -->
                     <!-- Display Add review or Review already added accordingly to whether user already left review -->
-                    <div v-if="userType == 'user' && userID !== 'defaultUser'" class="col-5 padding-for-addyourreviewbutton-large-screen">
+                    <div v-if="userType == 'user' && userID !== 'defaultUser'" class="col-5 padding-for-addyourreviewbutton-large-screen mobile-view-hide">
                         <div v-if="!inEdit" class="d-grid gap-2">
                             <button class="btn primary-btn-less-round btn-lg" data-bs-toggle="modal" data-bs-target="#reviewModal" style="font-weight:bold;"> 
                                 <!---<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 16">
@@ -355,7 +401,7 @@
                         </div>
 
                     </div>
-                    <div v-else-if="userType == 'user'" class="col-5">
+                    <div v-else-if="userType == 'user'" class="col-5 mobile-view-hide">
                         <div class="d-grid gap-2">
                             <router-link :to="{ path: '/login' }" class="reverse-clickable-text">
                                 <button class="btn primary-btn-less-round btn-lg"> 
@@ -368,22 +414,22 @@
                 </div>
 
                 <!-- popular flavorTag -->
-                <div class="row pt-3 container">
-                    <div class="text-start mb-2">
+                <div class="row pt-3 mobile-pt-2 container">
+                    <div class="text-start mb-2 mobile-mb-0">
                         
                         <!-- flavor tag -->
                         <span v-for="(count, tag) in sorted_flavorTagCounts" :key="tag" class="badge rounded-pill me-2" :style="{ backgroundColor: '#' + tag.split('#')[1] }">{{ tag.split('#')[0] }}</span>
-                        <p class="mb-2"> <u> Most Popular Flavour Tags </u> </p>
+                        <p class="mb-2 mobile-rating-smaller-text-2"> <u> Most Popular Flavour Tags </u> </p>
                     </div>
                 </div>
 
                 <!-- popular observationTag -->
-                <div class="row pt-3 container">
-                    <div class="text-start mb-2">
+                <div class="row pt-3 container mobile-pt-2">
+                    <div class="text-start mb-2 mobile-mb-0">
                         
                         <!-- flavor tag -->
                         <span v-for="(count, tag) in sorted_observationTagCounts" :key="tag" class="badge rounded-pill me-2" style="background-color: grey" >{{ tag }}</span>
-                        <p class="mb-2"> <u> Most Popular Action Tags </u> </p>
+                        <p class="mb-2 mobile-rating-smaller-text-2"> <u> Most Popular Action Tags </u> </p>
                     </div>
                 </div>
                     
@@ -807,23 +853,23 @@
                                 <!-- [if] user has not added a review yet, add new photo -->
                                 <div v-if="userType == 'user' && userID !== 'defaultUser' && !inEdit" class="row">
                                     <!-- (1) add button -->
-                                    <div class="col-sm-6 col-md-4 col-lg-2">
+                                    <div class="mobile-col-3 col-sm-6 col-md-4 col-lg-2 mobile-px-1">
                                         <div data-bs-toggle="modal" data-bs-target="#reviewModal">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">
+                                            <svg xmlns="http://www.w3.org/2000/svg"  fill="currentColor" class="bi bi-plus-lg review-image" viewBox="0 0 16 16">
                                                 <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
                                             </svg>
                                         </div>
                                     </div>
                                     <!-- (2) to (6) other photos -->
-                                    <div v-for="review in filteredReviewsWithImages.slice(0,5)" v-bind:key="review" class="col-sm-8 col-md-6 col-lg-2">
-                                        <img :src=" 'data:image/jpeg;base64,' + (review['photo'] || defaultProfilePhoto)" alt="" class="review-image" style="width: 150px; height: 150px">
+                                    <div v-for="review in filteredReviewsWithImages.slice(0,5)" v-bind:key="review" class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 mobile-px-1">
+                                        <img :src=" 'data:image/jpeg;base64,' + (review['photo'] || defaultProfilePhoto)" alt="" class="review-image" >
                                     </div>
                                 </div>
                                 <!-- [else] user has added a review -->
                                 <!-- (1) to (6) display all photos -->
                                 <div v-else class="row">
-                                    <div v-for="review in filteredReviewsWithImages" v-bind:key="review" class="col-sm-8 col-md-6 col-lg-2 p-0">
-                                        <img :src="'data:image/jpeg;base64,' + (review['photo'] || defaultProfilePhoto)" alt="" class="review-image" style="width: 150px; height: 150px">
+                                    <div v-for="review in filteredReviewsWithImages" v-bind:key="review" class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 p-0 mobile-px-1">
+                                        <img :src="'data:image/jpeg;base64,' + (review['photo'] || defaultProfilePhoto)" alt="" class="review-image" >
                                     </div>
                                 </div>
                             </div>
@@ -834,15 +880,62 @@
 
                     <div class="row mb-3" v-for="review in filteredReviews" v-bind:key="review._id">
                         <!-- profile photo -->
-                        <div class="col-12 col-lg-1" style="text-align: left;">
+                        <div class="col-12 col-lg-1 mobile-col-2" style="text-align: left;">
                             <router-link :to="`/profile/user/${review.userID.$oid}`">
                                 <img :src=" 'data:image/jpeg;base64,' + (getPhotoFromReview(review) || defaultProfilePhoto)" alt="" class="profile-image">
                             </router-link>
                         </div>
+                        <div class="text-start mb-2 mobile-view-show mobile-col-10">
+
+<!-- username -->
+<router-link :to="`/profile/user/${review.userID.$oid}`" style="color: inherit">
+    <b>
+        @{{ getUsernameFromReview(review) }}
+    </b>
+</router-link>
+
+<!-- rating -->
+&nbsp;rated {{ review['rating'] }}
+
+<!-- star icon -->
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-star-fill me-1" viewBox="0 0 16 16">
+    <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+</svg>
+
+<!-- location -->
+
+<span v-if="review.location !== '' && checkVenue(review.address)">
+    <a style="color: inherit" > 
+        at 
+        <router-link :to="'/profile/venue/' + checkVenue(review.address)" style="color: inherit">
+            <b>{{ review.location }}</b>
+        </router-link>
+    </a>
+</span>
+
+<span v-else-if="review.location !== ''">
+    at 
+    <a :href="'https://www.google.com/maps/search/' + review.location" style="color: inherit" target="_blank"> 
+        <b>{{ review.location }}</b>
+    </a>
+</span>
+
+<!-- tagged friends -->
+<span v-if="review.taggedUsers != null && review.taggedUsers.length > 0"> drank with {{ review.taggedUsers.length }} others </span>
+
+<!-- user title -->
+<span v-if="checkModFromUserID(review.userID)" class="badge rounded-pill ms-3" style="color: black; background-color: white;">Moderator</span>
+
+<!-- Insert Edit modal here -->
+<div class="mt-2">
+    <button v-if="review.userID['$oid'] === userID"  class="btn btn-warning me-1 py-1" @click="setUpdateID(review)" data-bs-toggle="modal" data-bs-target="#reviewModal">Edit</button>
+    <button v-if="review.userID['$oid'] === userID || correctModerator" class="btn btn-danger py-1" @click="setDeleteID(review)" data-bs-toggle="modal" data-bs-target="#deleteReview">Delete</button>
+</div>
+                        </div>
                         <!-- user reviews -->
                         <div class="col-12 col-lg-8">
                             <div class="row">
-                                <div class="text-start mb-2">
+                                <div class="text-start mb-2 mobile-view-hide">
 
                                     <!-- username -->
                                     <router-link :to="`/profile/user/${review.userID.$oid}`" style="color: inherit">
@@ -1145,11 +1238,14 @@
                             <!-- modal end -->
                         </div>
                         <!-- review photo -->
-                        <div class="col-12 col-lg-3 text-end">
+                        <div class="col-12 col-lg-3 text-end mobile-view-hide">
                             <!-- review photo -->
                             <img :src=" 'data:image/jpeg;base64,' + (review['photo'] || defaultProfilePhoto)" alt="" class="review-image" style="width: 125px; height: 125px">
                         </div>
-
+                        <div class="col-12 col-lg-3 text-start mobile-view-show">
+                            <!-- review photo -->
+                            <img :src=" 'data:image/jpeg;base64,' + (review['photo'] || defaultProfilePhoto)" alt="" class="review-image" style="width: 125px; height: 125px">
+                        </div>
                     <hr>
                 </div>
                 

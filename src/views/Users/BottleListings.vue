@@ -412,7 +412,7 @@
                                 <h5 v-if="filteredListings==''" style="display: inline-block;" class="pt-5"> There is no listing available for the selected filter </h5>
                                 <!-- v-loop for each listing -->
                                 <div class="container text-start mobile-ps-0 mobile-pe-0">
-                                    <div v-for="listing in filteredListings" v-bind:key="listing._id" class="p-3">
+                                    <div v-for="listing in filteredListings" v-bind:key="listing._id" class="p-3 mobile-pt-0">
 
                                         <div class="row">
                                             <!-- image -->
@@ -451,7 +451,7 @@
                                                 <!-- producer -->
                                                 <div class="row">
                                                     <router-link :to="{ path: '/profile/producer/' + listing.producerID.$oid }" class="primary-clickable-text">
-                                                        <h5> <b> {{ getProducerName(listing) }} </b> </h5>
+                                                        <h5 class="mobile-rating-smaller-text"> <b> {{ getProducerName(listing) }} </b> </h5>
                                                     </router-link>
                                                 </div>
                                                 <!-- review tzh shortened description if above 270 characters xyz -->
@@ -508,7 +508,7 @@
                                 <!-- v-loop for each listing -->
                                 <div class="container text-start">
                                     <h5 v-if="mostReviews==''" style="display: inline-block;"> There is no listing available for the selected filter </h5>
-                                    <div v-for="listing in mostReviews" v-bind:key="listing" class="p-3">
+                                    <div v-for="listing in mostReviews" v-bind:key="listing" class="p-3 mobile-pt-0">
 
                                         <div class="row" v-if="listing != null">
                                             <!-- image -->
@@ -546,7 +546,7 @@
                                                 <!-- producer -->
                                                 <div class="row">
                                                     <router-link :to="{ path: '/profile/producer/' + listing.producerID.$oid }" class="primary-clickable-text">
-                                                        <h5> <b> {{ getProducerName(listing) }} </b> </h5>
+                                                        <h5 class="mobile-rating-smaller-text"> <b> {{ getProducerName(listing) }} </b> </h5>
                                                     </router-link>
                                                 </div>
                                                 <!-- review -->
@@ -588,7 +588,7 @@
                                 <!-- v-loop for each listing -->
                                 <div class="container text-start">
                                     <h5 v-if="recentlyAdded==''" style="display: inline-block;"> There is no listing available for the selected filter </h5>
-                                    <div v-for="listing in recentlyAdded" v-bind:key="listing._id" class="p-3">
+                                    <div v-for="listing in recentlyAdded" v-bind:key="listing._id" class="p-3 mobile-pt-0">
 
                                         <div class="row">
                                             <!-- image -->
@@ -627,7 +627,7 @@
                                                 <!-- producer -->
                                                 <div class="row">
                                                     <router-link :to="{ path: '/profile/producer/' + listing.producerID.$oid }" class="primary-clickable-text">
-                                                        <h5> <b> {{ getProducerName(listing) }} </b> </h5>
+                                                        <h5 class="mobile-rating-smaller-text"> <b> {{ getProducerName(listing) }} </b> </h5>
                                                     </router-link>
                                                 </div>
                                                 <!-- review -->
@@ -739,7 +739,7 @@
             <div class="row">
                 <!-- v-loop for each listing -->
                 <div class="container text-start">
-                    <div v-for="listing in filteredListings" v-bind:key="listing._id" class="p-3">
+                    <div v-for="listing in filteredListings" v-bind:key="listing._id" class="p-3 mobile-pt-0">
                         <div class="row">
                             <!-- image -->
                             <div class="col-3 image-container homepage">

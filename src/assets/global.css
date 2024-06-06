@@ -1143,6 +1143,9 @@ button.primary-btn:hover{
     .mobile-pt-0 {
         padding-top:0 !important;
     }
+    .mobile-pt-4 {
+        padding-top:1.5rem !important;
+    }
 }
 
 
@@ -1228,4 +1231,36 @@ button.primary-btn:hover{
 .text-body-secondary.producer-page{
     font-size: 14px !important;
 }
+}
+
+@media (max-width: 991px){
+.mobile-rating-smaller-text{
+    font-size: 1.2em !important;
+}
+}
+
+@media (max-width: 991px){
+    .mobile-rating-smaller-text-2{
+        font-size: 0.8em !important;
+}
+}
+
+@media (max-width: 991px){
+    .rounded-pill{
+        font-size: 12px;
+    }
+}
+
+
+.review-image {
+    width: 150px;
+    height: 150px;
+    aspect-ratio: 1 / 1; /* Ensures the image remains a square */
+    object-fit: cover; /* Ensures the image covers the entire area without stretching */
+}
+@media (max-width: 991px){
+    .review-image {
+        width:100%; 
+        height:auto;
+    }
 }
