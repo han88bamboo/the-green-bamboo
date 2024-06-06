@@ -880,8 +880,29 @@ button.primary-btn:hover{
     }
 }
 
+.discover-and-following {
+    font-size:20px;
+    font-weight: bolder;
+}
 
-/* tzh added these changes for mobile */
+.funnel-svg-dimensions{
+    width:25px;
+    height:25px;
+}
+
+.image-container.homepage {
+    width: 300px;
+    aspect-ratio: 1 / 1; /* Ensures the image remains a square */
+    object-fit: cover; /* Ensures the image covers the entire area without stretching */
+}
+
+.img-border.homepage {
+    width: 300px;
+    aspect-ratio: 1 / 1; /* Ensures the image remains a square */
+    object-fit: cover; /* Ensures the image covers the entire area without stretching */
+}
+
+/* tzh added below changes for mobile */
 
 
 .primary-light-dropdown-homepage {
@@ -929,6 +950,13 @@ button.primary-btn:hover{
         padding-right: 0px !important;
 }
 }
+
+@media (max-width: 991px){
+    .mobile-view-no-right-padding {
+        padding-right: 0px !important;
+}
+}
+
 @media (max-width: 991px){
 .mobile-col-1 {
     flex: 0 0 auto;
@@ -954,3 +982,100 @@ button.primary-btn:hover{
         width: 33.333333333333%;
     }
 }
+
+@media (max-width: 991px){
+    .primary-btn.mobile-convert-to-toggle-button {
+        color: #495264  !important; /* Active state text color */
+        background-color: #F2F2F2 !important; /* Active state background color */
+        border-bottom: 3px solid #495264 !important; /* Underline for active tab */
+        border-left: none;
+        border-right: none;
+        border-top: none;
+        border-radius: 0px !important;
+        font-weight: bold !important;
+        text-align:left;
+}
+}
+
+@media (max-width: 991px){
+    .primary-btn-outline.mobile-convert-to-toggle-button {
+        color: black  !important; /* Active state text color */
+        background-color: #F2F2F2 !important; /* Active state background color */
+        border: none !important; /* Underline for active tab */
+        border-radius: 0px !important;
+        font-weight: bold !important;
+        border-bottom: 1px outset #495264 !important;
+        text-align:left;
+}
+}
+
+@media (max-width: 991px){
+.discover-and-following {
+    font-size:16px;
+    font-weight: 800;
+}
+}
+
+@media (max-width: 991px){
+    .mobile-ps-0 {
+        padding-left:0px;
+    }
+    .mobile-pe-0 {
+        padding-right:0px;
+    }
+}
+
+@media (max-width: 991px){
+    .mobile-ps-3 {
+        padding-left:1rem;
+    }
+    .mobile-pe-3 {
+        padding-right:1rem;
+    }
+}
+
+@media (max-width: 991px){
+    .mobile-ps-4 {
+        padding-left:1.5rem;
+    }
+    .mobile-pe-4 {
+        padding-right:1.5rem;
+    }
+}
+
+@media (max-width: 991px){
+.funnel-svg-dimensions{
+    width:35px;
+    height:35px;
+}
+}
+
+@media (max-width: 991px){
+    .mobile-mb-0{
+        margin-bottom:0px !important;
+}
+}
+
+@media (max-width: 991px){
+    .mobile-pt-2{
+        padding-top:0.5rem;
+    }
+    .mobile-pb-0{
+        padding-bottom:0;
+    }    
+}
+
+@media (max-width: 991px){
+    .image-container.homepage { 
+        width: 100%;
+        aspect-ratio: 1 / 1; /* Ensures the image remains a square */
+        object-fit: cover; /* Ensures the image covers the entire area without stretching */
+    }
+
+    .img-border.homepage {
+        width: 100%;
+        aspect-ratio: 1 / 1; /* Ensures the image remains a square */
+        object-fit: cover; /* Ensures the image covers the entire area without stretching */
+    }
+}
+
