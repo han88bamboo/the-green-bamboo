@@ -914,7 +914,21 @@ button.primary-btn:hover{
     margin-bottom:0.5rem;
 }
 
-
+.sub-flavour-tags {
+    width: 100px; 
+    height: 60px;
+    color:white;
+    border-Width:1px;
+}
+@media (max-width: 991px){
+    .sub-flavour-tags{
+        width: 70px; 
+        height: 60px;
+        color:white;
+        border-Width:1px;
+        font-size:0.9em;
+    }
+}
 
 /* tzh added below changes for mobile */
 @media (max-width: 991px){
@@ -1264,3 +1278,20 @@ button.primary-btn:hover{
         height:auto;
     }
 }
+
+.mobile-review-svg-button {
+    display: inline-block;
+    padding: 10px;
+    border: 2px solid #E2E2E4;
+    border-radius: 10px;
+}
+
+.input-with-icon {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="51" height="51" viewBox="0 0 24 24" fill="none" stroke="%23000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="arcs"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 16px 16px;
+    padding-right: 2rem;
+}
+
+

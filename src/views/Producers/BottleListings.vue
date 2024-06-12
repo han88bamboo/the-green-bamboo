@@ -102,26 +102,32 @@
                             <!-- expression name -->
                             <div class="row">
                                 <div class="col-12 col-lg-8">
-                                    <h3 class="text-body-secondary mb-0"> <b> {{ specified_listing["listingName"] }} </b> </h3>
+                                    <div class="row">
+                                        <h3 class="text-body-secondary mb-0 mobile-view-hide"> <b> {{ specified_listing["listingName"] }} </b> </h3>
+                                        <h4 class="text-body-secondary mb-0 mobile-view-show col-10 pe-1"> <b> {{ specified_listing["listingName"] }} </b> </h4>
+                                        <div class="col-2 mobile-view-show px-1">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="29" height="29" data-bs-toggle="modal" data-bs-target="#whereToBuyModal" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="arcs"><path d="M3.8 3.8l16.4 16.4M20.2 3.8L3.8 20.2M15 3h6v6M9 3H3v6M15 21h6v-6M9 21H3v-6"/></svg>
+                                        </div>
+                                    </div>
                                     <div class="row pt-1">
-                                <!-- producer -->
-                                <div class="col-12 col-lg-6">
-                                    <h6 class="text-body-secondary producer-page">
-                                        <router-link :to="{ path: '/profile/producer/' + this.producer_id }" class="default-text-no-background">
-                                            <p class="mobile-mb-0"> {{ getProducerName(specified_listing["producerID"]) }} </p>
-                                        </router-link>
-                                    </h6>
-                                </div>
-                                <!-- bottler -->
-                                <div class="col-12 col-lg-6">
-                                    <h6 v-if="specified_listing['bottler'] != 'OB'" class="text-body-secondary producer-page"> Bottler: <u> {{ specified_listing["bottler"] }} </u>  </h6>
-                                        <h6 v-else class="text-body-secondary producer-page"> Bottler:
-                                            <router-link :to="{ path: '/profile/producer/' + this.producer_id }" class="default-text-no-background"> 
-                                                <u style="color:black;"> {{ getProducerName(specified_listing["producerID"]) }} </u>  
-                                            </router-link>
-                                        </h6>
-                                </div>
-                            </div>
+                                        <!-- producer -->
+                                        <div class="col-12 col-lg-6">
+                                            <h6 class="text-body-secondary producer-page">
+                                                <router-link :to="{ path: '/profile/producer/' + this.producer_id }" class="default-text-no-background">
+                                                    <p class="mobile-mb-0"> {{ getProducerName(specified_listing["producerID"]) }} </p>
+                                                </router-link>
+                                            </h6>
+                                        </div>
+                                        <!-- bottler -->
+                                        <div class="col-12 col-lg-6">
+                                            <h6 v-if="specified_listing['bottler'] != 'OB'" class="text-body-secondary producer-page"> Bottler: <u> {{ specified_listing["bottler"] }} </u>  </h6>
+                                                <h6 v-else class="text-body-secondary producer-page"> Bottler:
+                                                    <router-link :to="{ path: '/profile/producer/' + this.producer_id }" class="default-text-no-background"> 
+                                                        <u style="color:black;"> {{ getProducerName(specified_listing["producerID"]) }} </u>  
+                                                    </router-link>
+                                                </h6>
+                                        </div>
+                                    </div>
                                 </div>
                                 <!-- tzh edited classes suggest edit & report duplicate padding-top-for-suggesteditslink-large-screen-->
                                 <div class="col-12 col-md-4 col-lg-4 text-end padding-left-for-suggesteditslink-large-screen padding-right-for-suggesteditslink-large-screen mobile-view-hide" style="position: relative;">
@@ -154,6 +160,128 @@
                                 </div>
                             </div>
                             
+                            <!-- The Modal xyz-->
+                            
+                            <div class="modal fade" id="whereToBuyModal" tabindex="-1" aria-labelledby="whereToBuyModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="background-color: #535C72">
+                                            <h5  class="modal-title" style="color: white;">More Details</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>    
+                                        <div class="modal-body">
+                                            <div class="col-sm-12 col-md-9 col-lg-3 ">
+                                                <!-- where to buy -->
+                                                <div class="row">
+                                                    <div class="square primary-square rounded p-3 mb-3 text-start" style="height: 250px;">
+                                                        <!-- header text -->
+                                                        <div class="square-inline text-start">
+                                                            <h4 class="mr-auto"> Where to Buy </h4>
+                                                        </div>
+                                                        <!-- body -->
+                                                        <div style="height: 85%;">
+                                                            <div class="text-start pt-2 overflow-auto" style="max-height: 100%;">
+                                                                <!-- [function] where to buy -->
+                                                                <div v-for="producer in producerListings" v-bind:key="producer._id">
+                                                                    <router-link :to="{ path: '/profile/producer/' + producer.$oid }" class="reverse-clickable-text">
+                                                                        <p> {{ getProducerName(producer) }} </p>
+                                                                    </router-link>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- not sure what this line supposed to do -->
+                                                <!-- {{ drinkList }} -->
+                                            
+                                                <!-- where to try -->
+                                                <div class="row">
+                                                    <div class="square primary-square rounded p-3 mb-3 text-start" style="height: 250px;">
+                                                        <!-- header text -->
+                                                        <div class="square-inline text-start">
+                                                            <h4 class="mr-auto"> Where to Try </h4>
+                                                        </div>
+                                                        <!-- body -->
+                                                        <div style="height: 85%;">
+                                                            <div class="text-start pt-2 overflow-auto" style="max-height: 100%;">
+                                                                <!-- [function] where to try -->
+                                                                <!-- [if] user does not allow location -->
+                                                                <div v-if="nearestBars.length == 0" >
+                                                                    <div v-for="venue in venueListings" v-bind:key="venue._id">
+                                                                        <router-link :to="{ path: '/profile/venue/' + venue._id.$oid }" class="reverse-clickable-text">
+                                                                            <p class="mb-1"> {{ venue.venueName }} </p>
+                                                                        </router-link>
+                                                                    </div>
+                                                                </div>
+                                                                <!-- [else] user allows location -->
+                                                                <div v-else>
+                                                                    <div v-for="(distance, venueID) in nearestBars" v-bind:key="venueID">
+                                                                        <router-link :to="{ path: '/profile/venue/' + venueID }" class="reverse-clickable-text">
+                                                                            <p class="mb-4"> 
+                                                                                <u> {{ getVenueNameFromID(venueID) }}  </u>
+                                                                                <br>
+                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-geo-alt-fill" viewBox="0 0 16 16">
+                                                                                    <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
+                                                                                </svg>
+                                                                                Distance: {{ venueDetails[venueID]["distance"] }}
+                                                                                <br>
+                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-clock" viewBox="0 0 16 16">
+                                                                                    <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z"/>
+                                                                                    <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0"/>
+                                                                                </svg>
+                                                                                Duration: {{ venueDetails[venueID]["duration"] }}
+                                                                            </p>
+                                                                        </router-link>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- 88 bamboo's review -->
+                                                <div class="row">
+                                                    <div class="square secondary-square rounded p-3 mb-3">
+                                                        <!-- header text -->
+                                                        <div class="py-2 text-start">
+                                                            <h4> 88 Bamboo's Review </h4>
+                                                            <a v-if="isHttpValid(specified_listing['reviewLink'])" :href="specified_listing['reviewLink']" class="text-left default-text-no-background row">
+                                                                <div class="row">
+                                                                    <div class="col-lg-4 col-md-6 col-sm-12">
+                                                                        {{ getOGImage(specified_listing['reviewLink']) }}
+                                                                        <!-- [if] there is a cover image for the post-->
+                                                                        <img v-if="ogImage != null" :src="ogImage[specified_listing.reviewLink]" alt="OG Image" style="width: 80px; height: 80px;">
+                                                                        <!-- [else] there is no cover image for the post (put 88 bamboo's logo) -->                    
+                                                                        <img v-else src="https://88bamboo.co/cdn/shop/files/88B_New_Logo_-_white_face_transparent_background_180x.png?v=1655894111" style="width: 80px; height: 80px;">                                   
+                                                                    </div>
+                                                                    <div class="col-lg-8 col-md-12">
+                                                                        {{ deepDiveLinkFormatted }}
+                                                                    </div>
+                                                                </div>
+                                                            </a>
+                                                            <div v-else>
+                                                                <div class="text-body-secondary">
+                                                                    <div class="fst-italic">
+                                                                        No reviews available for this listing.
+                                                                        For other 88 Bamboo reviews, 
+                                                                        <a href="https://88bamboo.co/blogs/news" class="default-text-no-background">click here</a>.
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                        </div>
+                                                        <div class="py-2"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                    </div>
+                                </div>
+                            </div>
+
+
                             <!-- description -->
                             <div class="row scrollable mobile-view-hide">
                                 <div class="col-lg-12 padding-right-for-suggesteditslink-large-screen">
@@ -462,7 +590,7 @@
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                             </div>
                         </div>
-
+                        <!-- tzh xyz -->
                         <div v-if='addingReview' class="modal-content">
                             <!-- change modal header colour -->
                             <div class="modal-header" style="background-color: #535C72">
@@ -474,9 +602,12 @@
 
                             <!-- This is where modal starts for review-->
                             <div class="modal-body px-4">
-                                
+                                <!-- row 0: expression name for mobile only -->
+                                <div class="row mobile-view-show ">
+                                    <p class="text-body-secondary text-start"><b> {{ specified_listing["listingName"] }} </b></p>
+                                </div>
                                 <!-- row 1: language, location -->
-                                <div class="row">
+                                <div class="row mobile-view-hide">
                                     <!-- language-->
                                     <div class="col-6 col-md-12 justify-content-start mb-3">
                                         <p class = 'text-start mb-2 fw-bold'>Language<span class="text-danger">*</span></p>
@@ -546,7 +677,7 @@
                                 </div>
 
                                 <!-- row 2: tag friends, add photo -->
-                                <div class="row">
+                                <div class="row mobile-view-hide">
                                     <!-- language-->
                                     <div class="col-6 col-md-12 justify-content-start">
                                         <p class = 'text-start mb-2 fw-bold'>Tag Friends</p>
@@ -604,6 +735,8 @@
                                     </div>
                                 </div>
 
+                                  
+                              
                                 <!-- row 4: buttons (would recommend, would buy again) -->
                                 <div class="row">
                                     <div class = 'col justify-content-start mb-3 text-start'>
@@ -619,6 +752,82 @@
                                         </div>                                         
                                     </div>
                                 </div>
+                                
+                                <!-- row 4A: mobile add photo, friends, location-->
+                                <div class="row mobile-view-show" >
+                                    <div class="col-4 ">
+                                        <input class="form-control mb-2" @change="onFileChange" type="file" id="reviewPhoto" style="display: none;">
+                                        <label for="reviewPhoto" >
+                                            <div class="mobile-review-svg-button">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="M20.4 14.5L16 10 4 20"></path> <circle cx="19" cy="19" r="3" fill="black"></circle><line x1="18" y1="19" x2="20" y2="19" stroke="white" stroke-width="1"></line><line x1="19" y1="18" x2="19" y2="20" stroke="white" stroke-width="1"></line></svg>
+                                            </div>
+                                        </label>
+                                        <div class = "row">
+                                            <img :src="image64 ? 'data:image/jpeg;base64,' + image64 : 'none'" alt="" id="output" class="py-2 review-preview-photo">
+                                        </div>
+                                        <div class="row justify-content-start mb-2">
+                                            <div class="col-md-4 text-start">
+                                                <button v-if="image64!==null" class="btn tertiary-square-btn mb-1" @click="clearPhoto">Clear Photo</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-8">
+                                        
+                                        <div class="col-12 justify-content-start">
+                                            
+                                            <div class="form-group mb-2">
+                                                <div v-if="showFriendTagList.length > 0" class="form-label pb-2 text-start"> 
+                                                Tagged Friends: 
+                                                    <div class="row">
+                                                        <div class="col">
+                                                            <div class="d-flex flex-wrap gap-2">
+                                                                <div v-for="friend in showFriendTagList" v-bind:key="friend.id" class="mb-0 pb-0">
+                                                                    <button @click='removeFriendTag(friend)' class="btn secondary-square-btn"> {{ friend.username }} </button> 
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!-- <input type="text" class="form-control" id="friendTag"> -->
+                                                <input list="followList" v-model="friendTag" class="form-control input-with-icon" id="friendTag" placeholder="Tag friends" v-on:keyup="updateFriendTag">
+                                                <datalist id="followList">
+                                                    <option v-for="user in followList" :key="user._id.$oid" :value="user.username">
+                                                        {{user.username}}
+                                                    </option>
+                                                </datalist>  
+                                                <div class="text-start mt-1">                                            
+                                                    <button v-if="selectedFriendTag!==null" class="btn tertiary-square-btn mt-1" @click="tagSpecificFriend">Tag This Friend</button>
+                                                </div>  
+                                                <p v-show="friendTag.length > 0" class="text-start mb-1 text-danger" id="friendTagError"></p>
+                                            </div>
+
+                                            <div class="form-group mb-2">
+                                                
+                                                <div class="input-group mb-2">
+                                                    <GMapAutocomplete
+                                                        placeholder="Add location"
+                                                        @place_changed="setPlace"
+                                                        class="form-control input-with-icon"
+                                                        ref="autocomplete"
+                                                        :value="selectedLocation"
+                                                    >
+                                                    </GMapAutocomplete>
+                                                </div>
+                                                <div>
+                                                    <p v-show="tagLocation.length > 0" class="text-start mb-1 text-danger" id="tagLocationError"></p>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-6 col-md-12 d-flex justify-content-start">
+                                                        <button v-if="selectedLocation!==''" class="btn text-start mb-1" style="background-color: #535C72;color: white;" @click="clearLocation">Clear Selection</button>
+                                                    </div>
+                                                    
+                                                </div>
+                                            </div>
+                                        </div>
+
+
+                                    </div>
+                                </div>  
 
                                 <!-- row 5: extend review -->
                                 <div class="row">
@@ -688,7 +897,7 @@
                                     <!-- row 7B: all colours -->
                                     <div class="row justify-content-start mb-1 text-start">
                                         <!-- normal colours-->
-                                        <div class="col-7">
+                                        <div class="col-7 mobile-col-9">
                                             <button @click="displaySelectColour(colour)" v-for="(colour, i) in colours.slice(0, 14)" :key="i" :value="colour" class="btn" data-bs-toggle="button"
                                                     :style="{ 
                                                         width: '30px', 
@@ -773,8 +982,8 @@
                                         <div v-for="family in flavourTags" :key="family['_id']">
                                             <div v-if="family.showBox" class="rounded p-3" :style="{border: '3px solid ' + family['hexcode'] }">
                                                 <div class="row">
-                                                    <div class="col-3" v-for="(element, index) in family.subTag2" :key="index">
-                                                        <button @click="toggleFlavourSelection(element.subTag, family['hexcode'],element.id)" class="btn mb-2" :style="{ width: '100px', height: '60px',color:'white', backgroundColor: selectedFlavourTags.includes(element.subTag+family['hexcode']) ? 'grey' :family['hexcode'], borderColor: family['hexcode'], borderWidth:'1px' }">{{ element.subTag }}</button>
+                                                    <div class="col-3 mobile-px-1" v-for="(element, index) in family.subTag2" :key="index">
+                                                        <button @click="toggleFlavourSelection(element.subTag, family['hexcode'],element.id)" class="btn mb-2 sub-flavour-tags mobile-px-1" :style="{ backgroundColor: selectedFlavourTags.includes(element.subTag+family['hexcode']) ? 'grey' :family['hexcode'], borderColor: family['hexcode'] }">{{ element.subTag }}</button>
                                                     </div>                        
                                                 </div>
                                             </div>
@@ -1254,7 +1463,7 @@
 
             </div>
             <!-- where to buy & where to try & 88 bamboo's review -->
-            <div class="col-sm-12 col-md-9 col-lg-3">
+            <div class="col-sm-12 col-md-9 col-lg-3 mobile-view-hide">
                 <!-- where to buy -->
                 <div class="row">
                     <div class="square primary-square rounded p-3 mb-3 text-start" style="height: 250px;">
