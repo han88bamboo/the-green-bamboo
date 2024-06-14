@@ -406,8 +406,8 @@
                         <!-- listings  TZH removed class scrollable-listings--->
                         <div class="row">
 
-                            <!-- [if] discovery & following not clicked -->
-                            <div v-if="discovery == false && following == false" class="mobile-ps-0 mobile-pe-0">
+                            <!-- [if] discovery & following not clicked changed && to ||-->
+                            <div v-if="discovery == true || following == false" class="mobile-ps-0 mobile-pe-0">
                                 <!-- Display error message when no results for filter-->
                                 <h5 v-if="filteredListings==''" style="display: inline-block;" class="pt-5"> There is no listing available for the selected filter </h5>
                                 <!-- v-loop for each listing -->
@@ -454,7 +454,7 @@
                                                         <h5 class="mobile-rating-smaller-text"> <b> {{ getProducerName(listing) }} </b> </h5>
                                                     </router-link>
                                                 </div>
-                                                <!-- review tzh shortened description if above 270 characters xyz -->
+                                                <!-- review tzh shortened description if above 270 characters  -->
                                                 <div class="row pt-3 mobile-pt-0">
                                                     <div class="mobile-col-9 mobile-pe-0">
                                                     <router-link :to="{ path: '/listing/view/' +listing._id.$oid }" class="default-clickable-text fst-italic scrollable-user-bottle-listings-description-box">
@@ -498,20 +498,20 @@
                                     </div>
                                 </div>
                             </div> <!-- end of listings -->
-
-                            <!-- [else] discovery clicked -->
+                            
+                            <!-- [else] discovery clicked 
                             <div v-else-if="discovery" class="mobile-ps-0 mobile-pe-0">
-                                <!-- most reviews -->
+                                <!- most reviews ->
                                 <h3 class="text-body-secondary text-start pt-3"> 
                                     <b> Most Reviews </b> 
                                 </h3>
-                                <!-- v-loop for each listing -->
+                                <!- v-loop for each listing ->
                                 <div class="container text-start">
                                     <h5 v-if="mostReviews==''" style="display: inline-block;"> There is no listing available for the selected filter </h5>
                                     <div v-for="listing in mostReviews" v-bind:key="listing" class="p-3 mobile-pt-0">
 
                                         <div class="row" v-if="listing != null">
-                                            <!-- image -->
+                                            <!- image ->
                                             <div class="col-xl-5 col-12 mb-3">
                                                 <div class="image-container homepage">
                                                     <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" class="img-border homepage">
@@ -526,9 +526,9 @@
                                                     </div>    
                                                 </div>
                                             </div>
-                                            <!-- details -->
+                                            <!- details ->
                                             <div class="col-xl-7 col-12">
-                                                <!-- expression name -->
+                                                <!- expression name ->
                                                 <div class="row pt-1">
                                                     <router-link :to="{ path: '/listing/view/' +listing._id.$oid }" class="primary-clickable-text mobile-col-10">
                                                         <h4> <b> {{ listing["listingName"] }} </b> </h4>
@@ -543,19 +543,19 @@
                                                         @icon-clicked="handleIconClick" />
                                                     </div>  
                                                 </div>
-                                                <!-- producer -->
+                                                <!- producer ->
                                                 <div class="row">
                                                     <router-link :to="{ path: '/profile/producer/' + listing.producerID.$oid }" class="primary-clickable-text">
                                                         <h5 class="mobile-rating-smaller-text"> <b> {{ getProducerName(listing) }} </b> </h5>
                                                     </router-link>
                                                 </div>
-                                                <!-- review -->
+                                                <!- review ->
                                                 <div class="row pt-3">
                                                     <router-link :to="{ path: '/listing/view/' +listing._id.$oid }" class="default-clickable-text fst-italic scrollable">
                                                         <h5> {{ listing["officialDesc"] }}. </h5>
                                                     </router-link>
                                                 </div>
-                                                <!-- rating -->
+                                                <!- rating ->
                                                 <div class="row pt-4"> 
                                                     <div class="col-6 d-flex align-items-center">
                                                         <h1 class="rating-text text-end d-flex align-items-center">
@@ -577,10 +577,10 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </div>-->
 
                             <!-- [else] following clicked -->
-                            <div v-else-if="following" class="mobile-ps-0 mobile-pe-0">
+                            <div v-else-if="following || discovery == false" class="mobile-ps-0 mobile-pe-0">
                                 <!-- recently added  -->
                                 <!-- <h3 class="text-body-secondary text-start pt-3"> 
                                     <b> Recently Added </b> 
@@ -903,8 +903,8 @@
                 haveTried: false,
                 wantToTry: false,
 
-                // for discovery
-                discovery: false,
+                // for discovery - tzh changed 'false' to 'true'
+                discovery: true,
                 allReviews: {},
                 mostReviews: [],
 
