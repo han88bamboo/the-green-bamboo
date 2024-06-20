@@ -286,6 +286,7 @@
                             <div class="row scrollable mobile-view-hide">
                                 <div class="col-lg-12 padding-right-for-suggesteditslink-large-screen">
                                     <!--<div class="py-2"></div>-->
+                                    <!-- below truncated-->
                                     <div v-if="specified_listing.officialDesc.length > 250">
                                         <p v-if="!showFullDescription" class="mobile-rating-smaller-text-2" style="margin-bottom:0.2rem;"><!-- tzh added truncated description --->
                                             <em>{{ specified_listing["officialDesc"].slice(0, 250) + (specified_listing["officialDesc"].length > 250 ? '...' : '') }}</em>
@@ -298,7 +299,8 @@
                                     </div>
                                     <p v-else style="margin-bottom:0.2rem;" class="mobile-rating-smaller-text-2">
                                         <em>{{ specified_listing["officialDesc"] }}</em>
-                                    </p>    
+                                    </p>  
+                                    <!-- above truncated-->  
                                 </div>
                             </div>
                         </div>
@@ -443,7 +445,7 @@
                                                 </div>
                                                 <div v-else class="d-grid gap-2">
                                                     <button class="btn primary-btn-less-round btn-lg mobile-rating-smaller-text-2"> 
-                                                        Review already added
+                                                        Review added
                                                     </button>
                                                 </div>
                                             </div>

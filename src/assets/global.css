@@ -113,6 +113,13 @@ body {
     border: 4px solid #535C72;
 }
 
+.active-toggle-producer-QnA {
+    color: #535C72;
+    background-color: whitesmoke;
+    border-radius: 10px;
+    border: 4px solid #535C72;
+}
+
 .primary-square {
     color: whitesmoke;
     background-color: #495264; /* color changed by TZH */
@@ -1111,6 +1118,24 @@ button.primary-btn:hover{
 }
 
 @media (max-width: 991px){
+    .mobile-ps-1 {
+        padding-left:0.25rem !important;
+    }
+    .mobile-pe-1 {
+        padding-right:0.25rem !important;
+    }
+}
+
+@media (max-width: 991px){
+    .mobile-ps-1 {
+        padding-left:0.5rem !important;
+    }
+    .mobile-pe-1 {
+        padding-right:0.5rem !important;
+    }
+}
+
+@media (max-width: 991px){
     .mobile-ps-3 {
         padding-left:1rem;
     }
@@ -1184,6 +1209,20 @@ button.primary-btn:hover{
         margin-left:0 !important;
         margin-right:0 !important;
     }
+    .mobile-me-0{
+        margin-right:0px !important;
+    }
+}
+@media (max-width: 991px){
+    .mobile-mt-0{
+        margin-top:0px !important;
+    }
+    .mobile-mt-1{
+        margin-top:0.25rem !important;
+    }
+    .mobile-mt-2{
+        margin-top:0.5rem !important;
+    }
 }
 
 @media (max-width: 991px){
@@ -1215,6 +1254,7 @@ button.primary-btn:hover{
     height: 230px;
 }
 
+
 @media (max-width: 991px){
     .producer-bottle-listing-page-image {
         width:100%; 
@@ -1224,6 +1264,30 @@ button.primary-btn:hover{
     }
 }    
 
+.producer-profile-latest-updates-image {
+    max-width:128px;
+    height: 128px;
+}
+
+@media (max-width: 991px){
+    .producer-profile-latest-updates-image {
+        width:100%; 
+        height:auto;
+        aspect-ratio: 1 / 1; /* Ensures the image remains a square */
+        object-fit: cover; /* Ensures the image covers the entire area without stretching */
+    }
+}    
+
+.producer-profile-latest-updates-heart {
+    width:25px;
+    height:25px;
+}
+@media (max-width: 991px){
+    .producer-profile-latest-updates-heart {
+        width:15px;
+        height:15px;
+    }
+}
 @media (max-width: 991px){
     .mobile-fs-4 {
         font-size: calc(1.275rem + 0.3vw) !important;
@@ -1233,6 +1297,12 @@ button.primary-btn:hover{
     }
     .mobile-fs-6 {
         font-size: 1rem !important;
+    }
+    .mobile-fs-7 {
+        font-size: 0.75rem !important;
+    }
+    .mobile-fs-8 {
+        font-size: 0.50rem !important;
     }
 }
 
@@ -1294,4 +1364,16 @@ button.primary-btn:hover{
     padding-right: 2rem;
 }
 
+@media (max-width: 991px){
+    .mobile-toggle-button-producer-profile{
+        background-color: #F2F2F2 !important;
+    }
+}
 
+@media (max-width: 991px){
+    .drink-photo-container-row-producer-profile {
+        min-width: 100px;
+        min-height: 100px;
+        position:relative;
+    }
+}
