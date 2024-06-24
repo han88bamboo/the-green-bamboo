@@ -695,19 +695,23 @@
                         <div class="col-8 pe-lg-4 mobile-col-10 mobile-ps-3 mobile-pe-0">
                             <!-- [if] user type is producer -->
                             <div v-if="correctProducer || isAdmin" class="row">
-                                <div class="col-3 d-grid no padding">
-                                    <button type="button" class="btn primary-btn-outline-thick rounded-0" v-on:click="editCatalogue()">
-                                        <a class="default-clickable-text"> Edit catalogue </a> 
+                                <div class="col-2 d-grid no padding">
+                                    <button type="button" class="btn primary-btn-outline-thick rounded-0 mobile-pe-2 mobile-ps-2" v-on:click="editCatalogue()">
+                                        <a class="default-clickable-text mobile-fs-7 mobile-view-hide"> Edit catalogue </a> 
+                                        <a class="default-clickable-text mobile-fs-7 mobile-view-show"> Edit </a> 
                                     </button>
                                 </div>
-                                <div class="col-3 d-grid no padding">
-                                    <button type="button" class="btn primary-btn-outline-thick rounded-0">
-                                        <router-link :to="`/listing/create`" class="default-clickable-text">
+                                <div class="col-2 d-grid no padding">
+                                    <button type="button" class="btn primary-btn-outline-thick rounded-0 mobile-pe-2 mobile-ps-2">
+                                        <router-link :to="`/listing/create`" class="default-clickable-text mobile-fs-7 mobile-view-hide">
                                             Add Listing
+                                        </router-link>
+                                        <router-link :to="`/listing/create`" class="default-clickable-text mobile-fs-7 mobile-view-show">
+                                            Add
                                         </router-link>
                                     </button>
                                 </div>
-                                <div class="col-6 d-grid no padding">
+                                <div class="col-7 d-grid no padding">
                                     <input class="search-bar form-control rounded fst-italic" type="text" placeholder="Search for expressions" style="height: 50px;" v-model="searchExpressions" v-on:keyup.enter="searchForExpressions()">
                                 </div>
                             </div>
