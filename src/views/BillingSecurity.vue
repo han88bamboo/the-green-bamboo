@@ -36,7 +36,7 @@
     <div class="" v-if="dataLoaded">
 
         <div class="container text-start" style="width: 50%">
-            <p style="font-family: radley; font-size: 50px;" class="pt-5 pb-0">You’re almost all set up!</p>
+            <p style="font-family: radley; font-size: 50px;" class="mt-5 mb-0">You’re almost all set up!</p>
             <p style="font-family: radley; font-size: 30px;">Enter your payment details and set up your login details.</p>
 
             <!-- choose plan -->
