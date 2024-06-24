@@ -29,6 +29,11 @@ const routes = [
     component: () => import('../views/BusinessSignUpPage.vue')
   },
   {
+    path: '/billingSecurity',
+    name: 'billingsecurity',
+    component: () => import('../views/BillingSecurity.vue')
+  },
+  {
     path: '/search/:input?',
     name: 'search',
     component: () => import('../views/SearchView.vue')
