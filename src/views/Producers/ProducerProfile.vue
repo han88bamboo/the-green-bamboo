@@ -249,7 +249,7 @@
                                             <!-- remove image option -->
                                             <button class="btn primary-light-dropdown m-1" @click="selectedLatestUpdateImage = 'data:image/jpeg;base64,' + defaultProfilePhoto; image64LatestUpdate = ''">Remove</button>
                                         </div>
-                                        <!-- [else] not editing tzh removed style="width: 128px; height: 128px; z-index: 1;" from img tag xyz-->
+                                        <!-- [else] not editing tzh removed style="width: 128px; height: 128px; z-index: 1;" from img tag -->
                                         <div v-else>
                                             <img :src="selectedLatestUpdateImage || 'data:image/jpeg;base64,' + (latestUpdate['photo'] || defaultProfilePhoto)" 
                                                 alt="" class="producer-profile-latest-updates-image" >
@@ -680,7 +680,7 @@
                     <!-- search & sort by -->
                     <div class="row">
                         <!-- back button -->
-                        <div class="col-1 centered">
+                        <div class="col-1 centered mobile-view-hide">
                             <!-- back button -->
                             <span style="display: inline-block;">
                                 <span class="pe-2">
@@ -692,7 +692,7 @@
                             </span>
                         </div>
                         <!-- search -->
-                        <div class="col-8 pe-lg-4">
+                        <div class="col-8 pe-lg-4 mobile-col-10 mobile-ps-3 mobile-pe-0">
                             <!-- [if] user type is producer -->
                             <div v-if="correctProducer || isAdmin" class="row">
                                 <div class="col-3 d-grid no padding">
@@ -728,10 +728,11 @@
                         </div>
                 
                         <!-- sort by -->
-                        <div class="col-3 padding-for-followthisbusinessbutton-large-screen">
+                        <div class="col-3 padding-for-followthisbusinessbutton-large-screen mobile-col-2 mobile-ps-0">
                             <div class="d-grid gap-2 dropdown">
-                                <button class="btn primary-light-dropdown btn-lg dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
-                                    Sort: {{ sortSelection.category != '' ? sortSelection.category : 'by Category' }}
+                                <button class="btn primary-light-dropdown-homepage btn-lg dropdown-toggle mobile-view-remove-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="mobile-view-show bi bi-sort-down funnel-svg-dimensions" viewBox="0 0 16 16"><path d="M3.5 2.5a.5.5 0 0 0-1 0v8.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L3.5 11.293zm3.5 1a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5M7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1z"></path></svg>
+                                    <span class="mobile-view-hide">Sort: {{ sortSelection.category != '' ? sortSelection.category : 'by Category' }}</span>
                                 </button>
                                 <ul class="dropdown-menu">
                                     <li><span class="dropdown-item" @click="sortByCategory('')"> Clear Sort </span></li>
@@ -746,12 +747,12 @@
                     <div class="row scrollable-expressions-none">
                         <!-- v-loop for each listing -->
                         <div class="container text-start">
-                            <div v-for="listing in lazyListings" v-bind:key="listing._id" class="p-3">
+                            <div v-for="listing in lazyListings" v-bind:key="listing._id" class="p-3 mobile-pb-0">
                                 <div class="row">
-                                    <!-- image -->
-                                    <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen">
+                                    <!-- image  remove style="width: 150px; height: 150px;" from img tag-->
+                                    <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
                                         <router-link :to="{ path: '/listing/view/' +listing._id.$oid}" class="default-text-no-background">
-                                            <img :src=" 'data:image/jpeg;base64,' + (listing['photo'] || defaultProfilePhoto)" style="width: 150px; height: 150px;">
+                                            <img :src=" 'data:image/jpeg;base64,' + (listing['photo'] || defaultProfilePhoto)" class="producer-bottle-listing-page-bottle-image" >
                                         </router-link>
                                         <!-- edit listing -->
                                         <button v-if="(correctProducer || isAdmin) && editingListing" type="button" class="btn tertiary-btn reverse-clickable-text m-1">
@@ -772,13 +773,13 @@
                                         </button>
                                     </div>
                                     <!-- details -->
-                                    <div class="col-lg-10 col-12 ps-3">
+                                    <div class="col-lg-10 col-12 ps-3 mobile-col-7 mobile-pe-0 mobile-ps-1">
                                         <!-- expression name, have tried & want to try & bookmark buttons -->
                                         <div class="row">
                                             <!-- expression name - tzh removed pt-2 from row-->
-                                            <div class="col-7">
+                                            <div class="col-7 mobile-col-12 mobile-pe-0">
                                                 <div class="row ">
-                                                    <p class="default-text fs-5" style="margin-bottom:0.3rem;"> 
+                                                    <p class="default-text fs-5 mobile-fs-6" style="margin-bottom:0.3rem;"> 
                                                         <router-link :to="{ path: '/listing/view/' +listing._id.$oid }" class="default-text-no-background">
                                                             <u> <b> {{ listing["listingName"] }}  </b> </u>
                                                         </router-link>
@@ -787,15 +788,15 @@
                                             </div>
                                             
                                             <!-- have tried button -->
-                                            <div class="col-2 pe-0">
+                                            <div class="col-2 pe-0 mobile-view-hide">
                                                 <div v-html="checkDrinkLists(listing).buttons.haveTried" class="d-grid"> </div>
                                             </div>
                                             <!-- want to try button -->
-                                            <div class="col-2 ps-0">
+                                            <div class="col-2 ps-0 mobile-view-hide">
                                                 <div v-html="checkDrinkLists(listing).buttons.wantToTry" class="d-grid"> </div>
                                             </div>
                                             <!-- bookmark button -->
-                                            <div class="col-1 text-start p-0">
+                                            <div class="col-1 text-start p-0 mobile-view-hide">
                                                 <BookmarkIcon 
                                                     v-if="user && Object.keys(user).length > 0" 
                                                     :user="user" 
@@ -807,13 +808,13 @@
                                         </div>
                                         <div class="row">
                                              <!-- Bottler / Drink Type / Type Category / ABV / Country / Description - added by TZH -->
-                                                <p class="text-start mb-1" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;"> 
+                                                <p class="text-start mb-1 mobile-fs-7" > 
                                                          {{ listing["bottler"] }} | {{ listing["drinkType"] }} | {{ listing["typeCategory"] }} | {{ listing["abv"] }} ABV | {{ listing["originCountry"] }} 
                                                 </p>
 
                                             
                                             <!-- official description --->
-                                            <div class="col-10">
+                                            <div class="col-10 mobile-view-hide">
                                                 <div class="row">
                                                     <div v-if="listing.officialDesc.length > 142">
                                                         <p v-if="!showFullDescription[listing._id.$oid]" style="margin-bottom:0.2rem;"><!-- tzh added truncated description --->
@@ -832,8 +833,8 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <!-- rating -->
-                                            <div class="col-2 d-flex align-items-center ps-lg-3">
+                                            <!-- rating-->
+                                            <div class="col-2 d-flex align-items-center ps-lg-3 mobile-view-hide">
                                                 <p class="fs-3 fw-bold rating-text text-end d-flex align-items-center" style="margin-bottom:0.1rem;">
                                                     {{ getRatings(listing) }}
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
@@ -845,7 +846,7 @@
                                             
                                             <div class="row">
                                                     
-                                                    <div class="col-4">
+                                                    <div class="col-4 mobile-view-hide">
                                                         <router-link :to="{ path: '/listing/view/' + listing._id.$oid }" >
                                                             <button type="button" class="btn primary-btn-outline-thick p-1 px-2" style="font-size:90%;"> See User Reviews </button>
                                                         </router-link>
@@ -869,6 +870,17 @@
                                                 date
                                             </h5>
                                         </div> -->
+                                    </div>
+                                    <!--mobile view rating -->
+                                    <div class="mobile-col-2 mobile-pe-0 mobile-ps-1">
+                                        <div class="d-flex flex-column align-items-center ps-lg-3 mobile-view-show">
+                                            <p class="fs-3 fw-bold rating-text text-end d-flex align-items-center mobile-fs-5" style="margin-bottom:0.1rem;">
+                                                {{ getRatings(listing) }}
+                                            </p>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-star-fill ms-2 me-2" viewBox="0 0 16 16">
+                                                <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                                            </svg>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

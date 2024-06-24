@@ -1185,6 +1185,9 @@ button.primary-btn:hover{
     .mobile-pt-4 {
         padding-top:1.5rem !important;
     }
+    .mobile-pb-0 {
+        padding-bottom:0 !important;
+    }
 }
 
 
@@ -1257,6 +1260,21 @@ button.primary-btn:hover{
 
 @media (max-width: 991px){
     .producer-bottle-listing-page-image {
+        width:100%; 
+        height:auto;
+        aspect-ratio: 1 / 1; /* Ensures the image remains a square */
+        object-fit: cover; /* Ensures the image covers the entire area without stretching */
+    }
+}    
+
+.producer-bottle-listing-page-bottle-image {
+    max-width: 150px; 
+    height: 150px;
+}
+
+
+@media (max-width: 991px){
+    .producer-bottle-listing-page-bottle-image {
         width:100%; 
         height:auto;
         aspect-ratio: 1 / 1; /* Ensures the image remains a square */
