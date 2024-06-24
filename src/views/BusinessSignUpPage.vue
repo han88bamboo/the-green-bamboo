@@ -150,21 +150,41 @@
                             </div>
                         </div>
 
-                        <!-- Input: Email -->
-                            <div class="form-group mb-3">
-                                <p class="text-start mb-1">Email <span style="color: red;">*</span></p>
-                                <input type="text" class="form-control" style="border-color: black" v-model="email" id="email" placeholder="Email">
-                                <span v-if="missingEmail" class="text-danger">Please enter an email.</span>
-                                <span v-if="invalidEmail" class="text-danger">Please enter a valid email.</span>
-                            </div>
-
-
                         <!-- Input: Is business account on the site already, provide link -->
-                            <div class="form-group mb-3">
-                                <p class="text-start mb-1">Representative's Relationship to Brand/Venue <span style="color: red;">*</span></p>
-                                <input type="text" class="form-control" style="border-color: black" v-model="relationship" id="relationship" placeholder="Relationship">
-                                <span v-if="missingRelationship" class="text-danger">Please enter your relationship with the business.</span>
+                        <div class="form-group mb-3">
+                            <p class="text-start mb-1">Representative's Relationship to Brand/Venue <span style="color: red;">*</span></p>
+                            <input type="text" class="form-control" style="border-color: black" v-model="relationship" id="relationship" placeholder="Relationship">
+                            <span v-if="missingRelationship" class="text-danger">Please enter your relationship with the business.</span>
+                        </div>
+
+                        <!-- Input: Email -->
+                        <div class="form-group mb-3">
+                            <p class="text-start mb-1">Email Address (This will be the email tied to the account) <span style="color: red;">*</span></p>
+                            <input type="text" class="form-control" style="border-color: black" v-model="email" id="email" placeholder="Email">
+                            <span v-if="missingEmail" class="text-danger">Please enter an email.</span>
+                            <span v-if="invalidEmail" class="text-danger">Please enter a valid email.</span>
+                        </div>
+
+                        <!-- Input Reference Document -->
+                        <div class="form-group">
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <p class="text-start my-auto">Upload Reference Document <span style="color: red;">*</span></p>
+                                    <div>
+                                        <a v-if="fileName" :href="pdfPreview" target="_blank" class="me-2 my-auto" style="font-size: 12px;">
+                                            {{ fileName.length > 50 ? fileName.slice(0, 50) + '...' : fileName }}
+                                        </a>
+                                        <button type="button" class="btn" style="background-color: white; border: 1px solid black; border-radius: 0px;">
+                                            <input type="file" id="actual-btn" hidden accept="application/pdf" @change="handleFileSelect"/>
+                                            <label for="actual-btn">Upload Document</label>
+                                        </button>
+                                    </div>
+                                </div>
+                                <span v-if="missingDocument" class="text-danger">Please upload a reference document.</span>
                             </div>
+                            <p class="text-start" style="font-style: italic; font-size: 15px;">Documents should reflect the relevant business name and location details to verify your identity as the company representative. </p>
+                        
+                        </div>
 
 
                         </form>
@@ -238,7 +258,7 @@
 
                 <div class="row">
                     <div class="col-lg-8 col-md-12">
-                        <button type="submit" class="btn btn-lg secondary-btn-border-thick mx-auto mb-3" @click="signUp">Sign Up</button>
+                        <button type="submit" class="btn btn-lg secondary-btn-border-thick mx-auto mb-3" @click="signUp">Register for Account</button>
                     </div>
                 </div>
 
@@ -282,6 +302,7 @@
                 missingRelationship:false,
                 missingSelectedCountry:false,
                 missingPlan:false,
+                missingDocument:false,
 
                 // form variables
                 businessType:'',
@@ -294,6 +315,10 @@
                 relationship:'',
                 selectedCountry:'',
                 countries: [],
+                fileName:'',
+                selectedFile: null,
+                pdfPreview: null,
+                pdfBase64:'',
                 selectedMonthlyPricing:false,
                 selectedYearlyPricing:false,
                 selectedPricing:'',
@@ -346,6 +371,18 @@
                         this.dataLoaded = null;
                     }
             },
+            handleFileSelect(event){
+                const file = event.target.files[0];
+
+                if (file && file.type === "application/pdf") {
+                    this.selectedFile = file;
+                    this.fileName = file.name
+                    this.pdfPreview = URL.createObjectURL(file);
+                } else {
+                    this.pdfPreview = null;
+                }
+            },
+
             goBack(){
                 this.$router.go(-1)
             },
@@ -413,10 +450,24 @@
                     errorCount++
                 }
 
+                // Document validation
+                if(this.pdfPreview == null){
+                    this.missingDocument = true
+                    errorCount++
+                }
+
                 if(errorCount>0){
                     return null
                 }
-`               `
+
+                // convert pdf to base64
+                if (this.selectedFile) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        this.pdfBase64 = e.target.result; // Assigns Base64 string to pdfBase64
+                    };
+                    reader.readAsDataURL(this.selectedFile);
+                }
                 let joinDate = new Date().toISOString();
                 let submitAPI =  "http://127.0.0.1:5031/createAccountRequest"
                 let submitData = {
@@ -428,11 +479,12 @@
                     "businessLink": this.businessLink,
                     "firstName": this.firstName,
                     "lastName": this.lastName,
-                    "email": this.email,
                     "relationship": this.relationship,
+                    "email": this.email,
+                    "referenceDocument": this.pdfBase64,
                     "photo": "",
                     "joinDate": joinDate,
-                    "reviewStatus": true
+                    "reviewStatus": true,
                 }
                 this.createAccount(submitAPI,submitData)
             },
@@ -491,6 +543,8 @@
                 this.missingLastName=false
                 this.missingRelationship=false
                 this.missingSelectedCountry=false
+                this.missingPlan=false
+                this.missingDocument=false
             },
         },
     }
