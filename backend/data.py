@@ -70,8 +70,8 @@ class countries:
 @dataclass
 class drinkTypes:
     drinkType: str
-    typeCategory: Optional[list] = None
     badgePhoto: str
+    typeCategory: Optional[list] = None
 
 # ========= flavourTags =========
 @dataclass
@@ -163,13 +163,13 @@ class requestInaccuracy:
 class requestListings:
     listingName: str
     bottler: str
-    originCountry: Optional[str] = None
     drinkType: str
     sourceLink: str
     brandRelation: str
     reviewStatus: bool
     userID: object
     photo: str
+    originCountry: Optional[str] = None
     producerID: Optional[object] = None
     producerNew: Optional[str] = None
     typeCategory: Optional[str] = None

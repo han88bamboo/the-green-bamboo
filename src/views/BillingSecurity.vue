@@ -108,7 +108,7 @@
     import NavBar from '@/components/NavBar.vue';
     import { loadStripe } from '@stripe/stripe-js';
 
-    export default{
+    export default {
         name: 'BillingSecurity',
         components: {
             NavBar
@@ -120,7 +120,7 @@
                 yearlyPriceId: "price_1PV7PsDnjokAiSGz02ZZTJdu",
 
                 // owner details
-                stripe: loadStripe('pk_test_51PV6CNDnjokAiSGzhdAambzILFYOByYtxMRMsVQCcQobPIxlFDi2a6gKYe8BQD021FQxFUejn4eIcjSLBHsHbD9A00T4Z8sPPl'),
+                stripe: null,
                 elements: null,
 
                 // customer details
@@ -138,6 +138,8 @@
             }
         },
         async mounted(){
+
+            this.stripe = await loadStripe('pk_test_51PV6CNDnjokAiSGzhdAambzILFYOByYtxMRMsVQCcQobPIxlFDi2a6gKYe8BQD021FQxFUejn4eIcjSLBHsHbD9A00T4Z8sPPl');
 
             async function initiateProcess() {
                 await this.create_customer();
@@ -185,20 +187,12 @@
                     }
             },
 
-
             async create_customer() {
                 try {
                     const response = await this.$axios.post('http://127.0.0.1:5009/create-customer',
                         {
                             customerEmail: this.customerEmail,
                             customerName: this.customerName,
-                            address: {
-                                city: "Brothers",
-                                country: "US",
-                                line1: "27 Fredrick Ave",
-                                postal_code: "97712",
-                                state: "CA",
-                            }
                         }, {
                         headers: {
                             'Content-Type': 'application/json'
@@ -236,7 +230,7 @@
 
             async paymentElement() {
 
-                const stripe = await loadStripe('pk_test_51PV6CNDnjokAiSGzhdAambzILFYOByYtxMRMsVQCcQobPIxlFDi2a6gKYe8BQD021FQxFUejn4eIcjSLBHsHbD9A00T4Z8sPPl');
+                const stripe = this.stripe;
                 const clientSecret = this.clientSecret;
                 const appearance = {
                     theme: 'stripe',
@@ -250,66 +244,63 @@
 
             },
 
-            async createAccount(){
+            async processPayment() {
 
-                // const stripe = this.stripe;
-                // const elements = this.elements;
+                const stripe = this.stripe;
+                const elements = this.elements;
 
-                // const {error} = await stripe.confirmPayment({
-                //     elements,
-                //     confirmParams: {
-                //         // TO CHANGE
-                //         return_url: "https://localhost:8080/",
-                //     }
-                // });
-
-                // if (error) {
-                //     // immediate error (for example, payment details incomplete)
-                //     const messageContainer = document.querySelector('#error-message');
-                //     messageContainer.textContent = error.message;
+                const { error } = await stripe.confirmPayment({
+                    elements,
+                    confirmParams: {
+                    // TODO: change return_url
+                    return_url: "http://localhost:8080/",
+                    },
+                });
+                console.log(error.type);
+                // if (error.type === "card_error" || error.type === "validation_error") {
+                //     showMessage(error.message);
                 // } else {
-                //     // success, redirection to return_url
-                //     // TODO: redirect to return_url
+                //     showMessage("An unexpected error occurred.");
                 // }
 
-                // // Retrieve the "payment_intent_client_secret" query parameter appended to
-                // // your return_url by Stripe.js
-                // const clientSecret = new URLSearchParams(window.location.search).get(
-                //     'payment_intent_client_secret'
-                // );
-
-                // // Retrieve the PaymentIntent
-                // stripe.retrievePaymentIntent(clientSecret).then(({paymentIntent}) => {
-                //     const message = document.querySelector('#message')
-
-                //     // Inspect the PaymentIntent `status` to indicate the status of the payment
-                //     // to your customer.
-                //     //
-                //     // Some payment methods will [immediately succeed or fail][0] upon
-                //     // confirmation, while others will first enter a `processing` state.
-                //     //
-                //     // [0]: https://stripe.com/docs/payments/payment-methods#payment-notification
-                //     switch (paymentIntent.status) {
-                //         case 'succeeded':
-                //         message.innerText = 'Success! Payment received.';
-                //         break;
-
-                //         case 'processing':
-                //         message.innerText = "Payment processing. We'll update you when payment is received.";
-                //         break;
-
-                //         case 'requires_payment_method':
-                //         message.innerText = 'Payment failed. Please try another payment method.';
-                //         // Redirect your user back to your payment page to attempt collecting
-                //         // payment again
-                //         break;
-
-                //         default:
-                //         message.innerText = 'Something went wrong.';
-                //         break;
-                //     }
-                // });
             },
+
+            async checkStatus() {
+                const clientSecret = new URLSearchParams(window.location.search).get(
+                    "payment_intent_client_secret"
+                );
+
+                if (!clientSecret) {
+                    return;
+                }
+
+                const stripe = this.stripe;
+
+                const { paymentIntent } = await stripe.retrievePaymentIntent(clientSecret);
+
+                console.log(paymentIntent.status);
+                // switch (paymentIntent.status) {
+                //     case "succeeded":
+                //     showMessage("Payment succeeded!");
+                //     break;
+                //     case "processing":
+                //     showMessage("Your payment is processing.");
+                //     break;
+                //     case "requires_payment_method":
+                //     showMessage("Your payment was not successful, please try again.");
+                //     break;
+                //     default:
+                //     showMessage("Something went wrong.");
+                //     break;
+                // }
+            },
+
+            async createAccount () {
+                await this.processPayment();
+                await this.checkStatus();
+            }
+
+        
         }
     }
 

@@ -80,9 +80,9 @@
                         
                         <!-- Profile Type -->
                         <!-- Radio for would recommend and would buy again -->
-                            <div class = 'row justify-content-start mb-3 text-start'>
+                            <div class='row justify-content-start mb-3 text-start'>
                                 <p class="text-start mb-1">Choose Your Profile Type <span style="color: red;">*</span></p>
-                                <div class = "col-md-12 justify-content-between">
+                                <div class="col-md-12 justify-content-between">
                                     <div class="form-check form-check-inline">
                                         <input class="form-check-input" type="radio" id="inlineCheckbox1" v-model="businessType" value="producer" name="business">
                                         <label class="form-check-label text-start fw-bold" for="inlineCheckbox1">Brand/Producer</label>
