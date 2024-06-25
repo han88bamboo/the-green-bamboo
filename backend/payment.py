@@ -35,17 +35,11 @@ def create_customer():
     data = request.get_json()
     customer_email = data['customerEmail']
     customer_name = data['customerName']
-    # address = data['address']
 
     try: 
         customer = stripe.Customer.create(
             email=customer_email,
             name=customer_name,
-            # shipping={
-            #     "address": address,
-            #     "name": customer_name,
-            # },
-            # address=address,
         )
         return jsonify(customerId=customer.id), 200
 

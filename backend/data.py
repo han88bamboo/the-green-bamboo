@@ -46,7 +46,9 @@ class accountRequests:
     relationship: str
     photo: str
     joinDate: datetime
-    reviewStatus: bool
+    referenceDocument: str
+    isPending: bool
+    isApproved: bool
 
 # ========= badges =========
 @dataclass

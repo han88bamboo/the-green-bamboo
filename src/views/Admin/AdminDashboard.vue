@@ -773,18 +773,47 @@
                             </div>
                         </div>
                         <div>
-                            <div v-if="pendingAccountRequests.length > 0" class="row" style="height: 525px; overflow: auto">
-                                <div v-for="request in pendingAccountRequests" class="col-md-6 col-lg-4 pb-4 pb-4" v-bind:key="request._id">
-                                    <div class="card h-100" style="background-color: white">
+                            <div class="my-2">
+                                <!-- filter request -->
+                                <div class="form-check form-check-inline alert alert-warning ps-5" role="alert">
+                                    <input class="form-check-input" type="checkbox" value="pendingApproval" id="flexCheckDefault" v-model="selectedAccountRequests" @change="filterAccountRequests">
+                                    <label class="form-check-label" for="flexCheckDefault">
+                                        Pending Approval
+                                    </label>
+                                </div>
+                                <div class="form-check form-check-inline alert alert-info ps-5" role="alert">
+                                    <input class="form-check-input" type="checkbox" value="pendingPayment" id="flexCheckChecked" v-model="selectedAccountRequests" @change="filterAccountRequests">
+                                    <label class="form-check-label" for="flexCheckChecked">
+                                        Pending Payment
+                                    </label>
+                                </div>
+                                <div class="form-check form-check-inline alert alert-success ps-5" role="alert">
+                                    <input class="form-check-input" type="checkbox" value="verified" id="flexCheckChecked" v-model="selectedAccountRequests" @change="filterAccountRequests">
+                                    <label class="form-check-label" for="flexCheckChecked">
+                                        Verified
+                                    </label>
+                                </div>
+                                <div class="form-check form-check-inline alert alert-danger ps-5" role="alert">
+                                    <input class="form-check-input" type="checkbox" value="rejected" id="flexCheckChecked" v-model="selectedAccountRequests" @change="filterAccountRequests">
+                                    <label class="form-check-label" for="flexCheckChecked">
+                                        Rejected
+                                    </label>
+                                </div>
+                            
+                            </div>
+
+                            <div v-if="filteredAccountRequests.length > 0" class="row" style="height: 525px; overflow: auto">
+                                <div v-for="request in filteredAccountRequests" class="col-md-6 col-lg-4 pb-4 pb-4" v-bind:key="request._id">
+                                    <div class="card h-100" :style="{ backgroundColor: request.bgColor}">
                                         <div class="card-body">
                                         <span class="fw-bold">Business Information</span>
                                         <hr>
                                         <ul class="list-group list-group-flush text-start">
-                                            <li class="list-group-item"><span class="fw-bold">Type: </span> {{ request.businessType }} </li>
-                                            <li class="list-group-item"><span class="fw-bold">Name: </span> {{ request.businessName }} </li>
-                                            <li class="list-group-item"><span class="fw-bold">Description: </span> {{ request.businessDesc }} </li>
-                                            <li class="list-group-item"><span class="fw-bold">Country: </span> {{ request.country }} </li>
-                                            <li class="list-group-item"><span class="fw-bold">Site: </span> 
+                                            <li class="list-group-item" :class="request.liClass"><span class="fw-bold">Type: </span> {{ request.businessType }} </li>
+                                            <li class="list-group-item" :class="request.liClass"><span class="fw-bold">Name: </span> {{ request.businessName }} </li>
+                                            <li class="list-group-item" :class="request.liClass"><span class="fw-bold">Description: </span> {{ request.businessDesc }} </li>
+                                            <li class="list-group-item" :class="request.liClass"><span class="fw-bold">Country: </span> {{ request.country }} </li>
+                                            <li class="list-group-item" :class="request.liClass"><span class="fw-bold">Site: </span> 
                                                 <router-link v-if="request.businessLink" :to="{ path: request.businessLink }" style="color: inherit;">
                                                     Link
                                                 </router-link> 
@@ -795,19 +824,26 @@
                                         <span class="fw-bold">Requestor Information</span>
                                         <hr>
                                         <ul class="list-group list-group-flush text-start">
-                                            <li class="list-group-item"><span class="fw-bold">First Name: </span> {{ request.firstName }} </li>
-                                            <li class="list-group-item"><span class="fw-bold">Last Name: </span> {{ request.lastName }} </li>
-                                            <li class="list-group-item"><span class="fw-bold">Email: </span> {{ request.email }} </li>
-                                            <li class="list-group-item"><span class="fw-bold">Relationship: </span> {{ request.relationship }} </li>
-                                            <li class="list-group-item"><span class="fw-bold">Price Plan: </span> {{ request.pricing }} </li>
+                                            <li class="list-group-item" :class="request.liClass"><span class="fw-bold">First Name: </span> {{ request.firstName }} </li>
+                                            <li class="list-group-item" :class="request.liClass"><span class="fw-bold">Last Name: </span> {{ request.lastName }} </li>
+                                            <li class="list-group-item" :class="request.liClass"><span class="fw-bold">Relationship: </span> {{ request.relationship }} </li>
+                                            <li class="list-group-item" :class="request.liClass"><span class="fw-bold">Email: </span> {{ request.email }} </li>
+                                            <li class="list-group-item" :class="request.liClass"><span class="fw-bold">Reference: </span>
+                                                <a @click.prevent="openDocumentInNewTab(request.referenceDocument)" style="text-decoration: underline; cursor: pointer;">View Document</a>
+                                            </li>
+                                            <li class="list-group-item" :class="request.liClass"><span class="fw-bold">Price Plan: </span> {{ request.pricing }} </li>
 
 
                                         </ul>
                                         </div>
-                                        <div class="card-footer">
-                                            <button v-if="checkBusinessExist(request.businessLink)" class="btn btn-success btn-sm mx-3 my-1" type="button" style="width: 75px;" @click="reviewAccountRequest(request, 'approve')" data-bs-toggle="modal" data-bs-target="#addBusinessModal">Approve</button>
+                                        <div v-if="request.isPending" class="card-footer">
+                                            <!-- <button v-if="checkBusinessExist(request.businessLink)" class="btn btn-success btn-sm mx-3 my-1" type="button" style="width: 75px;" @click="reviewAccountRequest(request, 'approve')" data-bs-toggle="modal" data-bs-target="#addBusinessModal">Approve</button>
                                             <button v-else class="btn btn-primary btn-sm mx-3 my-1" type="button" style="width: 75px;" @click="reviewAccountRequest(request, 'add')" data-bs-toggle="modal" data-bs-target="#addBusinessModal">Add</button>
-                                            <button class="btn btn-danger btn-sm mx-3 my-1" type="button" style="width: 75px;" @click="reviewAccountRequest(request, 'reject')">Reject</button>
+                                            <button class="btn btn-danger btn-sm mx-3 my-1" type="button" style="width: 75px;" @click="reviewAccountRequest(request, 'reject')">Reject</button> -->
+                                            
+                                            <button v-if="request.status == 'pendingApproval'" class="btn btn-success btn-sm mx-3 my-1" type="button" style="width: 125px;" @click="reviewAccountRequest(request, 'approve')">Approve</button>
+                                            <button v-if="request.status == 'pendingPayment'" class="btn btn-primary btn-sm mx-3 my-1" type="button" style="width: 125px;" @click="reviewAccountRequest(request, 'resend')">Resend Email</button>
+                                            <button v-if="request.isPending" class="btn btn-danger btn-sm mx-3 my-1" type="button" style="width: 125px;" @click="reviewAccountRequest(request, 'reject')">Reject</button>
                                         </div>
                                     </div>
                                 </div>
@@ -815,7 +851,7 @@
                                 
                             </div>
                             <div v-else>
-                                No New Business Account Request
+                                No Business Account Requests to Show
                             </div>
                         </div>
                     </div>
@@ -843,6 +879,7 @@
                     observationTags: [],
                     modRequests: [],
                     accountRequests: [],
+                    selectedAccountRequests: ["pendingApproval", "pendingPayment"],
                     producers: [],
                     venues: [],
                     countries: [],
@@ -851,7 +888,7 @@
                     editedObservationTags: [],
                     editedFlavourTags: [],
                     pendingModRequests: [],
-                    pendingAccountRequests: [],
+                    filteredAccountRequests: [],
                     moderators:[],
 
                     observationToDelete:'',
@@ -1027,7 +1064,31 @@
                     try {
                         const response = await this.$axios.get('http://127.0.0.1:5000/getAccountRequests');
                         this.accountRequests = response.data;
-                        this.pendingAccountRequests = this.accountRequests.filter(request => request.reviewStatus);
+
+                        this.accountRequests = response.data.map(request => {
+                            if (request.isPending && !request.isApproved) {
+                                request.status = 'pendingApproval';
+                                request.bgColor = '#FFF2CD';
+                                request.liClass = 'list-group-item-warning';
+                            } else if (request.isPending && request.isApproved) {
+                                request.status = 'pendingPayment';
+                                request.bgColor = '#D0F4FC';
+                                request.liClass = 'list-group-item-info';
+                            } else if (!request.isPending && request.isApproved) {
+                                request.status = 'verified';
+                                request.bgColor = '#D1E6DD';
+                                request.liClass = 'list-group-item-success';
+                            } else {
+                                request.status = 'rejected';
+                                request.bgColor = '#F9D8DA';
+                                request.liClass = 'list-group-item-danger';
+                            }
+                            return request;
+                        });
+
+                        this.filteredAccountRequests = this.accountRequests.filter(request => {
+                            return this.selectedAccountRequests.includes(request.status)
+                        });
                     } 
                     catch (error) {
                         console.error(error);
@@ -1452,7 +1513,7 @@
                     // update frontend
                     const index = this.accountRequests.findIndex(request => request._id.$oid == requestID);
                     this.accountRequests[index].reviewStatus = false;
-                    this.pendingAccountRequests = this.accountRequests.filter(request => request.reviewStatus);
+                    this.filteredAccountRequests = this.filterAccountRequests();
 
                 }, 
                 async createBusiness() {
@@ -2121,6 +2182,28 @@
                     this.errorDeleteFlavour = false;
                     this.subTagToDelete = ''
                     this.familyTagToDelete = ''
+                },
+
+                filterAccountRequests() {
+                    this.filteredAccountRequests = this.accountRequests.filter(request => {
+                        return this.selectedAccountRequests.includes(request.status)
+                    });
+                    
+                },
+                openDocumentInNewTab(referenceDocument) {
+                    const byteCharacters = atob(referenceDocument);
+                    const byteNumbers = new Array(byteCharacters.length);
+                    for (let i = 0; i < byteCharacters.length; i++) {
+                        byteNumbers[i] = byteCharacters.charCodeAt(i);
+                    }
+                    const byteArray = new Uint8Array(byteNumbers);
+                    const blob = new Blob([byteArray], { type: 'application/pdf' });
+                    const blobUrl = URL.createObjectURL(blob);
+                    
+                    const newTab = window.open(blobUrl, '_blank');
+                    if (!newTab || newTab.closed || typeof newTab.closed == 'undefined') {
+                        alert('Pop-up blocker is preventing the document from opening. Please allow pop-ups for this site.');
+                    }
                 },
             }
         }

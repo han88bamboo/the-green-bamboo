@@ -375,9 +375,20 @@
                 const file = event.target.files[0];
 
                 if (file && file.type === "application/pdf") {
-                    this.selectedFile = file;
                     this.fileName = file.name
                     this.pdfPreview = URL.createObjectURL(file);
+
+                    // convert to base64
+                    this.selectedFile = file;
+
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        this.pdfBase64 = e.target.result; // Assigns Base64 string to pdfBase64
+                        this.pdfBase64 = this.pdfBase64.split('data:application/pdf;base64,')[1];
+                    };
+                    reader.readAsDataURL(this.selectedFile);
+
+
                 } else {
                     this.pdfPreview = null;
                 }
@@ -460,14 +471,6 @@
                     return null
                 }
 
-                // convert pdf to base64
-                if (this.selectedFile) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        this.pdfBase64 = e.target.result; // Assigns Base64 string to pdfBase64
-                    };
-                    reader.readAsDataURL(this.selectedFile);
-                }
                 let joinDate = new Date().toISOString();
                 let submitAPI =  "http://127.0.0.1:5031/createAccountRequest"
                 let submitData = {
@@ -484,7 +487,8 @@
                     "referenceDocument": this.pdfBase64,
                     "photo": "",
                     "joinDate": joinDate,
-                    "reviewStatus": true,
+                    "isPending": true,
+                    "isApproved": false,
                 }
                 this.createAccount(submitAPI,submitData)
             },
