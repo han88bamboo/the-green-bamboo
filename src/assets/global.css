@@ -1137,16 +1137,16 @@ button.primary-btn:hover{
 
 @media (max-width: 991px){
     .mobile-ps-3 {
-        padding-left:1rem;
+        padding-left:1rem !important;
     }
     .mobile-pe-3 {
-        padding-right:1rem;
+        padding-right:1rem !important;
     }
 }
 
 @media (max-width: 991px){
     .mobile-ps-4 {
-        padding-left:1.5rem;
+        padding-left:1.5rem ;
     }
     .mobile-pe-4 {
         padding-right:1.5rem;
@@ -1181,6 +1181,15 @@ button.primary-btn:hover{
 @media (max-width: 991px){
     .mobile-pt-0 {
         padding-top:0 !important;
+    }
+    .mobile-pt-1 {
+        padding-top:0.25rem !important;
+    }
+    .mobile-pt-2 {
+        padding-top:0.5rem !important;
+    }
+    .mobile-pt-3 {
+        padding-top:1rem !important;
     }
     .mobile-pt-4 {
         padding-top:1.5rem !important;
@@ -1273,28 +1282,28 @@ button.primary-btn:hover{
 }
 
 
-@media (max-width: 991px){
-    .producer-bottle-listing-page-bottle-image {
+
+.producer-bottle-listing-page-bottle-image {
         width:100%; 
         height:auto;
         aspect-ratio: 1 / 1; /* Ensures the image remains a square */
         object-fit: cover; /* Ensures the image covers the entire area without stretching */
     }
-}    
+    
 
 .producer-profile-latest-updates-image {
     max-width:128px;
     height: 128px;
 }
 
-@media (max-width: 991px){
-    .producer-profile-latest-updates-image {
+
+.producer-profile-latest-updates-image {
         width:100%; 
         height:auto;
         aspect-ratio: 1 / 1; /* Ensures the image remains a square */
         object-fit: cover; /* Ensures the image covers the entire area without stretching */
     }
-}    
+    
 
 .producer-profile-latest-updates-heart {
     width:25px;
@@ -1394,4 +1403,14 @@ button.primary-btn:hover{
         min-height: 100px;
         position:relative;
     }
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
 }

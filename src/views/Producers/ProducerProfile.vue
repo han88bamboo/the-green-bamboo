@@ -212,7 +212,7 @@
                         <div class="row">
                             <!-- header -->
                             <div class="col-12">
-                                <p class="text-body-secondary text-start fs-3 fw-bold m-0 mobile-fs-6">Latest Updates from {{ specified_producer["producerName"] }}</p>
+                                <p class="text-body-secondary text-start fs-4 fw-bold m-0 mobile-fs-6">Latest Updates from {{ specified_producer["producerName"] }}</p>
                             </div>
                         </div>
 
@@ -353,7 +353,7 @@
                         <div class="row" v-if="hasUpdates">
 
                             <!-- Toggle Button -->
-                            <button 
+                            <button v-if="remainingUpdates.length > 0"
                                 type="button" 
                                 class="btn tertiary-text text-decoration-underline pt-2 no-margin border border-0" 
                                 data-bs-toggle="collapse" 
@@ -361,16 +361,16 @@
                                 aria-expanded="false" 
                                 aria-controls="collapseMoreUpdates" 
                                 @click="checkToShowRemainingUpdates()">
-                                 View <span v-if="showRemainingUpdates">less</span><span v-else>more</span> 
+                                 View <span v-if="showRemainingUpdates">less ↑</span><span v-else>more updates↓</span> 
                             </button>
-
+                            <p v-else></p>
                             <!-- show remaining updates when "view more" is clicked -->
                             <div class="collapse" id="collapseMoreUpdates">
 
-                                <!-- check if there are any updates -->
+                                <!-- check if there are any updates 
                                 <p v-if="remainingUpdates.length > 0" class="text-body-secondary fs-5 fw-bold m-0 mobile-fs-6 mobile-mb-2">Viewing {{ remainingUpdates.length }} more updates ↓</p>
                                 <p v-else class="fs-5 fst-italic m-0 mobile-fs-6 mobile-mb-2">There are no more updates to view!</p>
-
+                                -->
                                 <!-- for each update -->
                                 <div v-for="update in remainingUpdates" v-bind:key="update._id">
                                     <div class="row">
@@ -485,7 +485,7 @@
                             aria-expanded="false" 
                             aria-controls="collapseQnA" 
                             style="font-weight:bold;"
-                            @click="checkToShowQnA()">Q&As for {{ specified_producer["producerName"] }} ↓</button>
+                            @click="checkToShowQnA()">Q&As for {{ specified_producer["producerName"] }} ↑</button>
                         <button v-else
                             type="button" 
                             class="primary-btn-less-round tertiary-text pt-2 pb-2 border" 
@@ -494,9 +494,9 @@
                             aria-expanded="false" 
                             aria-controls="collapseQnA" 
                             style="font-weight:bold;"
-                            @click="checkToShowQnA()">Q&As for {{ specified_producer["producerName"] }}</button>
-                        <!-- show Q&A when button is clicked -->
-                        <div class="collapse pe-0 ps-0" id="collapseQnA">
+                            @click="checkToShowQnA()">Q&As for {{ specified_producer["producerName"] }} ↓</button>
+                    <!-- show Q&A when button is clicked -->
+                     <div class="collapse pe-0 ps-0" id="collapseQnA">
                     <!-- q&a -->
                     <br>
                     <div class="col-xl-12 col-lg-4 col-md-6 col-12">
@@ -692,16 +692,16 @@
                             </span>
                         </div>
                         <!-- search -->
-                        <div class="col-8 pe-lg-4 mobile-col-10 mobile-ps-3 mobile-pe-0">
+                        <div class="col-8 ps-0 pe-3 mobile-col-10 mobile-ps-3 mobile-pe-0">
                             <!-- [if] user type is producer -->
                             <div v-if="correctProducer || isAdmin" class="row">
-                                <div class="col-2 d-grid no padding">
+                                <div class="col-3 d-grid no padding mobile-pe-0">
                                     <button type="button" class="btn primary-btn-outline-thick rounded-0 mobile-pe-2 mobile-ps-2" v-on:click="editCatalogue()">
                                         <a class="default-clickable-text mobile-fs-7 mobile-view-hide"> Edit catalogue </a> 
                                         <a class="default-clickable-text mobile-fs-7 mobile-view-show"> Edit </a> 
                                     </button>
                                 </div>
-                                <div class="col-2 d-grid no padding">
+                                <div class="col-3 d-grid no padding mobile-pe-0">
                                     <button type="button" class="btn primary-btn-outline-thick rounded-0 mobile-pe-2 mobile-ps-2">
                                         <router-link :to="`/listing/create`" class="default-clickable-text mobile-fs-7 mobile-view-hide">
                                             Add Listing
@@ -711,8 +711,9 @@
                                         </router-link>
                                     </button>
                                 </div>
-                                <div class="col-7 d-grid no padding">
-                                    <input class="search-bar form-control rounded fst-italic" type="text" placeholder="Search for expressions" style="height: 50px;" v-model="searchExpressions" v-on:keyup.enter="searchForExpressions()">
+                                <div class="col-6 d-grid no padding mobile-pe-0">
+                                    <input class="search-bar form-control rounded fst-italic mobile-view-hide" type="text" placeholder="Search for expressions" style="height: 50px;" v-model="searchExpressions" v-on:keyup.enter="searchForExpressions()">
+                                    <input class="search-bar form-control rounded fst-italic mobile-view-show mobile-fs-7" type="text" placeholder="Search expressions" style="height: 50px;" v-model="searchExpressions" v-on:keyup.enter="searchForExpressions()">
                                 </div>
                             </div>
                             <!-- [else] user type is NOT producer -->
@@ -748,7 +749,8 @@
                             </div>
                         </div>
                     </div>
-                    <div class="row scrollable-expressions-none">
+                    <!-- scrollable expressions for desktop view TZH -->
+                    <div class="row scrollable-expressions-none mobile-view-hide">
                         <!-- v-loop for each listing -->
                         <div class="container text-start">
                             <div v-for="listing in lazyListings" v-bind:key="listing._id" class="p-3 mobile-pb-0">
@@ -758,23 +760,190 @@
                                         <router-link :to="{ path: '/listing/view/' +listing._id.$oid}" class="default-text-no-background">
                                             <img :src=" 'data:image/jpeg;base64,' + (listing['photo'] || defaultProfilePhoto)" class="producer-bottle-listing-page-bottle-image" >
                                         </router-link>
-                                        <!-- edit listing -->
-                                        <button v-if="(correctProducer || isAdmin) && editingListing" type="button" class="btn tertiary-btn reverse-clickable-text m-1">
-                                            <router-link :to="`/listing/edit/${listing._id.$oid}`" class="reverse-clickable-text">
-                                                Edit Listing
-                                            </router-link>
-                                        </button>
-                                        <button v-else-if="editingListing && user.modType.includes(listing.drinkType) && listing.allowMod" type="button" class="btn tertiary-btn reverse-clickable-text m-1">
-                                            <router-link :to="`/listing/edit/${listing._id.$oid}`" class="reverse-clickable-text">
-                                                Edit Listing
-                                            </router-link>
-                                        </button>
-                                        <!-- delete listing -->
-                                        <button v-if="deletingListing" type="button" class="btn btn-danger reverse-clickable-text p-1" v-on:click="deleteListings(listing)">
-                                            <a class="reverse-clickable-text">
-                                                Delete Listing
-                                            </a>
-                                        </button>
+                                        <div class="row">
+                                            <!-- edit listing -->
+                                            <div class="col-1">
+                                            <button v-if="(correctProducer || isAdmin) && editingListing" type="button" class="icon-btn">
+                                                <router-link :to="`/listing/edit/${listing._id.$oid}`" style="color:black;">
+                                                    <svg viewBox="0 0 24 24" fill="currentColor" class="bi bi-sort-down funnel-svg-dimensions" xmlns="http://www.w3.org/2000/svg"><path d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z" ></path>
+                                                    </svg>
+                                                </router-link>
+                                            </button>
+                                            <button v-else-if="editingListing && user.modType.includes(listing.drinkType) && listing.allowMod" type="button" class="icon-btn">
+                                                <router-link :to="`/listing/edit/${listing._id.$oid}`" style="color:black;">
+                                                    <svg viewBox="0 0 24 24" fill="currentColor" class="bi bi-sort-down funnel-svg-dimensions" xmlns="http://www.w3.org/2000/svg"><path d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z" ></path>
+                                                    </svg>
+                                                </router-link>
+                                            </button>
+                                            </div>
+                                            <!-- delete listing -->
+                                            <div class="col-1"> 
+                                            <button v-if="deletingListing" type="button" class="icon-btn" v-on:click="deleteListings(listing)">
+                                                <a>
+                                                    <svg viewBox="0 0 24 24" fill="none" class="bi bi-sort-down funnel-svg-dimensions" xmlns="http://www.w3.org/2000/svg">
+                                                        <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M18 6L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6M4 6H20M16 6L15.7294 5.18807C15.4671 4.40125 15.3359 4.00784 15.0927 3.71698C14.8779 3.46013 14.6021 3.26132 14.2905 3.13878C13.9376 3 13.523 3 12.6936 3H11.3064C10.477 3 10.0624 3 9.70951 3.13878C9.39792 3.26132 9.12208 3.46013 8.90729 3.71698C8.66405 4.00784 8.53292 4.40125 8.27064 5.18807L8 6" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g>
+                                                    </svg>
+                                                </a>
+                                            </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- details -->
+                                    <div class="col-lg-10 col-12 ps-3 mobile-col-7 mobile-pe-0 mobile-ps-1">
+                                        <!-- expression name, have tried & want to try & bookmark buttons -->
+                                        <div class="row">
+                                            <!-- expression name - tzh removed pt-2 from row-->
+                                            <div class="col-7 mobile-col-12 mobile-pe-0">
+                                                <div class="row ">
+                                                    <p class="default-text fs-5 mobile-fs-6" style="margin-bottom:0.3rem;"> 
+                                                        <router-link :to="{ path: '/listing/view/' +listing._id.$oid }" class="default-text-no-background">
+                                                            <u> <b> {{ listing["listingName"] }}  </b> </u>
+                                                        </router-link>
+                                                    </p> 
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- have tried button -->
+                                            <div class="col-2 pe-0 mobile-view-hide">
+                                                <div v-html="checkDrinkLists(listing).buttons.haveTried" class="d-grid"> </div>
+                                            </div>
+                                            <!-- want to try button -->
+                                            <div class="col-2 ps-0 mobile-view-hide">
+                                                <div v-html="checkDrinkLists(listing).buttons.wantToTry" class="d-grid"> </div>
+                                            </div>
+                                            <!-- bookmark button -->
+                                            <div class="col-1 text-start p-0 mobile-view-hide">
+                                                <BookmarkIcon 
+                                                    v-if="user && Object.keys(user).length > 0" 
+                                                    :user="user" 
+                                                    :listing="listing" 
+                                                    :overlay="false"
+                                                    size="30"
+                                                    @icon-clicked="handleIconClick" />
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                             <!-- Bottler / Drink Type / Type Category / ABV / Country / Description - added by TZH -->
+                                                <p class="text-start mb-1 mobile-fs-7" > 
+                                                         {{ listing["bottler"] }} | {{ listing["drinkType"] }} | {{ listing["typeCategory"] }} | {{ listing["abv"] }} ABV | {{ listing["originCountry"] }} 
+                                                </p>
+
+                                            
+                                            <!-- official description --->
+                                            <div class="col-10 mobile-view-hide">
+                                                <div class="row">
+                                                    <div v-if="listing.officialDesc.length > 142">
+                                                        <p v-if="!showFullDescription[listing._id.$oid]" style="margin-bottom:0.2rem;"><!-- tzh added truncated description --->
+                                                            <em>{{ listing["officialDesc"].slice(0, 142) + (listing["officialDesc"].length > 142 ? '...' : '') }}</em>
+                                                            <a @click="showFullDescription[listing._id.$oid] = true" style="font-weight: bold;">(Read More)</a>
+                                                        </p>
+                                                        <p v-else style="margin-bottom:0.2rem;"> <!-- tzh added full description --->
+                                                            <em>{{ listing["officialDesc"] }}</em>
+                                                            <a @click="showFullDescription[listing._id.$oid] = false" style="font-weight: bold;">(Read Less)</a>
+                                                        </p>
+                                                    </div>
+                                                    <div v-else>
+                                                        <p style="margin-bottom:0.2rem;"> <!-- tzh added full description --->
+                                                            <em>{{ listing["officialDesc"] }}</em>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- rating-->
+                                            <div class="col-2 d-flex align-items-center ps-lg-3 mobile-view-hide">
+                                                <p class="fs-3 fw-bold rating-text text-end d-flex align-items-center" style="margin-bottom:0.1rem;">
+                                                    {{ getRatings(listing) }}
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
+                                                        <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                                                    </svg>
+                                                </p>
+                                            </div>
+
+                                            
+                                            <div class="row">
+                                                    
+                                                    <div class="col-4 mobile-view-hide">
+                                                        <router-link :to="{ path: '/listing/view/' + listing._id.$oid }" >
+                                                            <button type="button" class="btn primary-btn-outline-thick p-1 px-2" style="font-size:90%;"> See User Reviews </button>
+                                                        </router-link>
+                                                    </div>
+                                                     
+                                                     <div class="col-4">
+                                                       
+                                                    </div>
+                                                    
+                                                    <div class="col-4">
+                                                        
+                                                    </div>
+                                                </div>
+
+                                        </div>
+                                        <!-- release date -->
+                                        <!-- NOTE: can exclude for now (no data) -->
+                                        <!-- <div class="row pt-5"> 
+                                            <h5> 
+                                                <b> Release Date:</b>
+                                                date
+                                            </h5>
+                                        </div> -->
+                                    </div>
+                                    <!--mobile view rating -->
+                                    <div class="mobile-col-2 mobile-pe-0 mobile-ps-1">
+                                        <div class="d-flex flex-column align-items-center ps-lg-3 mobile-view-show">
+                                            <p class="fs-3 fw-bold rating-text text-end d-flex align-items-center mobile-fs-5" style="margin-bottom:0.1rem;">
+                                                {{ getRatings(listing) }}
+                                            </p>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-star-fill ms-2 me-2" viewBox="0 0 16 16">
+                                                <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- load more button -->
+                            <div class="d-flex justify-content-center align-items-center" v-if="lazyListings.length < filteredListings.length">
+                                <button class="btn primary-btn-less-round btn-lg mt-2 mb-3" @click="loadMoreListings">Load More</button>
+                            </div>
+                        </div>
+                    </div> <!-- end of listings -->
+                    <!-- non-scrollable expressions for mobile view TZH -->
+                        <div class="row  mobile-view-show">
+                        <!-- v-loop for each listing -->
+                        <div class="container text-start">
+                            <div v-for="listing in lazyListings" v-bind:key="listing._id" class="p-3 mobile-pb-0">
+                                <div class="row">
+                                    <!-- image  remove style="width: 150px; height: 150px;" from img tag-->
+                                    <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
+                                        <router-link :to="{ path: '/listing/view/' +listing._id.$oid}" class="default-text-no-background">
+                                            <img :src=" 'data:image/jpeg;base64,' + (listing['photo'] || defaultProfilePhoto)" class="producer-bottle-listing-page-bottle-image" >
+                                        </router-link>
+                                        <div class="row">
+                                            <!-- edit listing -->
+                                            <div class="col-1">
+                                            <button v-if="(correctProducer || isAdmin) && editingListing" type="button" class="icon-btn">
+                                                <router-link :to="`/listing/edit/${listing._id.$oid}`" style="color:black;" >
+                                                    <svg width="25" height="25" viewBox="0 0 24 24" fill="currentColor" class="bi bi-sort-down" xmlns="http://www.w3.org/2000/svg"><path d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z" ></path>
+                                                    </svg>
+                                                </router-link>
+                                            </button>
+                                            <button v-else-if="editingListing && user.modType.includes(listing.drinkType) && listing.allowMod" type="button" class="icon-btn">
+                                                <router-link :to="`/listing/edit/${listing._id.$oid}`" style="color:black;">
+                                                    <svg width="25" height="25" viewBox="0 0 24 24" fill="currentColor" class="bi bi-sort-down " xmlns="http://www.w3.org/2000/svg"><path d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z" ></path>
+                                                    </svg>
+                                                </router-link>
+                                            </button>
+                                            </div>
+                                            <!-- delete listing -->
+                                            <div class="col-1">
+                                            <button v-if="deletingListing" type="button" class="icon-btn" v-on:click="deleteListings(listing)">
+                                                <a>
+                                                    <svg width="25" height="25" viewBox="0 0 24 24" fill="none" class="bi bi-sort-down " xmlns="http://www.w3.org/2000/svg">
+                                                        <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M18 6L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6M4 6H20M16 6L15.7294 5.18807C15.4671 4.40125 15.3359 4.00784 15.0927 3.71698C14.8779 3.46013 14.6021 3.26132 14.2905 3.13878C13.9376 3 13.523 3 12.6936 3H11.3064C10.477 3 10.0624 3 9.70951 3.13878C9.39792 3.26132 9.12208 3.46013 8.90729 3.71698C8.66405 4.00784 8.53292 4.40125 8.27064 5.18807L8 6" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g>
+                                                    </svg>
+                                                </a>
+                                            </button>
+                                            </div>
+                                        </div>
                                     </div>
                                     <!-- details -->
                                     <div class="col-lg-10 col-12 ps-3 mobile-col-7 mobile-pe-0 mobile-ps-1">
