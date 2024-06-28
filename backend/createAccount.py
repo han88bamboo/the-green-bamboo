@@ -131,17 +131,19 @@ def updateAccountRequest():
     data = request.get_json()
     print(data)
     requestID = data['requestID']
-    reviewStatus = data['reviewStatus']
+    isPending = data['isPending']
+    isApproved = data['isApproved']
 
     try: 
-        updateReviewStatus = db.accountRequests.update_one({'_id': ObjectId(requestID)}, {'$set': {'reviewStatus': reviewStatus}})
+        updateReviewStatus = db.accountRequests.update_one({'_id': ObjectId(requestID)}, {'$set': {'isPending': isPending, 'isApproved': isApproved}})
 
         return jsonify(
             {   
                 "code": 201,
                 "data": {
                     "requestID": requestID,
-                    "reviewStatus": reviewStatus
+                    "isPending": isPending, 
+                    "isApproved": isApproved
                 }
             }
         ), 201
@@ -153,7 +155,8 @@ def updateAccountRequest():
                 "data": {
                     "data": {
                         "requestID": requestID,
-                        "reviewStatus": reviewStatus
+                        "isPending": isPending,
+                        "isApproved": isApproved
                     }
                 },
                 "message": "An error occurred updating the mod request."

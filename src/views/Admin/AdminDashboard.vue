@@ -1435,85 +1435,126 @@
                     const requestID = request._id.$oid;
                     if (action == "approve") {
                         this.businessType = request.businessType;
-                        this.businessName = request.businessName;
-                        this.tempPassword = this.hashPassword(request.businessName).toString();
-                        this.tempPassword = this.tempPassword.replace(/-/g, '');
-                        const hashedPassword = this.hashPassword(request.businessName, this.tempPassword);
-
-                        const newBusinessData = {
-                            businessName: request.businessName,
-                            businessDesc: request.businessDesc,
-                            country: request.country,
-                            hashedPassword: hashedPassword,
-                            claimStatus: true,
-                        }
                         const businessID = request.businessLink.split("/").pop()
-                        let apiURL = '';
 
-                        // producers
-                        if (request.businessType == "producer") {
-                            apiURL = 'http://127.0.0.1:5200/updateProducerStatus';
-                        }
-                        // venues 
-                        else if (request.businessType == "venue") {
-                            apiURL = 'http://127.0.0.1:5300/updateVenueStatus';
-                        }
+                        const businessExist = this.checkBusinessExist(request.businessLink);
 
-                        if (apiURL != '') {
-                            try {
-                                const response = await this.$axios.post(apiURL, 
-                                    {
-                                        businessID: businessID,
-                                        newBusinessData: newBusinessData,
-                                    }, {
-                                    headers: {
-                                        'Content-Type': 'application/json'
-                                    }
-                                });
+                        if (businessExist) {
+                            this.businessName = request.businessName;
+                            this.tempPassword = this.hashPassword(request.businessName).toString();
+                            this.tempPassword = this.tempPassword.replace(/-/g, '');
+                            const hashedPassword = this.hashPassword(request.businessName, this.tempPassword);
+    
+                            const newBusinessData = {
+                                businessName: request.businessName,
+                                businessDesc: request.businessDesc,
+                                country: request.country,
+                                hashedPassword: hashedPassword,
+                                claimStatus: false,
+                            }
+                            let apiURL = '';
+    
+                            // producers
+                            if (request.businessType == "producer") {
+                                apiURL = 'http://127.0.0.1:5200/updateProducerStatus';
+                            }
+                            // venues 
+                            else if (request.businessType == "venue") {
+                                apiURL = 'http://127.0.0.1:5300/updateVenueStatus';
+                            }
+    
+                            if (apiURL != '') {
+                                try {
+                                    const response = await this.$axios.post(apiURL, 
+                                        {
+                                            businessID: businessID,
+                                            newBusinessData: newBusinessData,
+                                        }, {
+                                        headers: {
+                                            'Content-Type': 'application/json'
+                                        }
+                                    });
+    
+                                    if (response.data.code == 201) {
+                                        this.createBusinessSuccess = true;
+                                    } 
+    
+                                } catch (error) {
+                                    console.error(error);
+                                }
+                            }
 
-                                if (response.data.code == 201) {
-                                    this.createBusinessSuccess = true;
-                                } 
-
-                            } catch (error) {
-                                console.error(error);
+                        } 
+                        else {
+                            this.businessType = request.businessType;
+                            this.businessName = request.businessName;
+                            this.businessDesc = request.businessDesc;
+                            this.businessCountry = request.country;
+                            this.venueAddress = request.country;
+                            this.venueType = 'Bar';
+                            this.businessClaimStatus = "false";
+                            const createSuccess = await this.createBusiness();
+                            if (!createSuccess) {
+                                return;
                             }
                         }
 
-                    }
-                    if (action == "add") {
-                        this.businessType = request.businessType;
-                        this.businessName = request.businessName;
-                        this.businessDesc = request.businessDesc;
-                        this.businessCountry = request.country;
-                        this.venueAddress = request.country;
-                        this.venueType = 'Bar';
-                        this.businessClaimStatus = "true";
-                        const createSuccess = await this.createBusiness();
-                        if (!createSuccess) {
-                            return;
+                        // update review status
+                        try {
+                            await this.$axios.post('http://127.0.0.1:5031/updateAccountRequest', 
+                                {
+                                    requestID: requestID,
+                                    isPending: true,
+                                    isApproved: true,
+                                }, {
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+                        } catch (error) {
+                            console.error(error);
                         }
-                    }
 
-                    // update review status
-                    try {
-                        await this.$axios.post('http://127.0.0.1:5031/updateAccountRequest', 
-                            {
-                                requestID: requestID,
-                                reviewStatus: false,
-                            }, {
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
-                        });
-                    } catch (error) {
-                        console.error(error);
-                    }
+                        // update frontend
+                        const index = this.accountRequests.findIndex(request => request._id.$oid == requestID);
+                        this.accountRequests[index].isPending = true;
+                        this.accountRequests[index].isApproved = true;
 
-                    // update frontend
-                    const index = this.accountRequests.findIndex(request => request._id.$oid == requestID);
-                    this.accountRequests[index].reviewStatus = false;
-                    this.filteredAccountRequests = this.filterAccountRequests();
+                        this.accountRequests[index].status = 'pendingPayment';
+                        this.accountRequests[index].bgColor = '#D0F4FC';
+                        this.accountRequests[index].liClass = 'list-group-item-info';
+
+                        this.filterAccountRequests();
+                    } 
+                    else if (action == "reject") {
+                        // update review status
+                        try {
+                            await this.$axios.post('http://127.0.0.1:5031/updateAccountRequest', 
+                                {
+                                    requestID: requestID,
+                                    isPending: false,
+                                    isApproved: false,
+                                }, {
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+                        } catch (error) {
+                            console.error(error);
+                        }
+
+                        // update frontend
+                        const index = this.accountRequests.findIndex(request => request._id.$oid == requestID);
+                        this.accountRequests[index].isPending = false;
+                        this.accountRequests[index].isApproved = false;
+
+                        this.accountRequests[index].status = 'rejected';
+                        this.accountRequests[index].bgColor = '#F9D8DA';
+                        this.accountRequests[index].liClass = 'list-group-item-danger';
+
+                        this.filterAccountRequests();
+                        
+                    }
 
                 }, 
                 async createBusiness() {

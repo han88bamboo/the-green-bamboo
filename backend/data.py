@@ -125,7 +125,6 @@ class producers:
     originCountry: str
     mainDrinks: list
     photo: str
-    hashedPassword: str
     hashedPassword:str
     claimStatus: bool
     statusOB: Optional[str] = None
