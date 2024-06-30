@@ -1485,7 +1485,7 @@
                             }
 
                             // token
-                            this.generateToken(businessID);
+                            this.generateToken(businessID, request._id.$oid);
 
                         } 
                         else {
@@ -1674,17 +1674,18 @@
                     this.createBusinessError = "";
                 },
 
-                async generateToken(businessId) {
+                async generateToken(businessId, requestId) {
                     try {
                         const response = await this.$axios.post('http://127.0.0.1:5031/createToken', 
                             {
                                 businessId: businessId,
+                                requestId: requestId,
                             }, {
                             headers: {
                                 'Content-Type': 'application/json'
                             }
                         });
-                        const link = `http://localhost:8080/billingSecurity?${response.data.data.token}`;
+                        const link = `http://localhost:8080/billingSecurity?token=${response.data.data.token}`;
                         console.log(link);
                     } catch (error) {
                         console.error(error);

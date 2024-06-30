@@ -279,6 +279,7 @@ def createToken():
     newToken = {
         "token": token,
         "userId": ObjectId(data['businessId']),
+        "requestId": ObjectId(data['requestId']),
         "expiry": expiry,
     }
 
@@ -304,7 +305,65 @@ def createToken():
                 "message": "An error occurred creating the token."
             }
         ), 500
+    
+# [POST] Update customerId
+# - Possible return codes: 201 (Updated), 500 (Error during update)
+@app.route('/updateCustomerId', methods=['POST'])
+def updateCustomerId():
 
+    data = request.get_json()
+    print(data)
+
+    businessId = data['businessId']['$oid']
+    customerId = data['customerId']
+    businessType = data['businessType'] + 's'
+
+    try: 
+        update = db[businessType].update_one({'_id': ObjectId(businessId)}, {'$set': {'stripeCustomerId': customerId} })
+        return jsonify(
+            {   
+                "code": 201,
+                "message": "Updated customerId successfully!"
+            }
+        ), 201
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "data": data,
+                "message": "An error occurred updating profile!"
+            }
+        ), 500
+
+# -----------------------------------------------------------------------------------------
+# [POST] Delete Token
+# - Possible return codes: 201 (Updated), 500 (Error during update)
+@app.route('/deleteToken', methods=['POST'])
+def deleteToken():
+
+    data = request.get_json()
+    print(data)
+
+    token = data['token']
+
+    try: 
+        delete_result = db.tokens.delete_one({'token': token})
+        return jsonify(
+            {   
+                "code": 201,
+                "message": "Deleted token successfully!"
+            }
+        ), 201
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "data": data,
+                "message": "An error occurred deleting token!"
+            }
+        ), 500
 
 # -----------------------------------------------------------------------------------------
 if __name__ == "__main__":

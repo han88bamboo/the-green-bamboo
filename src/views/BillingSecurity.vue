@@ -126,14 +126,16 @@
                 // customer details
                 token: "",
                 businessId: "",
+                requestId: "",
+                accountRequest: {},
                 businessType: "",
                 business: {},
-                customerName: "John Doe",
-                customerEmail: "poh.liyingg@gmail.com",
+                customerName: "",
+                customerEmail: "",
 
                 // plan details
-                selectedMonthlyPricing: true,
-                selectedYearlyPricing: false,
+                selectedMonthlyPricing: false,
+                selectedYearlyPricing: true,
 
                 // stripe details
                 priceId: "",
@@ -143,20 +145,25 @@
         },
         async mounted(){
 
+            this.token = this.$route.query.token;
+            
             this.stripe = await loadStripe('pk_test_51PV6CNDnjokAiSGzhdAambzILFYOByYtxMRMsVQCcQobPIxlFDi2a6gKYe8BQD021FQxFUejn4eIcjSLBHsHbD9A00T4Z8sPPl');
 
             async function initiateProcess() {
-                await this.create_customer();
+                await this.loadData();
+
+                if (this.business.stripeCustomerId) {
+                    this.customerId = this.business.stripeCustomerId;
+                } else {
+                    await this.create_customer();
+                }
+
                 await this.create_subscription();
                 this.paymentElement();
             }
 
             initiateProcess.call(this);
 
-            this.token = this.$route.query.token;
-            console.log(this.token);
-
-            this.loadData();
 
         },
         methods: {
@@ -189,24 +196,33 @@
                 try {
                     const response = await this.$axios.get(`http://127.0.0.1:5000/getToken/${this.token}`);
                     this.businessId = response.data.userId;
-                    console.log(this.businessId);
+                    this.requestId = response.data.requestId;
+                    // todo verify token expiry
                 } 
                 catch (error) {
                     console.error(error);
                     this.loadError = true;
                 }
 
-                // check if business venue or producer and get the details
+                // get request
                 try {
-                    let response = await this.$axios.get(`http://127.0.0.1:5000/getVenue/${this.businessId.$oid}`);
-                    this.businessType = "venue";
+                    const response = await this.$axios.get(`http://127.0.0.1:5000/getAccountRequest/${this.requestId.$oid}`);
+                    this.accountRequest = response.data;
+                    this.businessType = this.accountRequest.businessType;
+                    this.customerName = this.accountRequest.firstName + " " + this.accountRequest.lastName;
+                    this.customerEmail = this.accountRequest.email;
+                    this.selectedMonthlyPricing = (this.accountRequest.pricing == "monthly");
+                    this.selectedYearlyPricing = (this.accountRequest.pricing == "yearly");
+                } 
+                catch (error) {
+                    console.error(error);
+                    this.loadError = true;
+                }
 
-                    if (response.data.length == 0) {
-                        this.businessType = "producer";
-                        response = await this.$axios.get(`http://127.0.0.1:5000/getProducer/${this.businessId.$oid}`);
-                    }
+                // get business
+                try {
+                    const response = await this.$axios.get(`http://127.0.0.1:5000/get${this.businessType.charAt(0).toUpperCase()}${this.businessType.slice(1)}/${this.businessId.$oid}`);
                     this.business = response.data;
-                    console.log(this.business);
                 }
                 catch (error) {
                     console.error(error);
@@ -217,6 +233,7 @@
             },
 
             async create_customer() {
+                // create customer
                 try {
                     const response = await this.$axios.post('http://127.0.0.1:5009/create-customer',
                         {
@@ -229,6 +246,20 @@
                     });
                     console.log(response.data);
                     this.customerId = response.data.customerId;
+
+                    // update business with customerId
+                    const response2 = await this.$axios.post(`http://127.0.0.1:5031/updateCustomerId`,
+                        {
+                            businessId: this.businessId,
+                            customerId: this.customerId,
+                            businessType: this.businessType
+                        }, {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    console.log(response2.data);
+
                 } catch (error) {
                     console.error(error);
                 }
@@ -308,6 +339,8 @@
                 const { paymentIntent } = await stripe.retrievePaymentIntent(clientSecret);
 
                 console.log(paymentIntent.status);
+
+                this.deleteToken();
                 // switch (paymentIntent.status) {
                 //     case "succeeded":
                 //     showMessage("Payment succeeded!");
@@ -324,9 +357,30 @@
                 // }
             },
 
+            async deleteToken() {
+                try {
+                    const response = await this.$axios.post(`http://127.0.0.1:5031/deleteToken`,
+                        {
+                            token: this.token,
+                        }, {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    console.log(response.data);
+
+                } catch (error) {
+                    console.error(error);
+                }
+            },
+
             async createAccount () {
+                // todo check if payment was successful
+                await this.deleteToken();
                 await this.processPayment();
                 await this.checkStatus();
+
+                
             }
 
         

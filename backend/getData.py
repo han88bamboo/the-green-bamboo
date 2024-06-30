@@ -480,10 +480,20 @@ def getBadges():
         allBadges.append(doc)
     return allBadges
 
+# -----------------------------------------------------------------------------------------
 # [GET] Specific Token
 @app.route("/getToken/<token>")
 def getToken(token):
     data = db.tokens.find_one({"token": token})
+    if data is None:
+        return []
+    return parse_json(data)
+
+# -----------------------------------------------------------------------------------------
+# [GET] Specific Request
+@app.route("/getAccountRequest/<id>")
+def getAccountRequest(id):
+    data = db.accountRequests.find_one({"_id": ObjectId(id)})
     if data is None:
         return []
     return parse_json(data)
