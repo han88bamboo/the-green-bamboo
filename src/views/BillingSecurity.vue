@@ -124,6 +124,10 @@
                 elements: null,
 
                 // customer details
+                token: "",
+                businessId: "",
+                businessType: "",
+                business: {},
                 customerName: "John Doe",
                 customerEmail: "poh.liyingg@gmail.com",
 
@@ -148,6 +152,9 @@
             }
 
             initiateProcess.call(this);
+
+            this.token = this.$route.query.token;
+            console.log(this.token);
 
             this.loadData();
 
@@ -178,13 +185,35 @@
                 }
             },
             async loadData(){
+                // get businessId
                 try {
-                    this.dataLoaded = true;
-                    } 
-                    catch (error) {
-                        console.error(error);
-                        this.dataLoaded = null;
+                    const response = await this.$axios.get(`http://127.0.0.1:5000/getToken/${this.token}`);
+                    this.businessId = response.data.userId;
+                    console.log(this.businessId);
+                } 
+                catch (error) {
+                    console.error(error);
+                    this.loadError = true;
+                }
+
+                // check if business venue or producer and get the details
+                try {
+                    let response = await this.$axios.get(`http://127.0.0.1:5000/getVenue/${this.businessId.$oid}`);
+                    this.businessType = "venue";
+
+                    if (response.data.length == 0) {
+                        this.businessType = "producer";
+                        response = await this.$axios.get(`http://127.0.0.1:5000/getProducer/${this.businessId.$oid}`);
                     }
+                    this.business = response.data;
+                    console.log(this.business);
+                }
+                catch (error) {
+                    console.error(error);
+                    this.loadError = true;
+                }
+
+                this.dataLoaded = true;
             },
 
             async create_customer() {

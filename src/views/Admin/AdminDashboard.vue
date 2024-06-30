@@ -1484,6 +1484,9 @@
                                 }
                             }
 
+                            // token
+                            this.generateToken(businessID);
+
                         } 
                         else {
                             this.businessType = request.businessType;
@@ -1659,16 +1662,33 @@
                 }, 
                 // reset when add a business button is clicked
                 resetAddBusinessModal() {
-                        this.businessType = "";
-                        this.businessName = "";
-                        this.businessDesc = "";
-                        this.businessCountry = "";
-                        this.venueAddress = "";
-                        this.venueType = "";
-                        this.businessClaimStatus = "";
-                        this.tempPassword = "";
-                        this.createBusinessSuccess = false;
-                        this.createBusinessError = "";
+                    this.businessType = "";
+                    this.businessName = "";
+                    this.businessDesc = "";
+                    this.businessCountry = "";
+                    this.venueAddress = "";
+                    this.venueType = "";
+                    this.businessClaimStatus = "";
+                    this.tempPassword = "";
+                    this.createBusinessSuccess = false;
+                    this.createBusinessError = "";
+                },
+
+                async generateToken(businessId) {
+                    try {
+                        const response = await this.$axios.post('http://127.0.0.1:5031/createToken', 
+                            {
+                                businessId: businessId,
+                            }, {
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        const link = `http://localhost:8080/billingSecurity?${response.data.data.token}`;
+                        console.log(link);
+                    } catch (error) {
+                        console.error(error);
+                    }
                 },
 
                 updateUsername(){

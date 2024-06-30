@@ -480,6 +480,14 @@ def getBadges():
         allBadges.append(doc)
     return allBadges
 
+# [GET] Specific Token
+@app.route("/getToken/<token>")
+def getToken(token):
+    data = db.tokens.find_one({"token": token})
+    if data is None:
+        return []
+    return parse_json(data)
+
 # -----------------------------------------------------------------------------------------
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=True, port = 5000)
