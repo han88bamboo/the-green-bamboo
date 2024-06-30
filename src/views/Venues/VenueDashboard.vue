@@ -6,7 +6,7 @@
     <NavBar />
 
     <!-- Main Content -->
-    <div class="container pt-5">
+    <div class="container pt-5 mobile-pt-3">
 
         <!-- Display when data is still loading -->
         <div class="text-info-emphasis fst-italic fw-bold fs-5" v-if="dataLoaded == false">
@@ -55,20 +55,140 @@
 
                 <!-- row 2: return to profile -->
                 <!-- Venue Version -->
-                <div v-if="selfView" class="row pt-3">
+                <div v-if="selfView" class="row pt-3 mobile-view-hide">
                     <router-link :to="{ path: '/profile/venue' }" class="d-grid default-clickable-text">
                         <button type="button" class="btn primary-btn-outline-thick rounded-0"> Return To Profile </button>
                     </router-link>
                 </div>
                 <!-- Admin Version -->
-                <div v-if="powerView" class="row pt-3">
+                <div v-if="powerView" class="row pt-3 mobile-view-hide">
                     <router-link :to="{ path: '/profile/venue/' + targetVenue._id['$oid'] }" class="d-grid default-clickable-text">
                         <button type="button" class="btn primary-btn-outline-thick rounded-0"> Return To Profile </button>
                     </router-link>
                 </div>
+                <!-- row 3: Q & A mobile xyz -->
 
-                <!-- row 3: Q & A -->
-                <div class="row pt-3">
+                <div class="row pt-3 mobile-view-show">
+
+                    <button v-if="showQnA"
+                       type="button" 
+                       class="active-toggle-producer-QnA tertiary-text pt-2 pb-2 border" 
+                       data-bs-toggle="collapse" 
+                       data-bs-target="#collapseQnA" 
+                       aria-expanded="false" 
+                       aria-controls="collapseQnA" 
+                       style="font-weight:bold;"
+                       @click="checkToShowQnA()">Q&As for {{ targetVenue["venueName"] }} ↑</button>
+                    <button v-else
+                       type="button" 
+                       class="primary-btn-less-round tertiary-text pt-2 pb-2 border" 
+                       data-bs-toggle="collapse" 
+                       data-bs-target="#collapseQnA" 
+                       aria-expanded="false" 
+                       aria-controls="collapseQnA" 
+                       style="font-weight:bold;"
+                       @click="checkToShowQnA()">Q&As for {{ targetVenue["venueName"] }} ↓</button>
+
+                    <div class="collapse col-12 pt-3 pe-0 ps-0" id="collapseQnA" >
+                        <div class="square primary-square rounded p-3 mb-3">
+
+                            <!-- Header -->
+                            <div class="square-inline text-start">
+
+                                <!-- [if] Self Venue -->
+                                <div v-if="selfView" class="mr-auto">
+                                    <h4> Q&A for You! </h4>
+                                    <router-link :to="{ path: '/Venues/VenuesQA/' + targetVenue._id['$oid'] }" class="default-text-no-background">
+                                        <p class="reverse-text no-margin text-decoration-underline text-start pb-2"> View All </p>
+                                    </router-link>
+                                </div>
+
+                                <!-- [else] -->
+                                <h4 v-else class="mr-auto"> Q&As for {{ targetVenue["venueName"] }} </h4>
+
+                            </div>
+
+                            <!-- Buttons for Answered/Unanswered Questions -->
+                            <div v-if="selfView" class="row text-center px-2">
+                                <div class="col-6 d-grid gap-0 no-padding">
+                                    <button type="button" class="btn tertiary-btn rounded-0 reverse-clickable-text" @click="qaMode = 'answered'">
+                                        Answered
+                                    </button>
+                                </div>
+                                <div class="col-6 d-grid gap-0 no-padding">
+                                    <button type="button" class="btn tertiary-btn rounded-0 reverse-clickable-text" @click="qaMode = 'unanswered'">
+                                        Unanswered
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Q & A Content -->
+                            <div class="text-start pt-2 py-1">
+                                <div class="carousel slide" id="carouselQA">
+                                    <div class="carousel-inner px-4">
+
+                                        <!-- Answered Questions -->
+                                        <div v-if="qaMode == 'answered'">
+                                            <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
+                                                <p> <b> Q: {{ qa["question"] }} </b> </p>
+                                                <!-- [if] not editing -->
+                                                <button v-if="editingQA == false || editingQAID != qa._id.$oid" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="editQA(qa)">
+                                                    Edit answer
+                                                </button>
+                                                <!-- [else] if editing -->
+                                                <button v-if="editingQAID == qa._id.$oid" type="button" class="btn btn-success rounded-0 me-1" v-on:click="saveQAEdit(qa)">
+                                                    Save
+                                                </button>
+                                                <!-- [else] if editing -->
+                                                <button v-if="editingQAID == qa._id.$oid" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="cancelQAEdit(qa)">
+                                                    Cancel
+                                                </button>
+                                                <!-- delete -->
+                                                <button type="button" class="btn btn-danger rounded-0" v-on:click="deleteQAEdit(qa)">
+                                                    Delete
+                                                </button>
+                                                <!-- spacer -->
+                                                <div class="mt-2"></div>
+                                                <p v-if="editingQA == false || editingQAID != qa._id.$oid"> A: {{ qa["answer"] }} </p>
+                                                <textarea v-else-if="editingQAID == qa._id.$oid" class="search-bar form-control rounded fst-italic question-box flex-grow-1" type="text" placeholder="Edit answer." v-model="edit_answer[qa._id.$oid]"></textarea>
+                                            </div>
+                                        </div>
+
+                                        <!-- Unanswered Questions -->
+                                        <div v-if="qaMode == 'unanswered'">
+                                            <div class="carousel-item" v-for="(qa, index) in unansweredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
+                                                <p class="fw-bold">Q: {{ qa["question"] }}</p>
+                                                <div class="input-group centered pt-2">
+                                                    <textarea class="search-bar form-control rounded fst-italic question-box" type="text" placeholder="Respond to your fans' latest questions." v-model="qaAnswer"></textarea>
+                                                    <div @click="sendAnswer(qa)" class="send-icon ps-1">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
+                                                            <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                    <!-- Carousel Control Buttons -->
+                                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselQA" data-bs-slide="prev">
+                                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                        <span class="visually-hidden">Previous</span>
+                                    </button>
+                                    <button class="carousel-control-next" type="button" data-bs-target="#carouselQA" data-bs-slide="next">
+                                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                        <span class="visually-hidden">Next</span>
+                                    </button>
+
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <!-- row 3: Q & A desktop-->
+                <div class="row pt-3 mobile-view-hide">
                     <div class="col-12">
                         <div class="square primary-square rounded p-3 mb-3">
 
@@ -167,9 +287,95 @@
                         </div>
                     </div>
                 </div>
+                 <!-- row 4: menu inaccuracy reports mobile-->
+                 <div class="row pt-3 mobile-view-show">
+                    <button v-if="showUserReports"
+                       type="button" 
+                       class="active-toggle-producer-QnA tertiary-text pt-2 pb-2 border" 
+                       data-bs-toggle="collapse" 
+                       data-bs-target="#collapseUserReports" 
+                       aria-expanded="false" 
+                       aria-controls="collapseUserReports" 
+                       style="font-weight:bold;"
+                       @click="checkToShowUserReports()">Review User Menu Reports ↑</button>
+                    <button v-else
+                       type="button" 
+                       class="primary-btn-less-round tertiary-text pt-2 pb-2 border" 
+                       data-bs-toggle="collapse" 
+                       data-bs-target="#collapseUserReports" 
+                       aria-expanded="false" 
+                       aria-controls="collapseUserReports" 
+                       style="font-weight:bold;"
+                       @click="checkToShowUserReports()">Review User Menu Reports ↓</button>
+                   
 
-                <!-- row 4: menu inaccuracy reports -->
-                <div class="row pt-3">
+                    <!--user reports -->
+                    <div class="collapse pt-3 pe-0 ps-0" id="collapseUserReports">
+                        <div class="square primary-square rounded p-3 mb-3">
+
+                            <!-- Header -->
+                            <div class="square-inline text-start">
+
+                                <!-- [if] Self Venue -->
+                                <div v-if="selfView" class="mr-auto">
+                                    <h4> User Menu Reports </h4>
+                                    <router-link :to="{ path: '/profile/venue' }" class="default-text-no-background">
+                                        <p class="reverse-text no-margin text-decoration-underline text-start pb-2"> Go to Your Profile </p>
+                                    </router-link>
+                                </div>
+
+                                <!-- [else] -->
+                                <div v-else class="mr-auto">
+                                    <h4> User Menu Reports </h4>
+                                    <router-link :to="{ path: '/profile/venue/' + targetVenue._id['$oid'] }" class="default-text-no-background">
+                                        <p class="reverse-text no-margin text-decoration-underline text-start pb-2"> Go to Venue Profile </p>
+                                    </router-link>
+                                </div>
+
+                            </div>
+
+                            <!-- Report Content -->
+                            <div class="text-start pt-2 py-1">
+                                <div class="carousel slide" id="carouselReports">
+                                    <div class="carousel-inner px-4">
+
+                                        <div class="carousel-item active" v-if="pendingReports.length === 0">
+                                            <p class="fst-italic text-center">( No Pending User Reports! )</p>
+                                        </div>
+
+                                        <div class="carousel-item" v-for="(userReport, index) in pendingReports" v-bind:key="userReport._id" v-bind:class="{ 'active': index === 0 }">
+                                            <p class="fw-bold">Menu Item:<br>{{ userReport.listingData["listingName"] }}</p>
+                                            <p> {{ userReport["inaccurateReason"] }} </p>
+                                            <div class="input-group pt-2" v-if="selfView">
+                                                <button type="button" class="btn btn-success rounded-0 reverse-clickable-text" @click="updateReportStatus(userReport._id['$oid'], 'approve')">
+                                                    Clear
+                                                </button>
+                                                <button type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1" @click="updateReportStatus(userReport._id['$oid'], 'reject')">
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                    <!-- Carousel Control Buttons -->
+                                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselReports" data-bs-slide="prev">
+                                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                        <span class="visually-hidden">Previous</span>
+                                    </button>
+                                    <button class="carousel-control-next" type="button" data-bs-target="#carouselReports" data-bs-slide="next">
+                                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                        <span class="visually-hidden">Next</span>
+                                    </button>
+
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <!-- row 4: menu inaccuracy reports desktop-->
+                <div class="row pt-3 mobile-view-hide">
                     <div class="col-12">
                         <div class="square primary-square rounded p-3 mb-3">
 
@@ -238,28 +444,49 @@
             </div>
 
             <!-- right pane -->
-            <div class="col-lg-8 col-md-12 col-sm-12 ps-5">
+            <hr class="mobile-view-show mt-3 mb-1">
+            <div class="col-lg-8 col-md-12 col-sm-12 ps-lg-5">
+                <ul class="nav nav-pills mobile-view-show pt-1" role="tablist">
+                    
+                    <li class="nav-item pe-2 pt-2" role="presentation">
+                        <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#countofreviews" type="button" role="tab" aria-controls="countofreviews" aria-selected="true">Count of Reviews</button>
+                    </li>
+                    <li class="nav-item pe-2 pt-2" role="presentation">
+                        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#profilevisits" type="button" role="tab" aria-controls="profilevisits" aria-selected="false">Profile Visits</button>
+                    </li>
+                    <li class="nav-item pe-2 pt-2" role="presentation">
+                        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#spread" type="button" role="tab" aria-controls="spread" aria-selected="false">Spread of Ratings</button>
+                    </li>
+                </ul>
 
-                <!-- row 1: review count + spread of ratings of menu's drinks -->
-                <div class="row">
+                <div class="row mobile-view-show tab-content">
+                    <div id="countofreviews" class="tab-pane fade show active col-lg-5 col-md-12 col-sm-12 text-start pt-5 mobile-pt-3 mx-lg-3 ps-lg-0 pe-lg-0">
+                        <Line :data="reviewsData" :options="chartOptions"></Line>
+                    </div>
+                    <div id="profilevisits" class="tab-pane fade col-lg-5 col-md-12 col-sm-12 text-start pt-5 mobile-pt-3 mx-lg-3 ps-lg-0 pe-lg-0">
+                        <Line :data="profileData" :options="chartOptions"></Line>
+                    </div>   
+                    <div id="spread" class="tab-pane fade col-lg-5 col-md-12 col-sm-12 text-start pt-5 mobile-pt-3 mx-lg-3 ps-lg-0 pe-lg-0">
+                        <Bar :data="ratingsData" :options="chartOptions" />
+                    </div>
+                </div>                    
 
+                <!-- row 1: review count + spread of ratings of menu's drinks desktop -->
+                <div class="row mobile-view-hide">
                     <!-- col 1: review count -->
                     <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0">
                         <h3> Review Count of Drinks </h3>
                         <Line :data="reviewsData" :options="chartOptions"></Line>
                     </div>
-
                     <!-- col 2: spread of ratings -->
                     <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0">
                         <h3> Spread of Ratings for Drinks </h3>
                         <Bar :data="ratingsData" :options="chartOptions" />
                     </div>
-
                 </div>
 
-                <!-- row 2: most reviewed + best rated menu's drinks -->
-                <div class="row mt-5">
-
+                <!-- row 2: most reviewed + best rated menu's drinks desktop-->
+                <div class="row mt-5 mobile-view-hide">
                     <!-- col 1: most reviewed drinks on the menu -->
                     <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0">
                         <h3> Most Reviewed Drinks </h3>
@@ -276,7 +503,6 @@
                             </router-link>
                         </div>
                     </div>
-
                     <!-- col 2: best rated drinks on the menu -->
                     <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0">
                         <h3> Best Rated Drinks </h3>
@@ -296,12 +522,10 @@
                             </router-link>
                         </div>
                     </div>
-
                 </div>
 
-                <!-- row 3: most reviewed + best rated menu sections -->
-                <div class="row mt-5">
-
+                <!-- row 3: most reviewed + best rated menu sections desktop -->
+                <div class="row mt-5 mobile-view-hide">
                     <!-- col 1: most reviewed sections -->
                     <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0">
                         <h3> Most Reviewed Sections </h3>
@@ -318,7 +542,6 @@
                             </div>
                         </div>
                     </div>
-
                     <!-- col 2: best rated sections -->
                     <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0">
                         <h3> Best Rated Sections </h3>
@@ -338,12 +561,10 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
 
                 <!-- row 4: venue menu summary + profile visits -->
-                <div class="row">
-
+                <div class="row mobile-view-hide">
                     <!-- col 1: venue menu summary -->
                     <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-3 ps-lg-0 pe-lg-0">
                         <h3> Venue Menu Summary </h3>
@@ -394,15 +615,160 @@
                         </div>
 
                     </div>
-
                     <!-- col 2: profile visits -->
                     <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 pt-5 ps-lg-0 pe-lg-0">
                         <h3> Profile Visits </h3>
                         <Line :data="profileData" :options="chartOptions"></Line>
                     </div>
-
                 </div>
 
+                <hr class="mobile-view-show mt-3 mb-1" style="margin-left:-0.5rem; margin-right:-0.5rem;">
+                <!--mobile toggle buttons for top expressions listing tzh -->
+                <ul class="nav nav-pills mobile-view-show pt-2"  role="tablist" >
+                    
+                   <li class="nav-item pe-2 pt-2 " role="presentation">
+                       <button class="nav-link active"  data-bs-toggle="pill" data-bs-target="#MostReviewedExpressions" type="button" role="tab" aria-controls="MostReviewedExpressions" aria-selected="true">Most Reviewed</button>
+                   </li>
+                   <li class="nav-item pe-2 pt-2 " role="presentation">
+                       <button class="nav-link "  data-bs-toggle="pill" data-bs-target="#BestRatedExpressions" type="button" role="tab" aria-controls="BestRatedExpressions" aria-selected="false">Best Rated</button>
+                   </li>
+                   <li class="nav-item pe-2 pt-2 " role="presentation">
+                       <button class="nav-link "  data-bs-toggle="pill" data-bs-target="#MostReviewedSections" type="button" role="tab" aria-controls="MostReviewedSections" aria-selected="false">Most Reviewed Sections</button>
+                   </li>
+                   <li class="nav-item pe-2 pt-2 " role="presentation">
+                       <button class="nav-link "  data-bs-toggle="pill" data-bs-target="#BestRatedSections" type="button" role="tab" aria-controls="BestRatedSections" aria-selected="false">Best Rated Sections</button>
+                   </li>
+                   <li class="nav-item pe-2 pt-2 " role="presentation">
+                       <button class="nav-link "  data-bs-toggle="pill" data-bs-target="#VenueMenuSummary" type="button" role="tab" aria-controls="VenueMenuSummary" aria-selected="false">Menu Summary</button>
+                   </li>
+                </ul>
+                    <div class="row mobile-view-show tab-content" style="min-height:550px;">
+                        <div id="MostReviewedExpressions" class="tab-pane fade show active col-lg-5 col-md-12 col-sm-12 text-start pt-3 mx-lg-3 ps-lg-0 pe-lg-0">
+                            <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0">
+                        
+                        <div class="text-start pb-2" v-for="listing in listingsMostReviewed" v-bind:key="listing._id">
+                            <router-link :to="{ path: '/listing/view/' + listing._id.$oid }" class="reverse-clickable-text">
+                                <div class="d-flex align-items-center">
+                                    <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;">
+                                    <p class="ms-3 default-clickable-text"> 
+                                        <b> {{ listing.listingName }} </b> 
+                                        <br>
+                                        {{ listing.reviews.length }} reviews
+                                    </p>
+                                </div>
+                            </router-link>
+                        </div>
+                            </div>
+                        </div>
+                        <div id="BestRatedExpressions" class="tab-pane fade col-lg-5 col-md-12 col-sm-12 text-start pt-3 mx-lg-3 ps-lg-0 pe-lg-0">
+                            <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0">
+                        
+                        <div class="text-start pb-2" v-for="listing in listingsBestRated" v-bind:key="listing._id">
+                            <router-link :to="{ path: '/listing/view/' + listing._id.$oid }" class="reverse-clickable-text">
+                                <div class="d-flex align-items-center">
+                                    <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;">
+                                    <p class="ms-3 default-clickable-text"> 
+                                        <b> {{ listing.listingName }} </b> 
+                                        <br>
+                                        {{ listing.avgRating }} 
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
+                                            <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                                        </svg>
+                                    </p>
+                                </div>
+                            </router-link>
+                        </div>
+                    </div>
+                        </div>
+                        <div id="MostReviewedSections" class="tab-pane fade col text-start pt-3 mx-lg-3 ps-lg-0 pe-lg-0">
+                            <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0">
+                        
+                        <div class="text-start pb-2" v-for="(section, index) in sectionsMostReviewed" v-bind:key="section._id">
+                            <div class="row ms-0 default-clickable-text"> 
+                                <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
+                                    <h5 class="my-auto"> {{ index + 1 }} </h5>
+                                </div>
+                                <div class="col-10 shrink-width-on-dashboard">
+                                    <b> {{ section.sectionName }} </b>
+                                    <br>
+                                    {{ section.sectionDetails.sectionReviews.length }} reviews
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                        </div>
+                        <div id="BestRatedSections" class="tab-pane fade col text-start pt-3 mx-lg-3 ps-lg-0 pe-lg-0">
+                            <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0">
+                       
+                        <div class="text-start pb-2" v-for="(section, index) in sectionsBestRated" v-bind:key="section._id">
+                            <div class="row ms-0 default-clickable-text"> 
+                                <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
+                                    <h5 class="my-auto"> {{ index + 1 }} </h5>
+                                </div>
+                                <div class="col-10 shrink-width-on-dashboard">
+                                    <b> {{ section.sectionName }} </b>
+                                    <br>
+                                    {{ section.sectionDetails.sectionRating }} 
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
+                                        <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                        </div>
+                        <div id="VenueMenuSummary" class="tab-pane fade col text-start pt-3 mx-lg-3 ps-lg-0 pe-lg-0">
+                            <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0">
+                       
+
+                        <!-- Number of Menu Items + Unique Drinks -->
+                        <div class="text-start pb-2">
+                            <div class="row ms-0 default-clickable-text"> 
+                                <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
+                                    <h5 class="my-auto"> - </h5>
+                                </div>
+                                <div class="col-10 shrink-width-on-dashboard">
+                                    <b> Number of Menu Items </b> 
+                                    <br>
+                                    {{ menuItemsCount }} (Unique: {{ loadedListings.length }})
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Number of Sections -->
+                        <div class="text-start pb-2">
+                            <div class="row ms-0 default-clickable-text"> 
+                                <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
+                                    <h5 class="my-auto"> - </h5>
+                                </div>
+                                <div class="col-10 shrink-width-on-dashboard">
+                                    <b> Number of Sections </b> 
+                                    <br>
+                                    {{ detailedMenu.length }} sections
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Overall Average Rating -->
+                        <div class="text-start pb-2">
+                            <div class="row ms-0 default-clickable-text"> 
+                                <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
+                                    <h5 class="my-auto"> - </h5>
+                                </div>
+                                <div class="col-10 shrink-width-on-dashboard">
+                                    <b> Overall Average Rating </b> 
+                                    <br>
+                                    {{ overallRating }} 
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
+                                        <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                        </div>
+                    </div>    
             </div>
 
         </div>
@@ -429,6 +795,12 @@
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         data() {
             return {
+                // to get producer's answered questions 
+                showQnA: false,
+
+                // to get user menu reoprts
+                showUserReports:false,
+
                 // Info
                 viewerID: localStorage.getItem('88B_accID'),
                 viewerType: localStorage.getItem('88B_accType'),
@@ -607,6 +979,22 @@
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         methods: {
             
+            checkToShowQnA() {
+                if (this.showQnA == true) {
+                    this.showQnA = false;
+                } 
+                else {
+                    this.showQnA = true;
+                }
+            },
+            checkToShowUserReports() {
+                if (this.showUserReports == true) {
+                    this.showUserReports = false;
+                } 
+                else {
+                    this.showUserReports = true;
+                }
+            },
             // Obtain user data
             async getUserData() {
                 try {

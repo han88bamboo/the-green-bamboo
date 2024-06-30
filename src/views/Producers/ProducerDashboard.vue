@@ -75,88 +75,97 @@
                        style="font-weight:bold;"
                        @click="checkToShowQnA()">Q&As for {{ specified_producer["producerName"] }} ↓</button>
                     <!-- Q&A-->
-                <div class="collapse pt-3 pe-0 ps-0" id="collapseQnA">
-                        <div class="square primary-square rounded p-3 mb-3 text-start">
-                            <!-- header text -->
-                            <div class="square-inline pb-2">
-                                <h4 class="square-inline text-start mr-auto"> Recent Fan Posted Questions </h4>
-                            </div>
-                            <!-- buttons-->
-                            <div class="row text-center px-2">
-                                <div class="col-6 d-grid gap-0 no-padding">
-                                    <button type="button" class="btn tertiary-btn-qa rounded-0 reverse-clickable-text">
-                                        <a class="reverse-clickable-text" v-on:click="showAnswered()">
-                                            Answered
-                                        </a>
-                                    </button>
+                    <div class="collapse pt-3 pe-0 ps-0" id="collapseQnA">
+                            <div class="square primary-square rounded p-3 mb-3 text-start">
+                                <!-- header text -->
+                                <div class="square-inline pb-2">
+                                    <h4 class="square-inline text-start mr-auto"> Recent Fan Posted Questions </h4>
                                 </div>
-                                <div class="col-6 d-grid gap-0 no-padding">
-                                    <button type="button" class="btn tertiary-btn-qa rounded-0 reverse-clickable-text">
-                                        <a class="reverse-clickable-text" v-on:click="showUnanswered()">
-                                            Unanswered
-                                        </a>
-                                    </button>
+                                <!-- buttons-->
+                                <div class="row text-center px-2">
+                                    <div class="col-6 d-grid gap-0 no-padding">
+                                        <button type="button" class="btn tertiary-btn-qa rounded-0 reverse-clickable-text">
+                                            <a class="reverse-clickable-text" v-on:click="showAnswered()">
+                                                Answered
+                                            </a>
+                                        </button>
+                                    </div>
+                                    <div class="col-6 d-grid gap-0 no-padding">
+                                        <button type="button" class="btn tertiary-btn-qa rounded-0 reverse-clickable-text">
+                                            <a class="reverse-clickable-text" v-on:click="showUnanswered()">
+                                                Unanswered
+                                            </a>
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                            <!-- body -->
-                            <div class="text-start pt-2">
-                                <!-- responses to q&a -->
-                                <div id="carouselExample" class="carousel slide">
-                                    <div class="carousel-inner px-4">
-                                        <!-- [if] user type is producer -->
-                                        <div v-if="correctProducer || isAdmin">
-                                            <!-- show answered questions -->
-                                            <div v-if="answerStatus">
-                                                <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
-                                                    <p> <b> Q: {{ qa["question"] }} </b> </p>
-                                                    <!-- [if] not editing -->
-                                                    <button v-if="correctProducer && (editingQA == false || editingQAID != qa._id.$oid)" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="editQA(qa)">
-                                                        Edit answer
-                                                    </button>
-                                                    <!-- [else] if editing -->
-                                                    <button v-if="correctProducer && editingQAID == qa._id.$oid" type="button" class="btn btn-success rounded-0 me-1" v-on:click="saveQAEdit(qa)">
-                                                        Save
-                                                    </button>
-                                                    <!-- [else] if editing -->
-                                                    <button v-if="correctProducer && editingQAID == qa._id.$oid" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="cancelQAEdit(qa)">
-                                                        Cancel
-                                                    </button>
-                                                    <!-- delete -->
-                                                    <button type="button" class="btn btn-danger rounded-0" v-on:click="deleteQAEdit(qa)">
-                                                        Delete
-                                                    </button>
-                                                    <!-- spacer -->
-                                                    <div class="mt-2"></div>
-                                                    <p v-if="editingQA == false || editingQAID != qa._id.$oid"> A: {{ qa["answer"] }} </p>
-                                                    <textarea v-else-if="editingQAID == qa._id.$oid" class="search-bar form-control rounded fst-italic question-box flex-grow-1" type="text" placeholder="Edit answer." v-model="edit_answer[qa._id.$oid]"></textarea>
+                                <!-- body -->
+                                <div class="text-start pt-2">
+                                    <!-- responses to q&a -->
+                                    <div id="carouselExample" class="carousel slide">
+                                        <div class="carousel-inner px-4">
+                                            <!-- [if] user type is producer -->
+                                            <div v-if="correctProducer || isAdmin">
+                                                <!-- show answered questions -->
+                                                <div v-if="answerStatus">
+                                                    <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
+                                                        <p> <b> Q: {{ qa["question"] }} </b> </p>
+                                                        <!-- [if] not editing -->
+                                                        <button v-if="correctProducer && (editingQA == false || editingQAID != qa._id.$oid)" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="editQA(qa)">
+                                                            Edit answer
+                                                        </button>
+                                                        <!-- [else] if editing -->
+                                                        <button v-if="correctProducer && editingQAID == qa._id.$oid" type="button" class="btn btn-success rounded-0 me-1" v-on:click="saveQAEdit(qa)">
+                                                            Save
+                                                        </button>
+                                                        <!-- [else] if editing -->
+                                                        <button v-if="correctProducer && editingQAID == qa._id.$oid" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="cancelQAEdit(qa)">
+                                                            Cancel
+                                                        </button>
+                                                        <!-- delete -->
+                                                        <button type="button" class="btn btn-danger rounded-0" v-on:click="deleteQAEdit(qa)">
+                                                            Delete
+                                                        </button>
+                                                        <!-- spacer -->
+                                                        <div class="mt-2"></div>
+                                                        <p v-if="editingQA == false || editingQAID != qa._id.$oid"> A: {{ qa["answer"] }} </p>
+                                                        <textarea v-else-if="editingQAID == qa._id.$oid" class="search-bar form-control rounded fst-italic question-box flex-grow-1" type="text" placeholder="Edit answer." v-model="edit_answer[qa._id.$oid]"></textarea>
+                                                    </div>
                                                 </div>
-                                            </div>
 
-                                            <!-- show unanswered questions -->
-                                            <div v-else>
-                                                    <div class="carousel-item" v-for="(qa, index) in unansweredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
-                                                    <p> <b> Q: {{ qa["question"] }} </b> </p>
-                                                    <div class="input-group centered">
-                                                        <div class="input-group centered pt-2">
-                                                            <textarea class="search-bar form-control rounded fst-italic question-box" type="text" placeholder="Respond to your fans latest questions." v-model="answer"></textarea>
-                                                            <div v-on:click="sendAnswer(qa)" class="send-icon ps-1">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
-                                                                    <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
-                                                                </svg>
+                                                <!-- show unanswered questions -->
+                                                <div v-else>
+                                                        <div class="carousel-item" v-for="(qa, index) in unansweredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
+                                                        <p> <b> Q: {{ qa["question"] }} </b> </p>
+                                                        <div class="input-group centered">
+                                                            <div class="input-group centered pt-2">
+                                                                <textarea class="search-bar form-control rounded fst-italic question-box" type="text" placeholder="Respond to your fans latest questions." v-model="answer"></textarea>
+                                                                <div v-on:click="sendAnswer(qa)" class="send-icon ps-1">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
+                                                                        <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
+                                                                    </svg>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <!-- [else] user type is NOT producer -->
-                                        <div v-else>
-                                            <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
-                                                <div>
-                                                    <p> <b> Q: {{ qa["question"] }} </b> </p>
-                                                    <p> A: {{ qa["answer"] }} </p>
+                                            <!-- [else] user type is NOT producer -->
+                                            <div v-else>
+                                                <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
+                                                    <div>
+                                                        <p> <b> Q: {{ qa["question"] }} </b> </p>
+                                                        <p> A: {{ qa["answer"] }} </p>
+                                                    </div>
+                                                    <div class="input-group centered pt-2">
+                                                        <textarea class="search-bar form-control rounded fst-italic question-box" type="text" placeholder="Ask your question!" v-model="question"></textarea>
+                                                        <div v-on:click="sendQuestion" class="send-icon ps-1">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
+                                                                <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
+                                                            </svg>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div class="input-group centered pt-2">
+                                                <div v-if="answeredQuestions.length === 0" class="input-group centered pt-2">
                                                     <textarea class="search-bar form-control rounded fst-italic question-box" type="text" placeholder="Ask your question!" v-model="question"></textarea>
                                                     <div v-on:click="sendQuestion" class="send-icon ps-1">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
@@ -165,27 +174,18 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div v-if="answeredQuestions.length === 0" class="input-group centered pt-2">
-                                                <textarea class="search-bar form-control rounded fst-italic question-box" type="text" placeholder="Ask your question!" v-model="question"></textarea>
-                                                <div v-on:click="sendQuestion" class="send-icon ps-1">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
-                                                        <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
-                                                    </svg>
-                                                </div>
-                                            </div>
                                         </div>
+                                        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
+                                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                            <span class="visually-hidden">Previous</span>
+                                        </button>
+                                        <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
+                                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                            <span class="visually-hidden">Next</span>
+                                        </button>
                                     </div>
-                                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
-                                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                        <span class="visually-hidden">Previous</span>
-                                    </button>
-                                    <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
-                                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                        <span class="visually-hidden">Next</span>
-                                    </button>
                                 </div>
                             </div>
-                        </div>
                     </div>
                 </div>
                 <!-- row 3: recent fan posted questions desktop -->
@@ -389,7 +389,7 @@
             <div class="col-lg-8 col-md-12 col-sm-12 ps-lg-5">
                 <!--mobile toggle buttons for graph tzh -->
                 <ul class="nav nav-pills mobile-view-show pt-2"  role="tablist" >
-                   
+                 <hr>  
                     <li class="nav-item pe-2 pt-2 " role="presentation">
                         <button class="nav-link active"  data-bs-toggle="pill" data-bs-target="#countofreviews" type="button" role="tab" aria-controls="countofreviews" aria-selected="true">Count of Reviews</button>
                     </li>
@@ -424,7 +424,7 @@
 
                 <!--mobile toggle buttons for top expressions listing tzh -->
                 <ul class="nav nav-pills mobile-view-show pt-2"  role="tablist" >
-                   
+                    <hr>
                    <li class="nav-item pe-2 pt-2 " role="presentation">
                        <button class="nav-link active"  data-bs-toggle="pill" data-bs-target="#BestRatedExpressions" type="button" role="tab" aria-controls="BestRatedExpressions" aria-selected="true">Best Rated</button>
                    </li>
@@ -434,13 +434,13 @@
                    <li class="nav-item pe-2 pt-2 " role="presentation">
                        <button class="nav-link "  data-bs-toggle="pill" data-bs-target="#MostReviewedCategories" type="button" role="tab" aria-controls="MostReviewedCategories" aria-selected="false">Top Categories</button>
                    </li>
-               </ul>
+                </ul>
 
                     <!-- row 2: your best rated expressions & your most reviewed expressions -->
-                    <div class="row mobile-view-show tab-content">
+                    <div style="min-height:450px;" class="row mobile-view-show tab-content">
 
                         <!-- col 1: your best rated expressions -->
-                        <div id="BestRatedExpressions" class="tab-pane fade show active col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-lg-3 ps-lg-0 pe-lg-0">
+                        <div id="BestRatedExpressions" class="tab-pane fade show active col-lg-5 col-md-12 col-sm-12 text-start pt-3 mx-lg-3 ps-lg-0 pe-lg-0">
                             
                             <div class="text-start pb-2" v-for="listing in mostPopular" v-bind:key="listing._id">
                                 <router-link :to="{ path: '/listing/view/' + listing._id.$oid }" class="reverse-clickable-text">
@@ -460,7 +460,7 @@
                         </div>
 
                         <!-- col 2: your most reviewed expressions -->
-                        <div id="MostReviewedExpressions" class="tab-pane fade col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-lg-3 ps-lg-0 pe-lg-0">
+                        <div id="MostReviewedExpressions" class="tab-pane fade col-lg-5 col-md-12 col-sm-12 text-start pt-3 mx-lg-3 ps-lg-0 pe-lg-0">
                             
                             <div class="text-start pb-2" v-for="listing in mostDiscussed" v-bind:key="listing._id">
                                 <router-link :to="{ path: '/listing/view/' + listing._id.$oid }" class="reverse-clickable-text">
@@ -476,7 +476,7 @@
                             </div>
                         </div>
 
-                        <div id="MostReviewedCategories" class="tab-pane fade col text-start pt-5 mx-lg-3 ps-lg-0 pe-lg-0">
+                        <div id="MostReviewedCategories" class="tab-pane fade col text-start pt-3 mx-lg-3 ps-lg-0 pe-lg-0">
                             
                             <div class="text-start pb-2" v-for="(category, index) in mostDiscussedCategories" v-bind:key="category">
                                 <div class="row ms-0 default-clickable-text"> 

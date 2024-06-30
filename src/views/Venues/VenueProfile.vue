@@ -5,7 +5,7 @@
     <NavBar />
 
     <!-- Main Content -->
-    <div class="container pt-5">
+    <div class="container pt-5 mobile-pt-3">
 
         <!-- Display when data is still loading -->
         <div class="text-info-emphasis fst-italic fw-bold fs-5" v-if="dataLoaded == false">
@@ -39,7 +39,7 @@
             <!-- ------- START Venue Information ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
             <!-- Venue Information -->
-            <div class="col-xl-9 col-12 no-margin">
+            <div class="col-xl-9 col-12 no-margin p-lg-0">
 
                 <!-- ------- START Header ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
@@ -49,13 +49,13 @@
                     <!-- ------- START Image ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
                     <!-- Image -->
-                    <div class="col-lg-3 col-12 mb-lg-0 mb-3 image-container">
+                    <div class="col-lg-3 col-12 mb-lg-0 mb-3 image-container text-start mobile-col-5">
 
-                        <!-- [if] editing profile -->
+                        <!-- [if] editing profile  TZH removed style="width: 200px; height: 200px; z-index: 1; opacity: 50%"-->
                         <div v-if="editProfile" style="position: relative; text-align: center;">
                             <!-- image -->
                             <img :src="'data:image/jpeg;base64,' + (editProfilePhoto || defaultProfilePhoto)" 
-                                alt="" style="width: 200px; height: 200px; z-index: 1; opacity: 50%">
+                                alt="" class="producer-bottle-listing-page-image">
                             <!-- change option -->
                             <label for="fileSelectPFP" class="btn primary-light-dropdown" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2;">Choose File</label>
                             <input id="fileSelectPFP" type="file" @change="handleFileSelectPFP" ref="fileInput" style="width: 0px; height: 0px; display: none;">
@@ -66,10 +66,10 @@
                             
                         </div>
 
-                        <!-- [else] not editing -->
+                        <!-- [else] not editing TZH removed style="width: 200px; height: 200px; z-index: 1;" -->
                         <div v-else>
                             <img :src="'data:image/jpeg;base64,' + (targetVenue['photo'] || defaultProfilePhoto)" 
-                                alt="" style="width: 200px; height: 200px; z-index: 1;">
+                                alt="" class="producer-bottle-listing-page-image" >
                         </div>
 
                     </div>
@@ -77,185 +77,190 @@
                     <!-- ------- END Image / START Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
                     <!-- Details -->
-                    <div class="col-lg-9 col-12 container text-start">
+                    <div class="col-lg-9 col-12 container text-start padding-for-followthisbusinessbutton-large-screen mobile-col-7 mobile-ps-0 mobile-pe-0">
+                        <div class="container text-start pe-lg-0">
+                            <div class="row">
 
-                        <div class="row">
+                                <!-- Country -->
+                                <div class="col-8 pe-0 ps-0">
 
-                            <!-- Country -->
-                            <div class="col-8">
-
-                                <!-- [if] editing profile -->
-                                <div v-if="editProfile">
-                                    <label for="editCountryInput"> Country of Origin </label>
-                                    <input type="text" class="form-control mb-3" id="editCountryInput" aria-describedby="originLocation" v-model="editCountry">
-                                </div>
-
-                                <!-- [else] not editing -->
-                                <h5 v-else class="text-body-secondary">{{ targetVenue['originLocation'] }}</h5>
-
-                            </div>
-
-                            <!-- Claim Venue / Report Menu Inaccuracy / Edit Profile -->
-                            <div class="col-4">
-                                <!-- [if] not logged in as viewed venue -->
-                                <div class="d-grid no-padding text-end" v-if="!selfView && !powerView">
-
-                                    <!-- Claim Venue -->
-                                    <p v-if="!targetVenue['claimStatus']" class="text-body-secondary no-margin text-decoration-underline fst-italic" @click="claimVenueAccount"> Claim This Business </p>
-                                    <p v-else class="text-body-secondary no-margin fw-bold fst-italic"> Verified Venue </p>
-
-                                    <!-- Report Menu Inaccuracy (Opens Modal) -->
-                                    <p v-if="loggedIn && targetVenue['claimStatus']" class="text-body-secondary no-margin text-decoration-underline fst-italic" data-bs-toggle="modal" data-bs-target="#inaccurateModal"> Report Menu Inaccuracy </p>
-                                    <p v-if="!loggedIn && targetVenue['claimStatus']" class="text-body-secondary no-margin text-decoration-underline fst-italic" @click="this.$router.push('/login');"> Report Menu Inaccuracy </p>
-                                </div>
-
-                                <!-- [else] logged in as viewed venue -->
-                                <div class="d-grid no-padding text-end" v-else>
-
-                                    <!-- Edit Profile Toggle -->
-
-                                    <!-- [if] not editing -->
-                                    <button v-if="!editProfile" type="button" class="btn tertiary-btn rounded-0 reverse-clickable-text" @click="editProfile = true">
-                                        Edit Profile
-                                    </button>
-                                    <!-- [else] if editing -->
-                                    <button v-else type="button" class="btn success-btn rounded-0 reverse-clickable-text" @click="saveProfileEdits">
-                                        Save
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -->
-                            <!-- modal for inaccurate listing request -->
-                            <div class="modal fade" id="inaccurateModal" tabindex="-1" aria-labelledby="inaccurateModalLabel" aria-hidden="true" data-bs-backdrop="static">
-                                <div class="modal-dialog modal-xl">
-
-                                    <!-- Report Submission Successful -->
-                                    <div class="text-success text-center fst-italic fw-bold fs-3 modal-content" v-if='reportSubmitSuccess'>
-                                        <span>Your report has successfully been submitted!</span>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" @click="resetReport" data-bs-dismiss="modal">Close</button>
-                                        </div>
+                                    <!-- [if] editing profile -->
+                                    <div v-if="editProfile">
+                                        <label for="editCountryInput"> Country of Origin </label>
+                                        <input type="text" class="form-control mb-3" id="editCountryInput" aria-describedby="originLocation" v-model="editCountry">
                                     </div>
 
-                                    <!-- Report Submission Error -->
-                                    <div class="text-danger text-center fst-italic fw-bold fs-3 modal-content" v-if="reportSubmitError != null">
-
-                                        <!-- Error: Generic -->
-                                        <span v-if="reportSubmitError == 'error'">An error occurred while attempting to report, please try again!</span>
-                                        <!-- Error: Duplicate Report -->
-                                        <span v-if="reportSubmitError == 'dupe'">You've already submitted an inaccurate report for this bottle listing!</span>
-                                        
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn primary-btn" @click="retryReport">Retry</button>
-                                            <button type="button" class="btn btn-secondary" @click="resetReport" data-bs-dismiss="modal">Clear & Close</button>
-                                        </div>
-                                        
-                                    </div>
-
-                                    <!-- Report Form -->
-                                    <div v-if="reportFormView" class="modal-content" style="height: 450px;">
-                                        <div class="modal-header" style="background-color: #535C72">
-                                            <h1 class="modal-title fs-5" id="exampleModalLabel" style="color: white;">Report Menu Inaccuracy</h1>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-
-                                            <!-- Select: Menu Section -->
-                                            <p class='text-start mb-2 fw-bold'>Menu Section: <span class="text-danger">*</span></p>
-                                            <div class="input-group">
-                                                <select v-model="reportSection" class="form-select mw-100" @change="getReportSectionItems">
-                                                    <option disabled value=''> (Select a section) </option>
-                                                    <option v-for="(section, index) in detailedMenu" v-bind:key="index" v-bind:value="index">{{ section.sectionName }}</option>
-                                                </select>
-                                            </div>
-
-                                            <!-- Select: Inaccurate Item -->
-                                            <p class='text-start mb-2 fw-bold'>Inaccurate Item: <span class="text-danger">* <span v-if="reportItemNone">(Select 1)</span></span></p>
-                                            <div class="input-group" v-if="reportSectionItems.length > 0">
-                                                <select v-model="reportItem" class="form-select mw-100">
-                                                    <option disabled value=''> (Select an item) </option>
-                                                    <option v-for="item in reportSectionItems" v-bind:key="item.itemID" v-bind:value="item.itemID">{{ item.itemDetails.itemName }}</option>
-                                                </select>
-                                            </div>
-                                            <!-- disabled if no valid items to select -->
-                                            <div class="input-group" v-else>
-                                                <select class="form-select mw-100" disabled>
-                                                    <option selected>-</option>
-                                                </select>
-                                            </div>
-
-                                            <!-- Text Input: Reason for Inaccuracy -->
-                                            <div class = 'row justify-content-start mt-3'>
-                                                <div class = "col-md-12">
-                                                    <p class='text-start mb-2 fw-bold'>Report Reason: <span class="text-danger">* <span v-if="reportReasonNone">(Required)</span></span></p>
-                                                    <textarea v-model="reportReason" class="form-control" id="reportReasonTextArea" rows="3" placeholder="Enter report reason / Describe inaccuracy and how to resolve your concern."></textarea>
-                                                </div>
-                                            </div>
-
-                                        </div>
-
-                                        <!-- end of modal body -->
-                                        <div class="modal-footer">
-                                            <div v-if="reportSubmitLoading" class="spinner-border" role="status">
-                                                <span class="visually-hidden">Loading...</span>
-                                            </div>
-                                            <button type="button" @click="submitReport" class="btn btn-primary">Submit Report</button>
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                            </div>
-                            <!-- END OF MODAL FOR INACCURATE REPORTING -->
-                            <!-- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -->
-
-                        </div>
-
-                        <!-- ------- START Producer ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
-
-                        <!-- Producer -->
-                        <div class="row">
-                            <div class="col-12">
-                                <!-- [if] editing -->
-                                <div v-if="editProfile">
-                                    <label for="venueNameInput"> Venue Name </label>
-                                    <input type="text" class="form-control mb-3" id="venueNameInput" aria-describedby="venueName" v-model="editVenueName">
-                                </div>
-                                <!-- [else] not editing -->
-                                <h3 v-else class="text-body-secondary"> <b> {{ targetVenue["venueName"] }} </b> </h3>
-                            </div>
-                        </div>
-
-                        <!-- ------- END Producer / START Description tzh to edit ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
-
-                        <!-- Description -->
-                        <div class="row scrollable">
-                            <div class="col-12">
-                                <!-- [if] editing -->
-                                <div v-if="editProfile">
-                                    <label for="venueDescInput"> Venue Description </label>
-                                    <textarea type="text" class="form-control" id="venueDescInput" aria-describedby="venueDesc" v-model="editVenueDesc"></textarea>
-                                </div>
-                                <!-- [else] not editing -->
-                                <div v-else class="text-body-secondary fs m-0"> 
-                                    <div v-if="targetVenue.venueDesc.length > 250">
-                                        <p v-if="!showFullDescription">
-                                            {{ targetVenue["venueDesc"].slice(0, 250) + (targetVenue["venueDesc"].length > 250 ? '...' : '')}}
-                                            <a @click="showFullDescription = true" style="font-weight: bold;">(Read More)</a>
-                                        </p>
-                                        <p v-else>
-                                            {{ targetVenue["venueDesc"]}}
-                                            <a @click="showFullDescription = false" style="font-weight: bold;">(Read Less)</a>
-                                        </p>
-                                    </div>
+                                    <!-- [else] not editing -->
                                     <div v-else>
-                                        {{ targetVenue["venueDesc"]}}
+                                        <h5 class="text-body-secondary mobile-view-hide">{{ targetVenue['originLocation'] }}</h5>
+                                        <h6 class="text-body-secondary mobile-view-show mb-0">{{ targetVenue['originLocation'] }}</h6>
+                                    </div>
+                                </div>
+
+                                <!-- Claim Venue / Report Menu Inaccuracy / Edit Profile -->
+                                <div class="col-4 mobile-view-hide">
+                                    <!-- [if] not logged in as viewed venue -->
+                                    <div class="d-grid no-padding text-end" v-if="!selfView && !powerView">
+
+                                        <!-- Claim Venue -->
+                                        <p v-if="!targetVenue['claimStatus']" class="text-body-secondary no-margin text-decoration-underline fst-italic" @click="claimVenueAccount"> Claim This Business </p>
+                                        <p v-else class="text-body-secondary no-margin fw-bold fst-italic"> Verified Venue </p>
+
+                                        <!-- Report Menu Inaccuracy (Opens Modal) -->
+                                        <p v-if="loggedIn && targetVenue['claimStatus']" class="text-body-secondary no-margin text-decoration-underline fst-italic" data-bs-toggle="modal" data-bs-target="#inaccurateModal"> Report Menu Inaccuracy </p>
+                                        <p v-if="!loggedIn && targetVenue['claimStatus']" class="text-body-secondary no-margin text-decoration-underline fst-italic" @click="this.$router.push('/login');"> Report Menu Inaccuracy </p>
+                                    </div>
+
+                                    <!-- [else] logged in as viewed venue -->
+                                    <div class="d-grid no-padding text-end" v-else>
+
+                                        <!-- Edit Profile Toggle -->
+
+                                        <!-- [if] not editing -->
+                                        <button v-if="!editProfile" type="button" class="btn tertiary-btn rounded-0 reverse-clickable-text" @click="editProfile = true">
+                                            Edit Profile
+                                        </button>
+                                        <!-- [else] if editing -->
+                                        <button v-else type="button" class="btn success-btn rounded-0 reverse-clickable-text" @click="saveProfileEdits">
+                                            Save
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -->
+                                <!-- modal for inaccurate listing request -->
+                                <div class="modal fade" id="inaccurateModal" tabindex="-1" aria-labelledby="inaccurateModalLabel" aria-hidden="true" data-bs-backdrop="static">
+                                    <div class="modal-dialog modal-xl">
+
+                                        <!-- Report Submission Successful -->
+                                        <div class="text-success text-center fst-italic fw-bold fs-3 modal-content" v-if='reportSubmitSuccess'>
+                                            <span>Your report has successfully been submitted!</span>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" @click="resetReport" data-bs-dismiss="modal">Close</button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Report Submission Error -->
+                                        <div class="text-danger text-center fst-italic fw-bold fs-3 modal-content" v-if="reportSubmitError != null">
+
+                                            <!-- Error: Generic -->
+                                            <span v-if="reportSubmitError == 'error'">An error occurred while attempting to report, please try again!</span>
+                                            <!-- Error: Duplicate Report -->
+                                            <span v-if="reportSubmitError == 'dupe'">You've already submitted an inaccurate report for this bottle listing!</span>
+                                            
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn primary-btn" @click="retryReport">Retry</button>
+                                                <button type="button" class="btn btn-secondary" @click="resetReport" data-bs-dismiss="modal">Clear & Close</button>
+                                            </div>
+                                            
+                                        </div>
+
+                                        <!-- Report Form -->
+                                        <div v-if="reportFormView" class="modal-content" style="height: 450px;">
+                                            <div class="modal-header" style="background-color: #535C72">
+                                                <h1 class="modal-title fs-5" id="exampleModalLabel" style="color: white;">Report Menu Inaccuracy</h1>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+
+                                                <!-- Select: Menu Section -->
+                                                <p class='text-start mb-2 fw-bold'>Menu Section: <span class="text-danger">*</span></p>
+                                                <div class="input-group">
+                                                    <select v-model="reportSection" class="form-select mw-100" @change="getReportSectionItems">
+                                                        <option disabled value=''> (Select a section) </option>
+                                                        <option v-for="(section, index) in detailedMenu" v-bind:key="index" v-bind:value="index">{{ section.sectionName }}</option>
+                                                    </select>
+                                                </div>
+
+                                                <!-- Select: Inaccurate Item -->
+                                                <p class='text-start mb-2 fw-bold'>Inaccurate Item: <span class="text-danger">* <span v-if="reportItemNone">(Select 1)</span></span></p>
+                                                <div class="input-group" v-if="reportSectionItems.length > 0">
+                                                    <select v-model="reportItem" class="form-select mw-100">
+                                                        <option disabled value=''> (Select an item) </option>
+                                                        <option v-for="item in reportSectionItems" v-bind:key="item.itemID" v-bind:value="item.itemID">{{ item.itemDetails.itemName }}</option>
+                                                    </select>
+                                                </div>
+                                                <!-- disabled if no valid items to select -->
+                                                <div class="input-group" v-else>
+                                                    <select class="form-select mw-100" disabled>
+                                                        <option selected>-</option>
+                                                    </select>
+                                                </div>
+
+                                                <!-- Text Input: Reason for Inaccuracy -->
+                                                <div class = 'row justify-content-start mt-3'>
+                                                    <div class = "col-md-12">
+                                                        <p class='text-start mb-2 fw-bold'>Report Reason: <span class="text-danger">* <span v-if="reportReasonNone">(Required)</span></span></p>
+                                                        <textarea v-model="reportReason" class="form-control" id="reportReasonTextArea" rows="3" placeholder="Enter report reason / Describe inaccuracy and how to resolve your concern."></textarea>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+                                            <!-- end of modal body -->
+                                            <div class="modal-footer">
+                                                <div v-if="reportSubmitLoading" class="spinner-border" role="status">
+                                                    <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                                <button type="button" @click="submitReport" class="btn btn-primary">Submit Report</button>
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <!-- END OF MODAL FOR INACCURATE REPORTING -->
+                                <!-- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -->
+
+                            </div>
+
+                            <!-- ------- START Producer ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+
+                            <!-- Producer -->
+                            <div class="row">
+                                <!--<div class="col-12"> -->
+                                    <!-- [if] editing -->
+                                    <div v-if="editProfile">
+                                        <label for="venueNameInput"> Venue Name </label>
+                                        <input type="text" class="form-control mb-3" id="venueNameInput" aria-describedby="venueName" v-model="editVenueName">
+                                    </div>
+                                    <!-- [else] not editing -->
+                                    <div v-else class="ps-0 pe-0">
+                                        <h3  class="text-body-secondary mobile-view-hide"> <b> {{ targetVenue["venueName"] }} </b> </h3>
+                                        <h4  class="text-body-secondary mobile-view-show pe-0 ps-0 mb-0"> <b> {{ targetVenue["venueName"] }} </b> </h4>
+                                    </div>
+                                <!--</div>-->
+                            </div>
+
+                            <!-- ------- END Producer / START Description tzh to edit ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+
+                            <!-- Description -->
+                            <div class="row scrollable">
+                                <div class="col-12 pe-lg-0 ps-0">
+                                    <!-- [if] editing -->
+                                    <div v-if="editProfile">
+                                        <label for="venueDescInput"> Venue Description </label>
+                                        <textarea type="text" class="form-control mb-3" id="venueDescInput" aria-describedby="venueDesc" v-model="editVenueDesc"></textarea>
+                                    </div>
+                                    <!-- [else] not editing tzh removed classes text-body-secondary fs m-0-->
+                                    <div v-else class="ps-0 pe-0 "> 
+                                        <div v-if="targetVenue.venueDesc.length > 150">
+                                            <p v-if="!showFullDescription" class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">
+                                                {{ targetVenue["venueDesc"].slice(0, 150) + (targetVenue["venueDesc"].length > 150 ? '...' : '')}}
+                                                <a @click="showFullDescription = true" style="font-weight: bold;">(Read More)</a>
+                                            </p>
+                                            <p v-else class="text-body-secondary fs m-0 mobile-rating-smaller-text-2" >
+                                                {{ targetVenue["venueDesc"]}}
+                                                <a @click="showFullDescription = false" style="font-weight: bold;">(Read Less)</a>
+                                            </p>
+                                        </div>
+                                        <p v-else class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">
+                                            {{ targetVenue["venueDesc"]}}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
                         <!-- ------- END Description ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
                     </div>
@@ -267,19 +272,24 @@
                 <!-- ------- END Header / START Content Buttons ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
                 <!-- Content Buttons (Bar Overview / Bar Menu / Follow Venue) -->
-                <div class="row mt-3">
-                    <div class="col-8 d-flex justify-content-start">
+                <div class="row mt-3 mobile-mt-1">
+                    <div class="col-8 d-flex justify-content-start mobile-col-7 mobile-pe-0">
                         <!-- Toggle Bar Overview -->
-                        <button v-if="contentMode == 'overview'" class="btn active-toggle-button mx-1" @click="contentMode = 'overview'"> Bar Overview </button>
-                        <button v-else class="btn inactive-toggle-button mx-1" @click="contentMode = 'overview'"> Bar Overview </button>
+                        <button v-if="contentMode == 'overview'" class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'overview'"> Bar Overview </button>
+                        <button v-else class="btn inactive-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'overview'"> Bar Overview </button>
                         <!-- Toggle Bar Menu -->
-                        <button v-if="contentMode == 'menu'" class="btn active-toggle-button mx-1" @click="contentMode = 'menu'"> Bar Menu </button>
-                        <button v-else class="btn inactive-toggle-button mx-1" @click="contentMode = 'menu'"> Bar Menu </button>
+                        <button v-if="contentMode == 'menu'" class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'menu'"> Bar Menu </button>
+                        <button v-else class="btn inactive-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'menu'"> Bar Menu </button>
                     </div>
                     <!-- Follow Venue -->
-                    <div v-if="viewerType == 'user'" class="col-4 d-flex justify-content-end">
-                        <button v-if="!userFollowing" class="btn btn-lg primary-btn-less-round mx-1" @click="editFollow('follow')" style="font-weight: bold;" > + Follow Venue </button>
-                        <button v-else class="btn btn-lg primary-btn-outline-less-round mx-1" @click="editFollow('unfollow')" style="font-weight: bold;" > Following </button>
+                    <div v-if="viewerType == 'user'" class="col-4 no-d-flex justify-content-end mobile-col-5 padding-for-followthisbusinessbutton-large-screen">
+                        <div v-if="!userFollowing" class="d-grid gap-2">
+                            <button  class="btn btn-lg primary-btn-less-round mx-1 mobile-view-show fs-6" @click="editFollow('follow')" style="font-weight: bold;" >+ Follow</button>
+                            <button  class="btn btn-lg primary-btn-less-round mx-1 mobile-view-hide" @click="editFollow('follow')" style="font-weight: bold;" >+ Follow Venue</button>
+                        </div>
+                        <div v-else class="d-grid gap-2">
+                            <button class="btn btn-lg primary-btn-outline-less-round mx-1" @click="editFollow('unfollow')" style="font-weight: bold;" >Following</button>
+                        </div>    
                     </div>
                 </div>
 
@@ -295,7 +305,7 @@
                     <!-- Latest Updates Header -->
                     <div class="row">
                         <div class="col-12">
-                            <p class="text-start text-body-secondary fs-3 fw-bold m-0">Latest Updates from {{ targetVenue["venueName"] }}</p>
+                            <p class="text-start text-body-secondary fs-4 fw-bold m-0 mobile-fs-6">Latest Updates from {{ targetVenue["venueName"] }}</p>
                             <p v-if="!(targetVenue['updates'].length > 0) && targetVenue['claimStatus']" class="text-start fs-5 fst-italic m-0 pb-2">{{ targetVenue["venueName"] }} has not posted any updates!</p>
                         </div>
                     </div>
@@ -318,9 +328,9 @@
                         <!-- Update Date + Edit / Delete Update -->
                         <div class="row">
                             <div class="col-xl-8 col-md-6 col-12">
-                                <p class="text-start text-decoration-underline fs-5 m-0 pb-3">Posted on: {{ targetVenue["updates"][0].date }}</p>
+                                <p class="text-start text-decoration-underline fs-5 m-0 pb-3 mobile-fs-6">Posted on: {{ targetVenue["updates"][0].date }}</p>
                             </div>
-                            <div v-if="selfView || powerView" class="col-xl-4 col-md-6 col-12 text-end">
+                            <div v-if="selfView || powerView" class="col-xl-4 col-md-6 col-12 text-end mobile-view-hide">
                                 <!-- [if] not editing -->
                                 <button v-if="editUpdateTarget != targetVenue['updates'][0]._id['$oid']" type="button" class="btn btn-warning rounded-0" @click="editUpdate(targetVenue['updates'][0])">
                                     Edit
@@ -362,9 +372,9 @@
                                     
                                 </div>
 
-                                <!-- [else] not editing -->
+                                <!-- [else] not editing tzh removed style="width: 128px; height: 128px; z-index: 1;"-->
                                 <div v-else>
-                                    <img :src=" 'data:image/jpeg;base64,' + (targetVenue['updates'][0].photo || defaultProfilePhoto)" alt="" style="width: 128px; height: 128px; z-index: 1;">
+                                    <img :src=" 'data:image/jpeg;base64,' + (targetVenue['updates'][0].photo || defaultProfilePhoto)" alt="" class="producer-profile-latest-updates-image">
                                 </div>
 
                             </div>
@@ -374,20 +384,20 @@
                                 <div v-if="Array.isArray(targetVenue['updates'][0].likes) && viewerType !== null" class="col-6 text-end">
                                     <!-- [if] Liked -->
                                     <div v-if="targetVenue['updates'][0].likes.some(like => like['$oid'] == viewerID)" class="d-inline-block" @click="unlikeUpdates(targetVenue['updates'][0]._id['$oid'])">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="red" class="bi bi-heart-fill" viewBox="0 0 16 16">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="red" class="bi bi-heart-fill producer-profile-latest-updates-heart" viewBox="0 0 16 16">
                                             <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"/>
                                         </svg>
                                     </div>
                                     <!-- [else] Not Liked -->
                                     <div v-else class="d-inline-block" @click="likeUpdates(targetVenue['updates'][0]._id['$oid'])">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-heart" viewBox="0 0 16 16">
+                                        <svg xmlns="http://www.w3.org/2000/svg"  fill="currentColor" class="bi bi-heart producer-profile-latest-updates-heart" viewBox="0 0 16 16">
                                             <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.920 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.090.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15"/>
                                         </svg>
                                     </div>
                                 </div>
                                 <div v-else class="col-6 text-end">
                                     <div class="d-inline-block opacity-25">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-heart" viewBox="0 0 16 16">
+                                        <svg xmlns="http://www.w3.org/2000/svg"  fill="currentColor" class="bi bi-heart producer-profile-latest-updates-heart" viewBox="0 0 16 16">
                                             <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.920 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.090.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15"/>
                                         </svg>
                                     </div>
@@ -478,14 +488,17 @@
                     <div class="row" v-if="targetVenue['claimStatus'] && (targetVenue['updates'].length > 0)">
 
                         <!-- Toggle Button -->
-                        <button type="button" class="btn tertiary-text text-decoration-underline pt-2 no-margin border border-0" data-bs-toggle="collapse" data-bs-target="#collapseMoreUpdates" aria-expanded="false" aria-controls="collapseMoreUpdates" @click="showMoreUpdates = !showMoreUpdates;"> View <span v-if="showMoreUpdates">less</span><span v-else>more</span> </button>
+                        <button type="button" class="btn tertiary-text text-decoration-underline pt-2 no-margin border border-0" data-bs-toggle="collapse" data-bs-target="#collapseMoreUpdates" aria-expanded="false" aria-controls="collapseMoreUpdates" @click="showMoreUpdates = !showMoreUpdates;"> 
+                            View <span v-if="showMoreUpdates">less ↑</span><span v-else>more updates ↓</span> 
+                        </button>
 
                         <!-- More Updates Collapsible -->
                         <div class="collapse" id="collapseMoreUpdates" v-if="Array.isArray(targetVenue['updates'])">
 
+                            <!-- check if there are any updates 
                             <p v-if="targetVenue['updates'].length > 1" class="text-body-secondary fs-5 fw-bold m-0">Viewing {{ targetVenue['updates'].length -1 }} more updates</p>
                             <p v-else class="fs-5 fst-italic m-0">There are no more updates to view!</p>
-
+                            -->
                             <!-- For Each Update -->
                             <div v-for="updateMore in targetVenue['updates'].slice(1)" v-bind:key="updateMore._id">
 
@@ -495,7 +508,7 @@
                                     <!-- Update Date + Edit / Delete Update -->
                                     <div class="row">
                                         <div class="col-xl-8 col-md-6 col-12">
-                                            <p class="text-start text-decoration-underline fs-5 m-0 pb-3">Posted on: {{ updateMore.date }}</p>
+                                            <p class="text-start text-decoration-underline fs-5 m-0 pb-3 mobile-fs-6">Posted on: {{ updateMore.date }}</p>
                                         </div>
                                         <div v-if="selfView || powerView" class="col-xl-4 col-md-6 col-12 text-end">
                                             <!-- [if] not editing -->
@@ -539,9 +552,9 @@
                                                 
                                             </div>
 
-                                            <!-- [else] not editing -->
+                                            <!-- [else] not editing tzh removed style="width: 128px; height: 128px; z-index: 1;" -->
                                             <div v-else>
-                                                <img :src=" 'data:image/jpeg;base64,' + (updateMore.photo || defaultProfilePhoto)" alt="" style="width: 128px; height: 128px; z-index: 1;">
+                                                <img :src=" 'data:image/jpeg;base64,' + (updateMore.photo || defaultProfilePhoto)" alt="" class="producer-profile-latest-updates-image" >
                                             </div>
 
                                         </div>
@@ -551,27 +564,27 @@
                                             <div v-if="Array.isArray(updateMore.likes)" class="col-6 text-end">
                                                 <!-- [if] Liked -->
                                                 <div v-if="updateMore.likes.some(like => like['$oid'] == viewerID)" class="d-inline-block" @click="unlikeUpdates(updateMore._id['$oid'])">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="red" class="bi bi-heart-fill" viewBox="0 0 16 16">
+                                                    <svg xmlns="http://www.w3.org/2000/svg"  fill="red" class="bi bi-heart-fill producer-profile-latest-updates-heart" viewBox="0 0 16 16">
                                                         <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"/>
                                                     </svg>
                                                 </div>
                                                 <!-- [else] Not Liked -->
                                                 <div v-else class="d-inline-block" @click="likeUpdates(updateMore._id['$oid'])">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-heart" viewBox="0 0 16 16">
+                                                    <svg xmlns="http://www.w3.org/2000/svg"  fill="currentColor" class="bi bi-heart producer-profile-latest-updates-heart" viewBox="0 0 16 16">
                                                         <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.920 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.090.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15"/>
                                                     </svg>
                                                 </div>
                                             </div>
                                             <div v-else class="col-6 text-end">
                                                 <div class="d-inline-block">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-heart" viewBox="0 0 16 16">
+                                                    <svg xmlns="http://www.w3.org/2000/svg"  fill="currentColor" class="bi bi-heart producer-profile-latest-updates-heart" viewBox="0 0 16 16">
                                                         <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.920 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.090.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15"/>
                                                     </svg>
                                                 </div>
                                             </div>
 
                                             <!-- Like Count -->
-                                            <div class="col-6 text-start">
+                                            <div class="col-6 text-start mobile-fs-6 ">
                                                 <p v-if="Array.isArray(updateMore.likes)" class="text-body-secondary fs-5 m-0">{{ updateMore.likes.length }}</p>
                                                 <p v-else class="text-body-secondary fs-5 m-0">-</p>
                                             </div>
@@ -579,12 +592,12 @@
                                     </div>
                                     
                                     <!-- Description -->
-                                    <div v-if="editUpdateTarget == updateMore._id['$oid']" class="col-xl-10 col-md-9 col-8 text-start p-text-lg">
+                                    <div v-if="editUpdateTarget == updateMore._id['$oid']" class="col-xl-10 col-md-9 col-8 text-start p-text-lg mobile-ps-0 mobile-pe-0">
                                         <label :for="'editUpdateText' + updateMore._id['$oid']"> Update Text </label>
                                         <textarea type="text" class="form-control" :id="'editUpdateText' + updateMore._id['$oid']" aria-describedby="editUpdateText" v-model="editUpdateContent[updateMore._id['$oid']].newText"></textarea>
                                     </div>
-                                    <div v-else class="col-xl-10 col-md-9 col-8">
-                                        <p class="text-start p-text-lg">{{ updateMore.text }}</p>
+                                    <div v-else class="col-xl-10 col-md-9 col-8 mobile-ps-0 mobile-pe-0">
+                                        <p class="text-start p-text-lg mobile-rating-smaller-text-2">{{ updateMore.text }}</p>
                                     </div>
 
                                 </div>
@@ -596,28 +609,202 @@
                     <hr>
 
                     <!-- ------- END View More Updates / START View Sorted Listings ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+                    <div class="row mobile-view-show ps-2 pe-2">
+                        <!-- Toggle Button vendor QnA-->
+                        <button v-if="showQnA"
+                                type="button" 
+                                class="active-toggle-producer-QnA tertiary-text pt-2 pb-2 border" 
+                                data-bs-toggle="collapse" 
+                                data-bs-target="#collapseQnA" 
+                                aria-expanded="false" 
+                                aria-controls="collapseQnA" 
+                                style="font-weight:bold;"
+                                @click="checkToShowQnA()">Q&As for {{ targetVenue["venueName"] }} ↑</button>
+                        <button v-else
+                                type="button" 
+                                class="primary-btn-less-round tertiary-text pt-2 pb-2 border" 
+                                data-bs-toggle="collapse" 
+                                data-bs-target="#collapseQnA" 
+                                aria-expanded="false" 
+                                aria-controls="collapseQnA" 
+                                style="font-weight:bold;"
+                                @click="checkToShowQnA()">Q&As for {{ targetVenue["venueName"] }} ↓</button>
+                        <!-- show mobile Q&A when button is clicked -->
+                        <div class="collapse pe-0 ps-0" id="collapseQnA">
+                            <br>
+                                <div class="col-xl-12 col-lg-4 col-md-6 col-12">
+                                    <div class="square primary-square rounded p-3 mb-3">
 
+                                        <!-- Header -->
+                                        <div class="square-inline text-start">
+
+                                            <!-- [if] Self Venue -->
+                                            <div v-if="selfView" class="mr-auto">
+                                                <h4> Q&A for You! </h4>
+                                                <router-link :to="{ path: '/Venues/VenuesQA/' + targetVenue._id['$oid'] }" class="default-text-no-background">
+                                                    <p class="reverse-text no-margin text-decoration-underline text-start pb-2"> View All </p>
+                                                </router-link>
+                                            </div>
+
+                                            <!-- [else] -->
+                                            <h4 v-else class="mr-auto"> Q&As for {{ targetVenue["venueName"] }} </h4>
+
+                                        </div>
+
+                                        <!-- Buttons for Answered/Unanswered Questions -->
+                                        <div v-if="selfView" class="row text-center px-2">
+                                            <div class="col-6 d-grid gap-0 no-padding">
+                                                <button type="button" class="btn tertiary-btn rounded-0 reverse-clickable-text" @click="qaMode = 'answered'">
+                                                    Answered
+                                                </button>
+                                            </div>
+                                            <div class="col-6 d-grid gap-0 no-padding">
+                                                <button type="button" class="btn tertiary-btn rounded-0 reverse-clickable-text" @click="qaMode = 'unanswered'">
+                                                    Unanswered
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Q & A Lock Message (Venue Unclaimed) -->
+                                        <div class="row text-center py-2 mx-1 default-text-no-background" v-if="!targetVenue['claimStatus']" style="background-color:#DDC8A9;">
+                                            <p class="fs-3 fw-bold fst-italic mt-3" >
+                                                Do you own this business?
+                                            </p>
+                                            <p> Sign up for a venue account to answer questions from your fans! </p>
+
+                                            <div class="col-lg-2 col-1"></div>
+                                            <button type="submit" class="col-lg-8 col-10 btn secondary-btn-border-thick mb-3" @click="claimVenueAccount"> Claim This Business </button>
+                                            <div class="col-lg-2 col-1"></div>
+                                        </div>
+
+                                        <!-- Q & A Content -->
+                                        <div class="text-start pt-2 py-1" v-else>
+                                            <div class="carousel slide" id="carouselQA">
+                                                <div class="carousel-inner px-4">
+
+                                                    <!-- [if] Self Venue -->
+                                                    <div v-if="selfView">
+
+                                                        <!-- Answered Questions -->
+                                                        <div v-if="qaMode == 'answered'">
+                                                            <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
+                                                                <p> <b> Q: {{ qa["question"] }} </b> </p>
+                                                                <!-- [if] not editing -->
+                                                                <button v-if="editingQA == false || editingQAID != qa._id.$oid" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="editQA(qa)">
+                                                                    Edit answer
+                                                                </button>
+                                                                <!-- [else] if editing -->
+                                                                <button v-if="editingQAID == qa._id.$oid" type="button" class="btn success-btn rounded-0 me-1" v-on:click="saveQAEdit(qa)">
+                                                                    Save
+                                                                </button>
+                                                                <!-- [else] if editing -->
+                                                                <button v-if="editingQAID == qa._id.$oid" type="button" class="btn secondary-btn rounded-0 me-1" v-on:click="cancelQAEdit(qa)">
+                                                                    Cancel
+                                                                </button>
+                                                                <!-- delete -->
+                                                                <button type="button" class="btn btn-danger rounded-0" v-on:click="deleteQAEdit(qa)">
+                                                                    Delete
+                                                                </button>
+                                                                <!-- spacer -->
+                                                                <div class="mt-2"></div>
+                                                                <p v-if="editingQA == false || editingQAID != qa._id.$oid"> A: {{ qa["answer"] }} </p>
+                                                                <textarea v-else-if="editingQAID == qa._id.$oid" class="search-bar form-control rounded fst-italic question-box flex-grow-1" type="text" placeholder="Edit answer." v-model="edit_answer[qa._id.$oid]"></textarea>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Unanswered Questions -->
+                                                        <div v-if="qaMode == 'unanswered'">
+                                                            <div class="carousel-item" v-for="(qa, index) in unansweredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
+                                                                <p class="fw-bold">Q: {{ qa["question"] }}</p>
+                                                                <div class="input-group centered pt-2">
+                                                                    <textarea class="search-bar form-control rounded fst-italic question-box" type="text" placeholder="Respond to your fans' latest questions." v-model="qaAnswer"></textarea>
+                                                                    <div @click="sendAnswer(qa)" class="send-icon ps-1">
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
+                                                                            <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
+                                                                        </svg>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                    </div>
+
+                                                    <!-- [else] Other Viewers -->
+                                                    <div v-else>
+
+                                                        <!-- Answered Questions -->
+                                                        <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
+                                                            <p class="fw-bold">Q: {{ qa["question"] }}</p>
+                                                            <p> A: {{ qa["answer"] }} </p>
+                                                            
+                                                            <!-- Ask Question -->
+                                                            <div class="input-group centered pt-2">
+                                                                <textarea class="search-bar form-control rounded fst-italic question-box" type="text" placeholder="Ask a question!" v-model="qaQuestion"></textarea>
+                                                                <div @click="sendQuestion" class="send-icon ps-1">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
+                                                                        <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
+                                                                    </svg>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- If No Answered Questions -->
+                                                        <div v-if="answeredQuestions.length === 0">
+                                                            <!-- Ask Question -->
+                                                            <div class="input-group centered pt-2">
+                                                                <textarea class="search-bar form-control rounded fst-italic question-box" type="text" placeholder="Ask a question!" v-model="qaQuestion"></textarea>
+                                                                <div @click="sendQuestion" class="send-icon ps-1">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
+                                                                        <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
+                                                                    </svg>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                    </div>
+
+                                                </div>
+
+                                                <!-- Carousel Control Buttons -->
+                                                <button class="carousel-control-prev" type="button" data-bs-target="#carouselQA" data-bs-slide="prev">
+                                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                                    <span class="visually-hidden">Previous</span>
+                                                </button>
+                                                <button class="carousel-control-next" type="button" data-bs-target="#carouselQA" data-bs-slide="next">
+                                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                                    <span class="visually-hidden">Next</span>
+                                                </button>
+
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                        </div>       
+                    </div> 
+                    <!-- end mobile Q&A-->
+                    <hr>
                     <!-- View Sorted Listings -->
                         <!-- 1: Most Popular (Highest Ratings) -->
                         <!-- 2: Most Discussed (Most Reviews) -->
                         <!-- 3: Recently Added (Newest) -->
                     <div v-for="sortedList in [mostPopular, mostDiscussed, recentlyAdded]" v-bind:key="sortedList">
 
-                        <ListingRowDisplay v-if="sortedList == mostPopular"
+                        <ListingRowDisplayProducerProfile v-if="sortedList == mostPopular"
                             :listingArr="sortedList" 
                             displayName="Most Popular" 
                             :user="userInfo" 
                             :listing="loadedListings" 
                             @icon-clicked="handleIconClick"/>
 
-                        <ListingRowDisplay v-if="sortedList == mostDiscussed"
+                        <ListingRowDisplayProducerProfile v-if="sortedList == mostDiscussed"
                             :listingArr="sortedList" 
                             displayName="Most Discussed" 
                             :user="userInfo" 
                             :listing="loadedListings" 
                             @icon-clicked="handleIconClick"/>
 
-                        <ListingRowDisplay v-if="sortedList == recentlyAdded"
+                        <ListingRowDisplayProducerProfile v-if="sortedList == recentlyAdded"
                             :listingArr="sortedList" 
                             displayName="Recently Added" 
                             :user="userInfo" 
@@ -656,23 +843,28 @@
                     <div v-if="!editMenuMode && targetVenue['claimStatus']" class="row align-items-center pb-3">
 
                         <!-- Menu Header -->
-                        <div class="col-8">
+                        <div class="col-8 mobile-view-hide">
                             <p class="text-body-secondary text-start fs-4 m-0"><span class="fw-bold">{{ loadedListings.length }}</span> Drinks On The Menu</p>
                         </div>
-
+                        <div class="col-7 mobile-view-show">
+                            <p class="text-body-secondary text-start fs-6 m-0"><span class="fw-bold">{{ loadedListings.length }}</span> Drinks On The Menu</p>
+                        </div>
                         <!-- Option Buttons -->
-                        <div class="col-4 d-grid">
+                        <div class="col-4 d-grid mobile-col-5">
                             <div v-if="selfView" class="row">
 
                                 <!-- Edit Menu -->
-                                <div class="col-6 d-grid px-1">
-                                    <button type="button" class="btn primary-btn-outline-thick rounded-0 reverse-clickable-text" @click="enableEditMenuMode"> Edit Menu </button>
+                                <div class="col-6 d-grid px- mobile-view-hide">
+                                    <button type="button" class="mobile-view-hide btn primary-btn-outline-thick rounded-0 reverse-clickable-text" @click="enableEditMenuMode"> 
+                                        Edit Menu 
+                                    </button>
                                 </div>
 
                                 <!-- Share Menu -->
-                                <div class="col-6 d-grid px-1">
-                                    <button type="button" class="btn primary-btn-outline-thick rounded-0 reverse-clickable-text" data-bs-toggle="modal" data-bs-target="#shareMenuModal"> Share Menu </button>
-
+                                <div class="col-6 d-grid px-1 mobile-view-hide">
+                                    <button type="button" class="mobile-view-hide btn primary-btn-outline-thick rounded-0 reverse-clickable-text" data-bs-toggle="modal" data-bs-target="#shareMenuModal"> 
+                                        Share Menu 
+                                    </button>
                                     <!-- Share Menu Modal (QR Code) -->
                                     <div class="modal fade" id="shareMenuModal" tabindex="-1" aria-labelledby="shareMenuModalLabel" aria-hidden="true">
                                         <div class="modal-dialog">
@@ -706,7 +898,50 @@
                                     </div>
 
                                 </div>
-
+                                <div class="d-grid px-1 mobile-view-show">
+                                    <div class="row justify-content-end pe-4">
+                                        <button type="button" style="max-width:50px;" class="btn  rounded-0 " @click="enableEditMenuMode"> 
+                                            <svg viewBox="0 0 24 24" fill="currentColor" class="bi bi-sort-down funnel-svg-dimensions" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z" ></path>
+                                            </svg>
+                                        </button>
+                                        <button type="button" style="max-width:50px;" class=" mobile-view-show btn rounded-0 " data-bs-toggle="modal" data-bs-target="#shareMenuModal1"> 
+                                            <svg viewBox="0 0 24 24" fill="none" class="bi bi-sort-down funnel-svg-dimensions" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M16 7L12 3M12 3L8 7M12 3V16M20 13V18C20 19.1046 19.1046 20 18 20H6C4.89543 20 4 19.1046 4 18L4 13" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> 
+                                            </svg>
+                                        </button>
+                                        <div class="modal fade" id="shareMenuModal1" tabindex="-1" aria-labelledby="shareMenuModal1Label" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h1 class="modal-title fs-5" id="shareMenuModalLabel"> Venue QR Code </h1>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="centered">
+                                                            <qr-code v-bind:text="currentURL" ref="qrCode"></qr-code>
+                                                        </div>
+                                                        <div class="input-group pt-3">
+                                                            <input type="text" class="form-control" aria-label="Link" aria-describedby="button-addon2" v-bind:value="currentURL" disabled>
+                                                            <button class="btn btn-outline-secondary" type="button" id="button-addon2" @click="copyToClipboard(currentURL)">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
+                                                                    <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/>
+                                                                    <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/>
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+                                                        <p class="text-start pt-2" v-if="clipboardItem"> 
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16">
+                                                                <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
+                                                            </svg>
+                                                            Copied to clipboard!
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -715,59 +950,89 @@
                     <!-- ------- END Menu Header + Option Buttons / START Search + Edit Menu Options + Sort ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
                     <!-- Search + Edit Menu Options + Sort -->
-                    <div class="row align-items-center" v-if="!(editMenuMode && !editMenuDataLoaded) && targetVenue['claimStatus']">
-
-                        <!-- Reset Search -->
-                        <div v-if="!editMenuMode" class="col-1 p-0">
-                            <button type="button" class="btn tertiary-btn" @click="searchMenuTerm = ''; searchMenu()">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
-                                    <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/>
-                                    <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/>
-                                </svg>
-                            </button>
-                        </div>
-
-                        <!-- Search Bar -->
-                        <div v-if="!editMenuMode" class="col-9 p-0">
-                            <input class="search-bar form-control rounded fst-italic" type="text" placeholder="Search menu" v-model="searchMenuTerm" @keyup.enter="searchMenu">
-                        </div>
-
-                        <!-- Edit Menu Options: Reset Section Order / Add New Section / Add Menu Item / Save Menu / Reset / Exit -->
-                        <!--<div v-if="editMenuMode" class="col-2 d-grid px-1">
-                            <button type="button" class="btn secondary-btn-border-thick rounded-0 reverse-clickable-text px-0" @click="editMenu.sort((a, b) => (a.sectionOrder > b.sectionOrder) ? 1 : -1);"  style="color:black;"> Reset Section Order </button>
-                        </div>-->
-                        <div v-if="editMenuMode" class="col-2 d-grid px-1">
-                            <button type="button" class="btn primary-btn-outline-thick rounded-0 reverse-clickable-text px-0" data-bs-toggle="modal" data-bs-target="#addMenuItemModal"> Add Item </button>
-                        </div>
-                        <div v-if="editMenuMode" class="col-2 d-grid px-1">
-                            <button type="button" class="btn primary-btn-outline-thick rounded-0 reverse-clickable-text px-0" @click="addMenuSection"> Add Section </button>
-                        </div>
-                        <div v-if="editMenuMode" class="col-2 d-grid px-1">
-                            <button type="button" class="btn btn-warning rounded-0 reverse-clickable-text px-0"  @click="resetEditMenu"> Reset </button>
-                        </div>
-                        <div v-if="editMenuMode" class="col-2 d-grid px-1">
-                            <button type="button" class="btn btn-success rounded-0 reverse-clickable-text px-0" @click="updateMenu"> Save </button>
-                        </div>
-                        <div v-if="editMenuMode" class="col-2 d-grid px-1">
-                            <button type="button" class="btn btn-danger rounded-0 reverse-clickable-text px-0" @click="editMenuMode = false"> Exit </button>
-                        </div>
-
-                        <!-- Sort Menu -->
-                        <div class="col-2 me-0">
-                            <div class="d-grid gap-2 dropdown">
-                                <button class="btn primary-light-dropdown dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
-                                    Sort{{ sortMenuTerm ? ': ' + sortMenuTerm : ' By...' }}
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="#" @click="sortMenu('')">(Default Order)</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li v-for="sortOption in sortMenuOptions" v-bind:key="sortOption">
-                                        <a class="dropdown-item" href="#" @click="sortMenu(sortOption)">{{ sortOption }}</a>
-                                    </li>
-                                </ul>
+                    <div class="container" v-if="!(editMenuMode && !editMenuDataLoaded) && targetVenue['claimStatus']"> 
+                        <div class="row align-items-center mobile-view-show" >
+                            <!-- Search Bar -->
+                            <div v-if="!editMenuMode" class="col-12 p-0">
+                                <input class="search-bar form-control rounded fst-italic" type="text" placeholder="Search menu" v-model="searchMenuTerm" @keyup.enter="searchMenu">
                             </div>
-                        </div>
 
+                            <!-- Edit Menu Options: Reset Section Order / Add New Section / Add Menu Item / Save Menu / Reset / Exit -->
+                            <!--<div v-if="editMenuMode" class="col-2 d-grid px-1">
+                                <button type="button" class="btn secondary-btn-border-thick rounded-0 reverse-clickable-text px-0" @click="editMenu.sort((a, b) => (a.sectionOrder > b.sectionOrder) ? 1 : -1);"  style="color:black;"> Reset Section Order </button>
+                            </div>-->
+                            <div v-if="editMenuMode" class="col-3 d-grid px-1">
+                                <button type="button" class="btn primary-btn-outline-thick rounded-0 reverse-clickable-text px-0" data-bs-toggle="modal" data-bs-target="#addMenuItemModal"><b>+ Item</b></button>
+                            </div>
+                            <div v-if="editMenuMode" class="col-3 d-grid px-1">
+                                <button type="button" class="btn primary-btn-outline-thick rounded-0 reverse-clickable-text px-0" @click="addMenuSection"><b>+ Section</b></button>
+                            </div>
+                            <!--<div v-if="editMenuMode" class="col-2 d-grid px-1">
+                                <button type="button" class="btn btn-warning rounded-0 reverse-clickable-text px-0"  @click="resetEditMenu"> Reset </button>
+                            </div>-->
+                            <div v-if="editMenuMode" class="col-3 d-grid px-1">
+                                <button type="button" class="btn btn-success rounded-0 reverse-clickable-text px-0" @click="updateMenu"> Save </button>
+                            </div>
+                            <div v-if="editMenuMode" class="col-3 d-grid px-1">
+                                <button type="button" class="btn btn-danger rounded-0 reverse-clickable-text px-0" @click="editMenuMode = false"> Exit </button>
+                            </div>
+
+
+                        </div>
+                        <div class="row align-items-center mobile-view-hide" >
+
+                            <!-- Reset Search -->
+                            <div v-if="!editMenuMode" class="col-1 p-0">
+                                <button type="button" class="btn tertiary-btn" @click="searchMenuTerm = ''; searchMenu()">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/>
+                                        <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <!-- Search Bar -->
+                            <div v-if="!editMenuMode" class="col-9 p-0">
+                                <input class="search-bar form-control rounded fst-italic" type="text" placeholder="Search menu" v-model="searchMenuTerm" @keyup.enter="searchMenu">
+                            </div>
+
+                            <!-- Edit Menu Options: Reset Section Order / Add New Section / Add Menu Item / Save Menu / Reset / Exit -->
+                            <!--<div v-if="editMenuMode" class="col-2 d-grid px-1">
+                                <button type="button" class="btn secondary-btn-border-thick rounded-0 reverse-clickable-text px-0" @click="editMenu.sort((a, b) => (a.sectionOrder > b.sectionOrder) ? 1 : -1);"  style="color:black;"> Reset Section Order </button>
+                            </div>-->
+                            <div v-if="editMenuMode" class="col-2 d-grid px-1">
+                                <button type="button" class="btn primary-btn-outline-thick rounded-0 reverse-clickable-text px-0" data-bs-toggle="modal" data-bs-target="#addMenuItemModal"> Add Item </button>
+                            </div>
+                            <div v-if="editMenuMode" class="col-2 d-grid px-1">
+                                <button type="button" class="btn primary-btn-outline-thick rounded-0 reverse-clickable-text px-0" @click="addMenuSection"> Add Section </button>
+                            </div>
+                            <div v-if="editMenuMode" class="col-2 d-grid px-1">
+                                <button type="button" class="btn btn-warning rounded-0 reverse-clickable-text px-0"  @click="resetEditMenu"> Reset </button>
+                            </div>
+                            <div v-if="editMenuMode" class="col-2 d-grid px-1">
+                                <button type="button" class="btn btn-success rounded-0 reverse-clickable-text px-0" @click="updateMenu"> Save </button>
+                            </div>
+                            <div v-if="editMenuMode" class="col-2 d-grid px-1">
+                                <button type="button" class="btn btn-danger rounded-0 reverse-clickable-text px-0" @click="editMenuMode = false"> Exit </button>
+                            </div>
+
+                            <!-- Sort Menu -->
+                            <div class="col-2 me-0">
+                                <div class="d-grid gap-2 dropdown">
+                                    <button class="btn primary-light-dropdown dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
+                                        Sort{{ sortMenuTerm ? ': ' + sortMenuTerm : ' By...' }}
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#" @click="sortMenu('')">(Default Order)</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li v-for="sortOption in sortMenuOptions" v-bind:key="sortOption">
+                                            <a class="dropdown-item" href="#" @click="sortMenu(sortOption)">{{ sortOption }}</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                        </div>
                     </div>
 
                     <!-- ------- END Search + Edit Menu Options + Sort / START Menu View (Not Editing) ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
@@ -782,20 +1047,116 @@
 
                         <!-- Message about Expanding / Collapsing Sections -->
                         <div v-else class="row my-2">
-                            <p class="text-start fw-bold fst-italic m-0">Click on each menu section's name to expand or hide its contents!</p>
+                            <p class="text-start fw-bold fst-italic m-0 mobile-view-hide">Click on each menu section's name to expand or hide its contents!</p>
                         </div>
 
                         <!-- Menu Sections -->
                         <div class="row mb-2" v-for="(menuSection, index) in searchMenuResults" v-bind:key="menuSection">
 
                             <!-- Section Name -->
-                            <div class="col-12 d-grid">
+                            <div class="col-12 d-grid mobile-px-0">
                                 <button type="button" class="btn secondary-btn-not-rounded fs-5 fw-bold text-start" data-bs-toggle="collapse" :data-bs-target="'#collapseMenuSection' + index" aria-expanded="true" :aria-controls="'collapseMenuSection' + index" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
-                                    {{ menuSection.sectionName }}
+                                    {{ menuSection.sectionName }} ⬇
                                 </button>
                             </div>
+                            <!--start mobile view menu listings-->
+                            <div class="collapse show mobile-view-show" :id="'collapseMenuSection' + index">
+                                <!-- No Section Contents to Show -->
+                                <div v-if="menuSection.sectionMenu.length == 0" class="col-12 my-3">
+                                    <p class="text-center fst-italic m-0">No menu items to show!</p>
+                                </div>
 
-                            <div class="collapse show" :id="'collapseMenuSection' + index">
+                                <!-- Section Contents -->
+                                <div class="col-12 my-3" v-for="sectionItem in menuSection.sectionMenu" v-bind:key="sectionItem.itemID">
+                                    <div class="row">
+
+                                        <!-- Item Image tzh removed style="width: 150px; height: 150px;" from img tag-->
+                                        <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
+                                            <router-link :to="{ path: '/listing/view/' + sectionItem.itemID['$oid'] }" class="default-text-no-background">
+                                                <img :src=" 'data:image/jpeg;base64,' + (sectionItem.itemDetails['itemPhoto'] || defaultProfilePhoto)" class="producer-bottle-listing-page-bottle-image" >
+                                            </router-link>
+                                        </div>
+
+                                        <!-- Item Information -->
+                                        <div class="col-lg-10 col-12 ps-3 mobile-col-7 mobile-pe-0 mobile-ps-1">
+
+                                            <!-- ------- START Item Info Header ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+
+                                            <!-- Item Info Header -->
+                                            <div class="row">
+
+                                                <!-- Item Name -->
+                                                <div class="col-12 mobile-pe-0">
+                                                    <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + sectionItem.itemID['$oid'] }">
+                                                        <p class="mobile-fs-6 fs-5 fw-bold text-start text-decoration-underline m-0" style="margin-bottom:0.3rem;">{{ sectionItem.itemDetails['itemName'] }}</p>
+                                                    </router-link>
+                                                </div>
+
+                                                
+
+                                                
+
+                                            </div>
+
+                                            <!-- ------- END Item Info Header / START Item Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+                                            
+                                            <!-- Item Details -->
+                                            <div class="row">
+
+                                                <!-- Item Producer / Drink Type / Type Category / ABV / Country / Description -->
+                                                
+                                                    <p class="text-start mb-1 mobile-fs-7" >
+                                                        <router-link v-if="sectionItem.itemDetails['itemProducerID']" style="color: #2c3e50;" class="text-decoration-none" :to="{ path: '/profile/producer/' + sectionItem.itemDetails['itemProducerID'] }">
+                                                            <span v-if="sectionItem.itemDetails['itemProducer']">{{ sectionItem.itemDetails['itemProducer'] }} | </span>
+                                                        </router-link>
+                                                        <span v-if="sectionItem.itemDetails['itemType']">{{ sectionItem.itemDetails['itemType'] }} | </span>
+                                                        <span v-if="sectionItem.itemDetails['itemTypeCategory']">{{ sectionItem.itemDetails['itemTypeCategory'] }} | </span>
+                                                        <span v-if="sectionItem.itemDetails['itemABV']">{{ sectionItem.itemDetails['itemABV'] }} ABV | </span>
+                                                        <span v-if="sectionItem.itemDetails['itemCountry']">{{ sectionItem.itemDetails['itemCountry'] }}</span>
+                                                    </p>
+                                                    
+                                            </div>
+
+                                            <!-- ------- END Item Details / START Item Menu Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+
+                                            <!-- Item Menu Details -->
+                                            <div class="row">
+
+                                                <!-- Item Price / Item Serving Type -->
+                                                <div class="col-6">
+                                                    <p class="text-start fs-6 fw-bold default-text-no-background mb-0">${{ sectionItem.itemPrice || " -" }} / {{ sectionItem.itemDetails.itemServingTypeName }}</p>
+                                                </div>
+
+                                                
+
+                                                <!-- Item Availability -->
+                                                <div v-if="sectionItem.itemAvailability == false" class="col-6">
+                                                    <p class="text-start fs-6 text-danger fw-bold fst-italic text-decoration-underline mb-0">Unavailable</p>
+                                                </div>
+
+                                            </div>
+
+                                            <!-- ------- END Item Menu Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+
+                                        </div>
+                                        <div class="mobile-col-2 mobile-pe-0 mobile-ps-1">
+                                            
+                                                <!-- Item Rating -->
+                                                <div class="d-flex flex-column align-items-center ps-lg-3 mobile-view-show">
+                                                    <p style="margin-bottom: 0.1rem;" class="fs-3 fw-bold rating-text text-end d-flex align-items-center mobile-fs-5">
+                                                        {{ sectionItem.itemDetails['itemRating'] }}</p>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-star-fill ms-2 me-2" viewBox="0 0 16 16">
+                                                            <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                                                    </svg>
+                                                    
+                                                </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <!--end mobile view menu listings-->
+                            <div class="collapse show mobile-view-hide" :id="'collapseMenuSection' + index">
 
                                 <!-- No Section Contents to Show -->
                                 <div v-if="menuSection.sectionMenu.length == 0" class="col-12 my-3">
@@ -951,7 +1312,7 @@
 
                         <!-- Message about Expanding / Collapsing Sections -->
                         <div v-else class="row my-2">
-                            <p class="text-start fw-bold fst-italic m-0">
+                            <p class="text-start fw-bold fst-italic m-0 mobile-view-hide">
                                 Click on each menu section's name to expand or hide its contents!
                             </p>
                         </div>
@@ -961,18 +1322,21 @@
                         <!-- Menu Sections -->
                         <draggable v-model="editMenu" item-key="sectionOrder" @start="drag=true" @end="drag=false" v-bind="dragOptions">
                             <template #item="{element: menuSection}">
-
                                 <div class="row mb-2">
 
                                     <!-- Section Name -->
-                                    <div class="col-7 d-grid pe-0">
+                                    <div class="col-7 d-grid pe-0 mobile-view-hide">
                                         <button type="button" class="btn secondary-btn-not-rounded rounded-end-0 fs-5 fw-bold text-start" data-bs-toggle="collapse" :data-bs-target="'#collapseEditMenuSection' + menuSection.sectionOrder" aria-expanded="true" :aria-controls="'collapseEditMenuSection' + menuSection.sectionOrder" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
                                             {{ menuSection.sectionName }}
                                         </button>
                                     </div>
-
+                                    <div class="col-7 d-grid ps-0 pe-0 mobile-view-show">
+                                        <button type="button" class="btn secondary-btn-not-rounded rounded-end-0 fs-6 fw-bold text-start" data-bs-toggle="collapse" :data-bs-target="'#collapseEditMenuSection' + menuSection.sectionOrder" aria-expanded="true" :aria-controls="'collapseEditMenuSection' + menuSection.sectionOrder" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
+                                            {{ menuSection.sectionName }}
+                                        </button>
+                                    </div>
                                     <!-- Reset Section Content Order -->
-                                    <div class="col-2 d-grid p-0">
+                                    <div class="col-2 d-grid p-0 mobile-view-hide">
                                         <button type="button" class="btn secondary-btn-not-rounded rounded-0 pe-2 text-center" @click="menuSection.sectionMenu.sort((a, b) => (a.itemOrder > b.itemOrder) ? 1 : -1);">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-repeat" viewBox="0 0 16 16">
                                                 <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41m-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9"/>
@@ -982,10 +1346,19 @@
                                         </button>
                                     </div>
 
+                                    <!-- Reset Section Content Order -->
+                                    <div class="col-2 d-grid p-0 mobile-view-show">
+                                        <button type="button" class="btn secondary-btn-not-rounded rounded-0 pe-2 text-center" @click="menuSection.sectionMenu.sort((a, b) => (a.itemOrder > b.itemOrder) ? 1 : -1);">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-repeat" viewBox="0 0 16 16">
+                                                <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41m-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9"/>
+                                                <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5 5 0 0 0 8 3M3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9z"/>
+                                            </svg>
+                                        </button>
+                                    </div>
                                     <br>
 
                                     <!-- Edit Section Name -->
-                                    <div class="col-2 d-grid p-0">
+                                    <div class="col-2 d-grid p-0 mobile-view-hide">
                                         <button type="button" class="btn secondary-btn-not-rounded rounded-0 px-0 text-center" data-bs-toggle="modal" data-bs-target="#renameMenuSectionModal" @click="populateRenameMenuSectionModal(menuSection.sectionOrder)">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
                                                 <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325"/>
@@ -993,12 +1366,26 @@
                                             Rename
                                         </button>
                                     </div>
-
+                                    <div class="col-2 d-grid p-0 mobile-view-show pe-0">
+                                        <button type="button" class="btn secondary-btn-not-rounded rounded-0 px-0 text-center" data-bs-toggle="modal" data-bs-target="#renameMenuSectionModal" @click="populateRenameMenuSectionModal(menuSection.sectionOrder)">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
+                                                <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325"/>
+                                            </svg>
+                                        </button>
+                                    </div>
                                     <!-- Delete Section -->
-                                    <div class="col-1 d-grid ps-0">
+                                    <div class="col-1 d-grid ps-0 mobile-view-hide">
                                         <button type="button" class="btn secondary-btn-not-rounded rounded-start-0 px-0 text-center " @click="deleteMenuSection(menuSection.sectionOrder)">
                                             <svg xmlns='http://www.w3.org/2000/svg' width="20" height="20" fill='#f5f5f5' class="pb-1" viewBox='0 0 16 16'>
                                                 <path d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/>
+                                            </svg>
+                                        </button>
+                                    </div>
+
+                                    <div class="col-1 d-grid ps-0 pe-0 mobile-view-show ">
+                                        <button type="button" class="btn secondary-btn-not-rounded rounded-start-0 px-0 text-center " @click="deleteMenuSection(menuSection.sectionOrder)">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="bi bi-sort-down " xmlns="http://www.w3.org/2000/svg">
+                                                <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M18 6L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6M4 6H20M16 6L15.7294 5.18807C15.4671 4.40125 15.3359 4.00784 15.0927 3.71698C14.8779 3.46013 14.6021 3.26132 14.2905 3.13878C13.9376 3 13.523 3 12.6936 3H11.3064C10.477 3 10.0624 3 9.70951 3.13878C9.39792 3.26132 9.12208 3.46013 8.90729 3.71698C8.66405 4.00784 8.53292 4.40125 8.27064 5.18807L8 6" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g>
                                             </svg>
                                         </button>
                                     </div>
@@ -1012,12 +1399,115 @@
 
                                         <!-- ------- START Section Contents ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
-                                        <!-- Section Contents -->
+                                        <!-- Section Contents xyz-->
                                         <draggable v-model="menuSection.sectionMenu" item-key="itemOrder" @start="drag=true" @end="drag=false" v-bind="dragOptions">
                                             <template #item="{element: menuItem}">
-
                                                 <div class="col-12 my-3">
-                                                    <div class="row">
+                                                    <div class="row mobile-view-show">
+                                                        <!-- Item Image -->
+                                                        <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
+                                                            <img :src=" 'data:image/jpeg;base64,' + (menuItem.itemDetails['itemPhoto'] || defaultProfilePhoto)" class="producer-bottle-listing-page-bottle-image">
+                                                            <!-- Remove Item From Menu Section -->
+                                                            <div class="row">
+                                                                <div class="col-1 d-grid">
+                                                                    <button  type="button" class="btn icon-btn" @click="deleteMenuItem(menuSection.sectionOrder, menuItem.itemOrder)">
+                                                                        <svg height="25" width="25" viewBox="0 0 24 24" fill="none" class="bi bi-sort-down " xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M18 6L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6M4 6H20M16 6L15.7294 5.18807C15.4671 4.40125 15.3359 4.00784 15.0927 3.71698C14.8779 3.46013 14.6021 3.26132 14.2905 3.13878C13.9376 3 13.523 3 12.6936 3H11.3064C10.477 3 10.0624 3 9.70951 3.13878C9.39792 3.26132 9.12208 3.46013 8.90729 3.71698C8.66405 4.00784 8.53292 4.40125 8.27064 5.18807L8 6" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></g>
+                                                                        </svg>
+                                                                    </button>
+                                                                </div>
+                                                                </div> 
+                                                        </div>
+
+                                                        <!-- Item Information -->
+                                                        <div class="col-lg-10 col-12 ps-3 mobile-col-7 mobile-pe-0 mobile-ps-1">
+
+                                                            <!-- ------- START Item Info Header ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+
+                                                            <!-- Item Info Header -->
+                                                            <div class="row">
+
+                                                                <!-- Item Name -->
+                                                                <div class="col-12 mobile-pe-0">
+                                                                    <p class="mobile-fs-6 fs-5 fw-bold text-start text-decoration-underline m-0" style="margin-bottom:0.3rem;">{{ menuItem.itemDetails['itemName'] }}</p>
+                                                                </div>
+
+                                                                
+                                                            </div>
+
+                                                            <!-- ------- END Item Info Header / START Item Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+                                                            
+                                                            <!-- Item Details -->
+                                                            <div class="row">
+
+                                                                <!-- Item Producer / Drink Type / Type Category / ABV / Country / Description -->
+                                                                
+                                                                    <p class="text-start mb-1 mobile-fs-7" >
+                                                                        <span v-if="menuItem.itemDetails['itemProducer']">{{ menuItem.itemDetails['itemProducer'] }} | </span>
+                                                                        <span v-if="menuItem.itemDetails['itemType']">{{ menuItem.itemDetails['itemType'] }} | </span>
+                                                                        <span v-if="menuItem.itemDetails['itemTypeCategory']">{{ menuItem.itemDetails['itemTypeCategory'] }} | </span>
+                                                                        <span v-if="menuItem.itemDetails['itemABV']">{{ menuItem.itemDetails['itemABV'] }} ABV | </span>
+                                                                        <span v-if="menuItem.itemDetails['itemCountry']">{{ menuItem.itemDetails['itemCountry'] }}</span>
+                                                                    </p>
+
+                                                                
+
+                                                                
+
+                                                            </div>
+
+                                                            <!-- ------- END Item Details / START Item Menu Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+
+                                                            
+
+                                                            <!-- ------- END Item Menu Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+
+                                                        </div>
+                                                        <div class="mobile-col-2 mobile-pe-0 mobile-ps-1">
+                                                            <div class="d-flex flex-column align-items-center ps-lg-3 mobile-view-show">
+                                                                <p class="fs-3 fw-bold rating-text text-end d-flex align-items-center mobile-fs-5" style="margin-bottom: 0.1rem;">
+                                                                    {{ menuItem.itemDetails['itemRating'] }}
+                                                                </p>
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-star-fill ms-2 me-2" viewBox="0 0 16 16"><path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path></svg>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- Item Menu Details abc-->
+                                                    <div class="row mobile-view-show">
+                                                        <!-- Toggle Item Availability -->
+                                                        <div class="col-4 ps-0 pt-2">
+                                                            <div class="form-check form-switch form-check-inline">
+                                                                <input class="form-check-input" type="checkbox" role="switch"
+                                                                :id="'AvailCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
+                                                                :name="'AvailCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
+                                                                v-model="menuItem.itemAvailability">
+                                                                <label v-if="menuItem.itemAvailability" class="form-check-label text-success fst-italic" :for="'AvailCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
+                                                                    Available
+                                                                </label>
+                                                                <label v-if="!menuItem.itemAvailability" class="form-check-label text-danger fst-italic" :for="'AvailCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
+                                                                    Unavailable
+                                                                </label>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Edit Item Price -->
+                                                        <div class="col-3 pe-0">
+                                                            <div class="input-group">
+                                                                <span class="input-group-text fw-bold p-1">$</span>
+                                                                <input type="number" class="p-1 form-control" v-model="menuItem.itemPrice" placeholder="-" min="0" step="0.01">
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Edit Item Serving Type -->
+                                                        <div class="col-5 ps-0">
+                                                            <div class="input-group">
+                                                                <span class="input-group-text fw-bold p-1">/</span>
+                                                                <select class="form-select p-1" v-model="menuItem.itemServingType">
+                                                                    <option v-for="servingType in servingTypes" :key="servingType._id" :value="servingType._id">{{ servingType.servingType }}</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row mobile-view-hide" >
 
                                                         <!-- Item Image -->
                                                         <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0">
@@ -1123,6 +1613,7 @@
                                                         </div>
 
                                                     </div>
+
                                                 </div>
 
                                             </template>
@@ -1135,6 +1626,8 @@
                                 </div>
 
                             </template>
+
+                            
                         </draggable>
 
                         <!-- ------- END Menu Sections / START Menu Item Modal ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
@@ -1430,9 +1923,10 @@
 
                 <!-- ------- END View Analytics / START Q & A ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
-                <!-- Q & A -->
-                <div class="row">
-                    <div class="col-xl-12 col-lg-4 col-md-6 col-12">
+                <!-- Q&A -->
+                <div class="row ">
+                    <!--  Q&A-->
+                    <div class="col-xl-12 col-lg-4 col-md-6 col-12 mobile-view-hide">
                         <div class="square primary-square rounded p-3 mb-3">
 
                             <!-- Header -->
@@ -1862,7 +2356,7 @@
 <script>
     import NavBar from '@/components/NavBar.vue';
     import draggable from 'vuedraggable';
-    import ListingRowDisplay from '@/components/ListingRowDisplay.vue';
+    import ListingRowDisplayProducerProfile from '@/components/ListingRowDisplayProducerProfile.vue';
     import BookmarkIcon from '@/components/BookmarkIcon.vue';
     import BookmarkModal from '@/components/BookmarkModal.vue';
 
@@ -1871,13 +2365,16 @@
         components: {
             NavBar,
             draggable, 
-            ListingRowDisplay,
+            ListingRowDisplayProducerProfile,
             BookmarkIcon, 
             BookmarkModal
         },
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         data() {
             return {
+                // to get producer's answered questions
+                showQnA: false,
+
                 drag: false,
                 // Info
                 viewerID: localStorage.getItem('88B_accID'),
@@ -2159,6 +2656,16 @@
                 }
                 catch (error) {
                     this.dataLoaded = null;
+                }
+            },
+
+            // to check if producer QnA should be shown
+            checkToShowQnA() {
+                if (this.showQnA == true) {
+                    this.showQnA = false;
+                } 
+                else {
+                    this.showQnA = true;
                 }
             },
 
@@ -3356,7 +3863,8 @@
                     buttons: {
                         haveTried: haveTriedButton,
                         wantToTry: wantToTryButton,
-                    }
+                    },
+                    
                 }
             },
 
