@@ -11,7 +11,8 @@ from flask_cors import CORS
 
 from bson.objectid import ObjectId
 
-from datetime import datetime
+from datetime import datetime, timedelta
+import secrets
 
 import data
 
@@ -131,17 +132,19 @@ def updateAccountRequest():
     data = request.get_json()
     print(data)
     requestID = data['requestID']
-    reviewStatus = data['reviewStatus']
+    isPending = data['isPending']
+    isApproved = data['isApproved']
 
     try: 
-        updateReviewStatus = db.accountRequests.update_one({'_id': ObjectId(requestID)}, {'$set': {'reviewStatus': reviewStatus}})
+        updateReviewStatus = db.accountRequests.update_one({'_id': ObjectId(requestID)}, {'$set': {'isPending': isPending, 'isApproved': isApproved}})
 
         return jsonify(
             {   
                 "code": 201,
                 "data": {
                     "requestID": requestID,
-                    "reviewStatus": reviewStatus
+                    "isPending": isPending, 
+                    "isApproved": isApproved
                 }
             }
         ), 201
@@ -153,7 +156,8 @@ def updateAccountRequest():
                 "data": {
                     "data": {
                         "requestID": requestID,
-                        "reviewStatus": reviewStatus
+                        "isPending": isPending,
+                        "isApproved": isApproved
                     }
                 },
                 "message": "An error occurred updating the mod request."
@@ -247,6 +251,60 @@ def createVenueAccount():
                 "message": "An error occurred creating the account."
             }
         ), 500
+    
+# -----------------------------------------------------------------------------------------
+# [POST] Creates a Token for new accounts
+
+@app.route("/createToken", methods= ['POST'])
+def createToken():
+    data = request.get_json()
+    print(data)
+
+    existingToken = db.tokens.find_one({"userId": ObjectId(data['businessId'])})
+
+    if (existingToken != None):
+        return jsonify(
+            {
+                "code": 400,
+                "data": {
+                    "userId": data['businessId']
+                },
+                "message": "Token already exists."
+            }
+        ), 400
+
+    token = secrets.token_urlsafe(16)
+    expiry = datetime.now() + timedelta(days=3)
+
+    newToken = {
+        "token": token,
+        "userId": ObjectId(data['businessId']),
+        "expiry": expiry,
+    }
+
+    try:
+        createToken = db.tokens.insert_one(newToken)
+        return jsonify(
+            {   
+                "code": 201,
+                "data": {
+                    "userId": data['businessId'],
+                    "token": token
+                }
+            }
+        ), 201
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "data": {
+                    "userId": data['businessId'],
+                },
+                "message": "An error occurred creating the token."
+            }
+        ), 500
+
 
 # -----------------------------------------------------------------------------------------
 if __name__ == "__main__":
