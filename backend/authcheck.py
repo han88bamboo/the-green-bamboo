@@ -70,7 +70,7 @@ def authcheck():
 
 
         # Check if producer exists in the "producers" collection
-        producerExistsRaw = db.producers.find_one({"producerName": loginInfo["username"]})
+        producerExistsRaw = db.producers.find_one({"username": loginInfo["username"]})
         producerExists = parse_json(producerExistsRaw)
         if (producerExists != None):
 
@@ -96,7 +96,7 @@ def authcheck():
 
 
         # Check if venue exists in the "venues" collection
-        venueExistsRaw = db.venues.find_one({"venueName": loginInfo["username"]})
+        venueExistsRaw = db.venues.find_one({"username": loginInfo["username"]})
         venueExists = parse_json(venueExistsRaw)
         if (venueExists != None):
 
@@ -199,7 +199,7 @@ def authcheckProducer():
     try:
         # Check if producer exists in the "producers" collection
         loginInfo = request.get_json()
-        producerExistsRaw = db.producers.find_one({"producerName": loginInfo["username"]})
+        producerExistsRaw = db.producers.find_one({"username": loginInfo["username"]})
         producerExists = parse_json(producerExistsRaw)
 
         # Producer does not exist
@@ -249,7 +249,7 @@ def authcheckVenue():
     try:
         # Check if venue exists in the "venues" collection
         loginInfo = request.get_json()
-        venueExistsRaw = db.venues.find_one({"venueName": loginInfo["username"]})
+        venueExistsRaw = db.venues.find_one({"username": loginInfo["username"]})
         venueExists = parse_json(venueExistsRaw)
 
         # Venue does not exist
