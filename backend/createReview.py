@@ -31,7 +31,35 @@ db = PyMongo(app).db
 def parse_json(data):
     return json.loads(json_util.dumps(data))
 
+# -----------------------------------------------------------------------------------------
+def create_username(location_name):
+    # Remove any spaces and convert to lowercase
+    # Get a dict of all usernames 
+    username_dict={}
+    for doc in db.venues.find({}):
+        username_dict[doc["username"]]=doc["_id"]
 
+    
+    location_name = location_name.replace(" ", "").lower()
+    
+    # Check if the location name is empty
+    if username_dict.get(location_name) is None :
+        username = location_name
+    
+    else:
+        # If the location name already exists, add a number to the end of the location name
+        # Find the maximum number
+        count = 0
+        for key in username_dict.keys():
+            if key.startswith(location_name):
+                count += 1
+                
+        
+        # Increment the number by 1
+        id= count + 1
+        username = location_name +"_"+ str(id)
+    
+    return username
 
 
 # -----------------------------------------------------------------------------------------
@@ -61,6 +89,9 @@ def createReviews():
     if locationAddress != "" :
         
         if condition_2==0 or condition_1==0 :
+
+            # Create a username for the venue
+            username = create_username(locationName)
             
             venue_to_insert = {
                 "venueName": rawReview["location"],
@@ -69,7 +100,7 @@ def createReviews():
                 "originLocation": "",
                 "venueDesc": "",
                 "menu": [],
-                "hashedPassword": hash_password(rawReview["location"],"admin1234"),
+                "hashedPassword": hash_password(username,"admin1234"),
                 "claimStatus": False,
                 "openingHours": {
                 "Monday": [
@@ -105,7 +136,8 @@ def createReviews():
                 "updates": [],
                 "questionsAnswers": [],
                 "reservationDetails": "",
-                "publicHolidays": ""
+                "publicHolidays": "",
+                "username": username
             }
 
             db.venues.insert_one(venue_to_insert)
