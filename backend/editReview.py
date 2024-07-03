@@ -20,6 +20,8 @@ import os
 
 from adminFunctions import hash_password
 
+from createReview import create_username
+
 
 app = Flask(__name__)
 CORS(app)  # Allow all requests
@@ -97,6 +99,10 @@ def updateReview(id):
     # see if address is in the dictionary, if not insert a new venue
     if locationAddress != "": 
         if condition_2==0 or condition_1==0 :
+
+            # Create a username for the venue
+            username = create_username(locationName)
+
             venue_to_insert = {
                 "venueName": data["location"],
                 "address": locationAddress,
@@ -104,7 +110,7 @@ def updateReview(id):
                 "originLocation": "",
                 "venueDesc": "",
                 "menu": [],
-                "hashedPassword": hash_password(data["location"],"admin1234"),
+                "hashedPassword": hash_password(username,"admin1234"),
                 "claimStatus": False,
                 "openingHours": {
                 "Monday": [
@@ -140,7 +146,8 @@ def updateReview(id):
                 "updates": [],
                 "questionsAnswers": [],
                 "reservationDetails": "",
-                "publicHolidays": ""
+                "publicHolidays": "",
+                "username": username
             }
 
             db.venues.insert_one(venue_to_insert)
