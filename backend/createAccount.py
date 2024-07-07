@@ -63,7 +63,10 @@ def createAccount():
         return jsonify( 
             {   
                 "code": 201,
-                "data": rawUsername
+                "data": {
+                    "userName": rawUsername,
+                    "userID": str(insertResult.inserted_id)
+                }
             }
         ), 201
     except Exception as e:

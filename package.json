@@ -25,6 +25,7 @@
     "filereader": "^0.10.3",
     "jsdom": "^24.0.0",
     "json2csv": "^6.0.0-alpha.2",
+    "jwt-decode": "^4.0.0",
     "mongodb": "^6.3.0",
     "mongodb-connection-string-url": "^3.0.0",
     "mongoimport": "^1.0.6",
