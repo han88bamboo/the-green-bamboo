@@ -290,6 +290,7 @@ def updateProducerStatus():
     originCountry = data['newBusinessData']["country"]
     hashedPassword = data['newBusinessData']["hashedPassword"]
     claimStatus = data['newBusinessData']["claimStatus"]
+    requestId = data['newBusinessData']["requestId"]
 
     try: 
         update = db.producers.update_one({'_id': ObjectId(producerID)}, 
@@ -298,7 +299,8 @@ def updateProducerStatus():
                                                 'producerDesc': producerDesc,
                                                 'originCountry': originCountry,
                                                 'hashedPassword': hashedPassword,
-                                                'claimStatus': claimStatus
+                                                'claimStatus': claimStatus,
+                                                'requestId': ObjectId(requestId)
                                             }})
 
         return jsonify(

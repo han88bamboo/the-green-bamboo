@@ -174,6 +174,7 @@ def createProducerAccount():
     data = request.get_json()
     print(data)
     newBusinessData = data["newBusinessData"]
+    newBusinessData["requestId"] = ObjectId(newBusinessData["requestId"])
 
     print(newBusinessData["producerName"])
 
@@ -218,6 +219,7 @@ def createVenueAccount():
     data = request.get_json()
     print(data)
     newBusinessData = data["newBusinessData"]
+    newBusinessData["requestId"] = ObjectId(newBusinessData["requestId"])
 
     print(newBusinessData["venueName"])
 

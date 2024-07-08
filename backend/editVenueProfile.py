@@ -531,6 +531,7 @@ def updateVenueStatus():
     originLocation = data['newBusinessData']["country"]
     hashedPassword = data['newBusinessData']["hashedPassword"]
     claimStatus = data['newBusinessData']["claimStatus"]
+    requestId = data['newBusinessData']["requestId"]
 
     try: 
         update = db.venues.update_one({'_id': ObjectId(venueID)}, 
@@ -539,7 +540,8 @@ def updateVenueStatus():
                                                 'venueDesc': venueDesc,
                                                 'originLocation': originLocation,
                                                 'hashedPassword': hashedPassword,
-                                                'claimStatus': claimStatus
+                                                'claimStatus': claimStatus, 
+                                                'requestId': ObjectId(requestId)
                                             }})
         return jsonify(
             {   

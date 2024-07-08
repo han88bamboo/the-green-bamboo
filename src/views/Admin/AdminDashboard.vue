@@ -984,6 +984,7 @@
                     tempPassword: "",
                     createBusinessError: "",
                     createBusinessSuccess: false,
+                    requestId: "",
 
                 }
             },
@@ -1451,6 +1452,7 @@
                                 country: request.country,
                                 hashedPassword: hashedPassword,
                                 claimStatus: false,
+                                requestId: requestID,
                             }
                             let apiURL = '';
     
@@ -1496,10 +1498,12 @@
                             this.venueAddress = request.country;
                             this.venueType = 'Bar';
                             this.businessClaimStatus = "false";
+                            this.requestId = request._id.$oid;
                             const createSuccess = await this.createBusiness();
                             if (!createSuccess) {
                                 return;
                             }
+                            this.generateToken(createSuccess, request._id.$oid);
                         }
 
                         // update review status
@@ -1559,6 +1563,10 @@
                         
                     }
 
+                    else if (action == "resend") {
+                        this.retrieveToken(requestID)
+                    }
+
                 }, 
                 async createBusiness() {
 
@@ -1601,7 +1609,7 @@
 
                                 if (response.data.code == 201) {
                                     this.createBusinessSuccess = true;
-                                    return true
+                                    return response.data.data._id
                                 } 
                             } catch (error) {
                                 console.error(error);
@@ -1635,6 +1643,7 @@
                                 },
                                 publicHolidays: "",
                                 reservationDetails: "",
+                                requestId: this.requestId
                             }
                             try {
                                 const response = await this.$axios.post('http://127.0.0.1:5031/createVenueAccount', 
@@ -1648,7 +1657,7 @@
 
                                 if (response.data.code == 201) {
                                     this.createBusinessSuccess = true;
-                                    return true
+                                    return response.data.data._id
                                 } 
                             } catch (error) {
                                 console.error(error);
@@ -1687,6 +1696,18 @@
                         });
                         const link = `http://localhost:8080/billingSecurity?token=${response.data.data.token}`;
                         console.log(link);
+                        return link;
+                    } catch (error) {
+                        console.error(error);
+                    }
+                },
+
+                async retrieveToken(requestId) {
+                    try {
+                        const response = await this.$axios.get(`http://127.0.0.1:5000/getTokenByRequestId/${requestId}`);
+                        const link = `http://localhost:8080/billingSecurity?token=${response.data.token}`;
+                        console.log(link);
+                        return link;
                     } catch (error) {
                         console.error(error);
                     }

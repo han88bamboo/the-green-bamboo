@@ -165,6 +165,14 @@
                             <span v-if="invalidEmail" class="text-danger">Please enter a valid email.</span>
                         </div>
 
+                        <!-- Input: Contact Number -->
+                        <div class="form-group mb-3">
+                            <p class="text-start mb-1">Contact Number <span style="color: red;">*</span></p>
+                            <input type="text" class="form-control" style="border-color: black" v-model="contact" id="contact" placeholder="Contact">
+                            <span v-if="missingContact" class="text-danger">Please enter a contact number.</span>
+                            <span v-if="invalidContact" class="text-danger">Please enter a valid contact number.</span>
+                        </div>
+
                         <!-- Input Reference Document -->
                         <div class="form-group">
                             <div class="mb-3">
@@ -297,6 +305,8 @@
                 missingBusinessType:false,
                 missingEmail:false,
                 invalidEmail:false,
+                missingContact:false,
+                invalidContact:false,
                 missingFirstName:false,
                 missingLastName:false,
                 missingRelationship:false,
@@ -312,6 +322,7 @@
                 firstName:'',
                 lastName:'',
                 email:'',
+                contact:'',
                 relationship:'',
                 selectedCountry:'',
                 countries: [],
@@ -449,6 +460,15 @@
                     errorCount++
                 }
 
+                // Contact validation
+                if(this.contact==''){
+                    this.missingContact = true
+                    errorCount++
+                }else if(!this.contact.match(/^\+?\d+$/)){
+                    this.invalidContact = true
+                    errorCount++
+                }
+
                 // First name validation
                 if(this.firstName == ''){
                     this.missingFirstName = true
@@ -484,6 +504,7 @@
                     "lastName": this.lastName,
                     "relationship": this.relationship,
                     "email": this.email,
+                    "contact": this.contact,
                     "referenceDocument": this.pdfBase64,
                     "photo": "",
                     "joinDate": joinDate,
@@ -543,6 +564,8 @@
                 this.missingBusinessType=false
                 this.missingEmail=false
                 this.invalidEmail=false
+                this.missingContact=false
+                this.invalidContact=false
                 this.missingFirstName=false
                 this.missingLastName=false
                 this.missingRelationship=false

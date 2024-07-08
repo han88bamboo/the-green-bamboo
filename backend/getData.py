@@ -489,6 +489,14 @@ def getToken(token):
         return []
     return parse_json(data)
 
+# [GET] Specific Token By requestId
+@app.route("/getTokenByRequestId/<requestId>")
+def getTokenByRequestId(requestId):
+    data = db.tokens.find_one({"requestId": ObjectId(requestId)})
+    if data is None:
+        return []
+    return parse_json(data)
+
 # -----------------------------------------------------------------------------------------
 # [GET] Specific Request
 @app.route("/getAccountRequest/<id>")
