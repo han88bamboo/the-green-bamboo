@@ -24,27 +24,30 @@
         </router-link>
     </div>
 
-  <div v-if="displayUser && dataLoaded" class="userprofile mt-5">
+  <div v-if="displayUser && dataLoaded" class="userprofile mt-5 mobile-mt-3">
 
     <div class="container text-start">
         <div class="row">
             <!-- user profile -->
-            <div class="col-12 col-md-4 mb-5">
+            <div class="col-12 col-md-4 mb-3">
 
                 <div class="container">
 
                     <!-- basic information -->
                     <div class="row">
+                        <!-- profile picture -->
+                        <div class="col-4 text-start pe-0">
+                            <img :src=" 'data:image/jpeg;base64,' + (displayUser.photo || defaultProfilePhoto)" alt="" class="rounded-circle-no-bg border border-dark profile-img" style="height:auto; width:100%; ">
+                        </div>                        
+                        <!-- user name -->
                         <div class="col-8">
-                            <h3>{{ displayUser.displayName }}</h3> 
+                            <h3 class="mb-0" >{{ displayUser.displayName }}</h3> 
                             <b>@{{ displayUser.username }}</b> 
                             <br/>
                             {{ drinkCount }} Drinks Tasted 
                             <br/>
-                        </div>
-                        <!-- profile picture -->
-                        <div class="col-4 text-end">
-                            <img :src=" 'data:image/jpeg;base64,' + (displayUser.photo || defaultProfilePhoto)" alt="" class="rounded-circle-no-bg border border-dark profile-img">
+                            <button v-if="!ownProfile && displayUser.modType != []" class="btn btn-warning hover-button p-1" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button> 
+                            <button v-if="user && user.isAdmin" class="btn btn-warning hover-button p-1" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button>
                         </div>
                     </div>
 
@@ -86,7 +89,6 @@
                             View My Analytics
                         </router-link>
                         <span style="position: relative; display: inline-block" class="m-0 p-0">
-                            <button v-if="!ownProfile && displayUser.modType != []" class="btn btn-warning mt-3 hover-button" style="width: 100%">★ Certified Moderator</button> 
                             <div v-if="!ownProfile && displayUser.modType != []" class="speech-bubble">{{ displayUser.modType ? displayUser.modType.join(', ') : 'None' }}</div>
                             <button v-if="user && user.isAdmin" class="btn tertiary-btn reverse-clickable-text mt-3" style="width: 100%" type="button" data-bs-toggle="modal" data-bs-target="#addModeratorModal">Add/Remove Moderator Rights</button>
                         </span>
@@ -212,7 +214,7 @@
                                             Image Preview
                                         </div>
                                         <div class="col-8">
-                                            <img :src="selectedImage || 'data:image/jpeg;base64,' + (user.photo || defaultProfilePhoto)" alt="" class="rounded-circle-no-bg border border-dark profile-img" id="output">
+                                            <img :src="selectedImage || 'data:image/jpeg;base64,' + (user.photo || defaultProfilePhoto)" alt="" class="rounded-circle-no-bg border border-dark profile-img" id="output" style="height:auto; width:100%; ">
                                         </div>
                                     </div>
                                     <div class="row mb-3">
@@ -357,20 +359,21 @@
 
                     <!-- badges -->
                     <div class="mt-3">
-                        <h3>Badges Unlocked</h3>
-                        <hr>
+                        <h3 class="mobile-view-hide">Badges Unlocked</h3>
+                        <p class="mobile-view-show"><strong>Badges Unlocked</strong></p>
+                        <!--<hr>-->
 
-                        <div v-if="topCategoriesReviewed.length == 0 && otherBadges.length == 0">
+                        <div v-if="otherBadges.length == 0">
                             You have no badges yet.
                         </div>
 
                         <div v-else class="container text-center mb-3">
                             <!-- badges for different drink types -->
                             <div class="row">
-                                <div class="col-12 col-sm-4 col-md-6 col-xl-4 p-2" v-for="drinkTypeDetails in matchedDrinkTypes" :key="drinkTypeDetails._id">
-                                    <!-- image of actual badge -->
+                                <div class="mobile-col-3 col-12 col-sm-4 col-md-6 col-xl-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2 " v-for="drinkTypeDetails in matchedDrinkTypes" :key="drinkTypeDetails._id">
+                                    <!-- image of actual badge  style="width: 100px; height: 100px;"  -->
                                     <img :src="'data:image/png;base64,'+ (drinkTypeDetails.badgePhoto || defaultProfilePhoto)" 
-                                        style="width: 100px; height: 100px;" 
+                                        
                                         alt="" class="rounded-circle-white-bg border border-dark badge-img">
                                     <!-- badge description -->
                                     <div class="pt-1" style="line-height: 1;"> 
@@ -392,10 +395,10 @@
                             </div>
                             <!-- badges based on other user activities -->
                             <div class="row">
-                                <div class="col-12 col-sm-4 col-md-6 col-xl-4 p-2" v-for="badge in otherBadges" :key="badge">
-                                    <!-- image of actual badge -->
+                                <div class="mobile-col-3 col-12 col-sm-4 col-md-6 col-xl-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2" v-for="badge in otherBadges" :key="badge">
+                                    <!-- image of actual badge style="width: 100px; height: 100px;" -->
                                     <img :src="'data:image/png;base64,'+ (getBadgeInfo(badge).badgePhoto)" 
-                                        style="width: 100px; height: 100px;" 
+                                         
                                         alt="" class="rounded-circle-white-bg border border-dark badge-img">
                                     <!-- badge description -->
                                     <p class="pt-1" style="line-height: 1;"> 
@@ -423,13 +426,13 @@
                 <!-- reviews button -->
                 <button 
                     class="btn mx-1"
-                    :class="{ 'active-toggle-button': activeTab === 'reviews', 'inactive-toggle-button': activeTab !== 'reviews' }"
+                    :class="{ 'active-toggle-button-user-profile': activeTab === 'reviews', 'inactive-toggle-button-user-profile': activeTab !== 'reviews' }"
                     @click="switchTab('reviews')"> 
                     Reviews 
                 </button>
                 <button 
                     class="btn mx-1"
-                    :class="{ 'active-toggle-button': activeTab !== 'reviews', 'inactive-toggle-button': activeTab === 'reviews' }"
+                    :class="{ 'active-toggle-button-user-profile': activeTab !== 'reviews', 'inactive-toggle-button-user-profile': activeTab === 'reviews' }"
                     @click="switchTab('lists')"> 
                     <span v-if="ownProfile">My Drink List</span>
                     <span v-if="!ownProfile">Drink List</span> 
@@ -438,6 +441,44 @@
                 <div class="tab-content container mt-2">
                     <!-- reviews tab -->
                     <div v-if="activeTab == 'reviews'" id="reviews">
+                        <h3 class="text-body-secondary text-start pt-4"> 
+                            <b> Recent Reviews </b> 
+                        </h3>
+                        <div v-if="Object.keys(recentReviews).length > 0">
+                            <div v-for="(review, index) in recentReviews.slice(0, 5)" :key="index">  
+                                <div style="display: flex" class="row">
+                                    <div class="col-3 mobile-col-4 mobile-pe-0">
+                                        <img :src=" 'data:image/png;base64,' + (review.photo||defaultDrinkImage)" alt="" class="rounded bottle-img "> <!--me-3-->
+                                        <p class="fs-4 mobile-fs-5 fw-bold rating-text text-center" >
+                                            {{ review.rating }}
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-star-fill " viewBox="0 0 16 16">
+                                                <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                                            </svg>
+                                        </p>
+                                    </div>
+                                    <div class="col-9 mobile-col-8 mobile-ps-1">
+                                        <a :href="'/listing/view/' + review.reviewTarget.$oid" style="text-decoration: none; color: #223957;">
+                                            <p class="fs-5 mobile-fs-6  mb-1" ><b>{{ getListingName(review.reviewTarget) }}</b></p>
+                                        </a>
+                                        <!-- flavor tag -->
+                                        <span v-for="(tag, index) in review.flavorTag.slice(0, 3)" :key="index" class="badge rounded-pill-user-profile me-2 mb-1" :style="{ backgroundColor: getTagColor(tag) }"> {{ getTagName(tag) }}</span>
+                                        <span v-for="(tag, index) in review.observationTag.slice(0, 2)" :key="index" class="badge rounded-pill-user-profile me-2 mb-1" style="background-color: grey;">{{ tag }}</span>
+
+                                        
+                                        <p>
+                                            <b>{{ review.reviewTitle }}</b> <br v-if="review.reviewTitle">
+                                            {{ review.reviewDesc }}
+                                        </p>
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-else class="container m-2">
+                            No reviews yet. To explore more drinks in the home page, 
+                            <router-link to="/" style="color: inherit;">click here</router-link>. 
+                        </div>
+
                         <ListingRowDisplayUserProfile 
                             :listingArr="favouriteListings" 
                             displayName="Favourite Listings" 
@@ -454,42 +495,11 @@
                             columnWidth="165px"
                             @icon-clicked="handleIconClick"/>
 
-                        <h3 class="text-body-secondary text-start pt-4"> 
-                            <b> Recent Reviews </b> 
-                        </h3>
-                        <div v-if="Object.keys(recentReviews).length > 0">
-                            <div v-for="(review, index) in recentReviews" :key="index">
-                                <div style="display: flex" class="mb-3">
-                                    <img :src=" 'data:image/png;base64,' + (review.photo||defaultDrinkImage)" alt="" class="rounded bottle-img me-3">
-                                    <div>
-                                        <a :href="'/listing/view/' + review.reviewTarget.$oid" style="text-decoration: none; color: inherit;">
-                                            <h3>{{ getListingName(review.reviewTarget) }}</h3>
-                                        </a>
-                                        <h2>
-                                            {{ review.rating }}
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-star-fill mb-2" viewBox="0 0 16 16">
-                                                <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                            </svg>
-                                        </h2>
-                                        <p>
-                                            <b>{{ review.reviewTitle }}</b> <br v-if="review.reviewTitle">
-                                            {{ review.reviewDesc }}
-                                        </p>
-                                        <!-- flavor tag -->
-                                        <span v-for="(tag, index) in review.flavorTag" :key="index" class="badge rounded-pill me-2" :style="{ backgroundColor: getTagColor(tag) }"> {{ getTagName(tag) }}</span>
-                                        <span v-for="(tag, index) in review.observationTag" :key="index" class="badge rounded-pill me-2" style="background-color: grey;">{{ tag }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div v-else class="container m-2">
-                            No reviews yet. To explore more drinks in the home page, 
-                            <router-link to="/" style="color: inherit;">click here</router-link>. 
-                        </div>
+
 
                     </div>
 
-                    <!-- lists tab -->
+                    <!-- lists tab xyz-->
                     <div v-if="activeTab == 'lists'" id="lists">
                         <button v-if="ownProfile" type="button" class="btn primary-btn-outline-less-round mb-3" data-bs-toggle="modal" data-bs-target="#createNewListModal" >Create New List</button>
 
@@ -529,9 +539,11 @@
                         </div>
                         
                         <!-- display all lists -->
-                        <div v-for="(bookmarkList, name, index) in displayUserBookmarks" :key="name" style="display: flex" class="mb-5">
-                            <img :src=" 'data:image/png;base64,' + (photo || defaultDrinkImage)" alt="" class="bottle-img me-3">
-                            <div style="height: 150px; display: flex; flex-direction: column;" >
+                        <div v-for="(bookmarkList, name, index) in displayUserBookmarks" :key="name" style="display: flex" class="row mb-3">
+                            <div class="col-3 mobile-col-4 mobile-pe-0" >
+                                <img :src=" 'data:image/png;base64,' + (photo || defaultDrinkImage)" alt="" class="bottle-img me-3">
+                            </div>
+                            <div  class="col-9 mobile-col-8 mobile-ps-1" > <!-- style="height: 150px; display: flex; flex-direction: column;" -->
                                 <h3 class="mt-1" @click="viewList(name)" style="cursor: pointer"> {{ name }} </h3>
                                 <span v-if="bookmarkList.listItems.length > 1"> {{ bookmarkList.listItems.length }} items in list </span>
                                 <span v-else> {{ bookmarkList.listItems.length }} item in list </span>
@@ -539,9 +551,12 @@
                                     {{ bookmarkList.listDesc }}
                                 </div>
                                 <div style="display: flex; margin-top: auto;" class="mb-1">
-                                    <a class="me-4" @click="viewList(name)" href="#" style="color: #535C72;">View List</a>
-                                    <a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')" class="me-4" href="#" style="color: #535C72;" data-bs-toggle="modal" :data-bs-target="`#editListModal${index}`" @click="resetEditList(name, bookmarkList.listDesc)">Edit List</a>
-                                    <a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')" href="#" style="color: #535C72;" data-bs-toggle="modal" :data-bs-target="`#deleteListModal${index}`">Delete List</a>
+                                    <b><a class="me-4 mobile-view-hide" @click="viewList(name)" href="#" style="color: #535C72;">View List</a></b>
+                                    <b><a class="me-4 mobile-view-show" @click="viewList(name)" href="#" style="color: #535C72;">View</a></b>
+                                    <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')" class="mobile-view-hide me-2" href="#" style="color: #535C72;" data-bs-toggle="modal" :data-bs-target="`#editListModal${index}`" @click="resetEditList(name, bookmarkList.listDesc)">Edit List</a></b>
+                                    <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')"  class="mobile-view-hide " href="#" style="color: #535C72;" data-bs-toggle="modal" :data-bs-target="`#deleteListModal${index}`">Delete List</a></b>
+                                    <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')" class="mobile-view-show me-2" href="#" style="color: #535C72;" data-bs-toggle="modal" :data-bs-target="`#editListModal${index}`" @click="resetEditList(name, bookmarkList.listDesc)">Edit</a></b>
+                                    <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')" class="mobile-view-show" href="#" style="color: #535C72;" data-bs-toggle="modal" :data-bs-target="`#deleteListModal${index}`">Delete</a></b>
                                 </div>
                             </div>
 
@@ -2159,17 +2174,45 @@ export default {
 
 <style>
 
-.badge-img, .profile-img {
+.profile-img {
+    max-width: 110px;
+    max-height: 110px;
+}
+
+.badge-img{
     width: 80px;
     height: 80px;
 }
 
+@media (max-width: 991px) {
+.badge-img{
+    width: 100%;
+    height: auto;
+}
+}
+
+
+/* .profile-img {
+    width: 80px;
+    height: 80px;
+} */
+
+.bottle-img {
+    
+    width:100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+}
+
+/* 
 .bottle-img {
     width: 150px;
     height: 150px;
     flex-shrink: 0;
     border: 2px solid #535C72;
 }
+*/
 
 .flex-start {
     display: flex;
