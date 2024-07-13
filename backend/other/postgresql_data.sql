@@ -1,3 +1,40 @@
+-- DROP TABLES IF EXISTS -- 
+DROP TABLE IF EXISTS accountRequests;
+DROP TABLE IF EXISTS badges;
+DROP TABLE IF EXISTS colours;
+DROP TABLE IF EXISTS countries;
+DROP TABLE IF EXISTS drinkTypes;
+DROP TABLE IF EXISTS flavourTags;
+DROP TABLE IF EXISTS languages;
+DROP TABLE IF EXISTS listings;
+DROP TABLE IF EXISTS modRequests;
+DROP TABLE IF EXISTS observationTags;
+DROP TABLE IF EXISTS producers;
+DROP TABLE IF EXISTS producersQuestionAnswers;
+DROP TABLE IF EXISTS producersUpdates;
+DROP TABLE IF EXISTS producersProfileViews;
+DROP TABLE IF EXISTS producersProfileViewsViews;
+DROP TABLE IF EXISTS requestEdits;
+DROP TABLE IF EXISTS requestInaccuracy;
+DROP TABLE IF EXISTS requestListings;
+DROP TABLE IF EXISTS reviews;
+DROP TABLE IF EXISTS reviewsUserVotes;
+DROP TABLE IF EXISTS servingTypes;
+DROP TABLE IF EXISTS specialColours;
+DROP TABLE IF EXISTS subTags;
+DROP TABLE IF EXISTS tokens;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS usersDrinkLists;
+DROP TABLE IF EXISTS usersfollowLists;
+DROP TABLE IF EXISTS venues;
+DROP TABLE IF EXISTS venuesMenu;
+DROP TABLE IF EXISTS venuesOpeningHours;
+DROP TABLE IF EXISTS venuesQuestionAnswers;
+DROP TABLE IF EXISTS venuesUpdates;
+DROP TABLE IF EXISTS venuesProfileViews;
+DROP TABLE IF EXISTS venuesProfileViewsViews;
+
+-- CREATE TABLES -- 
 -- ========= accountRequests =========
 CREATE TABLE accountRequests (
     id SERIAL PRIMARY KEY,
@@ -13,7 +50,7 @@ CREATE TABLE accountRequests (
     email VARCHAR(255),
     contact VARCHAR(255),
     referenceDocument VARCHAR(255),
-    photo VARCHAR(255),
+    photo TEXT,
     joinDate TIMESTAMP,
     isPending BOOLEAN,
     isApproved BOOLEAN
@@ -23,7 +60,7 @@ CREATE TABLE accountRequests (
 CREATE TABLE badges (
     id SERIAL PRIMARY KEY,
     badgeName VARCHAR(255),
-    badgePhoto VARCHAR(255),
+    badgePhoto TEXT,
     badgeDesc TEXT
 );
 
@@ -44,7 +81,7 @@ CREATE TABLE countries (
 CREATE TABLE drinkTypes (
     id SERIAL PRIMARY KEY,
     drinkType VARCHAR(255),
-    badgePhoto VARCHAR(255),
+    badgePhoto TEXT,
     typeCategory TEXT[]
 );
 
@@ -65,7 +102,7 @@ CREATE TABLE languages (
 CREATE TABLE listings (
     id SERIAL PRIMARY KEY,
     listingName VARCHAR(255),
-    producerID INT,
+    producerID SERIAL,
     bottler VARCHAR(255),
     originCountry VARCHAR(255),
     drinkType VARCHAR(255),
@@ -73,17 +110,17 @@ CREATE TABLE listings (
     officialDesc TEXT,
     allowMod BOOLEAN,
     addedDate TIMESTAMP,
-    typeCategory VARCHAR(255),
-    age VARCHAR(255),
-    reviewLink VARCHAR(255),
-    sourceLink VARCHAR(255),
-    photo VARCHAR(255)
+    typeCategory VARCHAR(255) ,
+    age VARCHAR(255) ,
+    reviewLink VARCHAR(255) ,
+    sourceLink VARCHAR(255) ,
+    photo TEXT 
 );
 
 -- ========= modRequests =========
 CREATE TABLE modRequests (
     id SERIAL PRIMARY KEY,
-    userID INT,
+    userID SERIAL,
     drinkType VARCHAR(255),
     modDesc TEXT,
     reviewStatus BOOLEAN
@@ -102,44 +139,68 @@ CREATE TABLE producers (
     producerDesc TEXT,
     originCountry VARCHAR(255),
     mainDrinks TEXT[],
-    photo VARCHAR(255),
+    photo TEXT,
     hashedPassword VARCHAR(255),
     claimStatus BOOLEAN,
-    statusOB VARCHAR(255),
-    questionAnswers TEXT[],
-    updates TEXT[],
-    producerLink VARCHAR(255),
-    stripeCustomerId VARCHAR(255)
+    statusOB VARCHAR(255) ,
+    questionAnswers SERIAL , -- [!] reference producersQuestionAnswers
+    updates SERIAL , -- [!] reference producersUpdates
+    producerLink VARCHAR(255) ,
+    stripeCustomerId VARCHAR(255) 
 );
 
--- ========= producersProfileViews =========
+-- ========= [NEW!] producersQuestionAnswers =========
+CREATE TABLE producersQuestionAnswers (
+    id SERIAL PRIMARY KEY,
+    question VARCHAR(255),
+    answer VARCHAR(255),
+    date TIMESTAMP,
+    userID SERIAL
+);
+
+-- ========= [NEW!] producersUpdates =========
+CREATE TABLE producersUpdates (
+    id SERIAL PRIMARY KEY,
+    date TIMESTAMP,
+    text VARCHAR(255),
+    photo TEXT
+);
+
+-- ========= [NEW!] producersProfileViews =========
 CREATE TABLE producersProfileViews (
     id SERIAL PRIMARY KEY,
     producerID INT,
-    views TEXT[]
+    views SERIAL  -- [!] reference(255),
+);
+
+-- ========= [NEW!] producersProfileViewsViews =========
+CREATE TABLE producersProfileViewsViews (
+    id SERIAL PRIMARY KEY,
+    date TIMESTAMP,
+    count INT
 );
 
 -- ========= requestEdits =========
 CREATE TABLE requestEdits (
     id SERIAL PRIMARY KEY,
     editDesc TEXT,
-    listingID INT,
-    userID INT,
+    listingID SERIAL,
+    userID SERIAL,
     brandRelation VARCHAR(255),
     reviewStatus BOOLEAN,
-    duplicateLink VARCHAR(255),
-    sourceLink VARCHAR(255)
+    duplicateLink VARCHAR(255) ,
+    sourceLink VARCHAR(255) 
 );
 
 -- ========= requestInaccuracy =========
 CREATE TABLE requestInaccuracy (
     id SERIAL PRIMARY KEY,
-    listingID INT,
-    userID INT,
-    venueID INT,
+    listingID SERIAL,
+    userID SERIAL,
+    venueID SERIAL,
     reportDate TIMESTAMP,
-    inaccurateReason TEXT,
-    reviewStatus BOOLEAN DEFAULT FALSE
+    inaccurateReason TEXT ,
+    reviewStatus BOOLEAN 
 );
 
 -- ========= requestListings =========
@@ -151,22 +212,22 @@ CREATE TABLE requestListings (
     sourceLink VARCHAR(255),
     brandRelation VARCHAR(255),
     reviewStatus BOOLEAN,
-    userID INT,
-    photo VARCHAR(255),
-    originCountry VARCHAR(255),
-    producerID INT,
-    producerNew VARCHAR(255),
-    typeCategory VARCHAR(255),
-    abv VARCHAR(255),
-    age VARCHAR(255),
-    reviewLink VARCHAR(255)
+    userID SERIAL,
+    photo TEXT,
+    originCountry VARCHAR(255) ,
+    producerID SERIAL ,
+    producerNew VARCHAR(255) ,
+    typeCategory VARCHAR(255) ,
+    abv VARCHAR(255) ,
+    age VARCHAR(255) ,
+    reviewLink VARCHAR(255) 
 );
 
 -- ========= reviews =========
 CREATE TABLE reviews (
     id SERIAL PRIMARY KEY,
-    userID INT,
-    reviewTarget INT,
+    userID SERIAL,
+    reviewTarget SERIAL,
     rating INT,
     reviewDesc TEXT,
     reviewType VARCHAR(255),
@@ -175,16 +236,23 @@ CREATE TABLE reviews (
     finish VARCHAR(255),
     willRecommend BOOLEAN,
     wouldBuyAgain BOOLEAN,
-    userVotes INT,
-    taggedUsers TEXT[],
-    flavorTag TEXT[],
-    photo VARCHAR(255),
-    colour VARCHAR(7),
-    aroma VARCHAR(255),
-    location INT,
-    taste VARCHAR(255),
-    observationTag TEXT[],
-    address VARCHAR(255)
+    userVotes SERIAL, -- [!] reference reviewsUserVotes
+    taggedUsers TEXT[] ,
+    flavorTag TEXT[] ,
+    photo TEXT ,
+    colour VARCHAR(7) ,
+    aroma VARCHAR(255) ,
+    location SERIAL ,
+    taste VARCHAR(255) ,
+    observationTag TEXT[] ,
+    address VARCHAR(255) 
+);
+
+-- ========= [NEW!] reviewsUserVotes =========
+CREATE TABLE reviewsUserVotes (
+    id SERIAL PRIMARY KEY,
+    upvotes TEXT[],
+    downvotes TEXT[]
 );
 
 -- ========= servingTypes =========
@@ -203,7 +271,7 @@ CREATE TABLE specialColours (
 -- ========= subTags =========
 CREATE TABLE subTags (
     id SERIAL PRIMARY KEY,
-    familyTagId INT,
+    familyTagId SERIAL,
     subTag VARCHAR(255)
 );
 
@@ -211,8 +279,8 @@ CREATE TABLE subTags (
 CREATE TABLE tokens (
     id SERIAL PRIMARY KEY,
     token VARCHAR(255),
-    userId INT,
-    requestId INT,
+    userId SERIAL,
+    requestId SERIAL,
     expiry TIMESTAMP
 );
 
@@ -223,16 +291,31 @@ CREATE TABLE users (
     displayName VARCHAR(255),
     choiceDrinks TEXT[],
     modType TEXT[],
-    photo VARCHAR(255),
+    photo TEXT,
     hashedPassword VARCHAR(255),
-    drinkLists INT,
+    drinkLists SERIAL, -- [!] reference usersDrinkLists
     joinDate TIMESTAMP,
-    followLists INT,
+    followLists SERIAL, -- [!] reference usersfollowLists
     firstName VARCHAR(255),
     lastName VARCHAR(255),
     email VARCHAR(255),
     isAdmin BOOLEAN,
     birthday TIMESTAMP
+);
+
+-- ========= usersDrinkLists =========
+CREATE TABLE usersDrinkLists (
+    id SERIAL PRIMARY KEY,
+    drinksIHaveTried TEXT[],
+    drinksIWantToTry TEXT[]
+);
+
+-- ========= usersfollowLists =========
+CREATE TABLE usersfollowLists (
+    id SERIAL PRIMARY KEY,
+    users TEXT[],
+    producers TEXT[],
+    venues TEXT[]
 );
 
 -- ========= venues =========
@@ -243,21 +326,65 @@ CREATE TABLE venues (
     venueType VARCHAR(255),
     originLocation VARCHAR(255),
     venueDesc TEXT,
-    menu TEXT[],
+    menu SERIAL, -- [!] reference venuesMenu
     hashedPassword VARCHAR(255),
-    photo VARCHAR(255),
+    photo TEXT,
     claimStatus BOOLEAN,
-    openingHours JSONB,
-    questionAnswers TEXT[],
-    updates TEXT[],
-    reservationDetails VARCHAR(255),
-    publicHolidays VARCHAR(255),
-    stripeCustomerId VARCHAR(255)
+    openingHours SERIAL, -- [!] reference venuesOpeningHours
+    questionAnswers SERIAL , -- [!] reference venuesQuestionAnswers
+    updates SERIAL , -- [!] reference venuesUpdates
+    reservationDetails VARCHAR(255) ,
+    publicHolidays VARCHAR(255) ,
+    stripeCustomerId VARCHAR(255) 
+);
+
+-- ========= [NEW!] venuesMenu =========
+CREATE TABLE venuesMenu (
+    id SERIAL PRIMARY KEY,
+    sectionName VARCHAR(255),
+    sectionOrder VARCHAR(255),
+    sectionMenu TEXT[]
+);
+
+-- ========= [NEW!] venuesOpeningHours =========
+CREATE TABLE venuesOpeningHours (
+    id SERIAL PRIMARY KEY,
+    Monday TEXT[],
+    Tuesday TEXT[],
+    Wednesday TEXT[],
+    Thursday TEXT[],
+    Friday TEXT[],
+    Saturday TEXT[],
+    Sunday TEXT[]
+);
+
+-- ========= [NEW!] =========
+CREATE TABLE venuesQuestionAnswers (
+    id SERIAL PRIMARY KEY,
+    question VARCHAR(255),
+    answer VARCHAR(255),
+    date TIMESTAMP,
+    userID SERIAL
+);
+
+-- ========= [NEW!] venuesUpdates =========
+CREATE TABLE venuesUpdates (
+    id SERIAL PRIMARY KEY,
+    date TIMESTAMP,
+    text VARCHAR(255),
+    photo TEXT
 );
 
 -- ========= venuesProfileViews =========
 CREATE TABLE venuesProfileViews (
     id SERIAL PRIMARY KEY,
     venueID INT,
-    views TEXT[]
+    views TEXT[] 
+);
+
+-- ========= [NEW!] ========= =========
+CREATE TABLE venuesProfileViewsViews (
+    id SERIAL PRIMARY KEY,
+    date TIMESTAMP,
+    count INT
 );
