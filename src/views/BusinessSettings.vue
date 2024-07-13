@@ -49,12 +49,12 @@
 
                 <!-- row 2: return to profile -->
                 <div class="row pt-3 mobile-view-hide">
-                    <button type="button" class="btn primary-btn-outline-thick rounded-0 default-clickable-text" > 
+                    <router-link :to="'/profile/producer/' + user_id" class="btn primary-btn-outline-thick rounded-0 default-clickable-text" > 
                         Return to profile 
-                    </button>
-                    <button type="button" class="btn primary-btn-outline-thick rounded-0 default-clickable-text mt-3" > 
+                    </router-link>
+                    <router-link :to="'/Producers/ProducersDashboard/' + user_id" class="btn primary-btn-outline-thick rounded-0 default-clickable-text mt-3" > 
                         Return to analytics 
-                    </button>
+                    </router-link>
                 </div>
 
             </div>
@@ -95,8 +95,12 @@
                     <div class="alert alert-secondary fw-bold" role="alert">
                         Payment Method
                     </div>
-                    <div class="mx-2">
+                    <div class="mx-2 mb-3">
                         <!-- stripe -->
+                        <img v-if="paymentMethod.brand == 'visa'" src="../../Images/Others/visa.png" alt="" style="height: 40px;" class="me-3">
+                        <img v-else-if="paymentMethod.brand == 'mastercard'" src="../../Images/Others/mastercard.png" alt="" style="height: 40px;" class="me-3">
+                        <img v-else src="../../Images/Others/credit-card.png" alt="" style="height: 30px;" class="me-3">
+                        •••• •••• •••• {{paymentMethod.last4}}
                     </div>
                 </div>
                 <!-- billing and subscription -->
@@ -106,10 +110,14 @@
                     </div>
                     <div class="row mx-2">
                         <!-- stripe -->
-                        <div class="col-6 fw-bold">Business Plan: Monthly Plan</div>
+                        <div class="col-6 fw-bold">Business Plan: 
+                            <span v-if="subscriptionDetails.interval == 'month'">Monthly</span> 
+                            <span v-if="subscriptionDetails.interval == 'year'">Yearly</span> 
+                            Plan
+                        </div>
                         <div class="col-6 text-end">
-                            <div class="fw-bold fs-3">$50 p/month</div>
-                            <div class="fst-italic">Next billing cycle: 1st August 2024</div>
+                            <div class="fw-bold fs-3">${{subscriptionDetails.price}} p/{{subscriptionDetails.interval}}</div>
+                            <div class="fst-italic">Next billing cycle: {{ formatDate(subscriptionDetails.next_billing_date) }}</div>
                             <button type="button" class="btn primary-btn-outline-not-round mt-2" style="font-weight:bold; width: 200px;">Edit Subscription</button>
                         </div>
                     </div>
@@ -128,7 +136,7 @@
 <script>
 
     import NavBar from '@/components/NavBar.vue';
-
+    import { loadStripe } from '@stripe/stripe-js';
 
     export default {
         components: {
@@ -146,6 +154,10 @@
                 businessName: null,
                 photo: null,
                 requestID: null,
+                stripeCustomerId: null,
+                subscription: null,
+                paymentMethod: null,
+                subscriptionDetails: null, 
 
                 request: null,
                 
@@ -166,12 +178,16 @@
                 this.userType = userType;
             }
 
+            this.stripe = await loadStripe('pk_test_51PV6CNDnjokAiSGzhdAambzILFYOByYtxMRMsVQCcQobPIxlFDi2a6gKYe8BQD021FQxFUejn4eIcjSLBHsHbD9A00T4Z8sPPl');
+
+
             await this.loadData();
+
         },
         methods: {
             // load data from database
             async loadData() {
-                if (this.userType != "producer" || this.userType != "venue") {
+                if (this.userType != "producer" && this.userType != "venue") {
                     // redirect to page
                     this.$router.push('/');
                 }
@@ -182,6 +198,7 @@
                     this.businessName = this.business[this.userType + "Name"];
                     this.photo = this.business.photo;
                     this.requestId = this.business.requestId
+                    this.stripeCustomerId = this.business.stripeCustomerId;
                 } 
                 catch (error) {
                     console.error(error);
@@ -196,9 +213,49 @@
                     console.error(error);
                     this.dataLoaded = null;
                 }
-                
+                // subscription
+                try {
+                    const response = await this.$axios.post('http://127.0.0.1:5009/retrieve-latest-subscription', {
+                        customerId: this.stripeCustomerId,
+                    }, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    });
+                    this.subscription = response.data;
+                } catch (error) {
+                    console.error('Error retrieving customer payment methods:', error);
+                    this.dataLoaded = null;
+                }
 
-            
+                // payment method
+                try {
+                    const response = await this.$axios.post('http://127.0.0.1:5009/retrieve-payment-method', {
+                        subscription: this.subscription,
+                    }, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    });
+                    this.paymentMethod = response.data;
+                } catch (error) {
+                    console.error('Error retrieving customer payment methods:', error);
+                    this.dataLoaded = null;
+                }
+                // subscription details
+                try {
+                    const response = await this.$axios.post('http://127.0.0.1:5009/retrieve-subscription-details', {
+                        subscription: this.subscription,
+                    }, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    });
+                    this.subscriptionDetails = response.data;
+                } catch (error) {
+                    console.error('Error retrieving customer payment methods:', error);
+                    this.dataLoaded = null;
+                }
 
                 // Set data loaded to true
                 if (this.dataLoaded != null) {
@@ -206,12 +263,29 @@
                 }
             },
 
-            // go back to profile page
-            goBack() {
-                this.$router.go(-1)
+            async getPaymentMethodIdFromCustomerId(customerId) {
+                try {
+                    const response = await this.$axios.get(`http://127.0.0.1:5000/get-payment-method-id/${customerId}`);
+                    if (response.data && response.data.paymentMethodId) {
+                        return response.data.paymentMethodId;
+                    } else {
+                        console.error('No payment method ID found for the given customer ID');
+                        return null;
+                    }
+                } catch (error) {
+                    console.error(error);
+                    return null;
+                }
             },
 
-            
+            formatDate(dateString) {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('en-GB', {
+                    day: 'numeric', month: 'long', year: 'numeric'
+                });
+            },
+
+
         }
     };
 </script>
