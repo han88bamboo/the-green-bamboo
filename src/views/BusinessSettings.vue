@@ -29,15 +29,16 @@
 
     <div class="container pt-5 mobile-pt-3" v-if="dataLoaded" style="position: relative;">
 
+        <!-- toast -->
         <transition name="fade">
-            <div class="toast-container" style="position: absolute; top: 12px; right: 12px;" v-if="editSubscriptionSuccess">
+            <div class="toast-container" style="position: absolute; top: 12px; right: 12px;" v-if="toastSuccess">
                 <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" style="display: block;">
                     <div class="toast-header bg-success-subtle">
                         <img src="../../Images/Others/accept.png" height="20px" class="rounded me-2" alt="...">
                         <strong class="me-auto">Successful</strong>
                     </div>
-                    <div class="toast-body">
-                        Your subscription has been edited.
+                    <div class="toast-body text-start">
+                        {{ toastMessage }}
                     </div>
                 </div>
             </div>
@@ -129,11 +130,21 @@
                             <span v-if="subscriptionDetails.interval == 'year'">Yearly</span> 
                             Plan
                         </div>
-                        <div class="col-6 text-end">
+                        <div v-if="activeSubscription" class="col-6 text-end">
                             <div class="fw-bold fs-3">${{subscriptionDetails.price}} p/{{subscriptionDetails.interval}}</div>
                             <div class="fst-italic">Next billing cycle: {{ formatDate(subscriptionDetails.next_billing_date) }}</div>
+                            <div class="fst-italic">Amount due: ${{ (this.upcomingInvoice.amount_due / 100).toFixed(2) }}</div>
                             <button type="button" class="btn primary-btn-outline-not-round mt-2" style="font-weight:bold; width: 200px;" data-bs-toggle="modal" data-bs-target="#editSubscriptionModal">Edit Subscription</button>
                         </div>
+
+                        <div v-else class="col-6 text-end">
+                            <div class="fw-bold fs-3" style="color: red;">PAUSED</div>
+                            <div v-if="activeSubscription == false" class="fst-italic" style="color: red;">Your subscription is available until {{ cancelledDate }}.</div>
+                            <div class="fst-italic" style="color: red;">Resume subscription to access premium features.</div>
+                            <button type="button" class="btn primary-btn-outline-not-round mt-2" style="font-weight:bold; width: 200px;" data-bs-toggle="modal" data-bs-target="#editSubscriptionModal">Resume Subscription</button>
+                        </div>
+
+                        
                     </div>
                 </div>
             </div>
@@ -187,7 +198,7 @@
                         <div v-else-if="selectedYearlyPricing && subscriptionDetails.interval!='year'" class="alert alert-success" role="alert">You are changing your subscription plan to <span class="fw-bold">yearly</span>. </div>
                         <div v-else class="alert alert-light" role="alert">No changes selected.</div>
                         <hr>
-                        <div>If you wish to cancel your subscription, please click <span data-bs-toggle="modal" data-bs-target="#cancelSubscriptionModal" style="text-decoration: underline; cursor: pointer;">here</span>.</div>
+                        <div>If you wish to pause your subscription, please click <span data-bs-toggle="modal" data-bs-target="#cancelSubscriptionModal" style="text-decoration: underline; cursor: pointer;">here</span>.</div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -209,13 +220,13 @@
 
                         <div class="text-center">
                             <img src="../../Images/Others/cancel.png" alt="" class="rounded-circle border border-dark text-center" style="width: 100px; height: 100px;">
-                            <h4 class="mt-3 mb-4">Cancel Subscription</h4>
+                            <h4 class="mt-3 mb-4">Pause Subscription</h4>
                             <p>We're sad to see you go!</p>
-                            <p>Are you sure you want to cancel your subscription? </p>
+                            <p>Are you sure you want to pause your subscription? </p>
                         </div>
                         <div style="display: inline" class="text-center mt-4 mb-4">
                             <button type="button" class="btn btn-secondary me-3" data-bs-toggle="modal" data-bs-target="#editSubscriptionModal">Keep Subscription</button>
-                            <button type="button" class="btn btn-danger" data-bs-dismiss="modal" >Cancel Subscription</button>
+                            <button type="button" class="btn btn-danger" data-bs-dismiss="modal" @click="cancelSubscription">Pause Subscription</button>
                         </div>
                     </div>
                 </div>
@@ -245,7 +256,8 @@
         data() {
             return {
                 dataLoaded: false,
-                editSubscriptionSuccess: false,
+                toastSuccess: false,
+                toastMessage: null,
 
                 user_id: null,
                 user_type: null,
@@ -259,6 +271,9 @@
                 requestID: null,
                 stripeCustomerId: null,
                 subscription: null,
+                activeSubscription: null,
+                cancelledDate: null,
+                // upcomingInvoice: null,
                 paymentMethod: null,
                 subscriptionDetails: null, 
 
@@ -319,6 +334,7 @@
                     console.error(error);
                     this.dataLoaded = null;
                 }
+
                 // subscription
                 try {
                     const response = await this.$axios.post('http://127.0.0.1:5009/retrieve-latest-subscription', {
@@ -329,9 +345,44 @@
                         }
                     });
                     this.subscription = response.data;
+
+                    if (this.subscription.status == "active") {
+                        if (this.subscription.cancel_at == null) {
+                            // there is no end date
+                            this.activeSubscription = true;
+                        } else {
+                            // there is an end date
+                            this.activeSubscription = false;
+                            this.cancelledDate = this.formatDate(this.subscription.cancel_at*1000);
+                        } 
+                    } else {
+                        // subscription has fully ended
+                        this.activeSubscription = null;
+                    }
+
+                    console.log(this.activeSubscription);
+
                 } catch (error) {
-                    console.error('Error retrieving customer payment methods:', error);
+                    console.error('Error retrieving subscription:', error);
                     this.dataLoaded = null;
+                }
+                
+                // upcoming invoice
+                if (this.activeSubscription) {
+                    try {
+                        const response = await this.$axios.post('http://127.0.0.1:5009/retrieve-upcoming-invoice', {
+                            subscription_id: this.subscription.id,
+                        }, {
+                            headers: {
+                                'Content-Type': 'application/json',
+                            }
+                        });
+                        this.upcomingInvoice = response.data;
+                        console.log(this.upcomingInvoice);
+                    } catch (error) {
+                        console.error('Error retrieving upcoming invoice:', error);
+                        this.dataLoaded = null;
+                    }
                 }
 
                 // payment method
@@ -416,7 +467,7 @@
 
             async editSubscription(interval) {
                 try {
-                    const response = await this.$axios.post('http://127.0.0.1:5009/change-subscription-plan', {
+                    await this.$axios.post('http://127.0.0.1:5009/change-subscription-plan', {
                         subscription: this.subscription,
                         subscription_id: this.subscription.id,
                         new_price_id: interval === 'month' ? this.monthlyPriceId : this.yearlyPriceId,
@@ -425,11 +476,33 @@
                             'Content-Type': 'application/json',
                         }
                     });
-                    const updatedSubscription = response.data;
                     this.loadData();
-                    this.editSubscriptionSuccess = true;
+                    this.toastSuccess = true;
+                    this.toastMessage = 'Your subscription has been updated!';
                     setTimeout(() => {
-                        this.editSubscriptionSuccess = false;
+                        this.toastSuccess = false;
+                    }, 5000);
+                } catch (error) {
+                    console.error('Error editing subscription:', error);
+                }
+
+            },
+
+            async cancelSubscription() {
+                try {
+                    await this.$axios.post('http://127.0.0.1:5009/cancel-subscription', {
+                        subscription: this.subscription,
+                        subscription_id: this.subscription.id,
+                    }, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    });
+                    this.loadData();
+                    this.toastSuccess = true;
+                    this.toastMessage = 'Your subscription has been cancelled.';
+                    setTimeout(() => {
+                        this.toastSuccess = false;
                     }, 5000);
                 } catch (error) {
                     console.error('Error editing subscription:', error);

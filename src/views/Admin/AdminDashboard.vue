@@ -1564,7 +1564,14 @@
                     }
 
                     else if (action == "resend") {
-                        this.retrieveToken(requestID)
+                        try {
+                            const requestId = request._id.$oid;
+                            const response = await this.$axios.get(`http://127.0.0.1:5000/get${request.businessType.charAt(0).toUpperCase()}${request.businessType.slice(1)}ByRequestId/${requestId}`);
+                            const businessId = response.data._id.$oid;
+                            this.generateToken(businessId, requestId)
+                        } catch (error) {
+                            console.error(error);
+                        }
                     }
 
                 }, 
@@ -1695,17 +1702,6 @@
                             }
                         });
                         const link = `http://localhost:8080/billingSecurity?token=${response.data.data.token}`;
-                        console.log(link);
-                        return link;
-                    } catch (error) {
-                        console.error(error);
-                    }
-                },
-
-                async retrieveToken(requestId) {
-                    try {
-                        const response = await this.$axios.get(`http://127.0.0.1:5000/getTokenByRequestId/${requestId}`);
-                        const link = `http://localhost:8080/billingSecurity?token=${response.data.token}`;
                         console.log(link);
                         return link;
                     } catch (error) {

@@ -2,7 +2,7 @@
     <NavBar />
 
     <!-- Display when data is still loading -->
-    <div class="text-info-emphasis fst-italic fw-bold fs-5 pt-5" v-if="dataLoaded == false">
+    <div class="text-info-emphasis fst-italic fw-bold fs-5 pt-5" v-if="validToken == true && dataLoaded == false">
         <span>Loading page, please wait...</span>
         <br><br>
         <div class="spinner-border" role="status">
@@ -33,7 +33,21 @@
         </div>
     </div>
 
-    <div class="" v-if="dataLoaded">
+    <!-- Display when token is invalid -->
+    <div class="text-danger fst-italic fw-bold fs-3 pt-5" v-if="validToken == false"> 
+        <span>The link provided is either invalid or expired; please contact the administrator for assistance.</span>
+        <br>
+        <button class="btn primary-btn btn-sm" @click="this.$router.go(-1)">
+            <span class="fs-5 fst-italic"> Return to previous page </span>
+        </button>
+        <router-link :to="'/'" class="mx-1">
+            <button class="btn primary-btn btn-sm">
+                <span class="fs-5 fst-italic"> Go to Home page </span>
+            </button>
+        </router-link>
+    </div>
+
+    <div class="" v-if="dataLoaded && validToken">
 
         <div class="container text-start" style="width: 50%">
             <p style="font-family: radley; font-size: 50px;" class="mt-5 mb-0">You’re almost all set up!</p>
@@ -125,6 +139,8 @@
 
                 // customer details
                 token: "",
+                tokenData: {},
+                validToken: false,
                 businessId: "",
                 requestId: "",
                 accountRequest: {},
@@ -146,10 +162,22 @@
         async mounted(){
 
             this.token = this.$route.query.token;
+
+            // this.verifyToken();
+
+            // if (!this.validToken) {
+            //     return;
+            // }
             
             this.stripe = await loadStripe('pk_test_51PV6CNDnjokAiSGzhdAambzILFYOByYtxMRMsVQCcQobPIxlFDi2a6gKYe8BQD021FQxFUejn4eIcjSLBHsHbD9A00T4Z8sPPl');
 
             async function initiateProcess() {
+                await this.verifyToken();
+
+                if (!this.validToken) {
+                    return;
+                }
+
                 await this.loadData();
 
                 if (this.business.stripeCustomerId) {
@@ -192,12 +220,12 @@
                 }
             },
             async loadData(){
-                // get businessId
+                // get token
                 try {
                     const response = await this.$axios.get(`http://127.0.0.1:5000/getToken/${this.token}`);
+                    this.tokenData = response.data;
                     this.businessId = response.data.userId;
                     this.requestId = response.data.requestId;
-                    // todo verify token expiry
                 } 
                 catch (error) {
                     console.error(error);
@@ -381,6 +409,26 @@
                 await this.checkStatus();
 
                 
+            }, 
+
+            async verifyToken() {
+                try {
+                    const response = await this.$axios.get(`http://127.0.0.1:5000/getToken/${this.token}`);
+                    this.tokenData = response.data;
+                    if (this.tokenData) {
+                        const expiry = new Date(this.tokenData.expiry.$date);
+                        const now = new Date();
+                        if (expiry > now) {
+                            this.validToken = true;
+                            return;
+                        }
+                    }
+                    this.validToken = false;
+                } 
+                catch (error) {
+                    console.error(error);
+                    this.loadError = true;
+                }
             }
 
         

@@ -86,9 +86,17 @@ def retrieve_latest_subscription():
         )
 
         if not subscriptions['data']:
-            return jsonify(error="No active subscriptions found for this customer"), 404
-        
-        latest_subscription = max(subscriptions['data'], key=lambda s: s['created'])
+            all_subscriptions = stripe.Subscription.list(
+                customer=customer_id,
+                limit=1,
+            )
+            if not all_subscriptions['data']:
+                return jsonify(error="No subscriptions found for this customer"), 404
+            
+            latest_subscription = max(subscriptions['data'], key=lambda s: s['cancel_at'])
+
+        else:
+            latest_subscription = max(subscriptions['data'], key=lambda s: s['created'])
         return jsonify(latest_subscription)
         
     except Exception as e:
@@ -185,6 +193,71 @@ def change_subscription_plan():
         
     except Exception as e:
         return jsonify(error=str(e)), 403
+    
+
+@app.route('/cancel-subscription', methods=['POST'])
+def cancel_subscription():
+    data = json.loads(request.data)
+    try:
+        subscription_id = data['subscription_id']
+        subscription = data['subscription']
+        
+        if subscription['schedule']:
+            subscription_schedule_id = subscription['schedule']
+            subscription_schedule = stripe.SubscriptionSchedule.retrieve(subscription_schedule_id)
+            
+            current_phase_start = subscription['current_period_start']
+            current_phase_end = subscription['current_period_end']
+            
+            current_phase = subscription_schedule['phases'][-1]
+            items = current_phase['items']
+            
+            canceled_schedule = stripe.SubscriptionSchedule.modify(
+                subscription_schedule_id,
+                end_behavior='cancel',
+                phases=[{
+                    'start_date': current_phase_start,
+                    'end_date': current_phase_end,
+                    'items': items
+                }]
+            )
+            
+            return jsonify(canceled_schedule)
+        else:
+            canceled_subscription = stripe.Subscription.modify(
+                subscription_id,
+                cancel_at_period_end=True
+            )
+            
+            return jsonify(canceled_subscription)   
+    except stripe.error.StripeError as e:
+        # Handle general Stripe errors
+        return jsonify(error=f"Stripe error: {str(e)}"), 403
+    except Exception as e:
+        # Handle other exceptions
+        return jsonify(error=f"An error occurred: {str(e)}"), 500
+    
+
+
+@app.route('/retrieve-upcoming-invoice', methods=['POST'])
+def retrieve_upcoming_invoice():
+    data = json.loads(request.data)
+    try:
+        subscription_id = data['subscription_id']
+        
+        # Retrieve the upcoming invoice for the subscription
+        upcoming_invoice = stripe.Invoice.upcoming(
+            subscription=subscription_id
+        )
+        
+        return jsonify(upcoming_invoice)
+        
+    except stripe.error.StripeError as e:
+        # Handle general Stripe errors
+        return jsonify(error=f"Stripe error: {str(e)}"), 403
+    except Exception as e:
+        # Handle other exceptions
+        return jsonify(error=f"An error occurred: {str(e)}"), 500
     
 
 # -----------------------------------------------------------------------------------------

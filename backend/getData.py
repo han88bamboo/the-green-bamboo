@@ -123,6 +123,14 @@ def getProducer(id):
         return []
     return parse_json(data)
 
+# [GET] Specific Producer
+@app.route("/getProducerByRequestId/<id>")
+def getProducerByRequestId(id):
+    data = db.producers.find_one({"requestId": ObjectId(id)})
+    if data is None:
+        return []
+    return parse_json(data)
+
 # -----------------------------------------------------------------------------------------
 # [GET] Reviews
 @app.route("/getReviews")
@@ -205,6 +213,14 @@ def getVenues():
 @app.route("/getVenue/<id>")
 def getVenue(id):
     data = db.venues.find_one({"_id": ObjectId(id)})
+    if data is None:
+        return []
+    return parse_json(data)
+
+# [GET] Specific Producer
+@app.route("/getVenueByRequestId/<id>")
+def getVenueByRequestId(id):
+    data = db.venues.find_one({"requestId": ObjectId(id)})
     if data is None:
         return []
     return parse_json(data)
