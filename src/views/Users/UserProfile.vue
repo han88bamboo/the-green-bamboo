@@ -499,7 +499,7 @@
 
                     </div>
 
-                    <!-- lists tab xyz-->
+                    <!-- lists tab -->
                     <div v-if="activeTab == 'lists'" id="lists">
                         <button v-if="ownProfile" type="button" class="btn primary-btn-outline-less-round mb-3" data-bs-toggle="modal" data-bs-target="#createNewListModal" >Create New List</button>
 
@@ -544,7 +544,7 @@
                                 <img :src=" 'data:image/png;base64,' + (photo || defaultDrinkImage)" alt="" class="bottle-img me-3">
                             </div>
                             <div  class="col-9 mobile-col-8 mobile-ps-1" > <!-- style="height: 150px; display: flex; flex-direction: column;" -->
-                                <h3 class="mt-1" @click="viewList(name)" style="cursor: pointer"> {{ name }} </h3>
+                                <h5 class="mt-1" @click="viewList(name)" style="cursor: pointer"> {{ name }} </h5>
                                 <span v-if="bookmarkList.listItems.length > 1"> {{ bookmarkList.listItems.length }} items in list </span>
                                 <span v-else> {{ bookmarkList.listItems.length }} item in list </span>
                                 <div style="max-height: 48px; overflow-y: auto; font-style: italic;">
