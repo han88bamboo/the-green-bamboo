@@ -27,7 +27,21 @@
 
     <!-- main content -->
 
-    <div class="container pt-5 mobile-pt-3" v-if="dataLoaded">
+    <div class="container pt-5 mobile-pt-3" v-if="dataLoaded" style="position: relative;">
+
+        <transition name="fade">
+            <div class="toast-container" style="position: absolute; top: 12px; right: 12px;" v-if="editSubscriptionSuccess">
+                <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" style="display: block;">
+                    <div class="toast-header bg-success-subtle">
+                        <img src="../../Images/Others/accept.png" height="20px" class="rounded me-2" alt="...">
+                        <strong class="me-auto">Successful</strong>
+                    </div>
+                    <div class="toast-body">
+                        Your subscription has been edited.
+                    </div>
+                </div>
+            </div>
+        </transition>
 
         <div class="row">
 
@@ -118,14 +132,99 @@
                         <div class="col-6 text-end">
                             <div class="fw-bold fs-3">${{subscriptionDetails.price}} p/{{subscriptionDetails.interval}}</div>
                             <div class="fst-italic">Next billing cycle: {{ formatDate(subscriptionDetails.next_billing_date) }}</div>
-                            <button type="button" class="btn primary-btn-outline-not-round mt-2" style="font-weight:bold; width: 200px;">Edit Subscription</button>
+                            <button type="button" class="btn primary-btn-outline-not-round mt-2" style="font-weight:bold; width: 200px;" data-bs-toggle="modal" data-bs-target="#editSubscriptionModal">Edit Subscription</button>
                         </div>
                     </div>
                 </div>
             </div>
 
         </div> <!-- end of row -->
+
         
+        <div> <!-- modals -->
+
+            <!-- edit subscription modal -->
+            <div class="modal fade" id="editSubscriptionModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="staticBackdropLabel">Edit Subscription</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-start">
+                        <!-- choose plan -->
+                        <div class="row justify-content-between">
+                            <div class="col-6">
+                                <button class="btn rounded p-3 text-start mb-3 w-100" @click="toggleMonthlyPricing" :style="{ backgroundColor: selectedMonthlyPricing ? '#DD9E54' :'white', 
+                                                                                                                                    color: selectedMonthlyPricing ? 'white' :'black', 
+                                                                                                                                    borderColor: '#DD9E54', 
+                                                                                                                                    borderWidth:'3px' }">
+                                    <span>
+                                        <h6> <b> Monthly plan </b> </h6>
+                                        <p class="m-0"> $65 / Month </p> 
+                                        <small class="fst-italic p-0"> Billed monthly </small>
+                                    </span>
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <button class="btn rounded p-3 text-start mb-3 w-100" @click="toggleYearlyPricing" :style="{ backgroundColor: selectedYearlyPricing ? '#DD9E54' :'white', 
+                                                                                                                                    color: selectedYearlyPricing ? 'white' :'black', 
+                                                                                                                                    borderColor: '#DD9E54', 
+                                                                                                                                    borderWidth:'3px' }">
+                                    <div class="row">
+                                        <div class="col-7"> <h6> <b> Yearly plan </b> </h6> </div> 
+                                        <div class="rounded col-5 text-center" style="background-color: green; color: white;">Save 23%</div>
+                                    </div>
+                                    <span>
+                                        <p class="m-0"> $50 / Month </p> 
+                                        <small class="fst-italic p-0"> $600 Billed annually </small>
+                                    </span>
+                                
+                                </button>
+                            </div>
+                        </div>
+                        <div v-if="selectedMonthlyPricing && subscriptionDetails.interval!='month'" class="alert alert-danger" role="alert">You are changing your subscription plan to <span class="fw-bold">monthly</span>. </div>
+                        <div v-else-if="selectedYearlyPricing && subscriptionDetails.interval!='year'" class="alert alert-success" role="alert">You are changing your subscription plan to <span class="fw-bold">yearly</span>. </div>
+                        <div v-else class="alert alert-light" role="alert">No changes selected.</div>
+                        <hr>
+                        <div>If you wish to cancel your subscription, please click <span data-bs-toggle="modal" data-bs-target="#cancelSubscriptionModal" style="text-decoration: underline; cursor: pointer;">here</span>.</div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button v-if="selectedMonthlyPricing && subscriptionDetails.interval!='month'" type="button" class="btn btn-primary" @click="editSubscription('month')" data-bs-dismiss="modal">Confirm</button>
+                        <button v-else-if="selectedYearlyPricing && subscriptionDetails.interval!='year'" type="button" class="btn btn-primary" @click="editSubscription('year')" data-bs-dismiss="modal">Confirm</button>
+                        <button v-else type="button" class="btn btn-primary" disabled>Confirm</button>
+                    </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- cancel subscription modal -->
+            <div class="modal fade" id="cancelSubscriptionModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="text-end mt-2 me-2">
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+
+                        <div class="text-center">
+                            <img src="../../Images/Others/cancel.png" alt="" class="rounded-circle border border-dark text-center" style="width: 100px; height: 100px;">
+                            <h4 class="mt-3 mb-4">Cancel Subscription</h4>
+                            <p>We're sad to see you go!</p>
+                            <p>Are you sure you want to cancel your subscription? </p>
+                        </div>
+                        <div style="display: inline" class="text-center mt-4 mb-4">
+                            <button type="button" class="btn btn-secondary me-3" data-bs-toggle="modal" data-bs-target="#editSubscriptionModal">Keep Subscription</button>
+                            <button type="button" class="btn btn-danger" data-bs-dismiss="modal" >Cancel Subscription</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div> <!-- end of modals -->
+        
+        
+
     </div> <!-- end of main content -->
 
 </template>
@@ -146,9 +245,13 @@
         data() {
             return {
                 dataLoaded: false,
+                editSubscriptionSuccess: false,
 
                 user_id: null,
                 user_type: null,
+
+                monthlyPriceId: "price_1PV7PCDnjokAiSGzX84MZogY",
+                yearlyPriceId: "price_1PV7PsDnjokAiSGz02ZZTJdu",
 
                 business: null,
                 businessName: null,
@@ -158,6 +261,9 @@
                 subscription: null,
                 paymentMethod: null,
                 subscriptionDetails: null, 
+
+                selectedMonthlyPricing: null, 
+                selectedYearlyPricing: null,
 
                 request: null,
                 
@@ -252,6 +358,8 @@
                         }
                     });
                     this.subscriptionDetails = response.data;
+                    this.selectedMonthlyPricing = this.subscriptionDetails.interval === 'month';
+                    this.selectedYearlyPricing = this.subscriptionDetails.interval === 'year';
                 } catch (error) {
                     console.error('Error retrieving customer payment methods:', error);
                     this.dataLoaded = null;
@@ -285,6 +393,49 @@
                 });
             },
 
+            toggleYearlyPricing(){
+                if(this.selectedMonthlyPricing && !this.selectedYearlyPricing){
+                    this.selectedMonthlyPricing= false
+                }
+                if(this.selectedYearlyPricing){
+                    this.selectedYearlyPricing=false
+                }else{
+                    this.selectedYearlyPricing = true
+                }
+            },
+            toggleMonthlyPricing(){
+                if(this.selectedYearlyPricing && ! this.selectedMonthlyPricing){
+                    this.selectedYearlyPricing= false
+                }
+                if(this.selectedMonthlyPricing){
+                    this.selectedMonthlyPricing=false
+                }else{
+                    this.selectedMonthlyPricing = true
+                }
+            },
+
+            async editSubscription(interval) {
+                try {
+                    const response = await this.$axios.post('http://127.0.0.1:5009/change-subscription-plan', {
+                        subscription: this.subscription,
+                        subscription_id: this.subscription.id,
+                        new_price_id: interval === 'month' ? this.monthlyPriceId : this.yearlyPriceId,
+                    }, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    });
+                    const updatedSubscription = response.data;
+                    this.loadData();
+                    this.editSubscriptionSuccess = true;
+                    setTimeout(() => {
+                        this.editSubscriptionSuccess = false;
+                    }, 5000);
+                } catch (error) {
+                    console.error('Error editing subscription:', error);
+                }
+
+            },
 
         }
     };

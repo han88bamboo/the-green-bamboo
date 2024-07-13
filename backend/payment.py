@@ -157,8 +157,35 @@ def retrieve_subscription_details():
         
     except Exception as e:
         return jsonify(error=str(e)), 403
+    
 
 
+@app.route('/change-subscription-plan', methods=['POST'])
+def change_subscription_plan():
+    data = json.loads(request.data)
+    try:
+        subscription = data['subscription']
+        subscription_id = data['subscription_id']
+        new_price_id = data['new_price_id']
+        
+        # Retrieve the subscription
+        # subscription = stripe.Subscription.retrieve(subscription_id)
+        
+        # Update the subscription with proration_behavior set to 'none'
+        updated_subscription = stripe.Subscription.modify(
+            subscription_id,
+            proration_behavior='create_prorations',
+            items=[{
+                'id': subscription['items']['data'][0]['id'],
+                'price': new_price_id,
+            }]
+        )
+        
+        return jsonify(updated_subscription)
+        
+    except Exception as e:
+        return jsonify(error=str(e)), 403
+    
 
 # -----------------------------------------------------------------------------------------
 if __name__ == '__main__':
