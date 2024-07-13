@@ -42,11 +42,12 @@ class accountRequests:
     businessLink: str
     firstName: str
     lastName: str
-    email: str
     relationship: str
+    email: str
+    contact: str
+    referenceDocument: str
     photo: str
     joinDate: datetime
-    referenceDocument: str
     isPending: bool
     isApproved: bool
 
@@ -131,6 +132,7 @@ class producers:
     questionAnswers: Optional[list] = None
     updates: Optional[list] = None
     producerLink: Optional[str] = None
+    stripeCustomerId: Optional[str] = None
 
 # ========= producersProfileViews =========
 @dataclass
@@ -219,6 +221,14 @@ class subTags:
     familyTagId: object
     subTag: str
 
+# ========= tokens =========
+@dataclass
+class tokens:
+    token: str
+    userId: object
+    requestId: object
+    expiry: datetime
+
 # ========= users =========
 @dataclass
 class users:
@@ -254,6 +264,7 @@ class venues:
     updates: Optional[list] = None
     reservationDetails: Optional[str] = None
     publicHolidays: Optional[str] = None
+    stripeCustomerId: Optional[str] = None
 
 # ========= venuesProfileViews =========
 @dataclass
