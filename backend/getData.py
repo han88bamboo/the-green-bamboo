@@ -523,5 +523,16 @@ def getAccountRequest(id):
     return parse_json(data)
 
 # -----------------------------------------------------------------------------------------
+# [GET] Producers
+@app.route("/getUsernames")
+def getUsernames():
+    producers_data = db.producers.find({}, {'username': 1, '_id': 0})
+    venues_data = db.venues.find({}, {'username': 1, '_id': 0})
+
+    all_usernames = [doc['username'] for doc in producers_data] + [doc['username'] for doc in venues_data]
+
+    return parse_json(all_usernames)
+
+# -----------------------------------------------------------------------------------------
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=True, port = 5000)

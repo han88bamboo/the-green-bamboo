@@ -561,6 +561,45 @@ def deleteQA():
                 "message": "An error occurred deleting producer's Q&A!"
             }
         ), 500
+    
+
+# -----------------------------------------------------------------------------------------
+# [POST] Edit producer profile claim status
+# - Update producer profile with new details
+# - Possible return codes: 201 (Updated), 500 (Error during update)
+@app.route('/updateProducerClaimStatus', methods=['POST'])
+def updateProducerClaimStatus():
+
+    # fetch sent data
+    data = request.get_json()
+    print(data)
+
+    # extract components of the data
+    producerID = data['businessId']
+    claimStatus = data["claimStatus"]
+
+    try: 
+        update = db.producers.update_one({'_id': ObjectId(producerID)}, 
+                                         {'$set': {
+                                                'claimStatus': claimStatus
+                                            }})
+
+        return jsonify(
+            {   
+                "code": 201,
+                "message": "Updated claim status successfully!"
+            }
+        ), 201
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "data": data,
+                "message": "An error occurred updating claim status!"
+            }
+        ), 500
+    
 
 # -----------------------------------------------------------------------------------------
 

@@ -803,6 +803,43 @@ def addNewProfileCount():
                 "message": "An error occurred updating the new profile view count."
             }
         ), 500
+    
+# -----------------------------------------------------------------------------------------
+# [POST] Edit venue profile claim status
+# - Update venue profile with new details
+# - Possible return codes: 201 (Updated), 500 (Error during update)
+@app.route('/updateVenueClaimStatus', methods=['POST'])
+def updateVenueClaimStatus():
+
+    # fetch sent data
+    data = request.get_json()
+    print(data)
+
+    # extract components of the data
+    venueID = data['businessId']
+    claimStatus = data["claimStatus"]
+
+    try: 
+        update = db.venues.update_one({'_id': ObjectId(venueID)}, 
+                                         {'$set': {
+                                                'claimStatus': claimStatus
+                                            }})
+
+        return jsonify(
+            {   
+                "code": 201,
+                "message": "Updated claim status successfully!"
+            }
+        ), 201
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "data": data,
+                "message": "An error occurred updating claim status!"
+            }
+        ), 500
 
 # -----------------------------------------------------------------------------------------
 

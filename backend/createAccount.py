@@ -369,6 +369,40 @@ def deleteToken():
                 "message": "An error occurred deleting token!"
             }
         ), 500
+    
+# [POST] Update business username and password
+# - Possible return codes: 201 (Updated), 500 (Error during update)
+@app.route('/updateUsernamePassword', methods=['POST'])
+def updateUsernamePassword():
+
+    data = request.get_json()
+    print(data)
+
+    businessId = data['businessId']['$oid']
+    username = data['username']
+    hashedPassword = data['hashedPassword']
+    businessType = data['businessType'] + 's'
+
+    try: 
+        update = db[businessType].update_one({'_id': ObjectId(businessId)}, {'$set': {
+                                                                                    'username': username,
+                                                                                    'hashedPassword': hashedPassword},
+                                                                                    })
+        return jsonify(
+            {   
+                "code": 201,
+                "message": "Updated username and password successfully!"
+            }
+        ), 201
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "data": data,
+                "message": "An error occurred updating profile!"
+            }
+        ), 500
 
 # -----------------------------------------------------------------------------------------
 if __name__ == "__main__":

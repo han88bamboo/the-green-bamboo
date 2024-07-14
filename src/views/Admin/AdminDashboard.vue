@@ -1583,12 +1583,7 @@
                     }
                     else {
                         this.addBizError = "";
-                        if (this.businessClaimStatus == "true") {
-                            this.tempPassword = this.hashPassword(this.businessName).toString();
-                            this.tempPassword = this.tempPassword.replace(/-/g, '');
-                        } else {
-                            this.tempPassword = "admin1234";
-                        }
+                        this.tempPassword = "admin1234";
                         const hashedPassword = this.hashPassword(this.businessName, this.tempPassword);
                         if (this.businessType == "producer") {
                             const newBusinessData = {
@@ -1602,7 +1597,7 @@
                                 questionsAnswers: [],
                                 updates: [],
                                 producerLink: "",
-                                claimStatus: this.businessClaimStatus === "true",
+                                claimStatus: this.businessClaimStatus === "false",
                             }
                             try {
                                 const response = await this.$axios.post('http://127.0.0.1:5031/createProducerAccount', 
@@ -1638,7 +1633,7 @@
                                 hashedPassword: hashedPassword,
                                 questionsAnswers: [],
                                 updates: [],
-                                claimStatus: this.businessClaimStatus === "true",
+                                claimStatus: this.businessClaimStatus === "false",
                                 openingHours: {
                                     Monday: ["", ""],
                                     Tuesday: ["", ""],
