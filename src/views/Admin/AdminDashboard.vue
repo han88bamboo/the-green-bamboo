@@ -1550,6 +1550,18 @@
                             console.error(error);
                         }
 
+                        // delete token if exist
+                        try {
+                            const response = await this.$axios.get(`http://127.0.0.1:5000/getTokenByRequestId/${requestID}`);
+                            const tokenData = response.data;
+                            if (Object.keys(tokenData).length > 0) {
+                                this.deleteToken(tokenData.token)
+                            }
+                        } 
+                        catch (error) {
+                            console.error(error);
+                        }
+
                         // update frontend
                         const index = this.accountRequests.findIndex(request => request._id.$oid == requestID);
                         this.accountRequests[index].isPending = false;
@@ -2277,6 +2289,22 @@
                     const newTab = window.open(blobUrl, '_blank');
                     if (!newTab || newTab.closed || typeof newTab.closed == 'undefined') {
                         alert('Pop-up blocker is preventing the document from opening. Please allow pop-ups for this site.');
+                    }
+                },
+                async deleteToken(token) {
+                    try {
+                        const response = await this.$axios.post(`http://127.0.0.1:5031/deleteToken`,
+                            {
+                                token: token,
+                            }, {
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        console.log(response.data);
+
+                    } catch (error) {
+                        console.error(error);
                     }
                 },
             }

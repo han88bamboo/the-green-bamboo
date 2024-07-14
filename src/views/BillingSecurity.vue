@@ -165,7 +165,7 @@
                 // customer details
                 token: "",
                 tokenData: {},
-                validToken: false,
+                validToken: null,
                 businessId: "",
                 requestId: "",
                 accountRequest: {},
@@ -200,12 +200,6 @@
         async mounted(){
 
             this.token = this.$route.query.token;
-
-            // this.verifyToken();
-
-            // if (!this.validToken) {
-            //     return;
-            // }
             
             this.stripe = await loadStripe('pk_test_51PV6CNDnjokAiSGzhdAambzILFYOByYtxMRMsVQCcQobPIxlFDi2a6gKYe8BQD021FQxFUejn4eIcjSLBHsHbD9A00T4Z8sPPl');
 
@@ -486,7 +480,8 @@
                 try {
                     const response = await this.$axios.get(`http://127.0.0.1:5000/getToken/${this.token}`);
                     this.tokenData = response.data;
-                    if (this.tokenData) {
+                    console.log(this.tokenData);
+                    if (Object.keys(this.tokenData).length > 0) {
                         const expiry = new Date(this.tokenData.expiry.$date);
                         const now = new Date();
                         if (expiry > now) {

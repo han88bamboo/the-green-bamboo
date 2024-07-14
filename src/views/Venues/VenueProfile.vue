@@ -1832,6 +1832,10 @@
                         <button type="button" class="btn secondary-btn-not-rounded rounded-0" style=" font-weight: bold;"> View My Analytics </button>
                     </router-link>
 
+                    <router-link class="d-grid pb-3 text-decoration-none" :to="{ path: '/business/settings' }">
+                        <button type="button" class="btn secondary-btn-not-rounded rounded-0" style=" font-weight: bold;"> Settings </button>
+                    </router-link>
+
                     <!-- Button for change/reset password -->
                     <div class="d-grid pb-3 text-decoration-none">
                          <button type="button" class="btn secondary-btn-not-rounded rounded-0" data-bs-toggle="modal" data-bs-target="#changePasswordModal">Change/Reset Password</button>
