@@ -827,6 +827,11 @@ button.primary-btn:hover{
     border-radius: var(--bs-border-radius-pill) !important;
 }
 
+@media (max-width: 991px){
+    .rounded-pill-user-profile{
+        font-size: 0.6rem;
+    }
+}
 .col-5x{
     position: relative;
     width: 100%;
@@ -1248,6 +1253,9 @@ button.primary-btn:hover{
     .mobile-mb-0{
         margin-bottom:0px !important;
     }
+    .mobile-mb-0_5{
+        margin-bottom:0.125rem !important;
+    }
     .mobile-mb-1{
         margin-bottom:0.25rem !important;
     }
@@ -1260,6 +1268,9 @@ button.primary-btn:hover{
     }
     .mobile-me-0{
         margin-right:0px !important;
+    }
+    .mobile-me-0_5{
+        margin-right:0.125rem !important;
     }
     .mobile-me-1{
         margin-right:0.25rem !important;

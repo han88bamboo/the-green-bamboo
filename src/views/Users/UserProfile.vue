@@ -438,7 +438,7 @@
                     <span v-if="!ownProfile">Drink List</span> 
                 </button>
 
-                <div class="tab-content container mt-2">
+                <div class="tab-content container mt-2 mobile-px-0" >
                     <!-- reviews tab -->
                     <div v-if="activeTab == 'reviews'" id="reviews">
                         <h3 class="text-body-secondary text-start pt-4"> 
@@ -447,25 +447,27 @@
                         <div v-if="Object.keys(recentReviews).length > 0">
                             <div v-for="(review, index) in recentReviews.slice(0, 5)" :key="index">  
                                 <div style="display: flex" class="row">
-                                    <div class="col-3 mobile-col-4 mobile-pe-0">
+                                    <div class="col-3 mobile-col-3 mobile-pe-0">
                                         <img :src=" 'data:image/png;base64,' + (review.photo||defaultDrinkImage)" alt="" class="rounded bottle-img "> <!--me-3-->
-                                        <p class="fs-4 mobile-fs-5 fw-bold rating-text text-center" >
+                                        <p class="fs-4 mobile-fs-5 fw-bold rating-text text-center mobile-mb-1" >
                                             {{ review.rating }}
                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-star-fill " viewBox="0 0 16 16">
                                                 <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
                                             </svg>
                                         </p>
                                     </div>
-                                    <div class="col-9 mobile-col-8 mobile-ps-1">
+                                    <div class="col-9 mobile-col-9 mobile-ps-2">
                                         <a :href="'/listing/view/' + review.reviewTarget.$oid" style="text-decoration: none; color: #223957;">
-                                            <p class="fs-5 mobile-fs-6  mb-1" ><b>{{ getListingName(review.reviewTarget) }}</b></p>
+                                            <p class="fs-5 mobile-fs-7 mb-1 mobile-mb-0_5" ><b>{{ getListingName(review.reviewTarget) }}</b></p>
                                         </a>
                                         <!-- flavor tag -->
-                                        <span v-for="(tag, index) in review.flavorTag.slice(0, 3)" :key="index" class="badge rounded-pill-user-profile me-2 mb-1" :style="{ backgroundColor: getTagColor(tag) }"> {{ getTagName(tag) }}</span>
-                                        <span v-for="(tag, index) in review.observationTag.slice(0, 2)" :key="index" class="badge rounded-pill-user-profile me-2 mb-1" style="background-color: grey;">{{ tag }}</span>
+                                            
+                                            <span v-for="(tag, index) in review.flavorTag" :key="index" class="mobile-view-hide badge rounded-pill-user-profile me-2 mb-1 mobile-me-0_5 mobile-mb-0_5 " :style="{ backgroundColor: getTagColor(tag) }"> {{ getTagName(tag) }}</span>
+                                            <span v-for="(tag, index) in review.observationTag" :key="index" class="mobile-view-hide badge rounded-pill-user-profile me-2 mb-1 mobile-me-0_5 mobile-mb-0_5" style="background-color: grey;">{{ tag }}</span>
 
-                                        
-                                        <p>
+                                            <span v-for="(tag, index) in review.flavorTag.slice(0, 2)" :key="index" class="mobile-view-show badge rounded-pill-user-profile me-2 mb-1 mobile-me-0_5 mobile-mb-0_5 " :style="{ backgroundColor: getTagColor(tag) }"> {{ getTagName(tag) }}</span>
+                                            <span v-for="(tag, index) in review.observationTag.slice(0, 1)" :key="index" class="mobile-view-show badge rounded-pill-user-profile me-2 mb-1 mobile-me-0_5 mobile-mb-0_5" style="background-color: grey;">{{ tag }}</span>                                        
+                                        <p class="mobile-fs-7">
                                             <b>{{ review.reviewTitle }}</b> <br v-if="review.reviewTitle">
                                             {{ review.reviewDesc }}
                                         </p>
