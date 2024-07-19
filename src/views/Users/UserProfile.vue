@@ -363,7 +363,7 @@
                         <p class="mobile-view-show"><strong>Badges Unlocked</strong></p>
                         <!--<hr>-->
 
-                        <div v-if="otherBadges.length == 0">
+                        <div v-if="topCategoriesReviewed.length == 0 && otherBadges.length == 0">
                             You have no badges yet.
                         </div>
 
