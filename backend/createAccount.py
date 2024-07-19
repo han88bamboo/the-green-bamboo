@@ -268,15 +268,7 @@ def createToken():
     existingToken = db.tokens.find_one({"userId": ObjectId(data['businessId'])})
 
     if (existingToken != None):
-        return jsonify(
-            {
-                "code": 400,
-                "data": {
-                    "userId": data['businessId']
-                },
-                "message": "Token already exists."
-            }
-        ), 400
+        db.tokens.delete_one({'token': existingToken['token']})
 
     token = secrets.token_urlsafe(16)
     expiry = datetime.now() + timedelta(days=3)
@@ -286,6 +278,7 @@ def createToken():
         "userId": ObjectId(data['businessId']),
         "requestId": ObjectId(data['requestId']),
         "expiry": expiry,
+        "isNew": data['isNew']
     }
 
     try:

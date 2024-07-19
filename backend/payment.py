@@ -86,14 +86,7 @@ def retrieve_latest_subscription():
         )
 
         if not subscriptions['data']:
-            all_subscriptions = stripe.Subscription.list(
-                customer=customer_id,
-                limit=1,
-            )
-            if not all_subscriptions['data']:
-                return jsonify(error="No subscriptions found for this customer"), 404
-            
-            latest_subscription = max(subscriptions['data'], key=lambda s: s['cancel_at'])
+            return jsonify(error="No active subscriptions found for this customer"), 404
 
         else:
             latest_subscription = max(subscriptions['data'], key=lambda s: s['created'])
@@ -258,6 +251,28 @@ def retrieve_upcoming_invoice():
     except Exception as e:
         # Handle other exceptions
         return jsonify(error=f"An error occurred: {str(e)}"), 500
+
+
+@app.route('/resume-subscription', methods=['POST'])
+def resume_subscription():
+    data = json.loads(request.data)
+    subscription_id = data['subscription_id']
+    subscription = data['subscription']
+
+    try:
+        if subscription["status"] == 'active' and subscription["cancel_at_period_end"]:
+            # Handle the case where the subscription is active but set to end
+            updated_subscription = stripe.Subscription.modify(
+                subscription_id,
+                cancel_at_period_end=False,
+            )
+            return jsonify({"message": "Subscription extended successfully", "subscription": updated_subscription}), 200
+
+        else:
+            return jsonify({"error": "Subscription is not eligible for resumption or extension"}), 400
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
     
 
 # -----------------------------------------------------------------------------------------

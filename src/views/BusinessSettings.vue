@@ -110,12 +110,17 @@
                     <div class="alert alert-secondary fw-bold" role="alert">
                         Payment Method
                     </div>
-                    <div class="mx-2 mb-3">
-                        <!-- stripe -->
-                        <img v-if="paymentMethod.brand == 'visa'" src="../../Images/Others/visa.png" alt="" style="height: 40px;" class="me-3">
-                        <img v-else-if="paymentMethod.brand == 'mastercard'" src="../../Images/Others/mastercard.png" alt="" style="height: 40px;" class="me-3">
-                        <img v-else src="../../Images/Others/credit-card.png" alt="" style="height: 30px;" class="me-3">
-                        •••• •••• •••• {{paymentMethod.last4}}
+                    <div class="row mx-2 mb-3">
+                        <div v-if="subscription">
+                            <!-- stripe -->
+                            <img v-if="paymentMethod.brand == 'visa'" src="../../Images/Others/visa.png" alt="" style="height: 40px;" class="me-3">
+                            <img v-else-if="paymentMethod.brand == 'mastercard'" src="../../Images/Others/mastercard.png" alt="" style="height: 40px;" class="me-3">
+                            <img v-else src="../../Images/Others/credit-card.png" alt="" style="height: 30px;" class="me-3">
+                            •••• •••• •••• {{paymentMethod.last4}}
+                        </div>
+                        <div v-else>
+                            <div>No active subscription.</div>
+                        </div>
                     </div>
                 </div>
                 <!-- billing and subscription -->
@@ -123,7 +128,7 @@
                     <div class="alert alert-secondary fw-bold" role="alert">
                         Billing and Subscription
                     </div>
-                    <div class="row mx-2">
+                    <div v-if="subscription" class="row mx-2">
                         <!-- stripe -->
                         <div class="col-6 fw-bold">Business Plan: 
                             <span v-if="subscriptionDetails.interval == 'month'">Monthly</span> 
@@ -141,9 +146,14 @@
                             <div class="fw-bold fs-3" style="color: red;">PAUSED</div>
                             <div v-if="activeSubscription == false" class="fst-italic" style="color: red;">Your subscription is available until {{ cancelledDate }}.</div>
                             <div class="fst-italic" style="color: red;">Resume subscription to access premium features.</div>
-                            <button type="button" class="btn primary-btn-outline-not-round mt-2" style="font-weight:bold; width: 200px;" data-bs-toggle="modal" data-bs-target="#editSubscriptionModal">Resume Subscription</button>
+                            <button type="button" class="btn primary-btn-not-round mt-2" style="font-weight:bold; width: 200px; background-color: #71966B; border: 4px solid #71966B;" @click="resumeSubscription">Resume Subscription</button>
                         </div>
-
+                    </div>
+                    <div v-else class="row mx-2">
+                        <div class="col-6">No active subscription.</div>
+                        <div class="col-6 text-end">
+                            <button type="button" class="btn primary-btn-not-round mt-2" style="font-weight:bold; width: 200px; background-color: #71966B; border: 4px solid #71966B;" @click='reSubscribe'>Subscribe</button>
+                        </div>
                         
                     </div>
                 </div>
@@ -268,7 +278,7 @@
                 business: null,
                 businessName: null,
                 photo: null,
-                requestID: null,
+                requestId: null,
                 stripeCustomerId: null,
                 subscription: null,
                 activeSubscription: null,
@@ -345,6 +355,11 @@
                         }
                     });
                     this.subscription = response.data;
+                    console.log(this.subscription);
+
+                    if (!this.subscription) {
+                        return;
+                    }
 
                     if (this.subscription.status == "active") {
                         if (this.subscription.cancel_at == null) {
@@ -360,15 +375,17 @@
                         this.activeSubscription = null;
                     }
 
-                    console.log(this.activeSubscription);
-
                 } catch (error) {
-                    console.error('Error retrieving subscription:', error);
-                    this.dataLoaded = null;
+                    if (error.response && error.response.status === 404) {
+                        console.error('Error retrieving subscription:', error);
+                    } else {
+                        console.error('Error retrieving subscription:', error);
+                        this.dataLoaded = null;
+                    }
                 }
                 
-                // upcoming invoice
                 if (this.activeSubscription) {
+                    // upcoming invoice
                     try {
                         const response = await this.$axios.post('http://127.0.0.1:5009/retrieve-upcoming-invoice', {
                             subscription_id: this.subscription.id,
@@ -383,37 +400,39 @@
                         console.error('Error retrieving upcoming invoice:', error);
                         this.dataLoaded = null;
                     }
-                }
 
-                // payment method
-                try {
-                    const response = await this.$axios.post('http://127.0.0.1:5009/retrieve-payment-method', {
-                        subscription: this.subscription,
-                    }, {
-                        headers: {
-                            'Content-Type': 'application/json',
-                        }
-                    });
-                    this.paymentMethod = response.data;
-                } catch (error) {
-                    console.error('Error retrieving customer payment methods:', error);
-                    this.dataLoaded = null;
-                }
-                // subscription details
-                try {
-                    const response = await this.$axios.post('http://127.0.0.1:5009/retrieve-subscription-details', {
-                        subscription: this.subscription,
-                    }, {
-                        headers: {
-                            'Content-Type': 'application/json',
-                        }
-                    });
-                    this.subscriptionDetails = response.data;
-                    this.selectedMonthlyPricing = this.subscriptionDetails.interval === 'month';
-                    this.selectedYearlyPricing = this.subscriptionDetails.interval === 'year';
-                } catch (error) {
-                    console.error('Error retrieving customer payment methods:', error);
-                    this.dataLoaded = null;
+                    // payment method
+                    try {
+                        const response = await this.$axios.post('http://127.0.0.1:5009/retrieve-payment-method', {
+                            subscription: this.subscription,
+                        }, {
+                            headers: {
+                                'Content-Type': 'application/json',
+                            }
+                        });
+                        this.paymentMethod = response.data;
+                    } catch (error) {
+                        console.error('Error retrieving customer payment methods:', error);
+                        this.dataLoaded = null;
+                    }
+
+                    // subscription details
+                    try {
+                        const response = await this.$axios.post('http://127.0.0.1:5009/retrieve-subscription-details', {
+                            subscription: this.subscription,
+                        }, {
+                            headers: {
+                                'Content-Type': 'application/json',
+                            }
+                        });
+                        this.subscriptionDetails = response.data;
+                        this.selectedMonthlyPricing = this.subscriptionDetails.interval === 'month';
+                        this.selectedYearlyPricing = this.subscriptionDetails.interval === 'year';
+                    } catch (error) {
+                        console.error('Error retrieving customer payment methods:', error);
+                        this.dataLoaded = null;
+                    }
+                
                 }
 
                 // Set data loaded to true
@@ -509,6 +528,53 @@
                 }
 
             },
+
+            async resumeSubscription() {
+                try {
+                    await this.$axios.post('http://127.0.0.1:5009/resume-subscription', {
+                        subscription: this.subscription,
+                        subscription_id: this.subscription.id,
+                    }, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    });
+                    this.loadData();
+                    this.toastSuccess = true;
+                    this.toastMessage = 'Your subscription has been resumed.';
+                    setTimeout(() => {
+                        this.toastSuccess = false;
+                    }, 5000);
+                } catch (error) {
+                    console.error('Error resuming subscription:', error);
+                }
+            }, 
+
+            async generateToken(businessId, requestId) {
+                console.log(businessId, requestId);
+                try {
+                    const response = await this.$axios.post('http://127.0.0.1:5031/createToken', 
+                        {
+                            businessId: businessId,
+                            requestId: requestId,
+                            isNew: false,
+                        }, {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    const link = `http://localhost:8080/billingSecurity?token=${response.data.data.token}`;
+                    console.log(link);
+                    return link;
+                } catch (error) {
+                    console.error(error);
+                }
+            },
+
+            async reSubscribe() {
+                const link = await this.generateToken(this.user_id, this.requestId.$oid);
+                window.location.href = link;
+            }
 
         }
     };

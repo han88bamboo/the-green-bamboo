@@ -97,7 +97,7 @@
             </div>
 
             <!-- username and password -->
-            <div style="width: 75%;">
+            <div v-if="accountRequest.isNew" style="width: 75%;">
                 <!-- Input: Username -->
                     <div class="form-group mb-3">
                         <p class="text-start mb-1" style="font-family: radley; font-size: 25px;">Username</p>
@@ -126,7 +126,8 @@
 
             <div class="row">
                 <div class="col-lg-8 col-md-12">
-                    <button type="submit" class="btn btn-lg secondary-btn-border-thick mx-auto my-3" @click="createAccount">Create Account</button>
+                    <button v-if="accountRequest.isNew" type="submit" class="btn btn-lg secondary-btn-border-thick mx-auto my-3" @click="createAccount">Create Account</button>
+                    <button v-else type="submit" class="btn btn-lg secondary-btn-border-thick mx-auto my-3" @click="createAccount">Subscribe</button>
                 </div>
             </div>
 
@@ -449,23 +450,32 @@
             },
 
             async createAccount () {
-                if (this.formError.username.length > 0 || this.formError.newPassword.length > 0 || this.formError.confirmPassword.length > 0) {
-                    return;
-                }
-
+                
                 if (!this.paymentFilled) {
                     return;
                 }
 
-                const updateSuccess = await this.updateUsernamePassword();
+                var updateSuccess = false;
+
+                if (this.accountRequest.isNew) {
+                    this.checkUsername();
+                    this.checkNewPassword();
+                    this.checkConfirmPassword();
+    
+                    if (this.formError.username.length > 0 || this.formError.newPassword.length > 0 || this.formError.confirmPassword.length > 0) {
+                        return;
+                    }
+
+                    updateSuccess = await this.updateUsernamePassword();
+                }
 
                 var paymentSuccess = false;
 
-                if (updateSuccess) {
+                if (updateSuccess || !this.accountRequest.isNew) {
                     paymentSuccess = await this.processPayment();
                 }
 
-                if (updateSuccess && paymentSuccess) {
+                if ( (updateSuccess || !this.accountRequest.isNew) && paymentSuccess ) {
                     await this.deleteToken();
                     // save details to local storage 
                     localStorage.setItem("88B_accID", this.businessId.$oid);

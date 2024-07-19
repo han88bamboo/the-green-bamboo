@@ -1703,6 +1703,7 @@
                             {
                                 businessId: businessId,
                                 requestId: requestId,
+                                isNew: true,
                             }, {
                             headers: {
                                 'Content-Type': 'application/json'
