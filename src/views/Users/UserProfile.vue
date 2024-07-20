@@ -1053,7 +1053,7 @@ export default {
                 console.error(error);
                 this.dataLoaded = null;
             }
-            // Badges
+            // for Badges
             try {
                 const response = await this.$axios.get('http://127.0.0.1:5000/getBadges');
                 this.badges = response.data;
