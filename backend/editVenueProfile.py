@@ -31,6 +31,9 @@ db = PyMongo(app).db
 mongo = PyMongo(app)
 fs = GridFS(mongo.db)
 
+# TODO: Create function using BOTO Library to upload images to the S3 bucket
+# TODO: Create function using BOTO Library to delete images from the S3 bucket
+
 # -----------------------------------------------------------------------------------------
 # [POST] Edit venue profile
 # - Update venue profile with new details
