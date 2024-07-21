@@ -10,6 +10,7 @@
                 <div class="drink-photo-container-row image-container-150">
                     <router-link :to="{ path: '/listing/view/' + listing._id.$oid }" class="default-text-no-background">
                         <img v-if="listing.photo !== '' && listing.photo !== null" :src="'data:image/jpeg;base64,' + listing.photo" class="add-drink-photo-background centered rounded"> 
+                        <!-- <img v-if="listing.photo !== '' && listing.photo !== null" :src="listing.photo" class="add-drink-photo-background centered rounded">  -->
                         <img v-else src="../../Images/Drinks/Placeholder.png" class="add-drink-photo-background centered rounded">
                     </router-link>
                     
@@ -45,6 +46,7 @@
                 <div class="drink-photo-container-row-producer-profile image-container-150">
                     <router-link :to="{ path: '/listing/view/' + listing._id.$oid }" class="default-text-no-background">
                         <img v-if="listing.photo !== '' && listing.photo !== null" :src="'data:image/jpeg;base64,' + listing.photo" class="add-drink-photo-background centered rounded review-image"> 
+                        <!-- <img v-if="listing.photo !== '' && listing.photo !== null" :src="listing.photo" class="add-drink-photo-background centered rounded review-image">  -->
                         <img v-else src="../../Images/Drinks/Placeholder.png" class="add-drink-photo-background centered rounded review-image">
                     </router-link>
                     
