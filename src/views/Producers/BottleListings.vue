@@ -50,6 +50,7 @@
                     <!-- image -->
                     <div class="col-12 col-lg-4 col-xl-3 image-container text-start mobile-col-5">
                         <img :src=" 'data:image/jpeg;base64,' + ( specified_listing['photo'] || defaultProfilePhoto )" class="producer-bottle-listing-page-image" >
+                        <!-- <img :src=" '( specified_listing['photo'] || defaultProfilePhoto )" class="producer-bottle-listing-page-image" > -->
                     </div>
                     <!-- details -->
                     <div class="col-12 col-lg-8 col-xl-9 text-start mobile-col-7 mobile-ps-0 mobile-pe-0">
@@ -715,6 +716,7 @@
                                         <input class="form-control mb-2" @change="onFileChange" type="file" id="reviewPhoto">
                                         <div class = "row">
                                             <img :src="image64 ? 'data:image/jpeg;base64,' + image64 : 'none'" alt="" id="output" class="py-2 review-preview-photo">
+                                            <!-- <img :src="image64 ? image64 : 'none'" alt="" id="output" class="py-2 review-preview-photo"> -->
                                         </div>
                                         <div class="row justify-content-start mb-2">
                                             <div class="col-md-4 text-start">
@@ -766,6 +768,7 @@
                                         </label>
                                         <div class = "row">
                                             <img :src="image64 ? 'data:image/jpeg;base64,' + image64 : 'none'" alt="" id="output" class="py-2 review-preview-photo">
+                                            <!-- <img :src="image64 ? image64 : 'none'" alt="" id="output" class="py-2 review-preview-photo"> -->
                                         </div>
                                         <div class="row justify-content-start mb-2">
                                             <div class="col-md-4 text-start">
@@ -1074,6 +1077,7 @@
                                     <!-- (2) to (6) other photos -->
                                     <div v-for="review in filteredReviewsWithImages.slice(0,5)" v-bind:key="review" class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 mobile-px-1">
                                         <img :src=" 'data:image/jpeg;base64,' + (review['photo'] || defaultProfilePhoto)" alt="" class="review-image" >
+                                        <!-- <img :src=" (review['photo'] || defaultProfilePhoto)" alt="" class="review-image" > -->
                                     </div>
                                 </div>
                                 <!-- [else] user has added a review -->
@@ -1081,6 +1085,7 @@
                                 <div v-else class="row">
                                     <div v-for="review in filteredReviewsWithImages" v-bind:key="review" class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 p-0 mobile-px-1">
                                         <img :src="'data:image/jpeg;base64,' + (review['photo'] || defaultProfilePhoto)" alt="" class="review-image" >
+                                        <!-- <img :src="(review['photo'] || defaultProfilePhoto)" alt="" class="review-image" > -->
                                     </div>
                                 </div>
                             </div>
@@ -1094,6 +1099,7 @@
                         <div class="col-12 col-lg-1 mobile-col-2" style="text-align: left;">
                             <router-link :to="`/profile/user/${review.userID.$oid}`">
                                 <img :src=" 'data:image/jpeg;base64,' + (getPhotoFromReview(review) || defaultProfilePhoto)" alt="" class="profile-image">
+                                <!-- <img :src="(getPhotoFromReview(review) || defaultProfilePhoto)" alt="" class="profile-image"> -->
                             </router-link>
                         </div>
                         <div class="text-start mb-2 mobile-view-show mobile-col-10">
@@ -1452,10 +1458,12 @@
                         <div class="col-12 col-lg-3 text-end mobile-view-hide">
                             <!-- review photo -->
                             <img :src=" 'data:image/jpeg;base64,' + (review['photo'] || defaultProfilePhoto)" alt="" class="review-image" style="width: 125px; height: 125px">
+                            <!-- <img :src="(review['photo'] || defaultProfilePhoto)" alt="" class="review-image" style="width: 125px; height: 125px"> -->
                         </div>
                         <div class="col-12 col-lg-3 text-start mobile-view-show">
                             <!-- review photo -->
                             <img :src=" 'data:image/jpeg;base64,' + (review['photo'] || defaultProfilePhoto)" alt="" class="review-image" style="width: 125px; height: 125px">
+                            <!-- <img :src="(review['photo'] || defaultProfilePhoto)" alt="" class="review-image" style="width: 125px; height: 125px"> -->
                         </div>
                     <hr>
                 </div>

@@ -56,13 +56,13 @@ def deleteImageFromS3(bucket_name, region='us-east-1'):
         return None
 
 # Example usage
-bucket_name = 'testbucketdrinkx'
+bucket_name = 'drinkximages'
 region = 'us-east-1'  # Replace with your S3 bucket region
 
 
 # This is an example base64 string for an image (you should use your actual base64 string)
 # base64_String= ''
-# url = uploadBase64ImageToS3(base64_string, bucket_name, region)
+# url = uploadBase64ImageToS3(base64_String, bucket_name, region)
 # isDeleted = deleteImageFromS3(bucket_name, region)
 # if url:
 #     print(f"Image URL: {url}")

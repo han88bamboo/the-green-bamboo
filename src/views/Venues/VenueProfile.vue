@@ -56,6 +56,8 @@
                             <!-- image -->
                             <img :src="'data:image/jpeg;base64,' + (editProfilePhoto || defaultProfilePhoto)" 
                                 alt="" class="producer-bottle-listing-page-image">
+                            <!-- <img :src="(editProfilePhoto || defaultProfilePhoto)" 
+                                alt="" class="producer-bottle-listing-page-image"> -->
                             <!-- change option -->
                             <label for="fileSelectPFP" class="btn primary-light-dropdown" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2;">Choose File</label>
                             <input id="fileSelectPFP" type="file" @change="handleFileSelectPFP" ref="fileInput" style="width: 0px; height: 0px; display: none;">
@@ -70,6 +72,8 @@
                         <div v-else>
                             <img :src="'data:image/jpeg;base64,' + (targetVenue['photo'] || defaultProfilePhoto)" 
                                 alt="" class="producer-bottle-listing-page-image" >
+                            <!-- <img :src="(targetVenue['photo'] || defaultProfilePhoto)" 
+                                alt="" class="producer-bottle-listing-page-image" > -->
                         </div>
 
                     </div>
@@ -362,6 +366,7 @@
                                 <div v-if="editUpdateTarget == targetVenue['updates'][0]._id['$oid']" style="position: relative; text-align: center;">
                                     <!-- image -->
                                     <img :src="'data:image/jpeg;base64,' + (editUpdateContent[targetVenue['updates'][0]._id['$oid']].newPhoto || defaultProfilePhoto)" alt="" style="width: 128px; height: 128px; z-index: 1; opacity: 50%">
+                                    <!-- <img :src="(editUpdateContent[targetVenue['updates'][0]._id['$oid']].newPhoto || defaultProfilePhoto)" alt="" style="width: 128px; height: 128px; z-index: 1; opacity: 50%"> -->
                                     <!-- change option -->
                                     <label :for="'fileSelectEditUpdate' + targetVenue['updates'][0]._id['$oid']" class="btn primary-light-dropdown" style="position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%); z-index: 2;">Choose</label>
                                     <input :id="'fileSelectEditUpdate' + targetVenue['updates'][0]._id['$oid']" type="file" @change="handleFileSelectEditUpdate" ref="fileInput" style="width: 0px; height: 0px; display: none;">">
@@ -375,6 +380,7 @@
                                 <!-- [else] not editing tzh removed style="width: 128px; height: 128px; z-index: 1;"-->
                                 <div v-else>
                                     <img :src=" 'data:image/jpeg;base64,' + (targetVenue['updates'][0].photo || defaultProfilePhoto)" alt="" class="producer-profile-latest-updates-image">
+                                    <img :src="(targetVenue['updates'][0].photo || defaultProfilePhoto)" alt="" class="producer-profile-latest-updates-image">
                                 </div>
 
                             </div>
@@ -469,6 +475,7 @@
                                 <div class="col-xl-2 col-md-3">
                                     <div style="position: relative; text-align: center; width: 128px; height: 128px;">
                                         <img :src=" 'data:image/jpeg;base64,' + (newUpdatePhoto || defaultProfilePhoto)" alt="" style="width: 128px; height: 128px;">
+                                        <!-- <img :src="(newUpdatePhoto || defaultProfilePhoto)" alt="" style="width: 128px; height: 128px;"> -->
                                         <button type="button" class="btn-close" @click="newUpdatePhoto = ''" style="position: absolute; top: 10%; left: 90%; transform: translate(-50%, -50%); z-index: 2;"></button>
                                     </div>
                                 </div>
@@ -542,6 +549,7 @@
                                             <div v-if="editUpdateTarget == updateMore._id['$oid']" style="position: relative; text-align: center;">
                                                 <!-- image -->
                                                 <img :src="'data:image/jpeg;base64,' + (editUpdateContent[updateMore._id['$oid']].newPhoto || defaultProfilePhoto)" alt="" style="width: 128px; height: 128px; z-index: 1; opacity: 50%">
+                                                <!-- <img :src="(editUpdateContent[updateMore._id['$oid']].newPhoto || defaultProfilePhoto)" alt="" style="width: 128px; height: 128px; z-index: 1; opacity: 50%"> -->
                                                 <!-- change option -->
                                                 <label :for="'fileSelectEditUpdate' + updateMore._id['$oid']" class="btn primary-light-dropdown" style="position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%); z-index: 2;">Choose</label>
                                                 <input :id="'fileSelectEditUpdate' + updateMore._id['$oid']" type="file" @change="handleFileSelectEditUpdate" ref="fileInput" style="width: 0px; height: 0px; display: none;">
@@ -555,6 +563,7 @@
                                             <!-- [else] not editing tzh removed style="width: 128px; height: 128px; z-index: 1;" -->
                                             <div v-else>
                                                 <img :src=" 'data:image/jpeg;base64,' + (updateMore.photo || defaultProfilePhoto)" alt="" class="producer-profile-latest-updates-image" >
+                                                <!-- <img :src="(updateMore.photo || defaultProfilePhoto)" alt="" class="producer-profile-latest-updates-image" > -->
                                             </div>
 
                                         </div>
@@ -1074,6 +1083,7 @@
                                         <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
                                             <router-link :to="{ path: '/listing/view/' + sectionItem.itemID['$oid'] }" class="default-text-no-background">
                                                 <img :src=" 'data:image/jpeg;base64,' + (sectionItem.itemDetails['itemPhoto'] || defaultProfilePhoto)" class="producer-bottle-listing-page-bottle-image" >
+                                                <!-- <img :src="(sectionItem.itemDetails['itemPhoto'] || defaultProfilePhoto)" class="producer-bottle-listing-page-bottle-image" > -->
                                             </router-link>
                                         </div>
 
@@ -1171,6 +1181,7 @@
                                         <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0">
                                             <router-link :to="{ path: '/listing/view/' + sectionItem.itemID['$oid'] }" class="default-text-no-background">
                                                 <img :src=" 'data:image/jpeg;base64,' + (sectionItem.itemDetails['itemPhoto'] || defaultProfilePhoto)" style="width: 150px; height: 150px;">
+                                                <!-- <img :src="(sectionItem.itemDetails['itemPhoto'] || defaultProfilePhoto)" style="width: 150px; height: 150px;"> -->
                                             </router-link>
                                         </div>
 
@@ -1407,6 +1418,7 @@
                                                         <!-- Item Image -->
                                                         <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
                                                             <img :src=" 'data:image/jpeg;base64,' + (menuItem.itemDetails['itemPhoto'] || defaultProfilePhoto)" class="producer-bottle-listing-page-bottle-image">
+                                                            <!-- <img :src="(menuItem.itemDetails['itemPhoto'] || defaultProfilePhoto)" class="producer-bottle-listing-page-bottle-image"> -->
                                                             <!-- Remove Item From Menu Section -->
                                                             <div class="row">
                                                                 <div class="col-1 d-grid">
@@ -1512,6 +1524,7 @@
                                                         <!-- Item Image -->
                                                         <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0">
                                                             <img :src=" 'data:image/jpeg;base64,' + (menuItem.itemDetails['itemPhoto'] || defaultProfilePhoto)" style="width: 150px; height: 150px;">
+                                                            <!-- <img :src="(menuItem.itemDetails['itemPhoto'] || defaultProfilePhoto)" style="width: 150px; height: 150px;"> -->
                                                         </div>
 
                                                         <!-- Item Information -->
@@ -1699,6 +1712,7 @@
                                                 <!-- Item Image -->
                                                 <div class="col-2 image-container text-center mx-auto">
                                                     <img :src=" 'data:image/jpeg;base64,' + ( newMenuItemTarget.photo || defaultProfilePhoto)" style="width: 150px; height: 150px;">
+                                                    <!-- <img :src="( newMenuItemTarget.photo || defaultProfilePhoto)" style="width: 150px; height: 150px;"> -->
                                                 </div>
 
                                                 <!-- Item Information -->
