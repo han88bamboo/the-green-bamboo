@@ -31,3 +31,6 @@ pnpm-debug.log*
 # tests/unit/Users.spec.js
 # tests/unit/test_createListing.py
 # tests/unit/test_data.py
+
+# Ignore cookies file in webscrapper
+Webscrape Untappd/Webscrapper/cookies.pkl
