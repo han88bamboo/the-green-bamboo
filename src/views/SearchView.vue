@@ -193,6 +193,7 @@
                             <div class="col-lg-3 col-12 image-container-256 mb-3">
                                 <router-link :to="{ path: '/listing/view/' + resultListing._id['$oid'] }">
                                     <img v-if="resultListing['photo']" :src="'data:image/png;base64,' + resultListing['photo']" class="img-border img-fluid object-fit-cover" style="width:256px; height:256px">
+                                    <!-- <img v-if="resultListing['photo']" :src="resultListing['photo']" class="img-border img-fluid object-fit-cover" style="width:256px; height:256px"> -->
                                     <img v-else src="../../Images/Drinks/Placeholder.png" class="img-border img-fluid object-fit-cover" style="width:256px; height:256px"> 
                                 </router-link>
                                 <BookmarkIcon 

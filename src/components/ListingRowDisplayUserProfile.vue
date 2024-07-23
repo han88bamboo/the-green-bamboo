@@ -11,6 +11,7 @@
                 <div class="Xdrink-photo-container-row Ximage-container-150">
                     <router-link :to="{ path: '/listing/view/' + listing._id.$oid }" class="default-text-no-background">
                         <img v-if="listing.photo !== '' && listing.photo !== null" :src="'data:image/jpeg;base64,' + listing.photo" class="add-drink-photo-background-user-profile centered rounded"> 
+                        <!-- <img v-if="listing.photo !== '' && listing.photo !== null" :src="listing.photo" class="add-drink-photo-background-user-profile centered rounded">  -->
                         <img v-else src="../../Images/Drinks/Placeholder.png" class="add-drink-photo-background-user-profile centered rounded">
                     </router-link>
                     
