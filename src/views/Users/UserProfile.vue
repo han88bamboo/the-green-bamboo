@@ -435,7 +435,6 @@
                                 <div class="mobile-col-3 col-12 col-sm-4 col-md-6 col-xl-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2 " v-for="drinkTypeDetails in matchedDrinkTypes" :key="drinkTypeDetails._id">
                                     <!-- image of actual badge  style="width: 100px; height: 100px;"  -->
                                     <img :src="'data:image/png;base64,'+ (drinkTypeDetails.badgePhoto || defaultProfilePhoto)" 
-                                        
                                         alt="" class="rounded-circle-white-bg border border-dark badge-img">
                                     <!-- badge description -->
                                     <div class="pt-1" style="line-height: 1;"> 
@@ -460,7 +459,6 @@
                                 <div class="mobile-col-3 col-12 col-sm-4 col-md-6 col-xl-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2" v-for="badge in otherBadges" :key="badge">
                                     <!-- image of actual badge style="width: 100px; height: 100px;" -->
                                     <img :src="'data:image/png;base64,'+ (getBadgeInfo(badge).badgePhoto)" 
-                                         
                                         alt="" class="rounded-circle-white-bg border border-dark badge-img">
                                     <!-- badge description -->
                                     <p class="pt-1" style="line-height: 1;"> 
@@ -1123,9 +1121,7 @@ export default {
         catch (error) {
             console.error(error);
         }
-        
-        // load data
-        this.loadData();
+
     },
     methods: {
         // load data from database
