@@ -47,7 +47,7 @@
                             {{ drinkCount }} Drinks Tasted 
                             <br/>
                             <button v-if="!ownProfile && displayUser.modType != []" data-bs-toggle="modal" data-bs-target="#moderatormodal" class="btn btn-warning hover-button p-1" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button> 
-                            <button v-if="user && user.isAdmin" data-bs-toggle="modal" data-bs-target=“#moderatormodal class="btn btn-warning hover-button p-1" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button>
+                            <button v-if="user && user.isAdmin" data-bs-toggle="modal" data-bs-target="#moderatormodal" class="btn btn-warning hover-button p-1" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button>
                         </div>
                     </div>
 
@@ -105,19 +105,24 @@
                         <div class="modal-content">
 
                         <div v-if="drinkChoice.length == 0" class="modal-body px-4">
-                            
+                        
                             <button v-if="!ownProfile && displayUser.modType != []" data-bs-toggle="modal" data-bs-target="#moderatormodal" class="btn btn-warning hover-button p-1 mb-3" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button> 
-                            <button v-if="user && user.isAdmin" data-bs-toggle="modal" data-bs-target=“#moderatormodal class="btn btn-warning hover-button p-1 mb-3" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button>
+                            <button v-if="user && user.isAdmin" data-bs-toggle="modal" data-bs-target="#moderatormodal" class="btn btn-warning hover-button p-1 mb-3" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button>
                             <button type="button" class="btn-close uninvert" data-bs-dismiss="modal" aria-label="Close" style="margin-left:63%;"></button>
                             <p><b>{{ displayUser.displayName }} is a Drink X moderator.</b></p> 
                             <p><b><em>Moderators help shape the drinks community and ensure drink reviews remain fun, useful and respectful!</em></b></p>
                             <b><a v-if="user && !user.isAdmin" href="#" class="mt-3" data-bs-toggle="modal" data-bs-target="#applyModerator" style="color: black">Want to be a moderator? Apply here!</a></b>   
                         </div>
                         <div v-else class="modal-body px-4">
-                            
-                            <button v-if="!ownProfile && displayUser.modType != []" data-bs-toggle="modal" data-bs-target="#moderatormodal" class="btn btn-warning hover-button p-1 mb-3" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button> 
-                            <button v-if="user && user.isAdmin" data-bs-toggle="modal" data-bs-target=“#moderatormodal class="btn btn-warning hover-button p-1 mb-3" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button>
-                            <button type="button" class="btn-close uninvert" data-bs-dismiss="modal" aria-label="Close" style=" margin-left:63%;"></button>
+                            <div style="display: flex; justify-content: space-between; ">
+                                <div style="display: inline-block;">
+                                    <button v-if="!ownProfile && displayUser.modType != []" data-bs-toggle="modal" data-bs-target="#moderatormodal" class="btn btn-warning hover-button p-1 mb-3" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button> 
+                                    <button v-if="user && user.isAdmin" data-bs-toggle="modal" data-bs-target="#moderatormodal" class="btn btn-warning hover-button p-1 mb-3" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button>
+                                </div>
+                                <div style="display: flex; justify-content: flex-end;">
+                                    <button type="button" class="btn-close uninvert" data-bs-dismiss="modal" aria-label="Close" ></button>
+                                </div>
+                            </div>   
                             <p><b>{{ displayUser.displayName }} is a moderator of the following communities:</b></p> 
                             <p>{{ drinkChoice }}</p>
                             <p><b><em>Moderators help shape the drinks community and ensure drink reviews remain fun, useful and respectful!</em></b></p>        
