@@ -435,7 +435,6 @@
                                 <div class="mobile-col-3 col-12 col-sm-4 col-md-6 col-xl-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2 " v-for="drinkTypeDetails in matchedDrinkTypes" :key="drinkTypeDetails._id">
                                     <!-- image of actual badge  style="width: 100px; height: 100px;"  -->
                                     <img :src="'data:image/png;base64,'+ (drinkTypeDetails.badgePhoto || defaultProfilePhoto)" 
-                                        
                                         alt="" class="rounded-circle-white-bg border border-dark badge-img">
                                     <!-- badge description -->
                                     <div class="pt-1" style="line-height: 1;"> 
@@ -460,7 +459,6 @@
                                 <div class="mobile-col-3 col-12 col-sm-4 col-md-6 col-xl-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2" v-for="badge in otherBadges" :key="badge">
                                     <!-- image of actual badge style="width: 100px; height: 100px;" -->
                                     <img :src="'data:image/png;base64,'+ (getBadgeInfo(badge).badgePhoto)" 
-                                         
                                         alt="" class="rounded-circle-white-bg border border-dark badge-img">
                                     <!-- badge description -->
                                     <p class="pt-1" style="line-height: 1;"> 
@@ -1013,6 +1011,7 @@ export default {
                 upvotes: 10
             },
             otherBadges: [],
+            totalBadges: 0,
 
             // for points
             pointSystem: { // CHANGE THIS! if there is a change in the point system (just change this.pointsDefault to a numerical value for the corresponding criteria)
@@ -1123,9 +1122,7 @@ export default {
         catch (error) {
             console.error(error);
         }
-        
-        // load data
-        this.loadData();
+
     },
     methods: {
         // load data from database
@@ -1306,6 +1303,7 @@ export default {
                 // ==== for badges ====
                 this.getTopCategoriesReviewed();
                 this.getMatchedDrinkType();
+                this.calculateTotalBadges();
 
             } 
             catch (error) {
@@ -2266,6 +2264,10 @@ export default {
             }
         },
 
+        calculateTotalBadges() {
+            this.totalBadges = Object.keys(this.categoryBadges).length + this.otherBadges.length;
+        },
+
         // ------------------- Points -------------------
 
         // get total number of friends tagged
@@ -2312,85 +2314,3 @@ export default {
     },
 };
 </script>
-
-<style>
-
-.profile-img {
-    max-width: 110px;
-    max-height: 110px;
-}
-
-.badge-img{
-    width: 80px;
-    height: 80px;
-}
-
-@media (max-width: 991px) {
-.badge-img{
-    width: 100%;
-    height: auto;
-}
-}
-
-
-/* .profile-img {
-    width: 80px;
-    height: 80px;
-} */
-
-.bottle-img {
-    
-    width:100%;
-    height: auto;
-    aspect-ratio: 1 / 1;
-    object-fit: cover;
-}
-
-/* 
-.bottle-img {
-    width: 150px;
-    height: 150px;
-    flex-shrink: 0;
-    border: 2px solid #535C72;
-}
-*/
-
-.flex-start {
-    display: flex;
-    justify-content: flex-start;
-    flex-direction: row;
-}
-
-.speech-bubble {
-    z-index: 1;
-    visibility: hidden;
-    opacity: 0;
-    position: absolute;
-    left: calc(100% + 12px);
-    top: 10px;
-    width: 200px;
-    background-color: white;
-    border: 1px solid #ccc;
-    padding: 10px;
-    border-radius: 5px; /* Adds rounded corners to the speech bubble */
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    transition: opacity 0.3s, visibility 0s linear 0.3s;
-    /* Creates the tail of the speech bubble */
-    &:after {
-        content: "";
-        position: absolute;
-        top: 10px;
-        left: -10px; /* Adjusts the position of the tail to be just outside the speech bubble */
-        border-style: solid;
-        border-width: 10px 10px 10px 0;
-        border-color: transparent white transparent transparent;
-    }
-}
-
-.hover-button:hover + .speech-bubble, .speech-bubble:hover {
-    visibility: visible;
-    opacity: 1;
-    transition-delay: 0s;
-}
-
-</style>

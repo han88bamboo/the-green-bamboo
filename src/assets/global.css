@@ -1504,3 +1504,81 @@ button.primary-btn:hover{
 .fade-enter, .fade-leave-to {
     opacity: 0;
 }
+
+.profile-img {
+    max-width: 110px;
+    max-height: 110px;
+}
+
+.badge-img{
+    width: 80px;
+    height: 80px;
+}
+
+@media (max-width: 991px) {
+.badge-img{
+    width: 100%;
+    height: auto;
+}
+}
+
+
+/* .profile-img {
+    width: 80px;
+    height: 80px;
+} */
+
+.bottle-img {
+    
+    width:100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+}
+
+/* 
+.bottle-img {
+    width: 150px;
+    height: 150px;
+    flex-shrink: 0;
+    border: 2px solid #535C72;
+}
+*/
+
+.flex-start {
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: row;
+}
+
+.speech-bubble {
+    z-index: 1;
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    left: calc(100% + 12px);
+    top: 10px;
+    width: 200px;
+    background-color: white;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 5px; /* Adds rounded corners to the speech bubble */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: opacity 0.3s, visibility 0s linear 0.3s;
+    /* Creates the tail of the speech bubble */
+    &:after {
+        content: "";
+        position: absolute;
+        top: 10px;
+        left: -10px; /* Adjusts the position of the tail to be just outside the speech bubble */
+        border-style: solid;
+        border-width: 10px 10px 10px 0;
+        border-color: transparent white transparent transparent;
+    }
+}
+
+.hover-button:hover + .speech-bubble, .speech-bubble:hover {
+    visibility: visible;
+    opacity: 1;
+    transition-delay: 0s;
+}
