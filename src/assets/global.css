@@ -688,6 +688,11 @@ body {
     color: white !important; 
     filter: invert(1) !important;
 }
+.btn-close.uninvert {
+    color: white !important; 
+    filter: none !important;
+}
+
 button.primary-square:hover {
     color: whitesmoke;
     background-color: #6d768d;

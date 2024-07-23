@@ -108,7 +108,7 @@
                             
                             <button v-if="!ownProfile && displayUser.modType != []" data-bs-toggle="modal" data-bs-target="#moderatormodal" class="btn btn-warning hover-button p-1 mb-3" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button> 
                             <button v-if="user && user.isAdmin" data-bs-toggle="modal" data-bs-target=“#moderatormodal class="btn btn-warning hover-button p-1 mb-3" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="filter:none !important; margin-left:63%;"></button>
+                            <button type="button" class="btn-close uninvert" data-bs-dismiss="modal" aria-label="Close" style="margin-left:63%;"></button>
                             <p><b>{{ displayUser.displayName }} is a Drink X moderator.</b></p> 
                             <p><b><em>Moderators help shape the drinks community and ensure drink reviews remain fun, useful and respectful!</em></b></p>
                             <b><a v-if="user && !user.isAdmin" href="#" class="mt-3" data-bs-toggle="modal" data-bs-target="#applyModerator" style="color: black">Want to be a moderator? Apply here!</a></b>   
@@ -117,7 +117,7 @@
                             
                             <button v-if="!ownProfile && displayUser.modType != []" data-bs-toggle="modal" data-bs-target="#moderatormodal" class="btn btn-warning hover-button p-1 mb-3" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button> 
                             <button v-if="user && user.isAdmin" data-bs-toggle="modal" data-bs-target=“#moderatormodal class="btn btn-warning hover-button p-1 mb-3" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="filter:none !important; margin-left:63%;"></button>
+                            <button type="button" class="btn-close uninvert" data-bs-dismiss="modal" aria-label="Close" style=" margin-left:63%;"></button>
                             <p><b>{{ displayUser.displayName }} is a moderator of the following communities:</b></p> 
                             <p>{{ drinkChoice }}</p>
                             <p><b><em>Moderators help shape the drinks community and ensure drink reviews remain fun, useful and respectful!</em></b></p>        
