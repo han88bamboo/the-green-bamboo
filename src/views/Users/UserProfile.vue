@@ -1011,6 +1011,7 @@ export default {
                 upvotes: 10
             },
             otherBadges: [],
+            totalBadges: 0,
 
             // for points
             pointSystem: { // CHANGE THIS! if there is a change in the point system (just change this.pointsDefault to a numerical value for the corresponding criteria)
@@ -1302,6 +1303,7 @@ export default {
                 // ==== for badges ====
                 this.getTopCategoriesReviewed();
                 this.getMatchedDrinkType();
+                this.calculateTotalBadges();
 
             } 
             catch (error) {
@@ -2260,6 +2262,10 @@ export default {
                 const badge = this.badges.find(badge => badge.badgeName === badgeName);
                 return badge ? badge : null;
             }
+        },
+
+        calculateTotalBadges() {
+            this.totalBadges = Object.keys(this.categoryBadges).length + this.otherBadges.length;
         },
 
         // ------------------- Points -------------------

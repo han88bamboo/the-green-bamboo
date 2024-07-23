@@ -51,9 +51,9 @@
                             <!--<b>@{{ user.username }}</b>-->
                             {{ drinkCount }} Drinks Tasted 
                             <br>
-                            __ Followers
+                            {{ followerCount }} Followers
                             <br>
-                            __ Badges Unlocked
+                            {{ totalBadges }} Badges Unlocked
                         </div>
                     </div>
 
@@ -675,6 +675,9 @@
                 recentActivity: {},
                 recentReviews: {},
 
+                // followers
+                followerCount: 0,
+
                 // for badges
                 allListingsReviewedByUser: [],
                 allCategoriesReviewedByUser: {},
@@ -697,6 +700,7 @@
                     upvotes: 10
                 },
                 otherBadges: [],
+                totalBadges: 0,
 
                 // for points
                 pointSystem: { // CHANGE THIS! if there is a change in the point system (just change this.pointsDefault to a numerical value for the corresponding criteria)
@@ -820,6 +824,9 @@
                         //drink count
                         this.drinkCount = this.getDrinkCount();
 
+                        // for followers
+                        this.getTotalFollowers();
+
                         // ==== for badges ====
                         this.getAllListingsReviewed();
                         this.getAllCategoriesReviewed();
@@ -850,9 +857,11 @@
                 try {
                     const response = await this.$axios.get('http://127.0.0.1:5000/getDrinkTypes');
                     this.drinkTypes = response.data;
+
                     // ==== for badges ====
                     this.getTopCategoriesReviewed();
                     this.getMatchedDrinkType();
+                    this.calculateTotalBadges();
 
                 } 
                 catch (error) {
@@ -942,6 +951,12 @@
                 else {
                     this.showReviewActivity = true;
                 }
+            },
+
+            // get total followers of user
+            getTotalFollowers() {
+                let followers = this.users.filter(user => user.followLists.users.some(follower => follower.followerID.$oid === this.userID));
+                this.followerCount = followers.length;
             },
 
             // ------------------- Badges -------------------
@@ -1073,6 +1088,10 @@
                     const badge = this.badges.find(badge => badge.badgeName === badgeName);
                     return badge ? badge : null;
                 }
+            },
+
+            calculateTotalBadges() {
+                this.totalBadges = Object.keys(this.categoryBadges).length + this.otherBadges.length;
             },
 
             // ------------------- Points -------------------
