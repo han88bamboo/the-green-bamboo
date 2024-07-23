@@ -27,9 +27,11 @@
 
     <!-- main content -->
 
-    <div v-if="user && dataLoaded" class="container pt-5 mobile-pt-3">
+    <div v-if="user && dataLoaded" class="userprofile mt-5 mobile-mt-3">
 
-        <div class="row">
+        <div class="container text-start">
+
+            <div class="row">
 
             <!-- left pane -->
             <div class="col-lg-4 col-md-12 col-sm-12">
@@ -316,7 +318,7 @@
             <div class="col-lg-8 col-md-12 col-sm-12 ps-lg-5">
                 <!--mobile toggle buttons for graph tzh -->
                 <ul class="nav nav-pills mobile-view-show pt-2"  role="tablist" >
-                 <hr>  
+                <hr>  
                     <li class="nav-item pe-2 pt-2 " role="presentation">
                         <button class="nav-link active"  data-bs-toggle="pill" data-bs-target="#countofreviews" type="button" role="tab" aria-controls="countofreviews" aria-selected="true">Count of Reviews</button>
                     </li>
@@ -343,12 +345,12 @@
 
                 <ul class="nav nav-pills mobile-view-show pt-2"  role="tablist" >
                     <hr>
-                   <li class="nav-item pe-2 pt-2 " role="presentation">
-                       <button class="nav-link active"  data-bs-toggle="pill" data-bs-target="#BestRatedExpressions" type="button" role="tab" aria-controls="BestRatedExpressions" aria-selected="true">Best Rated Drinks</button>
-                   </li>
-                   <li class="nav-item pe-2 pt-2 " role="presentation">
-                       <button class="nav-link "  data-bs-toggle="pill" data-bs-target="#BestRatedCategories" type="button" role="tab" aria-controls="BestRatedCategories" aria-selected="false">Best Rated Categories</button>
-                   </li>
+                <li class="nav-item pe-2 pt-2 " role="presentation">
+                    <button class="nav-link active"  data-bs-toggle="pill" data-bs-target="#BestRatedExpressions" type="button" role="tab" aria-controls="BestRatedExpressions" aria-selected="true">Best Rated Drinks</button>
+                </li>
+                <li class="nav-item pe-2 pt-2 " role="presentation">
+                    <button class="nav-link "  data-bs-toggle="pill" data-bs-target="#BestRatedCategories" type="button" role="tab" aria-controls="BestRatedCategories" aria-selected="false">Best Rated Categories</button>
+                </li>
                 </ul>    
                     <div style="min-height:450px;" class="row mobile-view-show tab-content">
                         <!-- col 1: your best rated drinks -->
@@ -373,7 +375,7 @@
 
                         <!-- col 2: your best rated categories -->
                         <div id="BestRatedCategories" class="tab-pane fade  col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-3 ps-lg-0 pe-lg-0 mobile-mx-0"> <!-- padding classes added by tzh-->
-                          
+                        
                             <div class="text-start pb-2" v-for="(category, index) in bestRatedCategories" v-bind:key="category">
                                 <div class="row ms-0 default-clickable-text "> 
                                     <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
@@ -459,7 +461,8 @@
             </div>
 
 
-        </div> <!-- end of row -->
+            </div> <!-- end of row -->
+        </div>
         
     </div> <!-- end of main content -->
 
