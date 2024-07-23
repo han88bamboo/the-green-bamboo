@@ -66,7 +66,48 @@
                     <div class="mt-3 text-start ">
                         <h3 class="mobile-view-hide">Badges Unlocked</h3>
                         <p class="mobile-view-show"><strong>Badges Unlocked</strong></p>
-
+                        <div class="container text-center mb-3">
+                            <!-- badges for different drink types -->
+                            <div class="row">
+                                <div class="mobile-col-3 col-12 col-sm-4 col-md-6 col-xl-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2 " v-for="drinkTypeDetails in matchedDrinkTypes" :key="drinkTypeDetails._id">
+                                    <!-- image of actual badge  style="width: 100px; height: 100px;"  -->
+                                    <img :src="'data:image/png;base64,'+ (drinkTypeDetails.badgePhoto || defaultProfilePhoto)" 
+                                        
+                                        alt="" class="rounded-circle-white-bg border border-dark badge-img">
+                                    <!-- badge description -->
+                                    <div class="pt-1" style="line-height: 1;"> 
+                                        <small> 
+                                            <b> {{ drinkTypeDetails.drinkType }} {{ categoryBadges[drinkTypeDetails.drinkType] }} </b>
+                                        </small>
+                                        <br>
+                                        <small class="xs-text" v-for="(subcategory, category) of topSubcategoriesReviewed" :key="category">
+                                            <span v-if="category === drinkTypeDetails.drinkType">
+                                                <i>
+                                                    (Power: <span v-for="item in subcategory" :key="item">
+                                                        {{ item }}<span v-if="subcategory.indexOf(item) !== subcategory.length - 1">, </span>
+                                                    </span>)
+                                                </i>
+                                            </span>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- badges based on other user activities -->
+                            <div class="row">
+                                <div class="mobile-col-3 col-12 col-sm-4 col-md-6 col-xl-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2" v-for="badge in otherBadges" :key="badge">
+                                    <!-- image of actual badge style="width: 100px; height: 100px;" -->
+                                    <img :src="'data:image/png;base64,'+ (getBadgeInfo(badge).badgePhoto)" 
+                                         
+                                        alt="" class="rounded-circle-white-bg border border-dark badge-img">
+                                    <!-- badge description -->
+                                    <p class="pt-1" style="line-height: 1;"> 
+                                        <small> 
+                                            <b> {{ getBadgeInfo(badge).badgeDesc }} </b>
+                                        </small> 
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
 
                     </div>
                     
@@ -615,6 +656,35 @@
                 // to get review activity
                 showReviewActivity: false,
                
+
+                // display user drink activity
+                favouriteListings: {},
+                recentActivity: {},
+                recentReviews: {},
+
+                // variables stored for badges
+                allListingsReviewedByUser: [],
+                allCategoriesReviewedByUser: {},
+                allSubCategoriesReviewedByUser: {},
+                matchedDrinkTypes: [],
+                topCategoriesReviewed: [],
+                topSubcategoriesReviewed: {},
+                reviewCountriesTagged: [],
+                badgeLevels: { // CHANGE THIS! if there is a change in criterion for minimum # of reviews that a user needs to gain a badge level
+                    novice: 3,
+                    lover: 10,
+                    master: 30,
+                },
+                categoryBadges: {},
+                otherBadgesLimit: { // CHANGE THIS! if there is a change in minimum # that a user needs to gain a badge level
+                    reviewDrinkCategory: 10,
+                    tagFriend: 3,
+                    tagLocation: 5,
+                    tagCountry: 3,
+                    upvotes: 10
+                },
+                otherBadges: [],
+
             };
         },
         async mounted() {
@@ -650,11 +720,29 @@
                 try {
                         const response = await this.$axios.get('http://127.0.0.1:5000/getReviews');
                         this.reviews = response.data;
+                        this.reversedReviews = this.reviews.reverse();
+                        this.recentReviews = this.reversedReviews.filter(review => review.userID?.$oid === this.displayUserID && review.reviewType === 'Listing');
                     }
                     catch (error) {
                         console.error(error);
                         this.dataLoaded = null;
                     }
+                
+                // Set data loaded to true
+                if (this.dataLoaded != null) {
+                    this.dataLoaded = true;
+                }
+                
+                // for Badges
+                try {
+                    const response = await this.$axios.get('http://127.0.0.1:5000/getBadges');
+                    this.badges = response.data;
+                    this.dataLoaded = true;
+                } 
+                catch (error) {
+                    console.error(error);
+                    this.dataLoaded = null;
+                }
                 // users
                 // _id, username, displayName, choiceDrinks, drinkLists, modType, photo
                 try {
@@ -677,20 +765,17 @@
                         this.dataLoaded = null;
                     }
                 
-                // Set data loaded to true
-                if (this.dataLoaded != null) {
-                    this.dataLoaded = true;
-                }
             }, 
 
             //for drink count
             getDrinkCount() {
-            if (this.ownProfile) {
-                return this.reviews.filter(review => review.userID.$oid === this.userID && review.reviewType === 'Listing').length;
-            }
-            else {
-                return this.reviews.filter(review => review.userID.$oid === this.displayUserID && review.reviewType === 'Listing').length;
-            }
+                if (this.ownProfile) {
+                    return this.reviews.filter(review => review.userID.$oid === this.userID && review.reviewType === 'Listing').length;
+                }
+                else {
+                    return this.reviews.filter(review => review.userID.$oid === this.displayUserID && review.reviewType === 'Listing').length;
+                    //return this.reviews.filter(review => review.userID.$oid === this.userID && review.reviewType === 'Listing').length;
+                }
             },
 
 
@@ -760,6 +845,138 @@
                     this.showReviewActivity = true;
                 }
             },
+
+        // ------------------- Badges -------------------
+
+        // get all listings reviewed by the user
+        getAllListingsReviewed() {
+            this.allListingsReviewedByUser = this.recentReviews.map(review => this.listings.find(listing => listing._id.$oid === review.reviewTarget.$oid));
+        },
+
+        // get all drinkType and typeCategory reviewed by the user
+        getAllCategoriesReviewed() {
+            for (let listing of this.allListingsReviewedByUser) {
+                // check if this.allCategoriesReviewedByUser already contains the count for listing.drinkType
+                // [if] no, assign the count as 1
+                // [else] yes, add 1 to the count
+                this.allCategoriesReviewedByUser[listing.drinkType] = (this.allCategoriesReviewedByUser[listing.drinkType] || 0) + 1;
+                // check if this.allSubCategoriesReviewedByUser already contains the count for listing.typeCategory for that listing.drinkType
+                // [if] no, assign the count as 1
+                // [else] yes, add 1 to the count
+                if (!this.allSubCategoriesReviewedByUser[listing.drinkType]) {
+                    this.allSubCategoriesReviewedByUser[listing.drinkType] = {};
+                }
+                this.allSubCategoriesReviewedByUser[listing.drinkType][listing.typeCategory] = (this.allSubCategoriesReviewedByUser[listing.drinkType][listing.typeCategory] || 0) + 1;
+            }
+        },
+
+        // extract out only the drink categories that the user has >= this.badgeLevels.novice (most basic level) reviews for
+        // assign this.categoryBadges[category] to user based on # of reviews for that category
+        // CHANGE! name of this.categoryBadges[category] if the criterion for minimum # of reviews to get a badge changes
+        getTopCategoriesReviewed() {
+            this.topCategoriesReviewed = Object.keys(this.allCategoriesReviewedByUser).reduce((acc, category) => {
+                // check if user has reviewed enough subcategories for this category
+                for (let subcategory in this.allSubCategoriesReviewedByUser[category]) {
+                    let count = this.allSubCategoriesReviewedByUser[category][subcategory];
+                    if (count >= this.otherBadgesLimit.reviewDrinkCategory) {
+                        this.topSubcategoriesReviewed[category] = this.topSubcategoriesReviewed[category] || [];
+                        this.topSubcategoriesReviewed[category].push(subcategory);
+                    }
+                }
+                // --> HIGHEST TIER : MASTER (>= 30 reviews)
+                if (this.allCategoriesReviewedByUser[category] >= this.badgeLevels.master) {
+                    acc[category] = this.allCategoriesReviewedByUser[category];
+                    this.categoryBadges[category] = "Master"
+                }
+                // --> MIDDLE TIER: LOVER (>= 10 reviews)
+                else if (this.allCategoriesReviewedByUser[category] >= this.badgeLevels.lover) {
+                    acc[category] = this.allCategoriesReviewedByUser[category];
+                    this.categoryBadges[category] = "Lover"
+                }
+                // --> LOWEST TIER: NOVICE (>= 3 reviews)
+                else if (this.allCategoriesReviewedByUser[category] >= this.badgeLevels.novice) {
+                    acc[category] = this.allCategoriesReviewedByUser[category];
+                    this.categoryBadges[category] = "Novice"
+                }
+                return acc;
+            }, {});
+        },
+
+        // match categories to "drinkType" database
+        // currently all "drinkTypes" in the reviews are hardcoded, so there is a need to map the objects so that all the badgePhoto can be retrieved
+        getMatchedDrinkType() {
+            this.matchedDrinkTypes = Object.keys(this.topCategoriesReviewed).map(category => this.drinkTypes.find(drinkType => drinkType.drinkType === category));
+        },
+
+        // get all countries user has tagged location in reviews
+        async getAllCountriesTagged() {
+            const apiKey = process.env.VUE_APP_API_KEY;
+            const promises = this.recentReviews.map(async (review) => {
+                const address = encodeURIComponent(review.address);
+                if (address) {
+                    const response = await this.$axios.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${apiKey}`);
+                    const { results } = response.data;
+                    if (results[0]) {
+                        const countryComponent = results[0].address_components.find(component => component.types.includes('country'));
+                        if (countryComponent) {
+                            const country = countryComponent.long_name;
+                            if (!this.reviewCountriesTagged.includes(country)) {
+                                this.reviewCountriesTagged.push(country);
+                            }
+                        }
+                    }
+                }
+            });
+
+            await Promise.all(promises);
+        },
+
+        // check if user has tagged locations in reviews
+        checkEnoughLocationTagged() {
+            if (this.pointSystem.tagLocation[0] >= this.otherBadgesLimit.tagLocation) {
+                this.otherBadges.push("tagLocation")
+            }
+        },
+
+        // check if user has tagged locations in reviews
+        checkEnoughCountriesTagged() {
+            if (this.pointSystem.tagCountry[0] >= this.otherBadgesLimit.tagCountry) {
+                this.otherBadges.push("tagCountry")
+            }
+        },
+
+        // check if user has tagged friends in reviews
+        checkEnoughFriendsTagged() {
+            if (this.pointSystem.tagFriend[0] >= this.otherBadgesLimit.tagFriend) {
+                this.otherBadges.push("tagFriend")
+            }
+        },
+
+        // get total number of upvotes received
+        getTotalUpvotes() {
+            let totalUpvotes = this.recentReviews.reduce((count, review) => {
+                if (review.userVotes.upvotes.some(vote => vote.userID.$oid === this.displayUserID)) {
+                    count += 1;
+                }
+                return count;
+            }, 0);
+            return totalUpvotes;
+        },
+
+        // check if user has upvotes from reviews
+        checkEnoughUpvotes() {
+            if (this.getTotalUpvotes() >= this.otherBadgesLimit.upvotes) {
+                this.otherBadges.push("upvotes")
+            }
+        },
+
+        getBadgeInfo(badgeName) {
+            if (badgeName) {
+                const badge = this.badges.find(badge => badge.badgeName === badgeName);
+                return badge ? badge : null;
+            }
+        },
+
 
         }
     };
