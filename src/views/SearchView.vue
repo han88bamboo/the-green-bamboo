@@ -414,13 +414,13 @@
                             <!-- Image -->
                             <div class="col-lg-3 col-12 image-container mb-3 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
                                 <router-link :to="{ path: '/profile/venue/' + venue._id['$oid'] }">
-                                    <img v-if="venue['photo']" :src="'data:image/png;base64,' + venue['photo']" class="img-border img-fluid object-fit-cover" style="width:256px; height:256px">
-                                    <img v-else src="../../Images/Drinks/Placeholder.png" class="img-border img-fluid object-fit-cover" style="width:256px; height:256px"> 
+                                    <img v-if="venue['photo']" :src="'data:image/png;base64,' + venue['photo']" class="img-border img-fluid object-fit-cover" style="/*width:256px; height:256px*/">
+                                    <img v-else src="../../Images/Drinks/Placeholder.png" class="img-border img-fluid object-fit-cover" style="/*width:256px; height:256px*/"> 
                                 </router-link>
                             </div>
 
-                            <!-- Details -->
-                            <div class="row col-lg-9 col-12">
+                            <!-- Details desktop -->
+                            <div class="row col-lg-9 col-12 mobile-view-hide">
 
                                 <div class="col-lg-8 col-12">
                                     <!-- Venue Name + Router Link -->
@@ -469,6 +469,24 @@
                                 <p class="fst-italic scrollable-long mt-3">{{ venue["venueDesc"] }}</p>
 
                             </div>
+
+                            <!-- Details mobile -->
+                            <div class="row col-9 mobile-view-show">
+
+                                <div class="col-lg-8 col-12">
+                                    <!-- Venue Name + Router Link -->
+                                    <router-link class="text-dark text-decoration-none" :to="{ path: '/profile/venue/' + venue._id['$oid'] }">
+                                        <h4 class="fw-bold my-1">{{ venue['venueName'] }}</h4>
+                                    </router-link>
+                                   
+                                    <!-- Venue Address -->
+                                    <p class="m-0 mobile-fs-7">
+                                        <b> Address: </b>
+                                        {{ venue['address'] }}
+                                    </p>
+                                </div>
+
+                                </div>
                         </div>
                     </div>
                 </div>

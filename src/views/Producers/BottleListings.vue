@@ -624,123 +624,14 @@
                                             <p class='text-danger text-start mb-2 fw-bold'>Please select a language</p>
                                         </div>
                                     </div>
-                                    <!-- add photo -->
-                                    <div class="col-6 col-md-12 justify-content-start">
-                                        <p class = 'text-start mb-2 fw-bold'>Add Photo</p>
-                                        <div class="row">
-                                            <div class="col-3">
-                                                <label for="reviewPhoto" >
-                                                    <div class="mobile-review-svg-button">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="M20.4 14.5L16 10 4 20"></path> <circle cx="19" cy="19" r="3" fill="black"></circle><line x1="18" y1="19" x2="20" y2="19" stroke="white" stroke-width="1"></line><line x1="19" y1="18" x2="19" y2="20" stroke="white" stroke-width="1"></line></svg>
-                                                    </div>
-                                                </label>
-                                            </div>
-                                            <div class="col-9">
-                                                <input style="margin-top:5%;" class="form-control mb-2" @change="onFileChange" type="file" id="reviewPhoto">
-                                            </div>
-                                        </div>
-                                        <div class = "row">
-                                            <img :src="image64 ? 'data:image/jpeg;base64,' + image64 : 'none'" alt="" id="output" class="py-2 review-preview-photo">
-                                            <!-- <img :src="image64 ? image64 : 'none'" alt="" id="output" class="py-2 review-preview-photo"> -->
-                                        </div>
-                                        <div class="row justify-content-start mb-2">
-                                            <div class="col-md-4 text-start">
-                                                <button v-if="image64!==null" class="btn tertiary-square-btn mb-1" @click="clearPhoto">Clear Photo</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
 
-                                <!-- row 2: tag friends, add photo -->
-                                <div class="row mobile-view-hide">
-                                    <!-- language-->
-                                    <div class="col-6 col-md-12 justify-content-start">
-                                        <p class = 'text-start mb-2 fw-bold'>Tag Friends</p>
-                                        <div class="form-group mb-2">
-                                            <div v-if="showFriendTagList.length > 0" class="form-label pb-2 text-start"> 
-                                            Tagged Friends: 
-                                                <div class="row">
-                                                    <div class="col">
-                                                        <div class="d-flex flex-wrap gap-2">
-                                                            <div v-for="friend in showFriendTagList" v-bind:key="friend.id" class="mb-0 pb-0">
-                                                                <button @click='removeFriendTag(friend)' class="btn secondary-square-btn"> {{ friend.username }} </button> 
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <!-- <input type="text" class="form-control" id="friendTag"> -->
-                                            <input list="followList" v-model="friendTag" class="form-control" id="friendTag" placeholder="Enter username" v-on:keyup="updateFriendTag">
-                                            <datalist id="followList">
-                                                <option v-for="user in followList" :key="user._id.$oid" :value="user.username">
-                                                    {{user.username}}
-                                                </option>
-                                            </datalist>  
-                                            <div class="text-start mt-1">                                            
-                                                <button v-if="selectedFriendTag!==null" class="btn tertiary-square-btn mt-1" @click="tagSpecificFriend">Tag This Friend</button>
-                                            </div>  
-                                            <p v-show="friendTag.length > 0" class="text-start mb-1 text-danger" id="friendTagError"></p>
-                                        </div>
-                                    </div>
-                                                                        <!-- select location -->
-                                                                        <div class="col-6 col-md-12 justify-content-start form-group mb-3">
-                                        <p class="text-start mb-1 fw-bold me-1" style="display: flex; align-items: center;">Location 
-                                            &nbsp;
-                                            <!-- <a @click="changeLocationInput('find')" :class="{ 'false-clickable-text': !isActive['find'], 'true-clickable-text': isActive['find'] }">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-                                                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
-                                                </svg>
-                                                Find existing
-                                            </a> 
-                                            &nbsp;|&nbsp;
-                                            <a @click="changeLocationInput('add')" :class="{ 'false-clickable-text': !isActive['add'], 'true-clickable-text': isActive['add']  }">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
-                                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                                                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
-                                                </svg>
-                                                Add new
-                                            </a>  -->
-                                        </p>     
-                                        <!-- Link filteredOptions to venues location -->
-                                        <!-- <div v-if="locationOnWebsite" class="input-group mb-2">
-
-                                            
-                                            <input list="locationOptions" v-model="tagLocation" class="form-control" id="tagLocation" placeholder="Enter Location" v-on:change="updateTagLocation">
-                                            <datalist id="locationOptions">
-                                                <option v-for="location in locationOptions" :key="location.id.$oid" :value="location.name" :label="location.address">
-                                                    {{location.name}}
-                                                </option>
-                                            </datalist>
-
-                                            
-                                            
-                                        </div> -->
-                                        <div class="input-group mb-2">
-                                            <GMapAutocomplete
-                                                placeholder="Search for location"
-                                                @place_changed="setPlace"
-                                                class="form-control"
-                                                ref="autocomplete"
-                                                :value="selectedLocation"
-                                            >
-                                            </GMapAutocomplete>
-                                        </div>
-                                        <div>
-                                            <p v-show="tagLocation.length > 0" class="text-start mb-1 text-danger" id="tagLocationError"></p>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-6 col-md-12 d-flex justify-content-start">
-                                                <button v-if="selectedLocation!==''" class="btn text-start mb-1" style="background-color: #535C72;color: white;" @click="clearLocation">Clear Selection</button>
-                                            </div>
-                                            
-                                        </div>
-                                    </div>
                                 </div>
 
 
-                                <!-- row 4A: mobile add photo, friends, location-->
-                                <div class="row mobile-view-show" >
-                                    <div class="col-4 ">
+
+                                <!-- row 4A: add photo, friends, location-->
+                                <div class="row " >
+                                    <div class="col-3 mobile-col-4">
                                         <input class="form-control mb-2" @change="onFileChange" type="file" id="reviewPhoto" style="display: none;">
                                         <label for="reviewPhoto" >
                                             <div class="mobile-review-svg-button">
@@ -757,11 +648,11 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-8">
+                                    <div class="col-9 mobile-col-8">
                                         
                                         <div class="col-12 justify-content-start">
                                             
-                                            <div class="form-group mb-2">
+                                            <div class="form-group mb-2 mobile-mt-0 mt-3">
                                                 <div v-if="showFriendTagList.length > 0" class="form-label pb-2 text-start"> 
                                                 Tagged Friends: 
                                                     <div class="row">
@@ -1161,7 +1052,7 @@
                                             <span v-if="review.taggedUsers != null && review.taggedUsers.length > 0"> drank with {{ review.taggedUsers.length }} others </span>
 
                                             <!-- user title -->
-                                            <span v-if="checkModFromUserID(review.userID)" class="badge rounded-pill ms-3" style="color: black; background-color: white;">Moderator</span>
+                                            <span v-if="checkModFromUserID(review.userID)" class="badge rounded-pill ms-3 mobile-ms-0 mobile mt-1" style="color: black; background-color: white;">Moderator</span>
                                             
                                             <!-- Insert Edit modal here -->
                                             <div class="mt-2 mobile-mt-1">

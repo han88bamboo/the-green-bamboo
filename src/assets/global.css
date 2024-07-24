@@ -1319,6 +1319,18 @@ button.primary-btn:hover{
     .mobile-me-3{
         margin-right:1rem !important;
     }
+    .mobile-ms-0{
+        margin-left:0px !important;
+    }
+    .mobile-ms-0_5{
+        margin-left:0.125rem !important;
+    }
+    .mobile-ms-1{
+        margin-left:0.25rem !important;
+    }
+    .mobile-ms-2{
+        margin-left:0.5rem !important;
+    }
 }
 @media (max-width: 991px){
     .mobile-mt-0{
@@ -1615,3 +1627,16 @@ button.primary-btn:hover{
     opacity: 1;
     transition-delay: 0s;
 }
+
+@media (max-width: 991px){
+    .primary-btn-outline-less-round.drinklist {
+        color: black;
+        padding: 0; /* Remove padding */
+        background-color: transparent; /* Make background transparent */
+        border: none; /* Remove border */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+}
+}
+
