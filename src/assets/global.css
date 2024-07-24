@@ -636,6 +636,39 @@ body {
     background-color: whitesmoke
 }
 
+@media (max-width: 991px){
+    .rounded-circle {
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        color: whitesmoke;
+        background-color: #DD9E54;
+    }
+
+    .rounded-circle-no-results {
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        color: whitesmoke;
+        background-color: #747D92;
+    }
+
+    .rounded-circle-no-bg {
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        color: whitesmoke;
+    }
+
+    .rounded-circle-white-bg {
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        color: whitesmoke;
+        background-color: whitesmoke
+    }
+}
+
 .qa-card-body {
     background-color:whitesmoke;
     border: 1px solid #535C72;
@@ -824,7 +857,7 @@ button.primary-btn:hover{
 }
 
 .rounded-pill{
-    font-size: 19px;
+    font-size: 17px;
 }
 
 .rounded-pill-user-profile{

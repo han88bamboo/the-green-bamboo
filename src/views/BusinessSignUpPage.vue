@@ -213,6 +213,7 @@
                                     <h6> <b> Monthly plan </b> </h6>
                                     <p class="m-0"> $65 / Month </p> 
                                     <small class="fst-italic p-0"> Billed monthly </small>
+                                    <h6 class="mt-1" style="color: green;"><b>Cancel anytime.</b></h6>
                                 </span>
                             </button>
                         </div>
@@ -224,11 +225,12 @@
                                                                                                                                 borderWidth:'3px' }">
                                 <div class="row">
                                     <div class="col-7"> <h6> <b> Yearly plan </b> </h6> </div> 
-                                    <div class="rounded col-5 text-center" style="background-color: green; color: white;">Save 23%</div>
+                                    
                                 </div>
                                 <span>
                                     <p class="m-0"> $50 / Month </p> 
                                     <small class="fst-italic p-0"> $600 Billed annually </small>
+                                    <h6 class="mt-2" style="color: green;"><b>Save 23%!</b></h6>
                                 </span>
                             
                             </button>
@@ -242,6 +244,7 @@
                                     <h6> <b> Monthly plan </b> </h6>
                                     <p class="m-0"> $65 / Month </p> 
                                     <small class="fst-italic p-0"> Billed monthly </small>
+                                    <h6 class="mt-2" style="color: green;"><b>Cancel anytime.</b></h6>
                                 </span>
                             </button>
                             <button class="btn rounded p-3 text-start mx-0 mb-3 col-6" @click="toggleYearlyPricing" :style="{ backgroundColor: selectedYearlyPricing ? '#DD9E54' :'white', 
@@ -250,11 +253,12 @@
                                                                                                                                 borderWidth:'3px' }">
                                 <div class="row">
                                     <div class="col-7"> <h6> <b> Yearly plan </b> </h6> </div> 
-                                    <div class="rounded col-5 text-center" style="background-color: green; color: white;">Save 23%</div>
+                                    
                                 </div>
                                 <span>
                                     <p class="m-0"> $50 / Month </p> 
                                     <small class="fst-italic p-0"> $600 Billed annually </small>
+                                    <h5 class="mt-2" style="color: green;"><b>Save 23%!</b></h5>
                                 </span>
                             
                             </button>

@@ -619,6 +619,7 @@
                                     <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')"  class="mobile-view-hide " href="#" style="color: #535C72;" data-bs-toggle="modal" :data-bs-target="`#deleteListModal${index}`">Delete List</a></b>
                                     <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')" class="mobile-view-show me-2" href="#" style="color: #535C72;" data-bs-toggle="modal" :data-bs-target="`#editListModal${index}`" @click="resetEditList(name, bookmarkList.listDesc)">Edit</a></b>
                                     <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')" class="mobile-view-show" href="#" style="color: #535C72;" data-bs-toggle="modal" :data-bs-target="`#deleteListModal${index}`">Delete</a></b>
+                                    
                                 </div>
                             </div>
 
@@ -792,7 +793,7 @@
                         <!-- list details -->
                         <div class="row mb-3" v-for="(listingID, index) in displayUser.drinkLists[currentList].listItems" :key="index">
                             <div class="col-10" style="display: flex">
-                                <img :src=" 'data:image/png;base64,' + ( getListingFromID(listingID[1].$oid).photo || defaultDrinkImage )" alt="" class="bottle-img me-3">
+                                <img :src=" 'data:image/png;base64,' + ( getListingFromID(listingID[1].$oid).photo || defaultDrinkImage )" alt="" style="width:150px;" class="bottle-img me-3">
                                 <div style="min-height: 150px; display: flex; flex-direction: column;">
                                     <a :href="'/listing/view/' + listingID[1].$oid" style="text-decoration: none; color: inherit;">
                                         <h4>{{ getListingFromID(listingID[1].$oid).listingName }}</h4>

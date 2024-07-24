@@ -36,7 +36,7 @@
                     
                         <!-- Back Button -->
                         <div class="d-grid col-2">
-                            <button class="btn primary-light-dropdown btn-sm" @click="()=>{this.$router.go(-1)}">
+                            <button class="btn primary-light-dropdown-homepage btn-sm" @click="()=>{this.$router.go(-1)}">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-left-circle" viewBox="0 0 16 16" v-on:click="previousListing">
                                     <path fill-rule="evenodd" d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8m15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-4.5-.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5z"/>
                                 </svg>
@@ -61,7 +61,7 @@
                     </div>
 
                     <!-- Request / Create Listing Link (font size reduced at smaller screen width) -->
-                    <div class="row">
+                    <div class="row mobile-view-hide">
                         <router-link class="col-12 text-decoration-none" v-if="role == 'producer'" :to="{ path: '/Producer/Producer-Create-Listing/' }">
                             <p class="d-none d-md-block fs-5 fst-italic text-start">Don't see what you're looking for? Create a new listing here!</p>
                             <p class="d-md-none fs-6 fst-italic text-start">Don't see what you're looking for? Create a new listing here!</p>
@@ -82,14 +82,32 @@
 
                     <div class="row d-flex justify-content-center">
 
+
+
+                        <div class="col-8 mobile-view-show mobile-pe-0">
+                            <router-link class=" text-decoration-none" v-if="role == 'producer'" :to="{ path: '/Producer/Producer-Create-Listing/' }">
+                                <p class="d-none d-md-block fs-5 fst-italic text-start">Don't see what you're looking for? Create a new listing here!</p>
+                                <p class="d-md-none fs-6 fst-italic text-start">Don't see what you're looking for? Create a new listing here!</p>
+                            </router-link>
+                            <router-link class="text-decoration-none" v-if="role == 'user'" :to="{ path: '/request/new/' }">
+                                <p class="d-none d-md-block fs-5 fst-italic text-start">Don't see what you're looking for? Request a new listing here!</p>
+                                <p class="d-md-none fs-6 fst-italic text-start">Don't see what you're looking for? Request a new listing here!</p>
+                            </router-link>
+                            <router-link class="text-decoration-none" v-if="role != 'producer' && role != 'user'" :to="{ path: '/login' }">
+                                <p class="d-none d-md-block fs-5 fst-italic text-start">Don't see what you're looking for? Login to request a new listing!</p>
+                                <p class="d-md-none fs-6 fst-italic text-start">Don't see what you're looking for? Login to request a new listing!</p>
+                            </router-link>
+                        </div>
+
+
                         <!-- Filter Options -->
-                        <div v-if="tabActive == 'listings'" class="col-xxl-6 col-md-12 col-sm-5 col-12 mb-xxl-0 mb-md-2 mb-sm-0 mb-2 dropdown">
+                        <div v-if="tabActive == 'listings'" class="mobile-col-2 mobile-pe-0 col-xxl-6 col-md-12 col-sm-5 col-12 mb-xxl-0 mb-md-2 mb-sm-0 mb-2 dropdown">
                             <div class="d-grid gap-2">
-                                <button class="btn primary-light-dropdown btn-lg dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="white-space: nowrap; overflow:hidden; text-overflow: ellipsis; min-width: 200px;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-funnel" viewBox="0 0 16 16">
+                                <button class="btn primary-light-dropdown-homepage btn-lg dropdown-toggle mobile-view-remove-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="white-space: nowrap; overflow:hidden; text-overflow: ellipsis;/* min-width: 200px;*/">
+                                    <svg xmlns="http://www.w3.org/2000/svg" style="/*height:25px;width:25px;*/" fill="currentColor" class="bi bi-funnel funnel-svg-dimensions" viewBox="0 0 16 16">
                                         <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2z"/>
                                     </svg>
-                                    <span style="margin-left: 5px;">Filter: {{ searchFilter['drinkType'] ? searchFilter['drinkType'] : 'Drink Type' }}</span>
+                                    <span class="mobile-view-hide" style="margin-left: 5px;">Filter: {{ searchFilter['drinkType'] ? searchFilter['drinkType'] : 'Drink Type' }}</span>
                                 </button>
                                 <ul class="dropdown-menu">
                                     <li><span class="dropdown-item" @click="filterByDrinkType('')">Clear Filter</span></li>
@@ -102,13 +120,13 @@
                         </div>
 
                         <!-- Sort Options -->
-                        <div class="col-xxl-6 col-md-12 col-sm-5 col-12 mb-xxl-0 mb-md-2 mb-sm-0 mb-2 dropdown">
+                        <div class="mobile-col-2 mobile-ps-0 col-xxl-6 col-md-12 col-sm-5 col-12 mb-xxl-0 mb-md-2 mb-sm-0 mb-2 dropdown">
                             <div class="d-grid gap-2">
-                                <button class="btn primary-light-dropdown dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="white-space: nowrap; overflow:hidden; text-overflow: ellipsis; min-width: 200px;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-sort-down" viewBox="0 0 16 16">
+                                <button class="btn primary-light-dropdown-homepage dropdown-toggle mobile-view-remove-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="white-space: nowrap; overflow:hidden; text-overflow: ellipsis;/* min-width: 200px;*/">
+                                    <svg xmlns="http://www.w3.org/2000/svg" style="/*height:25px;width:25px;*/"  fill="currentColor" class="bi bi-sort-down funnel-svg-dimensions" viewBox="0 0 16 16">
                                         <path d="M3.5 2.5a.5.5 0 0 0-1 0v8.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L3.5 11.293zm3.5 1a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5M7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1z"/>
                                     </svg>
-                                    Sort: {{ sortSelection.category != '' ? sortSelection.category : 'by Category' }}
+                                    <span class="mobile-view-hide" style="margin-left: 5px;">Sort: {{ sortSelection.category != '' ? sortSelection.category : 'by Category' }}</span>
                                 </button>
                                 <ul class="dropdown-menu">
                                     <li><span class="dropdown-item" @click="sortByCategory('')"> Clear Sort </span></li>
@@ -137,40 +155,40 @@
             </p> -->
 
             <!-- navtab to toggle between search results -->
-            <nav class="pb-0">
+            <nav class="pb-0 mobile-px-0">
                 <div class="nav nav-tabs justify-content-center" id="nav-tab" role="tablist">
                     <!-- Listings -->
-                    <button class="nav-link active col-lg-3 col-12" id="nav-listings-tab" data-bs-toggle="tab" data-bs-target="#nav-listings" type="button" role="tab" aria-controls="nav-listings" aria-selected="true" @click="changeActiveTabStatus('listings')"> 
+                    <button class="nav-link active col-lg-3 mobile-col-4 xcol-12 px-1" id="nav-listings-tab" data-bs-toggle="tab" data-bs-target="#nav-listings" type="button" role="tab" aria-controls="nav-listings" aria-selected="true" @click="changeActiveTabStatus('listings')"> 
                         <span class="d-flex align-items-center justify-content-center mb-0">
-                            Listings
-                            <span v-if="resultListings.length > 0" class="rounded-circle mx-3 d-flex align-items-center justify-content-center"> 
+                            Listings &nbsp;
+                            <span v-if="resultListings.length > 0" class="rounded-circle mobile-mx-0 mx-3 d-flex align-items-center justify-content-center"> 
                                 <p class="m-0">{{ resultListings.length }}</p>
                             </span>
-                            <span v-else class="rounded-circle-no-results mx-3 d-flex align-items-center justify-content-center"> 
+                            <span v-else class="rounded-circle-no-results mobile-mx-0 mx-3 d-flex align-items-center justify-content-center"> 
                                 <p class="m-0">{{ resultListings.length }}</p>
                             </span> 
                         </span>
                     </button>
                     <!-- Producers -->
-                    <button class="nav-link col-lg-3 col-12" id="nav-producers-tab" data-bs-toggle="tab" data-bs-target="#nav-producers" type="button" role="tab" aria-controls="nav-producers" aria-selected="false" @click="changeActiveTabStatus('producers')">
+                    <button class="nav-link col-lg-3 mobile-col-4 xcol-12 px-1" id="nav-producers-tab" data-bs-toggle="tab" data-bs-target="#nav-producers" type="button" role="tab" aria-controls="nav-producers" aria-selected="false" @click="changeActiveTabStatus('producers')">
                         <span class="d-flex align-items-center justify-content-center mb-0">
-                            Producers
-                            <span v-if="producerListings.length > 0" class="rounded-circle mx-3 d-flex align-items-center justify-content-center"> 
+                            Producers &nbsp;
+                            <span v-if="producerListings.length > 0" class="rounded-circle mx-3 mobile-mx-0 d-flex align-items-center justify-content-center"> 
                                 <p class="m-0">{{ producerListings.length }}</p>
                             </span>
-                            <span v-else class="rounded-circle-no-results mx-3 d-flex align-items-center justify-content-center"> 
+                            <span v-else class="rounded-circle-no-results mx-3 mobile-mx-0  d-flex align-items-center justify-content-center"> 
                                 <p class="m-0">{{ producerListings.length }}</p>
                             </span>
                         </span>
                     </button>
                     <!-- Venues -->
-                    <button class="nav-link col-lg-3 col-12" id="nav-venues-tab" data-bs-toggle="tab" data-bs-target="#nav-venues" type="button" role="tab" aria-controls="nav-venues" aria-selected="false" @click="changeActiveTabStatus('venues')">
+                    <button class="nav-link col-lg-3 mobile-col-4 xcol-12 px-1" id="nav-venues-tab" data-bs-toggle="tab" data-bs-target="#nav-venues" type="button" role="tab" aria-controls="nav-venues" aria-selected="false" @click="changeActiveTabStatus('venues')">
                         <span class="d-flex align-items-center justify-content-center mb-0">
-                            Venues
-                            <span v-if="venueListings.length > 0" class="rounded-circle mx-3 d-flex align-items-center justify-content-center"> 
+                            Venues &nbsp;
+                            <span v-if="venueListings.length > 0" class="rounded-circle mx-3 mobile-mx-0 d-flex align-items-center justify-content-center"> 
                                 <p class="m-0">{{ venueListings.length }}</p>
                             </span>
-                            <span v-else class="rounded-circle-no-results mx-3 d-flex align-items-center justify-content-center"> 
+                            <span v-else class="rounded-circle-no-results mx-3 mobile-mx-0 d-flex align-items-center justify-content-center"> 
                                 <p class="m-0">{{ venueListings.length }}</p>
                             </span> 
                         </span>
@@ -183,30 +201,52 @@
 
                 <!-- NAVTAB 1: LISTINGS -->
                 <div class="tab-pane fade show active" id="nav-listings" role="tabpanel" aria-labelledby="nav-listings-tab">
-                    <p class="fw-bold fst-italic fs-5 m-0 py-2" v-if="resultListings.length > 0">Viewing: {{ resultListings.length }} Listing Search Results</p>
+                    <p class="fw-bold fst-italic fs-5 m-0 py-2 mobile-view-hide" v-if="resultListings.length > 0">Viewing: {{ resultListings.length }} Listing Search Results</p>
                     <p class="fw-bold fst-italic fs-5 m-0 py-2" v-else>No Listing Results Found!</p>
                     
                     <div class="container text-start">
                         <div class="row" v-for="resultListing in resultListings" :key="resultListing._id">
                             <hr>
                             <!-- Image -->
-                            <div class="col-lg-3 col-12 image-container-256 mb-3">
+                            <div class="col-lg-3 col-12 image-container mb-3 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
                                 <router-link :to="{ path: '/listing/view/' + resultListing._id['$oid'] }">
-                                    <img v-if="resultListing['photo']" :src="'data:image/png;base64,' + resultListing['photo']" class="img-border img-fluid object-fit-cover" style="width:256px; height:256px">
+                                    <img v-if="resultListing['photo']" :src="'data:image/png;base64,' + resultListing['photo']" class="img-border img-fluid object-fit-cover" style="/*width:256px; height:256px*/">
                                     <!-- <img v-if="resultListing['photo']" :src="resultListing['photo']" class="img-border img-fluid object-fit-cover" style="width:256px; height:256px"> -->
-                                    <img v-else src="../../Images/Drinks/Placeholder.png" class="img-border img-fluid object-fit-cover" style="width:256px; height:256px"> 
+                                    <img v-else src="../../Images/Drinks/Placeholder.png" class=" img-border img-fluid object-fit-cover" style="/*width:256px; height:256px*/"> 
                                 </router-link>
-                                <BookmarkIcon 
+                                <!--<BookmarkIcon 
                                     v-if="user" 
                                     :user="user" 
                                     :listing="resultListing" 
                                     :overlay="true"
                                     size="30"
-                                    @icon-clicked="handleIconClick" />
+                                    @icon-clicked="handleIconClick" />-->
+                            </div>
+
+                            <div class="col-lg-8 col-12 ps-3 mobile-col-7 mobile-pe-0 mobile-ps-1 mobile-view-show">
+                                <!-- Listing Name + Router Link -->
+                                <router-link class="xtext-dark xtext-decoration-none" :to="{ path: '/listing/view/' + resultListing._id['$oid'] }">
+                                    <p class="default-text fs-5 mobile-fs-6" style="margin-bottom: 0.3rem;"><b><u>{{ resultListing['listingName'] }}</u></b></p>
+                                </router-link>
+                                <p class="text-start mb-1 mobile-fs-7"> 
+                                    {{ resultListing["bottler"] }} | {{ resultListing["drinkType"] }} | {{ resultListing["typeCategory"] }} | {{ resultListing["abv"] }} ABV | {{ resultListing["originCountry"] }} 
+                                </p>
+                            </div>
+
+                            <div class="mobile-col-2 mobile-pe-0 mobile-ps-1 mobile-view-show">
+                                <div class="d-flex flex-column align-items-center ps-lg-3" >
+                                    <p class="fs-3 fw-bold rating-text text-end d-flex align-items-center mobile-fs-5" style="margin-bottom: 0.1rem;">    
+                                        {{ getRatings(resultListing) }}
+                                    </p>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16">
+                                        <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                                    </svg>
+                                    
+                                </div>
                             </div>
 
                             <!-- Details -->
-                            <div class="row col-lg-9 col-12">
+                            <div class="row col-lg-9 col-12 mobile-view-hide">
 
                                 <div class="col-lg-8 col-12">
                                     <!-- Listing Name + Router Link -->
@@ -227,14 +267,10 @@
                                         {{ resultListing['originCountry'] }}
                                     </p>
                                     <!-- Added Date -->
-                                    <p class="m-0 mb-3">
+                                    <p class="m-0 xmb-3">
                                         <b> Date Added: </b>
                                         {{ formatDate(resultListing['addedDate'].$date) }}
                                     </p>
-
-                                </div>
-
-                                <div class="col-lg-4 col-12 text-xl-end text-start" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
                                     <!-- Drink Type / Type Category -->
                                     <p class="m-0">
                                         <b> Type: </b>
@@ -251,6 +287,11 @@
                                             <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
                                         </svg>
                                     </p>
+                                </div>
+
+                                <div class="col-lg-4 col-12 text-xl-end text-start" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
+                                    
+                                    
                                     <!-- Buttons -->
                                     <div class="row py-1">
                                         <!-- have tried button -->
@@ -286,22 +327,34 @@
 
                 <!-- NAVTAB 2: PRODUCERS -->
                 <div class="tab-pane fade show" id="nav-producers" role="tabpanel" aria-labelledby="nav-producers-tab">
-                    <p class="fw-bold fst-italic fs-5 m-0 py-2" v-if="producerListings.length > 0">Viewing: {{ producerListings.length }} Producer Search Results</p>
+                    <p class="fw-bold fst-italic fs-5 m-0 py-2 mobile-view-hide" v-if="producerListings.length > 0">Viewing: {{ producerListings.length }} Producer Search Results</p>
                     <p class="fw-bold fst-italic fs-5 m-0 py-2" v-else>No Producer Results Found!</p>
                     
                     <div class="container text-start">
                         <div class="row" v-for="producer in producerListings" :key="producer._id">
                             <hr>
                             <!-- Image -->
-                            <div class="col-lg-3 col-12 image-container-256 mb-3">
+                            <div class="col-lg-3 col-12 image-container mb-3 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
                                 <router-link :to="{ path: '/profile/producer/' + producer._id['$oid'] }">
-                                    <img v-if="producer['photo']" :src="'data:image/png;base64,' + producer['photo']" class="img-border img-fluid object-fit-cover" style="width:256px; height:256px">
-                                    <img v-else src="../../Images/Drinks/Placeholder.png" class="img-border img-fluid object-fit-cover" style="width:256px; height:256px"> 
+                                    <img v-if="producer['photo']" :src="'data:image/png;base64,' + producer['photo']" class="img-border img-fluid object-fit-cover" style="/*width:256px; height:256px*/">
+                                    <img v-else src="../../Images/Drinks/Placeholder.png" class="img-border img-fluid object-fit-cover" style="/*width:256px; height:256px*/"> 
                                 </router-link>
                             </div>
+                            <div class=" ps-3 mobile-col-9 mobile-pe-0 mobile-ps-1 mobile-view-show">
+                                <!-- Producer Name + Router Link -->
+                                <router-link class="xtext-dark xtext-decoration-none" :to="{ path: '/profile/producer/' + producer._id['$oid'] }">
+                                    <p class="default-text fs-5 mobile-fs-6" style="margin-bottom: 0.3rem;"><b><u>{{ producer['producerName'] }}</u></b></p>
+                                </router-link>
+                                <p v-if="producer.producerDesc.length > 144" class="mobile-fs-7"  >
+                                    {{ producer["producerDesc"].slice(0, 144) + (producer["producerDesc"].length > 144 ? '...' : '') }}
+                                </p>
+                                <p v-else class="mobile-fs-7" >
+                                    {{ producer["producerDesc"] }}
+                                </p>
 
+                            </div>
                             <!-- Details -->
-                            <div class="row col-lg-9 col-12">
+                            <div class="row col-lg-9 col-12 mobile-view-hide">
 
                                 <div class="col-lg-8 col-12">
                                     <!-- Producer Name + Router Link -->
@@ -321,7 +374,6 @@
                                         </div>
                                     </div>
                                 </div>
-
                                 <div class="col-lg-4 col-12 text-xl-end text-start" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
                                     <!-- Rating -->
                                     <p class="m-0">
@@ -340,9 +392,7 @@
                                             <button type="button" class="btn primary-btn-less-round"> Unverified </button>
                                         </div>
                                     </div>
-
                                 </div>
-
                                 <!-- Description -->
                                 <p class="fst-italic scrollable-long mt-3">{{ producer["producerDesc"] }}</p>
 
@@ -355,14 +405,14 @@
 
                 <!-- NAVTAB 3: VENUES -->
                 <div class="tab-pane fade show" id="nav-venues" role="tabpanel" aria-labelledby="nav-venues-tab">
-                    <p class="fw-bold fst-italic fs-5 m-0 py-2" v-if="venueListings.length > 0">Viewing: {{ venueListings.length }} Venue Search Results</p>
+                    <p class="fw-bold fst-italic fs-5 m-0 py-2 mobile-view-hide" v-if="venueListings.length > 0">Viewing: {{ venueListings.length }} Venue Search Results</p>
                     <p class="fw-bold fst-italic fs-5 m-0 py-2" v-else>No Venue Results Found!</p>
                     
                     <div class="container text-start">
                         <div class="row" v-for="venue in venueListings" :key="venue._id">
                             <hr>
                             <!-- Image -->
-                            <div class="col-lg-3 col-12 image-container-256 mb-3">
+                            <div class="col-lg-3 col-12 image-container mb-3 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
                                 <router-link :to="{ path: '/profile/venue/' + venue._id['$oid'] }">
                                     <img v-if="venue['photo']" :src="'data:image/png;base64,' + venue['photo']" class="img-border img-fluid object-fit-cover" style="width:256px; height:256px">
                                     <img v-else src="../../Images/Drinks/Placeholder.png" class="img-border img-fluid object-fit-cover" style="width:256px; height:256px"> 
