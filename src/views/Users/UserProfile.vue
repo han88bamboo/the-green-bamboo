@@ -38,6 +38,7 @@
                         <!-- profile picture -->
                         <div class="col-4 text-start pe-0">
                             <img :src=" 'data:image/jpeg;base64,' + (displayUser.photo || defaultProfilePhoto)" alt="" class="rounded-circle-no-bg border border-dark profile-img" style="height:auto; width:100%; ">
+                            <!-- <img :src="(displayUser.photo || defaultProfilePhoto)" alt="" class="rounded-circle-no-bg border border-dark profile-img" style="height:auto; width:100%; "> -->
                         </div>                        
                         <!-- user name -->
                         <div class="col-8">
@@ -267,6 +268,7 @@
                                         </div>
                                         <div class="col-8">
                                             <img :src="selectedImage || 'data:image/jpeg;base64,' + (user.photo || defaultProfilePhoto)" alt="" class="rounded-circle-no-bg border border-dark profile-img" id="output" style="height:auto; width:100%; ">
+                                            <!-- <img :src="selectedImage || (user.photo || defaultProfilePhoto)" alt="" class="rounded-circle-no-bg border border-dark profile-img" id="output" style="height:auto; width:100%; "> -->
                                         </div>
                                     </div>
                                     <div class="row mb-3">
@@ -324,6 +326,7 @@
                                                 <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
                                             </svg>
                                             <img v-else :src="'data:image/png;base64,'+ photo" style="height:auto; width:100%;" class="rounded-circle-no-bg border border-dark profile-img" >
+                                            <!-- <img v-else :src="photo" style="height:auto; width:100%;" class="rounded-circle-no-bg border border-dark profile-img" > -->
                                         </div>
                                         <div style="max-width:170px;" class="px-0">
                                             <button class="btn btn-warning hover-button p-1" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button> 
@@ -444,6 +447,8 @@
                                     <!-- image of actual badge  style="width: 100px; height: 100px;"  -->
                                     <img :src="'data:image/png;base64,'+ (drinkTypeDetails.badgePhoto || defaultProfilePhoto)" 
                                         alt="" class="rounded-circle-white-bg border border-dark badge-img">
+                                    <!-- <img :src="(drinkTypeDetails.badgePhoto || defaultProfilePhoto)" 
+                                        alt="" class="rounded-circle-white-bg border border-dark badge-img"> -->
                                     <!-- badge description -->
                                     <div class="pt-1" style="line-height: 1;"> 
                                         <small> 
@@ -468,6 +473,8 @@
                                     <!-- image of actual badge style="width: 100px; height: 100px;" -->
                                     <img :src="'data:image/png;base64,'+ (getBadgeInfo(badge).badgePhoto)" 
                                         alt="" class="rounded-circle-white-bg border border-dark badge-img">
+                                    <!-- <img :src="(getBadgeInfo(badge).badgePhoto)" 
+                                        alt="" class="rounded-circle-white-bg border border-dark badge-img"> -->
                                     <!-- badge description -->
                                     <p class="pt-1" style="line-height: 1;"> 
                                         <small> 
@@ -516,7 +523,8 @@
                             <div v-for="(review, index) in recentReviews.slice(0, 5)" :key="index">  
                                 <div style="display: flex" class="row">
                                     <div class="col-3 mobile-col-3 mobile-pe-0">
-                                        <img :src="review.photo ? 'data:image/png;base64,' + review.photo : defaultDrinkImage" alt="" class="rounded bottle-img "> <!--me-3-->
+                                        <img :src="'data:image/png;base64,' + (review.photo || defaultDrinkImage)" alt="" class="rounded bottle-img "> <!--me-3-->
+                                        <!-- <img :src="(review.photo || defaultDrinkImage)" alt="" class="rounded bottle-img "> -->
                                         <p class="fs-4 mobile-fs-5 fw-bold rating-text text-center mobile-mb-1" >
                                             {{ review.rating }}
                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-star-fill " viewBox="0 0 16 16">
@@ -611,7 +619,8 @@
                         <!-- display all lists -->
                         <div v-for="(bookmarkList, name, index) in displayUserBookmarks" :key="name" style="display: flex" class="row mb-3">
                             <div class="col-3 mobile-col-4 mobile-pe-0" >
-                                <img :src="photo ? 'data:image/png;base64,' + photo : defaultDrinkImage" alt="" class="bottle-img me-3"> <!-- xyz -->
+                                <img :src=" 'data:image/png;base64,' + ( getListingFromID(bookmarkList.listItems[0][1].$oid).photo || defaultDrinkImage )" alt="" class="bottle-img me-3"> <!-- xyz -->
+                                <!-- <img :src="( getListingFromID(bookmarkList.listItems[0][1].$oid).photo || defaultDrinkImage )" alt="" class="bottle-img me-3"> -->
                             </div>
                             <div  class="col-9 mobile-col-8 mobile-ps-1" > <!-- style="height: 150px; display: flex; flex-direction: column;" -->
                                 <h5 class="mt-1" @click="viewList(name)" style="cursor: pointer"> {{ name }} </h5>
@@ -806,6 +815,7 @@
                         <div class="row mb-3" v-for="(listingID, index) in displayUser.drinkLists[currentList].listItems" :key="index">
                             <div class="col-10 pe-0" style="display: flex">
                                 <img :src=" 'data:image/png;base64,' + ( getListingFromID(listingID[1].$oid).photo || defaultDrinkImage )" alt="" style="width:130px; height:130px;" class="bottle-img me-3">
+                                <!-- <img :src=" ( getListingFromID(listingID[1].$oid).photo || defaultDrinkImage )" alt="" style="width:130px; height:130px;" class="bottle-img me-3"> -->
                                 <div style="min-height: 150px; display: flex; flex-direction: column;">
                                     <a :href="'/listing/view/' + listingID[1].$oid" style="text-decoration: none; color: inherit;">
                                         <h4>{{ getListingFromID(listingID[1].$oid).listingName }}</h4>
