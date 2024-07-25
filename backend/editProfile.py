@@ -16,9 +16,9 @@ import pytz
 
 from gridfs import GridFS
 import os
+import s3Images
 
 from dotenv import load_dotenv
-import os
 
 app = Flask(__name__)
 CORS(app)  # Allow all requests
@@ -41,7 +41,12 @@ def editDetails():
     userID = data['userID']
     # if data contains image64
     if 'image64' in data:
-        image64 = data['image64']
+        existingUser = db.users.find_one({"_id": ObjectId(userID)})
+        if existingUser['photo']:
+            s3Images.deleteImageFromS3(existingUser['photo'])
+        image64 = s3Images.uploadBase64ImageToS3(data['image64'])
+        # Upload to S3 by calling function, rmb url
+
     drinkChoice = data['drinkChoice']
 
     try: 

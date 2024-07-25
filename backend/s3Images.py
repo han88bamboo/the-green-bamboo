@@ -9,7 +9,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def uploadBase64ImageToS3(base64_string, bucket_name, region='us-east-1'):
+def uploadBase64ImageToS3(base64_string):
+    bucket_name = 'drinkximages'
+    region='us-east-1'
     # Decode the base64 string
     credentials = { 
         'aws_access_key_id': os.getenv('AWS_ACCESS_KEY'),
@@ -37,13 +39,16 @@ def uploadBase64ImageToS3(base64_string, bucket_name, region='us-east-1'):
     
 
 
-def deleteImageFromS3(bucket_name, region='us-east-1'):
+def deleteImageFromS3(url):
+    bucket_name = 'drinkximages'
+    region='us-east-1'
     credentials = { 
         'aws_access_key_id': os.getenv('AWS_ACCESS_KEY'),
         'aws_secret_access_key': os.getenv('AWS_SECRET_KEY')
     }
-    # Get the key from the url by stripping https://testbucketdrinkx.s3.amazonaws.com/
-    object_key = 'images/1c186607-f6a5-4004-b1b3-e891b45da03e.jpg'
+    # Get the key from the url by stripping https://testbucketdrinkx.s3.amazonaws.com/xxxx
+    object_key = url[48:]
+    # object_key = 'images/1c186607-f6a5-4004-b1b3-e891b45da03e.jpg'
 
     # Initialize a session using Amazon S3
     s3_client = boto3.client('s3', region_name=region, **credentials)
@@ -55,15 +60,12 @@ def deleteImageFromS3(bucket_name, region='us-east-1'):
         print("Credentials not available")
         return None
 
+
 # Example usage
-bucket_name = 'drinkximages'
-region = 'us-east-1'  # Replace with your S3 bucket region
-
-
 # This is an example base64 string for an image (you should use your actual base64 string)
-# base64_String= ''
-# url = uploadBase64ImageToS3(base64_String, bucket_name, region)
-# isDeleted = deleteImageFromS3(bucket_name, region)
+# base64_String =''
+# url = uploadBase64ImageToS3(base64_String)
+# isDeleted = deleteImageFromS3(bucket_name)
 # if url:
 #     print(f"Image URL: {url}")
 # if isDeleted:

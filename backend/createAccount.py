@@ -15,6 +15,7 @@ from datetime import datetime, timedelta
 import secrets
 
 import data
+import s3Images
 
 from dotenv import load_dotenv
 import os
@@ -56,6 +57,8 @@ def createAccount():
     
     
     # Insert new review into database
+    if rawAccount['photo']:
+        rawAccount['photo'] = s3Images.uploadBase64ImageToS3(rawAccount['photo'])
     newAccount = data.users(**rawAccount)
     try:
         insertResult = db.users.insert_one(data.asdict(newAccount))

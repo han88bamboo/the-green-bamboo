@@ -16,7 +16,7 @@ import os
 from datetime import datetime
 
 from dotenv import load_dotenv
-import os
+import s3Images
 
 from adminFunctions import hash_password
 
@@ -176,6 +176,12 @@ def updateReview(id):
         ), 400
 
     try: 
+        # check if photo url exists, delete and reupload new one, else do nothing
+        if existingReview['photo']:
+            s3Images.deleteImageFromS3(existingReview['photo'])
+        if data['photo']:
+            data['photo'] = s3Images.uploadBase64ImageToS3(data['photo'])
+
         voteReview = db.reviews.update_one({'_id': reviewID}, {'$set': data})
         return jsonify(
             {   

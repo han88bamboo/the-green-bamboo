@@ -12,6 +12,7 @@ from flask_cors import CORS
 from bson.objectid import ObjectId
 
 import data
+import s3Images
 
 from dotenv import load_dotenv
 import os
@@ -49,6 +50,8 @@ def deleteReview(id):
 
     # Delete the review entry with the specified id
     try:
+        if(existingReview['photo']):
+            s3Images.deleteImageFromS3(existingReview['photo'])
         deleteResult = db.reviews.delete_one({"_id": ObjectId(id)})
 
         return jsonify( 

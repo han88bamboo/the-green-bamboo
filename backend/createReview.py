@@ -15,6 +15,7 @@ from bson.objectid import ObjectId
 from datetime import datetime
 
 import data
+import s3Images
 
 from dotenv import load_dotenv
 import os
@@ -169,7 +170,10 @@ def createReviews():
             }
         ), 400
     
-    
+    # Upload image into S3
+    if rawReview['photo']:
+        rawReview['photo'] = s3Images.uploadBase64ImageToS3(rawReview['photo'])
+
     # Insert new review into database
     newReview = data.reviews(**rawReview)
     try:

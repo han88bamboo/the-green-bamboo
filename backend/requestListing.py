@@ -15,6 +15,7 @@ from datetime import datetime
 import pytz
 
 import data
+import s3Images
 
 from dotenv import load_dotenv
 import os
@@ -51,7 +52,8 @@ def requestListing():
                 "message": "Bottle with the same name already exists."
             }
         ), 400
-    
+    if rawRequest['photo']:
+        rawRequest['photo'] = s3Images.uploadBase64ImageToS3(rawRequest['photo'])
     # Insert new request into database
     newRequest = data.requestListings(**rawRequest)
     try:
@@ -100,6 +102,14 @@ def requestListingModify(requestID):
             }
         ), 400
     
+    # find rawrequest, if rawrequest has photo, check if existingrequest has photo, delete if found, else upload image to s3 and save image in db
+    existingRequest = db.requestListings.find_one({"_id": ObjectId(requestID)})
+
+    if existingRequest['photo']:
+        s3Images.deleteImageFromS3(existingRequest['photo'])
+    if rawRequest['photo']:
+        rawRequest['photo'] = s3Images.uploadBase64ImageToS3(rawRequest['photo'])
+
     # Update existing request in database
     updateRequest = data.requestListings(**rawRequest)
     try:
