@@ -19,7 +19,7 @@ import os
 from datetime import datetime
 
 from dotenv import load_dotenv
-import os
+import s3Images
 
 app = Flask(__name__)
 CORS(app)  # Allow all requests
@@ -50,7 +50,13 @@ def editDetails():
     venueName = data['venueName']
     venueDesc = data['venueDesc']
     originLocation = data['originLocation']
-    image64 = data['image64']
+
+    # find existing venue if photo exists, delete photo and reupload, else just upload image
+    existingVenue = db.venues.find_one({"_id": ObjectId(venueID)})
+    if existingVenue['photo']:
+        s3Images.deleteImageFromS3(existingVenue['photo'])
+    if data['image64']:
+        image64 = s3Images.uploadBase64ImageToS3(data['image64']) 
 
     try: 
         update = db.venues.update_one({'_id': ObjectId(venueID)}, 
@@ -92,7 +98,8 @@ def addUpdates():
     venueID = data['venueID']
     date = datetime.strptime(data['date'], "%Y-%m-%dT%H:%M:%S.%fZ")
     text = data['text']
-    image64 = data['image64']
+    # upload image to s3
+    image64 = s3Images.uploadBase64ImageToS3(data['image64'])
 
     try:
         submitReq = db.venues.update_one(
@@ -578,7 +585,17 @@ def editUpdate():
     venueID = data['venueID']
     updateID = data['updateID']
     update = data['update']
-    image64 = data['image64']
+
+
+    # Check updates and see if photo exists, delete from s3 if found, else just upload
+    existingVenue = db.venues.find_one({"_id": ObjectId(venueID)})
+    for update in existingVenue['updates']:
+        if update['_id'] == ObjectId(updateID):
+            if(update['photo']):
+                s3Images.deleteImageFromS3(update['photo'])
+    if(data['image64']):
+        image64 = s3Images.uploadBase64ImageToS3(data['image64']) 
+
 
     try: 
         update = db.venues.update_one(
@@ -621,6 +638,13 @@ def deleteUpdate():
     venueID = data['venueID']
     updateID = data['updateID']
 
+    # Check updates and see if photo exists, delete from s3 if found
+    existingVenue = db.venues.find_one({"_id": ObjectId(venueID)})
+    for update in existingVenue['updates']:
+        if update['_id'] == ObjectId(updateID):
+            if(update['photo']):
+                s3Images.deleteImageFromS3(update['photo'])
+                
     try: 
         deleteUpdate = db.venues.update_one(
             {'_id': ObjectId(venueID)},

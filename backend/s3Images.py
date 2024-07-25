@@ -21,7 +21,7 @@ def uploadBase64ImageToS3(base64_string):
         image_data = base64.b64decode(base64_string)
     except base64.binascii.Error as e:
         print(f"Error decoding base64 string: {e}")
-        return None
+        return base64_string
 
     # Initialize a session using Amazon S3
     s3_client = boto3.client('s3', region_name=region, **credentials)
@@ -35,7 +35,7 @@ def uploadBase64ImageToS3(base64_string):
         return url
     except NoCredentialsError:
         print("Credentials not available")
-        return None
+        return base64_string
     
 
 

@@ -18,6 +18,7 @@ import csv
 import io
 import codecs
 import data
+import s3Images
 
 from urllib.request import urlopen
 import base64
@@ -565,7 +566,10 @@ def importListings():
 
         # Convert the image URL to base64
         base64_str = image_url_to_base64(converted_row[11])
-            
+        
+        # upload image to S3 object and retrieve the URL
+        s3_url = s3Images.uploadBase64ImageToS3(base64_str)
+
         # Create a dictionary representing the row
         row_dict = {
             'listingName': converted_row[0],
@@ -579,7 +583,7 @@ def importListings():
             'reviewLink': converted_row[8],
             'officialDesc': converted_row[9],
             'sourceLink': converted_row[10],
-            'photo': base64_str,
+            'photo': s3_url,
             'allowMod':True,
             'addedDate': datetime.now()
         }

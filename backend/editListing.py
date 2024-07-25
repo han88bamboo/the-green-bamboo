@@ -15,6 +15,7 @@ from bson.errors import InvalidId
 
 import data
 import pip._vendor.requests as requests
+import s3Images
 
 from dotenv import load_dotenv
 import os
@@ -54,11 +55,30 @@ def updateListing(id):
                     "message": "Bottle already exists."
                 }
             ), 410
+        else:
+            # delete the old image and upload new one
+            try:
+                if existingBottle['photo']:
+                    s3Images.deleteImageFromS3(existingBottle['photo'])
+                if updatedListing['photo']:
+                    updatedListing['photo'] = s3Images.uploadBase64ImageToS3(updatedListing['photo'])
+
+            except Exception as e:
+                print(str(e))
+                return jsonify(
+                    {
+                        "code": 450,
+                        "data": {
+                            "_id": id
+                        },
+                        "message": "An error occurred updating the listing."
+                    }
+                ), 450
     
     # Update the listing entry with the specified id
     # updatedBottle = data.listings(**updatedListing)
     # print(updatedBottle)
-    try:
+    try: 
         result = db.listings.update_one(
             {"_id": listing_id},
             # {"$set": data.asdict(updatedBottle)}
@@ -135,6 +155,10 @@ def deleteListing(id):
 
     # Delete the listing entry with the specified id
     try: 
+        # delete image from s3 bucket
+        s3Images.deleteImageFromS3(existingListing['photo'])
+
+        # delete listing
         result = db.listings.delete_one({"_id": ObjectId(id)})
 
         return jsonify(

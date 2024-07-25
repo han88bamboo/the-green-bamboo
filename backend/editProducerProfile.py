@@ -14,6 +14,7 @@ from bson.objectid import ObjectId
 from gridfs import GridFS
 import os
 from datetime import datetime
+import s3Images
 
 from dotenv import load_dotenv
 import os
@@ -41,10 +42,18 @@ def editDetails():
 
     # extract components of the data
     producerID = data['producerID']
-    image64 = data['image64']
     producerName = data['producerName']
     producerDesc = data['producerDesc']
     originCountry = data['originCountry']
+
+    # find existing bottle and check if photo exists, if it does, delete it from s3 bucket, then upload new image to bucket
+    existingProducer = db.producers.find_one({"_id": ObjectId(producerID)})
+    if existingProducer['photo']:
+        s3Images.deleteImageFromS3(existingProducer['photo'])
+    if(data['image64']):
+        image64 = s3Images.uploadBase64ImageToS3(data['image64'])
+
+    
 
     try: 
         update = db.producers.update_one({'_id': ObjectId(producerID)}, 
@@ -87,7 +96,7 @@ def addUpdates():
     producerID = data['producerID']
     date = datetime.strptime(data['date'], "%Y-%m-%dT%H:%M:%S.%fZ")
     text = data['text']
-    image64 = data['image64']
+    image64 = s3Images.uploadBase64ImageToS3(data['image64']) 
 
     try:
         submitReq = db.producers.update_one(
@@ -419,8 +428,41 @@ def editUpdate():
     producerID = data['producerID']
     updateID = data['updateID']
     update = data['update']
-    image64 = data['image64']
 
+    # find existing update and check if photo exists, if it does, delete it from s3 bucket, then upload new image to bucket
+    # Aggregation pipeline bye chatgpt
+    # pipeline = [
+    #     {
+    #         "$match": {
+    #             "_id": ObjectId(producerID),
+    #             "updates._id": ObjectId(updateID)
+    #         }
+    #     },
+    #     {
+    #         "$project": {
+    #             "updates": {
+    #                 "$filter": {
+    #                     "input": "$updates",
+    #                     "as": "update",
+    #                     "cond": { "$eq": ["$$update._id", ObjectId(updateID)] }
+    #                 }
+    #             }
+    #         }
+    #     }
+    # ]
+    # result = list(db.producers.aggregate(pipeline))
+    # if result and 'updates' in result[0] and result[0]['updates']:
+    #     photo = result[0]['updates'][0].get('photo', None)
+    #     s3Images.deleteImageFromS3(photo)
+    
+    existingProducer = db.producers.find_one({"_id": ObjectId(producerID)})
+    for update in existingProducer['updates']:
+        if update['_id'] == ObjectId(updateID):
+            if(update['photo']):
+                s3Images.deleteImageFromS3(update['photo']) 
+    if(data['image64']):
+        image64 = s3Images.uploadBase64ImageToS3(data['image64'])
+    
     try: 
         update = db.producers.update_one(
             {'_id': ObjectId(producerID), 'updates._id': ObjectId(updateID)},
@@ -461,6 +503,13 @@ def deleteUpdate():
     # extract components of the data
     producerID = data['producerID']
     updateID = data['updateID']
+
+    # find update and see if photo exist, if it does delete it from s3 bucket
+    existingProducer = db.producers.find_one({"_id": ObjectId(producerID)})
+    for update in existingProducer['updates']:
+        if update['_id'] == ObjectId(updateID):
+            if(update['photo']):
+                s3Images.deleteImageFromS3(update['photo']) 
 
     try: 
         deleteUpdate = db.producers.update_one(

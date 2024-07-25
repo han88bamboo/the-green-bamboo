@@ -14,6 +14,7 @@ from datetime import datetime
 import pytz
 
 import data
+import s3Images
 
 from dotenv import load_dotenv
 import os
@@ -54,9 +55,12 @@ def createListings():
             }
         ), 400
     
+    # Upload image into s3 bucket and retrieve url
+    rawBottle['photo'] = s3Images.uploadBase64ImageToS3(rawBottle['photo'])
     
     # Insert new listing into database
     newBottle = data.listings(**rawBottle)
+
     try:
         insertResult = db.listings.insert_one(data.asdict(newBottle))
 

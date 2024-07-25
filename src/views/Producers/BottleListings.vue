@@ -49,8 +49,8 @@
                 <div class="row container">
                     <!-- image -->
                     <div class="col-12 col-lg-4 col-xl-3 image-container text-start mobile-col-5">
-                        <img :src=" 'data:image/jpeg;base64,' + ( specified_listing['photo'] || defaultPhoto )" class="producer-bottle-listing-page-image" >
-                        <!-- <img :src=" '( specified_listing['photo'] || defaultPhoto )" class="producer-bottle-listing-page-image" > -->
+                        <!-- <img :src=" 'data:image/jpeg;base64,' + ( specified_listing['photo'] || defaultPhoto )" class="producer-bottle-listing-page-image" > -->
+                        <img :src="( specified_listing['photo'] || defaultPhoto )" class="producer-bottle-listing-page-image" >
                     </div>
                     <!-- details -->
                     <div class="col-12 col-lg-8 col-xl-9 text-start mobile-col-7 mobile-ps-0 mobile-pe-0">

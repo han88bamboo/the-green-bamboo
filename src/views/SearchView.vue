@@ -210,8 +210,7 @@
                             <!-- Image -->
                             <div class="col-lg-3 col-12 image-container mb-3 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
                                 <router-link :to="{ path: '/listing/view/' + resultListing._id['$oid'] }">
-                                    <img v-if="resultListing['photo']" :src="'data:image/png;base64,' + resultListing['photo']" class="img-border img-fluid object-fit-cover" style="/*width:256px; height:256px*/">
-                                    <!-- <img v-if="resultListing['photo']" :src="resultListing['photo']" class="img-border img-fluid object-fit-cover" style="width:256px; height:256px"> -->
+                                    <img v-if="resultListing['photo']" :src="resultListing['photo']" class="img-border img-fluid object-fit-cover" style="width:256px; height:256px">
                                     <img v-else src="../../Images/Drinks/Placeholder.png" class=" img-border img-fluid object-fit-cover" style="/*width:256px; height:256px*/"> 
                                 </router-link>
                                 <!--<BookmarkIcon 
@@ -336,7 +335,7 @@
                             <!-- Image -->
                             <div class="col-lg-3 col-12 image-container mb-3 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
                                 <router-link :to="{ path: '/profile/producer/' + producer._id['$oid'] }">
-                                    <img v-if="producer['photo']" :src="'data:image/png;base64,' + producer['photo']" class="img-border img-fluid object-fit-cover" style="/*width:256px; height:256px*/">
+                                    <img v-if="producer['photo']" :src="producer['photo']" class="img-border img-fluid object-fit-cover" style="/*width:256px; height:256px*/">
                                     <img v-else src="../../Images/Drinks/Placeholder.png" class="img-border img-fluid object-fit-cover" style="/*width:256px; height:256px*/"> 
                                 </router-link>
                             </div>
@@ -414,7 +413,7 @@
                             <!-- Image -->
                             <div class="col-lg-3 col-12 image-container mb-3 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
                                 <router-link :to="{ path: '/profile/venue/' + venue._id['$oid'] }">
-                                    <img v-if="venue['photo']" :src="'data:image/png;base64,' + venue['photo']" class="img-border img-fluid object-fit-cover" style="/*width:256px; height:256px*/">
+                                    <img v-if="venue['photo']" :src="venue['photo']" class="img-border img-fluid object-fit-cover" style="/*width:256px; height:256px*/">
                                     <img v-else src="../../Images/Drinks/Placeholder.png" class="img-border img-fluid object-fit-cover" style="/*width:256px; height:256px*/"> 
                                 </router-link>
                             </div>
