@@ -45,12 +45,12 @@ def editDetails():
     producerName = data['producerName']
     producerDesc = data['producerDesc']
     originCountry = data['originCountry']
-
+    image64 = data.get('image64', '')
     # find existing bottle and check if photo exists, if it does, delete it from s3 bucket, then upload new image to bucket
     existingProducer = db.producers.find_one({"_id": ObjectId(producerID)})
     if existingProducer['photo']:
         s3Images.deleteImageFromS3(existingProducer['photo'])
-    if(data['image64']):
+    if(image64):
         image64 = s3Images.uploadBase64ImageToS3(data['image64'])
 
     
@@ -456,10 +456,10 @@ def editUpdate():
     #     s3Images.deleteImageFromS3(photo)
     
     existingProducer = db.producers.find_one({"_id": ObjectId(producerID)})
-    for update in existingProducer['updates']:
-        if update['_id'] == ObjectId(updateID):
-            if(update['photo']):
-                s3Images.deleteImageFromS3(update['photo']) 
+    for updates in existingProducer['updates']:
+        if updates['_id'] == ObjectId(updateID):
+            if(updates['photo']):
+                s3Images.deleteImageFromS3(updates['photo']) 
     if(data['image64']):
         image64 = s3Images.uploadBase64ImageToS3(data['image64'])
     

@@ -50,12 +50,12 @@ def editDetails():
     venueName = data['venueName']
     venueDesc = data['venueDesc']
     originLocation = data['originLocation']
-
+    image64 = data.get('image64', '')
     # find existing venue if photo exists, delete photo and reupload, else just upload image
     existingVenue = db.venues.find_one({"_id": ObjectId(venueID)})
     if existingVenue['photo']:
         s3Images.deleteImageFromS3(existingVenue['photo'])
-    if data['image64']:
+    if image64:
         image64 = s3Images.uploadBase64ImageToS3(data['image64']) 
 
     try: 
@@ -589,10 +589,10 @@ def editUpdate():
 
     # Check updates and see if photo exists, delete from s3 if found, else just upload
     existingVenue = db.venues.find_one({"_id": ObjectId(venueID)})
-    for update in existingVenue['updates']:
-        if update['_id'] == ObjectId(updateID):
-            if(update['photo']):
-                s3Images.deleteImageFromS3(update['photo'])
+    for updates in existingVenue['updates']:
+        if updates['_id'] == ObjectId(updateID):
+            if(updates['photo']):
+                s3Images.deleteImageFromS3(updates['photo'])
     if(data['image64']):
         image64 = s3Images.uploadBase64ImageToS3(data['image64']) 
 

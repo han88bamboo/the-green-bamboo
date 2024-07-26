@@ -436,9 +436,9 @@
                     "age": "",
                     "brandRelation": "Others",
 
-                    "userID": {"$oid": ""},
-                    "producerID": {"$oid": ""}, // mutually exclusive with producerNew (exactly one of them will be blank)
-                    "listingID": {"$oid": ""},
+                    "userID": "",
+                    "producerID": "", // mutually exclusive with producerNew (exactly one of them will be blank)
+                    "listingID": "",
                     "photo": "",
                 },
             };
@@ -446,9 +446,7 @@
         mounted() {
 
             // Get userID
-            this.form['userID'] = {
-                "$oid": localStorage.getItem('88B_accID')
-            };
+            this.form['userID'] = localStorage.getItem('88B_accID');
 
             this.userType = localStorage.getItem('88B_accType');
             if (this.userType == "producer") {
@@ -481,7 +479,7 @@
                 // If user is a user, check power
                 else if (localStorage.getItem('88B_accType') == "user") {
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getUser/' + this.form['userID']["$oid"]);
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getUser/' + this.form['userID']);
                         if (Array.isArray(response.data) && response.data.length == 0) {
                             throw "User not found!";
                         }
@@ -556,7 +554,7 @@
 
                         // Check if user is a producer
                         if (localStorage.getItem('88B_accType') == "producer") {
-                            this.isProducer = this.producerList.find(producer => producer._id["$oid"] == this.form['userID']["$oid"]).producerName;
+                            this.isProducer = this.producerList.find(producer => producer._id["$oid"] == this.form['userID']).producerName;
                             this.form['producerID'] = this.form['userID'];
                         }
                     } 
@@ -568,9 +566,7 @@
 
                 // Only run when editing listing / proposing edit / reporting duplicate (listingID is present in route params)
                 if (this.formMode == "edit" || this.formMode == "dup") {
-                    this.form["listingID"] = {
-                        "$oid": this.$route.params.listingID
-                    };
+                    this.form["listingID"] = this.$route.params.listingID;
 
                     // Get target listing
                     try {
@@ -605,7 +601,7 @@
 
                             // If user is a producer, check if request producerID is the same as user producerID
                             if (this.isProducer != false) {
-                                if (previousData.producerID["$oid"] != this.form['userID']["$oid"]) {
+                                if (previousData.producerID["$oid"] != this.form['userID']) {
                                     alert("This request is specified for a different producer!");
                                     this.$router.go(-1);
                                 }
@@ -681,7 +677,7 @@
             checkUserPermissions(checkData) {
                 if (this.formType == "req") {
                     // Check if user is the owner of the request
-                    if (checkData.userID["$oid"] != this.form['userID']["$oid"]) {
+                    if (checkData.userID["$oid"] != this.form['userID']) {
                         alert("You can only edit requests that you have submitted!");
                         this.$router.go(-1);
                     }
@@ -704,11 +700,11 @@
                 this.form["listingName"] = previousData.listingName;
                 this.form["reviewLink"] = previousData.reviewLink;
                 this.form["originCountry"] = previousData.originCountry;
-                this.form["producerID"] = previousData.producerID;
+                this.form["producerID"] = previousData.producerID.$oid;
                 this.form["photo"] = previousData.photo;
 
                 // Check if producerID is blank
-                if (this.form["producerID"]["$oid"] == "") {
+                if (this.form["producerID"] == "") {
                     this.form["producerNew"] = previousData.producerNew;
                     // The code below... is it necessary?
                     if (this.formMode != "new") {
@@ -791,9 +787,7 @@
                     this.form['producerID'] = producer._id;
                 }
                 else {
-                    this.form['producerID'] = {
-                        "$oid": ""
-                    }
+                    this.form['producerID'] = ""
                 }
             },
 
@@ -841,9 +835,9 @@
                         }
 
                         // Validate Producer Name
-                        if (Object.prototype.hasOwnProperty.call(this.form["producerID"], "$oid")) {
+                        if (this.form['producerID']) {
                             // If producerID is blank, check if producerNew is blank
-                            if (!this.form["producerID"]["$oid"].trim() && !this.form["producerNew"].trim()) {
+                            if (!this.form["producerNew"]) {
                                 this.errors.push("Producer Name is required.");
                             }
                         } else {
@@ -864,11 +858,7 @@
                         }
 
                         // Validate Producer ID
-                        if (Object.prototype.hasOwnProperty.call(this.form["producerID"], "$oid")) {
-                            if (!this.form["producerID"]["$oid"].trim()) {
-                                this.errors.push("Producer ID is required: Create new producer first!");
-                            }
-                        } else {
+                        if (!this.form["producerID"]) {
                             this.errors.push("Producer ID is required: Create new producer first!");
                         }
 

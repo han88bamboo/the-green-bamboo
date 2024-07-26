@@ -9,6 +9,7 @@ from bson import json_util
 from flask import Flask, request, jsonify
 from flask_pymongo import PyMongo
 from flask_cors import CORS
+from bson.objectid import ObjectId
 
 from datetime import datetime
 import pytz
@@ -40,7 +41,7 @@ def createListings():
     # Add current datetime to the listing
     rawBottle['addedDate'] = datetime.now(pytz.timezone('Etc/GMT-8'))
     rawBottle["allowMod"] = True
-
+    rawBottle['producerID'] = ObjectId(rawBottle['producerID'])
     # Duplicate listing check: Reject if listing with the same bottle name already exists in the database
     rawBottleName = rawBottle["listingName"]
     existingBottle = db.listings.find_one({"listingName": rawBottleName})

@@ -22,6 +22,7 @@ from bson.objectid import ObjectId
 
 from dotenv import load_dotenv
 import os
+import s3Images
 
 app = Flask(__name__)
 CORS(app)  # Allow all requests
@@ -35,6 +36,19 @@ db = PyMongo(app).db
 def parse_json(data):
     return json.loads(json_util.dumps(data))
 
+# def modifyPhotos():
+#     data = db.producers.find({})
+#     dataEncode = parse_json(data)
+#     for doc in dataEncode:
+#         try:
+#             if(doc['photo']):
+#                 photo = s3Images.uploadBase64ImageToS3(doc['photo'])
+#                 updateImage = db.producers.update_one({'_id': ObjectId(doc['_id']['$oid'])}, {'$set': {'photo': photo, 'updates': []}})
+#         except Exception as e:
+#             print(e)
+#         print(doc['_id'])
+
+# modifyPhotos()
 # -----------------------------------------------------------------------------------------
 # [GET] accountRequests
 @app.route("/getAccountRequests")

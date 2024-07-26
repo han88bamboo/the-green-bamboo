@@ -39,7 +39,7 @@ def parse_json(data):
 def updateListing(id):
     listing_id=ObjectId(id)
     updatedListing = request.get_json()
-    
+    updatedListing['producerID'] = ObjectId(updatedListing['producerID'])
     
     # Duplicate listing check: Reject if listing with the same bottle name already exists in the database
     updatedListingName = updatedListing["listingName"]

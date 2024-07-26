@@ -49,7 +49,6 @@
                 <div class="row container">
                     <!-- image -->
                     <div class="col-12 col-lg-4 col-xl-3 image-container text-start mobile-col-5">
-                        <!-- <img :src=" 'data:image/jpeg;base64,' + ( specified_listing['photo'] || defaultPhoto )" class="producer-bottle-listing-page-image" > -->
                         <img :src="( specified_listing['photo'] || defaultPhoto )" class="producer-bottle-listing-page-image" >
                     </div>
                     <!-- details -->

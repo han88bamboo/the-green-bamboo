@@ -9,9 +9,8 @@
             <div v-for="(listing, index) in listingArr" :key="index" class="col-12 col-sm-6 col-md-6 col-lg-3 col-xl-2 align-items-center p-lg-0 me-4" :style="{ display: 'flex', flexDirection: 'column', width: columnWidth }">
                 <div class="drink-photo-container-row image-container-150">
                     <router-link :to="{ path: '/listing/view/' + listing._id.$oid }" class="default-text-no-background">
-                        <!-- <img v-if="listing.photo !== '' && listing.photo !== null" :src="'data:image/jpeg;base64,' + listing.photo" class="add-drink-photo-background centered rounded">  -->
                         <img v-if="listing.photo !== '' && listing.photo !== null" :src="listing.photo" class="add-drink-photo-background centered rounded"> 
-                        <img v-else src="../../Images/Drinks/Placeholder.png" class="add-drink-photo-background centered rounded">
+                        <img v-else src="https://drinkximages.s3.us-east-1.amazonaws.com/images/2d4d94bc-313e-4621-9a15-4bfbf77958de.jpg" class="add-drink-photo-background centered rounded">
                     </router-link>
                     
                     <BookmarkIcon 

@@ -42,6 +42,7 @@ def requestListing():
     # Duplicate listing check: Reject if listing with the same bottle name already exists in the "listings" collection
     rawRequestName = rawRequest["listingName"]
     existingBottle = db.listings.find_one({"listingName": rawRequestName})
+    rawRequest['userID'] = ObjectId(rawRequest['userID'])
     if (existingBottle != None):
         return jsonify(
             {
@@ -90,6 +91,7 @@ def requestListingModify(requestID):
 
     # Duplicate listing check: Reject if listing with the same bottle name already exists in the "listings" collection
     rawRequestName = rawRequest["listingName"]
+    rawRequest['userID'] = ObjectId(rawRequest['userID'])
     existingBottle = db.listings.find_one({"listingName": rawRequestName})
     if (existingBottle != None):
         return jsonify(
