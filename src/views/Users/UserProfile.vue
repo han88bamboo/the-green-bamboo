@@ -47,16 +47,11 @@
                             <br/>
                             {{ drinkCount }} Drinks Tasted 
                             <br/>
-                            <button v-if="!ownProfile && displayUser.modType != []"
+                            <button v-if="displayUser && displayUser.modType && (displayUser.modType.length > 0 || displayUser.isAdmin)"
                                 data-bs-toggle="modal" data-bs-target="#moderatormodal" class="btn btn-warning hover-button p-1" 
                                 style="border-radius: 20px; font-size: 0.8rem;">
                                 ★ Certified Moderator
                             </button> 
-                            <button v-if="user && user.isAdmin" 
-                                data-bs-toggle="modal" data-bs-target="#moderatormodal" class="btn btn-warning hover-button p-1" 
-                                style="border-radius: 20px; font-size: 0.8rem;">
-                                ★ Certified Moderator
-                            </button>
                         </div>
                     </div>
 
