@@ -649,6 +649,44 @@ def updateProducerClaimStatus():
             }
         ), 500
     
+# -----------------------------------------------------------------------------------------
+# [POST] Edit producer profile last check claim status date
+# - Update producer profile with new details
+# - Possible return codes: 201 (Updated), 500 (Error during update)
+@app.route('/updateProducerClaimStatusCheckDate', methods=['POST'])
+def updateProducerClaimStatusCheckDate():
+
+    # fetch sent data
+    data = request.get_json()
+    print(data)
+
+    # extract components of the data
+    producerID = data['businessId']
+    # claimStatusCheckDate = data["claimStatusCheckDate"]
+    claimStatusCheckDate = datetime.strptime(data["claimStatusCheckDate"], "%Y-%m-%dT%H:%M:%S.%fZ")
+
+    try: 
+        update = db.producers.update_one({'_id': ObjectId(producerID)}, 
+                                         {'$set': {
+                                                'claimStatusCheckDate': claimStatusCheckDate
+                                            }})
+
+        return jsonify(
+            {   
+                "code": 201,
+                "message": "Updated claim status check date successfully!"
+            }
+        ), 201
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "data": data,
+                "message": "An error occurred updating claim status check date!"
+            }
+        ), 500
+    
 
 # -----------------------------------------------------------------------------------------
 

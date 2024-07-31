@@ -868,6 +868,45 @@ def updateVenueClaimStatus():
             }
         ), 500
 
+
+# -----------------------------------------------------------------------------------------
+# [POST] Edit venue profile last check claim status date
+# - Update venue profile with new details
+# - Possible return codes: 201 (Updated), 500 (Error during update)
+@app.route('/updateVenueClaimStatusCheckDate', methods=['POST'])
+def updateVenueClaimStatusCheckDate():
+
+    # fetch sent data
+    data = request.get_json()
+    print(data)
+
+    # extract components of the data
+    venueID = data['businessId']
+    # claimStatusCheckDate = data["claimStatusCheckDate"]
+    claimStatusCheckDate = datetime.strptime(data["claimStatusCheckDate"], "%Y-%m-%dT%H:%M:%S.%fZ")
+
+    try: 
+        update = db.venues.update_one({'_id': ObjectId(venueID)}, 
+                                         {'$set': {
+                                                'claimStatusCheckDate': claimStatusCheckDate
+                                            }})
+
+        return jsonify(
+            {   
+                "code": 201,
+                "message": "Updated claim status check date successfully!"
+            }
+        ), 201
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "data": data,
+                "message": "An error occurred updating claim status check date!"
+            }
+        ), 500
+    
 # -----------------------------------------------------------------------------------------
 
 if __name__ == '__main__':

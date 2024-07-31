@@ -1600,7 +1600,77 @@
                         this.specified_producer = response.data
                         this.specified_producer_original_photo = this.specified_producer['photo']
 
-                        this.claimStatus = this.specified_producer.claimStatus // get claim status of producer
+                        if (this.specified_producer.stripeCustomerId) {    
+                            this.claimStatus = false                        
+                            // check for active subscription if last check status date before today
+                            const claimStatusCheckDate = this.specified_producer['claimStatusCheckDate']
+                            if (claimStatusCheckDate.$date.split('T')[0] < new Date().toISOString().split('T')[0]) {
+                                console.log('checking subscription');
+                                // check for active subscription
+                                try {
+                                    const response = await this.$axios.post('http://127.0.0.1:5009/retrieve-latest-subscription', {
+                                        customerId: this.specified_producer.stripeCustomerId,
+                                    }, {
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                        }
+                                    });
+                                    this.subscription = response.data;
+                                    console.log(this.subscription);
+    
+                                    if (this.subscription && this.subscription.status == "active") {
+                                        this.claimStatus = true;
+                                    } 
+    
+                                } catch (error) {
+                                    if (error.response && error.response.status === 404) {
+                                        console.error('Error retrieving subscription:', error);
+
+                                    } else {
+                                        console.error('Error retrieving subscription:', error);
+                                        this.dataLoaded = null;
+                                    }
+                                }
+
+                                // update claim status if different
+                                if (this.specified_producer.claimStatus != this.claimStatus) {
+                                    try {
+                                        await this.$axios.post(`http://127.0.0.1:5200/updateProducerClaimStatus`, 
+                                            {
+                                                businessId: this.producer_id,
+                                                claimStatus: this.claimStatus,
+                                            }, {
+                                            headers: {
+                                                'Content-Type': 'application/json'
+                                            }
+                                        });
+                                    } catch (error) {
+                                        console.error(error);
+                                    }
+                                }
+    
+                                // upqdate last check status date
+                                try {
+                                    await this.$axios.post(`http://127.0.0.1:5200/updateProducerClaimStatusCheckDate`, 
+                                        {
+                                            businessId: this.producer_id,
+                                            claimStatusCheckDate: new Date().toISOString(),
+                                        }, {
+                                        headers: {
+                                            'Content-Type': 'application/json'
+                                        }
+                                    });
+                                } catch (error) {
+                                    console.error(error);
+                                }
+                            } else {
+                                this.claimStatus = this.specified_producer.claimStatus // get claim status of producer
+                            }
+                        } else {
+                            this.claimStatus = this.specified_producer.claimStatus // get claim status of producer
+                        }
+
+
                         this.getLatestUpdates()
                         this.checkProducerAnswered()
                         this.formatDeepDiveLink()

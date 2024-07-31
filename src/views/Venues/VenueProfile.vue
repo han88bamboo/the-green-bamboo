@@ -2665,6 +2665,76 @@
                         }
 
                         this.venueExists = true;
+
+
+                        // get claim status
+                        if (this.targetVenue.stripeCustomerId) {    
+                            var claimStatus = false                        
+                            // check for active subscription if last check status date before today
+                            const claimStatusCheckDate = this.targetVenue['claimStatusCheckDate']
+                            if (claimStatusCheckDate.$date.split('T')[0] < new Date().toISOString().split('T')[0]) {
+                                console.log('checking subscription');
+                                // check for active subscription
+                                try {
+                                    const response = await this.$axios.post('http://127.0.0.1:5009/retrieve-latest-subscription', {
+                                        customerId: this.targetVenue.stripeCustomerId,
+                                    }, {
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                        }
+                                    });
+                                    const subscription = response.data;
+                                    console.log(subscription);
+    
+                                    if (subscription && subscription.status == "active") {
+                                        claimStatus = true;
+                                    } 
+    
+                                } catch (error) {
+                                    if (error.response && error.response.status === 404) {
+                                        console.error('Error retrieving subscription:', error);
+
+                                    } else {
+                                        console.error('Error retrieving subscription:', error);
+                                        this.dataLoaded = null;
+                                    }
+                                }
+
+                                // update claim status if different
+                                if (this.targetVenue.claimStatus != claimStatus) {
+                                    this.targetVenue.claimStatus = claimStatus;
+                                    try {
+                                        await this.$axios.post(`http://127.0.0.1:5300/updateVenueClaimStatus`, 
+                                            {
+                                                businessId: this.targetVenue._id['$oid'],
+                                                claimStatus: claimStatus,
+                                            }, {
+                                            headers: {
+                                                'Content-Type': 'application/json'
+                                            }
+                                        });
+                                    } catch (error) {
+                                        console.error(error);
+                                    }
+                                }
+    
+                                // upqdate last check status date
+                                try {
+                                    await this.$axios.post(`http://127.0.0.1:5300/updateVenueClaimStatusCheckDate`, 
+                                        {
+                                            businessId: this.targetVenue._id['$oid'],
+                                            claimStatusCheckDate: new Date().toISOString(),
+                                        }, {
+                                        headers: {
+                                            'Content-Type': 'application/json'
+                                        }
+                                    });
+                                } catch (error) {
+                                    console.error(error);
+                                }
+                            }
+                        } 
+
                         this.loadData();
                     }
                     else {
