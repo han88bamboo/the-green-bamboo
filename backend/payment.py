@@ -1,6 +1,4 @@
 import stripe
-stripe.api_key = "sk_test_51PV6CNDnjokAiSGzSjzjlwoN9jseVPhOi90H7BlGP0wMmfJ1Kx7jDzAW1xQAS9NxpI1MebZibT5kIfaETzrncq8l006ToZRlJ1"
-
 
 import bson
 import json
@@ -26,6 +24,8 @@ CORS(app)  # Allow all requests
 load_dotenv()
 app.config["MONGO_URI"] = os.getenv('MONGO_DB_URL')
 db = PyMongo(app).db
+
+stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 
 mongo = PyMongo(app)
 fs = GridFS(mongo.db)

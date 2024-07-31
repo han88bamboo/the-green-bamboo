@@ -2672,7 +2672,7 @@
                             var claimStatus = false                        
                             // check for active subscription if last check status date before today
                             const claimStatusCheckDate = this.targetVenue['claimStatusCheckDate']
-                            if (claimStatusCheckDate.$date.split('T')[0] < new Date().toISOString().split('T')[0]) {
+                            if ((claimStatusCheckDate.$date.split('T')[0] < new Date().toISOString().split('T')[0]) || !claimStatusCheckDate) {
                                 console.log('checking subscription');
                                 // check for active subscription
                                 try {

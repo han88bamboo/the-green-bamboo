@@ -9,6 +9,8 @@ from flask import Flask, request, jsonify
 from flask_pymongo import PyMongo
 from flask_cors import CORS
 
+from flask_mail import Mail, Message
+
 from bson.objectid import ObjectId
 
 from datetime import datetime, timedelta
@@ -26,6 +28,13 @@ CORS(app)  # Allow all requests
 load_dotenv()
 app.config["MONGO_URI"] = os.getenv('MONGO_DB_URL')
 db = PyMongo(app).db
+
+app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER')
+app.config['MAIL_PORT'] = os.getenv('MAIL_PORT')
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+mail = Mail(app)
 
 def parse_json(data):
     return json.loads(json_util.dumps(data))
@@ -399,6 +408,19 @@ def updateUsernamePassword():
                 "message": "An error occurred updating profile!"
             }
         ), 500
+    
+
+@app.route('/sendEmail', methods=['POST'])
+def sendEmail():
+    data = request.json
+    print(data)
+    msg = Message(data['subject'], 
+                  sender=os.getenv('MAIL_USERNAME'), 
+                  recipients=[data['recipient']])
+    msg.body = data['message']
+    mail.send(msg)
+    return jsonify({'message': 'Email sent successfully!'}), 200
+
 
 # -----------------------------------------------------------------------------------------
 if __name__ == "__main__":

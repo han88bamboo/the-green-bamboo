@@ -1487,7 +1487,8 @@
                             }
 
                             // token
-                            this.generateToken(businessID, request._id.$oid);
+                            const link = await this.generateToken(businessID, request._id.$oid);
+                            this.emailLink(request, link);
 
                         } 
                         else {
@@ -1503,7 +1504,8 @@
                             if (!createSuccess) {
                                 return;
                             }
-                            this.generateToken(createSuccess, request._id.$oid);
+                            const link = await this.generateToken(createSuccess, request._id.$oid)
+                            this.emailLink(request, link);
                         }
 
                         // update review status
@@ -1578,9 +1580,14 @@
                     else if (action == "resend") {
                         try {
                             const requestId = request._id.$oid;
+                            console.log(requestId);
                             const response = await this.$axios.get(`http://127.0.0.1:5000/get${request.businessType.charAt(0).toUpperCase()}${request.businessType.slice(1)}ByRequestId/${requestId}`);
+                            console.log(response);
                             const businessId = response.data._id.$oid;
-                            this.generateToken(businessId, requestId)
+                            console.log(businessId);
+                            const link = await this.generateToken(businessId, requestId)
+                            console.log(link);
+                            this.emailLink(request, link);
                         } catch (error) {
                             console.error(error);
                         }
@@ -1714,6 +1721,20 @@
                         return link;
                     } catch (error) {
                         console.error(error);
+                    }
+                },
+
+                async emailLink(request, link) {
+
+                    const emailDetails = {
+                        recipient: request.email,
+                        subject: "Reset Your Password with Drink X",
+                        message: `Hi ${request.firstName}, \n\nClick on the link below to reset your password: \n${link} \n\nIf you did not initiate this request, please contact us immediately. \n\nThank you, \nDrinkX`
+                    };
+                    try {
+                        await this.$axios.post('http://127.0.0.1:5031/sendEmail', emailDetails);
+                    } catch (error) {
+                        console.error('Failed to send email:', error);
                     }
                 },
 

@@ -202,7 +202,7 @@
 
             this.token = this.$route.query.token;
             
-            this.stripe = await loadStripe('pk_test_51PV6CNDnjokAiSGzhdAambzILFYOByYtxMRMsVQCcQobPIxlFDi2a6gKYe8BQD021FQxFUejn4eIcjSLBHsHbD9A00T4Z8sPPl');
+            this.stripe = await loadStripe(process.env.VUE_APP_STRIPE_PUBLISHABLE_KEY);
 
             async function initiateProcess() {
                 await this.verifyToken();
