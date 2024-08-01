@@ -382,7 +382,7 @@ CREATE TABLE venuesProfileViews (
     views TEXT[] 
 );
 
--- ========= [NEW!] ========= =========
+-- ========= [NEW!] venuesProfileViewsViews =========
 CREATE TABLE venuesProfileViewsViews (
     id SERIAL PRIMARY KEY,
     date TIMESTAMP,

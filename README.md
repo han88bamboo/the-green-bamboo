@@ -1,4 +1,5 @@
-# 28_DCS__The Green Bamboo_“Happy Hour!” UGC Product Review Application
+# The Green Bamboo
+# “Happy Hour!” UGC Product Review Application
 
 <a>
     <img src="Images/Logo/88 Bamboo.png" title="The Green Bamboo" alt="The Green Bamboo" style="height: 150px">
@@ -6,13 +7,12 @@
 
 ## Team
 
-| Member | Picture | Role | Email
-| :---:  | :----: | :---: | :---: |
-| Leong Jun Wei | <img src="Images/Team Pictures/Jun Wei.png" width="100" height="100"> | Scrum Master (Sprint 1, Sprint 6) | jwleong.2020@scis.smu.edu.sg |
-| Shannie Kwok | <img src="Images/Team Pictures/Shannie.png" width="100" height="100"> | Scrum Master (Sprint 2) | shanniekwok.2021@scis.smu.edu.sg |
-| Poh Li Ying | <img src="Images/Team Pictures/Li Ying.png" width="100" height="100"> | Scrum Master (Sprint 3) | liying.poh.2021@scis.smu.edu.sg |
-| Matthew Foo | <img src="Images/Team Pictures/Matthew.png" width="100" height="100"> | Scrum Master (Sprint 4) | matthew.foo.2021@scis.smu.edu.sg |
-| Ryan Lim | <img src="Images/Team Pictures/Ryan.png" width="100" height="100"> | Scrum Master (Sprint 5) | ryanlim.2021@scis.smu.edu.sg |
+| Member | Picture | Email
+| :---:  | :----: | :---: |
+| Leong Jun Wei | <img src="Images/Team Pictures/Jun Wei.png" width="100" height="100"> | jwleong.2020@scis.smu.edu.sg |
+| Shannie Kwok | <img src="Images/Team Pictures/Shannie.png" width="100" height="100"> | shanniekwok.2021@scis.smu.edu.sg |
+| Poh Li Ying | <img src="Images/Team Pictures/Li Ying.png" width="100" height="100"> |  liying.poh.2021@scis.smu.edu.sg |
+| Matthew Foo | <img src="Images/Team Pictures/Matthew.png" width="100" height="100"> | matthew.foo.2021@scis.smu.edu.sg |
 | Kai Lin Choo | <img src="Images/Team Pictures/Kai Lin.jpeg" width="100" height="100"> | Product Owner | kailin@88bamboo.co |
 | Wesley Chia | <img src="Images/Team Pictures/Wesley.jpeg" width="100" height="100"> | Product Owner | wesley@88bamboo.co |
 
@@ -107,34 +107,3 @@ npm test
 Open new terminal and executed the following code
 ```
 ./vendor/bin/phpunit ./unit_testing/DatabaseTest.php
-```
-
-# the-green-bamboo (TO BE EDITED)
-
-## Project setup
-```
-npm install
-```
-
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Run your unit tests
-```
-npm run test:unit
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
