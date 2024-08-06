@@ -66,9 +66,10 @@ These are the login credentials for test accounts:
 
 | Account Type | Username | Password |
 | :---:  | :----: | :---: |
-| User | `111hotpot` | `westlife123` |
-| Producer | `Ardbeg Distillery` | `ardddbe33g**!!` |
-| Venue | `Orh Gao Taproom` | `orhhorsogao` |
+| User (admin) | `111hotpot` | `westlife123` |
+| User (non-admin) | `charsiucharlie` | `westlife123` |
+| Producer | `ardbegdistillery` | `ardbegdistillery123` |
+| Venue | `orhgaotaproom` | `orhgaotaproom123` |
 
 ### Installation
 
