@@ -2,32 +2,19 @@
 # Routes: /authcheck (POST), /authcheckUser (POST), /authcheckProducer (POST), /authcheckVenue (POST)
 # -----------------------------------------------------------------------------------------
 
-import bson
+import os
 import json
 import smtplib
 import random
 import string
 
 from bson import json_util
-from flask import Flask, request, jsonify
-from flask_pymongo import PyMongo
-from flask_cors import CORS
-
+from flask import request, jsonify, g, Blueprint
 from bson.objectid import ObjectId
-
 from datetime import datetime
 
-import data
-
-from dotenv import load_dotenv
-import os
-
-app = Flask(__name__)
-CORS(app)  # Allow all requests
-
-load_dotenv()
-app.config["MONGO_URI"] = os.getenv('MONGO_DB_URL')
-db = PyMongo(app).db
+file_name = os.path.basename(__file__)
+blueprint = Blueprint(file_name[:-3], __name__)
 
 def parse_json(data):
     return json.loads(json_util.dumps(data))
@@ -36,12 +23,11 @@ def parse_json(data):
 # [POST] Authenticates an account
 # - Check if account exists in the "users", "producers", or "venues" collection. If so, check if the password matches.
 # - Possible return codes: 200 (Authenticated), 400 (Account not found), 401 (Incorrect password), 500 (Error during authentication)
-@app.route("/authcheck", methods= ['POST'])
+@blueprint.route("/authcheck", methods= ['POST'])
 def authcheck():
-
     try:
+        db = g.db
         loginInfo = request.get_json()
-
 
         # Check if user exists in the "users" collection
         userExistsRaw = db.users.find_one({"username": loginInfo["username"]})
@@ -143,10 +129,10 @@ def authcheck():
 # [POST] Authenticates a user
 # - Check if user exists in the "users" collection. If so, check if the password matches.
 # - Possible return codes: 200 (Authenticated), 400 (User not found), 401 (Incorrect password), 500 (Error during authentication)
-@app.route("/authcheckUser", methods= ['POST'])
+@blueprint.route("/authcheckUser", methods= ['POST'])
 def authcheckUser():
-
     try:
+        db = g.db
         # Check if user exists in the "users" collection
         loginInfo = request.get_json()
         userExistsRaw = db.users.find_one({"username": loginInfo["username"]})
@@ -193,10 +179,10 @@ def authcheckUser():
 # [POST] Authenticates a producer
 # - Check if producer exists in the "producers" collection. If so, check if the password matches.
 # - Possible return codes: 200 (Authenticated), 400 (Producer not found), 401 (Incorrect password), 500 (Error during authentication)
-@app.route("/authcheckProducer", methods= ['POST'])
+@blueprint.route("/authcheckProducer", methods= ['POST'])
 def authcheckProducer():
-
     try:
+        db = g.db
         # Check if producer exists in the "producers" collection
         loginInfo = request.get_json()
         producerExistsRaw = db.producers.find_one({"username": loginInfo["username"]})
@@ -243,10 +229,10 @@ def authcheckProducer():
 # [POST] Authenticates a venue
 # - Check if venue exists in the "venues" collection. If so, check if the password matches.
 # - Possible return codes: 200 (Authenticated), 400 (Venue not found), 401 (Incorrect password), 500 (Error during authentication)
-@app.route("/authcheckVenue", methods= ['POST'])
+@blueprint.route("/authcheckVenue", methods= ['POST'])
 def authcheckVenue():
-
     try:
+        db = g.db
         # Check if venue exists in the "venues" collection
         loginInfo = request.get_json()
         venueExistsRaw = db.venues.find_one({"username": loginInfo["username"]})
@@ -293,8 +279,9 @@ def authcheckVenue():
 # [POST] Edit user password
 # - Update user password with new password
 # - Possible return codes: 201 (Updated), 401(Passwords do not match) , 404(User not exist), 500 (Error during update)
-@app.route('/editPassword/<id>', methods=['POST'])
+@blueprint.route('/editPassword/<id>', methods=['POST'])
 def editPassword(id):
+    db = g.db
     data = request.get_json()
     print(data)
     # if data contains image64
@@ -355,8 +342,9 @@ def editPassword(id):
 # [POST] Reset user password
 # - Sends email with 6 digit PIN
 # - Possible return codes: 201 (Sent), 404 (Email not exist), 500 (Error during email sending)
-@app.route('/sendResetPin/<id>', methods=['POST'])
+@blueprint.route('/sendResetPin/<id>', methods=['POST'])
 def sendResetPin(id):
+    db = g.db
     data = request.get_json()
     print(data)
     
@@ -432,8 +420,9 @@ def sendResetPin(id):
 # - Possible return codes: 201 (Sent), 404 (Email not exist), 500 (Error during email sending)
 # To allow SMTP to login to google account, need to go here and create an app password, afterwards, store it in the .env file
 # https://myaccount.google.com/u/1/apppasswords
-@app.route('/verifyPin/<id>', methods=['POST'])
+@blueprint.route('/verifyPin/<id>', methods=['POST'])
 def verifyPin(id):
+    db = g.db
     data = request.get_json()
     print(data)
     
@@ -506,8 +495,9 @@ def verifyPin(id):
 # [POST] Reset Password
 # - Check whether user exists and then changes the hash value
 # - Possible return codes: 201 (Sent), 404 (Email not exist), 500 (Error during email sending)
-@app.route('/resetPassword/<id>', methods=['POST'])
+@blueprint.route('/resetPassword/<id>', methods=['POST'])
 def resetPassword(id):
+    db = g.db
     data = request.get_json()
     print(data)
     email_address = os.getenv('EMAIL_ADDRESS')
@@ -614,7 +604,3 @@ def resetPassword(id):
                 "message": "An error resetting the password. Please resend pin and try again. Please resend pin and try again."
             }
         ), 500
-    
-# -----------------------------------------------------------------------------------------
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', debug=True, port = 5030)

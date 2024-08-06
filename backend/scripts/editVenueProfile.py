@@ -5,31 +5,14 @@
 #         /deleteQA (POST), /addProfileCount (POST), /addNewProfileCount (POST)
 # -----------------------------------------------------------------------------------------
 
-import bson
-import json
-from bson import json_util
-from flask import Flask, request, jsonify
-from flask_pymongo import PyMongo
-from flask_cors import CORS
-
-from bson.objectid import ObjectId
-
-from gridfs import GridFS
 import os
+import s3Images
+from flask import Blueprint, g, request, jsonify
+from bson.objectid import ObjectId
 from datetime import datetime
 
-from dotenv import load_dotenv
-import s3Images
-
-app = Flask(__name__)
-CORS(app)  # Allow all requests
-
-load_dotenv()
-app.config["MONGO_URI"] = os.getenv('MONGO_DB_URL')
-db = PyMongo(app).db
-
-mongo = PyMongo(app)
-fs = GridFS(mongo.db)
+file_name = os.path.basename(__file__)
+blueprint = Blueprint(file_name[:-3], __name__)
 
 # TODO: Create function using BOTO Library to upload images to the S3 bucket
 # TODO: Create function using BOTO Library to delete images from the S3 bucket
@@ -38,8 +21,9 @@ fs = GridFS(mongo.db)
 # [POST] Edit venue profile
 # - Update venue profile with new details
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/editDetails', methods=['POST'])
+@blueprint.route('/editDetails', methods=['POST'])
 def editDetails():
+    db = g.db
 
     # fetch sent data
     data = request.get_json()
@@ -87,8 +71,9 @@ def editDetails():
 # [POST] Add updates to venue profile
 # - Add updates to the venue profile
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/addUpdates', methods=['POST'])
+@blueprint.route('/addUpdates', methods=['POST'])
 def addUpdates():
+    db = g.db
 
     # fetch sent data
     data = request.get_json()
@@ -136,8 +121,9 @@ def addUpdates():
 # [POST] Send questions to venue profile
 # - Send questions to the venue profile
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/sendQuestions', methods=['POST'])
+@blueprint.route('/sendQuestions', methods=['POST'])
 def sendQuestions():
+    db = g.db
 
     # fetch sent data
     data = request.get_json()
@@ -185,8 +171,9 @@ def sendQuestions():
 # [POST] Send answers to venue profile
 # - Send answers to the venue profile
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/sendAnswers', methods=['POST'])
+@blueprint.route('/sendAnswers', methods=['POST'])
 def sendAnswers():
+    db = g.db
 
     # fetch sent data
     data = request.get_json()
@@ -222,8 +209,9 @@ def sendAnswers():
 # [POST] Like updates
 # - Like updates
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/likeUpdates', methods=['POST'])
+@blueprint.route('/likeUpdates', methods=['POST'])
 def likeUpdates():
+    db = g.db
     data = request.get_json()
     print(data)
     venueID = data['venueID']
@@ -255,8 +243,9 @@ def likeUpdates():
 # [POST] Unlike updates
 # - Unlike updates
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/unlikeUpdates', methods=['POST'])
+@blueprint.route('/unlikeUpdates', methods=['POST'])
 def unlikeUpdates():
+    db = g.db
     data = request.get_json()
     print(data)
     venueID = data['venueID']
@@ -288,8 +277,9 @@ def unlikeUpdates():
 # [POST] Edit address
 # - Edit address
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/editAddress', methods=['POST'])
+@blueprint.route('/editAddress', methods=['POST'])
 def editAddress():
+    db = g.db
     data = request.get_json()
     print(data)
     venueID = data['venueID']
@@ -320,8 +310,9 @@ def editAddress():
 # [POST] Edit opening hours
 # - Edit opening hours
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/editOpeningHours', methods=['POST'])
+@blueprint.route('/editOpeningHours', methods=['POST'])
 def editOpeningHours():
+    db = g.db
     data = request.get_json()
     print(data)
     venueID = data['venueID']
@@ -352,8 +343,9 @@ def editOpeningHours():
 # [POST] Edit public holidays
 # - Edit public holidays
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/editPublicHolidays', methods=['POST'])
+@blueprint.route('/editPublicHolidays', methods=['POST'])
 def editPublicHolidays():
+    db = g.db
     data = request.get_json()
     print(data)
     venueID = data['venueID']
@@ -384,8 +376,9 @@ def editPublicHolidays():
 # [POST] Edit reservation details
 # - Edit reservation details
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/editReservationDetails', methods=['POST'])
+@blueprint.route('/editReservationDetails', methods=['POST'])
 def editReservationDetails():
+    db = g.db
     data = request.get_json()
     print(data)
     venueID = data['venueID']
@@ -416,8 +409,9 @@ def editReservationDetails():
 # [POST] Add listing to menu
 # - Add listing to menu
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/addListingToMenu', methods=['POST'])
+@blueprint.route('/addListingToMenu', methods=['POST'])
 def addListingToMenu():
+    db = g.db
     data = request.get_json()
     print(data)
     venueID = data['venueID']
@@ -463,8 +457,9 @@ def addListingToMenu():
 # [POST] Change Section Name 
 # - Change Section Name
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/editSectionName', methods=['PUT'])
+@blueprint.route('/editSectionName', methods=['PUT'])
 def editSectionName():
+    db = g.db
     data = request.get_json()
     print(data)
     venueID = data['venueID']
@@ -496,8 +491,9 @@ def editSectionName():
 # [POST] Edit menu
 # - Edit menu
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/editMenu', methods=['POST'])
+@blueprint.route('/editMenu', methods=['POST'])
 def editMenu():
+    db = g.db
     data = request.get_json()
     print(data)
     venueID = data['venueID']
@@ -528,8 +524,9 @@ def editMenu():
 # [POST] Edit venue profile
 # - Update producer profile with new details
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/updateVenueStatus', methods=['POST'])
+@blueprint.route('/updateVenueStatus', methods=['POST'])
 def updateVenueStatus():
+    db = g.db
     # fetch sent data
     data = request.get_json()
     print(data)
@@ -574,8 +571,9 @@ def updateVenueStatus():
 # [POST] Edit venue update
 # - Update a venue update with new details
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/editUpdate', methods=['POST'])
+@blueprint.route('/editUpdate', methods=['POST'])
 def editUpdate():
+    db = g.db
 
     # fetch sent data
     data = request.get_json()
@@ -627,8 +625,9 @@ def editUpdate():
 # [POST] Delete venue update
 # - Delete a venue update with new details
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/deleteUpdate', methods=['POST'])
+@blueprint.route('/deleteUpdate', methods=['POST'])
 def deleteUpdate():
+    db = g.db
 
     # fetch sent data
     data = request.get_json()
@@ -673,8 +672,9 @@ def deleteUpdate():
 # [POST] Edit Q&A
 # - Update a venue Q&A with new details
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/editQA', methods=['POST'])
+@blueprint.route('/editQA', methods=['POST'])
 def editQA():
+    db = g.db
 
     # fetch sent data
     data = request.get_json()
@@ -712,8 +712,9 @@ def editQA():
 # [POST] Delete venue Q&A
 # - Delete a venue Q&A with new details
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/deleteQA', methods=['POST'])
+@blueprint.route('/deleteQA', methods=['POST'])
 def deleteQA():
+    db = g.db
 
     # fetch sent data
     data = request.get_json()
@@ -751,8 +752,9 @@ def deleteQA():
 # [POST] Add profile view count
 # - Add profile view count
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/addProfileCount', methods=['POST'])
+@blueprint.route('/addProfileCount', methods=['POST'])
 def addProfileCount():
+    db = g.db
     data = request.get_json()
     print(data)
     venueID = data['venueID']
@@ -783,8 +785,9 @@ def addProfileCount():
 # [POST] Add new profile view count
 # - Add new profile view count
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/addNewProfileCount', methods=['POST'])
+@blueprint.route('/addNewProfileCount', methods=['POST'])
 def addNewProfileCount():
+    db = g.db
     data = request.get_json()
     print(data)
     venueID = data['venueID']
@@ -835,8 +838,9 @@ def addNewProfileCount():
 # [POST] Edit venue profile claim status
 # - Update venue profile with new details
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/updateVenueClaimStatus', methods=['POST'])
+@blueprint.route('/updateVenueClaimStatus', methods=['POST'])
 def updateVenueClaimStatus():
+    db = g.db
 
     # fetch sent data
     data = request.get_json()
@@ -873,8 +877,9 @@ def updateVenueClaimStatus():
 # [POST] Edit venue profile last check claim status date
 # - Update venue profile with new details
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/updateVenueClaimStatusCheckDate', methods=['POST'])
+@blueprint.route('/updateVenueClaimStatusCheckDate', methods=['POST'])
 def updateVenueClaimStatusCheckDate():
+    db = g.db
 
     # fetch sent data
     data = request.get_json()
@@ -906,8 +911,3 @@ def updateVenueClaimStatusCheckDate():
                 "message": "An error occurred updating claim status check date!"
             }
         ), 500
-    
-# -----------------------------------------------------------------------------------------
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True, port=5300)

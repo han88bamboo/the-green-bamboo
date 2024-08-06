@@ -1,40 +1,20 @@
 import stripe
-
-import bson
-import json
-from bson import json_util
-from flask import Flask, request, jsonify
-from flask_pymongo import PyMongo
-from flask_cors import CORS
-
-from bson.objectid import ObjectId
-
-from gridfs import GridFS
 import os
+import json
+from flask import Blueprint, g, request, jsonify
 from datetime import datetime
 
-from dotenv import load_dotenv
-import os
+file_name = os.path.basename(__file__)
+blueprint = Blueprint(file_name[:-3], __name__)
 
-from adminFunctions import hash_password
-
-app = Flask(__name__)
-CORS(app)  # Allow all requests
-
-load_dotenv()
-app.config["MONGO_URI"] = os.getenv('MONGO_DB_URL')
-db = PyMongo(app).db
-
-stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
-
-mongo = PyMongo(app)
-fs = GridFS(mongo.db)
-
-@app.route('/create-customer', methods=['POST'])
+@blueprint.route('/create-customer', methods=['POST'])
 def create_customer():
+    db = g.db
     data = request.get_json()
     customer_email = data['customerEmail']
     customer_name = data['customerName']
+
+    print("Creating customer...")
 
     try: 
         customer = stripe.Customer.create(
@@ -48,8 +28,9 @@ def create_customer():
 
 
 
-@app.route('/create-subscription', methods=['POST'])
+@blueprint.route('/create-subscription', methods=['POST'])
 def create_subscription():
+    db = g.db
     data = json.loads(request.data)
     customer_id = data['customerId']
     price_id = data['priceId']
@@ -73,8 +54,9 @@ def create_subscription():
         return jsonify(error={'message': e.user_message}), 400
 
 
-@app.route('/retrieve-latest-subscription', methods=['POST'])
+@blueprint.route('/retrieve-latest-subscription', methods=['POST'])
 def retrieve_latest_subscription():
+    db = g.db
     data = json.loads(request.data)
     try:
         customer_id = data['customerId']
@@ -96,8 +78,9 @@ def retrieve_latest_subscription():
         return jsonify(error=str(e)), 403
 
 
-@app.route('/retrieve-payment-method', methods=['POST'])
+@blueprint.route('/retrieve-payment-method', methods=['POST'])
 def retrieve_payment_method():
+    db = g.db
     data = json.loads(request.data)
     try:
         subscription = data['subscription']
@@ -124,8 +107,9 @@ def retrieve_payment_method():
 
 
 
-@app.route('/retrieve-subscription-details', methods=['POST'])
+@blueprint.route('/retrieve-subscription-details', methods=['POST'])
 def retrieve_subscription_details():
+    db = g.db
     data = json.loads(request.data)
     try:
         subscription = data['subscription']
@@ -161,8 +145,9 @@ def retrieve_subscription_details():
     
 
 
-@app.route('/change-subscription-plan', methods=['POST'])
+@blueprint.route('/change-subscription-plan', methods=['POST'])
 def change_subscription_plan():
+    db = g.db
     data = json.loads(request.data)
     try:
         subscription = data['subscription']
@@ -188,8 +173,9 @@ def change_subscription_plan():
         return jsonify(error=str(e)), 403
     
 
-@app.route('/cancel-subscription', methods=['POST'])
+@blueprint.route('/cancel-subscription', methods=['POST'])
 def cancel_subscription():
+    db = g.db
     data = json.loads(request.data)
     try:
         subscription_id = data['subscription_id']
@@ -232,8 +218,9 @@ def cancel_subscription():
     
 
 
-@app.route('/retrieve-upcoming-invoice', methods=['POST'])
+@blueprint.route('/retrieve-upcoming-invoice', methods=['POST'])
 def retrieve_upcoming_invoice():
+    db = g.db
     data = json.loads(request.data)
     try:
         subscription_id = data['subscription_id']
@@ -253,8 +240,9 @@ def retrieve_upcoming_invoice():
         return jsonify(error=f"An error occurred: {str(e)}"), 500
 
 
-@app.route('/resume-subscription', methods=['POST'])
+@blueprint.route('/resume-subscription', methods=['POST'])
 def resume_subscription():
+    db = g.db
     data = json.loads(request.data)
     subscription_id = data['subscription_id']
     subscription = data['subscription']
@@ -274,7 +262,3 @@ def resume_subscription():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
-
-# -----------------------------------------------------------------------------------------
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True, port=5009)

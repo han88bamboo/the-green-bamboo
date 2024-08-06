@@ -167,7 +167,7 @@
 
                 this.accType = localStorage.getItem('88B_accType');
                 let accID = localStorage.getItem('88B_accID');
-                let url = 'http://127.0.0.1:5000/get';
+                let url = 'http://127.0.0.1:5000/getData/get';
 
                 if (this.accType == 'user') {
                     url = url + 'User/' + accID;

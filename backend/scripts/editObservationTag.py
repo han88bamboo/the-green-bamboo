@@ -2,39 +2,21 @@
 # Routes: /updateObservationTag (PUT)
 # -----------------------------------------------------------------------------------------
 
-import bson
-import json
-from bson import json_util
-from flask import Flask, request, jsonify
-from flask_pymongo import PyMongo
-from flask_cors import CORS
-
+import os
+from flask import Blueprint, g, request, jsonify
 from bson.objectid import ObjectId
 
-from gridfs import GridFS
-import os
-from datetime import datetime
-
-from dotenv import load_dotenv
-import os
-
-app = Flask(__name__)
-CORS(app)  # Allow all requests
-
-load_dotenv()
-app.config["MONGO_URI"] = os.getenv('MONGO_DB_URL')
-db = PyMongo(app).db
-
-mongo = PyMongo(app)
-fs = GridFS(mongo.db)
+file_name = os.path.basename(__file__)
+blueprint = Blueprint(file_name[:-3], __name__)
 
 # -----------------------------------------------------------------------------------------
     
 # [PUT] Update review
 # - Update review with review metrics
 # - Possible return codes: 201 (Updated), 400(Observation tag not found), 500 (Error during update)
-@app.route('/updateObservationTag', methods=['PUT'])
+@blueprint.route('/updateObservationTag', methods=['PUT'])
 def updateObservationTag():
+    db = g.db
     data = request.get_json()
     # for loop for each observation tag and update
     updates = []
@@ -80,7 +62,3 @@ def updateObservationTag():
                 "message": "An error occurred updating the observation tags."
             }
         ), 500
-
-# -----------------------------------------------------------------------------------------
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True, port=5051)

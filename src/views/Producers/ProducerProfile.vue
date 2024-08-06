@@ -1596,7 +1596,7 @@
                 // producers
                 // _id, producerName, producerDesc, originCountry, statusOB, mainDrinks
                 try {
-                        const response = await this.$axios.get(`http://127.0.0.1:5000/getProducer/${this.producer_id}`);
+                        const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getProducer/${this.producer_id}`);
                         this.specified_producer = response.data
                         this.specified_producer_original_photo = this.specified_producer['photo']
 
@@ -1608,7 +1608,7 @@
                                 console.log('checking subscription');
                                 // check for active subscription
                                 try {
-                                    const response = await this.$axios.post('http://127.0.0.1:5009/retrieve-latest-subscription', {
+                                    const response = await this.$axios.post('http://127.0.0.1:5000/payment/retrieve-latest-subscription', {
                                         customerId: this.specified_producer.stripeCustomerId,
                                     }, {
                                         headers: {
@@ -1635,7 +1635,7 @@
                                 // update claim status if different
                                 if (this.specified_producer.claimStatus != this.claimStatus) {
                                     try {
-                                        await this.$axios.post(`http://127.0.0.1:5200/updateProducerClaimStatus`, 
+                                        await this.$axios.post(`http://127.0.0.1:5000/editProducerProfile/updateProducerClaimStatus`, 
                                             {
                                                 businessId: this.producer_id,
                                                 claimStatus: this.claimStatus,
@@ -1651,7 +1651,7 @@
     
                                 // upqdate last check status date
                                 try {
-                                    await this.$axios.post(`http://127.0.0.1:5200/updateProducerClaimStatusCheckDate`, 
+                                    await this.$axios.post(`http://127.0.0.1:5000/editProducerProfile/updateProducerClaimStatusCheckDate`, 
                                         {
                                             businessId: this.producer_id,
                                             claimStatusCheckDate: new Date().toISOString(),
@@ -1682,7 +1682,7 @@
                 // producer listings
                 // _id, listingName, producerID, bottler, originCountry, drinkType, typeCategory, age, abv, reviewLink, officialDesc, sourceLink, photo
                     try {
-                        const response = await this.$axios.get(`http://127.0.0.1:5000/getListingsByProducer/${this.producer_id}`);
+                        const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getListingsByProducer/${this.producer_id}`);
                         this.listings = response.data;
 
                         this.getAllDrinks()
@@ -1698,7 +1698,7 @@
                 // reviews
                 // _id, userID, reviewTarget, date, rating, reviewDesc, taggedUsers, reviewTitle, reviewType, flavorTag, photo
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getReviews');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getReviews');
                         this.reviews = response.data;
                         // get all reviews
                         this.getAllReviews()
@@ -1713,7 +1713,7 @@
                 // users
                 // _id, username, displayName, choiceDrinks, drinkLists, modType, photo
                     try {
-                        const response = await this.$axios.get(`http://127.0.0.1:5000/getUser/${this.user_id}`);
+                        const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getUser/${this.user_id}`);
                         this.user = response.data;
                         if (this.userType == "user") {
                             // this.user = this.users.find(user => user["_id"]["$oid"] == this.user_id);
@@ -1728,7 +1728,7 @@
                 // producersProfileViews
                 // _id, producerID, views
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getProducersProfileViews');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getProducersProfileViews');
                         this.producersProfileViews = response.data;
                         this.producerProfileViewInfo = this.producersProfileViews.find(view => view.producerID["$oid"] == this.producer_id);
                         this.producerProfileID = this.producerProfileViewInfo._id["$oid"];
@@ -2043,7 +2043,7 @@
                 }
                 
                 try {
-                    const response = await this.$axios.post('http://127.0.0.1:5200/editDetails', 
+                    const response = await this.$axios.post('http://127.0.0.1:5000/editProducerProfile/editDetails', 
                         {
                             producerID: this.producer_id,
                             image64: this.image64,
@@ -2069,7 +2069,7 @@
             // send questions that users ask to producers
             async sendQuestion () {
                 try {
-                    const response = await this.$axios.post('http://127.0.0.1:5200/sendQuestions', 
+                    const response = await this.$axios.post('http://127.0.0.1:5000/editProducerProfile/sendQuestions', 
                         {
                             producerID: this.producer_id,
                             question: this.question,
@@ -2098,7 +2098,7 @@
             async sendAnswer (qa) {
                 let q_and_a_id = qa._id.$oid;
                 try {
-                    const response = await this.$axios.post('http://127.0.0.1:5200/sendAnswers', 
+                    const response = await this.$axios.post('http://127.0.0.1:5000/editProducerProfile/sendAnswers', 
                         {
                             producerID: this.producer_id,
                             questionsAnswersID: q_and_a_id,
@@ -2134,7 +2134,7 @@
             async deleteListings(listing) {
 
                 try {
-                    const response = await this.$axios.delete(`http://127.0.0.1:5002/deleteListing/${listing._id.$oid}`);
+                    const response = await this.$axios.delete(`http://127.0.0.1:5000/editListing/deleteListing/${listing._id.$oid}`);
                     console.log(response.data);
                 } 
                 catch (error) {
@@ -2253,7 +2253,7 @@
             // for producer to add updates
             async addUpdates() {
                 try {
-                    const response = await this.$axios.post('http://127.0.0.1:5200/addUpdates', 
+                    const response = await this.$axios.post('http://127.0.0.1:5000/editProducerProfile/addUpdates', 
                         {
                             producerID: this.producer_id,
                             date: this.currDate,
@@ -2298,7 +2298,7 @@
             // like updates
             async likeUpdates(updateID) {
                 try {
-                    const response = await this.$axios.post('http://127.0.0.1:5200/likeUpdates', 
+                    const response = await this.$axios.post('http://127.0.0.1:5000/editProducerProfile/likeUpdates', 
                         {
                             producerID: this.producer_id,
                             updateID: updateID,
@@ -2322,7 +2322,7 @@
             // unlike updates
             async unlikeUpdates(updateID) {
                 try {
-                    const response = await this.$axios.post('http://127.0.0.1:5200/unlikeUpdates', 
+                    const response = await this.$axios.post('http://127.0.0.1:5000/editProducerProfile/unlikeUpdates', 
                         {
                             producerID: this.producer_id,
                             updateID: updateID,
@@ -2364,7 +2364,7 @@
                     this.following = true
                 }
                 try {
-                    const response = await this.$axios.post('http://127.0.0.1:5100/updateFollowLists', 
+                    const response = await this.$axios.post('http://127.0.0.1:5000/editProfile/updateFollowLists', 
                         {
                             userID: this.user_id,
                             action: action,
@@ -2516,7 +2516,7 @@
                         let views = this.producerProfileViewInfo.views.find(view => view.date["$date"] == currDate);
                         let viewsID = views._id["$oid"];
                         try {
-                            const response = this.$axios.post('http://127.0.0.1:5200/addProfileCount', 
+                            const response = this.$axios.post('http://127.0.0.1:5000/editProducerProfile/addProfileCount', 
                                 {
                                     producerID: this.producerProfileID,
                                     viewsID: viewsID,
@@ -2536,7 +2536,7 @@
                     // if current date does not exist, add a new view
                     else {
                         try {
-                            const response = this.$axios.post('http://127.0.0.1:5200/addNewProfileCount', 
+                            const response = this.$axios.post('http://127.0.0.1:5000/editProducerProfile/addNewProfileCount', 
                                 {
                                     producerID: this.producer_id,
                                     date: currDate,
@@ -2622,7 +2622,7 @@
                     }
                     // send to backend
                     try {
-                        const response = this.$axios.post('http://127.0.0.1:5200/editUpdate', 
+                        const response = this.$axios.post('http://127.0.0.1:5000/editProducerProfile/editUpdate', 
                             {
                                 producerID: this.producer_id,
                                 updateID: update._id.$oid,
@@ -2651,7 +2651,7 @@
                     }
                     // send to backend
                     try {
-                        const response = this.$axios.post('http://127.0.0.1:5200/editUpdate', 
+                        const response = this.$axios.post('http://127.0.0.1:5000/editProducerProfile/editUpdate', 
                             {
                                 producerID: this.producer_id,
                                 updateID: update._id.$oid,
@@ -2678,7 +2678,7 @@
             deleteUpdate(update) {
 
                 try {
-                    const response = this.$axios.post('http://127.0.0.1:5200/deleteUpdate', 
+                    const response = this.$axios.post('http://127.0.0.1:5000/editProducerProfile/deleteUpdate', 
                         {
                             producerID: this.producer_id,
                             updateID: update._id.$oid,
@@ -2726,7 +2726,7 @@
                 this.editingQA = false;
                 let q_and_a_id = qa._id.$oid;
                 try {
-                    this.$axios.post('http://127.0.0.1:5200/editQA', 
+                    this.$axios.post('http://127.0.0.1:5000/editProducerProfile/editQA', 
                         {
                             producerID: this.producer_id,
                             questionsAnswersID: q_and_a_id,
@@ -2748,7 +2748,7 @@
             deleteQAEdit(qa) {
                 let q_and_a_id = qa._id.$oid;
                 try {
-                    const response = this.$axios.post('http://127.0.0.1:5200/deleteQA', 
+                    const response = this.$axios.post('http://127.0.0.1:5000/editProducerProfile/deleteQA', 
                         {
                             producerID: this.producer_id,
                             questionsAnswersID: q_and_a_id,
@@ -2862,7 +2862,7 @@
             async confirmUpdatePassword(){
                 let oldHash = this.hashPassword(this.specified_producer.producerName, this.oldPassword)
                 let newHash = this.hashPassword(this.specified_producer.producerName, this.newPassword)
-                let submitURL = 'http://127.0.0.1:5030/editPassword/' + this.specified_producer._id.$oid 
+                let submitURL = 'http://127.0.0.1:5000/authcheck/editPassword/' + this.specified_producer._id.$oid 
                 let submitData = {
                     oldHash: oldHash.toString(),
                     newHash: newHash.toString(),
@@ -2893,7 +2893,7 @@
                 setTimeout(() => {
                     this.isButtonDisabled = false;
                 }, 60000);
-            let submitURL = 'http://127.0.0.1:5030/sendResetPin/' + this.specified_producer._id.$oid
+            let submitURL = 'http://127.0.0.1:5000/authcheck/sendResetPin/' + this.specified_producer._id.$oid
             let submitData = {
                 userType: "producer",
             }
@@ -2920,7 +2920,7 @@
 
         async verifyOTP(){
             // call api to verify the pin
-            let submitURL = "http://127.0.0.1:5030/verifyPin/" + this.specified_producer._id.$oid
+            let submitURL = "http://127.0.0.1:5000/authcheck/verifyPin/" + this.specified_producer._id.$oid
             let submitData ={
                 userType:"producer",
                 pin:this.resetPin
@@ -2948,7 +2948,7 @@
 
         async resetPassword(){
             this.resettingPassword=true
-            let submitURL = "http://127.0.0.1:5030/resetPassword/" + this.specified_producer._id.$oid
+            let submitURL = "http://127.0.0.1:5000/authcheck/resetPassword/" + this.specified_producer._id.$oid
             let submitData = {
                 userType:"producer",
                 pin:this.resetPin

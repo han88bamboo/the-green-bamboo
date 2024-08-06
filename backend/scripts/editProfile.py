@@ -2,40 +2,23 @@
 # Routes: /editDetails (POST), /updateBookmark (POST), /updateFollowLists (POST), /updateModType (POST), /removeModType (POST)
 # -----------------------------------------------------------------------------------------
 
-import bson
-import json
-from bson import json_util
-from flask import Flask, request, jsonify
-from flask_pymongo import PyMongo
-from flask_cors import CORS
-
-from bson.objectid import ObjectId
-
-from datetime import datetime
-import pytz
-
-from gridfs import GridFS
 import os
+import pytz
 import s3Images
+from flask import Blueprint, g, request, jsonify
+from bson.objectid import ObjectId
+from datetime import datetime
 
-from dotenv import load_dotenv
-
-app = Flask(__name__)
-CORS(app)  # Allow all requests
-
-load_dotenv()
-app.config["MONGO_URI"] = os.getenv('MONGO_DB_URL')
-db = PyMongo(app).db
-
-mongo = PyMongo(app)
-fs = GridFS(mongo.db)
+file_name = os.path.basename(__file__)
+blueprint = Blueprint(file_name[:-3], __name__)
 
 # -----------------------------------------------------------------------------------------
 # [POST] Edit user profile
 # - Update user profile with new details
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/editDetails', methods=['POST'])
+@blueprint.route('/editDetails', methods=['POST'])
 def editDetails():
+    db = g.db
     data = request.get_json()
     print(data)
     userID = data['userID']
@@ -80,8 +63,9 @@ def editDetails():
 # [POST] Update user bookmark
 # - Update user bookmark with new details
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/updateBookmark', methods=['POST'])
+@blueprint.route('/updateBookmark', methods=['POST'])
 def updateBookmark():
+    db = g.db
     data = request.get_json()
     print(data)
     userID = data['userID']
@@ -125,8 +109,9 @@ def updateBookmark():
 # [POST] Update follow lists
 # - Update user follow lists with new details
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/updateFollowLists', methods=['POST'])
+@blueprint.route('/updateFollowLists', methods=['POST'])
 def updateFollowList():
+    db = g.db
     data = request.get_json()
     print(data)
     userID = data['userID']
@@ -181,8 +166,9 @@ def updateFollowList():
 # [POST] Update mod type
 # - Update user mod type with new details
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/updateModType', methods=['POST'])
+@blueprint.route('/updateModType', methods=['POST'])
 def updateModType():
+    db = g.db
     data = request.get_json()
     print(data)
     userID = data['userID']
@@ -225,8 +211,9 @@ def updateModType():
 # [POST] Remove mod type
 # - Remove user mod type by specified drink type
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/removeModType', methods=['POST'])
+@blueprint.route('/removeModType', methods=['POST'])
 def removeModType():
+    db = g.db
     data = request.get_json()
     print(data)
     userID = data['userID']
@@ -264,8 +251,3 @@ def removeModType():
                 "message": "An error occurred updating mod type."
             }
         ), 500
-
-# -----------------------------------------------------------------------------------------
-    
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True, port=5100)

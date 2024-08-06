@@ -2579,7 +2579,7 @@
             // Obtain venue data
             async getVenueData() {
                 try {
-                    const response = await this.$axios.get('http://127.0.0.1:5000/getVenue/' + this.targetVenue);
+                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getVenue/' + this.targetVenue);
 
                     if (response != null && response.data != null && response.data != "" && !(Array.isArray(response.data) && response.data.length == 0)) {
 
@@ -2638,7 +2638,7 @@
                         }
 
                         // Obtain servingTypes
-                        const servingTypesResponse = await this.$axios.get('http://127.0.0.1:5000/getServingTypes');
+                        const servingTypesResponse = await this.$axios.get('http://127.0.0.1:5000/getData/getServingTypes');
                         this.servingTypes = servingTypesResponse.data;
                         this.getDefaultServingType();
 
@@ -2676,7 +2676,7 @@
                                 console.log('checking subscription');
                                 // check for active subscription
                                 try {
-                                    const response = await this.$axios.post('http://127.0.0.1:5009/retrieve-latest-subscription', {
+                                    const response = await this.$axios.post('http://127.0.0.1:5000/payment/retrieve-latest-subscription', {
                                         customerId: this.targetVenue.stripeCustomerId,
                                     }, {
                                         headers: {
@@ -2704,7 +2704,7 @@
                                 if (this.targetVenue.claimStatus != claimStatus) {
                                     this.targetVenue.claimStatus = claimStatus;
                                     try {
-                                        await this.$axios.post(`http://127.0.0.1:5300/updateVenueClaimStatus`, 
+                                        await this.$axios.post(`http://127.0.0.1:5300/editVenueProfile/updateVenueClaimStatus`, 
                                             {
                                                 businessId: this.targetVenue._id['$oid'],
                                                 claimStatus: claimStatus,
@@ -2720,7 +2720,7 @@
     
                                 // upqdate last check status date
                                 try {
-                                    await this.$axios.post(`http://127.0.0.1:5300/updateVenueClaimStatusCheckDate`, 
+                                    await this.$axios.post(`http://127.0.0.1:5300/editVenueProfile/updateVenueClaimStatusCheckDate`, 
                                         {
                                             businessId: this.targetVenue._id['$oid'],
                                             claimStatusCheckDate: new Date().toISOString(),
@@ -2770,7 +2770,7 @@
 
                             // If not found, get from server
                             if (listingData == undefined) {
-                                let response = await this.$axios.get('http://127.0.0.1:5000/getListing/' + item.itemID['$oid']);
+                                let response = await this.$axios.get('http://127.0.0.1:5000/getData/getListing/' + item.itemID['$oid']);
                                 listingData = response.data;
 
                                 if (Array.isArray(listingData) && listingData.length == 0) {
@@ -2781,7 +2781,7 @@
                                 else if (listingData != null && listingData != "") {
 
                                     // Get reviews
-                                    let reviewResponse = await this.$axios.get('http://127.0.0.1:5000/getReviewByTarget/' + item.itemID['$oid']);
+                                    let reviewResponse = await this.$axios.get('http://127.0.0.1:5000/getData/getReviewByTarget/' + item.itemID['$oid']);
                                     let reviewData = reviewResponse.data;
 
                                     if (Array.isArray(reviewData) && reviewData.length == 0) {
@@ -2802,7 +2802,7 @@
 
                                     // If not found, get from server
                                     if (producerData == undefined) {
-                                        let producerResponse = await this.$axios.get('http://127.0.0.1:5000/getProducer/' + listingData["producerID"]['$oid']);
+                                        let producerResponse = await this.$axios.get('http://127.0.0.1:5000/getData/getProducer/' + listingData["producerID"]['$oid']);
                                         producerData = producerResponse.data;
 
                                         if (Array.isArray(producerData) && producerData.length == 0) {
@@ -2892,7 +2892,7 @@
                     // Check if viewer is a user and get their data
                     if (this.viewerType == 'user') {
                         try {
-                            const response = await this.$axios.get('http://127.0.0.1:5000/getUser/' + this.viewerID);
+                            const response = await this.$axios.get('http://127.0.0.1:5000/getData/getUser/' + this.viewerID);
                             if (Array.isArray(response.data) && response.data.length == 0) {
                                 throw "User not found!";
                             }
@@ -2925,7 +2925,7 @@
 
                 // Get profile views
                 try {
-                    const response = await this.$axios.get('http://127.0.0.1:5000/getVenuesProfileViewsByVenue/' + this.targetVenue._id['$oid']);
+                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getVenuesProfileViewsByVenue/' + this.targetVenue._id['$oid']);
                     let venueProfileViewInfo = {};
                     if (Array.isArray(response.data) && response.data.length != 0) {
                         venueProfileViewInfo = response.data[0];
@@ -2946,7 +2946,7 @@
                             let views = venueProfileViewInfo.views.find(view => view.date["$date"] == currDate);
                             let viewsID = views._id["$oid"];
                             try {
-                                this.$axios.post('http://127.0.0.1:5300/addProfileCount', 
+                                this.$axios.post('http://127.0.0.1:5300/editVenueProfile/addProfileCount', 
                                     {
                                         venueID: venueProfileViewInfo._id["$oid"],
                                         viewsID: viewsID,
@@ -2965,7 +2965,7 @@
                         // if current date does not exist, add a new view
                         else {
                             try {
-                                this.$axios.post('http://127.0.0.1:5300/addNewProfileCount', 
+                                this.$axios.post('http://127.0.0.1:5300/editVenueProfile/addNewProfileCount', 
                                     {
                                         venueID: this.targetVenue._id["$oid"],
                                         date: currDate,
@@ -3199,7 +3199,7 @@
                 this.editProfile = false;
 
                 try {
-                    await this.$axios.post('http://127.0.0.1:5300/editDetails', 
+                    await this.$axios.post('http://127.0.0.1:5300/editVenueProfile/editDetails', 
                         {
                             venueID: this.targetVenue['_id']['$oid'],
                             image64: this.editProfilePhoto,
@@ -3225,7 +3225,7 @@
             // Submit New Update
             async submitNewUpdate() {
                 try {
-                    await this.$axios.post('http://127.0.0.1:5300/addUpdates', 
+                    await this.$axios.post('http://127.0.0.1:5300/editVenueProfile/addUpdates', 
                         {
                             venueID: this.targetVenue['_id']['$oid'],
                             date: new Date().toISOString(),
@@ -3262,7 +3262,7 @@
             // Save Update Edits
             async saveUpdate(update) {
                 try {
-                    await this.$axios.post('http://127.0.0.1:5300/editUpdate', 
+                    await this.$axios.post('http://127.0.0.1:5300/editVenueProfile/editUpdate', 
                         {
                             venueID: this.targetVenue['_id']['$oid'],
                             updateID: update['_id']['$oid'],
@@ -3288,7 +3288,7 @@
             // Delete Update
             async deleteUpdate(update) {
                 try {
-                    await this.$axios.post('http://127.0.0.1:5300/deleteUpdate', 
+                    await this.$axios.post('http://127.0.0.1:5300/editVenueProfile/deleteUpdate', 
                         {
                             venueID: this.targetVenue['_id']['$oid'],
                             updateID: update['_id']['$oid'],
@@ -3311,7 +3311,7 @@
             // Send Answer to a Question
             async sendAnswer(qa) {
                 try {
-                    await this.$axios.post('http://127.0.0.1:5300/sendAnswers', 
+                    await this.$axios.post('http://127.0.0.1:5300/editVenueProfile/sendAnswers', 
                         {
                             venueID: this.targetVenue['_id']['$oid'],
                             questionsAnswersID: qa._id['$oid'],
@@ -3341,7 +3341,7 @@
                 this.editAddress = false;
 
                 try {
-                    await this.$axios.post('http://localhost:5300/editAddress', 
+                    await this.$axios.post('http://localhost:5300/editVenueProfile/editAddress', 
                         {
                             venueID: this.targetVenue['_id']['$oid'],
                             updatedAddress: this.newAddress,
@@ -3398,7 +3398,7 @@
                 this.editOpeningHours = false;
 
                 try {
-                    await this.$axios.post('http://localhost:5300/editOpeningHours', 
+                    await this.$axios.post('http://localhost:5300/editVenueProfile/editOpeningHours', 
                         {
                             venueID: this.targetVenue['_id']['$oid'],
                             updatedOpeningHours: this.newOpeningHours,
@@ -3425,7 +3425,7 @@
                 this.editPublicHolidays = false;
 
                 try {
-                    await this.$axios.post('http://localhost:5300/editPublicHolidays', 
+                    await this.$axios.post('http://localhost:5300/editVenueProfile/editPublicHolidays', 
                         {
                             venueID: this.targetVenue['_id']['$oid'],
                             updatedPublicHolidays: this.newPublicHolidays,
@@ -3452,7 +3452,7 @@
                 this.editReservationDetails = false;
 
                 try {
-                    await this.$axios.post('http://localhost:5300/editReservationDetails', 
+                    await this.$axios.post('http://localhost:5300/editVenueProfile/editReservationDetails', 
                         {
                             venueID: this.targetVenue['_id']['$oid'],
                             updatedReservationDetails: this.newReservationDetails,
@@ -3625,15 +3625,15 @@
 
                     try {
                         // Obtain all listings
-                        const listingResponse = await this.$axios.get('http://127.0.0.1:5000/getListings');
+                        const listingResponse = await this.$axios.get('http://127.0.0.1:5000/getData/getListings');
                         this.allListings = listingResponse.data;
 
                         // Obtain all reviews
-                        let reviewResponse = await this.$axios.get('http://127.0.0.1:5000/getReviews');
+                        let reviewResponse = await this.$axios.get('http://127.0.0.1:5000/getData/getReviews');
                         let reviewData = reviewResponse.data;
 
                         // Obtain all producers
-                        let producerResponse = await this.$axios.get('http://127.0.0.1:5000/getProducers');
+                        let producerResponse = await this.$axios.get('http://127.0.0.1:5000/getData/getProducers');
                         this.loadedProducers = producerResponse.data;
 
                         // Get reviews + producer name for each listing
@@ -3701,7 +3701,7 @@
                 }
 
                 try {
-                    await this.$axios.post('http://127.0.0.1:5300/editMenu', 
+                    await this.$axios.post('http://127.0.0.1:5300/editVenueProfile/editMenu', 
                         {
                             venueID: this.targetVenue['_id']['$oid'],
                             updatedMenu: this.editMenu,
@@ -3735,7 +3735,7 @@
                 }
 
                 try {
-                    await this.$axios.post('http://127.0.0.1:5100/updateFollowLists', 
+                    await this.$axios.post('http://127.0.0.1:5100/editProfile/updateFollowLists', 
                         {
                             userID: this.viewerID,
                             action: action,
@@ -3756,7 +3756,7 @@
             // Unlike Updates
             async unlikeUpdates(unlikeUpdateID) {
                 try {
-                    await this.$axios.post('http://127.0.0.1:5300/unlikeUpdates', 
+                    await this.$axios.post('http://127.0.0.1:5300/editVenueProfile/unlikeUpdates', 
                         {
                             venueID: this.targetVenue['_id']['$oid'],
                             updateID: unlikeUpdateID,
@@ -3779,7 +3779,7 @@
             // Like Updates
             async likeUpdates(likeUpdateID) {
                 try {
-                    await this.$axios.post('http://127.0.0.1:5300/likeUpdates', 
+                    await this.$axios.post('http://127.0.0.1:5300/editVenueProfile/likeUpdates', 
                         {
                             venueID: this.targetVenue['_id']['$oid'],
                             updateID: likeUpdateID,
@@ -3802,7 +3802,7 @@
             // Send Question
             async sendQuestion() {
                 try {
-                    await this.$axios.post('http://127.0.0.1:5300/sendQuestions', 
+                    await this.$axios.post('http://127.0.0.1:5300/editVenueProfile/sendQuestions', 
                         {
                             venueID: this.targetVenue['_id']['$oid'],
                             question: this.qaQuestion,
@@ -3960,7 +3960,7 @@
             // Add listing to user's drink lists
             async addToBookmarks(targetList, listingID){
 
-                let submitAPI = "http://127.0.0.1:5070/addTo";
+                let submitAPI = "http://127.0.0.1:5000/addToList/addTo";
 
                 if (targetList == "tried") {
                     submitAPI += "Tried/";
@@ -4010,7 +4010,7 @@
                 this.editingQA = false;
                 let q_and_a_id = qa._id.$oid;
                 try {
-                    await this.$axios.post('http://127.0.0.1:5300/editQA', 
+                    await this.$axios.post('http://127.0.0.1:5300/editVenueProfile/editQA', 
                         {
                             venueID: this.targetVenue['_id']['$oid'],
                             questionsAnswersID: q_and_a_id,
@@ -4032,7 +4032,7 @@
             async deleteQAEdit(qa) {
                 let q_and_a_id = qa._id.$oid;
                 try {
-                    const response = await this.$axios.post('http://127.0.0.1:5300/deleteQA', 
+                    const response = await this.$axios.post('http://127.0.0.1:5300/editVenueProfile/deleteQA', 
                         {
                             venueID: this.targetVenue['_id']['$oid'],
                             questionsAnswersID: q_and_a_id,
@@ -4117,7 +4117,7 @@
             async confirmUpdatePassword(){
                 let oldHash = this.hashPassword(this.targetVenue.venueName, this.oldPassword)
                 let newHash = this.hashPassword(this.targetVenue.venueName, this.newPassword)
-                let submitURL = 'http://127.0.0.1:5030/editPassword/' + this.targetVenue._id.$oid 
+                let submitURL = 'http://127.0.0.1:5000/authcheck/editPassword/' + this.targetVenue._id.$oid 
                 let submitData = {
                     oldHash: oldHash.toString(),
                     newHash: newHash.toString(),
@@ -4148,7 +4148,7 @@
                 setTimeout(() => {
                     this.isButtonDisabled = false;
                 }, 60000);
-            let submitURL = 'http://127.0.0.1:5030/sendResetPin/' + this.targetVenue._id.$oid
+            let submitURL = 'http://127.0.0.1:5000/authcheck/sendResetPin/' + this.targetVenue._id.$oid
             let submitData = {
                 userType: "venue",
             }
@@ -4175,7 +4175,7 @@
 
         async verifyOTP(){
             // call api to verify the pin
-            let submitURL = "http://127.0.0.1:5030/verifyPin/" + this.targetVenue._id.$oid
+            let submitURL = "http://127.0.0.1:5000/authcheck/verifyPin/" + this.targetVenue._id.$oid
             let submitData ={
                 userType:"venue",
                 pin:this.resetPin
@@ -4203,7 +4203,7 @@
 
         async resetPassword(){
             this.resettingPassword=true
-            let submitURL = "http://127.0.0.1:5030/resetPassword/" + this.targetVenue._id.$oid
+            let submitURL = "http://127.0.0.1:5000/authcheck/resetPassword/" + this.targetVenue._id.$oid
             let submitData = {
                 userType:"venue",
                 pin:this.resetPin

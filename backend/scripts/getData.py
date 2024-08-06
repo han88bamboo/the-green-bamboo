@@ -12,29 +12,18 @@
 # pip install pymongo
 # pip install flask-cors
 
-import bson
+import os
 import json
 from bson import json_util
-from flask import Flask
-from flask_pymongo import PyMongo
-from flask_cors import CORS
+from flask import Blueprint, g
 from bson.objectid import ObjectId
 
-from dotenv import load_dotenv
-import os
-import s3Images
+file_name = os.path.basename(__file__)
+blueprint = Blueprint(file_name[:-3], __name__)
 
-app = Flask(__name__)
-CORS(app)  # Allow all requests
-
-load_dotenv()
-app.config["MONGO_URI"] = os.getenv('MONGO_DB_URL')
-db = PyMongo(app).db
-
-#This is to parse BSON data from Mongo so that we can parse it as JSON
-#possibility to put this into a separate python file so that each flask function can just import that instead of having this chunk of code
+# converts BSON to JSON
 def parse_json(data):
-    return json.loads(json_util.dumps(data))
+    return json.loads(json_util.dumps(data)) 
 
 # def modifyPhotos():
 #     data = db.producers.find({})
@@ -49,65 +38,59 @@ def parse_json(data):
 #         print(doc['_id'])
 
 # modifyPhotos()
+
 # -----------------------------------------------------------------------------------------
 # [GET] accountRequests
-@app.route("/getAccountRequests")
+@blueprint.route('/getAccountRequests', methods=['GET'])
 def getAccountRequests():
-    #this step finds all the items in the collection, specifying accountRequests
+    db = g.db
     data = db.accountRequests.find({})
-    #have to use data.clone so that cursor is not used up
     print(len(list(data.clone())))
     allAccountRequests = []
-    #parse bson as json
     dataEncode = parse_json(data)
     for doc in dataEncode:
-        # print(doc)
         allAccountRequests.append(doc)
     return allAccountRequests
 
 # -----------------------------------------------------------------------------------------
 # [GET] Countries
-@app.route("/getCountries")
+@blueprint.route('/getCountries', methods=['GET'])
 def getCountries():
-    #this step finds all the items in the collection, specifying Countries
+    db = g.db
     data = db.countries.find({})
-    #have to use data.clone so that cursor is not used up
     print(len(list(data.clone())))
     allCountries = []
-    #parse bson as json
     dataEncode = parse_json(data)
     for doc in dataEncode:
-        # print(doc)
         allCountries.append(doc)
     return allCountries
 
 # -----------------------------------------------------------------------------------------
 # [GET] Listings
-@app.route("/getListings")
+@blueprint.route("/getListings")
 def getListings():
-    #this step finds all the items in the collection, specifying Listings
+    db = g.db
     data = db.listings.find({})
-    #have to use data.clone so that cursor is not used up
     print(len(list(data.clone())))
     allListings = []
-    #parse bson as json
     dataEncode = parse_json(data)
     for doc in dataEncode:
-        # print(doc)
         allListings.append(doc)
     return allListings
 
 # [GET] Specific Listing
-@app.route("/getListing/<id>")
+@blueprint.route("/getListing/<id>")
 def getListing(id):
+    db = g.db
     data = db.listings.find_one({"_id": ObjectId(id)})
     if data is None:
         return []
     return parse_json(data)
 
 # [GET] Specific Listings By Producer
-@app.route("/getListingsByProducer/<id>")
+@blueprint.route("/getListingsByProducer/<id>")
 def getListingsByProducer(id):
+    db = g.db
     data = db.listings.find({"producerID": ObjectId(id)})
     if data is None:
         return []
@@ -115,31 +98,30 @@ def getListingsByProducer(id):
 
 # -----------------------------------------------------------------------------------------
 # [GET] Producers
-@app.route("/getProducers")
+@blueprint.route("/getProducers")
 def getProducers():
-    #this step finds all the items in the collection, specifying Producers
+    db = g.db
     data = db.producers.find({})
-    #have to use data.clone so that cursor is not used up
     print(len(list(data.clone())))
     allProducers = []
-    #parse bson as json
     dataEncode = parse_json(data)
     for doc in dataEncode:
-        # print(doc)
         allProducers.append(doc)
     return allProducers
 
 # [GET] Specific Producer
-@app.route("/getProducer/<id>")
+@blueprint.route("/getProducer/<id>")
 def getProducer(id):
+    db = g.db
     data = db.producers.find_one({"_id": ObjectId(id)})
     if data is None:
         return []
     return parse_json(data)
 
 # [GET] Specific Producer
-@app.route("/getProducerByRequestId/<id>")
+@blueprint.route("/getProducerByRequestId/<id>")
 def getProducerByRequestId(id):
+    db = g.db
     data = db.producers.find_one({"requestId": ObjectId(id)})
     if data is None:
         return []
@@ -147,61 +129,56 @@ def getProducerByRequestId(id):
 
 # -----------------------------------------------------------------------------------------
 # [GET] Reviews
-@app.route("/getReviews")
+@blueprint.route("/getReviews")
 def getReviews():
-    #this step finds all the items in the collection, specifying Reviews
+    db = g.db
     data = db.reviews.find({})
-    #have to use data.clone so that cursor is not used up
     print(len(list(data.clone())))
     allReviews = []
-    #parse bson as json
     dataEncode = parse_json(data)
     for doc in dataEncode:
-        # print(doc)
         allReviews.append(doc)
     return allReviews
 
 # [GET] Specific Reviews by reviewTarget
-@app.route("/getReviewByTarget/<id>")
+@blueprint.route("/getReviewByTarget/<id>")
 def getReviewByTarget(id):
+    db = g.db
     data = db.reviews.find({"reviewTarget": ObjectId(id)})
     if data is None:
         return []
     allReviews = []
-    #parse bson as json
     dataEncode = parse_json(data)
     for doc in dataEncode:
-        # print(doc)
         allReviews.append(doc)
     return allReviews
 
 # -----------------------------------------------------------------------------------------
 # [GET] Users
-@app.route("/getUsers")
+@blueprint.route("/getUsers")
 def getUsers():
-    #this step finds all the items in the collection, specifying Users
+    db = g.db
     data = db.users.find({})
-    #have to use data.clone so that cursor is not used up
     print(len(list(data.clone())))
     allUsers = []
-    #parse bson as json
     dataEncode = parse_json(data)
     for doc in dataEncode:
-        # print(doc)
         allUsers.append(doc)
     return allUsers
 
 # [GET] Specific User
-@app.route("/getUser/<id>")
+@blueprint.route("/getUser/<id>")
 def getUser(id):
+    db = g.db
     data = db.users.find_one({"_id": ObjectId(id)})
     if data is None:
         return []
     return parse_json(data)
 
 # [GET] Specific User by username
-@app.route("/getUserByUsername/<username>")
+@blueprint.route("/getUserByUsername/<username>")
 def getUserByUsername(username):
+    db = g.db
     data = db.users.find_one({"username": username})
     if data is None:
         return []
@@ -209,31 +186,30 @@ def getUserByUsername(username):
 
 # -----------------------------------------------------------------------------------------
 # [GET] Venues
-@app.route("/getVenues")
+@blueprint.route("/getVenues")
 def getVenues():
-    #this step finds all the items in the collection, specifying Venues
+    db = g.db
     data = db.venues.find({})
-    #have to use data.clone so that cursor is not used up
     print(len(list(data.clone())))
     allVenues = []
-    #parse bson as json
     dataEncode = parse_json(data)
     for doc in dataEncode:
-        # print(doc)
         allVenues.append(doc)
     return allVenues
 
 # [GET] Specific Venue
-@app.route("/getVenue/<id>")
+@blueprint.route("/getVenue/<id>")
 def getVenue(id):
+    db = g.db
     data = db.venues.find_one({"_id": ObjectId(id)})
     if data is None:
         return []
     return parse_json(data)
 
 # [GET] Specific Producer
-@app.route("/getVenueByRequestId/<id>")
+@blueprint.route("/getVenueByRequestId/<id>")
 def getVenueByRequestId(id):
+    db = g.db
     data = db.venues.find_one({"requestId": ObjectId(id)})
     if data is None:
         return []
@@ -241,55 +217,47 @@ def getVenueByRequestId(id):
 
 # -----------------------------------------------------------------------------------------
 # [GET] VenuesAPI
-@app.route("/getVenuesAPI")
+@blueprint.route("/getVenuesAPI")
 def getVenuesAPI():
-    #this step finds all the items in the collection, specifying VenuesAPI
+    db = g.db
     data = db.venuesAPI.find({})
-    #have to use data.clone so that cursor is not used up
     print(len(list(data.clone())))
     allVenuesAPI = []
-    #parse bson as json
     dataEncode = parse_json(data)
     for doc in dataEncode:
-        # print(doc)
         allVenuesAPI.append(doc)
     return allVenuesAPI
 
 # -----------------------------------------------------------------------------------------
 # [GET] DrinkTypes
-@app.route("/getDrinkTypes")
+@blueprint.route("/getDrinkTypes")
 def getDrinkTypes():
-    #this step finds all the items in the collection, specifying Drink Types
+    db = g.db
     data = db.drinkTypes.find({})
-    #have to use data.clone so that cursor is not used up
     print(len(list(data.clone())))
     allDrinkTypes = []
-    #parse bson as json
     dataEncode = parse_json(data)
     for doc in dataEncode:
-        # print(doc)
         allDrinkTypes.append(doc)
     return allDrinkTypes
 
 # -----------------------------------------------------------------------------------------
 # [GET] RequestListings
-@app.route("/getRequestListings")
+@blueprint.route("/getRequestListings")
 def getRequestListings():
-    #this step finds all the items in the collection, specifying Request Listings
+    db = g.db
     data = db.requestListings.find({})
-    #have to use data.clone so that cursor is not used up
     print(len(list(data.clone())))
     allRequestListings = []
-    #parse bson as json
     dataEncode = parse_json(data)
     for doc in dataEncode:
-        # print(doc)
         allRequestListings.append(doc)
     return allRequestListings
 
 # [GET] Specific Request Listing
-@app.route("/getRequestListing/<id>")
+@blueprint.route("/getRequestListing/<id>")
 def getRequestListing(id):
+    db = g.db
     data = db.requestListings.find_one({"_id": ObjectId(id)})
     if data is None:
         return []
@@ -297,23 +265,21 @@ def getRequestListing(id):
 
 # -----------------------------------------------------------------------------------------
 # [GET] RequestEdits
-@app.route("/getRequestEdits")
+@blueprint.route("/getRequestEdits")
 def getRequestEdits():
-    #this step finds all the items in the collection, specifying Request Edits
+    db = g.db
     data = db.requestEdits.find({})
-    #have to use data.clone so that cursor is not used up
     print(len(list(data.clone())))
     allRequestEdits = []
-    #parse bson as json
     dataEncode = parse_json(data)
     for doc in dataEncode:
-        # print(doc)
         allRequestEdits.append(doc)
     return allRequestEdits
 
 # [GET] Specific Request Edit
-@app.route("/getRequestEdit/<id>")
+@blueprint.route("/getRequestEdit/<id>")
 def getRequestEdit(id):
+    db = g.db
     data = db.requestEdits.find_one({"_id": ObjectId(id)})
     if data is None:
         return []
@@ -321,207 +287,175 @@ def getRequestEdit(id):
 
 # -----------------------------------------------------------------------------------------
 # [GET] modRequests
-@app.route("/getModRequests")
+@blueprint.route("/getModRequests")
 def getModRequests():
-    #this step finds all the items in the collection, specifying Mod Requests
+    db = g.db
     data = db.modRequests.find({})
-    #have to use data.clone so that cursor is not used up
     print(len(list(data.clone())))
     allModRequests = []
-    #parse bson as json
     dataEncode = parse_json(data)
     for doc in dataEncode:
-        # print(doc)
         allModRequests.append(doc)
     return allModRequests
 
 # -----------------------------------------------------------------------------------------
 # [GET] flavourTags
-@app.route("/getFlavourTags")
+@blueprint.route("/getFlavourTags")
 def getFlavourTags():
-    #this step finds all the items in the collection, specifying Flavour Tags
+    db = g.db
     data = db.flavourTags.find({})
-    #have to use data.clone so that cursor is not used up
     print(len(list(data.clone())))
     allFlavourTags = []
-    #parse bson as json
     dataEncode = parse_json(data)
     for doc in dataEncode:
-        # print(doc)
         allFlavourTags.append(doc)
     return allFlavourTags
 # -----------------------------------------------------------------------------------------
 # [GET] subTags
-@app.route("/getSubTags")
+@blueprint.route("/getSubTags")
 def getSubTags():
-    #this step finds all the items in the collection, specifying Flavour Tags
+    db = g.db
     data = db.subTags.find({})
-    #have to use data.clone so that cursor is not used up
     print(len(list(data.clone())))
     allSubTags = []
-    #parse bson as json
     dataEncode = parse_json(data)
     for doc in dataEncode:
-        # print(doc)
         allSubTags.append(doc)
     return allSubTags
 
 # -----------------------------------------------------------------------------------------
 # [GET] observationTags
-@app.route("/getObservationTags")
+@blueprint.route("/getObservationTags")
 def getObservationTags():
-    #this step finds all the items in the collection, specifying Flavour Tags
+    db = g.db
     data = db.observationTags.find({})
-    #have to use data.clone so that cursor is not used up
     print(len(list(data.clone())))
     allObservationTags = []
-    #parse bson as json
     dataEncode = parse_json(data)
     for doc in dataEncode:
-        # print(doc)
         allObservationTags.append(doc)
     return allObservationTags
 
 # -----------------------------------------------------------------------------------------
 # [GET] colours
-@app.route("/getColours")
+@blueprint.route("/getColours")
 def getColours():
-    #this step finds all the items in the collection, specifying Flavour Tags
+    db = g.db
     data = db.colours.find({})
-    #have to use data.clone so that cursor is not used up
     print(len(list(data.clone())))
     allColours = []
-    #parse bson as json
     dataEncode = parse_json(data)
     for doc in dataEncode:
-        # print(doc)
         allColours.append(doc)
     return allColours
 
 # -----------------------------------------------------------------------------------------
 # [GET] specialColours
-@app.route("/getSpecialColours")
+@blueprint.route("/getSpecialColours")
 def getSpecialColours():
-    #this step finds all the items in the collection, specifying Flavour Tags
+    db = g.db
     data = db.specialColours.find({})
-    #have to use data.clone so that cursor is not used up
     print(len(list(data.clone())))
     allSpecialColours = []
-    #parse bson as json
     dataEncode = parse_json(data)
     for doc in dataEncode:
-        # print(doc)
         allSpecialColours.append(doc)
     return allSpecialColours
 
 # -----------------------------------------------------------------------------------------
 # [GET] languages
-@app.route("/getLanguages")
+@blueprint.route("/getLanguages")
 def getLanguages():
-    #this step finds all the items in the collection, specifying languages
+    db = g.db
     data = db.languages.find({})
-    #have to use data.clone so that cursor is not used up
     print(len(list(data.clone())))
     languages = []
-    #parse bson as json
     dataEncode = parse_json(data)
     for doc in dataEncode:
-        # print(doc)
         languages.append(doc)
     return languages
 
 # -----------------------------------------------------------------------------------------
 # [GET] servingTypes
-@app.route("/getServingTypes")
+@blueprint.route("/getServingTypes")
 def getServingTypes():
-    #this step finds all the items in the collection, specifying servingTypes
+    db = g.db
     data = db.servingTypes.find({})
-    #have to use data.clone so that cursor is not used up
     print(len(list(data.clone())))
     servingTypes = []
-    #parse bson as json
     dataEncode = parse_json(data)
     for doc in dataEncode:
-        # print(doc)
         servingTypes.append(doc)
     return servingTypes
 
 # -----------------------------------------------------------------------------------------
 # [GET] producersProfileViews
-@app.route("/getProducersProfileViews")
+@blueprint.route("/getProducersProfileViews")
 def getProducersProfileViews():
-    #this step finds all the items in the collection, specifying producersProfileViews
+    db = g.db
     data = db.producersProfileViews.find({})
-    #have to use data.clone so that cursor is not used up
     print(len(list(data.clone())))
     producersProfileViews = []
-    #parse bson as json
     dataEncode = parse_json(data)
     for doc in dataEncode:
-        # print(doc)
         producersProfileViews.append(doc)
     return producersProfileViews
 
 # -----------------------------------------------------------------------------------------
 # [GET] venuesProfileViews by venueID
-@app.route("/getVenuesProfileViewsByVenue/<id>")
+@blueprint.route("/getVenuesProfileViewsByVenue/<id>")
 def getVenuesProfileViewsByVenue(id):
-    #this step finds all the items in the collection, specifying venuesProfileViews
+    db = g.db
     data = db.venuesProfileViews.find({"venueID": ObjectId(id)})
-    #have to use data.clone so that cursor is not used up
     print(len(list(data.clone())))
     venuesProfileViews = []
-    #parse bson as json
     dataEncode = parse_json(data)
     for doc in dataEncode:
-        # print(doc)
         venuesProfileViews.append(doc)
     return venuesProfileViews
 
 # -----------------------------------------------------------------------------------------
 # [GET] requestInaccuracy by venueID
-@app.route("/getRequestInaccuracyByVenue/<id>")
+@blueprint.route("/getRequestInaccuracyByVenue/<id>")
 def getRequestInaccuracyByVenue(id):
     # only get requestInaccuracy that has reviewStatus = False
+    db = g.db
     data = db.requestInaccuracy.find({"venueID": ObjectId(id), "reviewStatus": False})
     if data is None:
         return []
     allRequestInaccuracy = []
-    #parse bson as json
     dataEncode = parse_json(data)
     for doc in dataEncode:
-        # print(doc)
         allRequestInaccuracy.append(doc)
     return allRequestInaccuracy
 
 # -----------------------------------------------------------------------------------------
 # [GET] Badges
-@app.route("/getBadges")
+@blueprint.route("/getBadges")
 def getBadges():
-    #this step finds all the items in the collection, specifying Badges
+    db = g.db
     data = db.badges.find({})
-    #have to use data.clone so that cursor is not used up
     print(len(list(data.clone())))
     allBadges = []
-    #parse bson as json
     dataEncode = parse_json(data)
     for doc in dataEncode:
-        # print(doc)
         allBadges.append(doc)
     return allBadges
 
 # -----------------------------------------------------------------------------------------
 # [GET] Specific Token
-@app.route("/getToken/<token>")
+@blueprint.route("/getToken/<token>")
 def getToken(token):
+    db = g.db
     data = db.tokens.find_one({"token": token})
     if data is None:
         return []
     return parse_json(data)
 
 # [GET] Specific Token By requestId
-@app.route("/getTokenByRequestId/<requestId>")
+@blueprint.route("/getTokenByRequestId/<requestId>")
 def getTokenByRequestId(requestId):
+    db = g.db
     data = db.tokens.find_one({"requestId": ObjectId(requestId)})
     if data is None:
         return []
@@ -529,8 +463,9 @@ def getTokenByRequestId(requestId):
 
 # -----------------------------------------------------------------------------------------
 # [GET] Specific Request
-@app.route("/getAccountRequest/<id>")
+@blueprint.route("/getAccountRequest/<id>")
 def getAccountRequest(id):
+    db = g.db
     data = db.accountRequests.find_one({"_id": ObjectId(id)})
     if data is None:
         return []
@@ -538,15 +473,12 @@ def getAccountRequest(id):
 
 # -----------------------------------------------------------------------------------------
 # [GET] Producers
-@app.route("/getUsernames")
+@blueprint.route("/getUsernames")
 def getUsernames():
+    db = g.db
     producers_data = db.producers.find({}, {'username': 1, '_id': 0})
     venues_data = db.venues.find({}, {'username': 1, '_id': 0})
 
     all_usernames = [doc['username'] for doc in producers_data] + [doc['username'] for doc in venues_data]
 
     return parse_json(all_usernames)
-
-# -----------------------------------------------------------------------------------------
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', debug=True, port = 5000)

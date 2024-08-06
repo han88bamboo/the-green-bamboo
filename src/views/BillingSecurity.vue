@@ -255,7 +255,7 @@
             async loadData(){
                 // get token
                 try {
-                    const response = await this.$axios.get(`http://127.0.0.1:5000/getToken/${this.token}`);
+                    const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getToken/${this.token}`);
                     this.tokenData = response.data;
                     this.businessId = response.data.userId;
                     this.requestId = response.data.requestId;
@@ -267,7 +267,7 @@
 
                 // get request
                 try {
-                    const response = await this.$axios.get(`http://127.0.0.1:5000/getAccountRequest/${this.requestId.$oid}`);
+                    const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getAccountRequest/${this.requestId.$oid}`);
                     this.accountRequest = response.data;
                     this.businessType = this.accountRequest.businessType;
                     this.customerName = this.accountRequest.firstName + " " + this.accountRequest.lastName;
@@ -282,7 +282,7 @@
 
                 // get business
                 try {
-                    const response = await this.$axios.get(`http://127.0.0.1:5000/get${this.businessType.charAt(0).toUpperCase()}${this.businessType.slice(1)}/${this.businessId.$oid}`);
+                    const response = await this.$axios.get(`http://127.0.0.1:5000/getData/get${this.businessType.charAt(0).toUpperCase()}${this.businessType.slice(1)}/${this.businessId.$oid}`);
                     this.business = response.data;
                     this.username = this.business.username;
                 }
@@ -296,8 +296,9 @@
 
             async create_customer() {
                 // create customer
+                console.log("creating customer");
                 try {
-                    const response = await this.$axios.post('http://127.0.0.1:5009/create-customer',
+                    const response = await this.$axios.post('http://127.0.0.1:5000/payment/create-customer',
                         {
                             customerEmail: this.customerEmail,
                             customerName: this.customerName,
@@ -310,7 +311,7 @@
                     this.customerId = response.data.customerId;
 
                     // update business with customerId
-                    const response2 = await this.$axios.post(`http://127.0.0.1:5031/updateCustomerId`,
+                    const response2 = await this.$axios.post(`http://127.0.0.1:5000/createAccount/updateCustomerId`,
                         {
                             businessId: this.businessId,
                             customerId: this.customerId,
@@ -334,7 +335,7 @@
                     this.priceId = this.yearlyPriceId;
                 }
                 try {
-                    const response = await this.$axios.post('http://127.0.0.1:5009/create-subscription',
+                    const response = await this.$axios.post('http://127.0.0.1:5000/payment/create-subscription',
                         {
                             priceId: this.priceId,
                             customerId: this.customerId,
@@ -393,7 +394,7 @@
 
                     // update account request
                     try {
-                        await this.$axios.post('http://127.0.0.1:5031/updateAccountRequest', 
+                        await this.$axios.post('http://127.0.0.1:5000/createAccount/updateAccountRequest', 
                             {
                                 requestID: this.requestId.$oid,
                                 isPending: false,
@@ -408,9 +409,10 @@
                     }
                     
                     // update business claim status
-                    const port = this.businessType == "producer" ? "5200" : "5300";
                     try {
-                        await this.$axios.post(`http://127.0.0.1:${port}/update${this.businessType.charAt(0).toUpperCase()}${this.businessType.slice(1)}ClaimStatus`, 
+                        await this.$axios.post(`http://127.0.0.1:5000/
+                                                edit${this.businessType.charAt(0).toUpperCase()}${this.businessType.slice(1)}Profile/
+                                                update${this.businessType.charAt(0).toUpperCase()}${this.businessType.slice(1)}ClaimStatus`, 
                             {
                                 businessId: this.businessId.$oid,
                                 claimStatus: true,
@@ -434,7 +436,7 @@
 
             async deleteToken() {
                 try {
-                    const response = await this.$axios.post(`http://127.0.0.1:5031/deleteToken`,
+                    const response = await this.$axios.post(`http://127.0.0.1:5000/createAccount/deleteToken`,
                         {
                             token: this.token,
                         }, {
@@ -488,7 +490,7 @@
 
             async verifyToken() {
                 try {
-                    const response = await this.$axios.get(`http://127.0.0.1:5000/getToken/${this.token}`);
+                    const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getToken/${this.token}`);
                     this.tokenData = response.data;
                     console.log(this.tokenData);
                     if (Object.keys(this.tokenData).length > 0) {
@@ -522,7 +524,7 @@
                         // check if usernames have been loaded
                         if (!this.usernames) {
                             try {
-                                const response = await this.$axios.get(`http://127.0.0.1:5000/getUsernames`);
+                                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getUsernames`);
                                 this.usernames = response.data;
                             } 
                             catch (error) {
@@ -590,7 +592,7 @@
             async updateUsernamePassword() {
                 const hashedPassword = this.hashPassword(this.username, this.newPassword);
                 try {
-                    const response = await this.$axios.post(`http://127.0.0.1:5031/updateUsernamePassword`,
+                    const response = await this.$axios.post(`http://127.0.0.1:5000/createAccount/updateUsernamePassword`,
                         {
                             businessId: this.businessId,
                             username: this.username,

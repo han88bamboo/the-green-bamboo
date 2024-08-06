@@ -150,7 +150,7 @@
             async loadData() {
                 // Countries
                 try {
-                    const response = await this.$axios.get('http://127.0.0.1:5000/getCountries');
+                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getCountries');
                     this.countries = response.data;
                 } 
                 catch (error) {
@@ -158,7 +158,7 @@
                 }
                 // Listings
                 try {
-                    const response = await this.$axios.get('http://127.0.0.1:5000/getListings');
+                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getListings');
                     this.listings = response.data;
                     // originally, make filteredListings the entire collection of listings
                     this.filteredListings = this.listings;
@@ -182,7 +182,7 @@
                 }
                 // Producers
                 try {
-                    const response = await this.$axios.get('http://127.0.0.1:5000/getProducers');
+                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getProducers');
                     this.producers = response.data;
 
                     for (let producer of this.producers) {
@@ -198,7 +198,7 @@
                 }
                 // Reviews
                 try {
-                    const response = await this.$axios.get('http://127.0.0.1:5000/getReviews');
+                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getReviews');
                     this.reviews = response.data;
                 }
                 catch (error) {
@@ -206,7 +206,7 @@
                 }
                 // Users
                 try {
-                    const response = await this.$axios.get('http://127.0.0.1:5000/getUsers');
+                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getUsers');
                     this.users = response.data;
                 } 
                 catch (error) {
@@ -214,7 +214,7 @@
                 }
                 // Venues
                 try {
-                    const response = await this.$axios.get('http://127.0.0.1:5000/getVenues');
+                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getVenues');
                     this.venues = response.data;
                 } 
                 catch (error) {
@@ -222,7 +222,7 @@
                 }
                 // Drink Categories
                 try {
-                    const response = await this.$axios.get('http://127.0.0.1:5000/getDrinkTypes');
+                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getDrinkTypes');
                     this.drinkCategories = response.data;
                 } 
                 catch (error) {

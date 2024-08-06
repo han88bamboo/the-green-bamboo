@@ -783,7 +783,7 @@
                 // listings
                 // _id, listingName, producerID, bottler, originCountry, drinkType, typeCategory, age, abv, reviewLink, officialDesc, sourceLink, photo
                 try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getListings');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getListings');
                         this.listings = response.data;
                     } 
                     catch (error) {
@@ -792,7 +792,7 @@
                     }
                 // Producers
                 try {
-                    const response = await this.$axios.get('http://127.0.0.1:5000/getProducers');
+                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getProducers');
                     this.producers = response.data;
                     this.dataLoaded = true;
                 } 
@@ -802,7 +802,7 @@
                 }
                 // Venues
                 try {
-                    const response = await this.$axios.get('http://127.0.0.1:5000/getVenues');
+                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getVenues');
                     this.venues = response.data;
                     this.dataLoaded = true;
                 } 
@@ -813,7 +813,7 @@
                 // reviews
                 // _id, userID, reviewTarget, date, rating, reviewDesc, taggedUsers, reviewTitle, reviewType, flavorTag, photo
                 try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getReviews');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getReviews');
                         this.reviews = response.data;
                         this.reversedReviews = this.reviews.reverse();
                         this.recentReviews = this.reversedReviews.filter(review => review.userID?.$oid === this.displayUserID && review.reviewType === 'Listing');
@@ -830,7 +830,7 @@
                 
                 // for Badges
                 try {
-                    const response = await this.$axios.get('http://127.0.0.1:5000/getBadges');
+                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getBadges');
                     this.badges = response.data;
                     this.dataLoaded = true;
                 } 
@@ -841,7 +841,7 @@
                 // users
                 // _id, username, displayName, choiceDrinks, drinkLists, modType, photo
                 try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getUsers');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getUsers');
                         this.users = response.data;
                         this.user = this.users.find(user => user._id.$oid == this.userID);
                         this.displayUser = this.getUser(this.displayUserID);
@@ -887,7 +887,7 @@
                     }
                 // drinkCategories
                 try {
-                    const response = await this.$axios.get('http://127.0.0.1:5000/getDrinkTypes');
+                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getDrinkTypes');
                     this.drinkTypes = response.data;
 
                     // ==== for badges ====

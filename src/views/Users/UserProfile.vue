@@ -1060,7 +1060,7 @@ export default {
 
         this.accType = localStorage.getItem('88B_accType');
         let accID = localStorage.getItem('88B_accID');
-        let url = 'http://127.0.0.1:5000/get';
+        let url = 'http://127.0.0.1:5000/getData/get';
 
         if (this.accType == 'user') {
             url = url + 'User/' + accID;
@@ -1165,7 +1165,7 @@ export default {
 
             // Listings
             try {
-                const response = await this.$axios.get('http://127.0.0.1:5000/getListings');
+                const response = await this.$axios.get('http://127.0.0.1:5000/getData/getListings');
                 this.listings = response.data;
                 // originally, make filteredListings the entire collection of listings
                 this.filteredListings = this.listings;
@@ -1176,7 +1176,7 @@ export default {
             }
             // Reviews
             try {
-                const response = await this.$axios.get('http://127.0.0.1:5000/getReviews');
+                const response = await this.$axios.get('http://127.0.0.1:5000/getData/getReviews');
                 this.reviews = response.data;
                 this.reversedReviews = this.reviews.reverse();
                 this.recentReviews = this.reversedReviews.filter(review => review.userID?.$oid === this.displayUserID && review.reviewType === 'Listing');
@@ -1187,7 +1187,7 @@ export default {
             }
             // Producers
             try {
-                const response = await this.$axios.get('http://127.0.0.1:5000/getProducers');
+                const response = await this.$axios.get('http://127.0.0.1:5000/getData/getProducers');
                 this.producers = response.data;
                 this.dataLoaded = true;
             } 
@@ -1197,7 +1197,7 @@ export default {
             }
             // Venues
             try {
-                const response = await this.$axios.get('http://127.0.0.1:5000/getVenues');
+                const response = await this.$axios.get('http://127.0.0.1:5000/getData/getVenues');
                 this.venues = response.data;
                 this.dataLoaded = true;
             } 
@@ -1207,7 +1207,7 @@ export default {
             }
             // for Badges
             try {
-                const response = await this.$axios.get('http://127.0.0.1:5000/getBadges');
+                const response = await this.$axios.get('http://127.0.0.1:5000/getData/getBadges');
                 this.badges = response.data;
                 this.dataLoaded = true;
             } 
@@ -1217,7 +1217,7 @@ export default {
             }
             // Users
             try {
-                const response = await this.$axios.get('http://127.0.0.1:5000/getUsers');
+                const response = await this.$axios.get('http://127.0.0.1:5000/getData/getUsers');
                 this.users = response.data;
                 this.user = this.getUser(this.userID);
                 this.displayUser = this.getUser(this.displayUserID);
@@ -1284,7 +1284,7 @@ export default {
             }
             // mod requests
             try {
-                const response = await this.$axios.get('http://127.0.0.1:5000/getModRequests');
+                const response = await this.$axios.get('http://127.0.0.1:5000/getData/getModRequests');
                 this.modRequests = response.data;
                 this.modRequestsType = this.modRequests
                     .filter(request => request.userID.$oid === this.userID && request.reviewStatus === true)
@@ -1296,7 +1296,7 @@ export default {
             }
             // drinkCategories
             try {
-                const response = await this.$axios.get('http://127.0.0.1:5000/getDrinkTypes');
+                const response = await this.$axios.get('http://127.0.0.1:5000/getData/getDrinkTypes');
                 this.drinkTypes = response.data;
                 // retrieve the drink type and put them into an array
                 this.drinkType = this.drinkTypes.map(category => category.drinkType);
@@ -1329,7 +1329,7 @@ export default {
             // flavourTags
             // _id, hexcode, familyTag, subtag, showbox
             try {
-                const response = await this.$axios.get('http://127.0.0.1:5000/getFlavourTags');
+                const response = await this.$axios.get('http://127.0.0.1:5000/getData/getFlavourTags');
                 this.flavourTags = response.data.map(item => {
                     return { ...item, showBox: false };
                 })
@@ -1341,7 +1341,7 @@ export default {
             // subTags
             // _id, familyTagId, subtag
             try {
-                const response = await this.$axios.get('http://127.0.0.1:5000/getSubTags');
+                const response = await this.$axios.get('http://127.0.0.1:5000/getData/getSubTags');
                 this.subTags = response.data
                 this.flavourTags.forEach(flavourTag => {
                     // Filter subtags belonging to the current flavor tag
@@ -1412,7 +1412,7 @@ export default {
             }
             
             try {
-                const response = await this.$axios.post('http://127.0.0.1:5100/editDetails', 
+                const response = await this.$axios.post('http://127.0.0.1:5000/editProfile/editDetails', 
                     {
                         userID: this.userID,
                         image64: this.image64,
@@ -1475,7 +1475,7 @@ export default {
             }
 
             try {
-                const response = await this.$axios.post('http://127.0.0.1:5100/updateBookmark', 
+                const response = await this.$axios.post('http://127.0.0.1:5000/editProfile/updateBookmark', 
                     {
                         userID: this.userID,
                         bookmark: this.userBookmarks,
@@ -1507,7 +1507,7 @@ export default {
             this.userBookmarks[this.newListName].listItems = [];
 
             try {
-                const response = await this.$axios.post('http://127.0.0.1:5100/updateBookmark', 
+                const response = await this.$axios.post('http://127.0.0.1:5000/editProfile/updateBookmark', 
                     {
                         userID: this.userID,
                         bookmark: this.userBookmarks,
@@ -1531,7 +1531,7 @@ export default {
             this.userBookmarks[listName].listItems.splice(index, 1);
 
             try {
-                const response = await this.$axios.post('http://127.0.0.1:5100/updateBookmark', 
+                const response = await this.$axios.post('http://127.0.0.1:5000/editProfile/updateBookmark', 
                     {
                         userID: this.userID,
                         bookmark: this.userBookmarks,
@@ -1551,7 +1551,7 @@ export default {
             delete this.userBookmarks[listName];
 
             try {
-                const response = await this.$axios.post('http://127.0.0.1:5100/updateBookmark', 
+                const response = await this.$axios.post('http://127.0.0.1:5000/editProfile/updateBookmark', 
                     {
                         userID: this.userID,
                         bookmark: this.userBookmarks,
@@ -1595,7 +1595,7 @@ export default {
             this.userBookmarks[this.editListName].listDesc = this.editListDesc;
 
             try {
-                const response = await this.$axios.post('http://127.0.0.1:5100/updateBookmark', 
+                const response = await this.$axios.post('http://127.0.0.1:5000/editProfile/updateBookmark', 
                     {
                         userID: this.userID,
                         bookmark: this.userBookmarks,
@@ -1617,7 +1617,7 @@ export default {
         // submit moderator application
         async submitModeratorApplication() {
             try {
-                const response = await this.$axios.post('http://127.0.0.1:5101/submitModRequest', 
+                const response = await this.$axios.post('http://127.0.0.1:5000/editModRequests/submitModRequest', 
                     {
                         userID: this.userID,
                         drinkType: this.modCat,
@@ -1768,7 +1768,7 @@ export default {
                 this.following = true
             }
             try {
-                const response = await this.$axios.post('http://127.0.0.1:5100/updateFollowLists', 
+                const response = await this.$axios.post('http://127.0.0.1:5000/editProfile/updateFollowLists', 
                     {
                         userID: this.userID,
                         action: action,
@@ -1929,14 +1929,14 @@ export default {
                 let submitURL = ''
                 let submitData = {}
                 if(this.chooseMod=='remove'){
-                    submitURL = 'http://127.0.0.1:5100/removeModType'
+                    submitURL = 'http://127.0.0.1:5000/editProfile/removeModType'
                     submitData={
                         userID: this.displayUser._id.$oid,
                         removeModType: this.selectedRemoveType.drinkType,
                     }
                 }
                 if(this.chooseMod=='add'){
-                    submitURL = 'http://127.0.0.1:5100/updateModType'
+                    submitURL = 'http://127.0.0.1:5000/editProfile/updateModType'
                     submitData = {
                         userID: this.displayUser._id.$oid,
                         newModType: this.selectedPromotedType.drinkType,
@@ -2039,7 +2039,7 @@ export default {
         async confirmUpdatePassword(){
             let oldHash = this.hashPassword(this.user.username, this.oldPassword)
             let newHash = this.hashPassword(this.user.username, this.newPassword)
-            let submitURL = 'http://127.0.0.1:5030/editPassword/' + this.user._id.$oid 
+            let submitURL = 'http://127.0.0.1:5000/authcheck/editPassword/' + this.user._id.$oid 
             let submitData = {
                 oldHash: oldHash.toString(),
                 newHash: newHash.toString(),
@@ -2070,7 +2070,7 @@ export default {
                 setTimeout(() => {
                     this.isButtonDisabled = false;
                 }, 60000);
-            let submitURL = 'http://127.0.0.1:5030/sendResetPin/' + this.user._id.$oid
+            let submitURL = 'http://127.0.0.1:5000/authcheck/sendResetPin/' + this.user._id.$oid
             let submitData = {
                 userType: "user",
             }
@@ -2097,7 +2097,7 @@ export default {
 
         async verifyOTP(){
             // call api to verify the pin
-            let submitURL = "http://127.0.0.1:5030/verifyPin/" + this.user._id.$oid
+            let submitURL = "http://127.0.0.1:5000/authcheck/verifyPin/" + this.user._id.$oid
             let submitData ={
                 userType:"user",
                 pin:this.resetPin
@@ -2125,7 +2125,7 @@ export default {
 
         async resetPassword(){
             this.resettingPassword=true
-            let submitURL = "http://127.0.0.1:5030/resetPassword/" + this.user._id.$oid
+            let submitURL = "http://127.0.0.1:5000/authcheck/resetPassword/" + this.user._id.$oid
             let submitData = {
                 userType:"user",
                 pin:this.resetPin

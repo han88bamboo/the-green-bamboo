@@ -2,39 +2,21 @@
 # Routes: /createAccount (POST), /createAccountRequest (POST), /updateAccountRequest (POST), /createProducerAccount (POST), /createVenueAccount (POST)
 # -----------------------------------------------------------------------------------------
 
-import bson
 import json
+import data
+import s3Images
+import os
+
 from bson import json_util
-from flask import Flask, request, jsonify
-from flask_pymongo import PyMongo
-from flask_cors import CORS
-
-from flask_mail import Mail, Message
-
+from flask import Blueprint, g, request, jsonify
+from flask_mail import Message
 from bson.objectid import ObjectId
-
 from datetime import datetime, timedelta
 import secrets
 
-import data
-import s3Images
 
-from dotenv import load_dotenv
-import os
-
-app = Flask(__name__)
-CORS(app)  # Allow all requests
-
-load_dotenv()
-app.config["MONGO_URI"] = os.getenv('MONGO_DB_URL')
-db = PyMongo(app).db
-
-app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER')
-app.config['MAIL_PORT'] = os.getenv('MAIL_PORT')
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
-app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
-mail = Mail(app)
+file_name = os.path.basename(__file__)
+blueprint = Blueprint(file_name[:-3], __name__)
 
 def parse_json(data):
     return json.loads(json_util.dumps(data))
@@ -44,8 +26,9 @@ def parse_json(data):
 # - Insert entry into the "users" collection. Follows reviews dataclass requirements.
 # - Duplicate review check: If a user with the same username, reject the request
 # - Possible return codes: 201 (Created), 400 (Duplicate Detected), 500 (Error during creation)
-@app.route("/createAccount", methods= ['POST'])
+@blueprint.route("/createAccount", methods= ['POST'])
 def createAccount():
+    db = g.db
     rawAccount = request.get_json()
     rawAccount['joinDate'] = datetime.strptime(rawAccount['joinDate'], "%Y-%m-%dT%H:%M:%S.%fZ")# convert date to datetime object
     rawAccount['birthday'] = datetime.strptime(rawAccount['birthday'], "%Y-%m-%d")# convert birthday to datetime object
@@ -99,8 +82,9 @@ def createAccount():
 # - Insert entry into the "accountRequests" collection. Follows reviews dataclass requirements.
 # - Duplicate review check: If a user with the same username, reject the request
 # - Possible return codes: 201 (Created), 400 (Duplicate Detected), 500 (Error during creation)
-@app.route("/createAccountRequest", methods= ['POST'])
+@blueprint.route("/createAccountRequest", methods= ['POST'])
 def createAccountRequest():
+    db = g.db
     rawAccount = request.get_json()
     rawEmail= rawAccount['email']
     rawAccount['joinDate'] = datetime.strptime(rawAccount['joinDate'], "%Y-%m-%dT%H:%M:%S.%fZ")
@@ -142,8 +126,9 @@ def createAccountRequest():
         ), 500
 # -----------------------------------------------------------------------------------------
 # [POST] Updates a Business Account Request
-@app.route("/updateAccountRequest", methods= ['POST'])
+@blueprint.route("/updateAccountRequest", methods= ['POST'])
 def updateAccountRequest():
+    db = g.db
     data = request.get_json()
     print(data)
     requestID = data['requestID']
@@ -181,8 +166,9 @@ def updateAccountRequest():
 # -----------------------------------------------------------------------------------------
 # [POST] Creates an Account
 # - Insert entry into the "producers" collection. 
-@app.route("/createProducerAccount", methods= ['POST'])
+@blueprint.route("/createProducerAccount", methods= ['POST'])
 def createProducerAccount():
+    db = g.db
     data = request.get_json()
     print(data)
     newBusinessData = data["newBusinessData"]
@@ -226,8 +212,9 @@ def createProducerAccount():
 # -----------------------------------------------------------------------------------------
 # [POST] Creates a Venue Account
 # - Insert entry into the "venues" collection.
-@app.route("/createVenueAccount", methods= ['POST'])
+@blueprint.route("/createVenueAccount", methods= ['POST'])
 def createVenueAccount():
+    db = g.db
     data = request.get_json()
     print(data)
     newBusinessData = data["newBusinessData"]
@@ -272,8 +259,9 @@ def createVenueAccount():
 # -----------------------------------------------------------------------------------------
 # [POST] Creates a Token for new accounts
 
-@app.route("/createToken", methods= ['POST'])
+@blueprint.route("/createToken", methods= ['POST'])
 def createToken():
+    db = g.db
     data = request.get_json()
     print(data)
 
@@ -318,8 +306,9 @@ def createToken():
     
 # [POST] Update customerId
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/updateCustomerId', methods=['POST'])
+@blueprint.route('/updateCustomerId', methods=['POST'])
 def updateCustomerId():
+    db = g.db
 
     data = request.get_json()
     print(data)
@@ -349,8 +338,9 @@ def updateCustomerId():
 # -----------------------------------------------------------------------------------------
 # [POST] Delete Token
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/deleteToken', methods=['POST'])
+@blueprint.route('/deleteToken', methods=['POST'])
 def deleteToken():
+    db = g.db
 
     data = request.get_json()
     print(data)
@@ -377,8 +367,9 @@ def deleteToken():
     
 # [POST] Update business username and password
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/updateUsernamePassword', methods=['POST'])
+@blueprint.route('/updateUsernamePassword', methods=['POST'])
 def updateUsernamePassword():
+    db = g.db
 
     data = request.get_json()
     print(data)
@@ -410,8 +401,10 @@ def updateUsernamePassword():
         ), 500
     
 
-@app.route('/sendEmail', methods=['POST'])
+@blueprint.route('/sendEmail', methods=['POST'])
 def sendEmail():
+    db = g.db
+    mail = g.mail
     data = request.json
     print(data)
     msg = Message(data['subject'], 
@@ -421,7 +414,3 @@ def sendEmail():
     mail.send(msg)
     return jsonify({'message': 'Email sent successfully!'}), 200
 
-
-# -----------------------------------------------------------------------------------------
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', debug=True, port = 5031)

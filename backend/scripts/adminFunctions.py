@@ -2,47 +2,30 @@
 # Routes: /createObservationTag (POST), /updateObservationTag (PUT), /deleteObservationTag/<id> (DELETE), /updateFamilyTag (POST), /updateSubTag (PUT), /deleteFamilyTag/<id> (DELETE), /deleteSubTag/<id> (DELETE), /importListings (POST), /createFamilyTag (POST), /createSubTag (POST), /importListings (POST), /readCSV (GET)
 # -----------------------------------------------------------------------------------------
 
-import bson
-import json
-from flask import Flask, request, jsonify
-from flask_pymongo import PyMongo
-from flask_cors import CORS
-
-from bson.objectid import ObjectId
-
-from gridfs import GridFS
 import os
-from datetime import datetime
-
 import csv
 import io
 import codecs
 import data
 import s3Images
-
-from urllib.request import urlopen
 import base64
 
-from dotenv import load_dotenv
-import os
+from flask import Blueprint, g, request, jsonify
+from bson.objectid import ObjectId
+from datetime import datetime
+from urllib.request import urlopen
 
-app = Flask(__name__)
-CORS(app)  # Allow all requests
-
-load_dotenv()
-app.config["MONGO_URI"] = os.getenv('MONGO_DB_URL')
-db = PyMongo(app).db
-
-mongo = PyMongo(app)
-fs = GridFS(mongo.db)
+file_name = os.path.basename(__file__)
+blueprint = Blueprint(file_name[:-3], __name__)
 
 # -----------------------------------------------------------------------------------------
 # [POST] Creates an observation tag
 # - Insert entry into the "observationTags" collection. Follows observationTag dataclass requirements.
 # - Duplicate review check: If an observationTag with the same observationTag, reject the request
 # - Possible return codes: 201 (Created), 400 (Duplicate Detected), 500 (Error during creation)
-@app.route("/createObservationTag", methods= ['POST'])
+@blueprint.route("/createObservationTag", methods= ['POST'])
 def createObservationTag():
+    db = g.db
     rawTag = request.get_json()
     print(rawTag)
     rawObservation= rawTag['observationTag']
@@ -88,8 +71,9 @@ def createObservationTag():
 # [PUT] Update observation tag
 # - Update observation tag with updated data
 # - Possible return codes: 201 (Updated), 400(Observation tag not found), 500 (Error during update)
-@app.route('/updateObservationTag', methods=['PUT'])
+@blueprint.route('/updateObservationTag', methods=['PUT'])
 def updateObservationTag():
+    db = g.db
     data = request.get_json()
     # for loop for each observation tag and update
     updates = []
@@ -140,8 +124,9 @@ def updateObservationTag():
 # [DELETE] Deletes a observationTag
 # - Delete entry with specified id from the "observationTag" collection.
 # - Possible return codes: 201 (Deleted), 400 (Review doesn't exist), 500 (Error during deletion)
-@app.route("/deleteObservationTag/<id>", methods= ['DELETE'])
+@blueprint.route("/deleteObservationTag/<id>", methods= ['DELETE'])
 def deleteObservationTag(id):
+    db = g.db
 
     # Find the review entry with the specified id
     existingObservation = db.observationTags.find_one({"_id": ObjectId(id)})
@@ -184,8 +169,9 @@ def deleteObservationTag(id):
 # [PUT] Update family tag
 # - Update flavour tag with updated family tag data
 # - Possible return codes: 201 (Updated), 400(Flavour tag not found), 500 (Error during update)
-@app.route('/updateFamilyTag', methods=['PUT'])
+@blueprint.route('/updateFamilyTag', methods=['PUT'])
 def updateFamilyTag():
+    db = g.db
     data = request.get_json()
     # for loop for each family tag and update
     updates = []
@@ -238,8 +224,9 @@ def updateFamilyTag():
 # [PUT] Update sub tag
 # - Update subtag with udpated subtag info
 # - Possible return codes: 201 (Updated), 400(Sub tag not found), 500 (Error during update)
-@app.route('/updateSubTag', methods=['PUT'])
+@blueprint.route('/updateSubTag', methods=['PUT'])
 def updateSubTag():
+    db = g.db
     data = request.get_json()
     # for loop for each sub tag and update
     updates = []
@@ -291,8 +278,9 @@ def updateSubTag():
 # [DELETE] Deletes a familyTag
 # - Delete entry with specified id from the "flavourTags" collection.
 # - Possible return codes: 201 (Deleted), 400 (family tag doesn't exist), 500 (Error during deletion)
-@app.route("/deleteFamilyTag/<id>", methods= ['DELETE'])
+@blueprint.route("/deleteFamilyTag/<id>", methods= ['DELETE'])
 def deleteFamilyTag(id):
+    db = g.db
 
     # Find the flavour tag entry with the specified id
     existingFamilyTag = db.flavourTags.find_one({"_id": ObjectId(id)})
@@ -335,8 +323,9 @@ def deleteFamilyTag(id):
 # [DELETE] Deletes a flavour subTag
 # - Delete entry with specified id from the "subTags" collection.
 # - Possible return codes: 201 (Deleted), 400 (Subtag doesn't exist), 500 (Error during deletion)
-@app.route("/deleteSubTag/<id>", methods= ['DELETE'])
+@blueprint.route("/deleteSubTag/<id>", methods= ['DELETE'])
 def deleteSubTag(id):
+    db = g.db
 
     # Find the review entry with the specified id
     existingSubTag = db.subTags.find_one({"_id": ObjectId(id)})
@@ -379,8 +368,9 @@ def deleteSubTag(id):
 # - Insert entry into the "familyTags" collection. Follows flavourTag dataclass requirements.
 # - Duplicate review check: If a flavourTag with the same flavourTag, reject the request
 # - Possible return codes: 201 (Created), 400 (Duplicate Detected), 500 (Error during creation)
-@app.route("/createFamilyTag", methods= ['POST'])
+@blueprint.route("/createFamilyTag", methods= ['POST'])
 def createFamilyTag():
+    db = g.db
     rawTag = request.get_json()
     print(rawTag)
     rawFamily= rawTag['familyTag']
@@ -425,8 +415,9 @@ def createFamilyTag():
 # - Insert entry into the "subTags" collection. Follows subTag dataclass requirements.
 # - Duplicate review check: If a subTag with the same subTag, reject the request
 # - Possible return codes: 201 (Created), 400 (Duplicate Detected), 500 (Error during creation)
-@app.route("/createSubTag", methods= ['POST'])
+@blueprint.route("/createSubTag", methods= ['POST'])
 def createSubTag():
+    db = g.db
     rawTag = request.get_json()
     print(rawTag)
     rawSub= rawTag['subTag']
@@ -471,6 +462,7 @@ def createSubTag():
     
 # To convert image URL to base64    
 def image_url_to_base64(url):
+    db = g.db
     try:
         # Fetch the image from the URL
         with urlopen(url) as response:
@@ -505,8 +497,9 @@ def hash_password(id, password):
 # [POST] Import listings
 # - Bulk import listings
 # - Possible return codes: 201 (Updated), 400(Observation tag not found), 500 (Error during update)
-@app.route('/importListings', methods=['POST'])
+@blueprint.route('/importListings', methods=['POST'])
 def importListings():
+    db = g.db
 
     
     file = request.files['file']
@@ -661,8 +654,9 @@ def importListings():
         ), 500
 
 # -----------------------------------------------------------------------------------------
-@app.route('/readCSV', methods=['GET'])
+@blueprint.route('/readCSV', methods=['GET'])
 def readCSV():
+    db = g.db
     with codecs.open('Dataset/listingsFormat.csv', 'r', encoding='utf-8-sig') as file:
         reader = csv.reader(file)
         data = [row for row in reader]
@@ -671,7 +665,3 @@ def readCSV():
             "code": 201,
             "data": data
         }), 201
-
-# -----------------------------------------------------------------------------------------
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True, port=5052)

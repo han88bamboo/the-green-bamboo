@@ -1005,7 +1005,7 @@
             // Obtain user data
             async getUserData() {
                 try {
-                    const response = await this.$axios.get('http://127.0.0.1:5000/getUser/' + this.viewerID);
+                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getUser/' + this.viewerID);
 
                     if (response != null && response.data != null && response.data != "" && !(Array.isArray(response.data) && response.data.length == 0)) {
 
@@ -1031,7 +1031,7 @@
             // Obtain venue data
             async getVenueData() {
                 try {
-                    const response = await this.$axios.get('http://127.0.0.1:5000/getVenue/' + this.targetVenue);
+                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getVenue/' + this.targetVenue);
 
                     if (response != null && response.data != null && response.data != "" && !(Array.isArray(response.data) && response.data.length == 0)) {
 
@@ -1091,7 +1091,7 @@
 
                             // If not found, get from server
                             if (listingData == undefined) {
-                                let response = await this.$axios.get('http://127.0.0.1:5000/getListing/' + item.itemID['$oid']);
+                                let response = await this.$axios.get('http://127.0.0.1:5000/getData/getListing/' + item.itemID['$oid']);
                                 listingData = response.data;
 
                                 if (Array.isArray(listingData) && listingData.length == 0) {
@@ -1102,7 +1102,7 @@
                                 else if (listingData != null && listingData != "") {
 
                                     // Get reviews
-                                    let reviewResponse = await this.$axios.get('http://127.0.0.1:5000/getReviewByTarget/' + item.itemID['$oid']);
+                                    let reviewResponse = await this.$axios.get('http://127.0.0.1:5000/getData/getReviewByTarget/' + item.itemID['$oid']);
                                     let reviewData = reviewResponse.data;
 
                                     if (Array.isArray(reviewData) && reviewData.length == 0) {
@@ -1205,7 +1205,7 @@
                     });
 
                     // Get report data for venue
-                    let reportResponse = await this.$axios.get('http://127.0.0.1:5000/getRequestInaccuracyByVenue/' + this.targetVenue['_id']['$oid']);
+                    let reportResponse = await this.$axios.get('http://127.0.0.1:5000/getData/getRequestInaccuracyByVenue/' + this.targetVenue['_id']['$oid']);
                     this.pendingReports = reportResponse.data;
 
                     // Get listing data
@@ -1223,7 +1223,7 @@
                     this.pendingReports.sort((a, b) => (a.reportDate.$date > b.reportDate.$date) ? 1 : -1);
 
                     // Get venue views data
-                    let viewsResponse = await this.$axios.get('http://127.0.0.1:5000/getVenuesProfileViewsByVenue/' + this.targetVenue._id['$oid']);
+                    let viewsResponse = await this.$axios.get('http://127.0.0.1:5000/getData/getVenuesProfileViewsByVenue/' + this.targetVenue._id['$oid']);
                     if (viewsResponse.data.length > 0) {
                         this.venueViews = viewsResponse.data[0].views;
                     }
@@ -1267,7 +1267,7 @@
             // Send Answer to a Question
             async sendAnswer(qa) {
                 try {
-                    await this.$axios.post('http://127.0.0.1:5300/sendAnswers', 
+                    await this.$axios.post('http://127.0.0.1:5000/editVenueProfile/sendAnswers', 
                         {
                             venueID: this.targetVenue['_id']['$oid'],
                             questionsAnswersID: qa._id['$oid'],
@@ -1293,7 +1293,7 @@
             async updateReportStatus(reportID, status) {
 
                 let responseCode = "";
-                let submitAPI = "http://127.0.0.1:5011/requestReviewStatus/" + reportID;
+                let submitAPI = "http://127.0.0.1:5000/requestListing/requestReviewStatus/" + reportID;
                 let submitData = {
                     "targetCollection": "requestInaccuracy",
                     "reviewStatus": false,
@@ -1339,7 +1339,7 @@
                 this.editingQA = false;
                 let q_and_a_id = qa._id.$oid;
                 try {
-                    await this.$axios.post('http://127.0.0.1:5300/editQA', 
+                    await this.$axios.post('http://127.0.0.1:5000/editVenueProfile/editQA', 
                         {
                             venueID: this.targetVenue['_id']['$oid'],
                             questionsAnswersID: q_and_a_id,
@@ -1361,7 +1361,7 @@
             async deleteQAEdit(qa) {
                 let q_and_a_id = qa._id.$oid;
                 try {
-                    const response = await this.$axios.post('http://127.0.0.1:5300/deleteQA', 
+                    const response = await this.$axios.post('http://127.0.0.1:5000/editVenueProfile/deleteQA', 
                         {
                             venueID: this.targetVenue['_id']['$oid'],
                             questionsAnswersID: q_and_a_id,

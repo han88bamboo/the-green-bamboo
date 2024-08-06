@@ -263,7 +263,7 @@
                 async loadData() {
                     // Listings
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getListings');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getListings');
                         this.listings = response.data;
                     } 
                     catch (error) {
@@ -272,7 +272,7 @@
                     }
                     // Producers
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getProducers');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getProducers');
                         this.producers = response.data;
                     } 
                     catch (error) {
@@ -281,7 +281,7 @@
                     }
                     // Users
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getUsers');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getUsers');
                         this.users = response.data;
 
                         if (this.role == 'user') {
@@ -307,7 +307,7 @@
                     }
                     // Request Listings
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getRequestListings');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getRequestListings');
 
                         // Filter requests based on user role
                         if (this.role == 'producer') {
@@ -333,7 +333,7 @@
                     }
                     // Request Edits
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getRequestEdits');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getRequestEdits');
                         let unreviewedRequests = response.data.filter((request) => {
                             return request["reviewStatus"] == false;
                         });

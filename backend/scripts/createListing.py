@@ -3,29 +3,18 @@
 # Dataclass: listings
 # -----------------------------------------------------------------------------------------
 
-import bson
+import os
 import json
-from bson import json_util
-from flask import Flask, request, jsonify
-from flask_pymongo import PyMongo
-from flask_cors import CORS
-from bson.objectid import ObjectId
-
-from datetime import datetime
 import pytz
-
 import data
 import s3Images
+from bson import json_util
+from flask import Blueprint, g, request, jsonify
+from bson.objectid import ObjectId
+from datetime import datetime
 
-from dotenv import load_dotenv
-import os
-
-app = Flask(__name__)
-CORS(app)  # Allow all requests
-
-load_dotenv()
-app.config["MONGO_URI"] = os.getenv('MONGO_DB_URL')
-db = PyMongo(app).db
+file_name = os.path.basename(__file__)
+blueprint = Blueprint(file_name[:-3], __name__)
 
 def parse_json(data):
     return json.loads(json_util.dumps(data))
@@ -35,8 +24,9 @@ def parse_json(data):
 # - Insert entry into the "listings" collection. Follows listings dataclass requirements.
 # - Duplicate listing check: If a listing with the same name exists, reject the request
 # - Possible return codes: 201 (Created), 400 (Duplicate Detected), 500 (Error during creation)
-@app.route("/createListing", methods= ['POST'])
+@blueprint.route("/createListing", methods= ['POST'])
 def createListings():
+    db = g.db
     rawBottle = request.get_json()
     # Add current datetime to the listing
     rawBottle['addedDate'] = datetime.now(pytz.timezone('Etc/GMT-8'))
@@ -82,7 +72,3 @@ def createListings():
                 "message": "An error occurred creating the listing."
             }
         ), 500
-
-# -----------------------------------------------------------------------------------------
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', debug=True, port = 5001)

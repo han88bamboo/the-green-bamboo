@@ -790,7 +790,7 @@
                 // producers
                 // _id, producerName, producerDesc, originCountry, statusOB, mainDrinks
                 try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getProducers');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getProducers');
                         this.producers = response.data;
                         this.specified_producer = this.producers.find(producer => producer["_id"]["$oid"] == this.producer_id); // find specified producer
                         this.checkProducerAnswered()
@@ -803,7 +803,7 @@
                 // listings
                 // _id, listingName, producerID, bottler, originCountry, drinkType, typeCategory, age, abv, reviewLink, officialDesc, sourceLink, photo
                 try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getListings');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getListings');
                         this.listings = response.data;
                     } 
                     catch (error) {
@@ -813,7 +813,7 @@
                 // reviews
                 // _id, userID, reviewTarget, date, rating, reviewDesc, taggedUsers, reviewTitle, reviewType, flavorTag, photo
                 try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getReviews');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getReviews');
                         this.reviews = response.data;
                     }
                     catch (error) {
@@ -823,7 +823,7 @@
                 // users
                 // _id, username, displayName, choiceDrinks, drinkLists, modType, photo
                 try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getUsers');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getUsers');
                         this.users = response.data;
                     } 
                     catch (error) {
@@ -833,7 +833,7 @@
                  // producersProfileViews
                 // _id, producerID, views
                 try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getProducersProfileViews');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getProducersProfileViews');
                         this.producersProfileViews = response.data;
                         let producerProfileViewInfo = this.producersProfileViews.find(view => view.producerID["$oid"] == this.producer_id);
                         let producerViews = producerProfileViewInfo.views;
@@ -906,7 +906,7 @@
             async sendAnswer (qa) {
                 let q_and_a_id = qa._id.$oid;
                 try {
-                    const response = await this.$axios.post('http://127.0.0.1:5200/sendAnswers', 
+                    const response = await this.$axios.post('http://127.0.0.1:5000/editProducerProfile/sendAnswers', 
                         {
                             producerID: this.producer_id,
                             questionsAnswersID: q_and_a_id,
@@ -1207,7 +1207,7 @@
                 this.editingQA = false;
                 let q_and_a_id = qa._id.$oid;
                 try {
-                    this.$axios.post('http://127.0.0.1:5200/editQA', 
+                    this.$axios.post('http://127.0.0.1:5000/editProducerProfile/editQA', 
                         {
                             producerID: this.producer_id,
                             questionsAnswersID: q_and_a_id,
@@ -1229,7 +1229,7 @@
             deleteQAEdit(qa) {
                 let q_and_a_id = qa._id.$oid;
                 try {
-                    const response = this.$axios.post('http://127.0.0.1:5200/deleteQA', 
+                    const response = this.$axios.post('http://127.0.0.1:5000/editProducerProfile/deleteQA', 
                         {
                             producerID: this.producer_id,
                             questionsAnswersID: q_and_a_id,

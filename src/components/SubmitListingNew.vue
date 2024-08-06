@@ -479,7 +479,7 @@
                 // If user is a user, check power
                 else if (localStorage.getItem('88B_accType') == "user") {
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getUser/' + this.form['userID']);
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getUser/' + this.form['userID']);
                         if (Array.isArray(response.data) && response.data.length == 0) {
                             throw "User not found!";
                         }
@@ -519,7 +519,7 @@
 
                     // populate "countries" form data variable
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getCountries');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getCountries');
                         for (let country of response.data) {
                             this.countries.push(country.originCountry);
                         }
@@ -531,7 +531,7 @@
 
                     // populate "drinkCategories" + "drinkCategoriesList" form data variable
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getDrinkTypes');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getDrinkTypes');
                         this.drinkCategories = response.data;
                         for (let drink of this.drinkCategories) {
                             if (this.types.length === 0 || this.types.includes(drink.drinkType)) {
@@ -546,7 +546,7 @@
 
                     // populate "producerList" form data variable
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getProducers');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getProducers');
                         this.producerList = response.data;
                         this.producerList.sort((a,b)=>{
                             return a.producerName.localeCompare(b.producerName)
@@ -570,7 +570,7 @@
 
                     // Get target listing
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getListing/' + this.$route.params.listingID);
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getListing/' + this.$route.params.listingID);
                         if (Array.isArray(response.data) && response.data.length == 0) {
                             throw "Listing not found!";
                         }
@@ -592,7 +592,7 @@
                     // [REQ / POWER NEW] Retrieve previously submitted new listing request data
                     if (this.formMode == "new") {
                         try {
-                            const response = await this.$axios.get('http://127.0.0.1:5000/getRequestListing/' + this.$route.params.requestID);
+                            const response = await this.$axios.get('http://127.0.0.1:5000/getData/getRequestListing/' + this.$route.params.requestID);
                             if (Array.isArray(response.data) && response.data.length == 0) {
                                 throw "Request not found!";
                             }
@@ -618,7 +618,7 @@
                     // [REQ EDIT/DUP + POWER EDIT] Retrieve previously submitted request edit/duplicate data
                     if (this.formMode == "edit" || this.formMode == "dup") {
                         try {
-                            const response = await this.$axios.get('http://127.0.0.1:5000/getRequestEdit/' + this.$route.params.requestID);
+                            const response = await this.$axios.get('http://127.0.0.1:5000/getData/getRequestEdit/' + this.$route.params.requestID);
                             if (Array.isArray(response.data) && response.data.length == 0) {
                                 throw "Request not found!";
                             }
@@ -889,7 +889,7 @@
 
                         // Request Creation Mode
                         if (this.formMode == "new") {
-                            submitAPI = "http://127.0.0.1:5011/requestListing"
+                            submitAPI = "http://127.0.0.1:5000/requestListing/requestListing"
                             submitData = {
                                 "sourceLink": this.form["sourceLink"].trim(),
                                 "listingName": this.form["listingName"].trim(),
@@ -911,13 +911,13 @@
                             }
 
                             if (this.prevListing) {
-                                submitAPI = "http://127.0.0.1:5011/requestListingModify/" + this.$route.params.requestID
+                                submitAPI = "http://127.0.0.1:5000/requestListing/requestListingModify/" + this.$route.params.requestID
                             }
                         }
 
                         // Request Edit / Duplicate Mode
                         else if (this.formMode == "edit" || this.formMode == "dup") {
-                            submitAPI = "http://127.0.0.1:5011/requestEdits"
+                            submitAPI = "http://127.0.0.1:5000/requestListing/requestEdits"
                             submitData = {
                                 "editDesc": this.form["editDesc"].trim(),
                                 "sourceLink": this.form["sourceLink"].trim(),
@@ -930,7 +930,7 @@
                             }
 
                             if (this.prevListing) {
-                                submitAPI = "http://127.0.0.1:5011/requestEditsModify/" + this.$route.params.requestID;
+                                submitAPI = "http://127.0.0.1:5000/requestListing/requestEditsModify/" + this.$route.params.requestID;
                             }
                         }
 
@@ -961,12 +961,12 @@
 
                         // Listing Creation Mode
                         if (this.formMode == "new") {
-                            submitAPI = "http://127.0.0.1:5001/createListing"
+                            submitAPI = "http://127.0.0.1:5000/createListing/createListing"
                         }
 
                         // Listing Edit Mode
                         else if (this.formMode == "edit") {
-                            submitAPI = "http://127.0.0.1:5002/updateListing/" + this.$route.params.listingID
+                            submitAPI = "http://127.0.0.1:5000/editListing/updateListing/" + this.$route.params.listingID
                         }
 
                         else {
@@ -1053,7 +1053,7 @@
             async updateRequestStatus(status) {
 
                 let responseCode = "";
-                let submitAPI = "http://127.0.0.1:5011/requestReviewStatus/" + this.$route.params.requestID;
+                let submitAPI = "http://127.0.0.1:5000/requestListing/requestReviewStatus/" + this.$route.params.requestID;
                 let submitData = {};
 
                 // Set up submission data

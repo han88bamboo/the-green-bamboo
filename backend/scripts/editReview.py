@@ -2,43 +2,25 @@
 # Routes: /voteReview (POST), /updateReview/<id> (PUT)
 # -----------------------------------------------------------------------------------------
 
-import bson
-import json
-from bson import json_util
-from flask import Flask, request, jsonify
-from flask_pymongo import PyMongo
-from flask_cors import CORS
-
-from bson.objectid import ObjectId
-
-from gridfs import GridFS
 import os
+import s3Images
+from flask import Blueprint, g, request, jsonify
+from bson.objectid import ObjectId
 from datetime import datetime
 
-from dotenv import load_dotenv
-import s3Images
+from scripts.adminFunctions import hash_password
+from scripts.createReview import create_username
 
-from adminFunctions import hash_password
-
-from createReview import create_username
-
-
-app = Flask(__name__)
-CORS(app)  # Allow all requests
-
-load_dotenv()
-app.config["MONGO_URI"] = os.getenv('MONGO_DB_URL')
-db = PyMongo(app).db
-
-mongo = PyMongo(app)
-fs = GridFS(mongo.db)
+file_name = os.path.basename(__file__)
+blueprint = Blueprint(file_name[:-3], __name__)
 
 # -----------------------------------------------------------------------------------------
 # [POST] Vote review
 # - Update review with new votes
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/voteReview', methods=['POST'])
+@blueprint.route('/voteReview', methods=['POST'])
 def voteReview():
+    db = g.db
     data = request.get_json()
     print(data)
     reviewID = data['reviewID']
@@ -78,8 +60,9 @@ def voteReview():
 # [PUT] Update review
 # - Update review with review metrics
 # - Possible return codes: 200 (Updated), 400(Review not found), 500 (Error during update)
-@app.route('/updateReview/<id>', methods=['PUT'])
+@blueprint.route('/updateReview/<id>', methods=['PUT'])
 def updateReview(id):
+    db = g.db
     reviewID= ObjectId(id)
     data = request.get_json()
     existingReview = db.reviews.find_one({'_id': ObjectId(id)})
@@ -200,7 +183,3 @@ def updateReview(id):
                 "message": "An error occurred updating the review."
             }
         ), 500
-
-# -----------------------------------------------------------------------------------------
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True, port=5022)

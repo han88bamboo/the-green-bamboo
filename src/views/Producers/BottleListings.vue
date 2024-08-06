@@ -1703,7 +1703,7 @@
                     // countries
                     // _id, originCountry
                         // try {
-                        //         const response = await this.$axios.get('http://127.0.0.1:5000/getCountries');
+                        //         const response = await this.$axios.get('http://127.0.0.1:5000/getData/getCountries');
                         //         this.countries = response.data;
                         //     } 
                         //     catch (error) {
@@ -1712,7 +1712,7 @@
                     // reviews
                     // _id, userID, reviewTarget, date, rating, reviewDesc, taggedUsers, reviewTitle, reviewType, flavorTag, photo
                         try {
-                            const response = await this.$axios.get('http://127.0.0.1:5000/getReviews');
+                            const response = await this.$axios.get('http://127.0.0.1:5000/getData/getReviews');
                             this.reviews = response.data;
                             this.detailedReview = this.reviews[0];
                         }
@@ -1723,7 +1723,7 @@
                     // flavourTags
                     // _id, hexcode, familyTag, subtag, showbox
                     try {
-                                const response = await this.$axios.get('http://127.0.0.1:5000/getFlavourTags');
+                                const response = await this.$axios.get('http://127.0.0.1:5000/getData/getFlavourTags');
                                 this.flavourTags = response.data.map(item => {
                                     return { ...item, showBox: false };
                                 })                            } 
@@ -1734,7 +1734,7 @@
                     // subTags
                     // _id, familyTagId, subtag
                     try {
-                                const response = await this.$axios.get('http://127.0.0.1:5000/getSubTags');
+                                const response = await this.$axios.get('http://127.0.0.1:5000/getData/getSubTags');
                                 this.subTags = response.data
                                 this.flavourTags.forEach(flavourTag => {
                                     // Filter subtags belonging to the current flavor tag
@@ -1755,7 +1755,7 @@
                     // observationTags
                     // observationTag
                         try {
-                            const response = await this.$axios.get('http://127.0.0.1:5000/getObservationTags');
+                            const response = await this.$axios.get('http://127.0.0.1:5000/getData/getObservationTags');
                             for (let observationTag of response.data) {
                                 this.observationTags.push(observationTag.observationTag);
                             }
@@ -1768,7 +1768,7 @@
                     // colours
                     // hexcode
                         try {
-                            const response = await this.$axios.get('http://127.0.0.1:5000/getColours');
+                            const response = await this.$axios.get('http://127.0.0.1:5000/getData/getColours');
                             for (let colour of response.data) {
                                 this.colours.push(colour.hexcode);
                             }
@@ -1779,7 +1779,7 @@
                         }
                     // specialColours
                         try {
-                            const response = await this.$axios.get('http://127.0.0.1:5000/getSpecialColours');
+                            const response = await this.$axios.get('http://127.0.0.1:5000/getData/getSpecialColours');
                             this.specialColours = response.data.reduce((obj, item) => {
                                 obj[item.colour] = item.hexList;
                                 return obj;
@@ -1793,7 +1793,7 @@
                     // venues
                     // _id, venueName, venueDesc, originCountry, address, openingHours
                         try {
-                            const response = await this.$axios.get('http://127.0.0.1:5000/getVenues');
+                            const response = await this.$axios.get('http://127.0.0.1:5000/getData/getVenues');
                             this.venues = response.data;
                             this.locationOptions = response.data.map(item => ({name: item.venueName, id:item._id, address:item.address}));
                             this.addressDict = this.venues.reduce((dict, venue) => {
@@ -1809,7 +1809,7 @@
                 // listings
                 // _id, listingName, producerID, bottler, originCountry, drinkType, typeCategory, age, abv, reviewLink, officialDesc, sourceLink, photo
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getListings');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getListings');
                         this.listings = response.data;
                         this.filteredListings = this.listings; // originally, make filtered listings the entire collection of listings
                         this.specified_listing = this.listings.find(listing => listing._id.$oid == this.listing_id); // find specified listing
@@ -1830,7 +1830,7 @@
                 // languages
                 // _id, language
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getLanguages');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getLanguages');
                         this.languages = response.data.sort((a,b)=>{
                             return a.language.localeCompare(b.language)
                             })
@@ -1842,7 +1842,7 @@
                 // producers
                 // _id, producerName, producerDesc, originCountry, statusOB, mainDrinks
                 try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getProducers');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getProducers');
                         this.producers = response.data;
                     } 
                     catch (error) {
@@ -1852,7 +1852,7 @@
                 // users
                 // _id, username, displayName, choiceDrinks, drinkLists, modType, photo
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getUsers');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getUsers');
                         this.users = response.data;
                         this.user = this.users.find(user => user._id.$oid == this.userID)
                         if (this.user) {
@@ -1897,7 +1897,7 @@
                 // venuesAPI
                 // _id, venueName, venueDesc, originCountry
                 // try {
-                //         const response = await this.$axios.get('http://127.0.0.1:5000/getVenuesAPI');
+                //         const response = await this.$axios.get('http://127.0.0.1:5000/getData/getVenuesAPI');
                 //         this.venuesAPI = response.data;
                 //     } 
                 //     catch (error) {
@@ -1906,7 +1906,7 @@
                 // drinkTypes
                 // _id, drinkType, typeCategory
                     // try {
-                    //     const response = await this.$axios.get('http://127.0.0.1:5000/getDrinkTypes');
+                    //     const response = await this.$axios.get('http://127.0.0.1:5000/getData/getDrinkTypes');
                     //     this.drinkTypes = response.data;
                     // } 
                     // catch (error) {
@@ -1915,7 +1915,7 @@
                 // requestListings
                 // _id, listingName, producerNew, producerID, bottler, originCountry, drinkType, typeCategory, age, abv, reviewLink, sourceLink, brandRelation, reviewStatus, userID, photo
                     // try {
-                    //         const response = await this.$axios.get('http://127.0.0.1:5000/getRequestListings');
+                    //         const response = await this.$axios.get('http://127.0.0.1:5000/getData/getRequestListings');
                     //         this.requestListings = response.data;
                     //     } 
                     // catch (error) {
@@ -1924,7 +1924,7 @@
                 // requestEdits
                 // _id, duplicateLink, editDesc, sourceLink, brandRelation, listingID, userID, reviewStatus
                     // try {
-                    //         const response = await this.$axios.get('http://127.0.0.1:5000/getRequestEdits');
+                    //         const response = await this.$axios.get('http://127.0.0.1:5000/getData/getRequestEdits');
                     //         this.requestEdits = response.data;
                     //     } 
                     // catch (error) {
@@ -1933,7 +1933,7 @@
                 // modRequests
                 // _id, userID, drinkType, modDesc
                     // try {
-                    //         const response = await this.$axios.get('http://127.0.0.1:5000/getModRequests');
+                    //         const response = await this.$axios.get('http://127.0.0.1:5000/getData/getModRequests');
                     //         this.modRequests = response.data;
                     //     } 
                     // catch (error) {
@@ -2000,7 +2000,6 @@
                     const apiKey = process.env.VUE_APP_API_KEY;
                     // const apiKey = 'AIzaSyD5aukdDYDbnc8BKjFF_YjApx-fUe515Hs'; // Replace with your Google Places API key
                     // const maxDistance = 5000
-
                     // create an object to store the distance of each venue from the current location
                     let venueDistances = {};
                     
@@ -2017,7 +2016,7 @@
                             let destinations = `${venue.coordinates.lat},${venue.coordinates.lng}`
 
                             try {
-                                const response2 = await this.$axios.get('http://127.0.0.1:5002/getDistance/' + origins + '/' + destinations + '/' + apiKey);
+                                const response2 = await this.$axios.get('http://127.0.0.1:5000/editListing/getDistance/' + origins + '/' + destinations + '/' + apiKey);
                                 const responseData = response2.data.data
                                 const rows = responseData.rows;
                                 console.log(rows)
@@ -2335,7 +2334,7 @@
                 if (this.finish !== "") {
                     this.finish = this.finish.trim();
                 }
-                let submitAPI = "http://127.0.0.1:5021/createReview"
+                let submitAPI = "http://127.0.0.1:5000/createReview/createReview"
                 let submitData = {
                     "userID" : this.userID,
                     "reviewTarget" :this.listing_id,
@@ -2392,7 +2391,7 @@
                 if (this.finish !== "") {
                     this.finish = this.finish.trim();
                 }
-                let submitAPI = "http://127.0.0.1:5022/updateReview/" + this.specificReview[0]._id['$oid']
+                let submitAPI = "http://127.0.0.1:5000/editReview/updateReview/" + this.specificReview[0]._id['$oid']
                 let submitData = {
                     "userID" : this.userID,
                     "reviewTarget" :this.listing_id,
@@ -2538,7 +2537,7 @@
             },
 
             async deleteReview(){
-                let deleteAPI = "http://127.0.0.1:5023/deleteReview/" + this.deleteID['$oid']
+                let deleteAPI = "http://127.0.0.1:5000/deleteReview/deleteReview/" + this.deleteID['$oid']
                 const response = await this.$axios.delete(deleteAPI)
                 .then((response)=>{
                     this.deleteReviewCode = response.data.code
@@ -2589,7 +2588,7 @@
                 }
 
                 try {
-                    await this.$axios.post('http://127.0.0.1:5022/voteReview', 
+                    await this.$axios.post('http://127.0.0.1:5000/editReview/voteReview', 
                         {
                             reviewID: review._id,
                             userVotes: review.userVotes
@@ -2674,7 +2673,7 @@
                             "listingName": this.specified_listing.listingName,
                             "allowMod": this.specified_listing.allowMod,
                 }
-                const response = await this.$axios.post('http://127.0.0.1:5002/updateListing/' + this.listing_id, submitData)
+                const response = await this.$axios.post('http://127.0.0.1:5000/editListing/updateListing/' + this.listing_id, submitData)
                 .then((response)=>{
                     responseCode = response.data.code
                 })
@@ -2702,7 +2701,7 @@
                             "userID": this.userID,
                             
                 }
-                await this.$axios.put('http://127.0.0.1:5070/addToTried/', submitData)
+                await this.$axios.put('http://127.0.0.1:5000/addToList/addToTried/', submitData)
                     .then((response) => {
                         responseCode = response.data.code;
                     })
@@ -2727,7 +2726,7 @@
                             "userID": this.userID,
                             
                 }
-                await this.$axios.put('http://127.0.0.1:5070/addToWant/', submitData)
+                await this.$axios.put('http://127.0.0.1:5000/addToList/addToWant/', submitData)
                     .then((response) => {
                         responseCode = response.data.code;
                     })
@@ -2986,7 +2985,7 @@
 
             // delete bottle listing
             async deleteListings(listing) {
-                let deleteAPI = "http://127.0.0.1:5002/deleteListing/" + listing._id.$oid
+                let deleteAPI = "http://127.0.0.1:5000/editListing/deleteListing/" + listing._id.$oid
                 const response = await this.$axios.delete(deleteAPI)
                 .then((response)=>{
                     this.deleteListingCode = response.data.code
@@ -3015,7 +3014,7 @@
             // Check whether listing exists
             async checkListingExists() {
                 try {
-                    const listing = await this.$axios.get('http://127.0.0.1:5000/getListing/'+ this.listing_id);
+                    const listing = await this.$axios.get('http://127.0.0.1:5000/getData/getListing/'+ this.listing_id);
                     if (listing.data.length !== 0) {
                         this.loadData();
                         // Load local storage variables

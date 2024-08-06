@@ -181,7 +181,7 @@
 
                     // csv
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5052/readCSV');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/adminFunctions/readCSV');
                         this.fileFormat = response.data.data;
                         this.convertToCSV();
                     }
@@ -193,7 +193,7 @@
                     // Check if admin, if not reroute to home page
                     // users
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getUsers');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getUsers');
                         this.users = response.data;
                         if (this.userType == "user") {
                             this.user = this.users.find(user => user["_id"]["$oid"] == this.userID);
@@ -210,7 +210,7 @@
                     }
                     // observation tags
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getObservationTags');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getObservationTags');
                         this.observationTags = response.data;
                         this.editedObservationTags = JSON.parse(JSON.stringify(response.data));
                     } 
@@ -220,7 +220,7 @@
                     }
                     // mod requests
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getModRequests');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getModRequests');
                         this.modRequests = response.data;
                         this.pendingModRequests = this.modRequests.filter(request => request.reviewStatus);
                     } 
@@ -230,7 +230,7 @@
                     }
                     // account requests
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getAccountRequests');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getAccountRequests');
                         this.accountRequests = response.data;
                         this.pendingAccountRequests = this.accountRequests.filter(request => request.reviewStatus);
                     } 
@@ -240,7 +240,7 @@
                     }
                     // producer
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getProducers');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getProducers');
                         this.producers = response.data;
                         // check for producer with no producer name and retrieve id
                         // [TO BE REMOVED?]
@@ -257,7 +257,7 @@
                     }
                     // venues
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getVenues');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getVenues');
                         this.venues = response.data;
                     } 
                     catch (error) {
@@ -266,7 +266,7 @@
                     }
                     // countries
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getCountries');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getCountries');
                         this.countries = response.data;
                     } 
                     catch (error) {
@@ -294,7 +294,7 @@
                     formData.append('file', this.csvFile);
                     
                         try {
-                            const response = await this.$axios.post('http://127.0.0.1:5052/importListings', 
+                            const response = await this.$axios.post('http://127.0.0.1:5000/adminFunctions/importListings', 
                                 formData, {
                                 headers: {
                                     'Content-Type': 'multipart/form-data'

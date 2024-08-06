@@ -1025,7 +1025,7 @@
                     // Check if admin, if not reroute to home page
                     // users
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getUsers');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getUsers');
                         this.users = response.data;
                         if (this.userType == "user") {
                             this.user = this.users.find(user => user["_id"]["$oid"] == this.userID);
@@ -1043,7 +1043,7 @@
                     }
                     // observation tags
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getObservationTags');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getObservationTags');
                         this.observationTags = response.data;
                         this.editedObservationTags = JSON.parse(JSON.stringify(response.data));
                     } 
@@ -1053,7 +1053,7 @@
                     }
                     // mod requests
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getModRequests');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getModRequests');
                         this.modRequests = response.data;
                         this.pendingModRequests = this.modRequests.filter(request => request.reviewStatus);
                     } 
@@ -1063,7 +1063,7 @@
                     }
                     // account requests
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getAccountRequests');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getAccountRequests');
                         this.accountRequests = response.data;
 
                         this.accountRequests = response.data.map(request => {
@@ -1097,7 +1097,7 @@
                     }
                     // producer
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getProducers');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getProducers');
                         this.producers = response.data;
                         // check for producer with no producer name and retrieve id
                         // [TO BE REMOVED?]
@@ -1114,7 +1114,7 @@
                     }
                     // venues
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getVenues');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getVenues');
                         this.venues = response.data;
                     } 
                     catch (error) {
@@ -1123,7 +1123,7 @@
                     }
                     // countries
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getCountries');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getCountries');
                         this.countries = response.data;
                     } 
                     catch (error) {
@@ -1132,7 +1132,7 @@
                     }
                     // drinkType
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getDrinkTypes');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getDrinkTypes');
                         this.drinkTypes = response.data;
                     } 
                     catch (error) {
@@ -1141,7 +1141,7 @@
                     }
                     // flavour tag
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getFlavourTags');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getFlavourTags');
                         this.flavourTags = response.data.map(item => {
                             return { ...item, showBox: false };
                         })                            
@@ -1152,7 +1152,7 @@
                     }
                     // sub tags
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getSubTags');
+                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getSubTags');
                         this.subTags = response.data
                         this.flavourTags.forEach(flavourTag => {
                             // Filter subtags belonging to the current flavor tag
@@ -1230,7 +1230,7 @@
                     if(this.observationTags.find((tag)=> tag.observationTag == '')){
                         this.emptyObservation = true
                     }
-                    let submitAPI = "http://127.0.0.1:5052/updateObservationTag"
+                    let submitAPI = "http://127.0.0.1:5000/adminFunctions/updateObservationTag"
                     this.updateTags(submitAPI,submitData)
                 },
 
@@ -1282,7 +1282,7 @@
                     }
                     this.submittingObservation=true
                     this.addingObservation=false
-                    let submitAPI = "http://127.0.0.1:5052/createObservationTag"
+                    let submitAPI = "http://127.0.0.1:5000/adminFunctions/createObservationTag"
                     let submitData = {"observationTag":this.newObservation}
                     this.createTag(submitAPI, submitData)
                 },
@@ -1328,7 +1328,7 @@
                 },
                 async confirmDeleteTag(){
                     let responseCode = ''
-                    let deleteAPI = "http://127.0.0.1:5052/deleteObservationTag/" + this.observationToDelete.tagId.$oid
+                    let deleteAPI = "http://127.0.0.1:5000/adminFunctions/deleteObservationTag/" + this.observationToDelete.tagId.$oid
                     const response = await this.$axios.delete(deleteAPI)
                     .then((response)=>{
                         responseCode = response.data.code
@@ -1371,7 +1371,7 @@
                         const newModType = request.drinkType;
 
                         try {
-                            await this.$axios.post('http://127.0.0.1:5100/updateModType', 
+                            await this.$axios.post('http://127.0.0.1:5000/editProfile/updateModType', 
                                 {
                                     userID: userID,
                                     newModType: newModType,
@@ -1387,7 +1387,7 @@
                     
                     // update mod request db
                     try {
-                        await this.$axios.post('http://127.0.0.1:5101/updateModRequest', 
+                        await this.$axios.post('http://127.0.0.1:5000/editModRequests/updateModRequest', 
                             {
                                 requestID: requestID,
                                 reviewStatus: false,
@@ -1458,11 +1458,11 @@
     
                             // producers
                             if (request.businessType == "producer") {
-                                apiURL = 'http://127.0.0.1:5200/updateProducerStatus';
+                                apiURL = 'http://127.0.0.1:5000/editProducerProfile/updateProducerStatus';
                             }
                             // venues 
                             else if (request.businessType == "venue") {
-                                apiURL = 'http://127.0.0.1:5300/updateVenueStatus';
+                                apiURL = 'http://127.0.0.1:5000/editVenueProfile/updateVenueStatus';
                             }
     
                             if (apiURL != '') {
@@ -1510,7 +1510,7 @@
 
                         // update review status
                         try {
-                            await this.$axios.post('http://127.0.0.1:5031/updateAccountRequest', 
+                            await this.$axios.post('http://127.0.0.1:5000/createAccount/updateAccountRequest', 
                                 {
                                     requestID: requestID,
                                     isPending: true,
@@ -1538,7 +1538,7 @@
                     else if (action == "reject") {
                         // update review status
                         try {
-                            await this.$axios.post('http://127.0.0.1:5031/updateAccountRequest', 
+                            await this.$axios.post('http://127.0.0.1:5000/createAccount/updateAccountRequest', 
                                 {
                                     requestID: requestID,
                                     isPending: false,
@@ -1554,7 +1554,7 @@
 
                         // delete token if exist
                         try {
-                            const response = await this.$axios.get(`http://127.0.0.1:5000/getTokenByRequestId/${requestID}`);
+                            const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getTokenByRequestId/${requestID}`);
                             const tokenData = response.data;
                             if (Object.keys(tokenData).length > 0) {
                                 this.deleteToken(tokenData.token)
@@ -1581,7 +1581,7 @@
                         try {
                             const requestId = request._id.$oid;
                             console.log(requestId);
-                            const response = await this.$axios.get(`http://127.0.0.1:5000/get${request.businessType.charAt(0).toUpperCase()}${request.businessType.slice(1)}ByRequestId/${requestId}`);
+                            const response = await this.$axios.get(`http://127.0.0.1:5000/getData/get${request.businessType.charAt(0).toUpperCase()}${request.businessType.slice(1)}ByRequestId/${requestId}`);
                             console.log(response);
                             const businessId = response.data._id.$oid;
                             console.log(businessId);
@@ -1619,7 +1619,7 @@
                                 claimStatus: this.businessClaimStatus === "false",
                             }
                             try {
-                                const response = await this.$axios.post('http://127.0.0.1:5031/createProducerAccount', 
+                                const response = await this.$axios.post('http://127.0.0.1:5000/createAccount/createProducerAccount', 
                                     {
                                         newBusinessData
                                     }, {
@@ -1667,7 +1667,7 @@
                                 requestId: this.requestId
                             }
                             try {
-                                const response = await this.$axios.post('http://127.0.0.1:5031/createVenueAccount', 
+                                const response = await this.$axios.post('http://127.0.0.1:5000/createAccount/createVenueAccount', 
                                     {
                                         newBusinessData
                                     }, {
@@ -1706,7 +1706,7 @@
 
                 async generateToken(businessId, requestId) {
                     try {
-                        const response = await this.$axios.post('http://127.0.0.1:5031/createToken', 
+                        const response = await this.$axios.post('http://127.0.0.1:5000/createAccount/createToken', 
                             {
                                 businessId: businessId,
                                 requestId: requestId,
@@ -1732,7 +1732,7 @@
                         message: `Hi ${request.firstName}, \n\nClick on the link below to reset your password: \n${link} \n\nIf you did not initiate this request, please contact us immediately. \n\nThank you, \nDrinkX`
                     };
                     try {
-                        await this.$axios.post('http://127.0.0.1:5031/sendEmail', emailDetails);
+                        await this.$axios.post('http://127.0.0.1:5000/createAccount/sendEmail', emailDetails);
                     } catch (error) {
                         console.error('Failed to send email:', error);
                     }
@@ -1856,7 +1856,7 @@
 
                 async confirmAddModerator(){
                     try {
-                        await this.$axios.post('http://127.0.0.1:5100/updateModType', 
+                        await this.$axios.post('http://127.0.0.1:5000/editProfile/updateModType', 
                             {
                                 userID: this.selectedPromotedUser._id.$oid,
                                 newModType: this.selectedPromotedType.drinkType,
@@ -1880,7 +1880,7 @@
                 },
                 async confirmDowngradeModerator(){
                     try {
-                        await this.$axios.post('http://127.0.0.1:5100/removeModType', 
+                        await this.$axios.post('http://127.0.0.1:5000/editProfile/removeModType', 
                             {
                                 userID: this.selectedRemoveMod._id.$oid,
                                 removeModType: this.selectedRemoveType.drinkType,
@@ -2001,7 +2001,7 @@
                     let submitData= {}
                     
                     if(this.addFlavour == 'family'){
-                        submitURL = 'http://127.0.0.1:5052/createFamilyTag'
+                        submitURL = 'http://127.0.0.1:5000/adminFunctions/createFamilyTag'
                         submitData = {
                             hexcode: '#' + this.hexcode,
                             familyTag: this.newFamily
@@ -2009,7 +2009,7 @@
 
                     }
                     else if(this.addFlavour == 'sub'){
-                        submitURL = 'http://127.0.0.1:5052/createSubTag'
+                        submitURL = 'http://127.0.0.1:5000/adminFunctions/createSubTag'
                         submitData = {
                             familyTagId: this.chosenTagParent._id.$oid,
                             subTag: this.newSub
@@ -2157,7 +2157,7 @@
                     let submitData=[]
                     let submitURL=''
                     if(this.editFlavour=='family'){
-                        submitURL = 'http://127.0.0.1:5052/updateFamilyTag'
+                        submitURL = 'http://127.0.0.1:5000/adminFunctions/updateFamilyTag'
                         for( let i=0;i<this.editedFlavourTags.length;i++){
                             if(this.editedFlavourTags[i].familyTag!= this.flavourTags[i].familyTag || this.editedFlavourTags[i].hexcode!= this.flavourTags[i].hexcode){
                                 submitData.push(
@@ -2171,7 +2171,7 @@
                         }
                     }
                     if(this.editFlavour=='sub'){
-                        submitURL = 'http://127.0.0.1:5052/updateSubTag'
+                        submitURL = 'http://127.0.0.1:5000/adminFunctions/updateSubTag'
                         for( let i=0;i<this.editedFlavourTags.length;i++){
                             for(let j=0; j<this.editedFlavourTags[i].subTag2.length;j++){
                                 if(this.editedFlavourTags[i].subTag2[j].subTag != this.flavourTags[i].subTag2[j].subTag){
@@ -2228,10 +2228,10 @@
                 confirmDeleteFlavourTag(){
                     let submitURL = ''
                     if(this.deleteFlavour=='family'){
-                        submitURL = 'http://127.0.0.1:5052/deleteFamilyTag/' + this.familyTagToDelete._id
+                        submitURL = 'http://127.0.0.1:5000/adminFunctions/deleteFamilyTag/' + this.familyTagToDelete._id
                     }
                     if(this.deleteFlavour=='sub'){
-                        submitURL = 'http://127.0.0.1:5052/deleteSubTag/' + this.subTagToDelete._id
+                        submitURL = 'http://127.0.0.1:5000/adminFunctions/deleteSubTag/' + this.subTagToDelete._id
                         
                     }
                     this.writeDeleteTag(submitURL)
@@ -2315,7 +2315,7 @@
                 },
                 async deleteToken(token) {
                     try {
-                        const response = await this.$axios.post(`http://127.0.0.1:5031/deleteToken`,
+                        const response = await this.$axios.post(`http://127.0.0.1:5000/createAccount/deleteToken`,
                             {
                                 token: token,
                             }, {

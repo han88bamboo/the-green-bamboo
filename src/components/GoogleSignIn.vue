@@ -32,7 +32,7 @@
 
 
                 // create account only if it doesnt exist in the database
-                const response2 = await this.$axios.get('http://127.0.0.1:5000/getUserByUsername/' + userDetails.email);
+                const response2 = await this.$axios.get('http://127.0.0.1:5000/getData/getUserByUsername/' + userDetails.email);
                 await this.convertImageToBase64(userDetails.picture).then(base64String => {
                         this.base64Image = base64String // Outputs the Base64 string representation of the image
                     })
@@ -45,7 +45,7 @@
                             "image64": this.base64Image,
                             "drinkChoice": response2.data.choiceDrinks,
                         }
-                        await this.$axios.post('http://127.0.0.1:5100/editDetails', submitData2)
+                        await this.$axios.post('http://127.0.0.1:5000/editProfile/editDetails', submitData2)
                     }
                     localStorage.setItem("88B_accID", response2.data._id.$oid);
                     localStorage.setItem("88B_accType", "user");
@@ -60,7 +60,7 @@
                     await this.convertImageToBase64(userDetails.picture).then(base64String => {
                         this.base64Image = base64String // Outputs the Base64 string representation of the image
                     })
-                    let submitAPI =  "http://127.0.0.1:5031/createAccount"
+                    let submitAPI =  "http://127.0.0.1:5000/createAccount/createAccount"
                     let submitData = {
                         // pass in first name, last name, email, isadmin
                         "username": userDetails.email,
@@ -127,7 +127,7 @@
                     });
                     if(responseCode==201){
                         // Route them in  after setting details
-                        const response4 = await this.$axios.get('http://127.0.0.1:5000/getUserByUsername/' + userDetails.email);
+                        const response4 = await this.$axios.get('http://127.0.0.1:5000/getData/getUserByUsername/' + userDetails.email);
                         localStorage.setItem("88B_accID", response4.data._id.$oid);
                         localStorage.setItem("88B_accType", "user");
                         this.$router.push({path: '/'});

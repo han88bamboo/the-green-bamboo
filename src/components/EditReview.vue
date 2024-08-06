@@ -496,7 +496,7 @@ export default {
                 if (this.finish !== "") {
                     this.finish = this.finish.trim();
                 }
-                let submitAPI = "http://127.0.0.1:5021/createReview"
+                let submitAPI = "http://127.0.0.1:5000/createReview/createReview"
                 let submitData = {
                     "userID" : this.userID,
                     "reviewTarget" : {

@@ -13,7 +13,7 @@ from flask import Flask
 from flask.testing import FlaskClient
 from unittest.mock import patch
 from mongomock import MongoClient
-from backend.createListing import createListings  # replace 'your_app_module' with the actual name of your Flask application module
+from backend.scripts.createListing import createListings  # replace 'your_app_module' with the actual name of your Flask application module
 
 class FlaskAppTests(unittest.TestCase):
 

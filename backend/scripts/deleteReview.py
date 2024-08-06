@@ -2,27 +2,16 @@
 # Routes: /deleteReview/<id> (DELETE)
 # -----------------------------------------------------------------------------------------
 
-import bson
+import os
+import s3Images
 import json
 from bson import json_util
-from flask import Flask, request, jsonify
-from flask_pymongo import PyMongo
-from flask_cors import CORS
-
+from flask import Blueprint, g, request, jsonify
 from bson.objectid import ObjectId
 
-import data
-import s3Images
 
-from dotenv import load_dotenv
-import os
-
-app = Flask(__name__)
-CORS(app)  # Allow all requests
-
-load_dotenv()
-app.config["MONGO_URI"] = os.getenv('MONGO_DB_URL')
-db = PyMongo(app).db
+file_name = os.path.basename(__file__)
+blueprint = Blueprint(file_name[:-3], __name__)
 
 def parse_json(data):
     return json.loads(json_util.dumps(data))
@@ -31,8 +20,9 @@ def parse_json(data):
 # [DELETE] Deletes a review
 # - Delete entry with specified id from the "reviews" collection.
 # - Possible return codes: 201 (Deleted), 400 (Review doesn't exist), 500 (Error during deletion)
-@app.route("/deleteReview/<id>", methods= ['DELETE'])
+@blueprint.route("/deleteReview/<id>", methods= ['DELETE'])
 def deleteReview(id):
+    db = g.db
 
     # Find the review entry with the specified id
     existingReview = db.reviews.find_one({"_id": ObjectId(id)})
@@ -71,7 +61,3 @@ def deleteReview(id):
                 "message": "An error occurred deleting the listing."
             }
         ), 500
-
-# -----------------------------------------------------------------------------------------
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', debug=True, port = 5023)

@@ -3,27 +3,17 @@
 # Dataclass: listings
 # -----------------------------------------------------------------------------------------
 
-import bson
+import os
 import json
 from bson import json_util
-from flask import Flask, request, jsonify
+from flask import Blueprint, g, request, jsonify
 from flask_pymongo import PyMongo
 from flask_cors import CORS
-
 from bson.objectid import ObjectId
-
-import data
 from datetime import datetime
 
-from dotenv import load_dotenv
-import os
-
-app = Flask(__name__)
-CORS(app)  # Allow all requests
-
-load_dotenv()
-app.config["MONGO_URI"] = os.getenv('MONGO_DB_URL')
-db = PyMongo(app).db
+file_name = os.path.basename(__file__)
+blueprint = Blueprint(file_name[:-3], __name__)
 
 def parse_json(data):
     return json.loads(json_util.dumps(data))
@@ -32,9 +22,10 @@ def parse_json(data):
 # [PUT] adds a listing to have tried list 
 # - Update "Drinks I Have Tried List" with specified id from the "listings" collection
 # - Possible return codes: 200 (List Updated), 440 (Failed to add to list)
-@app.route("/addToTried/", methods=['PUT'])
+@blueprint.route("/addToTried/", methods=['PUT'])
 def addToTried():
     
+    db = g.db
     addedListing = request.get_json()
     date = datetime.strptime(addedListing["date"], "%Y-%m-%dT%H:%M:%S.%fZ")
     listingID = addedListing["listingID"]
@@ -75,9 +66,10 @@ def addToTried():
 # [PUT] adds a listing to have tried list 
 # - Update "Drinks I Want To Try" List with specified id from the "listings" collection
 # - Possible return codes: 210 (List Updated), 450 (Failed to add to list)
-@app.route("/addToWant/", methods=['PUT'])
+@blueprint.route("/addToWant/", methods=['PUT'])
 def addToWant():
     
+    db = g.db
     addedListing = request.get_json()
     date = datetime.strptime(addedListing["date"], "%Y-%m-%dT%H:%M:%S.%fZ")
     listingID = addedListing["listingID"]
@@ -111,7 +103,3 @@ def addToWant():
                 "message": "Listing was not added into the list"
             }
         ), 450
-
-# -----------------------------------------------------------------------------------------
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', debug=True, port = 5070)

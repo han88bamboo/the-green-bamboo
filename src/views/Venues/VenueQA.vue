@@ -214,7 +214,7 @@
                 // venues
                 // _id, venueName, venueDesc, originCountry, address, openingHours
                 try {
-                    const response = await this.$axios.get('http://127.0.0.1:5000/getVenues');
+                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getVenues');
                         this.venues = response.data;
                         this.specified_venue = this.venues.find(venue => venue["_id"]["$oid"] == this.venue_id); // find specified venue
                         this.checkVenueQuestions();
@@ -263,7 +263,7 @@
                 let q_and_a_id = qa._id.$oid;
                 let answer = this.answers[q_and_a_id];
                 try {
-                    const response = await this.$axios.post('http://127.0.0.1:5300/sendAnswers', 
+                    const response = await this.$axios.post('http://127.0.0.1:5000/editVenueProfile/sendAnswers', 
                         {
                             venueID: this.venue_id,
                             questionsAnswersID: q_and_a_id,
@@ -297,7 +297,7 @@
                 this.editingQA = false;
                 let q_and_a_id = qa._id.$oid;
                 try {
-                    this.$axios.post('http://127.0.0.1:5300/editQA', 
+                    this.$axios.post('http://127.0.0.1:5000/editQA', 
                         {
                             venueID: this.venue_id,
                             questionsAnswersID: q_and_a_id,
@@ -319,7 +319,7 @@
             deleteQAEdit(qa) {
                 let q_and_a_id = qa._id.$oid;
                 try {
-                    const response = this.$axios.post('http://127.0.0.1:5300/deleteQA', 
+                    const response = this.$axios.post('http://127.0.0.1:5000/deleteQA', 
                         {
                             venueID: this.venue_id,
                             questionsAnswersID: q_and_a_id,

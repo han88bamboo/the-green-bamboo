@@ -2,39 +2,20 @@
 # Routes: /submitModRequest (POST), /updateModRequest (POST)
 # -----------------------------------------------------------------------------------------
 
-import bson
-import json
-from bson import json_util
-from flask import Flask, request, jsonify
-from flask_pymongo import PyMongo
-from flask_cors import CORS
-
+import os
+from flask import Blueprint, g, request, jsonify
 from bson.objectid import ObjectId
 
-from datetime import datetime
-
-from gridfs import GridFS
-import os
-
-from dotenv import load_dotenv
-import os
-
-app = Flask(__name__)
-CORS(app)  # Allow all requests
-
-load_dotenv()
-app.config["MONGO_URI"] = os.getenv('MONGO_DB_URL')
-db = PyMongo(app).db
-
-mongo = PyMongo(app)
-fs = GridFS(mongo.db)
+file_name = os.path.basename(__file__)
+blueprint = Blueprint(file_name[:-3], __name__)
 
 # -----------------------------------------------------------------------------------------
 # [POST] Submit mod request
 # - Submit mod request with new details
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/submitModRequest', methods=['POST'])
+@blueprint.route('/submitModRequest', methods=['POST'])
 def submitModRequest():
+    db = g.db
     data = request.get_json()
     print(data)
     userID = data['userID']
@@ -81,8 +62,9 @@ def submitModRequest():
 # [POST] Update mod request status
 # - Update mod request with new details
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/updateModRequest', methods=['POST'])
+@blueprint.route('/updateModRequest', methods=['POST'])
 def updateModRequest():
+    db = g.db
     data = request.get_json()
     print(data)
     requestID = data['requestID']
@@ -114,7 +96,3 @@ def updateModRequest():
                 "message": "An error occurred updating the mod request."
             }
         ), 500
-
-# -----------------------------------------------------------------------------------------
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True, port=5101)

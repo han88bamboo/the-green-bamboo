@@ -3,29 +3,18 @@
 # Dataclass: RequestListings
 # -----------------------------------------------------------------------------------------
 
-import bson
+import os
 import json
-from bson import json_util
-from flask import Flask, request, jsonify
-from flask_pymongo import PyMongo
-from flask_cors import CORS
-
-from bson.objectid import ObjectId
-from datetime import datetime
 import pytz
-
 import data
 import s3Images
+from bson import json_util
+from flask import Blueprint, g, request, jsonify
+from bson.objectid import ObjectId
+from datetime import datetime
 
-from dotenv import load_dotenv
-import os
-
-app = Flask(__name__)
-CORS(app)  # Allow all requests
-
-load_dotenv()
-app.config["MONGO_URI"] = os.getenv('MONGO_DB_URL')
-db = PyMongo(app).db
+file_name = os.path.basename(__file__)
+blueprint = Blueprint(file_name[:-3], __name__)
 
 def parse_json(data):
     return json.loads(json_util.dumps(data))
@@ -35,8 +24,9 @@ def parse_json(data):
 # - Insert entry into the "requestListings" collection. Follows requestListings dataclass requirements.
 # - Duplicate listing check: If a listing with the same name exists, reject the request
 # - Possible return codes: 201 (Created), 400 (Duplicate Detected), 500 (Error during creation)
-@app.route("/requestListing", methods= ['POST'])
+@blueprint.route("/requestListing", methods= ['POST'])
 def requestListing():
+    db = g.db
     rawRequest = request.get_json()
 
     # Duplicate listing check: Reject if listing with the same bottle name already exists in the "listings" collection
@@ -85,8 +75,9 @@ def requestListing():
 # - Update entry with specified id from the "requestListings" collection. Follows requestListings dataclass requirements.
 # - Duplicate listing check: If a listing with the same name exists, reject the request
 # - Possible return codes: 201 (Updated), 400 (Duplicate Detected), 500 (Error during update)
-@app.route("/requestListingModify/<string:requestID>", methods= ['POST'])
+@blueprint.route("/requestListingModify/<string:requestID>", methods= ['POST'])
 def requestListingModify(requestID):
+    db = g.db
     rawRequest = request.get_json()
 
     # Duplicate listing check: Reject if listing with the same bottle name already exists in the "listings" collection
@@ -141,8 +132,9 @@ def requestListingModify(requestID):
 # [POST] Request for listing modification
 # - Insert entry into the "requestEdits" collection. Follows requestEdits dataclass requirements.
 # - Possible return codes: 201 (Created), 400 (Invalid Listing), 500 (Error during creation)
-@app.route("/requestEdits", methods= ['POST'])
+@blueprint.route("/requestEdits", methods= ['POST'])
 def requestEdits():
+    db = g.db
     rawRequest = request.get_json()
 
     # Check if edit request is linked to a listing that exists in the database
@@ -189,8 +181,9 @@ def requestEdits():
 # [POST] Edit submitted request for listing modification
 # - Update entry with specified id from the "requestEdits" collection. Follows requestEdits dataclass requirements.
 # - Possible return codes: 201 (Updated), 400 (Invalid Listing), 500 (Error during update)
-@app.route("/requestEditsModify/<string:requestID>", methods= ['POST'])
+@blueprint.route("/requestEditsModify/<string:requestID>", methods= ['POST'])
 def requestEditsModify(requestID):
+    db = g.db
     rawRequest = request.get_json()
 
     # Check if edit request is linked to a listing that exists in the database
@@ -237,8 +230,9 @@ def requestEditsModify(requestID):
 # [POST] Request for listing modification in venue menu
 # - Insert entry into the "requestInaccurate" collection. Follows requestInaccuracy dataclass requirements.
 # - Possible return codes: 201 (Created), 400 (Duplicate request), 500 (Error during creation)
-@app.route("/requestInaccuracy", methods= ['POST'])
+@blueprint.route("/requestInaccuracy", methods= ['POST'])
 def requestInaccuracy():
+    db = g.db
     rawRequest = request.get_json()
 
     # Check if inaccuracy request is already submitted for the same bottle for a venue in the database
@@ -294,8 +288,9 @@ def requestInaccuracy():
 # - Update entry with specified id from the specified collection.
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 
-@app.route("/requestReviewStatus/<string:requestID>", methods= ['POST'])
+@blueprint.route("/requestReviewStatus/<string:requestID>", methods= ['POST'])
 def requestReviewStatus(requestID):
+    db = g.db
 
     requestIDObject = ObjectId(requestID)
     updateRequest = request.get_json()
@@ -324,7 +319,3 @@ def requestReviewStatus(requestID):
                 "message": "An error occurred while updating the review status."
             }
         ), 500
-
-# -----------------------------------------------------------------------------------------
-if __name__ == "__main__":
-    app.run(debug=True, port = 5011)

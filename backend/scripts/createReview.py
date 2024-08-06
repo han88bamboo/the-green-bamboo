@@ -3,39 +3,29 @@
 # Dataclass: reviews
 # -----------------------------------------------------------------------------------------
 
-import bson
+import os
 import json
-from bson import json_util
-from flask import Flask, request, jsonify
-from flask_pymongo import PyMongo
-from flask_cors import CORS
-
-from bson.objectid import ObjectId
-
-from datetime import datetime
-
 import data
 import s3Images
+from bson import json_util
+from flask import Blueprint, g, request, jsonify
+from bson.objectid import ObjectId
+from datetime import datetime
 
-from dotenv import load_dotenv
-import os
+from scripts.adminFunctions import hash_password
 
-from adminFunctions import hash_password
-
-app = Flask(__name__)
-CORS(app)  # Allow all requests
-
-load_dotenv()
-app.config["MONGO_URI"] = os.getenv('MONGO_DB_URL')
-db = PyMongo(app).db
+file_name = os.path.basename(__file__)
+blueprint = Blueprint(file_name[:-3], __name__)
 
 def parse_json(data):
     return json.loads(json_util.dumps(data))
+
 
 # -----------------------------------------------------------------------------------------
 def create_username(location_name):
     # Remove any spaces and convert to lowercase
     # Get a dict of all usernames 
+    db = g.db
     username_dict={}
     for doc in db.venues.find({}):
         username_dict[doc["username"]]=doc["_id"]
@@ -68,8 +58,9 @@ def create_username(location_name):
 # - Insert entry into the "reviews" collection. Follows reviews dataclass requirements.
 # - Duplicate review check: If a review with the same userID and reviewTarget exists, reject the request
 # - Possible return codes: 201 (Created), 400 (Duplicate Detected), 500 (Error during creation)
-@app.route("/createReview", methods= ['POST'])
+@blueprint.route("/createReview", methods= ['POST'])
 def createReviews():
+    db = g.db
     rawReview = request.get_json()
     rawReview['reviewTarget'] = ObjectId(rawReview['reviewTarget'])  # Convert reviewTarget to ObjectId
     rawReview['userID'] = ObjectId(rawReview['userID'])  # Convert userID to ObjectId
@@ -196,7 +187,3 @@ def createReviews():
                 "message": "An error occurred creating the listing."
             }
         ), 500
-
-# -----------------------------------------------------------------------------------------
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', debug=True, port = 5021)

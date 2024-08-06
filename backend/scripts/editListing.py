@@ -3,29 +3,17 @@
 # Dataclass: listings
 # -----------------------------------------------------------------------------------------
 
-import bson
+import os
 import json
+import s3Images
 from bson import json_util
-from flask import Flask, request, jsonify
-from flask_pymongo import PyMongo
-from flask_cors import CORS
-
+from flask import Blueprint, g, request, jsonify
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
-
-import data
 import pip._vendor.requests as requests
-import s3Images
 
-from dotenv import load_dotenv
-import os
-
-app = Flask(__name__)
-CORS(app)  # Allow all requests
-
-load_dotenv()
-app.config["MONGO_URI"] = os.getenv('MONGO_DB_URL')
-db = PyMongo(app).db
+file_name = os.path.basename(__file__)
+blueprint = Blueprint(file_name[:-3], __name__)
 
 def parse_json(data):
     return json.loads(json_util.dumps(data))
@@ -35,8 +23,9 @@ def parse_json(data):
 # - Update entry with specified id from the "listings" collection. Follows listings dataclass requirements.
 # - Duplicate listing check: If a listing with the same name exists, reject the request
 # - Possible return codes: 200 (Updated), 410 (Duplicate Detected), 420 (Invalid ID), 440 (Not Found), 450 (Error during update)
-@app.route("/updateListing/<id>", methods=['POST'])
+@blueprint.route("/updateListing/<id>", methods=['POST'])
 def updateListing(id):
+    db = g.db
     listing_id=ObjectId(id)
     updatedListing = request.get_json()
     updatedListing['producerID'] = ObjectId(updatedListing['producerID'])
@@ -136,8 +125,9 @@ def updateListing(id):
 # [DELETE] Deletes a listing
 # - Delete entry with specified id from the "listings" collection
 # - Possible return codes: 201 (Deleted), 400 (Listing doesn't exist), 500 (Error during deletion)
-@app.route("/deleteListing/<id>", methods=['DELETE'])
+@blueprint.route("/deleteListing/<id>", methods=['DELETE'])
 def deleteListing(id):
+    db = g.db
         
     # Find the listing entry with the specified id
     existingListing = db.listings.find_one({"_id": ObjectId(id)})
@@ -183,8 +173,9 @@ def deleteListing(id):
 # [GET] Get distance between two locations
 # - Get distance between two locations
 # - Possible return codes: 201 (Success), 500 (Error)
-@app.route("/getDistance/<origins>/<destinations>/<key>", methods=['GET'])
+@blueprint.route("/getDistance/<origins>/<destinations>/<key>", methods=['GET'])
 def getDistance(origins, destinations, key):
+    db = g.db
     url = f"https://maps.googleapis.com/maps/api/distancematrix/json?destinations={destinations}&origins={origins}&key={key}"
     response = requests.get(url)
     data = response.json()
@@ -203,7 +194,3 @@ def getDistance(origins, destinations, key):
                 "message": "An error occurred getting distance!"
             }
         ), 500
-
-# -----------------------------------------------------------------------------------------
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', debug=True, port = 5002)

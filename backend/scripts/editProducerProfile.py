@@ -2,39 +2,22 @@
 # Routes: /editDetails (POST), /addUpdates (POST), /sendQuestions (POST), /sendAnswers (POST), /likeUpdates (POST), /unlikeUpdates (POST), /updateProducerStatus (POST), /addProfileCount (POST), /addNewProfileCount (POST), /editUpdate (POST), /deleteUpdate (POST), /editQA (POST), /deleteQA (POST)
 # -----------------------------------------------------------------------------------------
 
-import bson
-import json
-from bson import json_util
-from flask import Flask, request, jsonify
-from flask_pymongo import PyMongo
-from flask_cors import CORS
-
-from bson.objectid import ObjectId
-
-from gridfs import GridFS
 import os
-from datetime import datetime
 import s3Images
+from flask import Blueprint, g, request, jsonify
+from bson.objectid import ObjectId
+from datetime import datetime
 
-from dotenv import load_dotenv
-import os
-
-app = Flask(__name__)
-CORS(app)  # Allow all requests
-
-load_dotenv()
-app.config["MONGO_URI"] = os.getenv('MONGO_DB_URL')
-db = PyMongo(app).db
-
-mongo = PyMongo(app)
-fs = GridFS(mongo.db)
+file_name = os.path.basename(__file__)
+blueprint = Blueprint(file_name[:-3], __name__)
 
 # -----------------------------------------------------------------------------------------
 # [POST] Edit producer profile
 # - Update producer profile with new details
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/editDetails', methods=['POST'])
+@blueprint.route('/editDetails', methods=['POST'])
 def editDetails():
+    db = g.db
 
     # fetch sent data
     data = request.get_json()
@@ -85,8 +68,9 @@ def editDetails():
 # [POST] Add updates to producer profile
 # - Add updates to producer profile
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/addUpdates', methods=['POST'])
+@blueprint.route('/addUpdates', methods=['POST'])
 def addUpdates():
+    db = g.db
 
     # fetch sent data
     data = request.get_json()
@@ -133,8 +117,9 @@ def addUpdates():
 # [POST] Send questions to producer
 # - Send questions to producer
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/sendQuestions', methods=['POST'])
+@blueprint.route('/sendQuestions', methods=['POST'])
 def sendQuestions():
+    db = g.db
 
     # fetch sent data
     data = request.get_json()
@@ -182,8 +167,9 @@ def sendQuestions():
 # [POST] Send answers to questions
 # - Send answers to questions
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/sendAnswers', methods=['POST'])
+@blueprint.route('/sendAnswers', methods=['POST'])
 def sendAnswers():
+    db = g.db
 
     # fetch sent data
     data = request.get_json()
@@ -219,8 +205,9 @@ def sendAnswers():
 # [POST] Like updates
 # - Like updates
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/likeUpdates', methods=['POST'])
+@blueprint.route('/likeUpdates', methods=['POST'])
 def likeUpdates():
+    db = g.db
     data = request.get_json()
     print(data)
     producerID = data['producerID']
@@ -252,8 +239,9 @@ def likeUpdates():
 # [POST] Unlike updates
 # - Unlike updates
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/unlikeUpdates', methods=['POST'])
+@blueprint.route('/unlikeUpdates', methods=['POST'])
 def unlikeUpdates():
+    db = g.db
     data = request.get_json()
     print(data)
     producerID = data['producerID']
@@ -285,8 +273,9 @@ def unlikeUpdates():
 # [POST] Edit producer profile
 # - Update producer profile with new details
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/updateProducerStatus', methods=['POST'])
+@blueprint.route('/updateProducerStatus', methods=['POST'])
 def updateProducerStatus():
+    db = g.db
 
     # fetch sent data
     data = request.get_json()
@@ -333,8 +322,9 @@ def updateProducerStatus():
 # [POST] Add profile view count
 # - Add profile view count
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/addProfileCount', methods=['POST'])
+@blueprint.route('/addProfileCount', methods=['POST'])
 def addProfileCount():
+    db = g.db
     data = request.get_json()
     print(data)
     producerID = data['producerID']
@@ -364,8 +354,9 @@ def addProfileCount():
 # [POST] Add new profile view count
 # - Add new profile view count
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/addNewProfileCount', methods=['POST'])
+@blueprint.route('/addNewProfileCount', methods=['POST'])
 def addNewProfileCount():
+    db = g.db
     data = request.get_json()
     print(data)
     producerID = data['producerID']
@@ -417,8 +408,9 @@ def addNewProfileCount():
 # [POST] Edit producer update
 # - Update a producer update with new details
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/editUpdate', methods=['POST'])
+@blueprint.route('/editUpdate', methods=['POST'])
 def editUpdate():
+    db = g.db
 
     # fetch sent data
     data = request.get_json()
@@ -493,8 +485,9 @@ def editUpdate():
 # [POST] Delete producer update
 # - Delete a producer update with new details
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/deleteUpdate', methods=['POST'])
+@blueprint.route('/deleteUpdate', methods=['POST'])
 def deleteUpdate():
+    db = g.db
 
     # fetch sent data
     data = request.get_json()
@@ -538,8 +531,9 @@ def deleteUpdate():
 # [POST] Edit Q&A
 # - Update a producer Q&A with new details
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/editQA', methods=['POST'])
+@blueprint.route('/editQA', methods=['POST'])
 def editQA():
+    db = g.db
 
     # fetch sent data
     data = request.get_json()
@@ -577,8 +571,9 @@ def editQA():
 # [POST] Delete producer Q&A
 # - Delete a producer Q&A with new details
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/deleteQA', methods=['POST'])
+@blueprint.route('/deleteQA', methods=['POST'])
 def deleteQA():
+    db = g.db
 
     # fetch sent data
     data = request.get_json()
@@ -616,8 +611,9 @@ def deleteQA():
 # [POST] Edit producer profile claim status
 # - Update producer profile with new details
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/updateProducerClaimStatus', methods=['POST'])
+@blueprint.route('/updateProducerClaimStatus', methods=['POST'])
 def updateProducerClaimStatus():
+    db = g.db
 
     # fetch sent data
     data = request.get_json()
@@ -653,8 +649,9 @@ def updateProducerClaimStatus():
 # [POST] Edit producer profile last check claim status date
 # - Update producer profile with new details
 # - Possible return codes: 201 (Updated), 500 (Error during update)
-@app.route('/updateProducerClaimStatusCheckDate', methods=['POST'])
+@blueprint.route('/updateProducerClaimStatusCheckDate', methods=['POST'])
 def updateProducerClaimStatusCheckDate():
+    db = g.db
 
     # fetch sent data
     data = request.get_json()
@@ -686,9 +683,3 @@ def updateProducerClaimStatusCheckDate():
                 "message": "An error occurred updating claim status check date!"
             }
         ), 500
-    
-
-# -----------------------------------------------------------------------------------------
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True, port=5200)

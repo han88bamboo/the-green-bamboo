@@ -612,7 +612,7 @@
 
                 // Drink Types
                 try {
-                    const response = await this.$axios.get('http://127.0.0.1:5000/getDrinkTypes');
+                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getDrinkTypes');
                     this.drinkTypeList = response.data;
                 }
                 catch (error) {
@@ -622,7 +622,7 @@
 
                 // Listings
                 try {
-                    const response = await this.$axios.get('http://127.0.0.1:5000/getListings');
+                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getListings');
                     this.listings = response.data;
 
                     // clear previous results
@@ -654,7 +654,7 @@
 
                 // Producers
                 try {
-                    const response = await this.$axios.get('http://127.0.0.1:5000/getProducers');
+                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getProducers');
                     this.producerList = response.data;
 
                     // clear previous results
@@ -672,7 +672,7 @@
 
                 // Venues
                 try {
-                    const response = await this.$axios.get('http://127.0.0.1:5000/getVenues');
+                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getVenues');
                     this.venueList = response.data;
 
                     // clear previous results
@@ -690,7 +690,7 @@
 
                 // Users
                 try {
-                    const response = await this.$axios.get('http://127.0.0.1:5000/getUsers');
+                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getUsers');
                     this.users = response.data;
                     this.user = this.users.find(user => user._id.$oid == this.userID)
                     if (this.user) {
@@ -718,7 +718,7 @@
 
                 // Reviews
                 try {
-                    const response = await this.$axios.get('http://127.0.0.1:5000/getReviews');
+                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getReviews');
                     this.reviews = response.data;
                 }
                 catch (error) {
@@ -1046,7 +1046,7 @@
                             "userID": this.userID,
                             
                 }
-                await this.$axios.put('http://127.0.0.1:5070/addToTried/', submitData)
+                await this.$axios.put('http://127.0.0.1:5000/addToList/addToTried/', submitData)
                     .then((response) => {
                         responseCode = response.data.code;
                     })
@@ -1071,7 +1071,7 @@
                             "userID": this.userID,
                             
                 }
-                await this.$axios.put('http://127.0.0.1:5070/addToWant/', submitData)
+                await this.$axios.put('http://127.0.0.1:5000/addToList/addToWant/', submitData)
                     .then((response) => {
                         responseCode = response.data.code;
                     })

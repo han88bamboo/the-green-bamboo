@@ -151,7 +151,7 @@
                 }
 
                 try {
-                    const response = await this.$axios.post('http://127.0.0.1:5100/updateBookmark', 
+                    const response = await this.$axios.post('http://127.0.0.1:5000/editProfile/updateBookmark', 
                         {
                             userID: this.userID,
                             bookmark: this.userBookmarks,

@@ -316,7 +316,7 @@
         methods:{
             async loadData(){
                 try {
-                    const response = await this.$axios.get('http://127.0.0.1:5000/getCountries');
+                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getCountries');
                     this.countries = response.data.sort((a,b)=>{
                             return a.originCountry.localeCompare(b.originCountry)
                             })
@@ -435,7 +435,7 @@
 
                 let hashedPassword = this.hashPassword(this.username, this.password)
                 let joinDate = new Date().toISOString();
-                let submitAPI =  "http://127.0.0.1:5031/createAccount"
+                let submitAPI =  "http://127.0.0.1:5000/createAccount/createAccount"
                 let submitData = {
                     // pass in first name, last name, email, isadmin
                     "username": this.username,
@@ -541,7 +541,7 @@
 
             async checkUsername(username){
                 try {
-                    const response = await this.$axios.get('http://127.0.0.1:5000/getUsers');
+                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getUsers');
                     let duplicateUser = response.data.filter((user)=>{
                         return user.username == username
                     })
@@ -560,7 +560,7 @@
             async loginUser(){
                 // Get specific user by username and set local storage then redirect
                 try {
-                    const submitURL = 'http://127.0.0.1:5000/getUserByUsername/' + this.username
+                    const submitURL = 'http://127.0.0.1:5000/getData/getUserByUsername/' + this.username
                     const response = await this.$axios.get(submitURL);
                     if(response.data.username== this.username){
                         localStorage.setItem("88B_accID", response.data['_id']['$oid']);
