@@ -190,7 +190,8 @@ def createProducerAccount():
 
     try:
         insertResult = db.producers.insert_one(newBusinessData)
-        newBusinessData['_id'] = str(newBusinessData['_id'])
+        newBusinessData['_id'] = str(insertResult.inserted_id)
+        newBusinessData['requestId'] = str(newBusinessData['requestId'])
 
         return jsonify( 
             {   
@@ -204,7 +205,7 @@ def createProducerAccount():
             {
                 "code": 500,
                 "data": {
-                    "userame": newBusinessData
+                    "username": newBusinessData
                 },
                 "message": "An error occurred creating the account."
             }
@@ -236,8 +237,9 @@ def createVenueAccount():
 
     try:
         insertResult = db.venues.insert_one(newBusinessData)
-        newBusinessData['_id'] = str(newBusinessData['_id'])
-
+        newBusinessData['_id'] = str(insertResult.inserted_id)
+        newBusinessData['requestId'] = str(newBusinessData['requestId'])
+        
         return jsonify( 
             {   
                 "code": 201,

@@ -1436,11 +1436,11 @@
                     const requestID = request._id.$oid;
                     if (action == "approve") {
                         this.businessType = request.businessType;
-                        const businessID = request.businessLink.split("/").pop()
 
                         const businessExist = this.checkBusinessExist(request.businessLink);
 
                         if (businessExist) {
+                            const businessID = request.businessLink.split("/").pop()
                             this.businessName = request.businessName;
                             this.tempPassword = this.hashPassword(request.businessName).toString();
                             this.tempPassword = this.tempPassword.replace(/-/g, '');
@@ -1617,6 +1617,7 @@
                                 updates: [],
                                 producerLink: "",
                                 claimStatus: this.businessClaimStatus === "false",
+                                requestId: this.requestId
                             }
                             try {
                                 const response = await this.$axios.post('http://127.0.0.1:5000/createAccount/createProducerAccount', 
