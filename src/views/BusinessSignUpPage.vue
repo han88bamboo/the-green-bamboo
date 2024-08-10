@@ -342,11 +342,21 @@
         },
         created() {
             let accountDetails = this.$route.query
-            this.businessType = accountDetails.businessType
-            this.businessName = accountDetails.businessName
+            if(accountDetails.businessType){
+                this.businessType = accountDetails.businessType
+            }
+            if(accountDetails.businessName){
+                this.businessName = accountDetails.businessName
+            }
+            if(accountDetails.businessDesc){
             this.businessDesc = accountDetails.businessDesc
-            this.businessLink = accountDetails.businessLink
-            this.selectedCountry = accountDetails.originCountry
+            }
+            if(accountDetails.businessLink){
+                this.businessLink = accountDetails.businessLink
+            }
+            if(accountDetails.originCountry){
+                this.selectedCountry = accountDetails.originCountry
+            }
         },
         mounted(){
             this.loadData()
@@ -414,6 +424,9 @@
             },
 
             signUp(){
+                console.log(this.businessType)
+                console.log(this.businessName)
+                console.log(this.businessDesc)
                 this.resetError()
                 this.selectedPricing=''
 
