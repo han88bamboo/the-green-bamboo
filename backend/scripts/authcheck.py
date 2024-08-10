@@ -388,7 +388,7 @@ def sendResetPin(id):
         server.login(email_address, password)
 
         message = 'Subject: Drink-X Reset Password\n\n Your pin is {} and expires in 1 hour, please ignore this message if you did not try to reset your password, alternatively, you can email us'.format(pin)
-        server.sendmail(email_address, email_address, message)
+        server.sendmail(email_address, userRaw["email"], message)
         server.quit()
         print(email_address)
         print("Success: Email sent!")
@@ -570,7 +570,7 @@ def resetPassword(id):
             server.login(email_address, email_password)
 
             message = 'Subject: Drink-X Reset Password\n\n Your new password is {}, please email us if you did not authorise this'.format(password)
-            server.sendmail(email_address, email_address, message)
+            server.sendmail(email_address, userRaw["email"], message)
             server.quit()
             print("Success: Email sent!")
 
