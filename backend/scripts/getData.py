@@ -783,35 +783,35 @@ def getVenuesProfileViewsByVenue(id):
 # [NEW] TO BE ADDED:
 # ----------------------
 
-# [GET] venuesProfileViews
-@blueprint.route("/getVenuesProfileViews")
-def getVenuesProfileViews():
-    db = g.db
-    profile_views_data = db.venuesProfileViews.find({})
-    allProfileViews = []
-    for profile_view in profile_views_data:
-        # Fetch related views data based on the id(s) in profile_view's views
-        views_data = db.venuesProfileViewsViews.find({
-            "_id": {"$in": profile_view['views']}
-        })
-        profile_view['views'] = list(views_data)
-        allProfileViews.append(profile_view)
-    return parse_json(allProfileViews)
+# # [GET] venuesProfileViews
+# @blueprint.route("/getVenuesProfileViews")
+# def getVenuesProfileViews():
+#     db = g.db
+#     profile_views_data = db.venuesProfileViews.find({})
+#     allProfileViews = []
+#     for profile_view in profile_views_data:
+#         # Fetch related views data based on the id(s) in profile_view's views
+#         views_data = db.venuesProfileViewsViews.find({
+#             "_id": {"$in": profile_view['views']}
+#         })
+#         profile_view['views'] = list(views_data)
+#         allProfileViews.append(profile_view)
+#     return parse_json(allProfileViews)
 
-# [GET] venuesProfileViews by venueID
-@blueprint.route("/getVenuesProfileViewsByVenue/<id>")
-def getVenuesProfileViewsByVenue(id):
-    db = g.db
-    profile_views_data = db.venuesProfileViews.find({"venueID": ObjectId(id)})
-    allProfileViews = []
-    for profile_view in profile_views_data:
-        # Fetch related views data based on the id(s) in profile_view's views
-        views_data = db.venuesProfileViewsViews.find({
-            "_id": {"$in": profile_view['views']}
-        })
-        profile_view['views'] = list(views_data)
-        allProfileViews.append(profile_view)
-    return parse_json(allProfileViews)
+# # [GET] venuesProfileViews by venueID
+# @blueprint.route("/getVenuesProfileViewsByVenue/<id>")
+# def getVenuesProfileViewsByVenue(id):
+#     db = g.db
+#     profile_views_data = db.venuesProfileViews.find({"venueID": ObjectId(id)})
+#     allProfileViews = []
+#     for profile_view in profile_views_data:
+#         # Fetch related views data based on the id(s) in profile_view's views
+#         views_data = db.venuesProfileViewsViews.find({
+#             "_id": {"$in": profile_view['views']}
+#         })
+#         profile_view['views'] = list(views_data)
+#         allProfileViews.append(profile_view)
+#     return parse_json(allProfileViews)
 
 # =======================================================
 

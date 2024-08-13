@@ -13,8 +13,25 @@ from flask import request, jsonify, g, Blueprint
 from bson.objectid import ObjectId
 from datetime import datetime
 
+# import psycopg2
+# from psycopg2.extras import RealDictCursor
+
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
+
+
+# EXAMPLE ROUTE
+# @blueprint.route('/get_data', methods=['GET'])
+# def get_data():
+#     try:
+#         conn = g.db  # Get the DB connection from g
+#         cur = conn.cursor()
+#         cur.execute('SELECT * FROM testing')  # Replace with your query
+#         results = cur.fetchall()
+#         cur.close()  # Close the cursor
+#         return jsonify(results)  # Convert the results to JSON and return
+#     except Exception as e:
+#         return jsonify({"error": str(e)})
 
 def parse_json(data):
     return json.loads(json_util.dumps(data))

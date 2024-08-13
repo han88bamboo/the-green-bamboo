@@ -5,6 +5,8 @@ from flask import Flask, g
 from flask_pymongo import PyMongo
 from flask_cors import CORS
 from flask_mail import Mail
+import psycopg2
+from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
 
 # Allow all requests
@@ -13,9 +15,21 @@ CORS(app)
 
 load_dotenv()
 
+# OLD CONNECTOR -----------------------------------------------------------------
 # Connect to MongoDB
-app.config["MONGO_URI"] = os.getenv('MONGO_DB_URL')
-db = PyMongo(app).db 
+# app.config["MONGO_URI"] = os.getenv('MONGO_DB_URL')
+# db = PyMongo(app).db 
+
+# NEW CONNECTOR ------------------------------------------------------------------
+# Connect to Postgresql
+app.config["POSTGRES_URI"] = os.getenv('POSTGRES_URI')
+# Function to get or create a PostgreSQL connection
+def get_db_connection():
+    if 'db_conn' not in g:
+        g.db_conn = psycopg2.connect(app.config["POSTGRES_URI"], cursor_factory=RealDictCursor)
+    return g.db_conn
+
+
 
 # Connect to Mail Server
 app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER')
@@ -30,9 +44,13 @@ stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 # Make `db` accessible via Flask's `g` object
 @app.before_request
 def before_request():
-    g.db = db
+    # OLD
+    # g.db = db
     g.mail = mail
     
+    # NEW
+    g.db = get_db_connection()  # Example of storing a database connection in g
+    # print("before_request: Data loaded into g")
 
 # Function to dynamically register Blueprints from each script
 def create_routes():
@@ -48,6 +66,14 @@ def create_routes():
                 blueprint = getattr(module, 'blueprint')
                 app.register_blueprint(blueprint, url_prefix=f'/{script_name.replace("_", "-")}')
                 print(f"Registered blueprint: /{script_name.replace('_', '-')}")
+                
+# FUNCTION TO CLOSE CONNECTION WITH POSTGRESQL
+# NEW
+@app.teardown_request
+def teardown_request(exception):
+    db_conn = g.pop('db_conn', None)
+    if db_conn is not None:
+        db_conn.close()
 
 create_routes()
 
