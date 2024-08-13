@@ -22,10 +22,10 @@ Edits To Be Made:
     -> Fetch data from the correct tables
     -> Push data into the correct tables (in the correct format)
 
-- Affected tables: (** note: > means subtables split into)
-    -> (DONE) producers > producersQuestionAnswers, producersUpdates
+- Affected tables: (** note: > means subtables that the original table is split into)
+    -> producers > producersQuestionAnswers, producersUpdates
     -> producersProfileViews > producersProfileViewsViews
-    -> (DONE) reviews > reviewsUserVotes
-    -> (DONE) users > usersDrinkLists, usersFollowLists
-    -> (DONE) venues > venuesMenu, venuesOpeningHours, venuesQuestionAnswers, venuesUpdates
+    -> reviews > reviewsUserVotes
+    -> users > usersDrinkLists, usersFollowLists
+    -> venues > venuesMenu, venuesOpeningHours, venuesQuestionAnswers, venuesUpdates
     -> venuesProfileViews > venuesProfileViewsViews

@@ -14,7 +14,7 @@
 
 import os
 import json
-from bson import json_util
+from bson import json_util, ObjectId
 from flask import Blueprint, g
 from bson.objectid import ObjectId
 
@@ -146,14 +146,14 @@ def getProducerByRequestId(id):
 #     producers_data = db.producers.find({})
 #     allProducers = []
 #     for producer in producers_data:
-#         # Fetch related question answers
+#         # Fetch the related question answers based on the id stored in producer's questionAnswers
 #         question_answers_data = db.producersQuestionAnswers.find({
-#             "id": producer['questionAnswers']
+#             "id": {"$in": producer['questionAnswers']}
 #         })
-#         producer['questionAnswers'] = list(question_answers_data)
-#         # Fetch related updates
+#         producer['questionsAnswers'] = list(question_answers_data)
+#         # Fetch the related updates based on the id stored in producer's updates
 #         updates_data = db.producersUpdates.find({
-#             "id": producer['updates']
+#             "id": {"$in": producer['updates']}
 #         })
 #         producer['updates'] = list(updates_data)
 #         allProducers.append(producer)
@@ -167,14 +167,14 @@ def getProducerByRequestId(id):
 #     producer = db.producers.find_one({"_id": ObjectId(id)})
 #     if producer is None:
 #         return []
-#     # Fetch related question answers
+#     # Fetch related question answers based on the id(s) in producer's questionAnswers
 #     question_answers_data = db.producersQuestionAnswers.find({
-#         "id": producer['questionAnswers']
+#         "id": {"$in": producer['questionAnswers']}
 #     })
-#     producer['questionAnswers'] = list(question_answers_data)
-#     # Fetch related updates
+#     producer['questionsAnswers'] = list(question_answers_data)
+#     # Fetch related updates based on the id(s) in producer's updates
 #     updates_data = db.producersUpdates.find({
-#         "id": producer['updates']
+#         "id": {"$in": producer['updates']}
 #     })
 #     producer['updates'] = list(updates_data)
 #     return parse_json(producer)
@@ -187,14 +187,14 @@ def getProducerByRequestId(id):
 #     producer = db.producers.find_one({"requestId": ObjectId(id)})
 #     if producer is None:
 #         return []
-#     # Fetch related question answers
+#     # Fetch related question answers based on the id(s) in producer's questionAnswers
 #     question_answers_data = db.producersQuestionAnswers.find({
-#         "id": producer['questionAnswers']
+#         "id": {"$in": producer['questionAnswers']}
 #     })
-#     producer['questionAnswers'] = list(question_answers_data)
-#     # Fetch related updates
+#     producer['questionsAnswers'] = list(question_answers_data)
+#     # Fetch related updates based on the id(s) in producer's updates
 #     updates_data = db.producersUpdates.find({
-#         "id": producer['updates']
+#         "id": {"$in": producer['updates']}
 #     })
 #     producer['updates'] = list(updates_data)
 #     return parse_json(producer)
@@ -245,11 +245,11 @@ def getReviewByTarget(id):
 #     reviews_data = db.reviews.find({})
 #     allReviews = []
 #     for review in reviews_data:
-#         # Fetch related user votes
-#         user_votes_data = db.reviewsUserVotes.find_one({
-#             "id": review['userVotes']
+#         # Fetch related user votes based on the id(s) in review's userVotes
+#         user_votes_data = db.reviewsUserVotes.find({
+#             "_id": {"$in": review['userVotes']}
 #         })
-#         review['userVotes'] = user_votes_data
+#         review['userVotes'] = list(user_votes_data)
 #         allReviews.append(review)
 #     return parse_json(allReviews)
 
@@ -262,11 +262,11 @@ def getReviewByTarget(id):
 #         return []
 #     allReviews = []
 #     for review in reviews_data:
-#         # Fetch related user votes
-#         user_votes_data = db.reviewsUserVotes.find_one({
-#             "id": review['userVotes']
+#         # Fetch related user votes based on the id(s) in review's userVotes
+#         user_votes_data = db.reviewsUserVotes.find({
+#             "_id": {"$in": review['userVotes']}
 #         })
-#         review['userVotes'] = user_votes_data
+#         review['userVotes'] = list(user_votes_data)
 #         allReviews.append(review)
 #     return parse_json(allReviews)
 
@@ -321,16 +321,16 @@ def getUserByUsername(username):
 #     users_data = db.users.find({})
 #     allUsers = []
 #     for user in users_data:
-#         # Fetch related drink lists
-#         drink_lists_data = db.usersDrinkLists.find_one({
-#             "id": user['drinkLists']
+#         # Fetch related drink lists based on the id(s) in user's drinkLists
+#         drink_lists_data = db.usersDrinkLists.find({
+#             "_id": {"$in": user['drinkLists']}
 #         })
-#         user['drinkLists'] = drink_lists_data
-#         # Fetch related follow lists
-#         follow_lists_data = db.usersFollowLists.find_one({
-#             "id": user['followLists']
+#         user['drinkLists'] = list(drink_lists_data)
+#         # Fetch related follow lists based on the id(s) in user's followLists
+#         follow_lists_data = db.usersFollowLists.find({
+#             "_id": {"$in": user['followLists']}
 #         })
-#         user['followLists'] = follow_lists_data
+#         user['followLists'] = list(follow_lists_data)
 #         allUsers.append(user)
 #     return parse_json(allUsers)
 
@@ -341,16 +341,16 @@ def getUserByUsername(username):
 #     user = db.users.find_one({"_id": ObjectId(id)})
 #     if user is None:
 #         return []
-#     # Fetch related drink lists
-#     drink_lists_data = db.usersDrinkLists.find_one({
-#         "id": user['drinkLists']
+#     # Fetch related drink lists based on the id(s) in user's drinkLists
+#     drink_lists_data = db.usersDrinkLists.find({
+#         "_id": {"$in": user['drinkLists']}
 #     })
-#     user['drinkLists'] = drink_lists_data
-#     # Fetch related follow lists
-#     follow_lists_data = db.usersFollowLists.find_one({
-#         "id": user['followLists']
+#     user['drinkLists'] = list(drink_lists_data)
+#     # Fetch related follow lists based on the id(s) in user's followLists
+#     follow_lists_data = db.usersFollowLists.find({
+#         "_id": {"$in": user['followLists']}
 #     })
-#     user['followLists'] = follow_lists_data
+#     user['followLists'] = list(follow_lists_data)
 #     return parse_json(user)
 
 # # [GET] Specific User by Username
@@ -360,17 +360,16 @@ def getUserByUsername(username):
 #     user = db.users.find_one({"username": username})
 #     if user is None:
 #         return []
-#     # Fetch related drink lists
-#     drink_lists_data = db.usersDrinkLists.find_one({
-#         "id": user['drinkLists']
+#     # Fetch related drink lists based on the id(s) in user's drinkLists
+#     drink_lists_data = db.usersDrinkLists.find({
+#         "_id": {"$in": user['drinkLists']}
 #     })
-#     user['drinkLists'] = drink_lists_data
-#     # Fetch related follow lists
-#     follow_lists_data = db.usersFollowLists.find_one({
-#         "id": user['followLists']
+#     user['drinkLists'] = list(drink_lists_data)
+#     # Fetch related follow lists based on the id(s) in user's followLists
+#     follow_lists_data = db.usersFollowLists.find({
+#         "_id": {"$in": user['followLists']}
 #     })
-#     user['followLists'] = follow_lists_data
-    
+#     user['followLists'] = list(follow_lists_data)
 #     return parse_json(user)
 
 # =======================================================
@@ -424,18 +423,26 @@ def getVenueByRequestId(id):
 #     venues_data = db.venues.find({})
 #     allVenues = []
 #     for venue in venues_data:
-#         # Fetch related menu
-#         menu_data = db.venuesMenu.find_one({"id": venue['menu']})
-#         venue['menu'] = menu_data
-#         # Fetch related opening hours
-#         opening_hours_data = db.venuesOpeningHours.find_one({"id": venue['openingHours']})
-#         venue['openingHours'] = opening_hours_data
-#         # Fetch related question answers
-#         question_answers_data = db.venuesQuestionAnswers.find_one({"id": venue['questionAnswers']})
-#         venue['questionAnswers'] = question_answers_data
-#         # Fetch related updates
-#         updates_data = db.venuesUpdates.find_one({"id": venue['updates']})
-#         venue['updates'] = updates_data
+#         # Fetch related menu based on the id(s) in venue's menu
+#         menu_data = db.venuesMenu.find({
+#             "_id": {"$in": venue['menu']}
+#         })
+#         venue['menu'] = list(menu_data)
+#         # Fetch related opening hours based on the id(s) in venue's openingHours
+#         opening_hours_data = db.venuesOpeningHours.find({
+#             "_id": {"$in": venue['openingHours']}
+#         })
+#         venue['openingHours'] = list(opening_hours_data)
+#         # Fetch related question answers based on the id(s) in venue's questionAnswers
+#         question_answers_data = db.venuesQuestionAnswers.find({
+#             "_id": {"$in": venue['questionAnswers']}
+#         })
+#         venue['questionAnswers'] = list(question_answers_data)
+#         # Fetch related updates based on the id(s) in venue's updates
+#         updates_data = db.venuesUpdates.find({
+#             "_id": {"$in": venue['updates']}
+#         })
+#         venue['updates'] = list(updates_data)
 #         allVenues.append(venue)
 #     return parse_json(allVenues)
 
@@ -446,18 +453,26 @@ def getVenueByRequestId(id):
 #     venue = db.venues.find_one({"_id": ObjectId(id)})
 #     if venue is None:
 #         return []
-#     # Fetch related menu
-#     menu_data = db.venuesMenu.find_one({"id": venue['menu']})
-#     venue['menu'] = menu_data
-#     # Fetch related opening hours
-#     opening_hours_data = db.venuesOpeningHours.find_one({"id": venue['openingHours']})
-#     venue['openingHours'] = opening_hours_data
-#     # Fetch related question answers
-#     question_answers_data = db.venuesQuestionAnswers.find_one({"id": venue['questionAnswers']})
-#     venue['questionAnswers'] = question_answers_data
-#     # Fetch related updates
-#     updates_data = db.venuesUpdates.find_one({"id": venue['updates']})
-#     venue['updates'] = updates_data
+#     # Fetch related menu based on the id(s) in venue's menu
+#     menu_data = db.venuesMenu.find({
+#         "_id": {"$in": venue['menu']}
+#     })
+#     venue['menu'] = list(menu_data)
+#     # Fetch related opening hours based on the id(s) in venue's openingHours
+#     opening_hours_data = db.venuesOpeningHours.find({
+#         "_id": {"$in": venue['openingHours']}
+#     })
+#     venue['openingHours'] = list(opening_hours_data)
+#     # Fetch related question answers based on the id(s) in venue's questionAnswers
+#     question_answers_data = db.venuesQuestionAnswers.find({
+#         "_id": {"$in": venue['questionAnswers']}
+#     })
+#     venue['questionAnswers'] = list(question_answers_data)
+#     # Fetch related updates based on the id(s) in venue's updates
+#     updates_data = db.venuesUpdates.find({
+#         "_id": {"$in": venue['updates']}
+#     })
+#     venue['updates'] = list(updates_data)
 #     return parse_json(venue)
 
 # # [GET] Specific Venue by Request ID
@@ -467,18 +482,26 @@ def getVenueByRequestId(id):
 #     venue = db.venues.find_one({"requestId": ObjectId(id)})
 #     if venue is None:
 #         return []
-#     # Fetch related menu
-#     menu_data = db.venuesMenu.find_one({"id": venue['menu']})
-#     venue['menu'] = menu_data
-#     # Fetch related opening hours
-#     opening_hours_data = db.venuesOpeningHours.find_one({"id": venue['openingHours']})
-#     venue['openingHours'] = opening_hours_data
-#     # Fetch related question answers
-#     question_answers_data = db.venuesQuestionAnswers.find_one({"id": venue['questionAnswers']})
-#     venue['questionAnswers'] = question_answers_data
-#     # Fetch related updates
-#     updates_data = db.venuesUpdates.find_one({"id": venue['updates']})
-#     venue['updates'] = updates_data
+#     # Fetch related menu based on the id(s) in venue's menu
+#     menu_data = db.venuesMenu.find({
+#         "_id": {"$in": venue['menu']}
+#     })
+#     venue['menu'] = list(menu_data)
+#     # Fetch related opening hours based on the id(s) in venue's openingHours
+#     opening_hours_data = db.venuesOpeningHours.find({
+#         "_id": {"$in": venue['openingHours']}
+#     })
+#     venue['openingHours'] = list(opening_hours_data)
+#     # Fetch related question answers based on the id(s) in venue's questionAnswers
+#     question_answers_data = db.venuesQuestionAnswers.find({
+#         "_id": {"$in": venue['questionAnswers']}
+#     })
+#     venue['questionAnswers'] = list(question_answers_data)
+#     # Fetch related updates based on the id(s) in venue's updates
+#     updates_data = db.venuesUpdates.find({
+#         "_id": {"$in": venue['updates']}
+#     })
+#     venue['updates'] = list(updates_data)
 #     return parse_json(venue)
 
 # =======================================================
@@ -699,11 +722,11 @@ def getProducersProfileViewsByProducer():
 #     profile_views_data = db.producersProfileViews.find({})
 #     allProfileViews = []
 #     for profile_view in profile_views_data:
-#         # Fetch related views data
-#         views_data = db.producersProfileViewsViews.find_one({
-#             "id": profile_view['views']
+#         # Fetch related views data based on the id(s) in profile_view's views
+#         views_data = db.producersProfileViewsViews.find({
+#             "_id": {"$in": profile_view['views']}
 #         })
-#         profile_view['views'] = views_data
+#         profile_view['views'] = list(views_data)
 #         allProfileViews.append(profile_view)
 #     return parse_json(allProfileViews)
 
@@ -714,13 +737,13 @@ def getProducersProfileViewsByProducer():
 #     profile_views_data = db.producersProfileViews.find({"producerID": ObjectId(id)})
 #     allProfileViews = []
 #     for profile_view in profile_views_data:
-#         # Fetch related views data
-#         views_data = db.producersProfileViewsViews.find_one({
-#             "id": profile_view['views']
+#         # Fetch related views data based on the id(s) in profile_view's views
+#         views_data = db.producersProfileViewsViews.find({
+#             "_id": {"$in": profile_view['views']}
 #         })
-#         profile_view['views'] = views_data
+#         profile_view['views'] = list(views_data)
 #         allProfileViews.append(profile_view)
-#     return parse_json(allProfileViews)
+    return parse_json(allProfileViews)
 
 # =======================================================
 
@@ -760,37 +783,35 @@ def getVenuesProfileViewsByVenue(id):
 # [NEW] TO BE ADDED:
 # ----------------------
 
-# # [GET] venuesProfileViews
-# @blueprint.route("/getVenuesProfileViews")
-# def getVenuesProfileViews():
-#     db = g.db
-#     profile_views_data = db.venuesProfileViews.find({})
-#     allProfileViews = []
-#     for profile_view in profile_views_data:
-#         # Fetch related views data for each view ID in the 'views' list
-#         views_list = []
-#         for view_id in profile_view['views']:
-#             views_data = db.venuesProfileViewsViews.find_one({"id": view_id})
-#             views_list.append(views_data)
-#         profile_view['views'] = views_list
-#         allProfileViews.append(profile_view)
-#     return parse_json(allProfileViews)
+# [GET] venuesProfileViews
+@blueprint.route("/getVenuesProfileViews")
+def getVenuesProfileViews():
+    db = g.db
+    profile_views_data = db.venuesProfileViews.find({})
+    allProfileViews = []
+    for profile_view in profile_views_data:
+        # Fetch related views data based on the id(s) in profile_view's views
+        views_data = db.venuesProfileViewsViews.find({
+            "_id": {"$in": profile_view['views']}
+        })
+        profile_view['views'] = list(views_data)
+        allProfileViews.append(profile_view)
+    return parse_json(allProfileViews)
 
-# # [GET] venuesProfileViews by venueID
-# @blueprint.route("/getVenuesProfileViewsByVenue/<id>")
-# def getVenuesProfileViewsByVenue(id):
-#     db = g.db
-#     profile_views_data = db.venuesProfileViews.find({"venueID": ObjectId(id)})
-#     allProfileViews = []
-#     for profile_view in profile_views_data:
-#         # Fetch related views data for each view ID in the 'views' list
-#         views_list = []
-#         for view_id in profile_view['views']:
-#             views_data = db.venuesProfileViewsViews.find_one({"id": view_id})
-#             views_list.append(views_data)
-#         profile_view['views'] = views_list
-#         allProfileViews.append(profile_view)
-#     return parse_json(allProfileViews)
+# [GET] venuesProfileViews by venueID
+@blueprint.route("/getVenuesProfileViewsByVenue/<id>")
+def getVenuesProfileViewsByVenue(id):
+    db = g.db
+    profile_views_data = db.venuesProfileViews.find({"venueID": ObjectId(id)})
+    allProfileViews = []
+    for profile_view in profile_views_data:
+        # Fetch related views data based on the id(s) in profile_view's views
+        views_data = db.venuesProfileViewsViews.find({
+            "_id": {"$in": profile_view['views']}
+        })
+        profile_view['views'] = list(views_data)
+        allProfileViews.append(profile_view)
+    return parse_json(allProfileViews)
 
 # =======================================================
 
