@@ -1,0 +1,31 @@
+Edits To Be Made:
+-----------------
+- Codes to be changed are marked out in the following format:
+
+    # ================= POSTGRESQL FORMAT =================
+
+    # ----------------------
+    # [OLD] TO BE DELETED:
+    # ----------------------
+
+    ** old code **
+
+    # ----------------------
+    # [NEW] TO BE ADDED:
+    # ----------------------
+
+    ** new code **
+
+    # ======================================================
+
+- Updates to be made:
+    -> Fetch data from the correct tables
+    -> Push data into the correct tables (in the correct format)
+
+- Affected tables: (** note: > means subtables split into)
+    -> (DONE) producers > producersQuestionAnswers, producersUpdates
+    -> producersProfileViews > producersProfileViewsViews
+    -> (DONE) reviews > reviewsUserVotes
+    -> (DONE) users > usersDrinkLists, usersFollowLists
+    -> (DONE) venues > venuesMenu, venuesOpeningHours, venuesQuestionAnswers, venuesUpdates
+    -> venuesProfileViews > venuesProfileViewsViews

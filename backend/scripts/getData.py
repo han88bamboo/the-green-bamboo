@@ -97,6 +97,13 @@ def getListingsByProducer(id):
     return parse_json(data)
 
 # -----------------------------------------------------------------------------------------
+
+# ================== POSTGRESQL FORMAT ==================
+
+# ----------------------
+# [OLD] TO BE DELETED:
+# ----------------------
+
 # [GET] Producers
 @blueprint.route("/getProducers")
 def getProducers():
@@ -127,7 +134,81 @@ def getProducerByRequestId(id):
         return []
     return parse_json(data)
 
+# ----------------------
+# [NEW] TO BE ADDED:
+# ----------------------
+
+# # [GET] Producers
+# @blueprint.route("/getProducers")
+# def getProducers():
+#     db = g.db
+#     # Fetch all producers
+#     producers_data = db.producers.find({})
+#     allProducers = []
+#     for producer in producers_data:
+#         # Fetch related question answers
+#         question_answers_data = db.producersQuestionAnswers.find({
+#             "id": producer['questionAnswers']
+#         })
+#         producer['questionAnswers'] = list(question_answers_data)
+#         # Fetch related updates
+#         updates_data = db.producersUpdates.find({
+#             "id": producer['updates']
+#         })
+#         producer['updates'] = list(updates_data)
+#         allProducers.append(producer)
+#     return parse_json(allProducers)
+
+# # [GET] Specific Producer by ID
+# @blueprint.route("/getProducer/<id>")
+# def getProducer(id):
+#     db = g.db
+#     # Fetch the specific producer
+#     producer = db.producers.find_one({"_id": ObjectId(id)})
+#     if producer is None:
+#         return []
+#     # Fetch related question answers
+#     question_answers_data = db.producersQuestionAnswers.find({
+#         "id": producer['questionAnswers']
+#     })
+#     producer['questionAnswers'] = list(question_answers_data)
+#     # Fetch related updates
+#     updates_data = db.producersUpdates.find({
+#         "id": producer['updates']
+#     })
+#     producer['updates'] = list(updates_data)
+#     return parse_json(producer)
+
+# # [GET] Specific Producer by Request ID
+# @blueprint.route("/getProducerByRequestId/<id>")
+# def getProducerByRequestId(id):
+#     db = g.db
+#     # Fetch the specific producer by requestId
+#     producer = db.producers.find_one({"requestId": ObjectId(id)})
+#     if producer is None:
+#         return []
+#     # Fetch related question answers
+#     question_answers_data = db.producersQuestionAnswers.find({
+#         "id": producer['questionAnswers']
+#     })
+#     producer['questionAnswers'] = list(question_answers_data)
+#     # Fetch related updates
+#     updates_data = db.producersUpdates.find({
+#         "id": producer['updates']
+#     })
+#     producer['updates'] = list(updates_data)
+#     return parse_json(producer)
+
+# =======================================================
+
 # -----------------------------------------------------------------------------------------
+
+# ================== POSTGRESQL FORMAT ==================
+
+# ----------------------
+# [OLD] TO BE DELETED:
+# ----------------------
+
 # [GET] Reviews
 @blueprint.route("/getReviews")
 def getReviews():
@@ -153,7 +234,52 @@ def getReviewByTarget(id):
         allReviews.append(doc)
     return allReviews
 
+# ----------------------
+# [NEW] TO BE ADDED:
+# ----------------------
+
+# # [GET] Reviews
+# @blueprint.route("/getReviews")
+# def getReviews():
+#     db = g.db
+#     reviews_data = db.reviews.find({})
+#     allReviews = []
+#     for review in reviews_data:
+#         # Fetch related user votes
+#         user_votes_data = db.reviewsUserVotes.find_one({
+#             "id": review['userVotes']
+#         })
+#         review['userVotes'] = user_votes_data
+#         allReviews.append(review)
+#     return parse_json(allReviews)
+
+# # [GET] Specific Reviews by reviewTarget
+# @blueprint.route("/getReviewByTarget/<id>")
+# def getReviewByTarget(id):
+#     db = g.db
+#     reviews_data = db.reviews.find({"reviewTarget": ObjectId(id)})
+#     if reviews_data is None:
+#         return []
+#     allReviews = []
+#     for review in reviews_data:
+#         # Fetch related user votes
+#         user_votes_data = db.reviewsUserVotes.find_one({
+#             "id": review['userVotes']
+#         })
+#         review['userVotes'] = user_votes_data
+#         allReviews.append(review)
+#     return parse_json(allReviews)
+
+# =======================================================
+
 # -----------------------------------------------------------------------------------------
+
+# ================== POSTGRESQL FORMAT ==================
+
+# ----------------------
+# [OLD] TO BE DELETED:
+# ----------------------
+
 # [GET] Users
 @blueprint.route("/getUsers")
 def getUsers():
@@ -184,7 +310,79 @@ def getUserByUsername(username):
         return []
     return parse_json(data)
 
+# ----------------------
+# [NEW] TO BE ADDED:
+# ----------------------
+
+# # [GET] Users
+# @blueprint.route("/getUsers")
+# def getUsers():
+#     db = g.db
+#     users_data = db.users.find({})
+#     allUsers = []
+#     for user in users_data:
+#         # Fetch related drink lists
+#         drink_lists_data = db.usersDrinkLists.find_one({
+#             "id": user['drinkLists']
+#         })
+#         user['drinkLists'] = drink_lists_data
+#         # Fetch related follow lists
+#         follow_lists_data = db.usersFollowLists.find_one({
+#             "id": user['followLists']
+#         })
+#         user['followLists'] = follow_lists_data
+#         allUsers.append(user)
+#     return parse_json(allUsers)
+
+# # [GET] Specific User by ID
+# @blueprint.route("/getUser/<id>")
+# def getUser(id):
+#     db = g.db
+#     user = db.users.find_one({"_id": ObjectId(id)})
+#     if user is None:
+#         return []
+#     # Fetch related drink lists
+#     drink_lists_data = db.usersDrinkLists.find_one({
+#         "id": user['drinkLists']
+#     })
+#     user['drinkLists'] = drink_lists_data
+#     # Fetch related follow lists
+#     follow_lists_data = db.usersFollowLists.find_one({
+#         "id": user['followLists']
+#     })
+#     user['followLists'] = follow_lists_data
+#     return parse_json(user)
+
+# # [GET] Specific User by Username
+# @blueprint.route("/getUserByUsername/<username>")
+# def getUserByUsername(username):
+#     db = g.db
+#     user = db.users.find_one({"username": username})
+#     if user is None:
+#         return []
+#     # Fetch related drink lists
+#     drink_lists_data = db.usersDrinkLists.find_one({
+#         "id": user['drinkLists']
+#     })
+#     user['drinkLists'] = drink_lists_data
+#     # Fetch related follow lists
+#     follow_lists_data = db.usersFollowLists.find_one({
+#         "id": user['followLists']
+#     })
+#     user['followLists'] = follow_lists_data
+    
+#     return parse_json(user)
+
+# =======================================================
+
 # -----------------------------------------------------------------------------------------
+
+# ================== POSTGRESQL FORMAT ==================
+
+# ----------------------
+# [OLD] TO BE DELETED:
+# ----------------------
+
 # [GET] Venues
 @blueprint.route("/getVenues")
 def getVenues():
@@ -214,6 +412,76 @@ def getVenueByRequestId(id):
     if data is None:
         return []
     return parse_json(data)
+
+# ----------------------
+# [NEW] TO BE ADDED:
+# ----------------------
+
+# # [GET] Venues
+# @blueprint.route("/getVenues")
+# def getVenues():
+#     db = g.db
+#     venues_data = db.venues.find({})
+#     allVenues = []
+#     for venue in venues_data:
+#         # Fetch related menu
+#         menu_data = db.venuesMenu.find_one({"id": venue['menu']})
+#         venue['menu'] = menu_data
+#         # Fetch related opening hours
+#         opening_hours_data = db.venuesOpeningHours.find_one({"id": venue['openingHours']})
+#         venue['openingHours'] = opening_hours_data
+#         # Fetch related question answers
+#         question_answers_data = db.venuesQuestionAnswers.find_one({"id": venue['questionAnswers']})
+#         venue['questionAnswers'] = question_answers_data
+#         # Fetch related updates
+#         updates_data = db.venuesUpdates.find_one({"id": venue['updates']})
+#         venue['updates'] = updates_data
+#         allVenues.append(venue)
+#     return parse_json(allVenues)
+
+# # [GET] Specific Venue by ID
+# @blueprint.route("/getVenue/<id>")
+# def getVenue(id):
+#     db = g.db
+#     venue = db.venues.find_one({"_id": ObjectId(id)})
+#     if venue is None:
+#         return []
+#     # Fetch related menu
+#     menu_data = db.venuesMenu.find_one({"id": venue['menu']})
+#     venue['menu'] = menu_data
+#     # Fetch related opening hours
+#     opening_hours_data = db.venuesOpeningHours.find_one({"id": venue['openingHours']})
+#     venue['openingHours'] = opening_hours_data
+#     # Fetch related question answers
+#     question_answers_data = db.venuesQuestionAnswers.find_one({"id": venue['questionAnswers']})
+#     venue['questionAnswers'] = question_answers_data
+#     # Fetch related updates
+#     updates_data = db.venuesUpdates.find_one({"id": venue['updates']})
+#     venue['updates'] = updates_data
+#     return parse_json(venue)
+
+# # [GET] Specific Venue by Request ID
+# @blueprint.route("/getVenueByRequestId/<id>")
+# def getVenueByRequestId(id):
+#     db = g.db
+#     venue = db.venues.find_one({"requestId": ObjectId(id)})
+#     if venue is None:
+#         return []
+#     # Fetch related menu
+#     menu_data = db.venuesMenu.find_one({"id": venue['menu']})
+#     venue['menu'] = menu_data
+#     # Fetch related opening hours
+#     opening_hours_data = db.venuesOpeningHours.find_one({"id": venue['openingHours']})
+#     venue['openingHours'] = opening_hours_data
+#     # Fetch related question answers
+#     question_answers_data = db.venuesQuestionAnswers.find_one({"id": venue['questionAnswers']})
+#     venue['questionAnswers'] = question_answers_data
+#     # Fetch related updates
+#     updates_data = db.venuesUpdates.find_one({"id": venue['updates']})
+#     venue['updates'] = updates_data
+#     return parse_json(venue)
+
+# =======================================================
 
 # -----------------------------------------------------------------------------------------
 # [GET] VenuesAPI
@@ -389,6 +657,13 @@ def getServingTypes():
     return servingTypes
 
 # -----------------------------------------------------------------------------------------
+
+# ================== POSTGRESQL FORMAT ==================
+
+# ----------------------
+# [OLD] TO BE DELETED:
+# ----------------------
+
 # [GET] producersProfileViews
 @blueprint.route("/getProducersProfileViews")
 def getProducersProfileViews():
@@ -401,7 +676,74 @@ def getProducersProfileViews():
         producersProfileViews.append(doc)
     return producersProfileViews
 
+# [GET] producersProfileViews by producerID
+@blueprint.route("/getProducersProfileViewsByProducer/<id>")
+def getProducersProfileViewsByProducer():
+    db = g.db
+    data = db.producersProfileViews.find({"producerID": ObjectId(id)})
+    print(len(list(data.clone())))
+    producersProfileViews = []
+    dataEncode = parse_json(data)
+    for doc in dataEncode:
+        producersProfileViews.append(doc)
+    return producersProfileViews
+
+# ----------------------
+# [NEW] TO BE ADDED:
+# ----------------------
+
+# # [GET] producersProfileViews
+# @blueprint.route("/getProducersProfileViews")
+# def getProducersProfileViews():
+#     db = g.db
+#     profile_views_data = db.producersProfileViews.find({})
+#     allProfileViews = []
+#     for profile_view in profile_views_data:
+#         # Fetch related views data
+#         views_data = db.producersProfileViewsViews.find_one({
+#             "id": profile_view['views']
+#         })
+#         profile_view['views'] = views_data
+#         allProfileViews.append(profile_view)
+#     return parse_json(allProfileViews)
+
+# # [GET] producersProfileViews by producerID
+# @blueprint.route("/getProducersProfileViewsByProducer/<id>")
+# def getProducersProfileViewsByProducer(id):
+#     db = g.db
+#     profile_views_data = db.producersProfileViews.find({"producerID": ObjectId(id)})
+#     allProfileViews = []
+#     for profile_view in profile_views_data:
+#         # Fetch related views data
+#         views_data = db.producersProfileViewsViews.find_one({
+#             "id": profile_view['views']
+#         })
+#         profile_view['views'] = views_data
+#         allProfileViews.append(profile_view)
+#     return parse_json(allProfileViews)
+
+# =======================================================
+
 # -----------------------------------------------------------------------------------------
+
+# ================== POSTGRESQL FORMAT ==================
+
+# ----------------------
+# [OLD] TO BE DELETED:
+# ----------------------
+
+# [GET] venuesProfileViews
+@blueprint.route("/getVenuesProfileViews")
+def getVenuesProfileViews():
+    db = g.db
+    data = db.venuesProfileViews.find({})
+    print(len(list(data.clone())))
+    venuesProfileViews = []
+    dataEncode = parse_json(data)
+    for doc in dataEncode:
+        venuesProfileViews.append(doc)
+    return venuesProfileViews
+
 # [GET] venuesProfileViews by venueID
 @blueprint.route("/getVenuesProfileViewsByVenue/<id>")
 def getVenuesProfileViewsByVenue(id):
@@ -413,6 +755,44 @@ def getVenuesProfileViewsByVenue(id):
     for doc in dataEncode:
         venuesProfileViews.append(doc)
     return venuesProfileViews
+
+# ----------------------
+# [NEW] TO BE ADDED:
+# ----------------------
+
+# # [GET] venuesProfileViews
+# @blueprint.route("/getVenuesProfileViews")
+# def getVenuesProfileViews():
+#     db = g.db
+#     profile_views_data = db.venuesProfileViews.find({})
+#     allProfileViews = []
+#     for profile_view in profile_views_data:
+#         # Fetch related views data for each view ID in the 'views' list
+#         views_list = []
+#         for view_id in profile_view['views']:
+#             views_data = db.venuesProfileViewsViews.find_one({"id": view_id})
+#             views_list.append(views_data)
+#         profile_view['views'] = views_list
+#         allProfileViews.append(profile_view)
+#     return parse_json(allProfileViews)
+
+# # [GET] venuesProfileViews by venueID
+# @blueprint.route("/getVenuesProfileViewsByVenue/<id>")
+# def getVenuesProfileViewsByVenue(id):
+#     db = g.db
+#     profile_views_data = db.venuesProfileViews.find({"venueID": ObjectId(id)})
+#     allProfileViews = []
+#     for profile_view in profile_views_data:
+#         # Fetch related views data for each view ID in the 'views' list
+#         views_list = []
+#         for view_id in profile_view['views']:
+#             views_data = db.venuesProfileViewsViews.find_one({"id": view_id})
+#             views_list.append(views_data)
+#         profile_view['views'] = views_list
+#         allProfileViews.append(profile_view)
+#     return parse_json(allProfileViews)
+
+# =======================================================
 
 # -----------------------------------------------------------------------------------------
 # [GET] requestInaccuracy by venueID

@@ -166,11 +166,11 @@ CREATE TABLE producersUpdates (
     photo TEXT
 );
 
--- ========= [NEW!] producersProfileViews =========
+-- ========= producersProfileViews =========
 CREATE TABLE producersProfileViews (
     id SERIAL PRIMARY KEY,
     producerID INT,
-    views SERIAL  -- [!] reference(255),
+    views SERIAL  -- [!] reference producersProfileViewsViews
 );
 
 -- ========= [NEW!] producersProfileViewsViews =========
@@ -295,7 +295,7 @@ CREATE TABLE users (
     hashedPassword VARCHAR(255),
     drinkLists SERIAL, -- [!] reference usersDrinkLists
     joinDate TIMESTAMP,
-    followLists SERIAL, -- [!] reference usersfollowLists
+    followLists SERIAL, -- [!] reference usersFollowLists
     firstName VARCHAR(255),
     lastName VARCHAR(255),
     email VARCHAR(255),
@@ -303,15 +303,15 @@ CREATE TABLE users (
     birthday TIMESTAMP
 );
 
--- ========= usersDrinkLists =========
+-- ========= [NEW!] usersDrinkLists =========
 CREATE TABLE usersDrinkLists (
     id SERIAL PRIMARY KEY,
     drinksIHaveTried TEXT[],
     drinksIWantToTry TEXT[]
 );
 
--- ========= usersfollowLists =========
-CREATE TABLE usersfollowLists (
+-- ========= [NEW!] usersFollowLists =========
+CREATE TABLE usersFollowLists (
     id SERIAL PRIMARY KEY,
     users TEXT[],
     producers TEXT[],
@@ -358,7 +358,7 @@ CREATE TABLE venuesOpeningHours (
     Sunday TEXT[]
 );
 
--- ========= [NEW!] =========
+-- ========= [NEW!] venuesQuestionAnswers =========
 CREATE TABLE venuesQuestionAnswers (
     id SERIAL PRIMARY KEY,
     question VARCHAR(255),
