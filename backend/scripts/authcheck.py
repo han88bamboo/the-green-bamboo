@@ -43,20 +43,23 @@ def parse_json(data):
 @blueprint.route("/authcheck", methods= ['POST'])
 def authcheck():
     try:
-        db = g.db
+        # db = g.db
         loginInfo = request.get_json()
 
-        # Check if user exists in the "users" collection
-        userExistsRaw = db.users.find_one({"username": loginInfo["username"]})
-        userExists = parse_json(userExistsRaw)
-        if (userExists != None):
+        conn = g.db  # Get the DB connection from g
+        cur = conn.cursor()
+        username = loginInfo["username"]
+        password = loginInfo["password"]
 
-            # User exists, check if password matches
-            if(str(userExists["hashedPassword"]) == str(loginInfo["password"])):
+        # Check if user exists in the "users" table
+        cur.execute('SELECT * FROM users WHERE username = %s', (username,))
+        user = cur.fetchone()
+        if user is not None:
+            if(str(user["hashedpassword"]) == str(password)):
                 return jsonify(
                     {   
                         "code": 200,
-                        "id": userExists["_id"]["$oid"],
+                        "id": user['id'],
                         "role": "user",
                         "message": "Authenticated!"
                     }
@@ -64,6 +67,7 @@ def authcheck():
             
             # Password does not match
             else:
+                print('enters')
                 return jsonify(
                     {   
                         "code": 401,
@@ -71,18 +75,16 @@ def authcheck():
                     }
                 ), 401
 
-
-        # Check if producer exists in the "producers" collection
-        producerExistsRaw = db.producers.find_one({"username": loginInfo["username"]})
-        producerExists = parse_json(producerExistsRaw)
-        if (producerExists != None):
-
+        # Check if producer exists in the "producers" table
+        cur.execute('SELECT * FROM producers WHERE username = %s', (username,))
+        producer = cur.fetchone()
+        if (producer is not None):
             # Producer exists, check if password matches
-            if(str(producerExists["hashedPassword"]) == str(loginInfo["password"])):
+            if(str(producer["hashedPassword"]) == str(password)):
                 return jsonify(
                     {   
                         "code": 200,
-                        "id": producerExists["_id"]["$oid"],
+                        "id": producer['id'],
                         "role": "producer",
                         "message": "Authenticated!"
                     }
@@ -97,18 +99,17 @@ def authcheck():
                     }
                 ), 401
 
-
-        # Check if venue exists in the "venues" collection
-        venueExistsRaw = db.venues.find_one({"username": loginInfo["username"]})
-        venueExists = parse_json(venueExistsRaw)
-        if (venueExists != None):
+        # Check if venue exists in the "venues" table
+        cur.execute('SELECT * FROM venues WHERE username = %s', (username,))
+        venue = cur.fetchone()
+        if (venue is not None):
 
             # Venue exists, check if password matches
-            if(str(venueExists["hashedPassword"]) == str(loginInfo["password"])):
+            if(str(venue["hashedPassword"]) == str(password)):
                 return jsonify(
                     {   
                         "code": 200,
-                        "id": venueExists["_id"]["$oid"],
+                        "id": venue['id'],
                         "role": "venue",
                         "message": "Authenticated!"
                     }
@@ -122,9 +123,8 @@ def authcheck():
                         "message": "Invalid username or password!"
                     }
                 ), 401
-        
 
-        # Account does not exist
+        # Account does not exist at all in all three tables
         return jsonify(
             {   
                 "code": 400,
@@ -132,157 +132,92 @@ def authcheck():
             }
         ), 400
 
+    #     userExistsRaw = db.users.find_one({"username": loginInfo["username"]})
+    #     userExists = parse_json(userExistsRaw)
+    #     if (userExists != None):
 
-    # Error during authentication
-    except Exception as e:
-        return jsonify(
-            {   
-                "code": 500,
-                "message": "An unknown error occurred while logging in, please try again."
-            }
-        ), 500
+    #         # User exists, check if password matches
+    #         if(str(userExists["hashedPassword"]) == str(loginInfo["password"])):
+    #             return jsonify(
+    #                 {   
+    #                     "code": 200,
+    #                     "id": userExists["_id"]["$oid"],
+    #                     "role": "user",
+    #                     "message": "Authenticated!"
+    #                 }
+    #             ), 200
+            
+    #         # Password does not match
+    #         else:
+    #             return jsonify(
+    #                 {   
+    #                     "code": 401,
+    #                     "message": "Invalid username or password!"
+    #                 }
+    #             ), 401
 
-# -----------------------------------------------------------------------------------------
-# [POST] Authenticates a user
-# - Check if user exists in the "users" collection. If so, check if the password matches.
-# - Possible return codes: 200 (Authenticated), 400 (User not found), 401 (Incorrect password), 500 (Error during authentication)
-@blueprint.route("/authcheckUser", methods= ['POST'])
-def authcheckUser():
-    try:
-        db = g.db
-        # Check if user exists in the "users" collection
-        loginInfo = request.get_json()
-        userExistsRaw = db.users.find_one({"username": loginInfo["username"]})
-        userExists = parse_json(userExistsRaw)
 
-        # User does not exist
-        if(userExists == None):
-            return jsonify(
-                {   
-                    "code": 400,
-                    "message": "An account of this type and username does not exist!"
-                }
-            ), 400
+    #     # Check if producer exists in the "producers" collection
+    #     producerExistsRaw = db.producers.find_one({"username": loginInfo["username"]})
+    #     producerExists = parse_json(producerExistsRaw)
+    #     if (producerExists != None):
+
+    #         # Producer exists, check if password matches
+    #         if(str(producerExists["hashedPassword"]) == str(loginInfo["password"])):
+    #             return jsonify(
+    #                 {   
+    #                     "code": 200,
+    #                     "id": producerExists["_id"]["$oid"],
+    #                     "role": "producer",
+    #                     "message": "Authenticated!"
+    #                 }
+    #             ), 200
+            
+    #         # Password does not match
+    #         else:
+    #             return jsonify(
+    #                 {   
+    #                     "code": 401,
+    #                     "message": "Invalid username or password!"
+    #                 }
+    #             ), 401
+
+
+    #     # Check if venue exists in the "venues" collection
+    #     venueExistsRaw = db.venues.find_one({"username": loginInfo["username"]})
+    #     venueExists = parse_json(venueExistsRaw)
+    #     if (venueExists != None):
+
+    #         # Venue exists, check if password matches
+    #         if(str(venueExists["hashedPassword"]) == str(loginInfo["password"])):
+    #             return jsonify(
+    #                 {   
+    #                     "code": 200,
+    #                     "id": venueExists["_id"]["$oid"],
+    #                     "role": "venue",
+    #                     "message": "Authenticated!"
+    #                 }
+    #             ), 200
+            
+    #         # Password does not match
+    #         else:
+    #             return jsonify(
+    #                 {   
+    #                     "code": 401,
+    #                     "message": "Invalid username or password!"
+    #                 }
+    #             ), 401
         
-        # User exists, check if password matches
-        if(str(userExists["hashedPassword"]) == str(loginInfo["password"])):
-            return jsonify(
-                {   
-                    "code": 200,
-                    "id": userExists["_id"]["$oid"],
-                    "message": "Authenticated!"
-                }
-            ), 200
-        
-        # Password does not match
-        else:
-            return jsonify(
-                {   
-                    "code": 401,
-                    "message": "Invalid username or password!"
-                }
-            ), 401
-    
-    # Error during authentication
-    except Exception as e:
-        return jsonify(
-            {   
-                "code": 500,
-                "message": "An unknown error occurred while logging in, please try again."
-            }
-        ), 500
 
-# -----------------------------------------------------------------------------------------
-# [POST] Authenticates a producer
-# - Check if producer exists in the "producers" collection. If so, check if the password matches.
-# - Possible return codes: 200 (Authenticated), 400 (Producer not found), 401 (Incorrect password), 500 (Error during authentication)
-@blueprint.route("/authcheckProducer", methods= ['POST'])
-def authcheckProducer():
-    try:
-        db = g.db
-        # Check if producer exists in the "producers" collection
-        loginInfo = request.get_json()
-        producerExistsRaw = db.producers.find_one({"username": loginInfo["username"]})
-        producerExists = parse_json(producerExistsRaw)
+    #     # Account does not exist
+    #     return jsonify(
+    #         {   
+    #             "code": 400,
+    #             "message": "An account of this username does not exist!"
+    #         }
+    #     ), 400
 
-        # Producer does not exist
-        if(producerExists == None):
-            return jsonify(
-                {   
-                    "code": 400,
-                    "message": "An account of this type and username does not exist!"
-                }
-            ), 400
-        
-        # Producer exists, check if password matches
-        if(str(producerExists["hashedPassword"]) == str(loginInfo["password"])):
-            return jsonify(
-                {   
-                    "code": 200,
-                    "id": producerExists["_id"]["$oid"],
-                    "message": "Authenticated!"
-                }
-            ), 200
-        
-        # Password does not match
-        else:
-            return jsonify(
-                {   
-                    "code": 401,
-                    "message": "Invalid username or password!"
-                }
-            ), 401
-    
-    # Error during authentication
-    except Exception as e:
-        return jsonify(
-            {   
-                "code": 500,
-                "message": "An unknown error occurred while logging in, please try again."
-            }
-        ), 500
 
-# -----------------------------------------------------------------------------------------
-# [POST] Authenticates a venue
-# - Check if venue exists in the "venues" collection. If so, check if the password matches.
-# - Possible return codes: 200 (Authenticated), 400 (Venue not found), 401 (Incorrect password), 500 (Error during authentication)
-@blueprint.route("/authcheckVenue", methods= ['POST'])
-def authcheckVenue():
-    try:
-        db = g.db
-        # Check if venue exists in the "venues" collection
-        loginInfo = request.get_json()
-        venueExistsRaw = db.venues.find_one({"username": loginInfo["username"]})
-        venueExists = parse_json(venueExistsRaw)
-
-        # Venue does not exist
-        if(venueExists == None):
-            return jsonify(
-                {   
-                    "code": 400,
-                    "message": "An account of this type and username does not exist!"
-                }
-            ), 400
-        
-        # Venue exists, check if password matches
-        if(str(venueExists["hashedPassword"]) == str(loginInfo["password"])):
-            return jsonify(
-                {   
-                    "code": 200,
-                    "id": venueExists["_id"]["$oid"],
-                    "message": "Authenticated!"
-                }
-            ), 200
-        
-        # Password does not match
-        else:
-            return jsonify(
-                {   
-                    "code": 401,
-                    "message": "Invalid username or password!"
-                }
-            ), 401
-    
     # Error during authentication
     except Exception as e:
         return jsonify(

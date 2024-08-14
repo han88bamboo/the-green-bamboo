@@ -145,6 +145,7 @@ CREATE TABLE producers (
     statusOB VARCHAR(255) ,
     questionAnswers SERIAL , -- [!] reference producersQuestionAnswers
     updates SERIAL , -- [!] reference producersUpdates
+    username VARCHAR(255),
     producerLink VARCHAR(255) ,
     stripeCustomerId VARCHAR(255) 
 );
@@ -306,6 +307,7 @@ CREATE TABLE users (
 -- ========= [NEW!] usersDrinkLists =========
 CREATE TABLE usersDrinkLists (
     id SERIAL PRIMARY KEY,
+    user SERIAL,  -- [!] reference usersFollowLists
     drinksIHaveTried TEXT[],
     drinksIWantToTry TEXT[]
 );
@@ -334,6 +336,7 @@ CREATE TABLE venues (
     questionAnswers SERIAL , -- [!] reference venuesQuestionAnswers
     updates SERIAL , -- [!] reference venuesUpdates
     reservationDetails VARCHAR(255) ,
+    username VARCHAR(255),
     publicHolidays VARCHAR(255) ,
     stripeCustomerId VARCHAR(255) 
 );
