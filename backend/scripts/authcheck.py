@@ -67,7 +67,6 @@ def authcheck():
             
             # Password does not match
             else:
-                print('enters')
                 return jsonify(
                     {   
                         "code": 401,
@@ -80,7 +79,7 @@ def authcheck():
         producer = cur.fetchone()
         if (producer is not None):
             # Producer exists, check if password matches
-            if(str(producer["hashedPassword"]) == str(password)):
+            if(str(producer["hashedpassword"]) == str(password)):
                 return jsonify(
                     {   
                         "code": 200,
@@ -105,7 +104,7 @@ def authcheck():
         if (venue is not None):
 
             # Venue exists, check if password matches
-            if(str(venue["hashedPassword"]) == str(password)):
+            if(str(venue["hashedpassword"]) == str(password)):
                 return jsonify(
                     {   
                         "code": 200,
@@ -233,18 +232,27 @@ def authcheck():
 # - Possible return codes: 201 (Updated), 401(Passwords do not match) , 404(User not exist), 500 (Error during update)
 @blueprint.route('/editPassword/<id>', methods=['POST'])
 def editPassword(id):
-    db = g.db
+    # db = g.db
+    conn = g.db  # Get the DB connection from g
+    cur = conn.cursor()
     data = request.get_json()
     print(data)
-    # if data contains image64
+    newHash = data['newHash']
+
     if data["userType"] == "user":
-        userRaw = db.users.find_one({"_id": ObjectId(id)})
+        cur.execute('SELECT * FROM users WHERE id = %s', (id,))
+        user = cur.fetchone()
+        # userRaw = db.users.find_one({"_id": ObjectId(id)})
     if data["userType"] == "producer":
-        userRaw = db.producers.find_one({"_id": ObjectId(id)})
+        cur.execute('SELECT * FROM producers WHERE id = %s', (id,))
+        user = cur.fetchone()
+        # userRaw = db.producers.find_one({"_id": ObjectId(id)})
     if data["userType"] == "venue":
-        userRaw = db.venues.find_one({"_id": ObjectId(id)})
+        cur.execute('SELECT * FROM venues WHERE id = %s', (id,))
+        user = cur.fetchone()
+        # userRaw = db.venues.find_one({"_id": ObjectId(id)})
         
-    if userRaw is None:
+    if user is None:
         return jsonify(
             {   
                 "code": 404,
@@ -254,7 +262,11 @@ def editPassword(id):
             }
         ), 404
     try: 
-        if data['oldHash'] != userRaw['hashedPassword']:
+        print(user['hashedpassword'])
+        print(data['oldHash'])
+        print(str(user['hashedpassword'])==str(data['oldHash']))
+        # print(user['hashedpasssword'], data['oldHash'])
+        if str(user['hashedpassword'])!=str(data['oldHash']):
             return jsonify(
                 {   
                     "code": 401,
@@ -265,11 +277,15 @@ def editPassword(id):
             ), 401
         else:
             if data["userType"] == "user":
-                updatePassword = db.users.update_one({'_id': ObjectId(id)}, {'$set': {'hashedPassword': data['newHash']}})
+                cur.execute('UPDATE users set hashedpassword = %s WHERE id = %s', (newHash ,id,))
+                # updatePassword = db.users.update_one({'_id': ObjectId(id)}, {'$set': {'hashedPassword': data['newHash']}})
             if data["userType"] == "producer":
-                updatePassword = db.producers.update_one({'_id': ObjectId(id)}, {'$set': {'hashedPassword': data['newHash']}})
+                cur.execute('UPDATE producers set hashedpassword = %s WHERE id = %s', (newHash ,id,))
+                # updatePassword = db.producers.update_one({'_id': ObjectId(id)}, {'$set': {'hashedPassword': data['newHash']}})
             if data["userType"] == "venue":
-                updatePassword = db.venues.update_one({'_id': ObjectId(id)}, {'$set': {'hashedPassword': data['newHash']}})
+                cur.execute('UPDATE venues set hashedpassword = %s WHERE id = %s', (newHash ,id,))
+                # updatePassword = db.venues.update_one({'_id': ObjectId(id)}, {'$set': {'hashedPassword': data['newHash']}})
+            conn.commit()
 
             return jsonify(
                 {   
@@ -296,7 +312,9 @@ def editPassword(id):
 # - Possible return codes: 201 (Sent), 404 (Email not exist), 500 (Error during email sending)
 @blueprint.route('/sendResetPin/<id>', methods=['POST'])
 def sendResetPin(id):
-    db = g.db
+    # db = g.db
+    conn = g.db
+    cur = conn.cursor()
     data = request.get_json()
     print(data)
     
@@ -309,21 +327,31 @@ def sendResetPin(id):
     try:
         # check user type
         if data["userType"] == "user":
-            userRaw = db.users.find_one({"_id": ObjectId(id)})
+            # userRaw = db.users.find_one({"_id": ObjectId(id)})
+            cur.execute('SELECT * FROM users WHERE id = %s', (id,))
+            userRaw = cur.fetchone()
             if userRaw != None:
-                updatePin = db.users.update_one({'_id': ObjectId(id)}, {'$set': {'pin': updatePin}})
+                cur.execute('UPDATE users set pin = %s WHERE id = %s', (updatePin ,id,))
+                # updatePin = db.users.update_one({'_id': ObjectId(id)}, {'$set': {'pin': updatePin}})
 
         if data["userType"] == "producer":
-            userRaw = db.producers.find_one({"_id": ObjectId(id)})
+            # userRaw = db.producers.find_one({"_id": ObjectId(id)})
+            cur.execute('SELECT * FROM producers WHERE id = %s', (id,))
+            userRaw = cur.fetchone()
             if userRaw != None:
-                updatePin = db.producers.update_one({'_id': ObjectId(id)}, {'$set': {'pin': updatePin}})
+                # updatePin = db.producers.update_one({'_id': ObjectId(id)}, {'$set': {'pin': updatePin}})
+                cur.execute('UPDATE producers set pin = %s WHERE id = %s', (updatePin ,id,))                  
             # Need to get the email from producers and assign to variable to send email
+
         if data["userType"] == "venue":
-            userRaw = db.venues.find_one({"_id": ObjectId(id)})
+            cur.execute('SELECT * FROM venues WHERE id = %s', (id,))
+            userRaw = cur.fetchone()
+            # userRaw = db.venues.find_one({"_id": ObjectId(id)})
             if userRaw != None:
-                updatePin = db.venues.update_one({'_id': ObjectId(id)}, {'$set': {'pin': updatePin}})
+                # updatePin = db.venues.update_one({'_id': ObjectId(id)}, {'$set': {'pin': updatePin}})
+                cur.execute('UPDATE venues set pin = %s WHERE id = %s', (updatePin ,id,))
             # Need to get the email from venues and assign to variable to send email
-            
+        
         if userRaw is None:
             return jsonify(
                 {   
@@ -334,6 +362,9 @@ def sendResetPin(id):
                     "message": "User not found"
                 }
             ), 404
+        
+        conn.commit()
+
         server = smtplib.SMTP('smtp.gmail.com:587')
         server.ehlo()
         server.starttls()
@@ -374,7 +405,10 @@ def sendResetPin(id):
 # https://myaccount.google.com/u/1/apppasswords
 @blueprint.route('/verifyPin/<id>', methods=['POST'])
 def verifyPin(id):
-    db = g.db
+    # db = g.db
+    conn = g.db
+    cur = conn.cursor()
+
     data = request.get_json()
     print(data)
     
@@ -383,14 +417,18 @@ def verifyPin(id):
     try:
         # check user type
         if data["userType"] == "user":
-            userRaw = db.users.find_one({"_id": ObjectId(id)})
+            # userRaw = db.users.find_one({"_id": ObjectId(id)})
+            cur.execute('SELECT * FROM users WHERE id = %s', (id,))
 
         if data["userType"] == "producer":
-            userRaw = db.producers.find_one({"_id": ObjectId(id)})
+            # userRaw = db.producers.find_one({"_id": ObjectId(id)})
+            cur.execute('SELECT * FROM producers WHERE id = %s', (id,))
 
         if data["userType"] == "venue":
-            userRaw = db.venues.find_one({"_id": ObjectId(id)})
-            
+            # userRaw = db.venues.find_one({"_id": ObjectId(id)})
+            cur.execute('SELECT * FROM venues WHERE id = %s', (id,))
+
+        userRaw = cur.fetchone()
         if userRaw is None:
             return jsonify(
                 {   
@@ -449,7 +487,10 @@ def verifyPin(id):
 # - Possible return codes: 201 (Sent), 404 (Email not exist), 500 (Error during email sending)
 @blueprint.route('/resetPassword/<id>', methods=['POST'])
 def resetPassword(id):
-    db = g.db
+    # db = g.db
+    conn = g.db
+    cur = conn.cursor()
+
     data = request.get_json()
     print(data)
     email_address = os.getenv('EMAIL_ADDRESS')
@@ -457,20 +498,24 @@ def resetPassword(id):
     try:
         # check user type
         if data["userType"] == "user":
-            userRaw = db.users.find_one({"_id": ObjectId(id)})
-            if userRaw != None:
-                username = userRaw['username']
+            # userRaw = db.users.find_one({"_id": ObjectId(id)})
+            cur.execute('SELECT * FROM users WHERE id = %s', (id,))
+            # if userRaw != None:
+            #     username = userRaw['username']
 
         if data["userType"] == "producer":
-            userRaw = db.producers.find_one({"_id": ObjectId(id)})
-            if userRaw != None:
-                username = userRaw['producerName']
+            cur.execute('SELECT * FROM producers WHERE id = %s', (id,))
+            # userRaw = db.producers.find_one({"_id": ObjectId(id)})
+            # if userRaw != None:
+            #     username = userRaw['producerName']
 
         if data["userType"] == "venue":
-            userRaw = db.venues.find_one({"_id": ObjectId(id)})
-            if userRaw != None:
-                username = userRaw['venueName']
-            
+            cur.execute('SELECT * FROM venues WHERE id = %s', (id,))
+            # userRaw = db.venues.find_one({"_id": ObjectId(id)})
+            # if userRaw != None:
+            #     username = userRaw['venueName']
+
+        userRaw = cur.fetchone()
         if userRaw is None:
             return jsonify(
                 {   
@@ -481,6 +526,7 @@ def resetPassword(id):
                     "message": "User not found"
                 }
             ), 404
+        username = userRaw['username']
         # get actual pin
         splitPinData = userRaw['pin'].split(',')
         actualPin = splitPinData[0]
@@ -489,7 +535,11 @@ def resetPassword(id):
         if str(actualPin) == str(data['pin']):
 
             # create a new password here
-            characters = string.ascii_letters + string.digits + string.punctuation
+
+            # Define the set of characters to exclude
+            excludeChars = '"\\'  # Double quote and backslash, for example so that it doesnt interefere with code
+            filteredPunctuations = ''.join(ch for ch in string.punctuation if ch not in excludeChars)
+            characters = string.ascii_letters + string.digits + filteredPunctuations
             password = ''.join(random.choice(characters) for _ in range(10))
 
             combinedString = str(username) + password
@@ -507,12 +557,15 @@ def resetPassword(id):
 
             # Update the hash with new hash and remove the pin used to prevent re-reset
             if data["userType"] == "user":
-                updatePassword = db.users.update_one({'_id': ObjectId(id)}, {'$set': {'hashedPassword': str(hash), 'pin':''}})
+                # updatePassword = db.users.update_one({'_id': ObjectId(id)}, {'$set': {'hashedPassword': str(hash), 'pin':''}})
+                cur.execute('UPDATE users set hashedpassword = %s, pin = %s WHERE id = %s', (str(hash), '' ,id,))
             if data["userType"] == "producer":
-                updatePassword = db.producers.update_one({'_id': ObjectId(id)}, {'$set': {'hashedPassword': str(hash), 'pin':''}})
+                # updatePassword = db.producers.update_one({'_id': ObjectId(id)}, {'$set': {'hashedPassword': str(hash), 'pin':''}})
+                cur.execute('UPDATE producers set hashedpassword = %s, pin = %s WHERE id = %s', (str(hash), '' ,id,))
             if data["userType"] == "venue":
-                updatePassword = db.venues.update_one({'_id': ObjectId(id)}, {'$set': {'hashedPassword': str(hash), 'pin':''}})
-
+                # updatePassword = db.venues.update_one({'_id': ObjectId(id)}, {'$set': {'hashedPassword': str(hash), 'pin':''}})
+                cur.execute('UPDATE venues set hashedpassword = %s, pin = %s WHERE id = %s', (str(hash), '' ,id,))
+            conn.commit()
 
             # send email containing the password
             server = smtplib.SMTP('smtp.gmail.com:587')
