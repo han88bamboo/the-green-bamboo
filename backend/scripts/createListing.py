@@ -106,11 +106,11 @@ def createListings():
 # ======================================================
 # [NEW] TO BE ADDED FOR POSTGRES:
 # ------------------------------------------------------
-        columns = ', '.join(rawBottle.keys())
-        placeholders = ', '.join(['%s'] * len(rawBottle))
-        sql = f"INSERT INTO listings ({columns}) VALUES ({placeholders})"
-        cursor.execute(sql, list(rawBottle.values()))
-        db.commit()  # Commit the transaction
+        # columns = ', '.join(rawBottle.keys())
+        # placeholders = ', '.join(['%s'] * len(rawBottle))
+        # sql = f"INSERT INTO listings ({columns}) VALUES ({placeholders})"
+        # cursor.execute(sql, list(rawBottle.values()))
+        # db.commit()  # Commit the transaction
 # ======================================================        
         return jsonify( 
             {   
