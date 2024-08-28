@@ -158,7 +158,7 @@ def createListings():
 #             cursor.execute(select_query, (listing_data["listingName"],))
 #             # listing exist in db
 #             if cursor.fetchone():
-#                 raise ValueError(f"Listing {listing_data["listingName"]} already exists.")
+#                 raise ValueError(f"Bottle already exists.")
 
 #             # upload to s3 and 
 #             listing_data['photo'] = s3Images.uploadBase64ImageToS3(listing_data['photo'])
