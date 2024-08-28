@@ -35,3 +35,4 @@ pnpm-debug.log*
 # Ignore file in webscrapper
 Webscrape Untappd/Webscrapper/cookies.pkl
 Webscrape Untappd/Results/
+backend/postgresql/mongo_test.py
