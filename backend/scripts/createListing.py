@@ -129,3 +129,80 @@ def createListings():
                 "message": "An error occurred creating the listing."
             }
         ), 500
+
+
+# ======================================================
+# Optimize + simple rework (code not tested.)
+# two foreseeable issues that may or may not cause issues in the future
+# 1. EDGE CASE - uploading data here might hurt the performance, wait needs to be done for images(if user uploads raw images)
+# suggestion - move the upload with s3 presigned URL, action can be done through f/e when user upload the image hence api just needs to receove the URL
+# 2. db connection, for scalability ThreadedConnectionPool should be utilized
+# ------------------------------------------------------
+# ======================================================
+# Exception class
+# ------------------------------------------------------
+# class CreteListingError(Exception):
+#     pass 
+
+# ======================================================
+# logic layer
+# # ------------------------------------------------------
+# def create_db_listing(listing_data):
+#     db = g.db
+#     try: 
+#         # with is to ensure the proper connection closure when 
+#         # query is done 
+#         with db.cursor() as cursor:
+#             # fetch only necessary columns limits to only 1
+#             select_query = "SELECT listingName FROM listings WHERE listingName = %s LIMIT 1"
+#             cursor.execute(select_query, (listing_data["listingName"],))
+
+#             # upload to s3 and 
+#             listing_data['photo'] = s3Images.uploadBase64ImageToS3(listing_data['photo'])
+
+#             # insert new listing data into postgresql
+#             columns = ', '.join(rawBottle.keys())
+#             placeholders = ', '.join(['%s'] * len(rawBottle))
+#             insert_sql = f"INSERT INTO listings ({columns}) VALUES ({placeholders}) RETURNING id"
+#             cursor.execute(insert_sql, list(listing_data.values()))
+#             new_id = cursor.fetchone()['id']
+#             db.commit()
+
+#             return { "id": new_id, "listingName": listing_data["listingName"]}
+#     except Exception as e: 
+#         db.rollback()
+#         raise CreteListingError(f"Error creating listing: {str(e)}") from e
+    
+# ======================================================
+# base Route
+# ------------------------------------------------------
+# @blueprint.route("/createListing", methods= ['POST'])
+# def createListings():
+#     try:
+#         listing_data = request.get_json()
+#         # Add current datetime to the listing
+#         listing_data['addedDate'] = datetime.now(pytz.timezone('Etc/GMT-8'))
+#         listing_data["allowMod"] = True
+
+#         result = create_db_listing(listing_data)
+
+#         return jsonify({
+#             "code": 201,
+#             "data": result["listingName"]
+#         }), 201
+
+#     except ValueError as ve:
+#         return jsonify({
+#             "code": 400,
+#             "message": str(ve)
+#         }), 400
+#     except CreteListingError as cle: 
+#         return jsonify({
+#             "code": 500,
+#             "message": "An error occured while creating the listing."
+#         }), 500
+#     except Exception as e: 
+#         return jsonify({
+#             "code": 500,
+#             "message": f"An error occurred: {str(e)}"
+#         }), 500
