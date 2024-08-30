@@ -40,10 +40,10 @@
                     <div class="row">
                         <!-- producer profile photo -->
                         <div class="col-4 text-start pe-0">
-                            <img :src="selectedImage || 'data:image/jpeg;base64,' + (user['photo'] || defaultProfilePhoto)" 
-                                alt="" style="width: 100px; height: auto; z-index: 1;" class="rounded-circle-no-bg border border-dark profile-img">
-                            <!-- <img :src="selectedImage || (user['photo'] || defaultProfilePhoto)" 
+                            <!-- <img :src="selectedImage || 'data:image/jpeg;base64,' + (user['photo'] || defaultProfilePhoto)" 
                                 alt="" style="width: 100px; height: auto; z-index: 1;" class="rounded-circle-no-bg border border-dark profile-img"> -->
+                            <img :src="selectedImage || (user['photo'] || defaultProfilePhoto)" 
+                                alt="" style="width: 100px; height: auto; z-index: 1;" class="rounded-circle-no-bg border border-dark profile-img">
                         </div>
                         <!-- producer name -->
                         <div class="col-8 text-start">
@@ -79,7 +79,9 @@
                             <div class="row">
                                 <div class="mobile-col-3 col-12 col-sm-4 col-md-6 col-xl-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2 " v-for="drinkTypeDetails in matchedDrinkTypes" :key="drinkTypeDetails._id">
                                     <!-- image of actual badge  style="width: 100px; height: 100px;"  -->
-                                    <img :src="'data:image/png;base64,'+ (drinkTypeDetails.badgePhoto || defaultProfilePhoto)" 
+                                    <!-- <img :src="'data:image/png;base64,'+ (drinkTypeDetails.badgePhoto || defaultProfilePhoto)" 
+                                        alt="" class="rounded-circle-white-bg border border-dark badge-img"> -->
+                                    <img :src="(drinkTypeDetails.badgePhoto || defaultProfilePhoto)" 
                                         alt="" class="rounded-circle-white-bg border border-dark badge-img">
                                     <!-- badge description -->
                                     <div class="pt-1" style="line-height: 1;"> 
@@ -103,7 +105,9 @@
                             <div class="row">
                                 <div class="mobile-col-3 col-12 col-sm-4 col-md-6 col-xl-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2" v-for="badge in otherBadges" :key="badge">
                                     <!-- image of actual badge style="width: 100px; height: 100px;" -->
-                                    <img :src="'data:image/png;base64,'+ (getBadgeInfo(badge).badgePhoto)" 
+                                    <!-- <img :src="'data:image/png;base64,'+ (getBadgeInfo(badge).badgePhoto)" 
+                                        alt="" class="rounded-circle-white-bg border border-dark badge-img"> -->
+                                    <img :src="(getBadgeInfo(badge).badgePhoto)" 
                                         alt="" class="rounded-circle-white-bg border border-dark badge-img">
                                     <!-- badge description -->
                                     <p class="pt-1" style="line-height: 1;"> 
@@ -358,8 +362,8 @@
                             <div class="text-start pb-2" v-for="listing in bestRatedListings" v-bind:key="listing._id">
                                 <router-link :to="{ path: '/listing/view/' + listing._id.$oid }" class="reverse-clickable-text">
                                     <div class="d-flex align-items-center">
-                                        <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;">
-                                        <!-- <img :src="(listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;"> -->
+                                        <!-- <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;"> -->
+                                        <img :src="(listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;">
                                         <p class="ms-3 default-clickable-text"> 
                                             <b> {{ listing.listingName }} </b> 
                                             <br>
@@ -421,8 +425,8 @@
                         <div class="text-start pb-2" v-for="listing in bestRatedListings" v-bind:key="listing._id">
                             <router-link :to="{ path: '/listing/view/' + listing._id.$oid }" class="reverse-clickable-text">
                                 <div class="d-flex align-items-center">
-                                    <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;">
-                                    <!-- <img :src="(listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;"> -->
+                                    <!-- <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;"> -->
+                                    <img :src="(listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;">
                                     <p class="ms-3 default-clickable-text"> 
                                         <b> {{ listing.listingName }} </b> 
                                         <br>
