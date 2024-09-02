@@ -15,7 +15,7 @@
 import os
 import json
 from bson import json_util, ObjectId
-from flask import Blueprint, g
+from flask import Blueprint, g, jsonify
 from bson.objectid import ObjectId
 
 file_name = os.path.basename(__file__)
@@ -56,36 +56,44 @@ def getAccountRequests():
 # [GET] Countries
 @blueprint.route('/getCountries', methods=['GET'])
 def getCountries():
-    db = g.db
-    data = db.countries.find({})
-    print(len(list(data.clone())))
-    allCountries = []
-    dataEncode = parse_json(data)
-    for doc in dataEncode:
-        allCountries.append(doc)
-    return allCountries
+    conn = g.db
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT * FROM countries")
+        allCountries = cursor.fetchall()
+
+    if not allCountries:
+        return jsonify([])
+    
+    return jsonify(allCountries)
 
 # -----------------------------------------------------------------------------------------
 # [GET] Listings
 @blueprint.route("/getListings")
 def getListings():
-    db = g.db
-    data = db.listings.find({})
-    print(len(list(data.clone())))
-    allListings = []
-    dataEncode = parse_json(data)
-    for doc in dataEncode:
-        allListings.append(doc)
-    return allListings
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "listings"')
+        listings_data = cursor.fetchall()
+    
+    if not listings_data:
+        return jsonify([])
+
+    return jsonify(listings_data)
 
 # [GET] Specific Listing
 @blueprint.route("/getListing/<id>")
 def getListing(id):
-    db = g.db
-    data = db.listings.find_one({"_id": ObjectId(id)})
-    if data is None:
-        return []
-    return parse_json(data)
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "listings" WHERE "id" = %s', (id,))
+        listing_data = cursor.fetchone()
+
+    if listing_data is None:
+        return jsonify([])
+    
+    return jsonify(listing_data)
 
 # [GET] Specific Listings By Producer
 @blueprint.route("/getListingsByProducer/<id>")
@@ -107,23 +115,30 @@ def getListingsByProducer(id):
 # [GET] Producers
 @blueprint.route("/getProducers")
 def getProducers():
-    db = g.db
-    data = db.producers.find({})
-    print(len(list(data.clone())))
-    allProducers = []
-    dataEncode = parse_json(data)
-    for doc in dataEncode:
-        allProducers.append(doc)
-    return allProducers
+    conn = g.db
+    
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "producers"')
+        producers_data = cursor.fetchall()
+    
+    if not producers_data:
+        return jsonify([])
+
+    return jsonify(producers_data)
 
 # [GET] Specific Producer
 @blueprint.route("/getProducer/<id>")
 def getProducer(id):
-    db = g.db
-    data = db.producers.find_one({"_id": ObjectId(id)})
-    if data is None:
-        return []
-    return parse_json(data)
+    conn = g.db
+    
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "producers" WHERE "id" = %s', (id,))
+        producer_data = cursor.fetchone()
+    
+    if producer_data is None:
+        return jsonify([])
+
+    return jsonify(producer_data)
 
 # [GET] Specific Producer
 @blueprint.route("/getProducerByRequestId/<id>")
@@ -212,27 +227,30 @@ def getProducerByRequestId(id):
 # [GET] Reviews
 @blueprint.route("/getReviews")
 def getReviews():
-    db = g.db
-    data = db.reviews.find({})
-    print(len(list(data.clone())))
-    allReviews = []
-    dataEncode = parse_json(data)
-    for doc in dataEncode:
-        allReviews.append(doc)
-    return allReviews
+    conn = g.db
+    
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "reviews"')
+        reviews_data = cursor.fetchall()
+    
+    if not reviews_data:
+        return jsonify([])
+
+    return jsonify(reviews_data)
 
 # [GET] Specific Reviews by reviewTarget
 @blueprint.route("/getReviewByTarget/<id>")
 def getReviewByTarget(id):
-    db = g.db
-    data = db.reviews.find({"reviewTarget": ObjectId(id)})
-    if data is None:
-        return []
-    allReviews = []
-    dataEncode = parse_json(data)
-    for doc in dataEncode:
-        allReviews.append(doc)
-    return allReviews
+    conn = g.db
+    
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "reviews" WHERE "reviewTarget" = %s', (id,))
+        reviews_data = cursor.fetchall()
+    
+    if not reviews_data:
+        return jsonify([])
+
+    return jsonify(reviews_data)
 
 # ----------------------
 # [NEW] TO BE ADDED:
@@ -283,32 +301,52 @@ def getReviewByTarget(id):
 # [GET] Users
 @blueprint.route("/getUsers")
 def getUsers():
-    db = g.db
-    data = db.users.find({})
-    print(len(list(data.clone())))
+    conn = g.db
     allUsers = []
-    dataEncode = parse_json(data)
-    for doc in dataEncode:
-        allUsers.append(doc)
-    return allUsers
+    
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT * FROM users")
+            allUsers = cursor.fetchall()
+        
+        return jsonify(allUsers)
+    
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred while fetching users."
+            }
+        ), 500
 
 # [GET] Specific User
 @blueprint.route("/getUser/<id>")
 def getUser(id):
-    db = g.db
-    data = db.users.find_one({"_id": ObjectId(id)})
-    if data is None:
-        return []
-    return parse_json(data)
+    conn = g.db
+    
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "users" WHERE "id" = %s', (id,))
+        user_data = cursor.fetchone()
+    
+    if user_data is None:
+        return jsonify([])
+
+    return jsonify(user_data)
 
 # [GET] Specific User by username
 @blueprint.route("/getUserByUsername/<username>")
 def getUserByUsername(username):
-    db = g.db
-    data = db.users.find_one({"username": username})
-    if data is None:
-        return []
-    return parse_json(data)
+    conn = g.db
+    
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "users" WHERE "username" = %s', (username,))
+        user_data = cursor.fetchone()
+    
+    if user_data is None:
+        return jsonify([])
+
+    return jsonify(user_data)
 
 # ----------------------
 # [NEW] TO BE ADDED:
@@ -385,23 +423,30 @@ def getUserByUsername(username):
 # [GET] Venues
 @blueprint.route("/getVenues")
 def getVenues():
-    db = g.db
-    data = db.venues.find({})
-    print(len(list(data.clone())))
-    allVenues = []
-    dataEncode = parse_json(data)
-    for doc in dataEncode:
-        allVenues.append(doc)
-    return allVenues
+    conn = g.db
+    
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "venues"')
+        venues_data = cursor.fetchall()
+    
+    if not venues_data:
+        return jsonify([])
+
+    return jsonify(venues_data)
 
 # [GET] Specific Venue
 @blueprint.route("/getVenue/<id>")
 def getVenue(id):
-    db = g.db
-    data = db.venues.find_one({"_id": ObjectId(id)})
-    if data is None:
-        return []
-    return parse_json(data)
+    conn = g.db
+    
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "venues" WHERE "id" = %s', (id,))
+        venue_data = cursor.fetchone()
+    
+    if venue_data is None:
+        return jsonify([])
+
+    return jsonify(venue_data)
 
 # [GET] Specific Producer
 @blueprint.route("/getVenueByRequestId/<id>")
@@ -523,58 +568,74 @@ def getVenuesAPI():
 # [GET] DrinkTypes
 @blueprint.route("/getDrinkTypes")
 def getDrinkTypes():
-    db = g.db
-    data = db.drinkTypes.find({})
-    print(len(list(data.clone())))
-    allDrinkTypes = []
-    dataEncode = parse_json(data)
-    for doc in dataEncode:
-        allDrinkTypes.append(doc)
-    return allDrinkTypes
+    conn = g.db
+    
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "drinkTypes"')
+        drink_types_data = cursor.fetchall()
+    
+    if not drink_types_data:
+        return jsonify([])
+
+    return jsonify(drink_types_data)
 
 # -----------------------------------------------------------------------------------------
 # [GET] RequestListings
 @blueprint.route("/getRequestListings")
 def getRequestListings():
-    db = g.db
-    data = db.requestListings.find({})
-    print(len(list(data.clone())))
-    allRequestListings = []
-    dataEncode = parse_json(data)
-    for doc in dataEncode:
-        allRequestListings.append(doc)
-    return allRequestListings
+    conn = g.db
+    
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "requestListings"')
+        request_listings_data = cursor.fetchall()
+    
+    if not request_listings_data:
+        return jsonify([])
+
+    return jsonify(request_listings_data)
 
 # [GET] Specific Request Listing
 @blueprint.route("/getRequestListing/<id>")
 def getRequestListing(id):
-    db = g.db
-    data = db.requestListings.find_one({"_id": ObjectId(id)})
-    if data is None:
-        return []
-    return parse_json(data)
+    conn = g.db
+    
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "requestListings" WHERE "id" = %s', (id,))
+        request_listing_data = cursor.fetchone()
+    
+    if request_listing_data is None:
+        return jsonify([])
+
+    return jsonify(request_listing_data)
 
 # -----------------------------------------------------------------------------------------
 # [GET] RequestEdits
 @blueprint.route("/getRequestEdits")
 def getRequestEdits():
-    db = g.db
-    data = db.requestEdits.find({})
-    print(len(list(data.clone())))
-    allRequestEdits = []
-    dataEncode = parse_json(data)
-    for doc in dataEncode:
-        allRequestEdits.append(doc)
-    return allRequestEdits
+    conn = g.db
+    
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "requestEdits"')
+        request_edits_data = cursor.fetchall()
+    
+    if not request_edits_data:
+        return jsonify([])
+
+    return jsonify(request_edits_data)
 
 # [GET] Specific Request Edit
 @blueprint.route("/getRequestEdit/<id>")
 def getRequestEdit(id):
-    db = g.db
-    data = db.requestEdits.find_one({"_id": ObjectId(id)})
-    if data is None:
-        return []
-    return parse_json(data)
+    conn = g.db
+    
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "requestEdits" WHERE "id" = %s', (id,))
+        request_edit_data = cursor.fetchone()
+    
+    if request_edit_data is None:
+        return jsonify([])
+
+    return jsonify(request_edit_data)
 
 # -----------------------------------------------------------------------------------------
 # [GET] modRequests

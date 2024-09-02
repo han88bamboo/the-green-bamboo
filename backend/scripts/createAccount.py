@@ -14,6 +14,7 @@ from bson.objectid import ObjectId
 from datetime import datetime, timedelta
 import secrets
 
+from psycopg2 import sql
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -28,54 +29,77 @@ def parse_json(data):
 # - Possible return codes: 201 (Created), 400 (Duplicate Detected), 500 (Error during creation)
 @blueprint.route("/createAccount", methods= ['POST'])
 def createAccount():
-    db = g.db
+    db_conn = g.db
     rawAccount = request.get_json()
-    rawAccount['joinDate'] = datetime.strptime(rawAccount['joinDate'], "%Y-%m-%dT%H:%M:%S.%fZ")# convert date to datetime object
-    rawAccount['birthday'] = datetime.strptime(rawAccount['birthday'], "%Y-%m-%d")# convert birthday to datetime object
-    # rawAccount['birthday'] = datetime.strftime(rawAccount['birthday'], "%Y-%m-%dT%H:%M:%S.%fZ")# format birthday to desired object type
-    rawUsername= rawAccount['username']
-    # Duplicate listing check: Reject if review with the same userID and reviewTarget exists in the database
-    existingAccount = db.users.find_one({"username": rawUsername})
-    if(existingAccount!= None):
-        return jsonify(
-            {   
-                "code": 400,
-                "data": {
-                    "userName": rawUsername
-                },
-                "message": "Username already exists."
-            }
-        ), 400
     
+    # Convert date strings to datetime objects
+    rawAccount['joinDate'] = datetime.strptime(rawAccount['joinDate'], "%Y-%m-%dT%H:%M:%S.%fZ")
+    rawAccount['birthday'] = datetime.strptime(rawAccount['birthday'], "%Y-%m-%d")
     
-    # Insert new review into database
+    rawUsername = rawAccount['username']
+    
+    # Check for existing account with the same username
+    with db_conn.cursor() as cursor:
+        cursor.execute('SELECT "id" FROM "users" WHERE "username" = %s', (rawUsername,))
+        existingAccount = cursor.fetchone()
+        
+        if existingAccount is not None:
+            return jsonify(
+                {   
+                    "code": 400,
+                    "data": {
+                        "userName": rawUsername
+                    },
+                    "message": "Username already exists."
+                }
+            ), 400
+    
+    # Handle photo upload if present
     if rawAccount['photo']:
         rawAccount['photo'] = s3Images.uploadBase64ImageToS3(rawAccount['photo'])
-    newAccount = data.users(**rawAccount)
-    try:
-        insertResult = db.users.insert_one(data.asdict(newAccount))
 
-        return jsonify( 
+    # Prepare data for insertion
+    columns = ['username', 'displayName', 'firstName', 'lastName', 'email', 'choiceDrinks', 'modType', 
+               'photo', 'hashedPassword', 'joinDate', 'birthday', 'isAdmin']
+    values = [rawAccount['username'], rawAccount['displayName'], rawAccount['firstName'], rawAccount['lastName'], 
+              rawAccount['email'], rawAccount['choiceDrinks'], rawAccount['modType'], 
+              rawAccount['photo'], rawAccount['hashedPassword'], rawAccount['joinDate'], 
+              rawAccount['birthday'], rawAccount['isAdmin']]
+    
+    insert_query = sql.SQL('INSERT INTO "users" ({}) VALUES ({}) RETURNING "id"').format(
+        sql.SQL(', ').join(map(lambda col: sql.Identifier(col), columns)),
+        sql.SQL(', ').join(sql.Placeholder() * len(columns))
+    )
+    
+    try:
+        with db_conn.cursor() as cursor:
+            cursor.execute(insert_query, values)
+            user_id = cursor.fetchone()['id']
+            db_conn.commit()
+        
+        return jsonify(
             {   
                 "code": 201,
                 "data": {
                     "userName": rawUsername,
-                    "userID": str(insertResult.inserted_id)
+                    "userID": str(user_id)
                 }
             }
         ), 201
+    
     except Exception as e:
+        db_conn.rollback()
         print(str(e))
         return jsonify(
             {
                 "code": 500,
                 "data": {
-                    "userame": rawUsername
+                    "userName": rawUsername
                 },
                 "message": "An error occurred creating the account."
             }
         ), 500
-
+    
 # -----------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------
 # [POST] Creates a Business Account Request
