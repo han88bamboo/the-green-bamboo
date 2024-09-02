@@ -59,8 +59,8 @@ def createAccount():
         rawAccount['photo'] = s3Images.uploadBase64ImageToS3(rawAccount['photo'])
 
     # Prepare data for insertion
-    columns = ['username', 'displayName', 'firstName', 'lastName', 'email', 'choiceDrinks', 'modType', 
-               'photo', 'hashedPassword', 'joinDate', 'birthday', 'isAdmin']
+    columns = ['username', 'displayname', 'firstname', 'lastname', 'email', 'choicedrinks', 'modtype', 
+               'photo', 'hashedpassword', 'joindate', 'birthday', 'isadmin']
     values = [rawAccount['username'], rawAccount['displayName'], rawAccount['firstName'], rawAccount['lastName'], 
               rawAccount['email'], rawAccount['choiceDrinks'], rawAccount['modType'], 
               rawAccount['photo'], rawAccount['hashedPassword'], rawAccount['joinDate'], 
