@@ -55,7 +55,7 @@ def authcheck():
         cur.execute('SELECT * FROM users WHERE username = %s', (username,))
         user = cur.fetchone()
         if user is not None:
-            if(str(user["hashedpassword"]) == str(password)):
+            if(str(user["hashedPassword"]) == str(password)):
                 return jsonify(
                     {   
                         "code": 200,
@@ -79,7 +79,7 @@ def authcheck():
         producer = cur.fetchone()
         if (producer is not None):
             # Producer exists, check if password matches
-            if(str(producer["hashedpassword"]) == str(password)):
+            if(str(producer["hashedPassword"]) == str(password)):
                 return jsonify(
                     {   
                         "code": 200,
@@ -104,7 +104,7 @@ def authcheck():
         if (venue is not None):
 
             # Venue exists, check if password matches
-            if(str(venue["hashedpassword"]) == str(password)):
+            if(str(venue["hashedPassword"]) == str(password)):
                 return jsonify(
                     {   
                         "code": 200,
@@ -262,11 +262,11 @@ def editPassword(id):
             }
         ), 404
     try: 
-        print(user['hashedpassword'])
+        print(user['hashedPassword'])
         print(data['oldHash'])
-        print(str(user['hashedpassword'])==str(data['oldHash']))
+        print(str(user['hashedPassword'])==str(data['oldHash']))
         # print(user['hashedpasssword'], data['oldHash'])
-        if str(user['hashedpassword'])!=str(data['oldHash']):
+        if str(user['hashedPassword'])!=str(data['oldHash']):
             return jsonify(
                 {   
                     "code": 401,
@@ -277,13 +277,13 @@ def editPassword(id):
             ), 401
         else:
             if data["userType"] == "user":
-                cur.execute('UPDATE users set hashedpassword = %s WHERE id = %s', (newHash ,id,))
+                cur.execute('UPDATE users set hashedPassword = %s WHERE id = %s', (newHash ,id,))
                 # updatePassword = db.users.update_one({'_id': ObjectId(id)}, {'$set': {'hashedPassword': data['newHash']}})
             if data["userType"] == "producer":
-                cur.execute('UPDATE producers set hashedpassword = %s WHERE id = %s', (newHash ,id,))
+                cur.execute('UPDATE producers set hashedPassword = %s WHERE id = %s', (newHash ,id,))
                 # updatePassword = db.producers.update_one({'_id': ObjectId(id)}, {'$set': {'hashedPassword': data['newHash']}})
             if data["userType"] == "venue":
-                cur.execute('UPDATE venues set hashedpassword = %s WHERE id = %s', (newHash ,id,))
+                cur.execute('UPDATE venues set hashedPassword = %s WHERE id = %s', (newHash ,id,))
                 # updatePassword = db.venues.update_one({'_id': ObjectId(id)}, {'$set': {'hashedPassword': data['newHash']}})
             conn.commit()
 
@@ -558,13 +558,13 @@ def resetPassword(id):
             # Update the hash with new hash and remove the pin used to prevent re-reset
             if data["userType"] == "user":
                 # updatePassword = db.users.update_one({'_id': ObjectId(id)}, {'$set': {'hashedPassword': str(hash), 'pin':''}})
-                cur.execute('UPDATE users set hashedpassword = %s, pin = %s WHERE id = %s', (str(hash), '' ,id,))
+                cur.execute('UPDATE users set hashedPassword = %s, pin = %s WHERE id = %s', (str(hash), '' ,id,))
             if data["userType"] == "producer":
                 # updatePassword = db.producers.update_one({'_id': ObjectId(id)}, {'$set': {'hashedPassword': str(hash), 'pin':''}})
-                cur.execute('UPDATE producers set hashedpassword = %s, pin = %s WHERE id = %s', (str(hash), '' ,id,))
+                cur.execute('UPDATE producers set hashedPassword = %s, pin = %s WHERE id = %s', (str(hash), '' ,id,))
             if data["userType"] == "venue":
                 # updatePassword = db.venues.update_one({'_id': ObjectId(id)}, {'$set': {'hashedPassword': str(hash), 'pin':''}})
-                cur.execute('UPDATE venues set hashedpassword = %s, pin = %s WHERE id = %s', (str(hash), '' ,id,))
+                cur.execute('UPDATE venues set hashedPassword = %s, pin = %s WHERE id = %s', (str(hash), '' ,id,))
             conn.commit()
 
             # send email containing the password
