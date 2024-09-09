@@ -1661,7 +1661,7 @@
                                             <p class="text-start mb-1"> Bottle Listing ID (Search by Name) <span class="text-danger">*</span></p>
                                             <input list="newMenuItemList" v-model="newMenuItemID" class="form-control" id="newMenuItemID" placeholder="Enter a Drink to Add to Menu" @change="updateNewMenuItemTarget">
                                             <datalist id="newMenuItemList">
-                                                <option v-for="listing in allListings" :key="listing._id.$oid" :value="listing._id.$oid">
+                                                <option v-for="listing in allListings" :key="listing.id" :value="listing.id">
                                                     {{ listing.listingName }} (Producer: {{ listing.producerName }})
                                                 </option>
                                             </datalist>

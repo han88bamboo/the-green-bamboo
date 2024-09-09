@@ -1369,7 +1369,7 @@ export default {
         // ------------------- User Profile -------------------
         // get user from user ID
         getUser(id) {
-            return this.users.find(user => user._id.$oid === id);
+            return this.users.find(user => user.id === id);
         },
         // get display user details
         getDrinkCount() {
@@ -1449,7 +1449,7 @@ export default {
             }
         },
         getListingFromID(listingID) {
-            return this.listings.find(listing => listing._id.$oid === listingID);
+            return this.listings.find(listing => listing.id === listingID);
         },
 
         // return oid from name of drink listing
@@ -1461,7 +1461,7 @@ export default {
         searchResult() {
             this.drinkSearchResults = this.listings
                 .filter(listing => listing.listingName.toLowerCase().includes(this.drinkSearch.toLowerCase()))
-                .filter(listing => !this.checkBookmarkStatus(listing._id.$oid))
+                .filter(listing => !this.checkBookmarkStatus(listing.id))
                 .map(listing => listing.listingName);
         },
         // bookmark item through search
@@ -1648,7 +1648,7 @@ export default {
         // get listing name from listing ID
         getListingName(listingID) {
             if (this.listings) {
-                return this.listings.find(listing => listing._id.$oid === listingID.$oid).listingName;
+                return this.listings.find(listing => listing.id === listingID.$oid).listingName;
             }
         },
         // get user's favourite listings
@@ -1663,7 +1663,7 @@ export default {
                 .map(review => review.reviewTarget['$oid'])
 
             this.favouriteListings = this.listings
-                .filter(listing => favouriteListingIds.includes(listing._id.$oid))
+                .filter(listing => favouriteListingIds.includes(listing.id))
                 .sort((a, b) => {
                     // Get the indices of the IDs in favouriteIdList
                     const indexA = favouriteListingIds.indexOf(a._id.$oid);
@@ -1704,14 +1704,14 @@ export default {
                     ))
                 )
                 .map(item => {
-                    item = this.listings.find(listing => listing._id.$oid === item.listingID.$oid);
+                    item = this.listings.find(listing => listing.id === item.listingID.$oid);
                     return item;
                 })
                 .slice(0, 5);
 
         }, 
         getListingPhoto(listingID) {
-            const listing = this.listings.find(listing => listing._id.$oid === listingID.$oid);
+            const listing = this.listings.find(listing => listing.id === listingID.$oid);
             return listing.photo;
         },
         getTagName(tag) {
@@ -1931,14 +1931,14 @@ export default {
                 if(this.chooseMod=='remove'){
                     submitURL = 'http://127.0.0.1:5000/editProfile/removeModType'
                     submitData={
-                        userID: this.displayUser._id.$oid,
+                        userID: this.displayUser.id,
                         removeModType: this.selectedRemoveType.drinkType,
                     }
                 }
                 if(this.chooseMod=='add'){
                     submitURL = 'http://127.0.0.1:5000/editProfile/updateModType'
                     submitData = {
-                        userID: this.displayUser._id.$oid,
+                        userID: this.displayUser.id,
                         newModType: this.selectedPromotedType.drinkType,
                     }
                 }
@@ -2039,7 +2039,7 @@ export default {
         async confirmUpdatePassword(){
             let oldHash = this.hashPassword(this.user.username, this.oldPassword)
             let newHash = this.hashPassword(this.user.username, this.newPassword)
-            let submitURL = 'http://127.0.0.1:5000/authcheck/editPassword/' + this.user._id.$oid 
+            let submitURL = 'http://127.0.0.1:5000/authcheck/editPassword/' + this.user.id 
             let submitData = {
                 oldHash: oldHash.toString(),
                 newHash: newHash.toString(),
@@ -2070,7 +2070,7 @@ export default {
                 setTimeout(() => {
                     this.isButtonDisabled = false;
                 }, 60000);
-            let submitURL = 'http://127.0.0.1:5000/authcheck/sendResetPin/' + this.user._id.$oid
+            let submitURL = 'http://127.0.0.1:5000/authcheck/sendResetPin/' + this.user.id
             let submitData = {
                 userType: "user",
             }
@@ -2097,7 +2097,7 @@ export default {
 
         async verifyOTP(){
             // call api to verify the pin
-            let submitURL = "http://127.0.0.1:5000/authcheck/verifyPin/" + this.user._id.$oid
+            let submitURL = "http://127.0.0.1:5000/authcheck/verifyPin/" + this.user.id
             let submitData ={
                 userType:"user",
                 pin:this.resetPin
@@ -2125,7 +2125,7 @@ export default {
 
         async resetPassword(){
             this.resettingPassword=true
-            let submitURL = "http://127.0.0.1:5000/authcheck/resetPassword/" + this.user._id.$oid
+            let submitURL = "http://127.0.0.1:5000/authcheck/resetPassword/" + this.user.id
             let submitData = {
                 userType:"user",
                 pin:this.resetPin
@@ -2153,7 +2153,7 @@ export default {
 
         // get all listings reviewed by the user
         getAllListingsReviewed() {
-            this.allListingsReviewedByUser = this.recentReviews.map(review => this.listings.find(listing => listing._id.$oid === review.reviewTarget.$oid));
+            this.allListingsReviewedByUser = this.recentReviews.map(review => this.listings.find(listing => listing.id === review.reviewTarget.$oid));
         },
 
         // get all drinkType and typeCategory reviewed by the user

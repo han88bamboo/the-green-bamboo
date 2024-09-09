@@ -289,7 +289,7 @@
                                 return user["_id"]["$oid"] == this.accID;
                             }).modType;
                         }
-                        this.user = this.users.find(user => user._id.$oid == this.accID)
+                        this.user = this.users.find(user => user.id == this.accID)
                         if (this.user) {
                             // check if user is an admin
                             if (this.user.isAdmin) {

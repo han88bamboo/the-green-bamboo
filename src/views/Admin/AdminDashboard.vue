@@ -151,7 +151,7 @@
                                             <p class='text-start mt-2 mb-2 fw-bold'>Choose family tag to add under:</p>
                                             <input list="flavourTags" v-model="tagParent" class="form-control" id="tagParent" placeholder="Enter family tag to add to" v-on:change="updateTagParent">
                                             <datalist id="flavourTags">
-                                                <option v-for="tag in flavourTags" :key="tag._id.$oid" :value="tag.familyTag">
+                                                <option v-for="tag in flavourTags" :key="tag.id" :value="tag.familyTag">
                                                     {{tag.familyTag}}
                                                 </option>
                                             </datalist>
@@ -464,7 +464,7 @@
                                             <p class="text-start mb-1"> Choose user to promote to a moderator: <span class="text-danger">*</span></p>
                                             <input list="users" v-model="promotedUser" class="form-control" id="promotedUser" placeholder="Enter username" v-on:change="updateUsername">
                                             <datalist id="users">
-                                                <option v-for="user in users" :key="user._id.$oid" :value="user.username">
+                                                <option v-for="user in users" :key="user.id" :value="user.username">
                                                     {{user.username}}
                                                 </option>
                                             </datalist>
@@ -477,7 +477,7 @@
                                             </div>
                                             <input list="addableDrinkType" v-model="promotedType" class="form-control" id="promotedType" placeholder="Enter drink type" v-on:change="updateDrinkType">
                                             <datalist id="addableDrinkType">
-                                                <option v-for="drinkType in addableDrinkType" :key="drinkType._id.$oid" :value="drinkType.drinkType">
+                                                <option v-for="drinkType in addableDrinkType" :key="drinkType.id" :value="drinkType.drinkType">
                                                     {{drinkType.drinkType}}
                                                 </option>
                                             </datalist>
@@ -536,7 +536,7 @@
                                             <p class="text-start mb-1"> Choose user to remove as moderator: <span class="text-danger">*</span></p>
                                             <input list="moderators" v-model="removeMod" class="form-control" id="removeMod" placeholder="Enter username" v-on:change="updateModUsername">
                                             <datalist id="moderators">
-                                                <option v-for="user in moderators" :key="user._id.$oid" :value="user.username">
+                                                <option v-for="user in moderators" :key="user.id" :value="user.username">
                                                     {{user.username}}
                                                 </option>
                                             </datalist>
@@ -549,7 +549,7 @@
                                             </div>
                                             <input list="removableDrinkType" v-model="removedType" class="form-control" id="removedType" placeholder="Enter drink type" v-on:change="updateRemovedDrinkType">
                                             <datalist id="removableDrinkType">
-                                                <option v-for="drinkType in removableDrinkType" :key="drinkType._id.$oid" :value="drinkType.drinkType">
+                                                <option v-for="drinkType in removableDrinkType" :key="drinkType.id" :value="drinkType.drinkType">
                                                     {{drinkType.drinkType}}
                                                 </option>
                                             </datalist>
@@ -1104,7 +1104,7 @@
                         for (let i = 0; i < this.producers.length; i++) {
                             if (!this.producers[i].producerName) {
                                 console.log("no name");
-                                console.log(this.producers[i]._id.$oid);
+                                console.log(this.producers[i].id);
                             }
                         }
                     } 
@@ -1156,7 +1156,7 @@
                         this.subTags = response.data
                         this.flavourTags.forEach(flavourTag => {
                             // Filter subtags belonging to the current flavor tag
-                            const subTagsForFlavourTag = this.subTags.filter(subTag => subTag.familyTagId.$oid === flavourTag._id.$oid);
+                            const subTagsForFlavourTag = this.subTags.filter(subTag => subTag.familyTagId.$oid === flavourTag.id);
                             // Extract required information from subtags
                             const subTagsInfo = subTagsForFlavourTag.map(subTag=> ({
                                 id: subTag._id,
@@ -1340,7 +1340,7 @@
                     if(responseCode==200){
                         this.successDeleteObservation=true; // Display success message
                         this.deletingObservation=false; // Hide submission in progress message
-                        let observationToRemove = this.observationTags.findIndex(obj => obj._id.$oid === this.observationToDelete.tagId.$oid);
+                        let observationToRemove = this.observationTags.findIndex(obj => obj.id === this.observationToDelete.tagId.$oid);
                         if (observationToRemove !== -1) {
                             this.observationTags.splice(observationToRemove, 1);
                         }
@@ -1364,7 +1364,7 @@
                     return this.users.find(user => user["_id"]["$oid"] == userID["$oid"]);
                 }, 
                 async reviewModRequest(request, action) {
-                    const requestID = request._id.$oid;
+                    const requestID = request.id;
                     // update users db
                     if (action == "approve") {
                         const userID = request.userID.$oid;
@@ -1401,7 +1401,7 @@
                     }
                     
                     // update frontend
-                    const index = this.modRequests.findIndex(request => request._id.$oid == requestID);
+                    const index = this.modRequests.findIndex(request => request.id == requestID);
                     this.modRequests[index].reviewStatus = false;
                     this.pendingModRequests = this.modRequests.filter(request => request.reviewStatus);
 
@@ -1409,10 +1409,10 @@
                 checkBusinessExist(businessLink) {
                     if (businessLink) {
                         const businessID = businessLink.split("/").pop()
-                        if (this.producers.find(producer => producer._id.$oid == businessID)) {
+                        if (this.producers.find(producer => producer.id == businessID)) {
                             return true;
                         }
-                        if (this.venues.find(venue => venue._id.$oid == businessID)) {
+                        if (this.venues.find(venue => venue.id == businessID)) {
                             return true;
                         }
                     }
@@ -1433,7 +1433,7 @@
                 },
 
                 async reviewAccountRequest(request, action) {
-                    const requestID = request._id.$oid;
+                    const requestID = request.id;
                     if (action == "approve") {
                         this.businessType = request.businessType;
 
@@ -1487,7 +1487,7 @@
                             }
 
                             // token
-                            const link = await this.generateToken(businessID, request._id.$oid);
+                            const link = await this.generateToken(businessID, request.id);
                             this.emailLink(request, link);
 
                         } 
@@ -1499,12 +1499,12 @@
                             this.venueAddress = request.country;
                             this.venueType = 'Bar';
                             this.businessClaimStatus = "false";
-                            this.requestId = request._id.$oid;
+                            this.requestId = request.id;
                             const createSuccess = await this.createBusiness();
                             if (!createSuccess) {
                                 return;
                             }
-                            const link = await this.generateToken(createSuccess, request._id.$oid)
+                            const link = await this.generateToken(createSuccess, request.id)
                             this.emailLink(request, link);
                         }
 
@@ -1525,7 +1525,7 @@
                         }
 
                         // update frontend
-                        const index = this.accountRequests.findIndex(request => request._id.$oid == requestID);
+                        const index = this.accountRequests.findIndex(request => request.id == requestID);
                         this.accountRequests[index].isPending = true;
                         this.accountRequests[index].isApproved = true;
 
@@ -1565,7 +1565,7 @@
                         }
 
                         // update frontend
-                        const index = this.accountRequests.findIndex(request => request._id.$oid == requestID);
+                        const index = this.accountRequests.findIndex(request => request.id == requestID);
                         this.accountRequests[index].isPending = false;
                         this.accountRequests[index].isApproved = false;
 
@@ -1579,11 +1579,11 @@
 
                     else if (action == "resend") {
                         try {
-                            const requestId = request._id.$oid;
+                            const requestId = request.id;
                             console.log(requestId);
                             const response = await this.$axios.get(`http://127.0.0.1:5000/getData/get${request.businessType.charAt(0).toUpperCase()}${request.businessType.slice(1)}ByRequestId/${requestId}`);
                             console.log(response);
-                            const businessId = response.data._id.$oid;
+                            const businessId = response.data.id;
                             console.log(businessId);
                             const link = await this.generateToken(businessId, requestId)
                             console.log(link);
@@ -1859,7 +1859,7 @@
                     try {
                         await this.$axios.post('http://127.0.0.1:5000/editProfile/updateModType', 
                             {
-                                userID: this.selectedPromotedUser._id.$oid,
+                                userID: this.selectedPromotedUser.id,
                                 newModType: this.selectedPromotedType.drinkType,
                             }, {
                             headers: {
@@ -1883,7 +1883,7 @@
                     try {
                         await this.$axios.post('http://127.0.0.1:5000/editProfile/removeModType', 
                             {
-                                userID: this.selectedRemoveMod._id.$oid,
+                                userID: this.selectedRemoveMod.id,
                                 removeModType: this.selectedRemoveType.drinkType,
                             }, {
                             headers: {
@@ -2012,7 +2012,7 @@
                     else if(this.addFlavour == 'sub'){
                         submitURL = 'http://127.0.0.1:5000/adminFunctions/createSubTag'
                         submitData = {
-                            familyTagId: this.chosenTagParent._id.$oid,
+                            familyTagId: this.chosenTagParent.id,
                             subTag: this.newSub
                         }
                     }
@@ -2051,7 +2051,7 @@
                         }
                         if(this.addFlavour=='sub'){
                             let parentTagIndex = this.editedFlavourTags.findIndex(flavourTag=>{
-                                return flavourTag._id.$oid == this.chosenTagParent._id.$oid
+                                return flavourTag.id == this.chosenTagParent.id
                             })
                             if (parentTagIndex !== -1) {
                                 // Update the editedFlavourTags array
@@ -2163,7 +2163,7 @@
                             if(this.editedFlavourTags[i].familyTag!= this.flavourTags[i].familyTag || this.editedFlavourTags[i].hexcode!= this.flavourTags[i].hexcode){
                                 submitData.push(
                                     {
-                                        _id: this.editedFlavourTags[i]._id.$oid,
+                                        _id: this.editedFlavourTags[i].id,
                                         familyTag: this.editedFlavourTags[i].familyTag,
                                         hexcode: this.editedFlavourTags[i].hexcode,
                                     }
@@ -2266,10 +2266,10 @@
                         }
                         if(this.deleteFlavour == 'family'){
                             this.editedFlavourTags = this.editedFlavourTags.filter(flavourTag=>{
-                                return flavourTag._id.$oid != this.familyTagToDelete._id
+                                return flavourTag.id != this.familyTagToDelete._id
                             })
                             this.flavourTags = this.flavourTags.filter(flavourTag=>{
-                                return flavourTag._id.$oid != this.familyTagToDelete._id
+                                return flavourTag.id != this.familyTagToDelete._id
                             })
                         }
                     }else{

@@ -493,7 +493,7 @@
                     <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0">
                         <h3> Most Reviewed Drinks </h3>
                         <div class="text-start pb-2" v-for="listing in listingsMostReviewed" v-bind:key="listing._id">
-                            <router-link :to="{ path: '/listing/view/' + listing._id.$oid }" class="reverse-clickable-text">
+                            <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
                                 <div class="d-flex align-items-center">
                                     <!-- <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;"> -->
                                     <img :src="(listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;">
@@ -510,7 +510,7 @@
                     <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0">
                         <h3> Best Rated Drinks </h3>
                         <div class="text-start pb-2" v-for="listing in listingsBestRated" v-bind:key="listing._id">
-                            <router-link :to="{ path: '/listing/view/' + listing._id.$oid }" class="reverse-clickable-text">
+                            <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
                                 <div class="d-flex align-items-center">
                                     <!-- <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;"> -->
                                     <img :src="(listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;">
@@ -651,7 +651,7 @@
                             <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0">
                         
                         <div class="text-start pb-2" v-for="listing in listingsMostReviewed" v-bind:key="listing._id">
-                            <router-link :to="{ path: '/listing/view/' + listing._id.$oid }" class="reverse-clickable-text">
+                            <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
                                 <div class="d-flex align-items-center">
                                     <!-- <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;"> -->
                                     <img :src="(listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;">
@@ -669,7 +669,7 @@
                             <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0">
                         
                         <div class="text-start pb-2" v-for="listing in listingsBestRated" v-bind:key="listing._id">
-                            <router-link :to="{ path: '/listing/view/' + listing._id.$oid }" class="reverse-clickable-text">
+                            <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
                                 <div class="d-flex align-items-center">
                                     <!-- <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;"> -->
                                     <img :src="(listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;">

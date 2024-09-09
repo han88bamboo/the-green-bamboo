@@ -683,12 +683,12 @@
                                 <div class="row">
                                     <!-- image -->
                                     <div class="col-2 image-container text-center mx-auto">
-                                        <router-link :to="{ path: '/listing/view/' + listing._id.$oid }" class="default-text-no-background">
+                                        <router-link :to="{ path: '/listing/view/' + listing.id }" class="default-text-no-background">
                                             <img :src=" 'data:image/jpeg;base64,' + (listing['photo'] || defaultProfilePhoto)" style="width: 150px; height: 150px;">
                                         </router-link>
                                         <!-- edit listing -->
                                         <button v-if="editingCatalogue == true" type="button" class="btn tertiary-btn reverse-clickable-text m-1">
-                                            <router-link :to="`/listing/edit/${listing._id.$oid}`" class="reverse-clickable-text">
+                                            <router-link :to="`/listing/edit/${listing.id}`" class="reverse-clickable-text">
                                                 Edit Listing
                                             </router-link>
                                         </button>
@@ -707,7 +707,7 @@
                                             <div class="col-7">
                                                 <div class="row pt-2">
                                                     <h4 class="default-text"> 
-                                                        <router-link :to="{ path: '/listing/view/' + listing._id.$oid }" class="default-text-no-background">
+                                                        <router-link :to="{ path: '/listing/view/' + listing.id }" class="default-text-no-background">
                                                             <u> <b> {{ listing["listingName"] }}  </b> </u>
                                                         </router-link>
                                                     </h4> 
@@ -725,7 +725,7 @@
                                             <!-- bookmark button -->
                                             <div class="col-1 text-end">
                                                 <!-- bookmark icon -->
-                                                <svg v-if="checkBookmarkStatus(listing._id.$oid) && user" xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-bookmark-fill" viewBox="0 0 16 16"
+                                                <svg v-if="checkBookmarkStatus(listing.id) && user" xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-bookmark-fill" viewBox="0 0 16 16"
                                                     data-bs-toggle="modal" data-bs-target="#bookmarkModal" @click="populateBookmarkModal(listing._id)">
                                                     <path d="M2 2v13.5a.5.5 0 0 0 .74.439L8 13.069l5.26 2.87A.5.5 0 0 0 14 15.5V2a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2"/>
                                                 </svg>
@@ -739,7 +739,7 @@
                                             <!-- official description -->
                                             <div class="col-10">
                                                 <div class="row pt-2 pb-5">
-                                                    <router-link :to="{ path: '/listing/view/' + listing._id.$oid }" class="default-clickable-text">
+                                                    <router-link :to="{ path: '/listing/view/' + listing.id }" class="default-clickable-text">
                                                         <h5 class="fst-italic scrollable-long default-clickable-text"> {{ listing["officialDesc"] }} </h5>
                                                     </router-link>
                                                 </div>
@@ -1810,7 +1810,7 @@
             async deleteListings(listing) {
 
                 try {
-                    await this.$axios.delete(`http://127.0.0.1:5002/deleteListing/${listing._id.$oid}`);
+                    await this.$axios.delete(`http://127.0.0.1:5002/deleteListing/${listing.id}`);
                 } 
                 catch (error) {
                     console.error(error);
@@ -2216,7 +2216,7 @@
             },
             getListingName(listingID) {
                 if (this.listings) {
-                    return this.listings.find(listing => listing._id.$oid === listingID.$oid).listingName;
+                    return this.listings.find(listing => listing.id === listingID.$oid).listingName;
                 }
             },
             getListingID(listingName) {

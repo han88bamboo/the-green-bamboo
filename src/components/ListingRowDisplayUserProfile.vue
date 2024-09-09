@@ -9,7 +9,7 @@
         <div v-for="(listing, index) in listingArr" :key="index"  class="row mb-3" :style="{ display: 'flex' }" > <!--    , flexDirection: 'column' , width: columnWidth -->
             <div class="col-3 mobile-col-3 mobile-pe-0" > <!-- col-12 col-sm-6 col-md-6 col-lg-3 col-xl-2 align-items-center p-lg-0 me-4    -->
                 <div class="Xdrink-photo-container-row Ximage-container-150">
-                    <router-link :to="{ path: '/listing/view/' + listing._id.$oid }" class="default-text-no-background">
+                    <router-link :to="{ path: '/listing/view/' + listing.id }" class="default-text-no-background">
                         <img v-if="listing.photo !== '' && listing.photo !== null" :src="listing.photo" class="add-drink-photo-background-user-profile centered rounded"> 
                         <img v-else src="https://drinkximages.s3.us-east-1.amazonaws.com/images/2d4d94bc-313e-4621-9a15-4bfbf77958de.jpg" class="add-drink-photo-background-user-profile centered rounded">
                     </router-link>
@@ -26,7 +26,7 @@
 
             </div>
             <div class="col-9 mobile-col-9 mobile-ps-2" >
-                <router-link :to="{ path: '/listing/view/' +listing._id.$oid }" class="default-clickable-text scrollable mt-2 " style="text-decoration: none; color: rgb(34, 57, 87);">
+                <router-link :to="{ path: '/listing/view/' +listing.id }" class="default-clickable-text scrollable mt-2 " style="text-decoration: none; color: rgb(34, 57, 87);">
                     <p v-if="listing.listingName.length > 63" class="fs-5 mobile-fs-6 mb-1" > 
                         <b>{{ listing.listingName.slice(0,63) + (listing.listingName.length > 63 ? '...' : '') }}</b>
                     </p>

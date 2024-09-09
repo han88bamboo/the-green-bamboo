@@ -102,15 +102,15 @@
                                         <div v-if="drinkShelf.length != 0" class="overflow-auto" style="max-height: 100%;">
                                             <div class="text-start mb-2" v-for="listing in drinkShelf" v-bind:key="listing._id">
                                                 <div class="d-flex align-items-start">
-                                                    <router-link :to="{ path: '/listing/view/' +listing._id.$oid}" class="reverse-clickable-text">
+                                                    <router-link :to="{ path: '/listing/view/' +listing.id}" class="reverse-clickable-text">
                                                         <img :src="(listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;">
                                                     </router-link>
                                                     <span class="ms-3 reverse-clickable-text"> 
-                                                        <router-link :to="{ path: '/listing/view/' +listing._id.$oid}" class="reverse-clickable-text">
+                                                        <router-link :to="{ path: '/listing/view/' +listing.id}" class="reverse-clickable-text">
                                                             <b> {{ listing.listingName }} </b> 
                                                         </router-link>
                                                         <br>
-                                                        <router-link :to="{ path: '/profile/producer/' +listing.producerID.$oid}" class="reverse-clickable-text">
+                                                        <router-link :to="{ path: '/profile/producer/' +listing.producerID}" class="reverse-clickable-text">
                                                         {{ getProducerName(listing) }}
                                                         </router-link>
                                                     </span>
@@ -435,7 +435,7 @@
                                             <div class="col-xl-7 col-12  ps-lg-0">
                                                 <!-- expression name -->
                                                 <div class="row pt-1">
-                                                    <router-link :to="{ path: '/listing/view/' +listing._id.$oid }" class="primary-clickable-text mobile-col-10"> 
+                                                    <router-link :to="{ path: '/listing/view/' +listing.id }" class="primary-clickable-text mobile-col-10"> 
                                                         <h4> <b> {{ listing["listingName"] }} </b> </h4>
                                                     </router-link>
                                                     <div class="mobile-col-2 mobile-view-show"> 
@@ -450,14 +450,14 @@
                                                 </div>
                                                 <!-- producer -->
                                                 <div class="row">
-                                                    <router-link :to="{ path: '/profile/producer/' + listing.producerID.$oid }" class="primary-clickable-text">
+                                                    <router-link :to="{ path: '/profile/producer/' + listing.producerID }" class="primary-clickable-text">
                                                         <h5 class="mobile-rating-smaller-text"> <b> {{ getProducerName(listing) }} </b> </h5>
                                                     </router-link>
                                                 </div>
                                                 <!-- review tzh shortened description if above 270 characters  -->
                                                 <div class="row pt-3 mobile-pt-0">
                                                     <div class="mobile-col-9 mobile-pe-0">
-                                                    <router-link :to="{ path: '/listing/view/' +listing._id.$oid }" class="default-clickable-text fst-italic scrollable-user-bottle-listings-description-box">
+                                                    <router-link :to="{ path: '/listing/view/' +listing.id }" class="default-clickable-text fst-italic scrollable-user-bottle-listings-description-box">
                                                         <div v-if="listing.officialDesc.length > 300">  
                                                             <p class="homepage-bottle-listing-description"> {{ listing["officialDesc"].slice(0, 300) + (listing["officialDesc"].length > 300 ? '...' : '') }} </p>
                                                         </div>
@@ -487,7 +487,7 @@
                                                     </div>
                                                     <div class="col-6">
                                                         <div class="d-grid gap-5">
-                                                            <router-link :to="{ path: '/listing/view/' +listing._id.$oid }" class="primary-clickable-text">
+                                                            <router-link :to="{ path: '/listing/view/' +listing.id }" class="primary-clickable-text">
                                                                 <a class="btn secondary-btn btn-md" style="font-weight: bold;"> Read what the crowd thinks </a>
                                                             </router-link>
                                                         </div>
@@ -530,7 +530,7 @@
                                             <div class="col-xl-7 col-12">
                                                 <!- expression name ->
                                                 <div class="row pt-1">
-                                                    <router-link :to="{ path: '/listing/view/' +listing._id.$oid }" class="primary-clickable-text mobile-col-10">
+                                                    <router-link :to="{ path: '/listing/view/' +listing.id }" class="primary-clickable-text mobile-col-10">
                                                         <h4> <b> {{ listing["listingName"] }} </b> </h4>
                                                     </router-link>
                                                     <div class="mobile-col-2 mobile-view-show">
@@ -545,13 +545,13 @@
                                                 </div>
                                                 <!- producer ->
                                                 <div class="row">
-                                                    <router-link :to="{ path: '/profile/producer/' + listing.producerID.$oid }" class="primary-clickable-text">
+                                                    <router-link :to="{ path: '/profile/producer/' + listing.producerID }" class="primary-clickable-text">
                                                         <h5 class="mobile-rating-smaller-text"> <b> {{ getProducerName(listing) }} </b> </h5>
                                                     </router-link>
                                                 </div>
                                                 <!- review ->
                                                 <div class="row pt-3">
-                                                    <router-link :to="{ path: '/listing/view/' +listing._id.$oid }" class="default-clickable-text fst-italic scrollable">
+                                                    <router-link :to="{ path: '/listing/view/' +listing.id }" class="default-clickable-text fst-italic scrollable">
                                                         <h5> {{ listing["officialDesc"] }}. </h5>
                                                     </router-link>
                                                 </div>
@@ -567,7 +567,7 @@
                                                     </div>
                                                     <div class="col-6">
                                                         <div class="d-grid gap-5">
-                                                            <router-link :to="{ path: '/listing/view/' +listing._id.$oid }" class="primary-clickable-text">
+                                                            <router-link :to="{ path: '/listing/view/' +listing.id }" class="primary-clickable-text">
                                                                 <a class="btn secondary-btn btn-md"> Read what the crowd thinks </a>
                                                             </router-link>
                                                         </div>
@@ -611,7 +611,7 @@
                                             <div class="col-xl-7 col-12">
                                                 <!-- expression name -->
                                                 <div class="row pt-1">
-                                                    <router-link :to="{ path: '/listing/view/' +listing._id.$oid }" class="primary-clickable-text mobile-col-10">
+                                                    <router-link :to="{ path: '/listing/view/' +listing.id }" class="primary-clickable-text mobile-col-10">
                                                         <h4> <b> {{ listing["listingName"] }} </b> </h4>
                                                     </router-link>
                                                     <div class="mobile-col-2 mobile-view-show">
@@ -626,13 +626,13 @@
                                                 </div>
                                                 <!-- producer -->
                                                 <div class="row">
-                                                    <router-link :to="{ path: '/profile/producer/' + listing.producerID.$oid }" class="primary-clickable-text">
+                                                    <router-link :to="{ path: '/profile/producer/' + listing.producerID }" class="primary-clickable-text">
                                                         <h5 class="mobile-rating-smaller-text"> <b> {{ getProducerName(listing) }} </b> </h5>
                                                     </router-link>
                                                 </div>
                                                 <!-- review -->
                                                 <div class="row pt-3">
-                                                    <router-link :to="{ path: '/listing/view/' +listing._id.$oid }" class="default-clickable-text fst-italic scrollable">
+                                                    <router-link :to="{ path: '/listing/view/' +listing.id }" class="default-clickable-text fst-italic scrollable">
                                                         <h5> {{ listing["officialDesc"] }}. </h5>
                                                     </router-link>
                                                 </div>
@@ -648,7 +648,7 @@
                                                     </div>
                                                     <div class="col-6">
                                                         <div class="d-grid gap-5">
-                                                            <router-link :to="{ path: '/listing/view/' +listing._id.$oid }" class="primary-clickable-text">
+                                                            <router-link :to="{ path: '/listing/view/' +listing.id }" class="primary-clickable-text">
                                                                 <a class="btn secondary-btn btn-md"> Read what the crowd thinks </a>
                                                             </router-link>
                                                         </div>
@@ -743,7 +743,7 @@
                         <div class="row">
                             <!-- image -->
                             <div class="col-3 image-container homepage">
-                                <router-link :to="{ path: '/listing/view/' +listing._id.$oid }">
+                                <router-link :to="{ path: '/listing/view/' +listing.id }">
                                     <img v-if="listing['photo']" :src="listing['photo']"  class="img-border homepage">
                                     <img v-else src="../../../Images/Drinks/Placeholder.png"  class="img-border homepage"> 
                                 </router-link>
@@ -1002,10 +1002,10 @@
                         this.users = response.data;
                         if (this.userType == 'user') {
                             this.types = this.users.find((user) => {
-                                return user["_id"]["$oid"] == this.userID;
+                                return user["id"] == this.userID;
                             }).modType;
                         }
-                        this.user = this.users.find(user => user._id.$oid == this.userID)
+                        this.user = this.users.find(user => user.id == this.userID)
                         if (this.user) {
                             this.userBookmarks = this.user.drinkLists;
                             this.getFollowedProducers()
@@ -1058,7 +1058,7 @@
                             // Filter requests based on user role
                             if (this.userType == 'producer') {
                                 this.requestListings = response.data.filter((request) => {
-                                    return request["reviewStatus"] == false && request["producerID"]["$oid"] == this.userID;
+                                    return request["reviewStatus"] == false && request["producerID"] == this.userID;
                                 })
                             }
                             else if (this.userType == 'user') {
@@ -1068,7 +1068,7 @@
                                     })
                                 } else {
                                     this.requestListings = response.data.filter((request) => {
-                                        return request["reviewStatus"] == false && (request["userID"]["$oid"] == this.userID || this.types.includes(request["drinkType"]));
+                                        return request["reviewStatus"] == false && (request["userID"] == this.userID || this.types.includes(request["drinkType"]));
                                     })
                                 }
                             }
@@ -1088,7 +1088,7 @@
                         // Obtain listing data for each request
                         for (let request of unreviewedRequests) {
                             let targetListing = this.listings.find((listing) => {
-                                return listing["_id"]["$oid"] == request["listingID"]["$oid"];
+                                return listing["id"] == request["listingID"];
                             });
                             if (targetListing == undefined) {
                                 continue;
@@ -1108,18 +1108,18 @@
                         // Filter requests based on user role
                         if (this.userType == 'producer') {
                             this.requestEdits = this.requestEdits.filter((request) => {
-                                return request["producerID"]["$oid"] == this.userID;
+                                return request["producerID"] == this.userID;
                             })
                             this.requestDupes = this.requestDupes.filter((request) => {
-                                return request["producerID"]["$oid"] == this.userID;
+                                return request["producerID"] == this.userID;
                             })
                         }
                         else if (this.userType == 'user' && !this.isAdmin) {
                             this.requestEdits = this.requestEdits.filter((request) => {
-                                return request["userID"]["$oid"] == this.userID || this.types.includes(request["drinkType"]);
+                                return request["userID"] == this.userID || this.types.includes(request["drinkType"]);
                             })
                             this.requestDupes = this.requestDupes.filter((request) => {
-                                return request["userID"]["$oid"] == this.userID || this.types.includes(request["drinkType"]);
+                                return request["userID"] == this.userID || this.types.includes(request["drinkType"]);
                             })
                         }
                     } 
@@ -1149,9 +1149,9 @@
 
             // get username of user accessing page
             getUsername() {
-                let user = this.users.find(user => user._id.$oid == this.userID)
-                let producer = this.producers.find(producer => producer._id.$oid == this.userID)
-                let venue = this.venues.find(venue => venue._id.$oid == this.userID)
+                let user = this.users.find(user => user.id == this.userID)
+                let producer = this.producers.find(producer => producer.id == this.userID)
+                let venue = this.venues.find(venue => venue.id == this.userID)
                 if (user) {
                     this.username = user.username
                     this.displayName = user.displayName
@@ -1162,7 +1162,7 @@
                     })
                     let allDrinks = []
                     for (const item of allDrinkShelf) {
-                        const listing = this.listings.find(listing => listing._id.$oid === item[1].$oid);
+                        const listing = this.listings.find(listing => listing.id === item[1].id);
                         if (listing) {
                             allDrinks.push(listing);
                         }
@@ -1265,7 +1265,7 @@
             // get producerName for a listing based on listing
             getProducerName(listing) {
                 const producer = this.producers.find((producer) => {
-                    return producer["_id"]["$oid"] == listing["producerID"]["$oid"];
+                    return producer["id"] == listing["producerID"];
                 });
                 // ensures that producer is found before accessing "producerName"
                 if (producer) {
@@ -1293,7 +1293,7 @@
             // get ratings for a listing
             getRatings(listing) {
                 const ratings = this.reviews.filter((rating) => {
-                    return rating["reviewTarget"]["$oid"] == listing["_id"]["$oid"];
+                    return rating["reviewTarget"]["id"] == listing["id"];
                 });
                 // if there are no ratings
                 if (ratings.length == 0) {
@@ -1309,7 +1309,7 @@
             // get ratings for a listing --> return 0 if no ratings
             getAllRatings(listing) {
                 const ratings = this.reviews.filter((rating) => {
-                    return rating["reviewTarget"]["$oid"] == listing["_id"]["$oid"];
+                    return rating["reviewTarget"]["id"] == listing["id"];
                 });
                 // if there are no ratings
                 if (ratings.length == 0) {
@@ -1605,7 +1605,7 @@
 
         // find drink name given reviewTarget
         findDrinkNameForReview(reviewTarget) {
-                let drink = this.listings.find(listing => listing._id["$oid"] == reviewTarget["$oid"]);
+                let drink = this.listings.find(listing => listing.id == reviewTarget["id"]);
                 if (drink) {
                     let drink_name = drink.listingName; 
                     return drink_name;
@@ -1663,7 +1663,7 @@
         // get producers that user follows
         getFollowedProducers() {
             const user = this.users.find(user => {
-                return user["_id"]["$oid"] == this.userID;
+                return user["id"] == this.userID;
             });
             this.followedProducers = user.followLists.producers;
         },
@@ -1671,7 +1671,7 @@
         // get listings by producer
         getListingsByProducer() {
             this.followedProducers.forEach(producer => {
-                const producerListings = this.listings.filter(listing => listing.producerID.$oid == producer.$oid);
+                const producerListings = this.listings.filter(listing => listing.producerID == producer.id);
                 this.allProducerDrinks  = producerListings;
             });
         },
@@ -1679,7 +1679,7 @@
         // get venues that user follows
         getFollowedVenues() {
             const user = this.users.find(user => {
-                return user["_id"]["$oid"] == this.userID;
+                return user["id"] == this.userID;
             });
             if (user) {
                 this.followedVenues = user.followLists.venues;
@@ -1689,8 +1689,8 @@
         // get listings by venue
         getListingsByVenue() {
             this.followedVenues.forEach(venue => {
-                const venueID = venue.followerID.$oid;
-                const venueObject = this.venues.find(v => v._id.$oid === venueID);
+                const venueID = venue.followerID.id;
+                const venueObject = this.venues.find(v => v.id === venueID);
                 let allMenuItems = venueObject["menu"]
                 let allSectionMenus = allMenuItems.reduce((acc, menuItem) => {
                     return acc.concat(menuItem.sectionMenu);
@@ -1700,10 +1700,10 @@
                     return acc.concat(menuItem.itemID); 
                 }, []);
 
-                let uniqueListingsIDs = [...new Set(allListingsIDs.map(item => item["$oid"]))];
+                let uniqueListingsIDs = [...new Set(allListingsIDs.map(item => item["id"]))];
                 console.log(uniqueListingsIDs)
                 let allVenueDrinks = this.listings.filter(listing => {
-                    let listing_id = listing._id["$oid"];
+                    let listing_id = listing.id;
                     return uniqueListingsIDs.includes(listing_id);
                 }).map(listing => ({ ...listing }));
                 this.allVenueDrinks = allVenueDrinks;
@@ -1712,7 +1712,7 @@
 
         // get recently added
         getRecentlyAdded() {
-            this.recentlyAdded = [...new Map(this.allProducerDrinks.concat(this.allVenueDrinks).map(item => [item._id.$oid, item])).values()];
+            this.recentlyAdded = [...new Map(this.allProducerDrinks.concat(this.allVenueDrinks).map(item => [item.id, item])).values()];
         },
 
         getQuestionsUpdates() {
@@ -1724,7 +1724,7 @@
                         let updatesWithProducerName = producer.updates.map(update => ({
                             ...update,
                             name: producer.producerName, 
-                            id: producer._id.$oid,
+                            id: producer.id,
                             photo: producer.photo,
                             type: 'producerUpdate'
                         }));
@@ -1741,7 +1741,7 @@
                         let updatesWithVenueName = venue.updates.map(update => ({
                             ...update,
                             name: venue.venueName, 
-                            id: venue._id.$oid,
+                            id: venue.id,
                             photo: venue.photo,
                             type: 'venueUpdate'
                         }));

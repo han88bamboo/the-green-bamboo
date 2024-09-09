@@ -76,6 +76,31 @@ def createAccount():
             cursor.execute(insert_query, values)
             user_id = cursor.fetchone()['id']
             db_conn.commit()
+
+        # Insert into 'usersDrinkLists' table
+        with db_conn.cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO "usersDrinkLists" ("userId", "drinksIHaveTried", "drinksIWantToTry")
+                VALUES (%s, %s, %s)
+            """, (
+                user_id,
+                rawAccount['drinkLists']['Drinks I Have Tried']['listItems'],
+                rawAccount['drinkLists']['Drinks I Want To Try']['listItems']
+            ))
+            db_conn.commit()
+
+        # Insert into 'usersFollowLists' table
+        with db_conn.cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO "usersFollowLists" ("userId", "users", "producers", "venues")
+                VALUES (%s, %s, %s, %s)
+            """, (
+                user_id,
+                rawAccount['followLists']['users'],
+                rawAccount['followLists']['producers'],
+                rawAccount['followLists']['venues']
+            ))
+            db_conn.commit()
         
         return jsonify(
             {   

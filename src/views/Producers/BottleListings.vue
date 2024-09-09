@@ -135,7 +135,7 @@
                                     <!-- TODO: check if moderator type is for the listing -->
                                     <div v-if="correctProducer || correctModerator" class="edit-listing-report-duplicate-btn" >
                                         <button type="button" class="btn tertiary-btn reverse-clickable-text m-1">
-                                            <router-link :to="`/listing/edit/${specified_listing._id.$oid}`" class="reverse-clickable-text">
+                                            <router-link :to="`/listing/edit/${specified_listing.id}`" class="reverse-clickable-text">
                                                 Edit Listing
                                             </router-link>
                                         </button>
@@ -666,7 +666,7 @@
                                                 <!-- <input type="text" class="form-control" id="friendTag"> -->
                                                 <input list="followList" v-model="friendTag" class="form-control input-with-icon" id="friendTag" placeholder="Tag friends" v-on:keyup="updateFriendTag">
                                                 <datalist id="followList">
-                                                    <option v-for="user in followList" :key="user._id.$oid" :value="user.username">
+                                                    <option v-for="user in followList" :key="user.id" :value="user.username">
                                                         {{user.username}}
                                                     </option>
                                                 </datalist>  
@@ -1738,10 +1738,10 @@
                                 this.subTags = response.data
                                 this.flavourTags.forEach(flavourTag => {
                                     // Filter subtags belonging to the current flavor tag
-                                    const subTagsForFlavourTag = this.subTags.filter(subTag => subTag.familyTagId.$oid === flavourTag._id.$oid);
+                                    const subTagsForFlavourTag = this.subTags.filter(subTag => subTag.familyTagId === flavourTag.id);
                                     // Extract required information from subtags
                                     const subTagsInfo = subTagsForFlavourTag.map(subTag=> ({
-                                        id: subTag._id,
+                                        id: subTag.id,
                                         subTag: subTag.subTag
                                     }));
                                     // Assign subtag information to flavor tag object
@@ -1812,8 +1812,8 @@
                         const response = await this.$axios.get('http://127.0.0.1:5000/getData/getListings');
                         this.listings = response.data;
                         this.filteredListings = this.listings; // originally, make filtered listings the entire collection of listings
-                        this.specified_listing = this.listings.find(listing => listing._id.$oid == this.listing_id); // find specified listing
-                        this.producer_id = this.specified_listing.producerID.$oid // find specified producer
+                        this.specified_listing = this.listings.find(listing => listing.id == this.listing_id); // find specified listing
+                        this.producer_id = this.specified_listing.producerID // find specified producer
                         this.whereToBuy(); // find where to buy specified listing
                         this.whereToTry(); // find where to try specified listing [RE-ENABLE WHEN VENUES HAVE MENU ATTRIBUTE]
                         this.filteredReviews = this.getReviewsForListing(this.specified_listing);
@@ -1854,17 +1854,17 @@
                     try {
                         const response = await this.$axios.get('http://127.0.0.1:5000/getData/getUsers');
                         this.users = response.data;
-                        this.user = this.users.find(user => user._id.$oid == this.userID)
+                        this.user = this.users.find(user => user.id == this.userID)
                         if (this.user) {
                             this.userBookmarks = this.user.drinkLists
                             let triedDrinks=[]
                             let wantToTryDrinks=[]
                             this.followList = this.users.filter(user => {
-                                return this.user.followLists.users.some(item => item.followerID.$oid === user._id.$oid);
+                                return this.user.followLists.users.some(item => item.followerID.$oid === user.id);
                             });
                             if(this.specificReview.length >0){
                                 this.showFriendTagList = this.friendTagList.map(id => {
-                                    const user = this.users.find(user => user._id.$oid === id);
+                                    const user = this.users.find(user => user.id === id);
                                     return {
                                         username: user.username,
                                         id: id
@@ -1872,12 +1872,12 @@
                                 });
                             }
                             for (let drink of this.user.drinkLists["Drinks I Have Tried"]["listItems"]) {
-                                let triedDrink = this.listings.find(listing => listing._id.$oid === drink[1].$oid).listingName;
+                                let triedDrink = this.listings.find(listing => listing.id === drink[1].id).listingName;
                                 // let triedDrinkName = triedDrink ? triedDrink.listingName : null;
                                 triedDrinks.push(triedDrink)
                             }
                             for (let drink of this.user.drinkLists["Drinks I Want To Try"]["listItems"]) {
-                                let wantDrinkName = this.listings.find(listing => listing._id.$oid === drink[1].$oid).listingName;   
+                                let wantDrinkName = this.listings.find(listing => listing.id === drink[1].id).listingName;   
                                 wantToTryDrinks.push(wantDrinkName)
                             }
                             this.drinkList = {
@@ -1968,7 +1968,7 @@
             // view which producers have specified listing
             whereToBuy() {
                 this.producerListings = this.listings
-                    .filter(listing => listing["_id"]["$oid"] == this.specified_listing["_id"]["$oid"])
+                    .filter(listing => listing["id"] == this.specified_listing["id"])
                     .map(listing => listing["producerID"]);
             },
 
@@ -1990,8 +1990,8 @@
                         return acc.concat(menuItem.itemID); 
                     }, []);
 
-                    let uniqueListingsIDs = [...new Set(allListingsIDs.map(item => item["$oid"]))];
-                    if (uniqueListingsIDs.includes(this.specified_listing["_id"]["$oid"])) {
+                    let uniqueListingsIDs = [...new Set(allListingsIDs.map(item => item["id"]))];
+                    if (uniqueListingsIDs.includes(this.specified_listing["id"])) {
                         this.venueListings.push(venue);
                     }
                 }
@@ -2063,7 +2063,7 @@
             // get producerName for a listing based on producerID
             getProducerName(producerID) {
                 const producer = this.producers.find((producer) => {
-                    return producer["_id"]["$oid"] == producerID["$oid"];
+                    return producer["id"] == producerID;
                 });
                 // ensures that producer is found before accessing "producerName"
                 if (producer) {
@@ -2985,7 +2985,7 @@
 
             // delete bottle listing
             async deleteListings(listing) {
-                let deleteAPI = "http://127.0.0.1:5000/editListing/deleteListing/" + listing._id.$oid
+                let deleteAPI = "http://127.0.0.1:5000/editListing/deleteListing/" + listing.id
                 const response = await this.$axios.delete(deleteAPI)
                 .then((response)=>{
                     this.deleteListingCode = response.data.code

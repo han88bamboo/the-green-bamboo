@@ -563,7 +563,7 @@
                     const submitURL = 'http://127.0.0.1:5000/getData/getUserByUsername/' + this.username
                     const response = await this.$axios.get(submitURL);
                     if(response.data.username== this.username){
-                        localStorage.setItem("88B_accID", response.data['_id']['$oid']);
+                        localStorage.setItem("88B_accID", response.data['id']);
                         localStorage.setItem("88B_accType", "user");
                         this.$router.push({path: '/'});
                     }

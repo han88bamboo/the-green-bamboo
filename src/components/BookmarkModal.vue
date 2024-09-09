@@ -64,7 +64,7 @@
         },
         mounted() {
             if (this.user && Object.keys(this.user).length > 0) {
-                this.userID = this.user._id.$oid;
+                this.userID = this.user.id;
                 this.userBookmarks = this.user.drinkLists;
             }
         },
@@ -76,7 +76,7 @@
             }, 
             user: function() {
                 if (this.user && Object.keys(this.user).length > 0) {
-                    this.userID = this.user._id.$oid;
+                    this.userID = this.user.id;
                     this.userBookmarks = this.user.drinkLists;
                 }
             }
@@ -86,7 +86,7 @@
             checkBookmarkStatus(listingID) {
                 for (const category of Object.values(this.userBookmarks)) {
                     if (category.listItems) {
-                        if (category.listItems.some(item => item[1].$oid === listingID)) {
+                        if (category.listItems.some(item => item[1].id === listingID)) {
                             return true;
                         }
                     }
@@ -97,13 +97,13 @@
                 if (Object.keys(this.listingID).length === 0) {
                     return;
                 }
-                this.bookmarkModalItem = this.listings.find(listing => listing._id.$oid === listingID.$oid).listingName;
+                this.bookmarkModalItem = this.listings.find(listing => listing.id === listingID).listingName;
                 this.selectedBookmarkList = [];
                 for (const listName in this.userBookmarks) {
                     if (Object.hasOwnProperty.call(this.userBookmarks, listName)) {
                         const bookmarkItems = this.userBookmarks[listName].listItems;
                         if (bookmarkItems) {
-                            if (bookmarkItems.some(item => item[1].$oid === listingID.$oid)) {
+                            if (bookmarkItems.some(item => item[1].id === listingID.id)) {
                                 if (!this.selectedBookmarkList.includes(listName)) {
                                     this.selectedBookmarkList.push(listName);
                                 }

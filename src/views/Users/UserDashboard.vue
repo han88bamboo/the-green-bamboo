@@ -360,7 +360,7 @@
                         <!-- col 1: your best rated drinks -->
                         <div id="BestRatedExpressions" class="tab-pane fade show active col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-3 ps-lg-0 pe-lg-0 mobile-mx-0">
                             <div class="text-start pb-2" v-for="listing in bestRatedListings" v-bind:key="listing._id">
-                                <router-link :to="{ path: '/listing/view/' + listing._id.$oid }" class="reverse-clickable-text">
+                                <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
                                     <div class="d-flex align-items-center">
                                         <!-- <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;"> -->
                                         <img :src="(listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;">
@@ -423,7 +423,7 @@
                     <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5  mx-3 ps-lg-0 pe-lg-0">
                         <h3> Your Best Rated Drinks </h3>
                         <div class="text-start pb-2" v-for="listing in bestRatedListings" v-bind:key="listing._id">
-                            <router-link :to="{ path: '/listing/view/' + listing._id.$oid }" class="reverse-clickable-text">
+                            <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
                                 <div class="d-flex align-items-center">
                                     <!-- <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;"> -->
                                     <img :src="(listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;">
@@ -539,7 +539,7 @@
                     .slice(0, 5)
                 const bestRatedListings = top5reviews
                     .map(review => {
-                        const listing = this.listings.find(listing => listing._id.$oid === review.reviewTarget.$oid);
+                        const listing = this.listings.find(listing => listing.id === review.reviewTarget.$oid);
                         return {
                             ...listing,
                             rating: review ? review.rating : '',
@@ -549,7 +549,7 @@
             },
             bestRatedCategories() {
                 const reviewsWithCat = this.userReviews.map(review => {
-                    const listing = this.listings.find(listing => listing._id.$oid === review.reviewTarget.$oid);
+                    const listing = this.listings.find(listing => listing.id === review.reviewTarget.$oid);
                     return {
                         ...review,
                         drinkType: listing.drinkType
@@ -847,7 +847,7 @@
                 try {
                         const response = await this.$axios.get('http://127.0.0.1:5000/getData/getUsers');
                         this.users = response.data;
-                        this.user = this.users.find(user => user._id.$oid == this.userID);
+                        this.user = this.users.find(user => user.id == this.userID);
                         this.displayUser = this.getUser(this.displayUserID);
                         
                         if (this.userID === this.displayUserID) {
@@ -909,7 +909,7 @@
 
             // get user from user ID
             getUser(id) {
-                return this.users.find(user => user._id.$oid === id);
+                return this.users.find(user => user.id === id);
             },
 
             // get display user details
@@ -962,11 +962,11 @@
             }, 
 
             getListingFromID(listingID) {
-                return this.listings.find(listing => listing._id.$oid == listingID);
+                return this.listings.find(listing => listing.id == listingID);
             },
 
             getUserFromID(userID) {
-                return this.users.find(user => user._id.$oid == userID);
+                return this.users.find(user => user.id == userID);
             },
 
             // to check if follower activity should be shown
@@ -999,7 +999,7 @@
 
             // get all listings reviewed by the user
             getAllListingsReviewed() {
-                this.allListingsReviewedByUser = this.recentReviews.map(review => this.listings.find(listing => listing._id.$oid === review.reviewTarget.$oid));
+                this.allListingsReviewedByUser = this.recentReviews.map(review => this.listings.find(listing => listing.id === review.reviewTarget.$oid));
             },
 
             // get all drinkType and typeCategory reviewed by the user

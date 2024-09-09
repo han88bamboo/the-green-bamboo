@@ -25,7 +25,7 @@
                         <p class="text-start mb-1"> Name of Bottle <span class="text-danger">*</span></p>
                         <input list="bottle-listings" v-model="bottleName" class="form-control" id="bottleName" placeholder="Enter bottle name" v-on:change="updateBottleName">
                         <datalist id="bottle-listings">
-                            <option v-for="listing in listings" :key="listing._id.$oid" :value="listing.listingName">
+                            <option v-for="listing in listings" :key="listing.id" :value="listing.listingName">
                                 {{listing.listingName}}
                             </option>
                         </datalist>
@@ -81,7 +81,7 @@
                                 <div class="col-8 ps-5">
                                     <!-- expression name -->
                                     <div class="row pt-1">
-                                        <router-link :to="{ path: '/listing/view/' + selectedListing._id.$oid }" class="primary-clickable-text">
+                                        <router-link :to="{ path: '/listing/view/' + selectedListing.id }" class="primary-clickable-text">
                                             <h4> <b> {{ selectedListing["listingName"] }} </b> </h4>
                                         </router-link>
                                     </div>
@@ -93,7 +93,7 @@
                                     </div>
                                     <!-- review -->
                                     <div class="row pt-3">
-                                        <router-link :to="{ path: '/listing/view/' + selectedListing._id.$oid }" class="default-clickable-text scrollable fst-italic">
+                                        <router-link :to="{ path: '/listing/view/' + selectedListing.id }" class="default-clickable-text scrollable fst-italic">
                                             <h5> {{ selectedListing["officialDesc"] }}. </h5>
                                         </router-link>
                                     </div>
@@ -246,7 +246,7 @@
                 let listing = this.listings.find(listing => listing.listingName === this.bottleName)
                 if (listing) {
                     this.selectedListing = listing
-                    this.selectedBottle = listing._id.$oid
+                    this.selectedBottle = listing.id
                     this.bottleNameOK = true;
                     bottleNameError.innerHTML = ""
                 }

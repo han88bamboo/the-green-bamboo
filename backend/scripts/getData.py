@@ -23,7 +23,47 @@ blueprint = Blueprint(file_name[:-3], __name__)
 
 # converts BSON to JSON
 def parse_json(data):
-    return json.loads(json_util.dumps(data)) 
+    return json.loads(json_util.dumps(data))
+
+# Helper function to fetch user data from the database
+def fetch_user_data(cursor, user_id):
+    cursor.execute('SELECT * FROM "users" WHERE "id" = %s', (user_id,))
+    return cursor.fetchone()
+
+# Helper function to fetch drink lists for a user
+def fetch_drink_lists(cursor, user_id):
+    cursor.execute("""
+        SELECT "drinksIHaveTried", "drinksIWantToTry"
+        FROM "usersDrinkLists"
+        WHERE "userId" = %s
+    """, (user_id,))
+    drink_lists_data = cursor.fetchone()
+    
+    return {
+        "Drinks I Have Tried": {
+            "listDesc": "",
+            "listItems": drink_lists_data['drinksIHaveTried'] if drink_lists_data and drink_lists_data['drinksIHaveTried'] else []
+        },
+        "Drinks I Want To Try": {
+            "listDesc": "",
+            "listItems": drink_lists_data['drinksIWantToTry'] if drink_lists_data and drink_lists_data['drinksIWantToTry'] else []
+        }
+    }
+
+# Helper function to fetch follow lists for a user
+def fetch_follow_lists(cursor, user_id):
+    cursor.execute("""
+        SELECT "users", "producers", "venues"
+        FROM "usersFollowLists"
+        WHERE "userId" = %s
+    """, (user_id,))
+    follow_lists_data = cursor.fetchone()
+    
+    return {
+        "users": follow_lists_data["users"] if follow_lists_data and follow_lists_data["users"] else [],
+        "producers": follow_lists_data["producers"] if follow_lists_data and follow_lists_data["producers"] else [],
+        "venues": follow_lists_data["venues"] if follow_lists_data and follow_lists_data["venues"] else []
+    }
 
 # def modifyPhotos():
 #     data = db.producers.find({})
@@ -98,11 +138,16 @@ def getListing(id):
 # [GET] Specific Listings By Producer
 @blueprint.route("/getListingsByProducer/<id>")
 def getListingsByProducer(id):
-    db = g.db
-    data = db.listings.find({"producerID": ObjectId(id)})
-    if data is None:
-        return []
-    return parse_json(data)
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "listings" WHERE "producerID" = %s', (id,))
+        listings_data = cursor.fetchall()
+
+    if not listings_data:
+        return jsonify([])
+
+    return jsonify(listings_data)
 
 # -----------------------------------------------------------------------------------------
 
@@ -302,51 +347,67 @@ def getReviewByTarget(id):
 @blueprint.route("/getUsers")
 def getUsers():
     conn = g.db
-    allUsers = []
     
     try:
         with conn.cursor() as cursor:
-            cursor.execute("SELECT * FROM users")
-            allUsers = cursor.fetchall()
-        
-        return jsonify(allUsers)
-    
+            cursor.execute('SELECT * FROM "users"')
+            users_data = cursor.fetchall()
+
+            for user_data in users_data:
+                user_id = user_data['id']
+                
+                user_data["drinkLists"] = fetch_drink_lists(cursor, user_id)
+                user_data["followLists"] = fetch_follow_lists(cursor, user_id)
+
+        return jsonify(users_data), 200
+
     except Exception as e:
         print(str(e))
-        return jsonify(
-            {
-                "code": 500,
-                "message": "An error occurred while fetching users."
-            }
-        ), 500
+        return jsonify({"code": 500, "message": "An error occurred while fetching users."}), 500
 
-# [GET] Specific User
+# [GET] Specific User by ID
 @blueprint.route("/getUser/<id>")
 def getUser(id):
     conn = g.db
     
-    with conn.cursor() as cursor:
-        cursor.execute('SELECT * FROM "users" WHERE "id" = %s', (id,))
-        user_data = cursor.fetchone()
-    
-    if user_data is None:
-        return jsonify([])
+    try:
+        with conn.cursor() as cursor:
+            user_data = fetch_user_data(cursor, id)
+            if not user_data:
+                return jsonify({}), 404
 
-    return jsonify(user_data)
+            user_data["drinkLists"] = fetch_drink_lists(cursor, id)
+            user_data["followLists"] = fetch_follow_lists(cursor, id)
 
-# [GET] Specific User by username
+        return jsonify(user_data), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({"code": 500, "message": "An error occurred while fetching the user."}), 500
+
+# [GET] Specific User by Username
 @blueprint.route("/getUserByUsername/<username>")
 def getUserByUsername(username):
     conn = g.db
     
-    with conn.cursor() as cursor:
-        cursor.execute('SELECT * FROM "users" WHERE "username" = %s', (username,))
-        user_data = cursor.fetchone()
-    
-    if user_data is None:
-        return jsonify([])
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute('SELECT * FROM "users" WHERE "username" = %s', (username,))
+            user_data = cursor.fetchone()
+        
+            if not user_data:
+                return jsonify([]), 404
 
-    return jsonify(user_data)
+            user_id = user_data['id']
+
+            user_data["drinkLists"] = fetch_drink_lists(cursor, user_id)
+            user_data["followLists"] = fetch_follow_lists(cursor, user_id)
+
+        return jsonify(user_data), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({"code": 500, "message": "An error occurred while fetching the user."}), 500
 
 # ----------------------
 # [NEW] TO BE ADDED:
@@ -654,78 +715,90 @@ def getModRequests():
 # [GET] flavourTags
 @blueprint.route("/getFlavourTags")
 def getFlavourTags():
-    db = g.db
-    data = db.flavourTags.find({})
-    print(len(list(data.clone())))
-    allFlavourTags = []
-    dataEncode = parse_json(data)
-    for doc in dataEncode:
-        allFlavourTags.append(doc)
-    return allFlavourTags
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "flavourTags"')
+        flavour_tags_data = cursor.fetchall()
+
+    if not flavour_tags_data:
+        return jsonify([])
+
+    return jsonify(flavour_tags_data)
 # -----------------------------------------------------------------------------------------
 # [GET] subTags
 @blueprint.route("/getSubTags")
 def getSubTags():
-    db = g.db
-    data = db.subTags.find({})
-    print(len(list(data.clone())))
-    allSubTags = []
-    dataEncode = parse_json(data)
-    for doc in dataEncode:
-        allSubTags.append(doc)
-    return allSubTags
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "subTags"')
+        allSubTags = cursor.fetchall()
+
+    if not allSubTags:
+        return jsonify([])
+
+    return jsonify(allSubTags)
 
 # -----------------------------------------------------------------------------------------
 # [GET] observationTags
 @blueprint.route("/getObservationTags")
 def getObservationTags():
-    db = g.db
-    data = db.observationTags.find({})
-    print(len(list(data.clone())))
-    allObservationTags = []
-    dataEncode = parse_json(data)
-    for doc in dataEncode:
-        allObservationTags.append(doc)
-    return allObservationTags
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "observationTags"')
+        observation_tags_data = cursor.fetchall()
+
+    if not observation_tags_data:
+        return jsonify([])
+
+    return jsonify(observation_tags_data)
 
 # -----------------------------------------------------------------------------------------
 # [GET] colours
 @blueprint.route("/getColours")
 def getColours():
-    db = g.db
-    data = db.colours.find({})
-    print(len(list(data.clone())))
-    allColours = []
-    dataEncode = parse_json(data)
-    for doc in dataEncode:
-        allColours.append(doc)
-    return allColours
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "colours"')
+        colours_data = cursor.fetchall()
+
+    if not colours_data:
+        return jsonify([])
+
+    return jsonify(colours_data)
 
 # -----------------------------------------------------------------------------------------
 # [GET] specialColours
 @blueprint.route("/getSpecialColours")
 def getSpecialColours():
-    db = g.db
-    data = db.specialColours.find({})
-    print(len(list(data.clone())))
-    allSpecialColours = []
-    dataEncode = parse_json(data)
-    for doc in dataEncode:
-        allSpecialColours.append(doc)
-    return allSpecialColours
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "specialColours"')
+        allSpecialColours = cursor.fetchall()
+
+    if not allSpecialColours:
+        return jsonify([])
+
+    return jsonify(allSpecialColours)
 
 # -----------------------------------------------------------------------------------------
 # [GET] languages
 @blueprint.route("/getLanguages")
 def getLanguages():
-    db = g.db
-    data = db.languages.find({})
-    print(len(list(data.clone())))
-    languages = []
-    dataEncode = parse_json(data)
-    for doc in dataEncode:
-        languages.append(doc)
-    return languages
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "languages"')
+        languages = cursor.fetchall()
+
+    if not languages:
+        return jsonify([])
+
+    return jsonify(languages)
 
 # -----------------------------------------------------------------------------------------
 # [GET] servingTypes
@@ -751,14 +824,16 @@ def getServingTypes():
 # [GET] producersProfileViews
 @blueprint.route("/getProducersProfileViews")
 def getProducersProfileViews():
-    db = g.db
-    data = db.producersProfileViews.find({})
-    print(len(list(data.clone())))
-    producersProfileViews = []
-    dataEncode = parse_json(data)
-    for doc in dataEncode:
-        producersProfileViews.append(doc)
-    return producersProfileViews
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "producersProfileViews"')
+        allProducersProfileViews = cursor.fetchall()
+
+    if not allProducersProfileViews:
+        return jsonify([])
+
+    return jsonify(allProducersProfileViews)
 
 # [GET] producersProfileViews by producerID
 @blueprint.route("/getProducersProfileViewsByProducer/<id>")

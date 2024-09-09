@@ -763,7 +763,7 @@
                                 <div class="row">
                                     <!-- image  remove style="width: 150px; height: 150px;" from img tag-->
                                     <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
-                                        <router-link :to="{ path: '/listing/view/' +listing._id.$oid}" class="default-text-no-background">
+                                        <router-link :to="{ path: '/listing/view/' +listing.id}" class="default-text-no-background">
                                             <!-- <img :src=" 'data:image/jpeg;base64,' + (listing['photo'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" > -->
                                             <img :src="(listing['photo'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" >
                                         </router-link>
@@ -771,13 +771,13 @@
                                             <!-- edit listing -->
                                             <div class="col-1">
                                             <button v-if="(correctProducer || isAdmin) && editingListing" type="button" class="icon-btn">
-                                                <router-link :to="`/listing/edit/${listing._id.$oid}`" style="color:black;">
+                                                <router-link :to="`/listing/edit/${listing.id}`" style="color:black;">
                                                     <svg viewBox="0 0 24 24" fill="currentColor" class="bi bi-sort-down funnel-svg-dimensions" xmlns="http://www.w3.org/2000/svg"><path d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z" ></path>
                                                     </svg>
                                                 </router-link>
                                             </button>
                                             <button v-else-if="editingListing && user.modType.includes(listing.drinkType) && listing.allowMod" type="button" class="icon-btn">
-                                                <router-link :to="`/listing/edit/${listing._id.$oid}`" style="color:black;">
+                                                <router-link :to="`/listing/edit/${listing.id}`" style="color:black;">
                                                     <svg viewBox="0 0 24 24" fill="currentColor" class="bi bi-sort-down funnel-svg-dimensions" xmlns="http://www.w3.org/2000/svg"><path d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z" ></path>
                                                     </svg>
                                                 </router-link>
@@ -803,7 +803,7 @@
                                             <div class="col-7 mobile-col-12 mobile-pe-0">
                                                 <div class="row ">
                                                     <p class="default-text fs-5 mobile-fs-6" style="margin-bottom:0.3rem;"> 
-                                                        <router-link :to="{ path: '/listing/view/' +listing._id.$oid }" class="default-text-no-background">
+                                                        <router-link :to="{ path: '/listing/view/' +listing.id }" class="default-text-no-background">
                                                             <u> <b> {{ listing["listingName"] }}  </b> </u>
                                                         </router-link>
                                                     </p> 
@@ -840,13 +840,13 @@
                                             <div class="col-10 mobile-view-hide">
                                                 <div class="row">
                                                     <div v-if="listing.officialDesc.length > 142">
-                                                        <p v-if="!showFullDescription[listing._id.$oid]" style="margin-bottom:0.2rem;"><!-- tzh added truncated description --->
+                                                        <p v-if="!showFullDescription[listing.id]" style="margin-bottom:0.2rem;"><!-- tzh added truncated description --->
                                                             <em>{{ listing["officialDesc"].slice(0, 142) + (listing["officialDesc"].length > 142 ? '...' : '') }}</em>
-                                                            <a @click="showFullDescription[listing._id.$oid] = true" style="font-weight: bold;">(Read More)</a>
+                                                            <a @click="showFullDescription[listing.id] = true" style="font-weight: bold;">(Read More)</a>
                                                         </p>
                                                         <p v-else style="margin-bottom:0.2rem;"> <!-- tzh added full description --->
                                                             <em>{{ listing["officialDesc"] }}</em>
-                                                            <a @click="showFullDescription[listing._id.$oid] = false" style="font-weight: bold;">(Read Less)</a>
+                                                            <a @click="showFullDescription[listing.id] = false" style="font-weight: bold;">(Read Less)</a>
                                                         </p>
                                                     </div>
                                                     <div v-else>
@@ -870,7 +870,7 @@
                                             <div class="row">
                                                     
                                                     <div class="col-4 mobile-view-hide">
-                                                        <router-link :to="{ path: '/listing/view/' + listing._id.$oid }" >
+                                                        <router-link :to="{ path: '/listing/view/' + listing.id }" >
                                                             <button type="button" class="btn primary-btn-outline-thick p-1 px-2" style="font-size:90%;"> See User Reviews </button>
                                                         </router-link>
                                                     </div>
@@ -921,7 +921,7 @@
                                 <div class="row">
                                     <!-- image  remove style="width: 150px; height: 150px;" from img tag-->
                                     <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
-                                        <router-link :to="{ path: '/listing/view/' +listing._id.$oid}" class="default-text-no-background">
+                                        <router-link :to="{ path: '/listing/view/' +listing.id}" class="default-text-no-background">
                                             <!-- <img :src=" 'data:image/jpeg;base64,' + (listing['photo'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" > -->
                                             <img :src="(listing['photo'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" >
                                         </router-link>
@@ -929,13 +929,13 @@
                                             <!-- edit listing -->
                                             <div class="col-1">
                                             <button v-if="(correctProducer || isAdmin) && editingListing" type="button" class="icon-btn">
-                                                <router-link :to="`/listing/edit/${listing._id.$oid}`" style="color:black;" >
+                                                <router-link :to="`/listing/edit/${listing.id}`" style="color:black;" >
                                                     <svg width="25" height="25" viewBox="0 0 24 24" fill="currentColor" class="bi bi-sort-down" xmlns="http://www.w3.org/2000/svg"><path d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z" ></path>
                                                     </svg>
                                                 </router-link>
                                             </button>
                                             <button v-else-if="editingListing && user.modType.includes(listing.drinkType) && listing.allowMod" type="button" class="icon-btn">
-                                                <router-link :to="`/listing/edit/${listing._id.$oid}`" style="color:black;">
+                                                <router-link :to="`/listing/edit/${listing.id}`" style="color:black;">
                                                     <svg width="25" height="25" viewBox="0 0 24 24" fill="currentColor" class="bi bi-sort-down " xmlns="http://www.w3.org/2000/svg"><path d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z" ></path>
                                                     </svg>
                                                 </router-link>
@@ -961,7 +961,7 @@
                                             <div class="col-7 mobile-col-12 mobile-pe-0">
                                                 <div class="row ">
                                                     <p class="default-text fs-5 mobile-fs-6" style="margin-bottom:0.3rem;"> 
-                                                        <router-link :to="{ path: '/listing/view/' +listing._id.$oid }" class="default-text-no-background">
+                                                        <router-link :to="{ path: '/listing/view/' +listing.id }" class="default-text-no-background">
                                                             <u> <b> {{ listing["listingName"] }}  </b> </u>
                                                         </router-link>
                                                     </p> 
@@ -998,13 +998,13 @@
                                             <div class="col-10 mobile-view-hide">
                                                 <div class="row">
                                                     <div v-if="listing.officialDesc.length > 142">
-                                                        <p v-if="!showFullDescription[listing._id.$oid]" style="margin-bottom:0.2rem;"><!-- tzh added truncated description --->
+                                                        <p v-if="!showFullDescription[listing.id]" style="margin-bottom:0.2rem;"><!-- tzh added truncated description --->
                                                             <em>{{ listing["officialDesc"].slice(0, 142) + (listing["officialDesc"].length > 142 ? '...' : '') }}</em>
-                                                            <a @click="showFullDescription[listing._id.$oid] = true" style="font-weight: bold;">(Read More)</a>
+                                                            <a @click="showFullDescription[listing.id] = true" style="font-weight: bold;">(Read More)</a>
                                                         </p>
                                                         <p v-else style="margin-bottom:0.2rem;"> <!-- tzh added full description --->
                                                             <em>{{ listing["officialDesc"] }}</em>
-                                                            <a @click="showFullDescription[listing._id.$oid] = false" style="font-weight: bold;">(Read Less)</a>
+                                                            <a @click="showFullDescription[listing.id] = false" style="font-weight: bold;">(Read Less)</a>
                                                         </p>
                                                     </div>
                                                     <div v-else>
@@ -1028,7 +1028,7 @@
                                             <div class="row">
                                                     
                                                     <div class="col-4 mobile-view-hide">
-                                                        <router-link :to="{ path: '/listing/view/' + listing._id.$oid }" >
+                                                        <router-link :to="{ path: '/listing/view/' + listing.id }" >
                                                             <button type="button" class="btn primary-btn-outline-thick p-1 px-2" style="font-size:90%;"> See User Reviews </button>
                                                         </router-link>
                                                     </div>
@@ -2134,7 +2134,7 @@
             async deleteListings(listing) {
 
                 try {
-                    const response = await this.$axios.delete(`http://127.0.0.1:5000/editListing/deleteListing/${listing._id.$oid}`);
+                    const response = await this.$axios.delete(`http://127.0.0.1:5000/editListing/deleteListing/${listing.id}`);
                     console.log(response.data);
                 } 
                 catch (error) {

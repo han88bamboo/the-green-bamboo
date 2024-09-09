@@ -205,11 +205,11 @@
                     <p class="fw-bold fst-italic fs-5 m-0 py-2" v-else>No Listing Results Found!</p>
                     
                     <div class="container text-start">
-                        <div class="row" v-for="resultListing in resultListings" :key="resultListing._id">
+                        <div class="row" v-for="resultListing in resultListings" :key="resultListing.id">
                             <hr>
                             <!-- Image -->
                             <div class="col-lg-3 col-12 image-container mb-3 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
-                                <router-link :to="{ path: '/listing/view/' + resultListing._id['$oid'] }">
+                                <router-link :to="{ path: '/listing/view/' + resultListing.id }">
                                     <img v-if="resultListing['photo']" :src="resultListing['photo']" class="img-border img-fluid object-fit-cover" style="width:256px; height:256px">
                                     <img v-else src="../../Images/Drinks/Placeholder.png" class=" img-border img-fluid object-fit-cover" style="/*width:256px; height:256px*/"> 
                                 </router-link>
@@ -224,7 +224,7 @@
 
                             <div class="col-lg-8 col-12 ps-3 mobile-col-7 mobile-pe-0 mobile-ps-1 mobile-view-show">
                                 <!-- Listing Name + Router Link -->
-                                <router-link class="xtext-dark xtext-decoration-none" :to="{ path: '/listing/view/' + resultListing._id['$oid'] }">
+                                <router-link class="xtext-dark xtext-decoration-none" :to="{ path: '/listing/view/' + resultListing.id }">
                                     <p class="default-text fs-5 mobile-fs-6" style="margin-bottom: 0.3rem;"><b><u>{{ resultListing['listingName'] }}</u></b></p>
                                 </router-link>
                                 <p class="text-start mb-1 mobile-fs-7"> 
@@ -249,11 +249,11 @@
 
                                 <div class="col-lg-8 col-12">
                                     <!-- Listing Name + Router Link -->
-                                    <router-link class="text-dark text-decoration-none" :to="{ path: '/listing/view/' + resultListing._id['$oid'] }">
+                                    <router-link class="text-dark text-decoration-none" :to="{ path: '/listing/view/' + resultListing.id }">
                                         <h4 class="fw-bold my-1">{{ resultListing['listingName'] }}</h4>
                                     </router-link>
                                     <!-- Producer Name + Router Link -->
-                                    <router-link class="text-secondary-emphasis text-decoration-none" :to="{ path: '/profile/producer/' + resultListing.producerID['$oid'] }">
+                                    <router-link class="text-secondary-emphasis text-decoration-none" :to="{ path: '/profile/producer/' + resultListing.producerID }">
                                         <p class="m-0">
                                             <b> Producer: </b>
                                             {{ getProducerName(resultListing['producerID']) }}
@@ -268,7 +268,7 @@
                                     <!-- Added Date -->
                                     <p class="m-0 xmb-3">
                                         <b> Date Added: </b>
-                                        {{ formatDate(resultListing['addedDate'].$date) }}
+                                        {{ formatDate(resultListing['addedDate']) }}
                                     </p>
                                     <!-- Drink Type / Type Category -->
                                     <p class="m-0">
@@ -334,14 +334,14 @@
                             <hr>
                             <!-- Image -->
                             <div class="col-lg-3 col-12 image-container mb-3 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
-                                <router-link :to="{ path: '/profile/producer/' + producer._id['$oid'] }">
+                                <router-link :to="{ path: '/profile/producer/' + producer.id }">
                                     <img v-if="producer['photo']" :src="producer['photo']" class="img-border img-fluid object-fit-cover" style="/*width:256px; height:256px*/">
                                     <img v-else src="../../Images/Drinks/Placeholder.png" class="img-border img-fluid object-fit-cover" style="/*width:256px; height:256px*/"> 
                                 </router-link>
                             </div>
                             <div class=" ps-3 mobile-col-9 mobile-pe-0 mobile-ps-1 mobile-view-show">
                                 <!-- Producer Name + Router Link -->
-                                <router-link class="xtext-dark xtext-decoration-none" :to="{ path: '/profile/producer/' + producer._id['$oid'] }">
+                                <router-link class="xtext-dark xtext-decoration-none" :to="{ path: '/profile/producer/' + producer.id }">
                                     <p class="default-text fs-5 mobile-fs-6" style="margin-bottom: 0.3rem;"><b><u>{{ producer['producerName'] }}</u></b></p>
                                 </router-link>
                                 <p v-if="producer.producerDesc.length > 144" class="mobile-fs-7"  >
@@ -357,7 +357,7 @@
 
                                 <div class="col-lg-8 col-12">
                                     <!-- Producer Name + Router Link -->
-                                    <router-link class="text-dark text-decoration-none" :to="{ path: '/profile/producer/' + producer._id['$oid'] }">
+                                    <router-link class="text-dark text-decoration-none" :to="{ path: '/profile/producer/' + producer.id }">
                                         <h4 class="fw-bold my-1">{{ producer['producerName'] }}</h4>
                                     </router-link>
                                     <!-- Country of Origin -->
@@ -692,18 +692,18 @@
                 try {
                     const response = await this.$axios.get('http://127.0.0.1:5000/getData/getUsers');
                     this.users = response.data;
-                    this.user = this.users.find(user => user._id.$oid == this.userID)
+                    this.user = this.users.find(user => user.id == this.userID)
                     if (this.user) {
                         this.userBookmarks = this.user.drinkLists;
                         let triedDrinks=[]
                         let wantToTryDrinks=[]
                         for (let drink of this.user.drinkLists["Drinks I Have Tried"]["listItems"]) {
-                            let triedDrink = this.listings.find(listing => listing._id.$oid === drink[1].$oid).listingName;
+                            let triedDrink = this.listings.find(listing => listing.id === drink[1].id).listingName;
                             // let triedDrinkName = triedDrink ? triedDrink.listingName : null;
                             triedDrinks.push(triedDrink)
                         }
                         for (let drink of this.user.drinkLists["Drinks I Want To Try"]["listItems"]) {
-                            let wantDrinkName = this.listings.find(listing => listing._id.$oid === drink[1].$oid).listingName;   
+                            let wantDrinkName = this.listings.find(listing => listing.id === drink[1].id).listingName;   
                             wantToTryDrinks.push(wantDrinkName)
                         }
                         this.drinkList = {
@@ -1005,9 +1005,13 @@
 
             // format date
             formatDate(dateTimeString) {
-                let datePart = dateTimeString.split("T")[0];
+                let date = new Date(dateTimeString);
+
                 // splitting the date into year, month, and day
-                let [year, month, day] = datePart.split("-");
+                let day = String(date.getDate()).padStart(2, '0');
+                let month = String(date.getMonth() + 1).padStart(2, '0');
+                let year = date.getFullYear();
+
                 // formatting the date
                 let formattedDate = `${day}/${month}/${year}`;
                 return formattedDate;
@@ -1099,7 +1103,7 @@
             // get producerName for a listing based on producerID
             getProducerName(producerID) {
                 const producer = this.producerList.find((producer) => {
-                    return producer["_id"]["$oid"] == producerID["$oid"];
+                    return producer["id"] == producerID;
                 });
                 // ensures that producer is found before accessing "producerName"
                 if (producer) {
