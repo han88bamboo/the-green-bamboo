@@ -77,15 +77,27 @@ def createAccount():
             user_id = cursor.fetchone()['id']
             db_conn.commit()
 
-        # Insert into 'usersDrinkLists' table
+        # Insert into 'usersDrinkLists' table for "Drinks I Want To Try"
         with db_conn.cursor() as cursor:
             cursor.execute("""
-                INSERT INTO "usersDrinkLists" ("userId", "drinksIHaveTried", "drinksIWantToTry")
+                INSERT INTO "usersDrinkLists" ("userId", "listName", "drinks")
                 VALUES (%s, %s, %s)
             """, (
                 user_id,
-                rawAccount['drinkLists']['Drinks I Have Tried']['listItems'],
+                "Drinks I Want To Try",
                 rawAccount['drinkLists']['Drinks I Want To Try']['listItems']
+            ))
+            db_conn.commit()
+
+        # Insert into 'usersDrinkLists' table for "Drinks I Have Tried"
+        with db_conn.cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO "usersDrinkLists" ("userId", "listName", "drinks")
+                VALUES (%s, %s, %s)
+            """, (
+                user_id,
+                "Drinks I Have Tried",
+                rawAccount['drinkLists']['Drinks I Have Tried']['listItems']
             ))
             db_conn.commit()
 

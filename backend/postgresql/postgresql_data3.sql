@@ -263,8 +263,9 @@ CREATE TABLE "usersFollowLists" (
 CREATE TABLE "usersDrinkLists" (
     "id" SERIAL PRIMARY KEY,
     "userId" INTEGER REFERENCES "users"("id") ON DELETE SET NULL,  -- [!] reference "users" FK
-    "drinksIHaveTried" TEXT[], -- Contains "listings"("id")s
-    "drinksIWantToTry" TEXT[] -- Contains "listings"("id")s
+    "listName" TEXT,
+    "drinks" TEXT[],-- Contains "listings"("id")s
+    UNIQUE ("userId", "listName")
 );
 
 -- ========= "reviews" =========

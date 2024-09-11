@@ -32,23 +32,22 @@ def fetch_user_data(cursor, user_id):
 
 # Helper function to fetch drink lists for a user
 def fetch_drink_lists(cursor, user_id):
+
     cursor.execute("""
-        SELECT "drinksIHaveTried", "drinksIWantToTry"
+        SELECT "listName", "drinks"
         FROM "usersDrinkLists"
         WHERE "userId" = %s
     """, (user_id,))
-    drink_lists_data = cursor.fetchone()
-    
-    return {
-        "Drinks I Have Tried": {
-            "listDesc": "",
-            "listItems": drink_lists_data['drinksIHaveTried'] if drink_lists_data and drink_lists_data['drinksIHaveTried'] else []
-        },
-        "Drinks I Want To Try": {
-            "listDesc": "",
-            "listItems": drink_lists_data['drinksIWantToTry'] if drink_lists_data and drink_lists_data['drinksIWantToTry'] else []
-        }
-    }
+    drink_lists_data = cursor.fetchall()
+    result = {}
+    for row in drink_lists_data:
+            list_name = row["listName"]
+            drinks = row["drinks"]
+            result[list_name] = {
+                "listDesc": "",  # You can customize or fetch descriptions for each list if needed
+                "listItems": drinks if drinks else []
+            }
+    return result
 
 # Helper function to fetch follow lists for a user
 def fetch_follow_lists(cursor, user_id):
