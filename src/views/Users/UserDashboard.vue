@@ -158,23 +158,23 @@
                                     <div v-for="activity in recentFollowerActivity" v-bind:key="activity._id" class="py-2">
                                         <div v-if="activity.type === 'tag'">
                                             <i> 
-                                                <router-link :to="{ path: '/profile/user/' + activity.userID.$oid }" class="reverse-clickable-text">
-                                                    @<b> {{ getUserFromID(activity.userID.$oid).username }} </b>
+                                                <router-link :to="{ path: '/profile/user/' + activity.userID }" class="reverse-clickable-text">
+                                                    @<b> {{ getUserFromID(activity.userID).username }} </b>
                                                 </router-link> 
                                                 tagged you in a review on 
-                                                <router-link :to="{ path: '/listing/view/' + activity.listingID.$oid }" class="reverse-clickable-text">
-                                                    <u> {{ getListingFromID(activity.listingID.$oid).listingName }} </u>
+                                                <router-link :to="{ path: '/listing/view/' + activity.listingID }" class="reverse-clickable-text">
+                                                    <u> {{ getListingFromID(activity.listingID).listingName }} </u>
                                                 </router-link>
-                                                {{ getTimeDifference(activity.date.$date) }}
+                                                {{ getTimeDifference(activity.date) }}
                                             </i>
                                         </div>
                                         <div v-else-if="activity.type === 'follow'">
                                             <i> 
-                                                <router-link :to="{ path: '/profile/user/' + activity.userID.$oid }" class="reverse-clickable-text">
+                                                <router-link :to="{ path: '/profile/user/' + activity.userID }" class="reverse-clickable-text">
                                                     @<b> {{ activity.username }} </b>
                                                 </router-link> 
                                                 started following you
-                                                {{ getTimeDifference(activity.date.$date) }}
+                                                {{ getTimeDifference(activity.date) }}
                                             </i>
                                         </div>
                                     </div>
@@ -197,23 +197,23 @@
                                     <div v-for="activity in recentFollowerActivity" v-bind:key="activity._id" class="py-2">
                                         <div v-if="activity.type === 'tag'">
                                             <i> 
-                                                <router-link :to="{ path: '/profile/user/' + activity.userID.$oid }" class="reverse-clickable-text">
-                                                    @<b> {{ getUserFromID(activity.userID.$oid).username }} </b>
+                                                <router-link :to="{ path: '/profile/user/' + activity.userID }" class="reverse-clickable-text">
+                                                    @<b> {{ getUserFromID(activity.userID).username }} </b>
                                                 </router-link> 
                                                 tagged you in a review on 
-                                                <router-link :to="{ path: '/listing/view/' + activity.listingID.$oid }" class="reverse-clickable-text">
-                                                    <u> {{ getListingFromID(activity.listingID.$oid).listingName }} </u>
+                                                <router-link :to="{ path: '/listing/view/' + activity.listingID }" class="reverse-clickable-text">
+                                                    <u> {{ getListingFromID(activity.listingID).listingName }} </u>
                                                 </router-link>
-                                                {{ getTimeDifference(activity.date.$date) }}
+                                                {{ getTimeDifference(activity.date) }}
                                             </i>
                                         </div>
                                         <div v-else-if="activity.type === 'follow'">
                                             <i> 
-                                                <router-link :to="{ path: '/profile/user/' + activity.userID.$oid }" class="reverse-clickable-text">
+                                                <router-link :to="{ path: '/profile/user/' + activity.userID }" class="reverse-clickable-text">
                                                     @<b> {{ activity.username }} </b>
                                                 </router-link> 
                                                 started following you
-                                                {{ getTimeDifference(activity.date.$date) }}
+                                                {{ getTimeDifference(activity.date) }}
                                             </i>
                                         </div>
                                     </div>
@@ -257,19 +257,19 @@
                                             <svg v-if="activity.type == 'downvote'" fill="#ffffff" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="m20.901 10.566c-.167-.345-.516-.566-.901-.566h-2-2v-3-4c0-.553-.447-1-1-1h-6c-.553 0-1 .447-1 1v5 2h-1-3c-.385 0-.734.221-.901.566-.166.347-.12.758.12 1.059l8 10c.19.237.477.375.781.375s.591-.138.781-.375l8-10c.24-.301.286-.712.12-1.059z"/></svg>
                                             <i> 
                                                 Someone <span :style="{ color: activity.type === 'upvote' ? '#90ee90' : '#ff7f7f' }">{{ activity.type }}d</span> your review on 
-                                                <router-link :to="{ path: '/listing/view/' + activity.reviewTarget.$oid }" class="reverse-clickable-text">
-                                                    <u> {{ getListingFromID(activity.reviewTarget.$oid).listingName }} </u>
+                                                <router-link :to="{ path: '/listing/view/' + activity.reviewTarget }" class="reverse-clickable-text">
+                                                    <u> {{ getListingFromID(activity.reviewTarget).listingName }} </u>
                                                 </router-link>
-                                                {{ getTimeDifference(activity.date.$date) }}
+                                                {{ getTimeDifference(activity.date) }}
                                             </i>
                                         </div>
                                         <div v-else-if="activity.type === 'follow'">
                                             <i> 
-                                                <router-link :to="{ path: '/profile/user/' + activity.userID.$oid }" class="reverse-clickable-text">
+                                                <router-link :to="{ path: '/profile/user/' + activity.userID }" class="reverse-clickable-text">
                                                     @<b> {{ activity.username }} </b>
                                                 </router-link> 
                                                 started following you
-                                                {{ getTimeDifference(activity.date.$date) }}
+                                                {{ getTimeDifference(activity.date) }}
                                             </i>
                                         </div>
                                     </div>
@@ -295,19 +295,19 @@
                                             <svg v-if="activity.type == 'downvote'" fill="#ffffff" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="m20.901 10.566c-.167-.345-.516-.566-.901-.566h-2-2v-3-4c0-.553-.447-1-1-1h-6c-.553 0-1 .447-1 1v5 2h-1-3c-.385 0-.734.221-.901.566-.166.347-.12.758.12 1.059l8 10c.19.237.477.375.781.375s.591-.138.781-.375l8-10c.24-.301.286-.712.12-1.059z"/></svg>
                                             <i> 
                                                 Someone <span :style="{ color: activity.type === 'upvote' ? '#90ee90' : '#ff7f7f' }">{{ activity.type }}d</span> your review on 
-                                                <router-link :to="{ path: '/listing/view/' + activity.reviewTarget.$oid }" class="reverse-clickable-text">
-                                                    <u> {{ getListingFromID(activity.reviewTarget.$oid).listingName }} </u>
+                                                <router-link :to="{ path: '/listing/view/' + activity.reviewTarget }" class="reverse-clickable-text">
+                                                    <u> {{ getListingFromID(activity.reviewTarget).listingName }} </u>
                                                 </router-link>
-                                                {{ getTimeDifference(activity.date.$date) }}
+                                                {{ getTimeDifference(activity.date) }}
                                             </i>
                                         </div>
                                         <div v-else-if="activity.type === 'follow'">
                                             <i> 
-                                                <router-link :to="{ path: '/profile/user/' + activity.userID.$oid }" class="reverse-clickable-text">
+                                                <router-link :to="{ path: '/profile/user/' + activity.userID }" class="reverse-clickable-text">
                                                     @<b> {{ activity.username }} </b>
                                                 </router-link> 
                                                 started following you
-                                                {{ getTimeDifference(activity.date.$date) }}
+                                                {{ getTimeDifference(activity.date) }}
                                             </i>
                                         </div>
                                     </div>
@@ -494,10 +494,10 @@
         },
         computed: {
             userReviews() {
-                return this.reviews.filter(review => review.userID.$oid === this.userID && review.reviewType === 'Listing');
+                return this.reviews.filter(review => review.userID === parseInt(this.userID) && review.reviewType === 'Listing');
             },
             reviewsData() {
-                const dates = [...new Set(this.userReviews.map(review => this.formatDateMonthYear(review.createdDate.$date)))];
+                const dates = [...new Set(this.userReviews.map(review => this.formatDateMonthYear(review.createdDate)))];
                 dates.sort((a, b) => {
                     const [monthA, yearA] = a.split('/');
                     const [monthB, yearB] = b.split('/');
@@ -507,7 +507,7 @@
                         return monthA - monthB;
                     }
                 });
-                const counts = dates.map(date => this.userReviews.filter(review => this.formatDateMonthYear(review.createdDate.$date) === date).length);
+                const counts = dates.map(date => this.userReviews.filter(review => this.formatDateMonthYear(review.createdDate) === date).length);
                 return {
                     labels: dates,
                     datasets: [
@@ -539,7 +539,7 @@
                     .slice(0, 5)
                 const bestRatedListings = top5reviews
                     .map(review => {
-                        const listing = this.listings.find(listing => listing.id === review.reviewTarget.$oid);
+                        const listing = this.listings.find(listing => listing.id === review.reviewTarget);
                         return {
                             ...listing,
                             rating: review ? review.rating : '',
@@ -549,7 +549,7 @@
             },
             bestRatedCategories() {
                 const reviewsWithCat = this.userReviews.map(review => {
-                    const listing = this.listings.find(listing => listing.id === review.reviewTarget.$oid);
+                    const listing = this.listings.find(listing => listing.id === review.reviewTarget);
                     return {
                         ...review,
                         drinkType: listing.drinkType
@@ -572,7 +572,7 @@
                 // follows and review tags
                 const follows = this.users
                     .map(user => {
-                        const followUser = user.followLists.users.find(followUser => followUser.followerID.$oid === this.userID);
+                        const followUser = user.followLists.users.find(followUser => followUser.followerI === this.userID);
                         return followUser ? {
                             username: user.username,
                             userID: user._id,
@@ -583,7 +583,7 @@
                 const tags = this.reviews
                     .filter(review => review.reviewType === 'Listing' && review.taggedUsers)
                     .map(review => {
-                        const taggedReviews = review.taggedUsers.find(taggedUser => taggedUser.$oid === this.userID);
+                        const taggedReviews = review.taggedUsers.find(taggedUser => taggedUser === this.userID);
                         return taggedReviews ? {
                             userID: review.userID,
                             listingID: review.reviewTarget,
@@ -596,7 +596,7 @@
                     ...tags.map(tag => ({ ...tag, type: 'tag' })),
                     ...follows.map(follow => ({ ...follow, type: 'follow' }))
                 ];
-                activities.sort((a, b) => new Date(b.date.$date) - new Date(a.date.$date));
+                activities.sort((a, b) => new Date(b.date) - new Date(a.date));
                 
                 return activities;
 
@@ -621,7 +621,7 @@
                     ...upvotes.map(upvote => ({ ...upvote, type: 'upvote' })),
                     ...downvotes.map(downvote => ({ ...downvote, type: 'downvote' })),
                 ];
-                activities.sort((a, b) => new Date(b.date.$date) - new Date(a.date.$date));
+                activities.sort((a, b) => new Date(b.date) - new Date(a.date));
                 
                 return activities;
             }
@@ -820,7 +820,7 @@
                         const response = await this.$axios.get('http://127.0.0.1:5000/getData/getReviews');
                         this.reviews = response.data;
                         this.reversedReviews = this.reviews.reverse();
-                        this.recentReviews = this.reversedReviews.filter(review => review.userID?.$oid === this.displayUserID && review.reviewType === 'Listing');
+                        this.recentReviews = this.reversedReviews.filter(review => review.userID === this.displayUserID && review.reviewType === 'Listing');
                     }
                     catch (error) {
                         console.error(error);
@@ -915,10 +915,10 @@
             // get display user details
             getDrinkCount() {
                 if (this.ownProfile) {
-                    return this.reviews.filter(review => review.userID.$oid === this.userID && review.reviewType === 'Listing').length;
+                    return this.reviews.filter(review => review.userID === parseInt(this.userID) && review.reviewType === 'Listing').length;
                 }
                 else {
-                    return this.reviews.filter(review => review.userID.$oid === this.displayUserID && review.reviewType === 'Listing').length;
+                    return this.reviews.filter(review => review.userID === parseInt(this.displayUserID) && review.reviewType === 'Listing').length;
                 }
             },
 
@@ -991,7 +991,7 @@
 
             // get total followers of user
             getTotalFollowers() {
-                let followers = this.users.filter(user => user.followLists.users.some(follower => follower.followerID.$oid === this.userID));
+                let followers = this.users.filter(user => user.followLists.users.some(follower => follower.followerID === this.userID));
                 this.followerCount = followers.length;
             },
 
@@ -999,7 +999,7 @@
 
             // get all listings reviewed by the user
             getAllListingsReviewed() {
-                this.allListingsReviewedByUser = this.recentReviews.map(review => this.listings.find(listing => listing.id === review.reviewTarget.$oid));
+                this.allListingsReviewedByUser = this.recentReviews.map(review => this.listings.find(listing => listing.id === review.reviewTarget));
             },
 
             // get all drinkType and typeCategory reviewed by the user
@@ -1104,7 +1104,7 @@
             // get total number of upvotes received
             getTotalUpvotes() {
                 let totalUpvotes = this.recentReviews.reduce((count, review) => {
-                    if (review.userVotes.upvotes.some(vote => vote.userID.$oid === this.displayUserID)) {
+                    if (review.userVotes.upvotes.some(vote => vote.userID === this.displayUserID)) {
                         count += 1;
                     }
                     return count;
@@ -1155,14 +1155,14 @@
             // get total number of questions asked by user to producers
             getAskedProducerQuestions() {
                 this.pointSystem.askProducer[0] = this.producers.reduce((totalQuestions, producer) => {
-                    return totalQuestions + producer.questionsAnswers.filter(qa => qa.userID.$oid === this.displayUserID).length;
+                    return totalQuestions + producer.questionsAnswers.filter(qa => qa.userID === this.displayUserID).length;
                 }, 0);
             },
 
             // get total number of questions asked by user to venues
             getAskedVenueQuestions() {
                 this.pointSystem.askVenue[0] = this.venues.reduce((totalQuestions, venue) => {
-                    return totalQuestions + venue.questionsAnswers.filter(qa => qa.userID.$oid === this.displayUserID).length;
+                    return totalQuestions + venue.questionsAnswers.filter(qa => qa.userID === this.displayUserID).length;
                 }, 0);
             },
 

@@ -165,8 +165,17 @@ def getProducers():
         cursor.execute('SELECT * FROM "producers"')
         producers_data = cursor.fetchall()
     
-    if not producers_data:
-        return jsonify([])
+        if not producers_data:
+            return jsonify([])
+
+        for producer in producers_data:
+            cursor.execute('SELECT * FROM "producersQuestionAnswers" WHERE "id" = %s', (producer["id"],))
+            question_answers_data = cursor.fetchall()
+            producer["questionsAnswers"] = question_answers_data if question_answers_data else []
+
+            cursor.execute('SELECT * FROM "producersUpdates" WHERE "id" = %s', (producer["id"],))
+            updates_data = cursor.fetchall()
+            producer["updates"] = updates_data if updates_data else []
 
     return jsonify(producers_data)
 
@@ -179,8 +188,16 @@ def getProducer(id):
         cursor.execute('SELECT * FROM "producers" WHERE "id" = %s', (id,))
         producer_data = cursor.fetchone()
     
-    if producer_data is None:
-        return jsonify([])
+        if producer_data is None:
+            return jsonify([])
+
+        cursor.execute('SELECT * FROM "producersQuestionAnswers" WHERE "id" = %s', (producer_data["id"],))
+        question_answers_data = cursor.fetchall()
+        producer_data["questionsAnswers"] = question_answers_data if question_answers_data else []
+
+        cursor.execute('SELECT * FROM "producersUpdates" WHERE "id" = %s', (producer_data["id"],))
+        updates_data = cursor.fetchall()
+        producer_data["updates"] = updates_data if updates_data else []
 
     return jsonify(producer_data)
 
@@ -722,14 +739,16 @@ def getRequestEdit(id):
 # [GET] modRequests
 @blueprint.route("/getModRequests")
 def getModRequests():
-    db = g.db
-    data = db.modRequests.find({})
-    print(len(list(data.clone())))
-    allModRequests = []
-    dataEncode = parse_json(data)
-    for doc in dataEncode:
-        allModRequests.append(doc)
-    return allModRequests
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "modRequests"')
+        mod_requests_data = cursor.fetchall()
+
+    if not mod_requests_data:
+        return jsonify([])
+
+    return jsonify(mod_requests_data)
 
 # -----------------------------------------------------------------------------------------
 # [GET] flavourTags
@@ -990,14 +1009,15 @@ def getRequestInaccuracyByVenue(id):
 # [GET] Badges
 @blueprint.route("/getBadges")
 def getBadges():
-    db = g.db
-    data = db.badges.find({})
-    print(len(list(data.clone())))
-    allBadges = []
-    dataEncode = parse_json(data)
-    for doc in dataEncode:
-        allBadges.append(doc)
-    return allBadges
+    conn = g.db
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "badges"')
+        badges_data = cursor.fetchall()
+
+    if not badges_data:
+        return jsonify([])
+
+    return jsonify(badges_data)
 
 # -----------------------------------------------------------------------------------------
 # [GET] Specific Token

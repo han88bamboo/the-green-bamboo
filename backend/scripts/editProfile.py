@@ -18,25 +18,27 @@ blueprint = Blueprint(file_name[:-3], __name__)
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/editDetails', methods=['POST'])
 def editDetails():
-    db = g.db
+    conn = g.db
     data = request.get_json()
     print(data)
     userID = data['userID']
-    # if data contains image64
-    if 'image64' in data:
-        existingUser = db.users.find_one({"_id": ObjectId(userID)})
-        if existingUser['photo']:
-            s3Images.deleteImageFromS3(existingUser['photo'])
-        image64 = s3Images.uploadBase64ImageToS3(data['image64'])
-        # Upload to S3 by calling function, rmb url
 
-    drinkChoice = data['drinkChoice']
-
-    try: 
+    cursor = conn.cursor()
+    try:
         if 'image64' in data:
-            updateImage = db.users.update_one({'_id': ObjectId(userID)}, {'$set': {'photo': image64}})
-        updateDrinkChoice = db.users.update_one({'_id': ObjectId(userID)}, {'$set': {'choiceDrinks': drinkChoice}})
+            cursor.execute("SELECT photo FROM users WHERE id = %s", (userID,))
+            existingUser = cursor.fetchone()
+            if existingUser and existingUser[0]:
+                s3Images.deleteImageFromS3(existingUser[0])
 
+            image64 = s3Images.uploadBase64ImageToS3(data['image64'])
+
+            cursor.execute("UPDATE users SET photo = %s WHERE id = %s", (image64, userID))
+
+        drinkChoice = data['drinkChoice']
+        cursor.execute("UPDATE users SET \"choiceDrinks\" = %s WHERE id = %s", (drinkChoice, userID))
+
+        conn.commit()
         return jsonify(
             {   
                 "code": 201,
@@ -46,7 +48,9 @@ def editDetails():
                 }
             }
         ), 201
+
     except Exception as e:
+        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -58,36 +62,9 @@ def editDetails():
                 "message": "An error occurred updating the image or drink choice."
             }
         ), 500
-
-# -- ========= "users" =========
-# CREATE TABLE "users" (
-#     "id" SERIAL PRIMARY KEY,
-#     "username" VARCHAR(255),
-#     "displayName" VARCHAR(255),
-#     "choiceDrinks" TEXT[],
-#     "modType" TEXT[],
-#     "photo" TEXT,
-#     "hashedPassword" VARCHAR(255),
-#     -- "drinkLists" SERIAL, -- [!] reference "usersDrinkLists" not needed since user followlist ref users
-#     "joinDate" TIMESTAMP,
-#     -- "followLists" SERIAL, -- [!] reference "usersFollowLists"
-#     "firstName" VARCHAR(255),
-#     "lastName" VARCHAR(255),
-#     "email" VARCHAR(255),
-#     "isAdmin" BOOLEAN,
-#     "birthday" TIMESTAMP,
-#     "pin" VARCHAR(255)
-# );
-
-# -- ========= [NEW!] "usersDrinkLists" =========
-# CREATE TABLE "usersDrinkLists" (
-#     "id" SERIAL PRIMARY KEY,
-#     "userId" INTEGER REFERENCES "users"("id") ON DELETE SET NULL,  -- [!] reference "users" FK
-#     "listName" TEXT,
-#     "drinks" TEXT[],-- Contains "listings"("id")s
-#     UNIQUE ("userId", "listName")
-# );
-
+    
+    finally:
+        cursor.close()
     
 # -----------------------------------------------------------------------------------------
 # [POST] Update user bookmark

@@ -189,7 +189,7 @@
                                         <p v-html="formattedModTypes" class="text-start mb-1"></p>
                                         <input list="addableDrinkType" v-model="promotedType" class="form-control" id="promotedType" placeholder="Enter drink type" v-on:change="updateDrinkType">
                                         <datalist id="addableDrinkType">
-                                            <option v-for="drinkType in addableDrinkType" :key="drinkType._id.$oid" :value="drinkType.drinkType">
+                                            <option v-for="drinkType in addableDrinkType" :key="drinkType.id" :value="drinkType.drinkType">
                                                 {{drinkType.drinkType}}
                                             </option>
                                         </datalist>
@@ -204,7 +204,7 @@
                                         <p v-html="formattedModTypes" class="text-start mb-1"></p>
                                         <input list="removableDrinkType" v-model="removedType" class="form-control" id="removedType" placeholder="Enter drink type" v-on:change="updateRemovedDrinkType">
                                         <datalist id="removableDrinkType">
-                                            <option v-for="drinkType in removableDrinkType" :key="drinkType._id.$oid" :value="drinkType.drinkType">
+                                            <option v-for="drinkType in removableDrinkType" :key="drinkType.id" :value="drinkType.drinkType">
                                                 {{drinkType.drinkType}}
                                             </option>
                                         </datalist>
@@ -528,7 +528,7 @@
                                         </p>
                                     </div>
                                     <div class="col-9 mobile-col-9 mobile-ps-2">
-                                        <a :href="'/listing/view/' + review.reviewTarget.$oid" style="text-decoration: none; color: #223957;">
+                                        <a :href="'/listing/view/' + review.reviewTarget" style="text-decoration: none; color: #223957;">
                                             <p class="fs-5 mobile-fs-7 mb-1 mobile-mb-0_5" ><b>{{ getListingName(review.reviewTarget) }}</b></p>
                                         </a>
                                         <!-- flavor tag -->
@@ -614,8 +614,8 @@
                         <!-- display all lists -->
                         <div v-for="(bookmarkList, name, index) in displayUserBookmarks" :key="name" style="display: flex" class="row mb-3">
                             <div class="col-3 mobile-col-4 mobile-pe-0" >
-                                <!-- <img :src=" 'data:image/png;base64,' + ( getListingFromID(bookmarkList.listItems[0][1].$oid).photo || defaultDrinkImage )" alt="" class="bottle-img me-3"> xyz -->
-                                <img :src="( getListingFromID(bookmarkList.listItems[0][1].$oid).photo || defaultDrinkImage )" alt="" class="bottle-img me-3">
+                                <!-- <img :src=" 'data:image/png;base64,' + ( getListingFromID(bookmarkList.listItems[0]).photo || defaultDrinkImage )" alt="" class="bottle-img me-3"> xyz -->
+                                <img :src="( getListingFromID(bookmarkList.listItems[0]).photo || defaultDrinkImage )" alt="" class="bottle-img me-3">
                             </div>
                             <div  class="col-9 mobile-col-8 mobile-ps-1" > <!-- style="height: 150px; display: flex; flex-direction: column;" -->
                                 <h5 class="mt-1" @click="viewList(name)" style="cursor: pointer"> {{ name }} </h5>
@@ -809,13 +809,13 @@
                         <!-- list details -->
                         <div class="row mb-3" v-for="(listingID, index) in displayUser.drinkLists[currentList].listItems" :key="index">
                             <div class="col-10 pe-0" style="display: flex">
-                                <!-- <img :src=" 'data:image/png;base64,' + ( getListingFromID(listingID[1].$oid).photo || defaultDrinkImage )" alt="" style="width:130px; height:130px;" class="bottle-img me-3"> -->
-                                <img :src=" ( getListingFromID(listingID[1].$oid).photo || defaultDrinkImage )" alt="" style="width:130px; height:130px;" class="bottle-img me-3">
+                                <!-- <img :src=" 'data:image/png;base64,' + ( getListingFromID(listingID[1]).photo || defaultDrinkImage )" alt="" style="width:130px; height:130px;" class="bottle-img me-3"> -->
+                                <img :src=" ( getListingFromID(listingID).photo || defaultDrinkImage )" alt="" style="width:130px; height:130px;" class="bottle-img me-3">
                                 <div style="min-height: 150px; display: flex; flex-direction: column;">
-                                    <a :href="'/listing/view/' + listingID[1].$oid" style="text-decoration: none; color: inherit;">
-                                        <h4>{{ getListingFromID(listingID[1].$oid).listingName }}</h4>
+                                    <a :href="'/listing/view/' + listingID" style="text-decoration: none; color: inherit;">
+                                        <h4>{{ getListingFromID(listingID).listingName }}</h4>
                                     </a>
-                                    <p style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;"> {{ getListingFromID(listingID[1].$oid).officialDesc }} </p>
+                                    <p style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;"> {{ getListingFromID(listingID).officialDesc }} </p>
                                     <div v-if="ownProfile" style="display: flex; margin-top: auto" class="mb-0">
                                         <a href="#" style="text-decoration: none; color: #535C72;" data-bs-toggle="modal" :data-bs-target="`#deleteFromListModal${index}`">
                                             <!-- cross icon -->
@@ -831,7 +831,7 @@
                             </div>
                             <div class="col-2 text-center ps-0">
                                 <h2>
-                                    {{ getAverageReview(listingID[1]) }}
+                                    {{ getAverageReview(listingID) }}
                                     <svg class="mb-2" xmlns="http://www.w3.org/2000/svg" height="18" width="20.25" viewBox="0 0 576 512">
                                         <!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc. -->
                                         <path d="M287.9 0c9.2 0 17.6 5.2 21.6 13.5l68.6 141.3 153.2 22.6c9 1.3 16.5 7.6 19.3 16.3s.5 18.1-5.9 24.5L433.6 328.4l26.2 155.6c1.5 9-2.2 18.1-9.7 23.5s-17.3 6-25.3 1.7l-137-73.2L151 509.1c-8.1 4.3-17.9 3.7-25.3-1.7s-11.2-14.5-9.7-23.5l26.2-155.6L31.1 218.2c-6.5-6.4-8.7-15.9-5.9-24.5s10.3-14.9 19.3-16.3l153.2-22.6L266.3 13.5C270.4 5.2 278.7 0 287.9 0zm0 79L235.4 187.2c-3.5 7.1-10.2 12.1-18.1 13.3L99 217.9 184.9 303c5.5 5.5 8.1 13.3 6.8 21L171.4 443.7l105.2-56.2c7.1-3.8 15.6-3.8 22.6 0l105.2 56.2L384.2 324.1c-1.3-7.7 1.2-15.5 6.8-21l85.9-85.1L358.6 200.5c-7.8-1.2-14.6-6.1-18.1-13.3L287.9 79z"/>
@@ -851,7 +851,7 @@
                                             <img src="../../../Images/Others/cancel.png" alt="" class="rounded-circle border border-dark text-center" style="width: 100px; height: 100px;">
                                             <h3>Are you sure?</h3>
                                             <br>
-                                            <p>Do you really want to delete <b><i>{{ getListingFromID(listingID[1].$oid).listingName }}</i></b> from <b><i>{{ currentList }}</i></b>? </p>
+                                            <p>Do you really want to delete <b><i>{{ getListingFromID(listingID).listingName }}</i></b> from <b><i>{{ currentList }}</i></b>? </p>
                                         </div>
                                         <div style="display: inline" class="text-center mb-4">
                                             <button type="button" class="btn btn-secondary me-3" data-bs-dismiss="modal">Cancel</button>
@@ -1179,7 +1179,7 @@ export default {
                 const response = await this.$axios.get('http://127.0.0.1:5000/getData/getReviews');
                 this.reviews = response.data;
                 this.reversedReviews = this.reviews.reverse();
-                this.recentReviews = this.reversedReviews.filter(review => review.userID?.$oid === this.displayUserID && review.reviewType === 'Listing');
+                this.recentReviews = this.reversedReviews.filter(review => review.userID === this.displayUserID && review.reviewType === 'Listing');
             }
             catch (error) {
                 console.error(error);
@@ -1233,17 +1233,17 @@ export default {
                 this.drinkCount = this.getDrinkCount();
                 if (this.user) {
                     // join date
-                    const dateString = this.user.joinDate.$date;
+                    const dateString = this.user.joinDate;
                     const dateParts = dateString.split('-');
                     const year = dateParts[0];
                     const month = new Date(dateString).toLocaleString('default', { month: 'long' });
                     this.joinDate = `${month} ${year}`;
                     this.selectedDrinks = this.user.choiceDrinks;
                     this.userBookmarks = this.user.drinkLists;
-                    this.following = JSON.stringify(this.user.followLists.users).includes(JSON.stringify({$oid: this.displayUserID}));
+                    this.following = JSON.stringify(this.user.followLists.users).includes(JSON.stringify(this.displayUserID));
 
                 } else {
-                    const dateString = this.displayUser.joinDate.$date;
+                    const dateString = this.displayUser.joinDate;
                     const dateParts = dateString.split('-');
                     const year = dateParts[0];
                     const month = new Date(dateString).toLocaleString('default', { month: 'long' });
@@ -1287,7 +1287,7 @@ export default {
                 const response = await this.$axios.get('http://127.0.0.1:5000/getData/getModRequests');
                 this.modRequests = response.data;
                 this.modRequestsType = this.modRequests
-                    .filter(request => request.userID.$oid === this.userID && request.reviewStatus === true)
+                    .filter(request => request.userID === this.userID && request.reviewStatus === true)
                     .map(request => request.drinkType);
             } 
             catch (error) {
@@ -1345,10 +1345,10 @@ export default {
                 this.subTags = response.data
                 this.flavourTags.forEach(flavourTag => {
                     // Filter subtags belonging to the current flavor tag
-                    const subTagsForFlavourTag = this.subTags.filter(subTag => subTag.familyTagId.$oid === flavourTag._id.$oid);
+                    const subTagsForFlavourTag = this.subTags.filter(subTag => subTag.familyTagId === flavourTag.id);
                     // Extract required information from subtags
                     const subTagsInfo = subTagsForFlavourTag.map(subTag=> ({
-                        id: subTag._id,
+                        id: subTag.id,
                         subTag: subTag.subTag
                     }));
                     // Assign subtag information to flavor tag object
@@ -1369,15 +1369,15 @@ export default {
         // ------------------- User Profile -------------------
         // get user from user ID
         getUser(id) {
-            return this.users.find(user => user.id === id);
+            return this.users.find(user => user.id === parseInt(id));
         },
         // get display user details
         getDrinkCount() {
             if (this.ownProfile) {
-                return this.reviews.filter(review => review.userID.$oid === this.userID && review.reviewType === 'Listing').length;
+                return this.reviews.filter(review => review.userID === this.userID && review.reviewType === 'Listing').length;
             }
             else {
-                return this.reviews.filter(review => review.userID.$oid === this.displayUserID && review.reviewType === 'Listing').length;
+                return this.reviews.filter(review => review.userID === this.displayUserID && review.reviewType === 'Listing').length;
             }
         },
         getDrinkOfChoice() {
@@ -1427,7 +1427,7 @@ export default {
                 console.error(error);
             }
 
-            window.location.reload();
+            // window.location.reload();
         },
         // reset edit profile form
         cancelChanges() {
@@ -1468,7 +1468,8 @@ export default {
         async addDrinkToList(listName) {
             for (const drink of this.drinksToAdd) {
                 let addListingId = this.getListingID(drink);
-                let itemExist = this.userBookmarks[listName].listItems.find(item => item[1].$oid === addListingId.$oid);
+                console.log(this.userBookmarks)
+                let itemExist = this.userBookmarks[listName].listItems.find(item => item === addListingId);
                 if (!itemExist) {
                     this.userBookmarks[listName].listItems.push([new Date(), addListingId]);
                 }
@@ -1642,32 +1643,32 @@ export default {
         // ------------------- User Drink Activity -------------------
         // check if review is for listing
         async checkReviewType(listingID) {
-            const review = this.reviews.find(review => review.listingID.$oid === listingID.$oid);
+            const review = this.reviews.find(review => review.listingID === listingID);
             return review.reviewType == "Listing"
         },
         // get listing name from listing ID
         getListingName(listingID) {
             if (this.listings) {
-                return this.listings.find(listing => listing.id === listingID.$oid).listingName;
+                return this.listings.find(listing => listing.id === listingID).listingName;
             }
         },
         // get user's favourite listings
         getUserFavourite() {
             const favouriteListingReviews = this.reviews
                 .filter(review => review.reviewType === "Listing" && 
-                    review.userID.$oid === this.displayUserID &&
+                    review.userID === this.displayUserID &&
                     review.rating >= 5)
                 .sort((a, b) => b.rating - a.rating);
 
             const favouriteListingIds = favouriteListingReviews
-                .map(review => review.reviewTarget['$oid'])
+                .map(review => review.reviewTarget)
 
             this.favouriteListings = this.listings
                 .filter(listing => favouriteListingIds.includes(listing.id))
                 .sort((a, b) => {
                     // Get the indices of the IDs in favouriteIdList
-                    const indexA = favouriteListingIds.indexOf(a._id.$oid);
-                    const indexB = favouriteListingIds.indexOf(b._id.$oid);
+                    const indexA = favouriteListingIds.indexOf(a.id);
+                    const indexB = favouriteListingIds.indexOf(b.id);
                     
                     // Sort based on the indices in favouriteIdList
                     return indexA - indexB;
@@ -1680,7 +1681,7 @@ export default {
             // // reviews
             let userReviews = this.reviews
                 .filter(review => review.reviewType === "Listing" && 
-                    review.userID.$oid === this.displayUserID)
+                    review.userID === this.displayUserID)
                 .map(review => {
                     review.listingID = review.reviewTarget;
                     return review;
@@ -1688,39 +1689,36 @@ export default {
 
             // bookmarks
             let allUserBookmarks = Object.values(this.userBookmarks).map(item => item.listItems).flat();
-            let allUserBookmarksDict = allUserBookmarks.map(([createdDate, listingID]) => ({createdDate, listingID}));
+            let allUserBookmarksDict = allUserBookmarks.map(listingID => ({listingID}));
 
             // combine reviews and bookmarks
             let userActivity = userReviews.concat(allUserBookmarksDict);
 
             this.recentActivity = userActivity
-                .sort((a, b) => {
-                    return new Date(b.createdDate) - new Date(a.createdDate);
-                })
                 .reverse()
                 .filter((item, index, self) =>
                     index === self.findIndex((t) => (
-                    t.listingID.$oid === item.listingID.$oid
+                    t.listingID === item.listingID
                     ))
                 )
                 .map(item => {
-                    item = this.listings.find(listing => listing.id === item.listingID.$oid);
+                    item = this.listings.find(listing => listing.id === parseInt(item.listingID));
                     return item;
                 })
                 .slice(0, 5);
 
         }, 
         getListingPhoto(listingID) {
-            const listing = this.listings.find(listing => listing.id === listingID.$oid);
+            const listing = this.listings.find(listing => listing.id === listingID);
             return listing.photo;
         },
         getTagName(tag) {
             if (!this.subTags || !this.flavourTags) {
                 return "";
             }
-            const subTag = this.subTags.find(subTag=>subTag._id.$oid === tag.$oid)
+            const subTag = this.subTags.find(subTag=>subTag.id === tag)
             if(subTag){
-                const familyTag = this.flavourTags.find(family=>subTag.familyTagId.$oid===family._id.$oid)
+                const familyTag = this.flavourTags.find(family=>subTag.familyTagId===family.id)
                 if(familyTag){
                     const hexcode = familyTag.hexcode
                     const subtagInfo = subTag.subTag
@@ -1740,9 +1738,9 @@ export default {
             if (!this.subTags || !this.flavourTags) {
                 return "";
             }
-            const subTag = this.subTags.find(subTag=>subTag._id.$oid === tag.$oid)
+            const subTag = this.subTags.find(subTag=>subTag.id === tag)
             if(subTag){
-                const familyTag = this.flavourTags.find(family=>subTag.familyTagId.$oid===family._id.$oid)
+                const familyTag = this.flavourTags.find(family=>subTag.familyTagId===family.id)
                 if(familyTag){
                     const hexcode = familyTag.hexcode
                     const subtagInfo = subTag.subTag
@@ -1789,7 +1787,7 @@ export default {
         // get average review
         getAverageReview(listingID) {
             // param: objectId
-            const reviews = this.reviews.filter(review => review.reviewTarget.$oid === listingID.$oid);
+            const reviews = this.reviews.filter(review => review.reviewTarget === listingID);
             if (reviews.length > 0) {
                 const totalRating = reviews.reduce((acc, review) => acc + review.rating, 0);
                 return (totalRating / reviews.length).toFixed(1);
@@ -2153,7 +2151,7 @@ export default {
 
         // get all listings reviewed by the user
         getAllListingsReviewed() {
-            this.allListingsReviewedByUser = this.recentReviews.map(review => this.listings.find(listing => listing.id === review.reviewTarget.$oid));
+            this.allListingsReviewedByUser = this.recentReviews.map(review => this.listings.find(listing => listing.id === review.reviewTarget));
         },
 
         // get all drinkType and typeCategory reviewed by the user
@@ -2258,7 +2256,7 @@ export default {
         // get total number of upvotes received
         getTotalUpvotes() {
             let totalUpvotes = this.recentReviews.reduce((count, review) => {
-                if (review.userVotes.upvotes.some(vote => vote.userID.$oid === this.displayUserID)) {
+                if (review.userVotes.upvotes.some(vote => vote.userID === this.displayUserID)) {
                     count += 1;
                 }
                 return count;
@@ -2309,14 +2307,14 @@ export default {
         // get total number of questions asked by user to producers
         getAskedProducerQuestions() {
             this.pointSystem.askProducer[0] = this.producers.reduce((totalQuestions, producer) => {
-                return totalQuestions + producer.questionsAnswers.filter(qa => qa.userID.$oid === this.displayUserID).length;
+                return totalQuestions + producer.questionsAnswers.filter(qa => qa.userID === this.displayUserID).length;
             }, 0);
         },
 
         // get total number of questions asked by user to venues
         getAskedVenueQuestions() {
             this.pointSystem.askVenue[0] = this.venues.reduce((totalQuestions, venue) => {
-                return totalQuestions + venue.questionsAnswers.filter(qa => qa.userID.$oid === this.displayUserID).length;
+                return totalQuestions + venue.questionsAnswers.filter(qa => qa.userID === this.displayUserID).length;
             }, 0);
         },
 
