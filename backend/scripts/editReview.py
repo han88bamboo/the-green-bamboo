@@ -20,40 +20,49 @@ blueprint = Blueprint(file_name[:-3], __name__)
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/voteReview', methods=['POST'])
 def voteReview():
-    db = g.db
+    conn = g.db
     data = request.get_json()
-    print(data)
-    reviewID = data['reviewID']
-    userVotes = data['userVotes']
 
-    for voteType in userVotes:
-        votes = userVotes[voteType]
-        for vote in votes:
-            if isinstance(vote["userID"], str):
-                vote["userID"] = ObjectId(vote["userID"])
-            if isinstance(vote["date"], str):
-                vote["date"] = datetime.strptime(vote["date"], "%Y-%m-%dT%H:%M:%S.%fZ")
+    review_id = data['reviewID']
+    user_votes = data['userVotes']
+    action = data['action']
 
-    try: 
-        voteReview = db.reviews.update_one({'_id': ObjectId(reviewID['$oid'])}, {'$set': {'userVotes': userVotes}})
+    with conn.cursor() as cur:
+        try:
+            cur.execute("SELECT id, upvotes, downvotes FROM \"reviewsUserVotes\" WHERE \"reviewId\" = %s", (review_id,))
+            result = cur.fetchone()
+            print("Result: ", result)
 
-        return jsonify(
-            {   
+            if result:
+                cur.execute("""
+                    UPDATE "reviewsUserVotes"
+                    SET upvotes = %s, downvotes = %s
+                    WHERE id = %s;
+                """, (user_votes['upvotes'], user_votes['downvotes'], result['id']))
+            else:
+                cur.execute("""
+                    INSERT INTO "reviewsUserVotes" ("reviewId", upvotes, downvotes)
+                    VALUES (%s, %s, %s);
+                """, (review_id, user_votes['upvotes'], user_votes['downvotes']))
+
+            conn.commit()
+
+            return jsonify({
                 "code": 201,
-                "data": userVotes
-            }
-        ), 201
-    except Exception as e:
-        print(str(e))
-        return jsonify(
-            {
-                "code": 500,
                 "data": {
-                    "data": userVotes
-                },
-                "message": "An error occurred updating the image."
-            }
-        ), 500
+                    "upvotes": current_upvotes if 'current_upvotes' in locals() else user_votes['upvotes'],
+                    "downvotes": current_downvotes if 'current_downvotes' in locals() else user_votes['downvotes']
+                }
+            }), 201
+
+        except Exception as e:
+            print(str(e))
+            conn.rollback()
+            return jsonify({
+                "code": 500,
+                "message": "An error occurred updating the votes.",
+                "details": str(e)
+            }), 500
 
 # -----------------------------------------------------------------------------------------
     
@@ -62,124 +71,94 @@ def voteReview():
 # - Possible return codes: 200 (Updated), 400(Review not found), 500 (Error during update)
 @blueprint.route('/updateReview/<id>', methods=['PUT'])
 def updateReview(id):
-    db = g.db
-    reviewID= ObjectId(id)
+    conn = g.db
+    cur = conn.cursor()
     data = request.get_json()
-    existingReview = db.reviews.find_one({'_id': ObjectId(id)})
-    data['reviewTarget'] = ObjectId(data['reviewTarget'])  # Convert reviewTarget to ObjectId
-    data['userID'] = ObjectId(data['userID'])  # Convert userID to ObjectId
 
-    # get review address
-    locationAddress=data['address']
-    locationName=data['location']
+    # Parse the date from the request body
+    try:
+        created_date = datetime.strptime(data.get('createdDate', ''), "%a, %d %b %Y %H:%M:%S %Z")
+    except ValueError:
+        return jsonify({
+            "code": 400,
+            "message": "Invalid date format."
+        }), 400
 
+    # Check if review exists
+    cur.execute("""
+        SELECT * FROM "reviews" WHERE "id" = %s
+    """, (id,))
+    existing_review = cur.fetchone()
+
+    if existing_review is None:
+        return jsonify({
+            "code": 400,
+            "data": {
+                "reviewDesc": data.get('reviewDesc', '')
+            },
+            "message": "Review does not exist."
+        }), 400
+
+    # Insert or find the venue
+    venue_id = None
+    location_name = data.get('location')
+    address = data.get('address')
+
+    if location_name and address:
+        cur.execute("""
+            SELECT "id" FROM "venues" WHERE "venueName" = %s AND "address" = %s
+        """, (location_name, address))
+        venue = cur.fetchone()
+
+        if not venue:
+            # Insert new venue
+            cur.execute("""
+                INSERT INTO "venues" ("venueName", "address", "venueType", "originLocation", "venueDesc", "menu", 
+                                      "hashedPassword", "claimStatus", "photo", "reservationDetails", "username")
+                VALUES (%s, %s, '', '', '', NULL, 'hashed_password', FALSE, '', '', %s)
+                RETURNING "id"
+            """, (location_name, address, create_username(location_name)))
+            venue_id = cur.fetchone()[0]
+            conn.commit()
+        else:
+            venue_id = venue[0]
+
+    # Update review
+    tagged_users = '{' + ','.join(map(str, data.get('taggedUsers', []))) + '}'
+    flavour_tags = '{' + ','.join(map(str, data.get('flavourTag', []))) + '}'
+    observation_tags = '{' + ','.join(map(str, data.get('observationTag', []))) + '}'
+
+    update_review_sql = """
+        UPDATE "reviews"
+        SET "userID" = %s, "reviewTarget" = %s, "rating" = %s, "reviewDesc" = %s, "reviewType" = %s, "createdDate" = %s,
+            "language" = %s, "finish" = %s, "willRecommend" = %s, "wouldBuyAgain" = %s, "taggedUsers" = %s, "flavourTag" = %s,
+            "photo" = %s, "colour" = %s, "aroma" = %s, "taste" = %s, "observationTag" = %s, "location" = %s, "address" = %s
+        WHERE "id" = %s
+    """
     
-    # create a dictionary of addresses from venue documents and store thier ids
-    
-    condition_1= db.venues.count_documents({ "address": locationAddress })
-    condition_2= db.venues.count_documents({ "venueName": locationName })
+    review_values = (
+        data.get('userID'), data.get('reviewTarget'), int(data.get('rating', 0)), data.get('reviewDesc'),
+        data.get('reviewType'), created_date,
+        data.get('language'), data.get('finish'), data.get('willRecommend', False), data.get('wouldBuyAgain', False),
+        tagged_users, flavour_tags, data.get('photo'), data.get('colour'), data.get('aroma'), data.get('taste'),
+        observation_tags, venue_id, address, id
+    )
 
-    # see if address is in the dictionary, if not insert a new venue
-    if locationAddress != "": 
-        if condition_2==0 or condition_1==0 :
+    try:
+        cur.execute(update_review_sql, review_values)
+        conn.commit()
 
-            # Create a username for the venue
-            username = create_username(locationName)
+        return jsonify({
+            "code": 200,
+            "data": data.get('reviewDesc', '')
+        }), 200
 
-            venue_to_insert = {
-                "venueName": data["location"],
-                "address": locationAddress,
-                "venueType": "",
-                "originLocation": "",
-                "venueDesc": "",
-                "menu": [],
-                "hashedPassword": hash_password(username,"admin1234"),
-                "claimStatus": False,
-                "openingHours": {
-                "Monday": [
-                    "",
-                    ""
-                ],
-                "Tuesday": [
-                    "",
-                    ""
-                ],
-                "Wednesday": [
-                    "",
-                    ""
-                ],
-                "Thursday": [
-                    "",
-                    ""
-                ],
-                "Friday": [
-                    "",
-                    ""
-                ],
-                "Saturday": [
-                    "",
-                    ""
-                ],
-                "Sunday": [
-                    "",
-                    ""
-                ]
-                },
-                "photo": "",
-                "updates": [],
-                "questionsAnswers": [],
-                "reservationDetails": "",
-                "publicHolidays": "",
-                "username": username
-            }
-
-            db.venues.insert_one(venue_to_insert)
-            
-
-    if len(data['taggedUsers']) >0:
-        temp_tag_id =[]
-        for userId in data['taggedUsers']:
-            temp_tag_id.append(ObjectId(userId))
-        data['taggedUsers'] = temp_tag_id
-    if len(data['flavorTag']) >0:
-        temp_flavour_tag =[]
-        for flavour_id in data['flavorTag']:
-            temp_flavour_tag.append(ObjectId(flavour_id['$oid']))
-        data['flavorTag'] = temp_flavour_tag
-
-    if(existingReview == None):
-        return jsonify(
-            {   
-                "code": 400,
-                "data": {
-                    "listingName": data['reviewDesc']
-                },
-                "message": "Review does not exist."
-            }
-        ), 400
-
-    try: 
-        # check if photo url exists, delete and reupload new one, else do nothing
-        if existingReview['photo']:
-            s3Images.deleteImageFromS3(existingReview['photo'])
-        if data['photo']:
-            data['photo'] = s3Images.uploadBase64ImageToS3(data['photo'])
-
-        voteReview = db.reviews.update_one({'_id': reviewID}, {'$set': data})
-        return jsonify(
-            {   
-                "code": 200,
-                "data": data['reviewDesc']
-            }
-        ), 201
     except Exception as e:
         print(str(e))
-        return jsonify(
-            {
-                "code": 500,
-                "data": {
-                    "data": data['reviewDesc']
-                },
-                "message": "An error occurred updating the review."
-            }
-        ), 500
+        return jsonify({
+            "code": 500,
+            "data": {
+                "reviewDesc": data.get('reviewDesc', '')
+            },
+            "message": "An error occurred updating the review."
+        }), 500

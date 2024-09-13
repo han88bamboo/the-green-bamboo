@@ -45,7 +45,7 @@ handleIconClick(data) {
             checkBookmarkStatus(listingID) {
                 for (const category of Object.values(this.userBookmarks)) {
                     if (category.listItems) {
-                        if (category.listItems.some(item => item[1].$oid === listingID)) {
+                        if (category.listItems.some(item => item.id === listingID)) {
                             return true;
                         }
                     }

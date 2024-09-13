@@ -182,8 +182,8 @@
                                                         <div style="height: 85%;">
                                                             <div class="text-start pt-2 overflow-auto" style="max-height: 100%;">
                                                                 <!-- [function] where to buy -->
-                                                                <div v-for="producer in producerListings" v-bind:key="producer._id">
-                                                                    <router-link :to="{ path: '/profile/producer/' + producer.$oid }" class="reverse-clickable-text">
+                                                                <div v-for="producer in producerListings" v-bind:key="producer.id">
+                                                                    <router-link :to="{ path: '/profile/producer/' + producer.id }" class="reverse-clickable-text">
                                                                         <p> {{ getProducerName(producer) }} </p>
                                                                     </router-link>
                                                                 </div>
@@ -208,8 +208,8 @@
                                                                 <!-- [function] where to try -->
                                                                 <!-- [if] user does not allow location -->
                                                                 <div v-if="nearestBars.length == 0" >
-                                                                    <div v-for="venue in venueListings" v-bind:key="venue._id">
-                                                                        <router-link :to="{ path: '/profile/venue/' + venue._id.$oid }" class="reverse-clickable-text">
+                                                                    <div v-for="venue in venueListings" v-bind:key="venue.id">
+                                                                        <router-link :to="{ path: '/profile/venue/' + venue.id }" class="reverse-clickable-text">
                                                                             <p class="mb-1"> {{ venue.venueName }} </p>
                                                                         </router-link>
                                                                     </div>
@@ -994,7 +994,7 @@
 
                     <hr>
 
-                    <div class="row mb-3" v-for="review in filteredReviews" v-bind:key="review._id">
+                    <div class="row mb-3" v-for="review in filteredReviews" v-bind:key="review.id">
 
 
                         <!-- user reviews -->
@@ -1005,13 +1005,13 @@
                                     <div class="row">    
                                         <!-- profile photo -->
                                         <div class="col-12 col-lg-1 mobile-col-2" style="text-align: left;">
-                                            <router-link :to="`/profile/user/${review.userID.$oid}`">
+                                            <router-link :to="`/profile/user/${review.userID}`">
                                                 <img :src="(getPhotoFromReview(review) || defaultProfilePhoto)" alt="" class="profile-image">
                                             </router-link>
                                         </div>
                                         <div class="col-10 pe-0 mobile-fs-7 mobile-ps-4">
                                             <!-- username -->
-                                            <router-link :to="`/profile/user/${review.userID.$oid}`" style="color: inherit">
+                                            <router-link :to="`/profile/user/${review.userID}`" style="color: inherit">
                                                 <b>
                                                     @{{ getUsernameFromReview(review) }}
                                                 </b>
@@ -1029,14 +1029,14 @@
                                             
                                             <span v-if="review.location !== '' && checkVenue(review.address)">
                                                 <a style="color: inherit" > 
-                                                    at 
+                                                    at
                                                     <router-link :to="'/profile/venue/' + checkVenue(review.address)" style="color: inherit">
                                                         <b>{{ review.location }}</b>
                                                     </router-link>
                                                 </a>
                                             </span>
 
-                                            <span v-else-if="review.location !== ''">
+                                            <span v-else-if="review.location">
                                                 at 
                                                 <a :href="'https://www.google.com/maps/search/' + review.location" style="color: inherit" target="_blank"> 
                                                     <b>{{ review.location }}</b>
@@ -1051,8 +1051,8 @@
                                             
                                             <!-- Insert Edit modal here -->
                                             <div class="mt-2 mobile-mt-1">
-                                                <button v-if="review.userID['$oid'] === userID"  class="btn btn-warning me-1 py-1  mobile-fs-7" @click="setUpdateID(review)" data-bs-toggle="modal" data-bs-target="#reviewModal">Edit</button>
-                                                <button v-if="review.userID['$oid'] === userID || correctModerator" class="btn btn-danger py-1  mobile-fs-7" @click="setDeleteID(review)" data-bs-toggle="modal" data-bs-target="#deleteReview">Delete</button>
+                                                <button v-if="review.userID === parseInt(userID)"  class="btn btn-warning me-1 py-1  mobile-fs-7" @click="setUpdateID(review)" data-bs-toggle="modal" data-bs-target="#reviewModal">Edit</button>
+                                                <button v-if="review.userID === parseInt(userID) || correctModerator" class="btn btn-danger py-1  mobile-fs-7" @click="setDeleteID(review)" data-bs-toggle="modal" data-bs-target="#deleteReview">Delete</button>
                                             </div>
                                         </div>    
                                     </div>
@@ -1149,7 +1149,7 @@
                                                 </div>
                                                 <div class="col-9">
                                                     <b>
-                                                        @<router-link :to="`/profile/user/${detailedReview.userID.$oid}`" style="text-decoration-color: #535C72;">
+                                                        @<router-link :to="`/profile/user/${detailedReview.userID}`" style="text-decoration-color: #535C72;">
                                                             <span class="default-clickable-text">
                                                                 {{ getUsernameFromReview(detailedReview) }}
                                                             </span>
@@ -1275,9 +1275,9 @@
                                                 <div class="col-9">
                                                     <span v-for="(user, index) in detailedReview.taggedUsers" :key="index">
                                                         <b>
-                                                            @<router-link :to="`/profile/user/${user.$oid}`" style="text-decoration-color: #535C72;">
+                                                            @<router-link :to="`/profile/user/${user.id}`" style="text-decoration-color: #535C72;">
                                                                 <span class="default-clickable-text">
-                                                                    {{ getUsernameFromId(user.$oid) }}
+                                                                    {{ getUsernameFromId(user.id) }}
                                                                 </span>
                                                             </router-link>
                                                         </b>
@@ -1358,8 +1358,8 @@
                         <div style="height: 85%;">
                             <div class="text-start pt-2 overflow-auto" style="max-height: 100%;">
                                 <!-- [function] where to buy -->
-                                <div v-for="producer in producerListings" v-bind:key="producer._id">
-                                    <router-link :to="{ path: '/profile/producer/' + producer.$oid }" class="reverse-clickable-text">
+                                <div v-for="producer in producerListings" v-bind:key="producer.id">
+                                    <router-link :to="{ path: '/profile/producer/' + producer.id }" class="reverse-clickable-text">
                                         <p> {{ getProducerName(producer) }} </p>
                                     </router-link>
                                 </div>
@@ -1384,8 +1384,8 @@
                                 <!-- [function] where to try -->
                                 <!-- [if] user does not allow location -->
                                 <div v-if="nearestBars.length == 0" >
-                                    <div v-for="venue in venueListings" v-bind:key="venue._id">
-                                        <router-link :to="{ path: '/profile/venue/' + venue._id.$oid }" class="reverse-clickable-text">
+                                    <div v-for="venue in venueListings" v-bind:key="venue.id">
+                                        <router-link :to="{ path: '/profile/venue/' + venue.id }" class="reverse-clickable-text">
                                             <p class="mb-1"> {{ venue.venueName }} </p>
                                         </router-link>
                                     </div>
@@ -1795,9 +1795,9 @@
                         try {
                             const response = await this.$axios.get('http://127.0.0.1:5000/getData/getVenues');
                             this.venues = response.data;
-                            this.locationOptions = response.data.map(item => ({name: item.venueName, id:item._id, address:item.address}));
+                            this.locationOptions = response.data.map(item => ({name: item.venueName, id:item.id, address:item.address}));
                             this.addressDict = this.venues.reduce((dict, venue) => {
-                                dict[venue.address] = venue._id.$oid;
+                                dict[venue.address] = venue.id;
                                 return dict;
                             }, {});
                             this.getVenuesWithMenu(); // extract venues with menu
@@ -1860,7 +1860,7 @@
                             let triedDrinks=[]
                             let wantToTryDrinks=[]
                             this.followList = this.users.filter(user => {
-                                return this.user.followLists.users.some(item => item.followerID.$oid === user.id);
+                                return this.user.followLists.users.some(item => item.followerID.id === user.id);
                             });
                             if(this.specificReview.length >0){
                                 this.showFriendTagList = this.friendTagList.map(id => {
@@ -1872,12 +1872,12 @@
                                 });
                             }
                             for (let drink of this.user.drinkLists["Drinks I Have Tried"]["listItems"]) {
-                                let triedDrink = this.listings.find(listing => listing.id === drink[1].id).listingName;
+                                let triedDrink = this.listings.find(listing => listing.id === parseInt(drink)).listingName;
                                 // let triedDrinkName = triedDrink ? triedDrink.listingName : null;
                                 triedDrinks.push(triedDrink)
                             }
                             for (let drink of this.user.drinkLists["Drinks I Want To Try"]["listItems"]) {
-                                let wantDrinkName = this.listings.find(listing => listing.id === drink[1].id).listingName;   
+                                let wantDrinkName = this.listings.find(listing => listing.id === parseInt(drink)).listingName;   
                                 wantToTryDrinks.push(wantDrinkName)
                             }
                             this.drinkList = {
@@ -2029,10 +2029,10 @@
                                     const duration_text = duration.text;
 
                                     // to store the distance value only
-                                    venueDistances[venue._id.$oid] = distance_value
+                                    venueDistances[venue.id] = distance_value
 
                                     // to store other info
-                                    this.venueDetails[venue._id.$oid] = {
+                                    this.venueDetails[venue.id] = {
                                         distance: distance_text,
                                         duration: duration_text
                                     }
@@ -2078,7 +2078,7 @@
             // get VenueName for a listing based on producerID
             getVenueName(venueID) {
                 const venue = this.venues.find((venue) => {
-                    return venue["_id"]["$oid"] == venueID["$oid"];
+                    return venue["id"] == venueID;
                 });
                 // ensures that venue is found before accessing "venueName"
                 if (venue) {
@@ -2092,7 +2092,7 @@
 
             getVenueNameFromID(venueID) {
                 const venue = this.venues.find((venue) => {
-                    return venue["_id"]["$oid"] == venueID;
+                    return venue["id"] == venueID;
                 });
                 if (venue) {
                     return venue["venueName"];
@@ -2128,7 +2128,7 @@
             getRatings(listing) {
                 const ratings = this.reviews.filter((rating) => {
                 try {
-                    return rating["reviewTarget"]['$oid'] == listing['_id']['$oid'];
+                    return rating["reviewTarget"] == listing['id'];
                 }
                 catch(error){console.error(error)}
                 });
@@ -2147,7 +2147,7 @@
             getWillRecommend(listing) {
                 const ratings = this.reviews.filter((rating) => {
                 try {
-                    return rating["reviewTarget"]['$oid'] == listing['_id']['$oid'];
+                    return rating["reviewTarget"] == listing['id'];
                 }
                 catch(error){console.error(error)}
                 });
@@ -2167,7 +2167,7 @@
             getWillDrinkAgain(listing) {
                 const ratings = this.reviews.filter((rating) => {
                 try {
-                    return rating["reviewTarget"]['$oid'] == listing['_id']['$oid'];
+                    return rating["reviewTarget"] == listing['id'];
                 }
                 catch(error){console.error(error)}
                 });
@@ -2190,13 +2190,13 @@
 
             getReviewsForListing(listing) {
                 const reviews = this.reviews.filter((review) => {
-                    return review["reviewTarget"]['$oid'] == listing._id['$oid'];
+                    return review["reviewTarget"] == listing.id;
                 });
                 return reviews;
             },
             getLoggedUserReview(){
                 const specificReview = this.filteredReviews.filter((review) => {
-                    return review["userID"]['$oid'] == this.userID;
+                    return review["userID"] == this.userID;
                 });
                 if(specificReview.length!=0){
                     this.inEdit=true
@@ -2213,9 +2213,9 @@
                     // this.selectedFlavourTags= specificReview[0].flavorTag
                     if(specificReview[0].flavorTag!=null){
                         specificReview[0].flavorTag.forEach(subtag=>{
-                            const subTag = this.subTags.find(subTag=>subtag.$oid===subTag._id.$oid)                       
+                            const subTag = this.subTags.find(subTag=>subtag.id===subTag.id)                       
                             if(subTag){
-                                const familyTag = this.flavourTags.find(family=>subTag.familyTagId.$oid===family._id.$oid)
+                                const familyTag = this.flavourTags.find(family=>subTag.familyTagId===family.id)
                                 if(familyTag){
                                     const hexcode = familyTag.hexcode
                                     const subtagInfo = subTag.subTag
@@ -2228,14 +2228,14 @@
                     }
                     this.finalSelectedFlavourTags = specificReview[0].flavorTag
                     if(specificReview[0].taggedUsers !=null){
-                        this.friendTagList = specificReview[0].taggedUsers.map(user => user.$oid);
+                        this.friendTagList = specificReview[0].taggedUsers.map(user => user.id);
                     }
                     this.selectedObservations= specificReview[0].observationTag
                     this.image64= specificReview[0].photo
                     let selectedLocation = []
                     if(specificReview[0].location != null){
                         selectedLocation = this.locationOptions.filter((location)=>{
-                            return location['id']['$oid'] == specificReview[0].location['$oid']
+                            return location['id'] == specificReview[0].location
                         })
                     }
                     if(selectedLocation.length !=0){
@@ -2249,7 +2249,7 @@
 
             getUsernameFromReview(review) {
                 const user = this.users.find((user) => {
-                    return user["_id"]["$oid"] == review["userID"]["$oid"];
+                    return user["id"] == review["userID"];
                 });
                 if (user) {
                     return user["username"];
@@ -2258,7 +2258,7 @@
 
             getUsernameFromId(id) {
                 const user = this.users.find((user) => {
-                    return user["_id"]["$oid"] == id;
+                    return user["id"] == id;
                 });
                 if (user) {
                     return user["username"];
@@ -2267,7 +2267,7 @@
 
             getPhotoFromReview(review) {
                 const user = this.users.find((user) => {
-                    return user["_id"]["$oid"] == review["userID"]["$oid"];
+                    return user["id"] == review["userID"];
                 });
                 if (user) {
                     return user["photo"];
@@ -2275,7 +2275,7 @@
             },
             checkModFromUserID(userID){
                 const user = this.users.find((user) => {
-                    return user["_id"]["$oid"] == userID["$oid"];
+                    return user["id"] == userID;
                 });
                 if (user) {
                     return user["modType"].length > 0;
@@ -2341,7 +2341,7 @@
                     "rating" : Number(this.rating),
                     "reviewDesc": this.reviewDesc,
                     "reviewType": "Listing",
-                    "flavorTag" : this.finalSelectedFlavourTags,
+                    "flavourTag" : this.finalSelectedFlavourTags,
                     "photo" : this.image64,
                     "colour" : this.selectedColour,
                     "language" : this.selectedLanguage,
@@ -2391,7 +2391,7 @@
                 if (this.finish !== "") {
                     this.finish = this.finish.trim();
                 }
-                let submitAPI = "http://127.0.0.1:5000/editReview/updateReview/" + this.specificReview[0]._id['$oid']
+                let submitAPI = "http://127.0.0.1:5000/editReview/updateReview/" + this.specificReview[0].id
                 let submitData = {
                     "userID" : this.userID,
                     "reviewTarget" :this.listing_id,
@@ -2537,7 +2537,7 @@
             },
 
             async deleteReview(){
-                let deleteAPI = "http://127.0.0.1:5000/deleteReview/deleteReview/" + this.deleteID['$oid']
+                let deleteAPI = "http://127.0.0.1:5000/deleteReview/deleteReview/" + this.deleteID
                 const response = await this.$axios.delete(deleteAPI)
                 .then((response)=>{
                     this.deleteReviewCode = response.data.code
@@ -2563,35 +2563,33 @@
             },
 
             setDeleteID(review){
-                this.deleteID = review._id
+                this.deleteID = review.id
             },
 
             setUpdateID(review){
-                this.updateID = review._id
+                this.updateID = review.id
             },
 
             async voteReview(review, vote){
-                const voteObject = {
-                    userID: this.userID, 
-                    date: new Date()
-                }
+                console.log(review, vote)
                 if (vote == "upvote") {
-                    review.userVotes.upvotes.push(voteObject);
-                    review.userVotes.downvotes = review.userVotes.downvotes.filter(vote => vote.userID.$oid !== this.userID && vote.userID !== this.userID)
+                    review.userVotes.upvotes.push(this.userID);
+                    review.userVotes.downvotes = review.userVotes.downvotes.filter(vote => vote !== this.userID);
                 } else if (vote == "downvote") {
-                    review.userVotes.downvotes.push(voteObject);
-                    review.userVotes.upvotes = review.userVotes.upvotes.filter(vote => vote.userID.$oid !== this.userID && vote.userID !== this.userID)
+                    review.userVotes.downvotes.push(this.userID);
+                    review.userVotes.upvotes = review.userVotes.upvotes.filter(vote => vote !== this.userID);
                 } else if (vote == "unupvote") {
-                    review.userVotes.upvotes = review.userVotes.upvotes.filter(vote => vote.userID.$oid !== this.userID && vote.userID !== this.userID)
+                    review.userVotes.upvotes = review.userVotes.upvotes.filter(vote => vote !== this.userID);
                 } else if (vote == "undownvote") {
-                    review.userVotes.downvotes = review.userVotes.downvotes.filter(vote => vote.userID.$oid !== this.userID && vote.userID !== this.userID)
+                    review.userVotes.downvotes = review.userVotes.downvotes.filter(vote => vote !== this.userID);
                 }
 
                 try {
                     await this.$axios.post('http://127.0.0.1:5000/editReview/voteReview', 
                         {
-                            reviewID: review._id,
-                            userVotes: review.userVotes
+                            reviewID: review.id,
+                            userVotes: review.userVotes,
+                            action: vote
                         }, {
                         headers: {
                             'Content-Type': 'application/json'
@@ -2601,6 +2599,7 @@
                     console.error(error);
                 }
             },
+
 
             // view detailed review
             updateDetailedReview(review) {
@@ -2615,9 +2614,9 @@
                 this.$router.push('/'); // Navigate to root 
             },
             getTagName(tag) {
-                const subTag = this.subTags.find(subTag=>subTag._id.$oid === tag.$oid)
+                const subTag = this.subTags.find(subTag=>subTag.id === tag.id)
                 if(subTag){
-                    const familyTag = this.flavourTags.find(family=>subTag.familyTagId.$oid===family._id.$oid)
+                    const familyTag = this.flavourTags.find(family=>subTag.familyTagId===family.id)
                     if(familyTag){
                         const hexcode = familyTag.hexcode
                         const subtagInfo = subTag.subTag
@@ -2630,9 +2629,9 @@
                 }
             },
             getTagColor(tag) {
-                const subTag = this.subTags.find(subTag=>subTag._id.$oid === tag.$oid)
+                const subTag = this.subTags.find(subTag=>subTag.id === tag.id)
                 if(subTag){
-                    const familyTag = this.flavourTags.find(family=>subTag.familyTagId.$oid===family._id.$oid)
+                    const familyTag = this.flavourTags.find(family=>subTag.familyTagId===family.id)
                     if(familyTag){
                         const hexcode = familyTag.hexcode
                         const subtagInfo = subTag.subTag
@@ -2697,7 +2696,7 @@
                 
                 let submitData = {
                             "date": new Date(),
-                            "listingID": this.specified_listing._id,
+                            "listingID": this.specified_listing.id,
                             "userID": this.userID,
                             
                 }
@@ -2712,17 +2711,17 @@
 
                 if (responseCode == 200) {
                     console.log("Success")
+                    window.location.reload();
                 } else {
                     console.log("Fail");
                 }
-                window.location.reload();
             },
             async addToWantList(){
                 let responseCode = "";
                 
                 let submitData = {
                             "date": new Date(),
-                            "listingID": this.specified_listing._id,
+                            "listingID": this.specified_listing.id,
                             "userID": this.userID,
                             
                 }
@@ -2737,10 +2736,10 @@
 
                 if (responseCode == 210) {
                     console.log("Success")
+                    window.location.reload();
                 } else {
                     console.log("Fail");
                 }
-                window.location.reload();
             },
             
             getFilteredReviewsWithImages() {
@@ -2759,12 +2758,12 @@
                 let allReviews = this.filteredReviews
                 let flavorTags = []
                 for (let review of allReviews) {
-                    for (let tag of review.flavorTag) {
+                    for (let tag of review.flavourTag) {
                         // convert ID into the string instead, make life easier
                         // flavorTags.push(tag)
-                        const subTag = this.subTags.find(subTag=>subTag._id.$oid === tag.$oid)
+                        const subTag = this.subTags.find(subTag=>subTag.id === tag.id)
                         if(subTag){
-                            const familyTag = this.flavourTags.find(family=>subTag.familyTagId.$oid===family._id.$oid)
+                            const familyTag = this.flavourTags.find(family=>subTag.familyTagId === family.id)
                             if(familyTag){
                                 const hexcode = familyTag.hexcode
                                 const subtagInfo = subTag.subTag
@@ -2865,9 +2864,9 @@
             },
 
             tagSpecificFriend(){
-                if (this.selectedFriendTag !== null && !this.friendTagList.includes(this.selectedFriendTag._id.$oid)) {
-                    this.friendTagList.push(this.selectedFriendTag._id.$oid);
-                    this.showFriendTagList.push({username:this.selectedFriendTag.username,id:this.selectedFriendTag._id.$oid})
+                if (this.selectedFriendTag !== null && !this.friendTagList.includes(this.selectedFriendTag.id)) {
+                    this.friendTagList.push(this.selectedFriendTag.id);
+                    this.showFriendTagList.push({username:this.selectedFriendTag.username,id:this.selectedFriendTag.id})
                     this.friendTag=''
                     this.selectedFriendTag=null
                 }
@@ -2921,7 +2920,7 @@
                 // }
                 // const selectedPlace = this.filteredOptions.find(option => option.name === place);
                 // if(selectedPlace){
-                //     return selectedPlace.id.$oid;
+                //     return selectedPlace.id;
                 // }
                 // else{
                 //     return false;

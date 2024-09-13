@@ -268,17 +268,38 @@ def getProducerByRequestId(id):
 # [OLD] TO BE DELETED:
 # ----------------------
 
+# -- ========= [NEW!] "reviewsUserVotes" =========
+# CREATE TABLE "reviewsUserVotes" (
+#     "id" SERIAL PRIMARY KEY,
+#     "upvotes" TEXT[], -- Contain "users"("id")s
+#     "downvotes" TEXT[], -- Contain "users"("id")s
+#     "reviewId" INTEGER REFERENCES "reviews"("id") on DELETE SET NULL -- [!] reference "reviews" FK
+# );
+
 # [GET] Reviews
 @blueprint.route("/getReviews")
 def getReviews():
     conn = g.db
     
     with conn.cursor() as cursor:
-        cursor.execute('SELECT * FROM "reviews"')
+        cursor.execute("""
+            SELECT "reviews".*, "reviewsUserVotes"."upvotes", "reviewsUserVotes"."downvotes"
+            FROM "reviews"
+            LEFT JOIN "reviewsUserVotes" ON "reviews"."id" = "reviewsUserVotes"."reviewId"
+        """)
+
         reviews_data = cursor.fetchall()
     
     if not reviews_data:
         return jsonify([])
+
+    for review in reviews_data:
+        review["userVotes"] = {
+            "upvotes": review["upvotes"] if review["upvotes"] else [],
+            "downvotes": review["downvotes"] if review["downvotes"] else []
+        }
+        del review["upvotes"]
+        del review["downvotes"]
 
     return jsonify(reviews_data)
 

@@ -48,23 +48,13 @@ def parse_json(data):
 
 @blueprint.route("/deleteReview/<id>", methods= ['DELETE'])
 def deleteReview(id):
-    # [OLD] TO BE DELETED FOR POSTGRES:
-    # ------------------------------------------------------
-    db = g.db
-    # ======================================================
-    
-    # [NEW] TO BE ADDED FOR POSTGRES:
-    # ------------------------------------------------------
-    # conn = g.db  # Get the DB connection from g
-    # cur = conn.cursor()
-    # ======================================================
+    conn = g.db
+    cur = conn.cursor()
 
+    cur.execute("SELECT * FROM reviews WHERE id = %s", (id,))
+    existingReview = cur.fetchone()
 
-# Find the review entry with the specified id
-    # [OLD] TO BE DELETED FOR POSTGRES:
-    # ------------------------------------------------------
-    existingReview = db.reviews.find_one({"_id": ObjectId(id)})
-    if(existingReview == None):
+    if existingReview is None:
         return jsonify(
             {   
                 "code": 400,
@@ -74,41 +64,26 @@ def deleteReview(id):
                 "message": "Review doesn't exist."
             }
         ), 400
-    # ======================================================
 
-    # [NEW] TO BE ADDED FOR POSTGRES:
-    # ------------------------------------------------------
-    
-    # cur.execute("SELECT * FROM reviews WHERE id = %s", (id,))
-    # existingReview = cur.fetchone()
-
-    # if existingReview is None:
-    #     return jsonify(
-    #         {   
-    #             "code": 400,
-    #             "data": {
-    #                 "id": id
-    #             },
-    #             "message": "Review doesn't exist."
-    #         }
-    #     ), 400
-
-    # ======================================================
-
-# Delete the review entry with the specified id
-    # [OLD] TO BE DELETED FOR POSTGRES:
-    # ------------------------------------------------------
     try:
         if(existingReview['photo']):
             s3Images.deleteImageFromS3(existingReview['photo'])
-        deleteResult = db.reviews.delete_one({"_id": ObjectId(id)})
 
-        return jsonify( 
+        # Delete associated votes
+        cur.execute("DELETE FROM \"reviewsUserVotes\" WHERE \"reviewId\" = %s", (id,))
+
+        # Delete the review
+        cur.execute("DELETE FROM reviews WHERE id = %s", (id,))
+
+        conn.commit()
+
+        return jsonify(
             {   
                 "code": 200,
                 "data": id
             }
-        ), 201
+        ), 200
+
     except Exception as e:
         print(str(e))
         return jsonify(
@@ -120,33 +95,4 @@ def deleteReview(id):
                 "message": "An error occurred deleting the listing."
             }
         ), 500
-    # ======================================================
-
-    # [NEW] TO BE ADDED FOR POSTGRES:
-    # ------------------------------------------------------
-    # try:
-    #     if(existingReview['photo']):
-    #         s3Images.deleteImageFromS3(existingReview['photo'])
-    #     cur.execute("DELETE FROM reviews WHERE id = %s", (id,))
-    #     g.db.commit()  # Commit the transaction to make sure the deletion takes effect
-
-
-    #     return jsonify( 
-    #         {   
-    #             "code": 200,
-    #             "data": id
-    #         }
-    #     ), 201
-    # except Exception as e:
-    #     print(str(e))
-    #     return jsonify(
-    #         {
-    #             "code": 500,
-    #             "data": {
-    #                 "id": id
-    #             },
-    #             "message": "An error occurred deleting the listing."
-    #         }
-    #     ), 500
-    # ======================================================
 
