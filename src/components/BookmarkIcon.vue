@@ -45,14 +45,14 @@ handleIconClick(data) {
             checkBookmarkStatus(listingID) {
                 for (const category of Object.values(this.userBookmarks)) {
                     if (category.listItems) {
-                        if (category.listItems.some(item => item.id === listingID)) {
+                        if (category.listItems.some(item => parseInt(item) === listingID)) {
                             return true;
                         }
                     }
                 }
             },
             iconClicked() {
-                this.$emit('icon-clicked', this.listing._id);
+                this.$emit('icon-clicked', this.listing.id);
             }
 
         }

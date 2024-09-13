@@ -58,6 +58,36 @@ def editDetails():
                 "message": "An error occurred updating the image or drink choice."
             }
         ), 500
+
+# -- ========= "users" =========
+# CREATE TABLE "users" (
+#     "id" SERIAL PRIMARY KEY,
+#     "username" VARCHAR(255),
+#     "displayName" VARCHAR(255),
+#     "choiceDrinks" TEXT[],
+#     "modType" TEXT[],
+#     "photo" TEXT,
+#     "hashedPassword" VARCHAR(255),
+#     -- "drinkLists" SERIAL, -- [!] reference "usersDrinkLists" not needed since user followlist ref users
+#     "joinDate" TIMESTAMP,
+#     -- "followLists" SERIAL, -- [!] reference "usersFollowLists"
+#     "firstName" VARCHAR(255),
+#     "lastName" VARCHAR(255),
+#     "email" VARCHAR(255),
+#     "isAdmin" BOOLEAN,
+#     "birthday" TIMESTAMP,
+#     "pin" VARCHAR(255)
+# );
+
+# -- ========= [NEW!] "usersDrinkLists" =========
+# CREATE TABLE "usersDrinkLists" (
+#     "id" SERIAL PRIMARY KEY,
+#     "userId" INTEGER REFERENCES "users"("id") ON DELETE SET NULL,  -- [!] reference "users" FK
+#     "listName" TEXT,
+#     "drinks" TEXT[],-- Contains "listings"("id")s
+#     UNIQUE ("userId", "listName")
+# );
+
     
 # -----------------------------------------------------------------------------------------
 # [POST] Update user bookmark
@@ -65,21 +95,28 @@ def editDetails():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/updateBookmark', methods=['POST'])
 def updateBookmark():
-    db = g.db
+    conn = g.db
     data = request.get_json()
     print(data)
     userID = data['userID']
     bookmark = data['bookmark']
 
-    # convert date (str) to datetime object
-    for listName in bookmark:
-        listItems = bookmark[listName]["listItems"]
-        for item in listItems:
-            if isinstance(item[0], str):
-                item[0] = datetime.strptime(item[0], "%Y-%m-%dT%H:%M:%S.%fZ")
+    try:
+        cursor = conn.cursor()
+        for listName in bookmark:
+            listDesc = bookmark[listName]["listDesc"]
+            listItems = bookmark[listName]["listItems"]
 
-    try: 
-        updateBookmark = db.users.update_one({'_id': ObjectId(userID)}, {'$set': {'drinkLists': bookmark}})
+            query = """
+                INSERT INTO "usersDrinkLists" ("userId", "listName", "drinks")
+                VALUES (%s, %s, %s)
+                ON CONFLICT ("userId", "listName") DO UPDATE
+                SET "drinks" = EXCLUDED."drinks";
+            """
+            cursor.execute(query, (userID, listName, listItems))
+        
+        conn.commit()
+        cursor.close()
 
         return jsonify(
             {   
@@ -90,6 +127,7 @@ def updateBookmark():
                 }
             }
         ), 201
+
     except Exception as e:
         print(str(e))
         return jsonify(

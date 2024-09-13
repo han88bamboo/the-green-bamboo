@@ -2571,7 +2571,6 @@
             },
 
             async voteReview(review, vote){
-                console.log(review, vote)
                 if (vote == "upvote") {
                     review.userVotes.upvotes.push(this.userID);
                     review.userVotes.downvotes = review.userVotes.downvotes.filter(vote => vote !== this.userID);

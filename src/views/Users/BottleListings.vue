@@ -1162,7 +1162,7 @@
                     })
                     let allDrinks = []
                     for (const item of allDrinkShelf) {
-                        const listing = this.listings.find(listing => listing.id === item[1].id);
+                        const listing = this.listings.find(listing => listing.id === parseInt(item));
                         if (listing) {
                             allDrinks.push(listing);
                         }
