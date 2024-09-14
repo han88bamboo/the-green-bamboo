@@ -1162,7 +1162,7 @@
                     })
                     let allDrinks = []
                     for (const item of allDrinkShelf) {
-                        const listing = this.listings.find(listing => listing.id === item[1].id);
+                        const listing = this.listings.find(listing => listing.id === parseInt(item));
                         if (listing) {
                             allDrinks.push(listing);
                         }
@@ -1293,7 +1293,7 @@
             // get ratings for a listing
             getRatings(listing) {
                 const ratings = this.reviews.filter((rating) => {
-                    return rating["reviewTarget"]["id"] == listing["id"];
+                    return rating["reviewTarget"] == listing["id"];
                 });
                 // if there are no ratings
                 if (ratings.length == 0) {
@@ -1309,7 +1309,7 @@
             // get ratings for a listing --> return 0 if no ratings
             getAllRatings(listing) {
                 const ratings = this.reviews.filter((rating) => {
-                    return rating["reviewTarget"]["id"] == listing["id"];
+                    return rating["reviewTarget"] == listing["id"];
                 });
                 // if there are no ratings
                 if (ratings.length == 0) {

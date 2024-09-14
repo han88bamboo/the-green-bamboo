@@ -18,25 +18,27 @@ blueprint = Blueprint(file_name[:-3], __name__)
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/editDetails', methods=['POST'])
 def editDetails():
-    db = g.db
+    conn = g.db
     data = request.get_json()
     print(data)
     userID = data['userID']
-    # if data contains image64
-    if 'image64' in data:
-        existingUser = db.users.find_one({"_id": ObjectId(userID)})
-        if existingUser['photo']:
-            s3Images.deleteImageFromS3(existingUser['photo'])
-        image64 = s3Images.uploadBase64ImageToS3(data['image64'])
-        # Upload to S3 by calling function, rmb url
 
-    drinkChoice = data['drinkChoice']
-
-    try: 
+    cursor = conn.cursor()
+    try:
         if 'image64' in data:
-            updateImage = db.users.update_one({'_id': ObjectId(userID)}, {'$set': {'photo': image64}})
-        updateDrinkChoice = db.users.update_one({'_id': ObjectId(userID)}, {'$set': {'choiceDrinks': drinkChoice}})
+            cursor.execute("SELECT photo FROM users WHERE id = %s", (userID,))
+            existingUser = cursor.fetchone()
+            if existingUser and existingUser[0]:
+                s3Images.deleteImageFromS3(existingUser[0])
 
+            image64 = s3Images.uploadBase64ImageToS3(data['image64'])
+
+            cursor.execute("UPDATE users SET photo = %s WHERE id = %s", (image64, userID))
+
+        drinkChoice = data['drinkChoice']
+        cursor.execute("UPDATE users SET \"choiceDrinks\" = %s WHERE id = %s", (drinkChoice, userID))
+
+        conn.commit()
         return jsonify(
             {   
                 "code": 201,
@@ -46,7 +48,9 @@ def editDetails():
                 }
             }
         ), 201
+
     except Exception as e:
+        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -59,27 +63,37 @@ def editDetails():
             }
         ), 500
     
+    finally:
+        cursor.close()
+    
 # -----------------------------------------------------------------------------------------
 # [POST] Update user bookmark
 # - Update user bookmark with new details
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/updateBookmark', methods=['POST'])
 def updateBookmark():
-    db = g.db
+    conn = g.db
     data = request.get_json()
     print(data)
     userID = data['userID']
     bookmark = data['bookmark']
 
-    # convert date (str) to datetime object
-    for listName in bookmark:
-        listItems = bookmark[listName]["listItems"]
-        for item in listItems:
-            if isinstance(item[0], str):
-                item[0] = datetime.strptime(item[0], "%Y-%m-%dT%H:%M:%S.%fZ")
+    try:
+        cursor = conn.cursor()
+        for listName in bookmark:
+            listDesc = bookmark[listName]["listDesc"]
+            listItems = bookmark[listName]["listItems"]
 
-    try: 
-        updateBookmark = db.users.update_one({'_id': ObjectId(userID)}, {'$set': {'drinkLists': bookmark}})
+            query = """
+                INSERT INTO "usersDrinkLists" ("userId", "listName", "drinks")
+                VALUES (%s, %s, %s)
+                ON CONFLICT ("userId", "listName") DO UPDATE
+                SET "drinks" = EXCLUDED."drinks";
+            """
+            cursor.execute(query, (userID, listName, listItems))
+        
+        conn.commit()
+        cursor.close()
 
         return jsonify(
             {   
@@ -90,6 +104,7 @@ def updateBookmark():
                 }
             }
         ), 201
+
     except Exception as e:
         print(str(e))
         return jsonify(

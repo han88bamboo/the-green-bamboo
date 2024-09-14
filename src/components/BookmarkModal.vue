@@ -94,16 +94,15 @@
             },
             populateBookmarkModal(listingID) {
                 // param: objectId
-                if (Object.keys(this.listingID).length === 0) {
+                if (!this.listingID) {
                     return;
                 }
                 this.bookmarkModalItem = this.listings.find(listing => listing.id === listingID).listingName;
-                this.selectedBookmarkList = [];
                 for (const listName in this.userBookmarks) {
                     if (Object.hasOwnProperty.call(this.userBookmarks, listName)) {
                         const bookmarkItems = this.userBookmarks[listName].listItems;
                         if (bookmarkItems) {
-                            if (bookmarkItems.some(item => item[1].id === listingID.id)) {
+                            if (bookmarkItems.some(item => parseInt(item) === listingID)) {
                                 if (!this.selectedBookmarkList.includes(listName)) {
                                     this.selectedBookmarkList.push(listName);
                                 }
@@ -114,20 +113,19 @@
             },
             // triggered when user clicks on save changes in bookmark modal
             async bookmarkItem() {
-
-                let addListingId = this.listings.find(listing => listing.listingName === this.bookmarkModalItem)._id;
+                let addListingId = this.listings.find(listing => listing.listingName === this.bookmarkModalItem).id;
 
                 for (const listName in this.userBookmarks) {
                     if (Object.hasOwnProperty.call(this.userBookmarks, listName)) {
                         const bookmarkItems = this.userBookmarks[listName].listItems;
-                        let itemExist = bookmarkItems.some(item => item[1].$oid === addListingId.$oid);
+                        let itemExist = bookmarkItems.some(item => parseInt(item) === addListingId);
                         if (this.selectedBookmarkList.includes(listName)) {
                             if (!itemExist) {
-                                bookmarkItems.push([new Date(), addListingId]);
+                                bookmarkItems.push(addListingId);
                             }
                         } else {
                             if (itemExist) {
-                                const index = bookmarkItems.findIndex(item => item[1].$oid === addListingId.$oid);
+                                const index = bookmarkItems.findIndex(item => parseInt(item) === addListingId);
                                 bookmarkItems.splice(index, 1);
                             }
                         }
@@ -145,7 +143,7 @@
                         this.othersListNameError = "";
                         this.userBookmarks[this.othersListName] = {
                             listDesc: "",
-                            listItems: [[new Date(), addListingId]],
+                            listItems: [addListingId],
                         };
                     }
                 }
