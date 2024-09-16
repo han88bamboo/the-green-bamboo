@@ -38,7 +38,7 @@
                         <!-- profile picture -->
                         <div class="col-4 text-start pe-0">
                             <!-- <img :src=" 'data:image/jpeg;base64,' + (displayUser.photo || defaultProfilePhoto)" alt="" class="rounded-circle-no-bg border border-dark profile-img" style="height:auto; width:100%; "> -->
-                            <img :src="(displayUser.photo || defaultProfilePhoto)" alt="" class="rounded-circle-no-bg border border-dark profile-img" style="height:auto; width:100%; ">
+                            <img :src="selectedImage || (displayUser.photo || defaultProfilePhoto)" alt="" class="rounded-circle-no-bg border border-dark profile-img" style="height:auto; width:100%; ">
                         </div>                        
                         <!-- user name -->
                         <div class="col-8">

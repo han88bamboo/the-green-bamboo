@@ -236,6 +236,11 @@ def createReviews():
             venue_id = cur.fetchone()[0]
             conn.commit()
 
+    # Upload image into S3
+    if raw_review['photo']:
+        raw_review['photo'] = s3Images.uploadBase64ImageToS3(raw_review['photo'])
+
+
     # Prepare the insert SQL for reviews
     insert_review_sql = """INSERT INTO reviews ("userID", "reviewTarget", "rating", "reviewDesc", "reviewType", "createdDate", 
                           language, finish, "willRecommend", "wouldBuyAgain", "taggedUsers", "flavourTag", photo, colour, 

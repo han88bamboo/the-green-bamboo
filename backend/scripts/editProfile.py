@@ -20,21 +20,19 @@ blueprint = Blueprint(file_name[:-3], __name__)
 def editDetails():
     conn = g.db
     data = request.get_json()
-    print(data)
+    # print(data['image64'])
     userID = data['userID']
-
     cursor = conn.cursor()
     try:
         if 'image64' in data:
             cursor.execute("SELECT photo FROM users WHERE id = %s", (userID,))
             existingUser = cursor.fetchone()
-            if existingUser and existingUser[0]:
-                s3Images.deleteImageFromS3(existingUser[0])
+            if existingUser:
+                s3Images.deleteImageFromS3(existingUser['photo'])
 
             image64 = s3Images.uploadBase64ImageToS3(data['image64'])
 
             cursor.execute("UPDATE users SET photo = %s WHERE id = %s", (image64, userID))
-
         drinkChoice = data['drinkChoice']
         cursor.execute("UPDATE users SET \"choiceDrinks\" = %s WHERE id = %s", (drinkChoice, userID))
 

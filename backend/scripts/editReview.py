@@ -123,6 +123,12 @@ def updateReview(id):
         else:
             venue_id = venue[0]
 
+    # Update review photo
+    if existing_review['photo']:
+        s3Images.deleteImageFromS3(existing_review['photo'])
+        if data['photo']:
+            data['photo'] = s3Images.uploadBase64ImageToS3(data['photo'])
+
     # Update review
     tagged_users = '{' + ','.join(map(str, data.get('taggedUsers', []))) + '}'
     flavour_tags = '{' + ','.join(map(str, data.get('flavourTag', []))) + '}'
