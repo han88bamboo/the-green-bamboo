@@ -82,14 +82,15 @@ def fetch_follow_lists(cursor, user_id):
 # [GET] accountRequests
 @blueprint.route('/getAccountRequests', methods=['GET'])
 def getAccountRequests():
-    db = g.db
-    data = db.accountRequests.find({})
-    print(len(list(data.clone())))
-    allAccountRequests = []
-    dataEncode = parse_json(data)
-    for doc in dataEncode:
-        allAccountRequests.append(doc)
-    return allAccountRequests
+    conn = g.db
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "accountRequests"')
+        allAccountRequests = cursor.fetchall()
+
+    if not allAccountRequests:
+        return jsonify([])
+
+    return jsonify(allAccountRequests)
 
 # -----------------------------------------------------------------------------------------
 # [GET] Countries

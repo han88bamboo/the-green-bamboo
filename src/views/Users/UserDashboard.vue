@@ -606,13 +606,13 @@
 
                 const upvotes = this.userReviews
                     .map(review => review.userVotes.upvotes
-                        .map(upvote => ({ ...upvote, reviewTarget: review.reviewTarget }))
+                        .map(upvote => ({ ...upvote, reviewTarget: review.reviewTarget, date: review.createdDate }))
                     )
                     .filter(upvote => upvote.length > 0)
                     .flat();
                 const downvotes = this.userReviews
                     .map(review => review.userVotes.downvotes
-                        .map(downvote => ({ ...downvote, reviewTarget: review.reviewTarget }))
+                        .map(downvote => ({ ...downvote, reviewTarget: review.reviewTarget, date: review.createdDate }))
                     )
                     .filter(downvote => downvote.length > 0)
                     .flat();

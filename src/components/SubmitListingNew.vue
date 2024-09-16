@@ -551,10 +551,9 @@
                         this.producerList.sort((a,b)=>{
                             return a.producerName.localeCompare(b.producerName)
                         })
-
                         // Check if user is a producer
                         if (localStorage.getItem('88B_accType') == "producer") {
-                            this.isProducer = this.producerList.find(producer => producer._id["$oid"] == this.form['userID']).producerName;
+                            this.isProducer = this.producerList.find(producer => producer.id == this.form['userID']).producerName;
                             this.form['producerID'] = this.form['userID'];
                         }
                     } 
@@ -563,7 +562,6 @@
                     }
 
                 }
-
                 // Only run when editing listing / proposing edit / reporting duplicate (listingID is present in route params)
                 if (this.formMode == "edit" || this.formMode == "dup") {
                     this.form["listingID"] = this.$route.params.listingID;
@@ -596,12 +594,12 @@
                             if (Array.isArray(response.data) && response.data.length == 0) {
                                 throw "Request not found!";
                             }
-                            let previousData = response.data;
+                            let previousData = await response.data;
                             this.checkUserPermissions(previousData);
 
                             // If user is a producer, check if request producerID is the same as user producerID
                             if (this.isProducer != false) {
-                                if (previousData.producerID["$oid"] != this.form['userID']) {
+                                if (previousData.producerID != this.form['userID']) {
                                     alert("This request is specified for a different producer!");
                                     this.$router.go(-1);
                                 }
@@ -655,7 +653,7 @@
                             if (this.formType == "power") {
 
                                 // Check if retrieved request is for the correct listing
-                                if (previousData.listingID["$oid"] != this.$route.params.listingID) {
+                                if (previousData.listingID != this.$route.params.listingID) {
                                     alert("The linked request is not for the linked listing!\nRemoving request link...");
                                     // [RE-ROUTE FLAG] this.$router.push({path: '/listing/edit/' + this.$route.params.listingID});
                                     this.$router.push({path: '/listing/edit/' + this.$route.params.listingID});
@@ -677,7 +675,7 @@
             checkUserPermissions(checkData) {
                 if (this.formType == "req") {
                     // Check if user is the owner of the request
-                    if (checkData.userID["$oid"] != this.form['userID']) {
+                    if (checkData.userID != this.form['userID']) {
                         alert("You can only edit requests that you have submitted!");
                         this.$router.go(-1);
                     }
@@ -700,11 +698,11 @@
                 this.form["listingName"] = previousData.listingName;
                 this.form["reviewLink"] = previousData.reviewLink;
                 this.form["originCountry"] = previousData.originCountry;
-                this.form["producerID"] = previousData.producerID.$oid;
+                this.form["producerID"] = previousData.producerID;
                 this.form["photo"] = previousData.photo;
 
                 // Check if producerID is blank
-                if (this.form["producerID"] == "") {
+                if (this.form["producerID"] == "" || this.form["producerID"] == null) {
                     this.form["producerNew"] = previousData.producerNew;
                     // The code below... is it necessary?
                     if (this.formMode != "new") {
@@ -718,7 +716,7 @@
                         }
                     }
                 } else {
-                    this.form["producerNew"] = this.producerList.find(producer => producer._id["$oid"] == previousData.producerID["$oid"]).producerName;
+                    this.form["producerNew"] = this.producerList.find(producer => producer.id == previousData.producerID).producerName;
                 }
 
                 // If independent bottler, fill in bottler
@@ -784,7 +782,7 @@
             getProducerID() {
                 let producer = this.producerList.find(producer => producer.producerName == this.form['producerNew'])
                 if (producer) {
-                    this.form['producerID'] = producer._id;
+                    this.form['producerID'] = producer.id;
                 }
                 else {
                     this.form['producerID'] = ""

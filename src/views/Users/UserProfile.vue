@@ -1374,10 +1374,10 @@ export default {
         // get display user details
         getDrinkCount() {
             if (this.ownProfile) {
-                return this.reviews.filter(review => review.userID === this.userID && review.reviewType === 'Listing').length;
+                return this.reviews.filter(review => review.userID === parseInt(this.userID) && review.reviewType === 'Listing').length;
             }
             else {
-                return this.reviews.filter(review => review.userID === this.displayUserID && review.reviewType === 'Listing').length;
+                return this.reviews.filter(review => review.userID === parseInt(this.displayUserID) && review.reviewType === 'Listing').length;
             }
         },
         getDrinkOfChoice() {
@@ -1442,7 +1442,7 @@ export default {
             // check if listingID is in user bookmark
             for (const category of Object.values(this.userBookmarks)) {
                 if (category.listItems) {
-                    if (category.listItems.some(item => item[1].id === listingID)) {
+                    if (category.listItems.some(item => item === listingID)) {
                         return true;
                     }
                 }
