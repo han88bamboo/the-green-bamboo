@@ -18,6 +18,12 @@ from urllib.request import urlopen
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
 
+# -- ========= "observationTags" =========
+# CREATE TABLE "observationTags" (
+#     "id" SERIAL PRIMARY KEY,
+#     "observationTag" VARCHAR(255)
+# );
+
 # -----------------------------------------------------------------------------------------
 # [POST] Creates an observation tag
 # - Insert entry into the "observationTags" collection. Follows observationTag dataclass requirements.
@@ -25,46 +31,54 @@ blueprint = Blueprint(file_name[:-3], __name__)
 # - Possible return codes: 201 (Created), 400 (Duplicate Detected), 500 (Error during creation)
 @blueprint.route("/createObservationTag", methods= ['POST'])
 def createObservationTag():
-    db = g.db
+    conn = g.db
+    cur = conn.cursor()
     rawTag = request.get_json()
-    print(rawTag)
-    rawObservation= rawTag['observationTag']
-    # Duplicate listing check: Reject if review with the same observation exists in the database
-    existingAccount = db.observationTags.find_one({"observationTag": rawObservation})
-    if(existingAccount!= None):
-        return jsonify(
-            {   
-                "code": 400,
-                "data": {
-                    "ObservationTag": rawObservation
-                },
-                "message": "Observation tag already exists."
-            }
-        ), 400
-    
-    
-    # Insert new review into database
-    newAccount = data.observationTags(**rawTag)
+    rawObservationTag = rawTag['observationTag']
+
     try:
-        insertResult = db.observationTags.insert_one(data.asdict(newAccount))
-        created_id = str(insertResult.inserted_id)
-        return jsonify( 
-            {   
+        # Check if the observation tag already exists
+        cur.execute('SELECT * FROM "observationTags" WHERE "observationTag" = %s', (rawObservationTag,))
+        existingObservationTag = cur.fetchone()
+
+        if existingObservationTag:
+            return jsonify(
+                {
+                    "code": 400,
+                    "data": {
+                        "observationTag": rawObservationTag
+                    },
+                    "message": "Observation tag already exists."
+                }
+            ), 400
+
+        # Insert the new observation tag
+        cur.execute('INSERT INTO "observationTags" ("observationTag") VALUES (%s) RETURNING "id"', (rawObservationTag,))
+        newObservationTagId = cur.fetchone()
+        conn.commit()
+
+        return jsonify(
+            {
                 "code": 201,
-                "data": created_id
+                "data": newObservationTagId
             }
         ), 201
+
     except Exception as e:
         print(str(e))
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,
                 "data": {
-                    "ObservationTag": rawObservation
+                    "observationTag": rawObservationTag
                 },
                 "message": "An error occurred creating the observation tag."
             }
         ), 500
+
+    finally:
+        cur.close()
 
 # -----------------------------------------------------------------------------------------
     
@@ -73,43 +87,44 @@ def createObservationTag():
 # - Possible return codes: 201 (Updated), 400(Observation tag not found), 500 (Error during update)
 @blueprint.route('/updateObservationTag', methods=['PUT'])
 def updateObservationTag():
-    db = g.db
+    conn = g.db
+    cur = conn.cursor()
     data = request.get_json()
-    # for loop for each observation tag and update
+
     updates = []
     for elem in data:
+        # check psql table for existing observation tag
+        cur.execute('SELECT * FROM "observationTags" WHERE "id" = %s', (elem["id"],))
+        existingObservationTag = cur.fetchone()
 
-        existingObservationTag = db.observationTags.find_one({'_id': ObjectId(elem["_id"]["$oid"])})
-
-        if(existingObservationTag == None):
+        if existingObservationTag == None:
             return jsonify(
                 {   
                     "code": 400,
                     "data": {
-                        "observationTag": elem['observationTag']
+                        "id": elem["id"]
                     },
                     "message": "Observation Tag does not exist."
                 }
             ), 400
 
-        tag_key, tag_value = list(elem.items())[1]
-        tag_dict = {"$set":{tag_key: tag_value}}
-        updates.append({"filter": {"_id": ObjectId(elem["_id"]["$oid"])}, "update": tag_dict})
+        update_dict = {"observationTag": elem["observationTag"]}
+        updates.append({"id": elem["id"], "update": update_dict})
 
-
-    try: 
+    try:
         for update in updates:
-            filter_criteria = update["filter"]
-            update_data = update["update"]
-            db.observationTags.update_many(filter_criteria, update_data)
+            cur.execute('UPDATE "observationTags" SET "observationTag" = %s WHERE "id" = %s', (update["update"]["observationTag"], update["id"]))
+            conn.commit()
         return jsonify(
             {   
                 "code": 201,
                 "data": elem['observationTag']
             }
         ), 201
+
     except Exception as e:
         print(str(e))
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,
@@ -119,18 +134,22 @@ def updateObservationTag():
                 "message": "An error occurred updating the observation tags."
             }
         ), 500
-    
+
+    finally:
+        cur.close()
 # -----------------------------------------------------------------------------------------
 # [DELETE] Deletes a observationTag
 # - Delete entry with specified id from the "observationTag" collection.
 # - Possible return codes: 201 (Deleted), 400 (Review doesn't exist), 500 (Error during deletion)
 @blueprint.route("/deleteObservationTag/<id>", methods= ['DELETE'])
 def deleteObservationTag(id):
-    db = g.db
+    conn = g.db
+    cur = conn.cursor()
 
-    # Find the review entry with the specified id
-    existingObservation = db.observationTags.find_one({"_id": ObjectId(id)})
-    if(existingObservation == None):
+    cur.execute('SELECT * FROM "observationTags" WHERE "id" = %s', (id,))
+    existingObservation = cur.fetchone()
+
+    if existingObservation == None:
         return jsonify(
             {   
                 "code": 400,
@@ -140,20 +159,20 @@ def deleteObservationTag(id):
                 "message": "Observation tag doesn't exist."
             }
         ), 400
-    
 
-    # Delete the review entry with the specified id
     try:
-        deleteObservation = db.observationTags.delete_one({"_id": ObjectId(id)})
-
+        cur.execute('DELETE FROM "observationTags" WHERE "id" = %s', (id,))
+        conn.commit()
         return jsonify( 
             {   
                 "code": 200,
                 "data": id
             }
         ), 201
+
     except Exception as e:
         print(str(e))
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,
@@ -164,6 +183,9 @@ def deleteObservationTag(id):
             }
         ), 500
 
+    finally:
+        cur.close()
+
 # -----------------------------------------------------------------------------------------
     
 # [PUT] Update family tag
@@ -171,53 +193,57 @@ def deleteObservationTag(id):
 # - Possible return codes: 201 (Updated), 400(Flavour tag not found), 500 (Error during update)
 @blueprint.route('/updateFamilyTag', methods=['PUT'])
 def updateFamilyTag():
-    db = g.db
+    conn = g.db
+    cur = conn.cursor()
     data = request.get_json()
-    # for loop for each family tag and update
+
     updates = []
-    for elem in data:
+    try:
+        for elem in data:
+            cur.execute('SELECT id FROM "flavourTags" WHERE id = %s', (elem["id"],))
+            existingFamilyTag = cur.fetchone()
 
-        existingFamilyTag = db.flavourTags.find_one({'_id': ObjectId(elem["_id"])})
+            if existingFamilyTag is None:
+                return jsonify(
+                    {   
+                        "code": 400,
+                        "data": {
+                            "familyTag": elem['familyTag']
+                        },
+                        "message": "Family Tag does not exist."
+                    }
+                ), 400
 
-        if(existingFamilyTag == None):
-            return jsonify(
-                {   
-                    "code": 400,
-                    "data": {
-                        "familyTag": elem['familyTag']
-                    },
-                    "message": "Family Tag does not exist."
-                }
-            ), 400
-        family_tag = elem['familyTag']
-        hexcode = elem['hexcode']
-        document_id = elem['_id']
-        tag_dict = {"$set": {"familyTag": family_tag, "hexcode": hexcode}}
-        updates.append({"filter": {"_id": ObjectId(document_id)}, "update": tag_dict})
+            cur.execute("""
+                UPDATE "flavourTags" SET "familyTag" = %s, "hexcode" = %s WHERE "id" = %s
+            """, (elem["familyTag"], elem["hexcode"], elem["id"]))
+            conn.commit()
 
+            updates.append({"id": elem["id"], "familyTag": elem["familyTag"], "hexcode": elem["hexcode"]})
 
-    try: 
-        for update in updates:
-            filter_criteria = update["filter"]
-            update_data = update["update"]
-            db.flavourTags.update_many(filter_criteria, update_data)
         return jsonify(
-            {   
+            {
                 "code": 201,
-                "data": elem['familyTag']
+                "data": updates
             }
         ), 201
+
     except Exception as e:
         print(str(e))
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,
                 "data": {
-                    "data": elem['familyTag']
+                    "familyTag": elem["familyTag"]
                 },
-                "message": "An error occurred updating the family tags."
+                "message": "An error occurred updating the family tag."
             }
         ), 500
+
+    finally:
+        cur.close()
+            
     
 # -----------------------------------------------------------------------------------------
     
@@ -226,52 +252,57 @@ def updateFamilyTag():
 # - Possible return codes: 201 (Updated), 400(Sub tag not found), 500 (Error during update)
 @blueprint.route('/updateSubTag', methods=['PUT'])
 def updateSubTag():
-    db = g.db
+    conn = g.db
+    cur = conn.cursor()
     data = request.get_json()
-    # for loop for each sub tag and update
+
     updates = []
-    for elem in data:
+    try:
+        for elem in data:
+            # Check if the sub tag exists
+            cur.execute('SELECT id FROM "subTags" WHERE "id" = %s', (elem["id"],))
+            existingSubTag = cur.fetchone()
 
-        existingSubTag = db.subTags.find_one({'_id': ObjectId(elem["_id"])})
+            if existingSubTag == None:
+                return jsonify(
+                    {
+                        "code": 400,
+                        "data": {
+                            "id": elem["id"]
+                        },
+                        "message": "Sub tag does not exist."
+                    }
+                ), 400
 
-        if(existingSubTag == None):
-            return jsonify(
-                {   
-                    "code": 400,
-                    "data": {
-                        "subTag": elem['subTag']
-                    },
-                    "message": "Sub Tag does not exist."
-                }
-            ), 400
+            cur.execute("""
+                UPDATE "subTags" SET "subTag" = %s WHERE "id" = %s
+            """, (elem["subTag"], elem["id"]))
+            conn.commit()
 
-        sub_tag = elem['subTag']
-        document_id = elem['_id']
-        tag_dict = {"$set": {"subTag": sub_tag}}
-        updates.append({"filter": {"_id": ObjectId(document_id)}, "update": tag_dict})
+            updates.append({"id": elem["id"], "subTag": elem["subTag"]})
 
-    try: 
-        for update in updates:
-            filter_criteria = update["filter"]
-            update_data = update["update"]
-            db.subTags.update_many(filter_criteria, update_data)
         return jsonify(
-            {   
+            {
                 "code": 201,
-                "data": elem['subTag']
+                "data": updates
             }
         ), 201
+
     except Exception as e:
         print(str(e))
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,
                 "data": {
-                    "data": elem['subTag']
+                    "subTag": elem["subTag"]
                 },
-                "message": "An error occurred updating the sub tags."
+                "message": "An error occurred updating the sub tag."
             }
         ), 500
+
+    finally:
+        cur.close()
     
 # -----------------------------------------------------------------------------------------
     
@@ -280,34 +311,76 @@ def updateSubTag():
 # - Possible return codes: 201 (Deleted), 400 (family tag doesn't exist), 500 (Error during deletion)
 @blueprint.route("/deleteFamilyTag/<id>", methods= ['DELETE'])
 def deleteFamilyTag(id):
-    db = g.db
+    # db = g.db
 
-    # Find the flavour tag entry with the specified id
-    existingFamilyTag = db.flavourTags.find_one({"_id": ObjectId(id)})
-    if(existingFamilyTag == None):
-        return jsonify(
-            {   
-                "code": 400,
-                "data": {
-                    "id": id
-                },
-                "message": "Family tag doesn't exist."
-            }
-        ), 400
+    # # Find the flavour tag entry with the specified id
+    # existingFamilyTag = db.flavourTags.find_one({"_id": ObjectId(id)})
+    # if(existingFamilyTag == None):
+    #     return jsonify(
+    #         {   
+    #             "code": 400,
+    #             "data": {
+    #                 "id": id
+    #             },
+    #             "message": "Family tag doesn't exist."
+    #         }
+    #     ), 400
     
 
-    # Delete the review entry with the specified id
-    try:
-        deleteFamily = db.flavourTags.delete_one({"_id": ObjectId(id)})
+    # # Delete the review entry with the specified id
+    # try:
+    #     deleteFamily = db.flavourTags.delete_one({"_id": ObjectId(id)})
 
-        return jsonify( 
-            {   
+    #     return jsonify( 
+    #         {   
+    #             "code": 201,
+    #             "data": id
+    #         }
+    #     ), 201
+    # except Exception as e:
+    #     print(str(e))
+    #     return jsonify(
+    #         {
+    #             "code": 500,
+    #             "data": {
+    #                 "id": id
+    #             },
+    #             "message": "An error occurred deleting the family tag."
+    #         }
+    #     ), 500
+
+    conn = g.db
+    cur = conn.cursor()
+
+    try:
+        cur.execute('SELECT id FROM "flavourTags" WHERE "id" = %s', (id,))
+        existingFamilyTag = cur.fetchone()
+
+        if existingFamilyTag == None:
+            return jsonify(
+                {
+                    "code": 400,
+                    "data": {
+                        "id": id
+                    },
+                    "message": "Family tag doesn't exist."
+                }
+            ), 400
+
+        cur.execute('DELETE FROM "subTags" WHERE "familyTagId" = %s', (id,))
+        cur.execute('DELETE FROM "flavourTags" WHERE "id" = %s', (id,))
+        conn.commit()
+
+        return jsonify(
+            {
                 "code": 201,
                 "data": id
             }
         ), 201
+
     except Exception as e:
         print(str(e))
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,
@@ -325,43 +398,50 @@ def deleteFamilyTag(id):
 # - Possible return codes: 201 (Deleted), 400 (Subtag doesn't exist), 500 (Error during deletion)
 @blueprint.route("/deleteSubTag/<id>", methods= ['DELETE'])
 def deleteSubTag(id):
-    db = g.db
+    conn = g.db
+    cur = conn.cursor()
 
-    # Find the review entry with the specified id
-    existingSubTag = db.subTags.find_one({"_id": ObjectId(id)})
-    if(existingSubTag == None):
-        return jsonify(
-            {   
-                "code": 400,
-                "data": {
-                    "id": id
-                },
-                "message": "Sub tag doesn't exist."
-            }
-        ), 400
-    
-
-    # Delete the review entry with the specified id
     try:
-        deletesubTag = db.subTags.delete_one({"_id": ObjectId(id)})
+        # Check if the sub tag exists
+        cur.execute('SELECT id FROM "subTags" WHERE "id" = %s', (id,))
+        existingSubTag = cur.fetchone()
 
-        return jsonify( 
-            {   
+        if existingSubTag == None:
+            return jsonify(
+                {
+                    "code": 400,
+                    "data": {
+                        "id": id
+                    },
+                    "message": "Sub tag doesn't exist."
+                }
+            ), 400
+
+        cur.execute('DELETE FROM "subTags" WHERE "id" = %s', (id,))
+        conn.commit()
+
+        return jsonify(
+            {
                 "code": 201,
                 "data": id
             }
         ), 201
+
     except Exception as e:
         print(str(e))
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,
                 "data": {
                     "id": id
                 },
-                "message": "An error occurred deleting the observation."
+                "message": "An error occurred deleting the sub tag."
             }
         ), 500
+
+    finally:
+        cur.close()
     
 # -----------------------------------------------------------------------------------------
 # [POST] Creates a flavour family tag
@@ -370,37 +450,45 @@ def deleteSubTag(id):
 # - Possible return codes: 201 (Created), 400 (Duplicate Detected), 500 (Error during creation)
 @blueprint.route("/createFamilyTag", methods= ['POST'])
 def createFamilyTag():
-    db = g.db
+    conn = g.db
+    cur = conn.cursor()
     rawTag = request.get_json()
     print(rawTag)
     rawFamily= rawTag['familyTag']
-    # Duplicate listing check: Reject if review with the same observation exists in the database
-    existingTag = db.flavourTags.find_one({"familyTag": rawFamily})
-    if(existingTag!= None):
-        return jsonify(
-            {   
-                "code": 400,
-                "data": {
-                    "familyTag": rawFamily
-                },
-                "message": "Family tag already exists."
-            }
-        ), 400
-    
-    
-    # Insert new review into database
-    newFamily = data.flavourTags(**rawTag)
+
     try:
-        insertResult = db.flavourTags.insert_one(data.asdict(newFamily))
-        created_id = str(insertResult.inserted_id)
-        return jsonify( 
-            {   
+        # Duplicate listing check: Reject if a subTag with the same name exists in the database
+        cur.execute('SELECT id FROM "flavourTags" WHERE "familyTag" = %s', (rawFamily,))
+        existingTag = cur.fetchone()
+
+        if existingTag is not None:
+            return jsonify(
+                {
+                    "code": 400,
+                    "data": {
+                        "familyTag": rawFamily
+                    },
+                    "message": "Family tag already exists."
+                }
+            ), 400
+
+        # Insert the new family tag
+        cur.execute("""
+            INSERT INTO "flavourTags" ("familyTag", "hexcode") VALUES (%s, %s) RETURNING "id"
+        """, (rawFamily, rawTag['hexcode']))
+        newFamilyTagId = cur.fetchone()
+        conn.commit()
+
+        return jsonify(
+            {
                 "code": 201,
-                "data": created_id
+                "data": newFamilyTagId
             }
         ), 201
+
     except Exception as e:
         print(str(e))
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,
@@ -410,6 +498,9 @@ def createFamilyTag():
                 "message": "An error occurred creating the family tag."
             }
         ), 500
+
+    finally:
+        cur.close()
 # -----------------------------------------------------------------------------------------
 # [POST] Creates a flavour sub tag
 # - Insert entry into the "subTags" collection. Follows subTag dataclass requirements.
@@ -417,38 +508,45 @@ def createFamilyTag():
 # - Possible return codes: 201 (Created), 400 (Duplicate Detected), 500 (Error during creation)
 @blueprint.route("/createSubTag", methods= ['POST'])
 def createSubTag():
-    db = g.db
+    conn = g.db
+    cur = conn.cursor()
     rawTag = request.get_json()
     print(rawTag)
     rawSub= rawTag['subTag']
+
     # Duplicate listing check: Reject if review with the same observation exists in the database
-    existingTag = db.subTags.find_one({"subTag": rawSub})
-    if(existingTag!= None):
-        return jsonify(
-            {   
-                "code": 400,
-                "data": {
-                    "subTag": rawSub
-                },
-                "message": "Sub tag already exists."
-            }
-        ), 400
-    
-    
-    # Insert new review into database
-    rawTag['familyTagId']= ObjectId(rawTag['familyTagId'])
-    newSub = data.subTags(**rawTag)
     try:
-        insertResult = db.subTags.insert_one(data.asdict(newSub))
-        created_id = str(insertResult.inserted_id)
-        return jsonify( 
-            {   
+        cur.execute('SELECT id FROM "subTags" WHERE "subTag" = %s', (rawSub,))
+        existingTag = cur.fetchone()
+
+        if existingTag:
+            return jsonify(
+                {
+                    "code": 400,
+                    "data": {
+                        "subTag": rawSub
+                    },
+                    "message": "Sub tag already exists."
+                }
+            ), 400
+
+        # Insert the new sub tag
+        cur.execute("""
+            INSERT INTO "subTags" ("familyTagId", "subTag") VALUES (%s, %s) RETURNING "id"
+        """, (rawTag['familyTagId'], rawSub))
+        newSubTagId = cur.fetchone()
+        conn.commit()
+
+        return jsonify(
+            {
                 "code": 201,
-                "data": created_id
+                "data": newSubTagId
             }
         ), 201
+
     except Exception as e:
         print(str(e))
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,
@@ -458,6 +556,9 @@ def createSubTag():
                 "message": "An error occurred creating the sub tag."
             }
         ), 500
+
+    finally:
+        cur.close()
 # -----------------------------------------------------------------------------------------
     
 # To convert image URL to base64    

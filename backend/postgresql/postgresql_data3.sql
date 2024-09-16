@@ -395,10 +395,10 @@ CREATE TABLE "requestListings" (
     "sourceLink" VARCHAR(255),
     "brandRelation" VARCHAR(255),
     "reviewStatus" BOOLEAN,
-    "userId" INTEGER REFERENCES "users"("id") ON DELETE SET NULL, -- [!] References users FK
+    "userID" INTEGER REFERENCES "users"("id") ON DELETE SET NULL, -- [!] References users FK
     "photo" TEXT,
     "originCountry" VARCHAR(255),
-    "producerId" INTEGER REFERENCES "producers"("id") ON DELETE SET NULL, -- [!] References producers FK
+    "producerID" INTEGER REFERENCES "producers"("id") ON DELETE SET NULL, -- [!] References producers FK
     "producerNew" VARCHAR(255),
     "typeCategory" VARCHAR(255),
     "abv" VARCHAR(255),

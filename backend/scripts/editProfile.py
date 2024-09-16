@@ -181,20 +181,31 @@ def updateFollowList():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/updateModType', methods=['POST'])
 def updateModType():
-    db = g.db
+    conn = g.db
+    cur = conn.cursor()
     data = request.get_json()
     print(data)
     userID = data['userID']
     newModType = data['newModType']
 
-    user_document = db.users.find_one({"_id": ObjectId(userID)})
-    modType = user_document['modType']
+    try:
+        cur.execute('SELECT "modType" FROM users WHERE id = %s', (userID,))
+        existingModType = cur.fetchone()
 
-    modType.append(newModType)
+        if not existingModType:
+            return jsonify(
+                {
+                    "code": 404,
+                    "message": "User not found."
+                }
+            ), 404
 
-    try: 
-        updateModType = db.users.update_one({'_id': ObjectId(userID)}, {'$set': {'modType': modType}})
+        modType = existingModType['modType'] if existingModType['modType'] is not None else []
+        modType.append(newModType)
 
+        cur.execute('UPDATE users SET "modType" = %s WHERE id = %s', (modType, userID))
+        conn.commit()
+        cur.close()
 
         return jsonify(
             {   
@@ -205,20 +216,23 @@ def updateModType():
                 }
             }
         ), 201
+
     except Exception as e:
+        conn.rollback()
         print(str(e))
         return jsonify(
             {
                 "code": 500,
                 "data": {
-                    "data": {
-                        "userID": userID,
-                        "newModType": newModType
-                    }
+                    "userID": userID,
+                    "newModType": newModType
                 },
                 "message": "An error occurred updating mod type."
             }
         ), 500
+
+    finally:
+        cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [POST] Remove mod type
@@ -226,20 +240,31 @@ def updateModType():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/removeModType', methods=['POST'])
 def removeModType():
-    db = g.db
+    conn = g.db
+    cur = conn.cursor()
     data = request.get_json()
     print(data)
     userID = data['userID']
     removeModType = data['removeModType']
 
-    user_document = db.users.find_one({"_id": ObjectId(userID)})
-    modType = user_document['modType']
+    try:
+        cur.execute('SELECT "modType" FROM users WHERE id = %s', (userID,))
+        existingModType = cur.fetchone()
 
-    modType.remove(removeModType)
+        if not existingModType:
+            return jsonify(
+                {
+                    "code": 404,
+                    "message": "User not found."
+                }
+            ), 404
 
-    try: 
-        updateModType = db.users.update_one({'_id': ObjectId(userID)}, {'$set': {'modType': modType}})
+        modType = existingModType['modType'] if existingModType['modType'] is not None else []
+        modType.remove(removeModType)
 
+        cur.execute('UPDATE users SET "modType" = %s WHERE id = %s', (modType, userID))
+        conn.commit()
+        cur.close()
 
         return jsonify(
             {   
@@ -250,17 +275,20 @@ def removeModType():
                 }
             }
         ), 201
+
     except Exception as e:
+        conn.rollback()
         print(str(e))
         return jsonify(
             {
                 "code": 500,
                 "data": {
-                    "data": {
-                        "userID": userID,
-                        "removeModType": removeModType
-                    }
+                    "userID": userID,
+                    "removeModType": removeModType
                 },
                 "message": "An error occurred updating mod type."
             }
         ), 500
+
+    finally:
+        cur.close()

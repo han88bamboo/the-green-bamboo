@@ -198,7 +198,7 @@
 
                                         <div v-if="editFlavour == 'family'" class="modal-body">
                                             <div class="row">
-                                                <div v-for="tag in editedFlavourTags" class="mb-2 col-md-6"  v-bind:key="tag._id">
+                                                <div v-for="tag in editedFlavourTags" class="mb-2 col-md-6"  v-bind:key="tag">
                                                     <input v-model="tag.familyTag" type="text" class="form-control" :style="{ color:'black', backgroundColor: tag['hexcode'], borderColor:tag['hexcode'], borderWidth:'1px' }">
                                                     <input v-model="tag.hexcode" type="text" class="form-control">
                                                     <p v-if="tag.familyTag==''" class='text-danger text-start mb-2 fw-bold'>Flavour tag cannot be empty</p>
@@ -208,8 +208,8 @@
                                         </div>
                                         
                                         <div v-if="editFlavour == 'sub'" class="modal-body">
-                                            <button class="btn mb-2 me-2" @click="toggleBox(family)" v-for="family in editedFlavourTags" v-bind:key="family['_id']" :style="{ color:'white', backgroundColor: family['hexcode'], borderColor:family['hexcode'], borderWidth:'1px' }">{{ family['familyTag'] }}</button>
-                                            <div v-for="family in editedFlavourTags" :key="family['_id']">
+                                            <button class="btn mb-2 me-2" @click="toggleBox(family)" v-for="family in editedFlavourTags" v-bind:key="family['id']" :style="{ color:'white', backgroundColor: family['hexcode'], borderColor:family['hexcode'], borderWidth:'1px' }">{{ family['familyTag'] }}</button>
+                                            <div v-for="family in editedFlavourTags" :key="family['id']">
                                                 <div v-if="family.showBox" class="rounded p-3" :style="{border: '3px solid ' + family['hexcode'] }">
                                                     <div class="row">
                                                         <div class="col-3" v-for="(element, index) in family.subTag2" :key="index">
@@ -263,8 +263,8 @@
 
                                         <div v-if="deleteFlavour == 'family'" class="modal-body">
                                             <div class="row">
-                                                <div v-for="tag in editedFlavourTags" class="mb-2 col-md-6"  v-bind:key="tag._id">
-                                                    <button @click="selectDeleteFamily(tag._id, tag.familyTag, tag.hexcode, tag.subTag2)" type="text" class="form-control" :style="{ color:'black', backgroundColor: tag['hexcode'], borderColor:tag['hexcode'], borderWidth:'1px' }">{{ tag.familyTag }}</button>
+                                                <div v-for="tag in editedFlavourTags" class="mb-2 col-md-6"  v-bind:key="tag">
+                                                    <button @click="selectDeleteFamily(tag.id, tag.familyTag, tag.hexcode, tag.subTag2)" type="text" class="form-control" :style="{ color:'black', backgroundColor: tag['hexcode'], borderColor:tag['hexcode'], borderWidth:'1px' }">{{ tag.familyTag }}</button>
                                                 </div>
                                             </div>
                                             <div v-if="familyTagToDelete!=''">
@@ -280,8 +280,8 @@
                                         </div>
                                         
                                         <div v-if="deleteFlavour == 'sub'" class="modal-body">
-                                            <button class="btn mb-2 me-2" @click="toggleBox(family)" v-for="family in editedFlavourTags" v-bind:key="family['_id']" :style="{ color:'white', backgroundColor: family['hexcode'], borderColor:family['hexcode'], borderWidth:'1px' }">{{ family['familyTag'] }}</button>
-                                            <div v-for="family in editedFlavourTags" :key="family['_id']">
+                                            <button class="btn mb-2 me-2" @click="toggleBox(family)" v-for="family in editedFlavourTags" v-bind:key="family['id']" :style="{ color:'white', backgroundColor: family['hexcode'], borderColor:family['hexcode'], borderWidth:'1px' }">{{ family['familyTag'] }}</button>
+                                            <div v-for="family in editedFlavourTags" :key="family['id']">
                                                 <div v-if="family.showBox" class="rounded p-3" :style="{border: '3px solid ' + family['hexcode'] }">
                                                     <div class="row">
                                                         <div class="col-3" v-for="(element, index) in family.subTag2" :key="index">
@@ -385,7 +385,7 @@
                                     <!-- Modal body for editing observation -->
                                     <div v-if="editingObservation" class="modal-body">
                                         <div class="row">
-                                            <div v-for="tag in editedObservationTags" class="mb-2 col-md-6"  v-bind:key="tag._id">
+                                            <div v-for="tag in editedObservationTags" class="mb-2 col-md-6"  v-bind:key="tag">
                                                 <input v-model="tag.observationTag" type="text" class="form-control">
                                                 <p v-if="tag.observationTag==''" class='text-danger text-start mb-2 fw-bold'>Action Tag cannot be empty</p>
                                             </div>
@@ -395,8 +395,8 @@
 
                                     <div v-if="deletingObservation" class="modal-body">
                                         <div class="row">
-                                            <div v-for="tag in observationTags" class="mb-2 col-md-4"  v-bind:key="tag._id">
-                                                <button @click="deleteObservation(tag._id, tag.observationTag)" type="button" class="btn btn-danger" style="width: 150px; height: 60px;">{{ tag.observationTag }}</button>
+                                            <div v-for="tag in observationTags" class="mb-2 col-md-4"  v-bind:key="tag.id">
+                                                <button @click="deleteObservation(tag.id, tag.observationTag)" type="button" class="btn btn-danger" style="width: 150px; height: 60px;">{{ tag.observationTag }}</button>
                                             </div>
                                         </div>
                                         <div v-if="observationToDelete!=''">
@@ -597,12 +597,12 @@
                         </div>
                         <div>
                             <div v-if="pendingModRequests.length > 0" class="row" style="height: 650px; overflow: auto">
-                                <div v-for="request in pendingModRequests" class="col-md-6 col-lg-4 pb-4 pb-4 pb-4" v-bind:key="request._id">
+                                <div v-for="request in pendingModRequests" class="col-md-6 col-lg-4 pb-4 pb-4 pb-4" v-bind:key="request">
                                     <div class="card" style="background-color: white; height: 300px;">
                                         <div class="card-body">
                                         <ul class="list-group list-group-flush text-start">
                                             <li class="list-group-item"><span class="fw-bold">Requested By: </span > <br/>
-                                                @<router-link :to="{ path: '/profile/user/' + request.userID.$oid }" style="color: inherit;">
+                                                @<router-link :to="{ path: '/profile/user/' + request.userID }" style="color: inherit;">
                                                     {{ getUserbyID(request.userID).username }}
                                                 </router-link> 
                                             </li>
@@ -803,7 +803,7 @@
                             </div>
 
                             <div v-if="filteredAccountRequests.length > 0" class="row" style="height: 525px; overflow: auto">
-                                <div v-for="request in filteredAccountRequests" class="col-md-6 col-lg-4 pb-4 pb-4" v-bind:key="request._id">
+                                <div v-for="request in filteredAccountRequests" class="col-md-6 col-lg-4 pb-4 pb-4" v-bind:key="request">
                                     <div class="card h-100" :style="{ backgroundColor: request.bgColor}">
                                         <div class="card-body">
                                         <span class="fw-bold">Business Information</span>
@@ -1028,7 +1028,7 @@
                         const response = await this.$axios.get('http://127.0.0.1:5000/getData/getUsers');
                         this.users = response.data;
                         if (this.userType == "user") {
-                            this.user = this.users.find(user => user["_id"]["$oid"] == this.userID);
+                            this.user = this.users.find(user => user["id"] == this.userID);
                             if(!this.user.isAdmin){
                                 this.$router.push('/');
                             }
@@ -1156,10 +1156,10 @@
                         this.subTags = response.data
                         this.flavourTags.forEach(flavourTag => {
                             // Filter subtags belonging to the current flavor tag
-                            const subTagsForFlavourTag = this.subTags.filter(subTag => subTag.familyTagId.$oid === flavourTag.id);
+                            const subTagsForFlavourTag = this.subTags.filter(subTag => subTag.familyTagId === flavourTag.id);
                             // Extract required information from subtags
                             const subTagsInfo = subTagsForFlavourTag.map(subTag=> ({
-                                id: subTag._id,
+                                id: subTag.id,
                                 subTag: subTag.subTag
                             }));
                             // Assign subtag information to flavor tag object
@@ -1217,6 +1217,11 @@
                             submitData.push(this.editedObservationTags[i])
                             this.observationTags[i].observationTag = this.editedObservationTags[i].observationTag
                         }
+                    }
+                    // if observation tag value is empty, return null
+                    if (this.editedObservationTags.find((tag) => tag.observationTag == '')){
+                        this.emptyObservation = true
+                        return null
                     }
                     if(submitData.length<=0){
                         let randoVariable = this.editedObservationTags[0].observationTag
@@ -1293,7 +1298,7 @@
                     const response = await this.$axios.post(submitAPI, submitData)
                     .then((response)=>{
                         responseCode = response.data.code
-                        newObservationId = response.data.data
+                        newObservationId = response.data.data.id
                     })
                     .catch((error)=>{
                         console.error(error);
@@ -1303,11 +1308,11 @@
                     if(responseCode==201){
                         this.successCreateObservation=true; // Display success message
                         this.editedObservationTags.push({
-                            _id:{'$oid': newObservationId},
+                            id: newObservationId,
                             observationTag: this.newObservation
                         })
                         this.observationTags.push({
-                            _id:{'$oid': newObservationId},
+                            id: newObservationId,
                             observationTag: this.newObservation
                         })
                         
@@ -1323,12 +1328,12 @@
                 }, 
 
                 deleteObservation(tagId,tag){
-                    // alert(tagId.$oid)
+                    // alert(tagId)
                     this.observationToDelete = {"tagId":tagId, "observationTag":tag}
                 },
                 async confirmDeleteTag(){
                     let responseCode = ''
-                    let deleteAPI = "http://127.0.0.1:5000/adminFunctions/deleteObservationTag/" + this.observationToDelete.tagId.$oid
+                    let deleteAPI = "http://127.0.0.1:5000/adminFunctions/deleteObservationTag/" + this.observationToDelete.tagId
                     const response = await this.$axios.delete(deleteAPI)
                     .then((response)=>{
                         responseCode = response.data.code
@@ -1340,7 +1345,7 @@
                     if(responseCode==200){
                         this.successDeleteObservation=true; // Display success message
                         this.deletingObservation=false; // Hide submission in progress message
-                        let observationToRemove = this.observationTags.findIndex(obj => obj.id === this.observationToDelete.tagId.$oid);
+                        let observationToRemove = this.observationTags.findIndex(obj => obj.id === this.observationToDelete.tagId);
                         if (observationToRemove !== -1) {
                             this.observationTags.splice(observationToRemove, 1);
                         }
@@ -1361,13 +1366,13 @@
                 },
 
                 getUserbyID(userID) {
-                    return this.users.find(user => user["_id"]["$oid"] == userID["$oid"]);
+                    return this.users.find(user => user["id"] == userID);
                 }, 
                 async reviewModRequest(request, action) {
                     const requestID = request.id;
                     // update users db
                     if (action == "approve") {
-                        const userID = request.userID.$oid;
+                        const userID = request.userID;
                         const newModType = request.drinkType;
 
                         try {
@@ -1631,7 +1636,7 @@
 
                                 if (response.data.code == 201) {
                                     this.createBusinessSuccess = true;
-                                    return response.data.data._id
+                                    return response.data.data
                                 } 
                             } catch (error) {
                                 console.error(error);
@@ -1679,7 +1684,7 @@
 
                                 if (response.data.code == 201) {
                                     this.createBusinessSuccess = true;
-                                    return response.data.data._id
+                                    return response.data.data
                                 } 
                             } catch (error) {
                                 console.error(error);
@@ -2025,7 +2030,7 @@
                     const response = await this.$axios.post(submitURL, submitData)
                     .then((response)=>{
                         responseCode = response.data.code
-                        tagNewId = response.data.data
+                        tagNewId = response.data.data.id
                     })
                     .catch((error)=>{
                         console.error(error);
@@ -2039,14 +2044,14 @@
                                 hexcode: '#' + this.hexcode,
                                 subTag2: [],
                                 showBox: false,
-                                _id: {'$oid': tagNewId}
+                                id: tagNewId
                             })
                             this.flavourTags.push({
                                 familyTag: this.newFamily,
                                 hexcode: '#' + this.hexcode,
                                 subTag2: [],
                                 showBox: false,
-                                _id: {'$oid': tagNewId}
+                                id: tagNewId
                             })
                         }
                         if(this.addFlavour=='sub'){
@@ -2056,13 +2061,14 @@
                             if (parentTagIndex !== -1) {
                                 // Update the editedFlavourTags array
                                 this.editedFlavourTags[parentTagIndex].subTag2.push({
-                                    id: { '$oid': tagNewId },
+                                    id: tagNewId,
                                     subTag: this.newSub
                                 });
                                 this.flavourTags[parentTagIndex].subTag2.push({
-                                    id: { '$oid': tagNewId },
+                                    id: tagNewId,
                                     subTag: this.newSub
                                 });
+
                             }
                         }
                     }else{
@@ -2163,7 +2169,7 @@
                             if(this.editedFlavourTags[i].familyTag!= this.flavourTags[i].familyTag || this.editedFlavourTags[i].hexcode!= this.flavourTags[i].hexcode){
                                 submitData.push(
                                     {
-                                        _id: this.editedFlavourTags[i].id,
+                                        id: this.editedFlavourTags[i].id,
                                         familyTag: this.editedFlavourTags[i].familyTag,
                                         hexcode: this.editedFlavourTags[i].hexcode,
                                     }
@@ -2178,7 +2184,7 @@
                                 if(this.editedFlavourTags[i].subTag2[j].subTag != this.flavourTags[i].subTag2[j].subTag){
                                     submitData.push(
                                         {
-                                            _id: this.editedFlavourTags[i].subTag2[j].id.$oid,
+                                            id: this.editedFlavourTags[i].subTag2[j].id,
                                             subTag: this.editedFlavourTags[i].subTag2[j].subTag
                                         }
                                     )
@@ -2213,10 +2219,10 @@
                 },
 
                 selectDeleteSub(id, subTag, hexcode){
-                    this.subTagToDelete = {"_id":id.$oid, "subTag":subTag, "hexcode": hexcode}
+                    this.subTagToDelete = {"id":id, "subTag":subTag, "hexcode": hexcode}
                 },
                 selectDeleteFamily(id, familyTag, hexcode, subTag2){
-                    this.familyTagToDelete = {"_id":id.$oid, "familyTag":familyTag, "hexcode": hexcode, subTag2}
+                    this.familyTagToDelete = {"id":id, "familyTag":familyTag, "hexcode": hexcode, subTag2}
                 },
 
                 resetDeleteSubTag(){
@@ -2229,11 +2235,10 @@
                 confirmDeleteFlavourTag(){
                     let submitURL = ''
                     if(this.deleteFlavour=='family'){
-                        submitURL = 'http://127.0.0.1:5000/adminFunctions/deleteFamilyTag/' + this.familyTagToDelete._id
+                        submitURL = 'http://127.0.0.1:5000/adminFunctions/deleteFamilyTag/' + this.familyTagToDelete.id
                     }
                     if(this.deleteFlavour=='sub'){
-                        submitURL = 'http://127.0.0.1:5000/adminFunctions/deleteSubTag/' + this.subTagToDelete._id
-                        
+                        submitURL = 'http://127.0.0.1:5000/adminFunctions/deleteSubTag/' + this.subTagToDelete.id
                     }
                     this.writeDeleteTag(submitURL)
                 },
@@ -2253,26 +2258,29 @@
                         if(this.deleteFlavour == 'sub'){
                             this.editedFlavourTags = this.editedFlavourTags.map(item => {
                                 // Filter the subTags array of each main object to remove the one with the specified ID
-                                const updatedSubTags = item.subTag2.filter(subTag => subTag.id.$oid !== this.subTagToDelete._id);
+                                const updatedSubTags = item.subTag2.filter(subTag => subTag.id !== this.subTagToDelete.id);
                                 // Return a new object with the updated subTags array
                                 return { ...item, subTag2: updatedSubTags };
                             });
                             this.flavourTags = this.flavourTags.map(item => {
                                 // Filter the subTags array of each main object to remove the one with the specified ID
-                                const updatedSubTags = item.subTag2.filter(subTag => subTag.id.$oid !== this.subTagToDelete._id);
+                                const updatedSubTags = item.subTag2.filter(subTag => subTag.id !== this.subTagToDelete.id);
                                 // Return a new object with the updated subTags array
                                 return { ...item, subTag2: updatedSubTags };
                             });
                         }
                         if(this.deleteFlavour == 'family'){
                             this.editedFlavourTags = this.editedFlavourTags.filter(flavourTag=>{
-                                return flavourTag.id != this.familyTagToDelete._id
+                                return flavourTag.id != this.familyTagToDelete
                             })
                             this.flavourTags = this.flavourTags.filter(flavourTag=>{
-                                return flavourTag.id != this.familyTagToDelete._id
+                                return flavourTag.id != this.familyTagToDelete
                             })
                         }
-                    }else{
+                    } else if(responseCode==400){
+                        // this means given subTag doesn't exist, so manage accordingly
+                        this.errorDeleteFlavour = true
+                    } else{
                         this.errorDeleteFlavour = true
                     }
                     return response

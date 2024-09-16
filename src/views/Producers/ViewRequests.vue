@@ -80,7 +80,7 @@
                         <hr>
                         <p class="fw-bold fst-italic fs-4 m-0" v-if="requestListings.length > 0">Viewing: New Listing Requests</p>
                         <p class="fw-bold fst-italic fs-4 m-0" v-else>No New Listing Requests!</p>
-                        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-12 my-1 px-1" v-for="requestNew in requestListings" :key="requestNew._id">
+                        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-12 my-1 px-1" v-for="requestNew in requestListings" :key="requestNew.id">
                             <div class="card border-warning h-100">
                                 <div class="card-header">
                                     New Listing
@@ -94,13 +94,13 @@
                                     <li class="list-group-item" v-if="requestNew['bottler'] != 'OB'"><span class="fw-bold">Bottler: </span>{{ requestNew['bottler'] }}</li>
                                     <li class="list-group-item"><span class="fw-bold">Producer: </span>{{ findProducer(requestNew) }}</li>
                                     <li class="list-group-item"><span class="fw-bold">Type: </span>{{ requestNew['drinkType'] }}</li>
-                                    <li class="list-group-item"><span class="fw-bold">Requested By: </span>{{ findUser(requestNew["userID"]["$oid"]) }}</li>
+                                    <li class="list-group-item"><span class="fw-bold">Requested By: </span>{{ findUser(requestNew["userID"]) }}</li>
                                 </ul>
                                 <div class="card-footer">
-                                    <router-link v-if="role == 'producer' || isAdmin || types.includes(requestNew['drinkType'])" :to="{ path: '/listing/create/' + requestNew._id['$oid'] }">
+                                    <router-link v-if="role == 'producer' || isAdmin || types.includes(requestNew['drinkType'])" :to="{ path: '/listing/create/' + requestNew.id }">
                                         <button class="border btn btn-warning btn-sm align-bottom">Review Request</button>
                                     </router-link>
-                                    <router-link v-if="role == 'user' && requestNew['userID']['$oid'] == accID" :to="{ path: '/request/new/' + requestNew._id['$oid'] }">
+                                    <router-link v-if="role == 'user' && requestNew['userID'] == accID" :to="{ path: '/request/new/' + requestNew.id }">
                                         <button class="border btn btn-warning btn-sm align-bottom">Modify Request</button>
                                     </router-link>
                                 </div>
@@ -115,7 +115,7 @@
                         <hr>
                         <p class="fw-bold fst-italic fs-4 m-0" v-if="requestEdits.length > 0">Viewing: Listing Edit Requests</p>
                         <p class="fw-bold fst-italic fs-4 m-0" v-else>No Listing Edit Requests!</p>
-                        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-12 my-1 px-1" v-for="requestEdit in requestEdits" :key="requestEdit._id">
+                        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-12 my-1 px-1" v-for="requestEdit in requestEdits" :key="requestEdit.id">
                             <div class="card border-secondary h-100">
                                 <div class="card-header">
                                     Listing Edit
@@ -129,13 +129,13 @@
                                     <li class="list-group-item" v-if="requestEdit['sourceLink']"><span class="fw-bold">Source Link: </span>{{ requestEdit['sourceLink'] }}</li>
                                     <li class="list-group-item"><span class="fw-bold">Producer: </span>{{ findProducer(requestEdit) }}</li>
                                     <li class="list-group-item"><span class="fw-bold">Brand Relation: </span>{{ requestEdit['brandRelation'] }}</li>
-                                    <li class="list-group-item"><span class="fw-bold">Requested By: </span>{{ findUser(requestEdit["userID"]["$oid"]) }}</li>
+                                    <li class="list-group-item"><span class="fw-bold">Requested By: </span>{{ findUser(requestEdit["userID"]) }}</li>
                                 </ul>
                                 <div class="card-footer">
-                                    <router-link v-if="role == 'producer' || isAdmin || types.includes(requestEdit['drinkType'])" :to="{ path: '/listing/edit/' + requestEdit.listingID['$oid'] + '/' + requestEdit._id['$oid'] }">
+                                    <router-link v-if="role == 'producer' || isAdmin || types.includes(requestEdit['drinkType'])" :to="{ path: '/listing/edit/' + requestEdit.listingID + '/' + requestEdit.id }">
                                         <button class="border btn btn-secondary btn-sm align-bottom">Review Request</button>
                                     </router-link>
-                                    <router-link v-if="role == 'user' && requestEdit['userID']['$oid'] == accID" :to="{ path: '/request/modify/edit/' + requestEdit.listingID['$oid'] + '/' + requestEdit._id['$oid'] }">
+                                    <router-link v-if="role == 'user' && requestEdit['userID'] == accID" :to="{ path: '/request/modify/edit/' + requestEdit.listingID + '/' + requestEdit.id }">
                                         <button class="border btn btn-secondary btn-sm align-bottom">Modify Request</button>
                                     </router-link>
                                 </div>
@@ -150,7 +150,7 @@
                         <hr>
                         <p class="fw-bold fst-italic fs-4 m-0" v-if="requestDupes.length > 0">Viewing: Duplicate Reports</p>
                         <p class="fw-bold fst-italic fs-4 m-0" v-else>No Duplicate Reports!</p>
-                        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-12 my-1 px-1" v-for="requestDupe in requestDupes" :key="requestDupe._id">
+                        <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-12 my-1 px-1" v-for="requestDupe in requestDupes" :key="requestDupe.id">
                             <div class="card border-dark h-100">
                                 <div class="card-header">
                                     Duplicate Report
@@ -164,13 +164,13 @@
                                     <li class="list-group-item" v-if="requestDupe['duplicateLink']"><span class="fw-bold">Duplicate Link: </span>{{ requestDupe['duplicateLink'] }}</li>
                                     <li class="list-group-item"><span class="fw-bold">Producer: </span>{{ findProducer(requestDupe) }}</li>
                                     <li class="list-group-item"><span class="fw-bold">Brand Relation: </span>{{ requestDupe['brandRelation'] }}</li>
-                                    <li class="list-group-item"><span class="fw-bold">Requested By: </span>{{ findUser(requestDupe["userID"]["$oid"]) }}</li>
+                                    <li class="list-group-item"><span class="fw-bold">Requested By: </span>{{ findUser(requestDupe["userID"]) }}</li>
                                 </ul>
                                 <div class="card-footer">
-                                    <router-link v-if="role == 'producer' || isAdmin || types.includes(requestDupe['drinkType'])" :to="{ path: '/listing/edit/' + requestDupe.listingID['$oid'] + '/' + requestDupe._id['$oid'] }">
+                                    <router-link v-if="role == 'producer' || isAdmin || types.includes(requestDupe['drinkType'])" :to="{ path: '/listing/edit/' + requestDupe.listingID + '/' + requestDupe.id }">
                                         <button class="border btn btn-dark btn-sm align-bottom">Review Request</button>
                                     </router-link>
-                                    <router-link v-if="role == 'user' && requestDupe['userID']['$oid'] == accID" :to="{ path: '/request/modify/duplicate/' + requestDupe.listingID['$oid'] + '/' + requestDupe._id['$oid'] }">
+                                    <router-link v-if="role == 'user' && requestDupe['userID'] == accID" :to="{ path: '/request/modify/duplicate/' + requestDupe.listingID + '/' + requestDupe.id }">
                                         <button class="border btn btn-dark btn-sm align-bottom">Modify Request</button>
                                     </router-link>
                                 </div>
@@ -232,9 +232,9 @@
             methods: {
                 // find producer name from producer ID
                 findProducer(request) {
-                    const producerID = request["producerID"]["$oid"];
+                    const producerID = request["producerID"];
                     const producer = this.producers.find((producer) => {
-                        return producer["_id"]["$oid"] == producerID;
+                        return producer["id"] == producerID;
                     });
                     if (producer == undefined) {
                         return request["producerNew"];
@@ -245,11 +245,11 @@
                 // find user name from user ID
                 findUser(userID) {
                     const user = this.users.find((user) => {
-                        return user["_id"]["$oid"] == userID;
+                        return user["id"] == userID;
                     });
                     if (user == undefined) {
                         const producer = this.producers.find((producer) => {
-                            return producer["_id"]["$oid"] == userID;
+                            return producer["id"] == userID;
                         });
                         if (producer != undefined) {
                             return producer["producerName"];
@@ -286,7 +286,7 @@
 
                         if (this.role == 'user') {
                             this.types = this.users.find((user) => {
-                                return user["_id"]["$oid"] == this.accID;
+                                return user["id"] == this.accID;
                             }).modType;
                         }
                         this.user = this.users.find(user => user.id == this.accID)
@@ -312,7 +312,7 @@
                         // Filter requests based on user role
                         if (this.role == 'producer') {
                             this.requestListings = response.data.filter((request) => {
-                                return request["reviewStatus"] == false && request["producerID"]["$oid"] == this.accID;
+                                return request["reviewStatus"] == false && request["producerID"] == this.accID;
                             })
                         }
                         else if (this.role == 'user') {
@@ -322,7 +322,7 @@
                                 })
                             } else {
                                 this.requestListings = response.data.filter((request) => {
-                                    return request["reviewStatus"] == false && (request["userID"]["$oid"] == this.accID || this.types.includes(request["drinkType"]));
+                                    return request["reviewStatus"] == false && (request["userID"] == this.accID || this.types.includes(request["drinkType"]));
                                 })
                             }
                         }
@@ -341,7 +341,7 @@
                         // Obtain listing data for each request
                         for (let request of unreviewedRequests) {
                             let targetListing = this.listings.find((listing) => {
-                                return listing["_id"]["$oid"] == request["listingID"]["$oid"];
+                                return listing["id"] == request["listingID"];
                             });
                             if (targetListing == undefined) {
                                 continue;
@@ -361,18 +361,18 @@
                         // Filter requests based on user role
                         if (this.role == 'producer') {
                             this.requestEdits = this.requestEdits.filter((request) => {
-                                return request["producerID"]["$oid"] == this.accID;
+                                return request["producerID"] == this.accID;
                             })
                             this.requestDupes = this.requestDupes.filter((request) => {
-                                return request["producerID"]["$oid"] == this.accID;
+                                return request["producerID"] == this.accID;
                             })
                         }
                         else if (this.role == 'user' && !this.isAdmin) {
                             this.requestEdits = this.requestEdits.filter((request) => {
-                                return request["userID"]["$oid"] == this.accID || this.types.includes(request["drinkType"]);
+                                return request["userID"] == this.accID || this.types.includes(request["drinkType"]);
                             })
                             this.requestDupes = this.requestDupes.filter((request) => {
-                                return request["userID"]["$oid"] == this.accID || this.types.includes(request["drinkType"]);
+                                return request["userID"] == this.accID || this.types.includes(request["drinkType"]);
                             })
                         }
                     } 

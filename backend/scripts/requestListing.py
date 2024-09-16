@@ -26,14 +26,15 @@ def parse_json(data):
 # - Possible return codes: 201 (Created), 400 (Duplicate Detected), 500 (Error during creation)
 @blueprint.route("/requestListing", methods= ['POST'])
 def requestListing():
-    db = g.db
+    conn = g.db
+    cursor = conn.cursor()
     rawRequest = request.get_json()
 
-    # Duplicate listing check: Reject if listing with the same bottle name already exists in the "listings" collection
     rawRequestName = rawRequest["listingName"]
-    existingBottle = db.listings.find_one({"listingName": rawRequestName})
-    rawRequest['userID'] = ObjectId(rawRequest['userID'])
-    if (existingBottle != None):
+    cursor.execute('SELECT id FROM listings WHERE "listingName" = %s', (rawRequestName,))
+    existingBottle = cursor.fetchone()
+
+    if existingBottle is not None:
         return jsonify(
             {
                 "code": 400,
@@ -43,23 +44,61 @@ def requestListing():
                 "message": "Bottle with the same name already exists."
             }
         ), 400
+
     if rawRequest['photo']:
         rawRequest['photo'] = s3Images.uploadBase64ImageToS3(rawRequest['photo'])
-    # Insert new request into database
-    newRequest = data.requestListings(**rawRequest)
+
+    # Handle nullable foreign keys
+    producerId = rawRequest.get('producerID') or None
+    userId = rawRequest.get('userID') or None
+
     try:
-        insertResult = db.requestListings.insert_one(data.asdict(newRequest))
+        cursor.execute("""
+            INSERT INTO "requestListings" (
+                "listingName", bottler, "drinkType", "sourceLink", "brandRelation", 
+                "reviewStatus", "userID", photo, "originCountry", "producerID", 
+                "producerNew", "typeCategory", abv, age, "reviewLink"
+            ) VALUES (%s, %s, %s, %s, %s, 
+                      %s, %s, %s, %s, %s, 
+                      %s, %s, %s, %s, %s)
+            RETURNING id;
+        """, (
+            rawRequestName,
+            rawRequest['bottler'],
+            rawRequest['drinkType'],
+            rawRequest['sourceLink'],
+            rawRequest['brandRelation'],
+            rawRequest['reviewStatus'],
+            userId,
+            rawRequest['photo'],
+            rawRequest['originCountry'],
+            producerId,
+            rawRequest['producerNew'],
+            rawRequest['typeCategory'],
+            rawRequest['abv'],
+            rawRequest['age'],
+            rawRequest['reviewLink']
+        ))
+
+        conn.commit()
+        newRequestId = cursor.fetchone()
+
+        if newRequestId is None:
+            raise Exception("Failed to retrieve the new request ID after insert.")
 
         return jsonify(
             {
                 "code": 201,
-                "data": rawRequestName
+                "data": {
+                    "listingName": rawRequestName,
+                    "requestId": newRequestId
+                }
             }
         ), 201
-    
-    except Exception as e:
-        print(str(e))
 
+    except Exception as e:
+        conn.rollback()
+        print(f"Error: {str(e)}")
         return jsonify(
             {
                 "code": 500,
@@ -69,6 +108,9 @@ def requestListing():
                 "message": "An error occurred while submitting the request."
             }
         ), 500
+    
+    finally:
+        cursor.close()
 
 # -----------------------------------------------------------------------------------------
 # [POST] Edit submitted request for listing creation
@@ -77,14 +119,15 @@ def requestListing():
 # - Possible return codes: 201 (Updated), 400 (Duplicate Detected), 500 (Error during update)
 @blueprint.route("/requestListingModify/<string:requestID>", methods= ['POST'])
 def requestListingModify(requestID):
-    db = g.db
+    conn = g.db
+    cursor = conn.cursor()
     rawRequest = request.get_json()
 
-    # Duplicate listing check: Reject if listing with the same bottle name already exists in the "listings" collection
     rawRequestName = rawRequest["listingName"]
-    rawRequest['userID'] = ObjectId(rawRequest['userID'])
-    existingBottle = db.listings.find_one({"listingName": rawRequestName})
-    if (existingBottle != None):
+    cursor.execute('SELECT id FROM listings WHERE "listingName" = %s', (rawRequestName,))
+    existingBottle = cursor.fetchone()
+
+    if existingBottle is not None:
         return jsonify(
             {
                 "code": 400,
@@ -94,30 +137,62 @@ def requestListingModify(requestID):
                 "message": "Bottle with the same name already exists."
             }
         ), 400
-    
-    # find rawrequest, if rawrequest has photo, check if existingrequest has photo, delete if found, else upload image to s3 and save image in db
-    existingRequest = db.requestListings.find_one({"_id": ObjectId(requestID)})
+        
 
-    if existingRequest['photo']:
-        s3Images.deleteImageFromS3(existingRequest['photo'])
+    # If rawRequest has photo, check if existingRequest has photo, delete if found, else upload image to s3 and save image in db
     if rawRequest['photo']:
-        rawRequest['photo'] = s3Images.uploadBase64ImageToS3(rawRequest['photo'])
+        cursor.execute('SELECT photo FROM "requestListings" WHERE id = %s', (requestID,))
+        existingRequest = cursor.fetchone()
 
-    # Update existing request in database
-    updateRequest = data.requestListings(**rawRequest)
+        if existingRequest:
+            s3Images.deleteImageFromS3(existingRequest)
+        if rawRequest['photo']:
+            rawRequest['photo'] = s3Images.uploadBase64ImageToS3(rawRequest['photo'])
+
+    producerId = rawRequest.get('producerID') or None
+    userId = rawRequest.get('userID') or None
+
     try:
-        updateResult = db.requestListings.update_one({"_id": ObjectId(requestID)}, {"$set": data.asdict(updateRequest)})
+        cursor.execute("""
+            UPDATE "requestListings"
+            SET "listingName" = %s, bottler = %s, "drinkType" = %s, "sourceLink" = %s, "brandRelation" = %s, 
+                "reviewStatus" = %s, "userID" = %s, photo = %s, "originCountry" = %s, "producerID" = %s, 
+                "producerNew" = %s, "typeCategory" = %s, abv = %s, age = %s, "reviewLink" = %s
+            WHERE id = %s;
+        """, (
+            rawRequestName,
+            rawRequest['bottler'],
+            rawRequest['drinkType'],
+            rawRequest['sourceLink'],
+            rawRequest['brandRelation'],
+            rawRequest['reviewStatus'],
+            userId,
+            rawRequest['photo'],
+            rawRequest['originCountry'],
+            producerId,
+            rawRequest['producerNew'],
+            rawRequest['typeCategory'],
+            rawRequest['abv'],
+            rawRequest['age'],
+            rawRequest['reviewLink'],
+            requestID
+        ))
+
+        conn.commit()
 
         return jsonify(
             {
                 "code": 201,
-                "data": rawRequestName
+                "data": {
+                    "listingName": rawRequestName,
+                    "requestId": requestID
+                }
             }
         ), 201
-    
-    except Exception as e:
-        print(str(e))
 
+    except Exception as e:
+        conn.rollback()
+        print(f"Error: {str(e)}")
         return jsonify(
             {
                 "code": 500,
