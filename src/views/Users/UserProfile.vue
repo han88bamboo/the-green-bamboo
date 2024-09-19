@@ -615,7 +615,7 @@
                         <div v-for="(bookmarkList, name, index) in displayUserBookmarks" :key="name" style="display: flex" class="row mb-3">
                             <div class="col-3 mobile-col-4 mobile-pe-0" >
                                 <!-- <img :src=" 'data:image/png;base64,' + ( getListingFromID(bookmarkList.listItems[0]).photo || defaultDrinkImage )" alt="" class="bottle-img me-3"> xyz -->
-                                <img :src="( getListingFromID(bookmarkList.listItems[0]).photo || defaultDrinkImage )" alt="" class="bottle-img me-3">
+                                <img :src="( getListingFromID(bookmarkList.listItems[0])?.photo || defaultDrinkImage )" alt="" class="bottle-img me-3">
                             </div>
                             <div  class="col-9 mobile-col-8 mobile-ps-1" > <!-- style="height: 150px; display: flex; flex-direction: column;" -->
                                 <h5 class="mt-1" @click="viewList(name)" style="cursor: pointer"> {{ name }} </h5>
@@ -810,12 +810,12 @@
                         <div class="row mb-3" v-for="(listingID, index) in displayUser.drinkLists[currentList].listItems" :key="index">
                             <div class="col-10 pe-0" style="display: flex">
                                 <!-- <img :src=" 'data:image/png;base64,' + ( getListingFromID(listingID[1]).photo || defaultDrinkImage )" alt="" style="width:130px; height:130px;" class="bottle-img me-3"> -->
-                                <img :src=" ( getListingFromID(listingID).photo || defaultDrinkImage )" alt="" style="width:130px; height:130px;" class="bottle-img me-3">
+                                <img :src=" ( getListingFromID(listingID)?.photo || defaultDrinkImage )" alt="" style="width:130px; height:130px;" class="bottle-img me-3">
                                 <div style="min-height: 150px; display: flex; flex-direction: column;">
                                     <a :href="'/listing/view/' + listingID" style="text-decoration: none; color: inherit;">
-                                        <h4>{{ getListingFromID(listingID).listingName }}</h4>
+                                        <h4>{{ getListingFromID(listingID)?.listingName }}</h4>
                                     </a>
-                                    <p style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;"> {{ getListingFromID(listingID).officialDesc }} </p>
+                                    <p style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;"> {{ getListingFromID(listingID)?.officialDesc }} </p>
                                     <div v-if="ownProfile" style="display: flex; margin-top: auto" class="mb-0">
                                         <a href="#" style="text-decoration: none; color: #535C72;" data-bs-toggle="modal" :data-bs-target="`#deleteFromListModal${index}`">
                                             <!-- cross icon -->
@@ -851,7 +851,7 @@
                                             <img src="../../../Images/Others/cancel.png" alt="" class="rounded-circle border border-dark text-center" style="width: 100px; height: 100px;">
                                             <h3>Are you sure?</h3>
                                             <br>
-                                            <p>Do you really want to delete <b><i>{{ getListingFromID(listingID).listingName }}</i></b> from <b><i>{{ currentList }}</i></b>? </p>
+                                            <p>Do you really want to delete <b><i>{{ getListingFromID(listingID)?.listingName }}</i></b> from <b><i>{{ currentList }}</i></b>? </p>
                                         </div>
                                         <div style="display: inline" class="text-center mb-4">
                                             <button type="button" class="btn btn-secondary me-3" data-bs-dismiss="modal">Cancel</button>
@@ -1442,14 +1442,14 @@ export default {
             // check if listingID is in user bookmark
             for (const category of Object.values(this.userBookmarks)) {
                 if (category.listItems) {
-                    if (category.listItems.some(item => item === listingID)) {
+                    if (category.listItems.some(item => item === parseInt(listingID))) {
                         return true;
                     }
                 }
             }
         },
         getListingFromID(listingID) {
-            return this.listings.find(listing => listing.id === listingID);
+            return this.listings.find(listing => listing.id === parseInt(listingID));
         },
 
         // return oid from name of drink listing

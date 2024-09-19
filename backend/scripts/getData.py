@@ -161,55 +161,142 @@ def getListingsByProducer(id):
 @blueprint.route("/getProducers")
 def getProducers():
     conn = g.db
-    
-    with conn.cursor() as cursor:
-        cursor.execute('SELECT * FROM "producers"')
-        producers_data = cursor.fetchall()
-    
+    cur = conn.cursor()
+
+    try:
+        # Query to get producers and related data
+        query = """
+            SELECT 
+                p.id, p."producerName", p."producerDesc", p."originCountry", p."mainDrinks", p.photo, 
+                p."hashedPassword", p."claimStatus", p."statusOB", p.username, p."producerLink", 
+                p."stripeCustomerId",
+                COALESCE(json_agg(DISTINCT qa) FILTER (WHERE qa IS NOT NULL), '[]') AS "questionsAnswers",
+                COALESCE(json_agg(DISTINCT u) FILTER (WHERE u IS NOT NULL), '[]') AS updates
+            FROM producers p
+            LEFT JOIN "producersQuestionAnswers" qa ON p.id = qa."producerId"
+            LEFT JOIN "producersUpdates" u ON p.id = u."producerId"
+            GROUP BY p.id
+            ORDER BY p.id
+        """
+
+        cur.execute(query)
+        producers_data = cur.fetchall()
+
         if not producers_data:
             return jsonify([])
 
-        for producer in producers_data:
-            cursor.execute('SELECT * FROM "producersQuestionAnswers" WHERE "id" = %s', (producer["id"],))
-            question_answers_data = cursor.fetchall()
-            producer["questionsAnswers"] = question_answers_data if question_answers_data else []
+        producers_list = []
+        for row in producers_data:
+            producer = dict(row)
+            producer['questionsAnswers'] = producer['questionsAnswers'] if producer['questionsAnswers'] else []
+            producer['updates'] = producer['updates'] if producer['updates'] else []
+            producers_list.append(producer)
 
-            cursor.execute('SELECT * FROM "producersUpdates" WHERE "id" = %s', (producer["id"],))
-            updates_data = cursor.fetchall()
-            producer["updates"] = updates_data if updates_data else []
+        return jsonify(producers_list), 200
 
-    return jsonify(producers_data)
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred retrieving producers."
+            }
+        ), 500
+
+    finally:
+        cur.close()
 
 # [GET] Specific Producer
-@blueprint.route("/getProducer/<id>")
+@blueprint.route("/getProducer/<int:id>")
 def getProducer(id):
     conn = g.db
-    
-    with conn.cursor() as cursor:
-        cursor.execute('SELECT * FROM "producers" WHERE "id" = %s', (id,))
-        producer_data = cursor.fetchone()
-    
+    cur = conn.cursor()
+
+    try:
+        # Query to get a specific producer and related data
+        query = """
+            SELECT 
+                p.id, p."producerName", p."producerDesc", p."originCountry", p."mainDrinks", p.photo, 
+                p."hashedPassword", p."claimStatus", p."statusOB", p.username, p."producerLink", 
+                p."stripeCustomerId",
+                COALESCE(json_agg(DISTINCT qa) FILTER (WHERE qa IS NOT NULL), '[]') AS "questionsAnswers",
+                COALESCE(json_agg(DISTINCT u) FILTER (WHERE u IS NOT NULL), '[]') AS updates
+            FROM producers p
+            LEFT JOIN "producersQuestionAnswers" qa ON p.id = qa."producerId"
+            LEFT JOIN "producersUpdates" u ON p.id = u."producerId"
+            WHERE p.id = %s
+            GROUP BY p.id
+        """
+
+        cur.execute(query, (id,))
+        producer_data = cur.fetchone()
+
         if producer_data is None:
-            return jsonify([])
+            return jsonify({"message": "Producer not found"}), 404
 
-        cursor.execute('SELECT * FROM "producersQuestionAnswers" WHERE "id" = %s', (producer_data["id"],))
-        question_answers_data = cursor.fetchall()
-        producer_data["questionsAnswers"] = question_answers_data if question_answers_data else []
+        producer = dict(producer_data)
+        producer['questionsAnswers'] = producer['questionsAnswers'] if producer['questionsAnswers'] else []
+        producer['updates'] = producer['updates'] if producer['updates'] else []
 
-        cursor.execute('SELECT * FROM "producersUpdates" WHERE "id" = %s', (producer_data["id"],))
-        updates_data = cursor.fetchall()
-        producer_data["updates"] = updates_data if updates_data else []
+        return jsonify(producer), 200
 
-    return jsonify(producer_data)
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred retrieving the producer."
+            }
+        ), 500
+
+    finally:
+        cur.close()
 
 # [GET] Specific Producer
 @blueprint.route("/getProducerByRequestId/<id>")
 def getProducerByRequestId(id):
-    db = g.db
-    data = db.producers.find_one({"requestId": ObjectId(id)})
-    if data is None:
-        return []
-    return parse_json(data)
+    conn = g.db
+    cur = conn.cursor()
+
+    try:
+        # Query to get a specific producer and related data
+        query = """
+            SELECT 
+                p.id, p."producerName", p."producerDesc", p."originCountry", p."mainDrinks", p.photo, 
+                p."hashedPassword", p."claimStatus", p."statusOB", p.username, p."producerLink", 
+                p."stripeCustomerId",
+                COALESCE(json_agg(DISTINCT qa) FILTER (WHERE qa IS NOT NULL), '[]') AS "questionsAnswers",
+                COALESCE(json_agg(DISTINCT u) FILTER (WHERE u IS NOT NULL), '[]') AS updates
+            FROM producers p
+            LEFT JOIN "producersQuestionAnswers" qa ON p.id = qa."producerId"
+            LEFT JOIN "producersUpdates" u ON p.id = u."producerId"
+            WHERE p."requestId" = %s
+            GROUP BY p.id
+        """
+
+        cur.execute(query, (id,))
+        producer_data = cur.fetchone()
+
+        if producer_data is None:
+            return jsonify({"message": "Producer not found"}), 404
+
+        producer = dict(producer_data)
+        producer['questionsAnswers'] = producer['questionsAnswers'] if producer['questionsAnswers'] else []
+        producer['updates'] = producer['updates'] if producer['updates'] else []
+
+        return jsonify(producer), 200
+    
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred retrieving the producer."
+            }
+        ), 500
+    
+    finally:
+        cur.close()
 
 # ----------------------
 # [NEW] TO BE ADDED:
@@ -523,38 +610,160 @@ def getUserByUsername(username):
 @blueprint.route("/getVenues")
 def getVenues():
     conn = g.db
-    
-    with conn.cursor() as cursor:
-        cursor.execute('SELECT * FROM "venues"')
-        venues_data = cursor.fetchall()
-    
-    if not venues_data:
-        return jsonify([])
+    cur = conn.cursor()
 
-    return jsonify(venues_data)
+    try:
+        # Query to get venues and related data
+        query = """
+            SELECT 
+                v.id, v.address, v."claimStatus", v."hashedPassword", v."venueName", v."venueDesc", 
+                v."originLocation", v.photo, v."publicHolidays", v."reservationDetails", 
+                v.username, v."venueType", v."stripeCustomerId", v.pin,
+                COALESCE(json_agg(DISTINCT m) FILTER (WHERE m IS NOT NULL), '[]') AS menu,
+                COALESCE(json_agg(DISTINCT oh) FILTER (WHERE oh IS NOT NULL), '[]') AS "openingHours",
+                COALESCE(json_agg(DISTINCT qa) FILTER (WHERE qa IS NOT NULL), '[]') AS "questionsAnswers",
+                COALESCE(json_agg(DISTINCT u) FILTER (WHERE u IS NOT NULL), '[]') AS updates
+            FROM venues v
+            LEFT JOIN "venuesMenu" m ON v.id = m."venueId"
+            LEFT JOIN "venuesOpeningHours" oh ON v.id = oh."venueId"
+            LEFT JOIN "venuesQuestionAnswers" qa ON v.id = qa."venueId"
+            LEFT JOIN "venuesUpdates" u ON v.id = u."venueId"
+            GROUP BY v.id
+            ORDER BY v.id
+        """
+
+        cur.execute(query)
+        venues_data = cur.fetchall()
+
+        if not venues_data:
+            return jsonify([])
+
+        venues_list = []
+        for row in venues_data:
+            venue = dict(row)
+            venue['menu'] = venue['menu'] if venue['menu'] else []
+            venue['openingHours'] = venue['openingHours'] if venue['openingHours'] else {}
+            venue['questionsAnswers'] = venue['questionsAnswers'] if venue['questionsAnswers'] else []
+            venue['updates'] = venue['updates'] if venue['updates'] else []
+            venues_list.append(venue)
+
+        return jsonify(venues_list), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred retrieving venues."
+            }
+        ), 500
+
+    finally:
+        cur.close()
 
 # [GET] Specific Venue
 @blueprint.route("/getVenue/<id>")
 def getVenue(id):
     conn = g.db
-    
-    with conn.cursor() as cursor:
-        cursor.execute('SELECT * FROM "venues" WHERE "id" = %s', (id,))
-        venue_data = cursor.fetchone()
-    
-    if venue_data is None:
-        return jsonify([])
+    cur = conn.cursor()
 
-    return jsonify(venue_data)
+    try:
+        # Query to get a specific venue and related data
+        query = """
+            SELECT 
+                v.id, v.address, v."claimStatus", v."hashedPassword", v."venueName", v."venueDesc", 
+                v."originLocation", v.photo, v."publicHolidays", v."reservationDetails", 
+                v.username, v."venueType", v."stripeCustomerId", v.pin,
+                COALESCE(json_agg(DISTINCT m) FILTER (WHERE m IS NOT NULL), '[]') AS menu,
+                COALESCE(json_agg(DISTINCT oh) FILTER (WHERE oh IS NOT NULL), '[]') AS "openingHours",
+                COALESCE(json_agg(DISTINCT qa) FILTER (WHERE qa IS NOT NULL), '[]') AS "questionsAnswers",
+                COALESCE(json_agg(DISTINCT u) FILTER (WHERE u IS NOT NULL), '[]') AS updates
+            FROM venues v
+            LEFT JOIN "venuesMenu" m ON v.id = m."venueId"
+            LEFT JOIN "venuesOpeningHours" oh ON v.id = oh."venueId"
+            LEFT JOIN "venuesQuestionAnswers" qa ON v.id = qa."venueId"
+            LEFT JOIN "venuesUpdates" u ON v.id = u."venueId"
+            WHERE v.id = %s
+            GROUP BY v.id
+        """
+
+        cur.execute(query, (id,))
+        venue_data = cur.fetchone()
+
+        if venue_data is None:
+            return jsonify({"message": "Venue not found"}), 404
+
+        venue = dict(venue_data)
+        venue['menu'] = venue['menu'] if venue['menu'] else []
+        venue['openingHours'] = venue['openingHours'] if venue['openingHours'] else {}
+        venue['questionsAnswers'] = venue['questionsAnswers'] if venue['questionsAnswers'] else []
+        venue['updates'] = venue['updates'] if venue['updates'] else []
+
+        return jsonify(venue), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred retrieving the venue."
+            }
+        ), 500
+
+    finally:
+        cur.close()
 
 # [GET] Specific Producer
 @blueprint.route("/getVenueByRequestId/<id>")
 def getVenueByRequestId(id):
-    db = g.db
-    data = db.venues.find_one({"requestId": ObjectId(id)})
-    if data is None:
-        return []
-    return parse_json(data)
+    conn = g.db
+    cur = conn.cursor()
+
+    try:
+        # Query to get a specific venue by requestId and related data
+        query = """
+            SELECT 
+                v.id, v.address, v."claimStatus", v."hashedPassword", v."venueName", v."venueDesc", 
+                v."originLocation", v.photo, v."publicHolidays", v."reservationDetails", 
+                v.username, v."venueType", v."stripeCustomerId", v.pin,
+                COALESCE(json_agg(DISTINCT m) FILTER (WHERE m IS NOT NULL), '[]') AS menu,
+                COALESCE(json_agg(DISTINCT oh) FILTER (WHERE oh IS NOT NULL), '[]') AS "openingHours",
+                COALESCE(json_agg(DISTINCT qa) FILTER (WHERE qa IS NOT NULL), '[]') AS "questionsAnswers",
+                COALESCE(json_agg(DISTINCT u) FILTER (WHERE u IS NOT NULL), '[]') AS updates
+            FROM venues v
+            LEFT JOIN "venuesMenu" m ON v.id = m."venueId"
+            LEFT JOIN "venuesOpeningHours" oh ON v.id = oh."venueId"
+            LEFT JOIN "venuesQuestionAnswers" qa ON v.id = qa."venueId"
+            LEFT JOIN "venuesUpdates" u ON v.id = u."venueId"
+            WHERE v."requestId" = %s
+            GROUP BY v.id
+        """
+
+        cur.execute(query, (id,))
+        venue_data = cur.fetchone()
+
+        if venue_data is None:
+            return jsonify({"message": "Venue not found"}), 404
+
+        venue = dict(venue_data)
+        venue['menu'] = venue['menu'] if venue['menu'] else []
+        venue['openingHours'] = venue['openingHours'] if venue['openingHours'] else {}
+        venue['questionsAnswers'] = venue['questionsAnswers'] if venue['questionsAnswers'] else []
+        venue['updates'] = venue['updates'] if venue['updates'] else []
+
+        return jsonify(venue), 200
+    
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred retrieving the venue."
+            }
+        ), 500
+    
+    finally:
+        cur.close()
 
 # ----------------------
 # [NEW] TO BE ADDED:
@@ -652,16 +861,16 @@ def getVenueByRequestId(id):
 
 # -----------------------------------------------------------------------------------------
 # [GET] VenuesAPI
-@blueprint.route("/getVenuesAPI")
-def getVenuesAPI():
-    db = g.db
-    data = db.venuesAPI.find({})
-    print(len(list(data.clone())))
-    allVenuesAPI = []
-    dataEncode = parse_json(data)
-    for doc in dataEncode:
-        allVenuesAPI.append(doc)
-    return allVenuesAPI
+# @blueprint.route("/getVenuesAPI")
+# def getVenuesAPI():
+#     db = g.db
+#     data = db.venuesAPI.find({})
+#     print(len(list(data.clone())))
+#     allVenuesAPI = []
+#     dataEncode = parse_json(data)
+#     for doc in dataEncode:
+#         allVenuesAPI.append(doc)
+#     return allVenuesAPI
 
 # -----------------------------------------------------------------------------------------
 # [GET] DrinkTypes
@@ -844,14 +1053,16 @@ def getLanguages():
 # [GET] servingTypes
 @blueprint.route("/getServingTypes")
 def getServingTypes():
-    db = g.db
-    data = db.servingTypes.find({})
-    print(len(list(data.clone())))
-    servingTypes = []
-    dataEncode = parse_json(data)
-    for doc in dataEncode:
-        servingTypes.append(doc)
-    return servingTypes
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "servingTypes"')
+        serving_types_data = cursor.fetchall()
+
+    if not serving_types_data:
+        return jsonify([]), 404
+    
+    return jsonify(serving_types_data), 200
 
 # -----------------------------------------------------------------------------------------
 
@@ -865,27 +1076,55 @@ def getServingTypes():
 @blueprint.route("/getProducersProfileViews")
 def getProducersProfileViews():
     conn = g.db
+    cur = conn.cursor()
 
-    with conn.cursor() as cursor:
-        cursor.execute('SELECT * FROM "producersProfileViews"')
-        allProducersProfileViews = cursor.fetchall()
+    try:
+        cur.execute('SELECT * FROM "producersProfileViews"')
+        producers_profile_views_data = cur.fetchall()
 
-    if not allProducersProfileViews:
-        return jsonify([])
+        if not producers_profile_views_data:
+            return jsonify([]), 404
 
-    return jsonify(allProducersProfileViews)
+        return jsonify(producers_profile_views_data), 200
+    
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred retrieving the profile views."
+            }
+        ), 500
+    
+    finally:
+        cur.close()
 
 # [GET] producersProfileViews by producerID
 @blueprint.route("/getProducersProfileViewsByProducer/<id>")
 def getProducersProfileViewsByProducer():
-    db = g.db
-    data = db.producersProfileViews.find({"producerID": ObjectId(id)})
-    print(len(list(data.clone())))
-    producersProfileViews = []
-    dataEncode = parse_json(data)
-    for doc in dataEncode:
-        producersProfileViews.append(doc)
-    return producersProfileViews
+    conn = g.db
+    cur = conn.cursor()
+
+    try:
+        cur.execute('SELECT * FROM "producersProfileViews" WHERE "producerID" = %s', (id,))
+        producers_profile_views_data = cur.fetchall()
+
+        if not producers_profile_views_data:
+            return jsonify([]), 404
+
+        return jsonify(producers_profile_views_data), 200
+    
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred retrieving the profile views."
+            }
+        ), 500
+    
+    finally:
+        cur.close()
 
 # ----------------------
 # [NEW] TO BE ADDED:
@@ -919,7 +1158,7 @@ def getProducersProfileViewsByProducer():
 #         })
 #         profile_view['views'] = list(views_data)
 #         allProfileViews.append(profile_view)
-    return parse_json(allProfileViews)
+    # return parse_json(allProfileViews)
 
 # =======================================================
 
@@ -934,26 +1173,56 @@ def getProducersProfileViewsByProducer():
 # [GET] venuesProfileViews
 @blueprint.route("/getVenuesProfileViews")
 def getVenuesProfileViews():
-    db = g.db
-    data = db.venuesProfileViews.find({})
-    print(len(list(data.clone())))
-    venuesProfileViews = []
-    dataEncode = parse_json(data)
-    for doc in dataEncode:
-        venuesProfileViews.append(doc)
-    return venuesProfileViews
+    conn = g.db
+    cur = conn.cursor()
+
+    try:
+        cur.execute('SELECT * FROM "venuesProfileViews"')
+        profile_views_data = cur.fetchall()
+
+        if not profile_views_data:
+            return jsonify([]), 404
+
+        return jsonify(profile_views_data), 200
+    
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred retrieving the profile views."
+            }
+        ), 500
+    
+    finally:
+        cur.close()
 
 # [GET] venuesProfileViews by venueID
 @blueprint.route("/getVenuesProfileViewsByVenue/<id>")
 def getVenuesProfileViewsByVenue(id):
-    db = g.db
-    data = db.venuesProfileViews.find({"venueID": ObjectId(id)})
-    print(len(list(data.clone())))
-    venuesProfileViews = []
-    dataEncode = parse_json(data)
-    for doc in dataEncode:
-        venuesProfileViews.append(doc)
-    return venuesProfileViews
+    conn = g.db
+    cur = conn.cursor()
+
+    try:
+        cur.execute('SELECT * FROM "venuesProfileViews" WHERE "venueID" = %s', (id,))
+        profile_views_data = cur.fetchall()
+
+        if not profile_views_data:
+            return jsonify([]), 404
+
+        return jsonify(profile_views_data), 200
+    
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred retrieving the profile views."
+            }
+        ), 500
+    
+    finally:
+        cur.close()
 
 # ----------------------
 # [NEW] TO BE ADDED:
@@ -996,15 +1265,29 @@ def getVenuesProfileViewsByVenue(id):
 @blueprint.route("/getRequestInaccuracyByVenue/<id>")
 def getRequestInaccuracyByVenue(id):
     # only get requestInaccuracy that has reviewStatus = False
-    db = g.db
-    data = db.requestInaccuracy.find({"venueID": ObjectId(id), "reviewStatus": False})
-    if data is None:
-        return []
-    allRequestInaccuracy = []
-    dataEncode = parse_json(data)
-    for doc in dataEncode:
-        allRequestInaccuracy.append(doc)
-    return allRequestInaccuracy
+    conn = g.db
+    cur = conn.cursor()
+
+    try:
+        cur.execute('SELECT * FROM "requestInaccuracy" WHERE "venueID" = %s AND "reviewStatus" = FALSE', (id,))
+        request_inaccuracy_data = cur.fetchall()
+
+        if not request_inaccuracy_data:
+            return jsonify([]), 404
+
+        return jsonify(request_inaccuracy_data), 200
+    
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred retrieving the request inaccuracy."
+            }
+        ), 500
+    
+    finally:
+        cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [GET] Badges
@@ -1024,39 +1307,123 @@ def getBadges():
 # [GET] Specific Token
 @blueprint.route("/getToken/<token>")
 def getToken(token):
-    db = g.db
-    data = db.tokens.find_one({"token": token})
-    if data is None:
-        return []
-    return parse_json(data)
+    conn = g.db
+    cur = conn.cursor()
 
-# [GET] Specific Token By requestId
+    try:
+        cur.execute("""
+            SELECT * FROM "tokens" WHERE "token" = %s
+        """, (token,))
+
+        token_data = cur.fetchone()
+
+        if token_data is None:
+            return jsonify([]), 404
+        
+        return jsonify(token_data), 200
+    
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred retrieving the token."
+            }
+        ), 500
+    
+    finally:
+        cur.close()
+
 @blueprint.route("/getTokenByRequestId/<requestId>")
 def getTokenByRequestId(requestId):
-    db = g.db
-    data = db.tokens.find_one({"requestId": ObjectId(requestId)})
-    if data is None:
-        return []
-    return parse_json(data)
+    conn = g.db
+    cur = conn.cursor()
+
+    try:
+        cur.execute("""
+            SELECT * FROM "tokens" WHERE "requestId" = %s
+        """, (requestId,))
+        token_data = cur.fetchone()
+
+        if token_data is None:
+            return jsonify([]), 404
+        
+        return jsonify(token_data), 200
+    
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred retrieving the token."
+            }
+        ), 500
+    
+    finally:
+        cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [GET] Specific Request
 @blueprint.route("/getAccountRequest/<id>")
 def getAccountRequest(id):
-    db = g.db
-    data = db.accountRequests.find_one({"_id": ObjectId(id)})
-    if data is None:
-        return []
-    return parse_json(data)
+    conn = g.db
+    cur = conn.cursor()
+
+    try:
+        cur.execute("""
+            SELECT * FROM "accountRequests" WHERE "id" = %s
+        """, (id,))
+
+        request_data = cur.fetchone()
+
+        if request_data is None:
+            return jsonify([]), 404
+        
+        return jsonify(request_data), 200
+    
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred retrieving the request."
+            }
+        ), 500
+    
+    finally:
+        cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [GET] Producers
 @blueprint.route("/getUsernames")
 def getUsernames():
-    db = g.db
-    producers_data = db.producers.find({}, {'username': 1, '_id': 0})
-    venues_data = db.venues.find({}, {'username': 1, '_id': 0})
+    conn = g.db
+    cur = conn.cursor()
 
-    all_usernames = [doc['username'] for doc in producers_data] + [doc['username'] for doc in venues_data]
+    try:
+        cur.execute('SELECT "username" FROM "producers"')
+        producer_usernames = cur.fetchall()
 
-    return parse_json(all_usernames)
+        cur.execute('SELECT "username" FROM "venues"')
+        venue_usernames = cur.fetchall()
+
+        # Combine and filter usernames
+        usernames = (
+            [username['username'] for username in producer_usernames] +
+            [username['username'] for username in venue_usernames]
+        )
+        usernames = [username for username in usernames if username]  # Filter out any None values
+
+        return jsonify(usernames), 200
+    
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred retrieving usernames."
+            }
+        ), 500
+    
+    finally:
+        cur.close()

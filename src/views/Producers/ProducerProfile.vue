@@ -261,13 +261,13 @@
                                     <div class="row pt-2"> 
                                         <div class="col-6 text-end">
                                             <!-- [if] liked -->
-                                            <div v-if="likeStatus" class="d-inline-block" v-on:click="unlikeUpdates(latestUpdate._id.$oid)">
+                                            <div v-if="likeStatus" class="d-inline-block" v-on:click="unlikeUpdates(latestUpdate.id)">
                                                 <svg xmlns="http://www.w3.org/2000/svg"  fill="red" class="bi bi-heart-fill producer-profile-latest-updates-heart" viewBox="0 0 16 16">
                                                     <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"/>
                                                 </svg>
                                             </div>
                                             <!-- [else] not liked -->
-                                            <div v-else class="d-inline-block" v-on:click="likeUpdates(latestUpdate._id.$oid)">
+                                            <div v-else class="d-inline-block" v-on:click="likeUpdates(latestUpdate.id)">
                                                 <svg xmlns="http://www.w3.org/2000/svg"  fill="currentColor" class="bi bi-heart producer-profile-latest-updates-heart" viewBox="0 0 16 16">
                                                     <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.920 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.090.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15"/>
                                                 </svg>
@@ -383,10 +383,10 @@
 
                                             <div v-if="correctProducer || isAdmin" class="col-xl-4 col-md-6 col-12 text-end">
                                                 <!-- edit & delete button -->
-                                                <button v-if="correctProducer && (editingRemainingUpdate == false || editingRemainingUpdateID != update._id.$oid)" type="button" class="btn btn-warning rounded-0" @click="editUpdate(update, 'remaining')"> Edit </button>
-                                                <button v-if="correctProducer && editingRemainingUpdateID == update._id.$oid" type="button" class="btn btn-success rounded-0 reverse-clickable-text" @click="saveUpdateEdit(update, 'remaining')"> Save </button>
-                                                <button v-if="correctProducer && editingRemainingUpdateID == update._id.$oid" type="button" class="btn btn-warning rounded-0 reverse-clickable-text ms-1" @click="cancelUpdate(update, 'remaining')"> Cancel </button>
-                                                <button v-if="correctProducer && (editingRemainingUpdate == false || editingRemainingUpdateID != update._id.$oid)" type="button" class="btn btn-danger rounded-0 ms-1" @click="deleteUpdate(update)"> Delete </button>
+                                                <button v-if="correctProducer && (editingRemainingUpdate == false || editingRemainingUpdateID != update.id)" type="button" class="btn btn-warning rounded-0" @click="editUpdate(update, 'remaining')"> Edit </button>
+                                                <button v-if="correctProducer && editingRemainingUpdateID == update.id" type="button" class="btn btn-success rounded-0 reverse-clickable-text" @click="saveUpdateEdit(update, 'remaining')"> Save </button>
+                                                <button v-if="correctProducer && editingRemainingUpdateID == update.id" type="button" class="btn btn-warning rounded-0 reverse-clickable-text ms-1" @click="cancelUpdate(update, 'remaining')"> Cancel </button>
+                                                <button v-if="correctProducer && (editingRemainingUpdate == false || editingRemainingUpdateID != update.id)" type="button" class="btn btn-danger rounded-0 ms-1" @click="deleteUpdate(update)"> Delete </button>
                                             </div>
                                         </div>
 
@@ -396,7 +396,7 @@
                                             <div class="image-container">
                                                 <!-- image -->
                                                 <!-- [if] editing -->
-                                                <div v-if="editingRemainingUpdateID == update._id.$oid" style="position: relative; text-align: center;">
+                                                <div v-if="editingRemainingUpdateID == update.id" style="position: relative; text-align: center;">
                                                     <!-- image -->
                                                     <!-- <img :src="selectedRemainingUpdateImage || 'data:image/jpeg;base64,' + (update['photo'] || defaultPhoto)" 
                                                         alt="" style="width: 128px; height: 128px; z-index: 1; opacity: 50%"> -->
@@ -411,7 +411,7 @@
                                                     <button class="btn primary-light-dropdown m-1" @click="selectedRemainingUpdateImage = defaultPhoto; image64RemainingUpdate = ''">Remove</button>
                                                 </div>
                                                 <!-- [else] not editing -->
-                                                <div v-else-if="editingRemainingUpdate == false || editingRemainingUpdateID != update._id.$oid">
+                                                <div v-else-if="editingRemainingUpdate == false || editingRemainingUpdateID != update.id">
                                                     <!-- <img :src="'data:image/jpeg;base64,' + (update['photo'] || defaultPhoto)" 
                                                         alt="" class="producer-profile-latest-updates-image"> -->
                                                     <img :src="(update['photo'] || defaultPhoto)" 
@@ -422,13 +422,13 @@
                                             <div class="row pt-2"> 
                                                 <div class="col-6 text-end">
                                                     <!-- [if] liked -->
-                                                    <div v-if="remainingLikeStatus[update._id.$oid]" class="d-inline-block"  v-on:click="unlikeUpdates(update._id.$oid)">
+                                                    <div v-if="remainingLikeStatus[update.id]" class="d-inline-block"  v-on:click="unlikeUpdates(update.id)">
                                                         <svg xmlns="http://www.w3.org/2000/svg"  fill="red" class="bi bi-heart-fill producer-profile-latest-updates-heart" viewBox="0 0 16 16">
                                                             <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"/>
                                                         </svg>
                                                     </div>
                                                     <!-- [else] not liked -->
-                                                    <div v-else class="d-inline-block" v-on:click="likeUpdates(update._id.$oid)">
+                                                    <div v-else class="d-inline-block" v-on:click="likeUpdates(update.id)">
                                                         <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-heart producer-profile-latest-updates-heart" viewBox="0 0 16 16">
                                                             <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.920 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.090.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15"/>
                                                         </svg>
@@ -444,12 +444,12 @@
                                         <div class="col-xl-10 col-md-9 col-8 mobile-ps-0 mobile-pe-0">
                                             <!-- description -->
                                             <div class="text-start p-text-lg mobile-rating-smaller-text-2"> 
-                                                <p v-if="editingRemainingUpdate == false || editingRemainingUpdateID != update._id.$oid">
+                                                <p v-if="editingRemainingUpdate == false || editingRemainingUpdateID != update.id">
                                                     {{update['text']}}
                                                 </p>
-                                                <p v-else-if="editingRemainingUpdateID == update._id.$oid">
+                                                <p v-else-if="editingRemainingUpdateID == update.id">
                                                     <label for="remainingUpdateText"> Update Text </label>
-                                                    <textarea class="form-control" id="remainingUpdateText" aria-describedby="remainingUpdateText" v-model="edit_remainingUpdateText[update._id.$oid]"></textarea>
+                                                    <textarea class="form-control" id="remainingUpdateText" aria-describedby="remainingUpdateText" v-model="edit_remainingUpdateText[update.id]"></textarea>
                                                 </p>
                                             </div>
                                         </div>
@@ -553,15 +553,15 @@
                                                             <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
                                                                 <p> <b> Q: {{ qa["question"] }} </b> </p>
                                                                 <!-- [if] not editing -->
-                                                                <button v-if="correctProducer && (editingQA == false || editingQAID != qa._id.$oid)" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="editQA(qa)">
+                                                                <button v-if="correctProducer && (editingQA == false || editingQAID != qa.id)" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="editQA(qa)">
                                                                     Edit answer
                                                                 </button>
                                                                 <!-- [else] if editing -->
-                                                                <button v-if="correctProducer && editingQAID == qa._id.$oid" type="button" class="btn btn-success rounded-0 me-1" v-on:click="saveQAEdit(qa)">
+                                                                <button v-if="correctProducer && editingQAID == qa.id" type="button" class="btn btn-success rounded-0 me-1" v-on:click="saveQAEdit(qa)">
                                                                     Save
                                                                 </button>
                                                                 <!-- [else] if editing -->
-                                                                <button v-if="correctProducer && editingQAID == qa._id.$oid" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="cancelQAEdit(qa)">
+                                                                <button v-if="correctProducer && editingQAID == qa.id" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="cancelQAEdit(qa)">
                                                                     Cancel
                                                                 </button>
                                                                 <!-- delete -->
@@ -570,8 +570,8 @@
                                                                 </button>
                                                                 <!-- spacer -->
                                                                 <div class="mt-2"></div>
-                                                                <p v-if="editingQA == false || editingQAID != qa._id.$oid"> A: {{ qa["answer"] }} </p>
-                                                                <textarea v-else-if="editingQAID == qa._id.$oid" class="search-bar form-control rounded fst-italic question-box flex-grow-1" type="text" placeholder="Edit answer." v-model="edit_answer[qa._id.$oid]"></textarea>
+                                                                <p v-if="editingQA == false || editingQAID != qa.id"> A: {{ qa["answer"] }} </p>
+                                                                <textarea v-else-if="editingQAID == qa.id" class="search-bar form-control rounded fst-italic question-box flex-grow-1" type="text" placeholder="Edit answer." v-model="edit_answer[qa.id]"></textarea>
                                                             </div>
                                                         </div>
 
@@ -1140,15 +1140,15 @@
                                                     <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
                                                         <p> <b> Q: {{ qa["question"] }} </b> </p>
                                                         <!-- [if] not editing -->
-                                                        <button v-if="correctProducer && (editingQA == false || editingQAID != qa._id.$oid)" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="editQA(qa)">
+                                                        <button v-if="correctProducer && (editingQA == false || editingQAID != qa.id)" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="editQA(qa)">
                                                             Edit answer
                                                         </button>
                                                         <!-- [else] if editing -->
-                                                        <button v-if="correctProducer && editingQAID == qa._id.$oid" type="button" class="btn btn-success rounded-0 me-1" v-on:click="saveQAEdit(qa)">
+                                                        <button v-if="correctProducer && editingQAID == qa.id" type="button" class="btn btn-success rounded-0 me-1" v-on:click="saveQAEdit(qa)">
                                                             Save
                                                         </button>
                                                         <!-- [else] if editing -->
-                                                        <button v-if="correctProducer && editingQAID == qa._id.$oid" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="cancelQAEdit(qa)">
+                                                        <button v-if="correctProducer && editingQAID == qa.id" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="cancelQAEdit(qa)">
                                                             Cancel
                                                         </button>
                                                         <!-- delete -->
@@ -1157,8 +1157,8 @@
                                                         </button>
                                                         <!-- spacer -->
                                                         <div class="mt-2"></div>
-                                                        <p v-if="editingQA == false || editingQAID != qa._id.$oid"> A: {{ qa["answer"] }} </p>
-                                                        <textarea v-else-if="editingQAID == qa._id.$oid" class="search-bar form-control rounded fst-italic question-box flex-grow-1" type="text" placeholder="Edit answer." v-model="edit_answer[qa._id.$oid]"></textarea>
+                                                        <p v-if="editingQA == false || editingQAID != qa.id"> A: {{ qa["answer"] }} </p>
+                                                        <textarea v-else-if="editingQAID == qa.id" class="search-bar form-control rounded fst-italic question-box flex-grow-1" type="text" placeholder="Edit answer." v-model="edit_answer[qa.id]"></textarea>
                                                     </div>
                                                 </div>
 
@@ -1604,7 +1604,7 @@
                             this.claimStatus = false                        
                             // check for active subscription if last check status date before today
                             const claimStatusCheckDate = this.specified_producer['claimStatusCheckDate']
-                            if ((claimStatusCheckDate?.$date.split('T')[0] < new Date().toISOString().split('T')[0]) || !claimStatusCheckDate) {
+                            if (claimStatusCheckDate) {
                                 console.log('checking subscription');
                                 // check for active subscription
                                 try {
@@ -1650,19 +1650,19 @@
                                 }
     
                                 // upqdate last check status date
-                                try {
-                                    await this.$axios.post(`http://127.0.0.1:5000/editProducerProfile/updateProducerClaimStatusCheckDate`, 
-                                        {
-                                            businessId: this.producer_id,
-                                            claimStatusCheckDate: new Date().toISOString(),
-                                        }, {
-                                        headers: {
-                                            'Content-Type': 'application/json'
-                                        }
-                                    });
-                                } catch (error) {
-                                    console.error(error);
-                                }
+                                // try {
+                                //     await this.$axios.post(`http://127.0.0.1:5000/editProducerProfile/updateProducerClaimStatusCheckDate`, 
+                                //         {
+                                //             businessId: this.producer_id,
+                                //             claimStatusCheckDate: new Date().toISOString(),
+                                //         }, {
+                                //         headers: {
+                                //             'Content-Type': 'application/json'
+                                //         }
+                                //     });
+                                // } catch (error) {
+                                //     console.error(error);
+                                // }
                             } else {
                                 this.claimStatus = this.specified_producer.claimStatus // get claim status of producer
                             }
@@ -1716,8 +1716,8 @@
                         const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getUser/${this.user_id}`);
                         this.user = response.data;
                         if (this.userType == "user") {
-                            // this.user = this.users.find(user => user["_id"]["$oid"] == this.user_id);
-                            this.following = JSON.stringify(this.user.followLists.producers).includes(JSON.stringify({$oid: this.producer_id}));
+                            // this.user = this.users.find(user => user['id'] == this.user_id);
+                            this.following = JSON.stringify(this.user.followLists.producers).includes(this.producer_id);
                             this.isAdmin = this.user.isAdmin // check if user is admin
                         }
                     } 
@@ -1730,8 +1730,13 @@
                     try {
                         const response = await this.$axios.get('http://127.0.0.1:5000/getData/getProducersProfileViews');
                         this.producersProfileViews = response.data;
-                        this.producerProfileViewInfo = this.producersProfileViews.find(view => view.producerID["$oid"] == this.producer_id);
-                        this.producerProfileID = this.producerProfileViewInfo._id["$oid"];
+
+                        if (this.producersProfileViews.length > 0) {
+                            this.producerProfileViewInfo = this.producersProfileViews.find(view => view.producerID == this.producer_id);
+                            if (this.producerProfileViewInfo) {
+                                this.producerProfileID = this.producerProfileViewInfo.id;
+                            }
+                        }
                         this.getProfileViews()
                     }
                     catch (error) {
@@ -1756,7 +1761,7 @@
 
             // get all drinks that a producer has
             async getAllDrinks() {
-                let allProducerDrinks = this.listings.filter(listing => listing.producerID["$oid"] == this.producer_id);
+                let allProducerDrinks = this.listings.filter(listing => listing.producerID == this.producer_id);
                 this.allDrinks = allProducerDrinks;
                 this.allDrinksCount = allProducerDrinks.length
             },
@@ -1764,9 +1769,9 @@
             // get all reviews that a producer has
             async getAllReviews() {
                 let allProducerReviews = this.reviews.filter(review => {
-                    let review_target = review.reviewTarget["$oid"];
+                    let review_target = review.reviewTarget;
                     let all_drinks = this.allDrinks;
-                    return all_drinks.some(drink => drink._id["$oid"] === review_target);
+                    return all_drinks.some(drink => drink.id === review_target);
                 });
                 this.allReviews = allProducerReviews;
                 this.allReviewsCount = allProducerReviews.length
@@ -1774,7 +1779,7 @@
 
             // find drink name given reviewTarget
             findDrinkNameForReview(reviewTarget) {
-                let drink_name = this.listings.find(listing => listing._id["$oid"] == reviewTarget["$oid"]).listingName;
+                let drink_name = this.listings.find(listing => listing.id == reviewTarget).listingName;
                 return drink_name;
             },
 
@@ -1854,7 +1859,7 @@
                 firstFiveItems = firstFiveItems.slice(0,5)
                 this.mostPopular = firstFiveItems;
                 this.mostPopular = this.mostPopular.map(item => {
-                    return this.listings.find(listing => listing._id["$oid"] == item[2]["$oid"]);
+                    return this.listings.find(listing => listing.id == item[2]);
                 });
             },
 
@@ -1882,7 +1887,7 @@
                 firstFiveItems = firstFiveItems.slice(0,5)
                 this.mostDiscussed = firstFiveItems;
                 this.mostDiscussed = this.mostDiscussed.map(item => {
-                    return this.listings.find(listing => listing._id["$oid"] == item[2]["$oid"]);
+                    return this.listings.find(listing => listing.id == item[2]);
                 });
             },
 
@@ -1919,7 +1924,7 @@
             // get ratings for a listing
             getRatings(listing) {
                 const ratings = this.reviews.filter((rating) => {
-                    return rating["reviewTarget"]["$oid"] == listing["_id"]["$oid"];
+                    return rating["reviewTarget"] == listing['id'];
                 });
                 // if there are no ratings
                 if (ratings.length == 0) {
@@ -2037,8 +2042,10 @@
                 this.editing = false;
 
                 // check if image is uploaded
+                console.log(this.image64);
                 if (this.image64 == null) {
                     // set default image
+                    console.log(this.specified_producer)
                     this.image64 = this.specified_producer["photo"];
                 }
                 
@@ -2096,7 +2103,7 @@
 
             // send answer that producers give to users
             async sendAnswer (qa) {
-                let q_and_a_id = qa._id.$oid;
+                let q_and_a_id = qa.id;
                 try {
                     const response = await this.$axios.post('http://127.0.0.1:5000/editProducerProfile/sendAnswers', 
                         {
@@ -2184,12 +2191,12 @@
                         });
                         for (let update of this.remainingUpdates) {
                             let remainingUpdateLike = update["likes"];
-                            this.remainingUpdateLikes[update["_id"]["$oid"]] = remainingUpdateLike
+                            this.remainingUpdateLikes[update['id']] = remainingUpdateLike
                             try {
-                                this.remainingLikesCount[update["_id"]["$oid"]] = this.remainingUpdateLikes[update["_id"]["$oid"]].length;
+                                this.remainingLikesCount[update['id']] = this.remainingUpdateLikes[update['id']].length;
                             }
                             catch {
-                                this.remainingLikesCount[update["_id"]["$oid"]] = 0;
+                                this.remainingLikesCount[update['id']] = 0;
                             }
                             this.checkLiked('remaining');
                         }
@@ -2279,7 +2286,7 @@
             checkLiked(status) {
                 if (status == 'latest') {
                     for (let i in this.updateLikes) {
-                        if (this.updateLikes[i]["$oid"] == this.user_id) {
+                        if (this.updateLikes[i] == this.user_id) {
                             this.likeStatus = true;
                         }
                     }
@@ -2287,7 +2294,7 @@
                 else if (status == 'remaining') {
                     for (let i in this.remainingUpdateLikes) {
                         for (let j in this.remainingUpdateLikes[i]) {
-                            if (this.remainingUpdateLikes[i][j]["$oid"] == this.user_id) {
+                            if (this.remainingUpdateLikes[i][j] == this.user_id) {
                                 this.remainingLikeStatus[i] = true;
                             }
                         }
@@ -2484,7 +2491,7 @@
             // get ratings (search function) --> main difference is if there are no ratings, return 0 instead of "-" so that it can be sorted
             getRatingsSearch(listing) {
                 const ratings = this.reviews.filter((rating) => {
-                    return rating["reviewTarget"]["$oid"] == listing["_id"]["$oid"];
+                    return rating["reviewTarget"] == listing['id'];
                 });
                 // if there are no ratings
                 if (ratings.length == 0) {
@@ -2514,7 +2521,7 @@
 
                         // get current view
                         let views = this.producerProfileViewInfo.views.find(view => view.date["$date"] == currDate);
-                        let viewsID = views._id["$oid"];
+                        let viewsID = views.id;
                         try {
                             const response = this.$axios.post('http://127.0.0.1:5000/editProducerProfile/addProfileCount', 
                                 {
@@ -2564,10 +2571,10 @@
                     this.edit_latestUpdateText = update.text
                 }
                 else if (status == "remaining") {
-                    this.editingRemainingUpdateID = update._id.$oid;
+                    this.editingRemainingUpdateID = update.id;
                     this.editingRemainingUpdate = true;
                     // set the current details to the edit details
-                    this.edit_remainingUpdateText[update._id.$oid] = update.text
+                    this.edit_remainingUpdateText[update.id] = update.text
                 }
             },
 
@@ -2625,7 +2632,7 @@
                         const response = this.$axios.post('http://127.0.0.1:5000/editProducerProfile/editUpdate', 
                             {
                                 producerID: this.producer_id,
-                                updateID: update._id.$oid,
+                                updateID: update.id,
                                 update: this.edit_latestUpdateText,
                                 image64: this.image64LatestUpdate,
                             },
@@ -2642,7 +2649,7 @@
                 }
                 else if (status == "remaining") {
                     this.editingRemainingUpdate = false;
-                    let newUpdate = this.edit_remainingUpdateText[update._id.$oid];
+                    let newUpdate = this.edit_remainingUpdateText[update.id];
                     console.log(update)
                     // check if image is uploaded
                     if (this.image64RemainingUpdate == null) {
@@ -2654,7 +2661,7 @@
                         const response = this.$axios.post('http://127.0.0.1:5000/editProducerProfile/editUpdate', 
                             {
                                 producerID: this.producer_id,
-                                updateID: update._id.$oid,
+                                updateID: update.id,
                                 update: newUpdate,
                                 image64: this.image64RemainingUpdate,
                             },
@@ -2681,7 +2688,7 @@
                     const response = this.$axios.post('http://127.0.0.1:5000/editProducerProfile/deleteUpdate', 
                         {
                             producerID: this.producer_id,
-                            updateID: update._id.$oid,
+                            updateID: update.id,
                         },
                         {
                             headers: {
@@ -2709,7 +2716,7 @@
                 else if (status == "remaining") {
                     this.editingRemainingUpdateID = ""
                     this.editingRemainingUpdate = false;
-                    this.edit_remainingUpdateText[update._id.$oid] = ""
+                    this.edit_remainingUpdateText[update.id] = ""
                 }
             },
 
@@ -2717,20 +2724,20 @@
             editQA(qa) {
                 this.editingQA = true;
                 // set the current details to the edit details
-                this.edit_answer[qa._id.$oid] = qa.answer
-                this.editingQAID = qa._id.$oid;
+                this.edit_answer[qa.id] = qa.answer
+                this.editingQAID = qa.id;
             }, 
             
             saveQAEdit(qa) {
                 // set editing status to false
                 this.editingQA = false;
-                let q_and_a_id = qa._id.$oid;
+                let q_and_a_id = qa.id;
                 try {
                     this.$axios.post('http://127.0.0.1:5000/editProducerProfile/editQA', 
                         {
                             producerID: this.producer_id,
                             questionsAnswersID: q_and_a_id,
-                            answer: this.edit_answer[qa._id.$oid],
+                            answer: this.edit_answer[qa.id],
                         },
                         {
                             headers: {
@@ -2746,7 +2753,7 @@
             },
 
             deleteQAEdit(qa) {
-                let q_and_a_id = qa._id.$oid;
+                let q_and_a_id = qa.id;
                 try {
                     const response = this.$axios.post('http://127.0.0.1:5000/editProducerProfile/deleteQA', 
                         {
@@ -2772,7 +2779,7 @@
             // cancel Q&A edit
             cancelQAEdit(qa) {
                 this.editingQA = false;
-                this.edit_answer[qa._id.$oid] = "";
+                this.edit_answer[qa.id] = "";
                 this.editingQAID = "";
             },
 
@@ -2862,7 +2869,7 @@
             async confirmUpdatePassword(){
                 let oldHash = this.hashPassword(this.specified_producer.producerName, this.oldPassword)
                 let newHash = this.hashPassword(this.specified_producer.producerName, this.newPassword)
-                let submitURL = 'http://127.0.0.1:5000/authcheck/editPassword/' + this.specified_producer._id.$oid 
+                let submitURL = 'http://127.0.0.1:5000/authcheck/editPassword/' + this.specified_producer.id 
                 let submitData = {
                     oldHash: oldHash.toString(),
                     newHash: newHash.toString(),
@@ -2893,7 +2900,7 @@
                 setTimeout(() => {
                     this.isButtonDisabled = false;
                 }, 60000);
-            let submitURL = 'http://127.0.0.1:5000/authcheck/sendResetPin/' + this.specified_producer._id.$oid
+            let submitURL = 'http://127.0.0.1:5000/authcheck/sendResetPin/' + this.specified_producer.id
             let submitData = {
                 userType: "producer",
             }
@@ -2920,7 +2927,7 @@
 
         async verifyOTP(){
             // call api to verify the pin
-            let submitURL = "http://127.0.0.1:5000/authcheck/verifyPin/" + this.specified_producer._id.$oid
+            let submitURL = "http://127.0.0.1:5000/authcheck/verifyPin/" + this.specified_producer.id
             let submitData ={
                 userType:"producer",
                 pin:this.resetPin
@@ -2948,7 +2955,7 @@
 
         async resetPassword(){
             this.resettingPassword=true
-            let submitURL = "http://127.0.0.1:5000/authcheck/resetPassword/" + this.specified_producer._id.$oid
+            let submitURL = "http://127.0.0.1:5000/authcheck/resetPassword/" + this.specified_producer.id
             let submitData = {
                 userType:"producer",
                 pin:this.resetPin

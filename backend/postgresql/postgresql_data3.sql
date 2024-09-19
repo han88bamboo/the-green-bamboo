@@ -49,7 +49,7 @@ CREATE TABLE "accountRequests" (
     "relationship" VARCHAR(255),
     "email" VARCHAR(255),
     "contact" VARCHAR(255),
-    "referenceDocument" VARCHAR(255),
+    "referenceDocument" TEXT,  -- Changed to TEXT
     "photo" TEXT,
     "joinDate" TIMESTAMP,
     "isPending" BOOLEAN,

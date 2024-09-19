@@ -365,15 +365,23 @@ def requestInaccuracy():
 
 @blueprint.route("/requestReviewStatus/<string:requestID>", methods= ['POST'])
 def requestReviewStatus(requestID):
-    db = g.db
+    conn = g.db
+    cur = conn.cursor()
 
-    requestIDObject = ObjectId(requestID)
     updateRequest = request.get_json()
     targetCollection = updateRequest["targetCollection"]
     status = updateRequest["reviewStatus"]
 
     try:
-        updateResult = db[targetCollection].update_one({"_id": requestIDObject}, {"$set": {"reviewStatus": status}})
+        if targetCollection == "requestInaccuracy":
+            print(f"Handling requestInaccuracy for requestID: {requestID}")
+
+        cur.execute(
+            f'UPDATE "{targetCollection}" SET "reviewStatus" = %s WHERE id = %s;',
+            (status, requestID)
+        )
+
+        conn.commit()
 
         return jsonify(
             {
@@ -383,8 +391,8 @@ def requestReviewStatus(requestID):
         ), 201
     
     except Exception as e:
-        print(str(e))
-
+        conn.rollback()
+        print(f"Error: {str(e)}")
         return jsonify(
             {
                 "code": 500,
@@ -394,3 +402,6 @@ def requestReviewStatus(requestID):
                 "message": "An error occurred while updating the review status."
             }
         ), 500
+    
+    finally:
+        cur.close()

@@ -311,44 +311,6 @@ def updateSubTag():
 # - Possible return codes: 201 (Deleted), 400 (family tag doesn't exist), 500 (Error during deletion)
 @blueprint.route("/deleteFamilyTag/<id>", methods= ['DELETE'])
 def deleteFamilyTag(id):
-    # db = g.db
-
-    # # Find the flavour tag entry with the specified id
-    # existingFamilyTag = db.flavourTags.find_one({"_id": ObjectId(id)})
-    # if(existingFamilyTag == None):
-    #     return jsonify(
-    #         {   
-    #             "code": 400,
-    #             "data": {
-    #                 "id": id
-    #             },
-    #             "message": "Family tag doesn't exist."
-    #         }
-    #     ), 400
-    
-
-    # # Delete the review entry with the specified id
-    # try:
-    #     deleteFamily = db.flavourTags.delete_one({"_id": ObjectId(id)})
-
-    #     return jsonify( 
-    #         {   
-    #             "code": 201,
-    #             "data": id
-    #         }
-    #     ), 201
-    # except Exception as e:
-    #     print(str(e))
-    #     return jsonify(
-    #         {
-    #             "code": 500,
-    #             "data": {
-    #                 "id": id
-    #             },
-    #             "message": "An error occurred deleting the family tag."
-    #         }
-    #     ), 500
-
     conn = g.db
     cur = conn.cursor()
 

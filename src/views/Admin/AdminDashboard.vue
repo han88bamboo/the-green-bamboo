@@ -1004,7 +1004,7 @@
                         return "This user is currently not a moderator!"
                     }
                     else{
-                        return "This use is currently a moderator for <b>" + this.selectedRemoveMod.modType.join(', ') +"</b>!";
+                        return "This user is currently a moderator for <b>" + this.selectedRemoveMod.modType.join(', ') +"</b>!";
                     }
                 },
             },

@@ -16,46 +16,61 @@ blueprint = Blueprint(file_name[:-3], __name__)
 # - Update producer profile with new details
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/editDetails', methods=['POST'])
-def editDetails():
-    db = g.db
-
-    # fetch sent data
+def editDetails():  
+    conn = g.db
+    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
-    # extract components of the data
-    producerID = data['producerID']
+    producerID = int(data['producerID'])
     producerName = data['producerName']
     producerDesc = data['producerDesc']
     originCountry = data['originCountry']
     image64 = data.get('image64', '')
-    # find existing bottle and check if photo exists, if it does, delete it from s3 bucket, then upload new image to bucket
-    existingProducer = db.producers.find_one({"_id": ObjectId(producerID)})
-    if existingProducer['photo']:
-        s3Images.deleteImageFromS3(existingProducer['photo'])
-    if(image64):
-        image64 = s3Images.uploadBase64ImageToS3(data['image64'])
 
-    
+    try:
+        cur.execute('SELECT * FROM producers WHERE id = %s', (producerID,))
+        existingProducer = cur.fetchone()
 
-    try: 
-        update = db.producers.update_one({'_id': ObjectId(producerID)}, 
-                                        {'$set': {
-                                                    'photo': image64,
-                                                    'producerName': producerName,
-                                                    'producerDesc': producerDesc,
-                                                    'originCountry': originCountry
-                                                    }
-                                            })
+        if existingProducer:
+            if existingProducer['photo']:
+                s3Images.deleteImageFromS3(existingProducer['photo'])
 
-        return jsonify(
-            {   
-                "code": 201,
-                "message": "Updated profile successfully!"
-            }
-        ), 201
+            if image64:
+                image64 = s3Images.uploadBase64ImageToS3(image64)
+
+            cur.execute(
+                """
+                UPDATE producers 
+                SET 
+                    "photo" = %s,
+                    "producerName" = %s,
+                    "producerDesc" = %s,
+                    "originCountry" = %s
+                WHERE id = %s
+                """,
+                (image64, producerName, producerDesc, originCountry, producerID)
+            )
+            conn.commit()
+
+            return jsonify(
+                {
+                    "code": 201,
+                    "message": "Updated profile successfully!"
+                }
+            ), 201
+        
+        else:
+            return jsonify(
+                {
+                    "code": 404,
+                    "message": "Producer not found."
+                }
+            ), 404
+        
     except Exception as e:
         print(str(e))
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,
@@ -63,6 +78,9 @@ def editDetails():
                 "message": "An error occurred updating profile!"
             }
         ), 500
+    
+    finally:
+        cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [POST] Add updates to producer profile
@@ -275,39 +293,43 @@ def unlikeUpdates():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/updateProducerStatus', methods=['POST'])
 def updateProducerStatus():
-    db = g.db
-
-    # fetch sent data
+    conn = g.db
+    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
-    # extract components of the data
-    producerID = data['businessID']
+    producerID = int(data['businessID'])
     producerName = data['newBusinessData']["businessName"]
     producerDesc = data['newBusinessData']["businessDesc"]
     originCountry = data['newBusinessData']["country"]
     hashedPassword = data['newBusinessData']["hashedPassword"]
     claimStatus = data['newBusinessData']["claimStatus"]
-    requestId = data['newBusinessData']["requestId"]
 
-    try: 
-        update = db.producers.update_one({'_id': ObjectId(producerID)}, 
-                                         {'$set': {
-                                                'producerName': producerName,
-                                                'producerDesc': producerDesc,
-                                                'originCountry': originCountry,
-                                                'hashedPassword': hashedPassword,
-                                                'claimStatus': claimStatus,
-                                                'requestId': ObjectId(requestId)
-                                            }})
+    try:
+        cur.execute(
+            """
+                UPDATE producers
+                SET
+                    "producerName" = %s,
+                    "producerDesc" = %s,
+                    "originCountry" = %s,
+                    "hashedPassword" = %s,
+                    "claimStatus" = %s
+                WHERE id = %s
+            """,
+            (producerName, producerDesc, originCountry, hashedPassword, claimStatus, producerID)
+        )
+        conn.commit()
 
         return jsonify(
-            {   
+            {
                 "code": 201,
                 "message": "Updated claim status successfully!"
             }
         ), 201
+    
     except Exception as e:
+        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -316,6 +338,9 @@ def updateProducerStatus():
                 "message": "An error occurred updating claim status!"
             }
         ), 500
+    
+    finally:
+        cur.close()
 
 
 # -----------------------------------------------------------------------------------------
@@ -613,21 +638,49 @@ def deleteQA():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/updateProducerClaimStatus', methods=['POST'])
 def updateProducerClaimStatus():
-    db = g.db
+    # db = g.db
 
-    # fetch sent data
+    # # fetch sent data
+    # data = request.get_json()
+    # print(data)
+
+    # # extract components of the data
+    # producerID = data['businessId']
+    # claimStatus = data["claimStatus"]
+
+    # try: 
+    #     update = db.producers.update_one({'_id': ObjectId(producerID)}, 
+    #                                      {'$set': {
+    #                                             'claimStatus': claimStatus
+    #                                         }})
+
+    #     return jsonify(
+    #         {   
+    #             "code": 201,
+    #             "message": "Updated claim status successfully!"
+    #         }
+    #     ), 201
+    # except Exception as e:
+    #     print(str(e))
+    #     return jsonify(
+    #         {
+    #             "code": 500,
+    #             "data": data,
+    #             "message": "An error occurred updating claim status!"
+    #         }
+    #     ), 500
+
+    conn = g.db
+    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
-    # extract components of the data
-    producerID = data['businessId']
+    producerID = int(data['businessId'])
     claimStatus = data["claimStatus"]
 
-    try: 
-        update = db.producers.update_one({'_id': ObjectId(producerID)}, 
-                                         {'$set': {
-                                                'claimStatus': claimStatus
-                                            }})
+    try:
+        cur.execute('UPDATE producers SET "claimStatus" = %s WHERE id = %s', (claimStatus, producerID))
+        conn.commit()
 
         return jsonify(
             {   
@@ -635,7 +688,9 @@ def updateProducerClaimStatus():
                 "message": "Updated claim status successfully!"
             }
         ), 201
+    
     except Exception as e:
+        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -644,6 +699,9 @@ def updateProducerClaimStatus():
                 "message": "An error occurred updating claim status!"
             }
         ), 500
+    
+    finally:
+        cur.close()
     
 # -----------------------------------------------------------------------------------------
 # [POST] Edit producer profile last check claim status date

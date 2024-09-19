@@ -145,28 +145,34 @@ def createAccount():
 # - Possible return codes: 201 (Created), 400 (Duplicate Detected), 500 (Error during creation)
 @blueprint.route("/createAccountRequest", methods= ['POST'])
 def createAccountRequest():
-    db = g.db
+    conn = g.db
+    cur = conn.cursor()
     rawAccount = request.get_json()
-    rawEmail= rawAccount['email']
+    rawEmail = rawAccount['email']
+
     rawAccount['joinDate'] = datetime.strptime(rawAccount['joinDate'], "%Y-%m-%dT%H:%M:%S.%fZ")
-    # Duplicate listing check: Reject if review with the same userID and reviewTarget exists in the database
-    existingAccount = db.accountRequests.find_one({"email": rawEmail})
-    if(existingAccount!= None):
-        return jsonify(
-            {   
-                "code": 400,
-                "data": {
-                    "userName": rawEmail
-                },
-                "message": "Request already exists."
-            }
-        ), 400
-    
-    
-    # Insert new review into database
-    # newAccount = data.users(**rawAccount)
+
     try:
-        insertResult = db.accountRequests.insert_one(rawAccount)
+        cur.execute('SELECT * FROM "accountRequests" WHERE email = %s', (rawEmail,))
+        existingAccount = cur.fetchone()
+
+        if existingAccount is not None:
+            return jsonify(
+                {   
+                    "code": 400,
+                    "data": {
+                        "userName": rawEmail
+                    },
+                    "message": "Request already exists."
+                }
+            ), 400
+        
+        columns = ', '.join(f'"{key}"' for key in rawAccount.keys())
+        placeholders = ', '.join(['%s'] * len(rawAccount))
+        sql = f'INSERT INTO "accountRequests" ({columns}) VALUES ({placeholders})'
+
+        cur.execute(sql, list(rawAccount.values()))
+        conn.commit()
 
         return jsonify( 
             {   
@@ -174,8 +180,10 @@ def createAccountRequest():
                 "data": rawEmail
             }
         ), 201
+    
     except Exception as e:
         print(str(e))
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,
@@ -185,19 +193,69 @@ def createAccountRequest():
                 "message": "An error occurred creating the account request."
             }
         ), 500
+
+    finally:
+        cur.close()
+
 # -----------------------------------------------------------------------------------------
 # [POST] Updates a Business Account Request
 @blueprint.route("/updateAccountRequest", methods= ['POST'])
 def updateAccountRequest():
-    db = g.db
+    # db = g.db
+    # data = request.get_json()
+    # print(data)
+    # requestID = data['requestID']
+    # isPending = data['isPending']
+    # isApproved = data['isApproved']
+
+    # try: 
+    #     updateReviewStatus = db.accountRequests.update_one({'_id': ObjectId(requestID)}, {'$set': {'isPending': isPending, 'isApproved': isApproved}})
+
+    #     return jsonify(
+    #         {   
+    #             "code": 201,
+    #             "data": {
+    #                 "requestID": requestID,
+    #                 "isPending": isPending, 
+    #                 "isApproved": isApproved
+    #             }
+    #         }
+    #     ), 201
+    # except Exception as e:
+    #     print(str(e))
+    #     return jsonify(
+    #         {
+    #             "code": 500,
+    #             "data": {
+    #                 "data": {
+    #                     "requestID": requestID,
+    #                     "isPending": isPending,
+    #                     "isApproved": isApproved
+    #                 }
+    #             },
+    #             "message": "An error occurred updating the mod request."
+    #         }
+    #     ), 500
+
+    conn = g.db
+    cur = conn.cursor()
     data = request.get_json()
     print(data)
-    requestID = data['requestID']
+
+    requestID = int(data['requestID'])
     isPending = data['isPending']
     isApproved = data['isApproved']
 
-    try: 
-        updateReviewStatus = db.accountRequests.update_one({'_id': ObjectId(requestID)}, {'$set': {'isPending': isPending, 'isApproved': isApproved}})
+    try:
+        cur.execute(
+            """
+                UPDATE "accountRequests"
+                SET "isPending" = %s, "isApproved" = %s
+                WHERE "id" = %s
+            """,
+            (isPending, isApproved, requestID)
+        )
+        conn.commit()
 
         return jsonify(
             {   
@@ -209,163 +267,329 @@ def updateAccountRequest():
                 }
             }
         ), 201
+    
     except Exception as e:
+        conn.rollback()
         print(str(e))
         return jsonify(
             {
                 "code": 500,
                 "data": {
-                    "data": {
-                        "requestID": requestID,
-                        "isPending": isPending,
-                        "isApproved": isApproved
-                    }
+                    "requestID": requestID,
+                    "isPending": isPending,
+                    "isApproved": isApproved
                 },
-                "message": "An error occurred updating the mod request."
+                "message": "An error occurred updating the account request."
             }
         ), 500
+    
+    finally:
+        cur.close()
+
 # -----------------------------------------------------------------------------------------
 # [POST] Creates an Account
 # - Insert entry into the "producers" collection. 
-@blueprint.route("/createProducerAccount", methods= ['POST'])
+@blueprint.route("/createProducerAccount", methods=['POST'])
 def createProducerAccount():
-    db = g.db
+    conn = g.db
+    cur = conn.cursor()
     data = request.get_json()
     print(data)
     newBusinessData = data["newBusinessData"]
-    newBusinessData["requestId"] = ObjectId(newBusinessData["requestId"])
-
-    print(newBusinessData["producerName"])
-
-    existingAccount = db.producers.find_one({"producerName": newBusinessData['producerName']})
-    if(existingAccount!= None):
-        return jsonify(
-            {   
-                "code": 400,
-                "data": {
-                    "producerName": newBusinessData['producerName']
-                },
-                "message": "Producer Name already exists."
-            }
-        ), 400
 
     try:
-        insertResult = db.producers.insert_one(newBusinessData)
-        newBusinessData['_id'] = str(insertResult.inserted_id)
-        newBusinessData['requestId'] = str(newBusinessData['requestId'])
+        # Check if producerName already exists
+        cur.execute('SELECT id FROM producers WHERE "producerName" = %s', (newBusinessData['producerName'],))
+        existingAccount = cur.fetchone()
+
+        if existingAccount:
+            return jsonify(
+                {
+                    "code": 400,
+                    "data": {
+                        "producerName": newBusinessData['producerName']
+                    },
+                    "message": "Producer Name already exists."
+                }
+            ), 400
+
+        # Insert new producer
+        cur.execute("""
+            INSERT INTO producers (
+                "producerName", "producerDesc", "originCountry", "mainDrinks", "photo", "hashedPassword", 
+                "claimStatus", "statusOB", "username", "producerLink", "stripeCustomerId"
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
+        """, (
+            newBusinessData['producerName'], newBusinessData['producerDesc'], newBusinessData['originCountry'],
+            newBusinessData['mainDrinks'], newBusinessData['photo'], newBusinessData['hashedPassword'],
+            newBusinessData['claimStatus'], newBusinessData['statusOB'], newBusinessData.get('username', None),
+            newBusinessData.get('producerLink', None), newBusinessData.get('stripeCustomerId', None)
+        ))
+
+        # Extract the new producer ID
+        result = cur.fetchone()
+
+        if result is None:
+            raise Exception("Failed to retrieve new producer ID")
+
+        newProducerId = result['id']
+        conn.commit()
+
+        # Handle related data: questionsAnswers
+        questions_answers = newBusinessData.get('questionsAnswers', [])
+        for qa in questions_answers:
+            cur.execute(
+                """
+                INSERT INTO "producersQuestionAnswers" (
+                    "question", "answer", "date", "userId", "producerId"
+                ) 
+                VALUES (%s, %s, %s, %s, %s)
+                """,
+                (qa['question'], qa['answer'], qa['date'], qa.get('userId', None), newProducerId)
+            )
+        conn.commit()
+        
+        # Handle related data: updates
+        updates = newBusinessData.get('updates', [])
+        for update in updates:
+            cur.execute(
+                """
+                INSERT INTO "producersUpdates" (
+                    "date", "text", "photo", "producerId"
+                ) 
+                VALUES (%s, %s, %s, %s)
+                """,
+                (update['date'], update['text'], update['photo'], newProducerId)
+            )
+        conn.commit()
 
         return jsonify( 
             {   
                 "code": 201,
-                "data": newBusinessData
+                "data": {
+                    "id": newProducerId,
+                    "producerName": newBusinessData['producerName']
+                }
             }
         ), 201
+
     except Exception as e:
+        conn.rollback()
         print(str(e))
         return jsonify(
             {
                 "code": 500,
                 "data": {
-                    "username": newBusinessData
+                    "producerName": newBusinessData['producerName']
                 },
-                "message": "An error occurred creating the account."
+                "message": "An error occurred creating the producer account."
             }
         ), 500
+
+    finally:
+        cur.close()
+        
+
 # -----------------------------------------------------------------------------------------
 # [POST] Creates a Venue Account
 # - Insert entry into the "venues" collection.
 @blueprint.route("/createVenueAccount", methods= ['POST'])
 def createVenueAccount():
-    db = g.db
+    conn = g.db
+    cur = conn.cursor()
     data = request.get_json()
     print(data)
     newBusinessData = data["newBusinessData"]
-    newBusinessData["requestId"] = ObjectId(newBusinessData["requestId"])
-
-    print(newBusinessData["venueName"])
-
-    existingAccount = db.venues.find_one({"venueName": newBusinessData['venueName']})
-    if(existingAccount!= None):
-        return jsonify(
-            {   
-                "code": 400,
-                "data": {
-                    "venueName": newBusinessData['venueName']
-                },
-                "message": "Venue Name already exists."
-            }
-        ), 400
 
     try:
-        insertResult = db.venues.insert_one(newBusinessData)
-        newBusinessData['_id'] = str(insertResult.inserted_id)
-        newBusinessData['requestId'] = str(newBusinessData['requestId'])
+        # Check if venueName already exists
+        cur.execute('SELECT id FROM venues WHERE "venueName" = %s', (newBusinessData['venueName'],))
+        existingAccount = cur.fetchone()
+
+        if existingAccount:
+            return jsonify(
+                {
+                    "code": 400,
+                    "data": {
+                        "venueName": newBusinessData['venueName']
+                    },
+                    "message": "Venue Name already exists."
+                }
+            ), 400
+
+        # Insert new venue
+        cur.execute("""
+            INSERT INTO venues (
+                "venueName", "address", "venueType", "originLocation", "venueDesc", 
+                "hashedPassword", "photo", "claimStatus", "reservationDetails", "username", 
+                "publicHolidays", "stripeCustomerId", "pin"
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
+        """, (
+            newBusinessData['venueName'], newBusinessData['address'], newBusinessData['venueType'],
+            newBusinessData['originLocation'], newBusinessData['venueDesc'], newBusinessData['hashedPassword'],
+            newBusinessData['photo'], newBusinessData['claimStatus'], newBusinessData['reservationDetails'],
+            newBusinessData.get('username', None), newBusinessData.get('publicHolidays', None),
+            newBusinessData.get('stripeCustomerId', None), newBusinessData.get('pin', None)
+        ))
+
+        # Extract the new venue ID
+        result = cur.fetchone()
         
+        if result is None:
+            raise Exception("Failed to retrieve new venue ID")
+
+        newVenueId = result['id']
+        conn.commit()
+
+        # Handle related data: menu
+        menu = newBusinessData.get('menu', [])
+        for section in menu:
+            cur.execute(
+                """
+                INSERT INTO "venuesMenu" (
+                    "sectionName", "sectionOrder", "sectionMenu", "venueId"
+                ) 
+                VALUES (%s, %s, %s, %s)
+                """,
+                (section.get('sectionName', None), section.get('sectionOrder', None), section.get('sectionMenu', []), newVenueId)
+            )
+        conn.commit()
+
+        # Handle related data: openingHours
+        opening_hours = newBusinessData.get('openingHours', {})
+        cur.execute(
+            """
+            INSERT INTO "venuesOpeningHours" (
+                "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday", "venueId"
+            ) 
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """,
+            (opening_hours.get('Monday', []), opening_hours.get('Tuesday', []), opening_hours.get('Wednesday', []),
+             opening_hours.get('Thursday', []), opening_hours.get('Friday', []), opening_hours.get('Saturday', []),
+             opening_hours.get('Sunday', []), newVenueId)
+        )
+        conn.commit()
+
+        # Handle related data: questionsAnswers
+        questions_answers = newBusinessData.get('questionsAnswers', [])
+        for qa in questions_answers:
+            cur.execute(
+                """
+                INSERT INTO "venuesQuestionAnswers" (
+                    "question", "answer", "date", "userId", "venueId"
+                ) 
+                VALUES (%s, %s, %s, %s, %s)
+                """,
+                (qa['question'], qa['answer'], qa['date'], qa.get('userId', None), newVenueId)
+            )
+        conn.commit()
+
+        # Handle related data: updates
+        updates = newBusinessData.get('updates', [])
+        for update in updates:
+            cur.execute(
+                """
+                INSERT INTO "venuesUpdates" (
+                    "date", "text", "photo", "venueId"
+                ) 
+                VALUES (%s, %s, %s, %s)
+                """,
+                (update['date'], update['text'], update['photo'], newVenueId)
+            )
+        conn.commit()
+
         return jsonify( 
             {   
                 "code": 201,
-                "data": newBusinessData
+                "data": {
+                    "id": newVenueId,
+                    "venueName": newBusinessData['venueName']
+                }
             }
         ), 201
+
     except Exception as e:
+        conn.rollback()
         print(str(e))
         return jsonify(
             {
                 "code": 500,
                 "data": {
-                    "userame": newBusinessData
+                    "venueName": newBusinessData['venueName']
                 },
-                "message": "An error occurred creating the account."
+                "message": "An error occurred creating the venue account."
             }
         ), 500
+
+    finally:
+        cur.close()
     
 # -----------------------------------------------------------------------------------------
 # [POST] Creates a Token for new accounts
 
 @blueprint.route("/createToken", methods= ['POST'])
 def createToken():
-    db = g.db
+    conn = g.db
+    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
-    existingToken = db.tokens.find_one({"userId": ObjectId(data['businessId'])})
-
-    if (existingToken != None):
-        db.tokens.delete_one({'token': existingToken['token']})
-
-    token = secrets.token_urlsafe(16)
-    expiry = datetime.now() + timedelta(days=3)
-
-    newToken = {
-        "token": token,
-        "userId": ObjectId(data['businessId']),
-        "requestId": ObjectId(data['requestId']),
-        "expiry": expiry,
-        "isNew": data['isNew']
-    }
+    businessId = int(data['businessId'])
+    requestId = int(data['requestId'])
 
     try:
-        createToken = db.tokens.insert_one(newToken)
+        cur.execute('SELECT * FROM "tokens" WHERE "userId" = %s', (businessId,))
+        existingToken = cur.fetchone()
+
+        if existingToken is not None:
+            cur.execute('DELETE FROM "tokens" WHERE "token" = %s', (existingToken['token'],))
+
+        token = secrets.token_urlsafe(16)
+        expiry = datetime.now() + timedelta(days=3)
+
+        newToken = {
+            "token": token,
+            "userId": businessId,
+            "requestId": requestId,
+            "expiry": expiry,
+        }
+
+        cur.execute(
+            """
+                INSERT INTO tokens ("token", "userId", "requestId", "expiry")
+                VALUES (%s, %s, %s, %s)
+            """,
+            (token, businessId, requestId, expiry)
+        )
+        conn.commit()
+
         return jsonify(
-            {   
+            {
                 "code": 201,
                 "data": {
-                    "userId": data['businessId'],
+                    "userId": businessId,
                     "token": token
                 }
             }
         ), 201
+    
     except Exception as e:
+        conn.rollback()
         print(str(e))
         return jsonify(
             {
                 "code": 500,
                 "data": {
-                    "userId": data['businessId'],
+                    "userId": businessId,
                 },
                 "message": "An error occurred creating the token."
             }
         ), 500
+    
+    finally:
+        cur.close()
     
 # [POST] Update customerId
 # - Possible return codes: 201 (Updated), 500 (Error during update)
