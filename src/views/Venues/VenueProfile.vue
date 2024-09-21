@@ -332,21 +332,21 @@
                             </div>
                             <div v-if="selfView || powerView" class="col-xl-4 col-md-6 col-12 text-end mobile-view-hide">
                                 <!-- [if] not editing -->
-                                <button v-if="editUpdateTarget != targetVenue['updates'][0]._id['$oid']" type="button" class="btn btn-warning rounded-0" @click="editUpdate(targetVenue['updates'][0])">
+                                <button v-if="editUpdateTarget != targetVenue['updates'][0].id" type="button" class="btn btn-warning rounded-0" @click="editUpdate(targetVenue['updates'][0])">
                                     Edit
                                 </button>
-                                <button v-if="editUpdateTarget != targetVenue['updates'][0]._id['$oid']" type="button" class="btn btn-danger rounded-0 ms-1" @click="deleteUpdate(targetVenue['updates'][0])">
+                                <button v-if="editUpdateTarget != targetVenue['updates'][0].id" type="button" class="btn btn-danger rounded-0 ms-1" @click="deleteUpdate(targetVenue['updates'][0])">
                                     Delete
                                 </button>
                                 
                                 <!-- [else] if editing -->
-                                <button v-if="editUpdateTarget == targetVenue['updates'][0]._id['$oid']" type="button" class="btn btn-success rounded-0 reverse-clickable-text" @click="saveUpdate(targetVenue['updates'][0])" :disabled="!(editUpdateContent[targetVenue['updates'][0]._id['$oid']].newText.length > 0)">
+                                <button v-if="editUpdateTarget == targetVenue['updates'][0].id" type="button" class="btn btn-success rounded-0 reverse-clickable-text" @click="saveUpdate(targetVenue['updates'][0])" :disabled="!(editUpdateContent[targetVenue['updates'][0].id].newText.length > 0)">
                                     Save
                                 </button>
-                                <button v-if="editUpdateTarget == targetVenue['updates'][0]._id['$oid']" type="button" class="btn btn-warning rounded-0 reverse-clickable-text ms-1" @click="editUpdateTarget = null">
+                                <button v-if="editUpdateTarget == targetVenue['updates'][0].id" type="button" class="btn btn-warning rounded-0 reverse-clickable-text ms-1" @click="editUpdateTarget = null">
                                     Cancel
                                 </button>
-                               <!--<button v-if="editUpdateTarget == targetVenue['updates'][0]._id['$oid']" type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1" @click="editUpdateContent[targetVenue['updates'][0]._id['$oid']] = {newText: targetVenue['updates'][0].text, newPhoto: targetVenue['updates'][0].photo}">
+                               <!--<button v-if="editUpdateTarget == targetVenue['updates'][0].id" type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1" @click="editUpdateContent[targetVenue['updates'][0].id] = {newText: targetVenue['updates'][0].text, newPhoto: targetVenue['updates'][0].photo}">
                                     Reset
                                 </button>-->
                             </div>
@@ -359,17 +359,17 @@
                             <div class="image-container">
 
                                 <!-- [if] editing update -->
-                                <div v-if="editUpdateTarget == targetVenue['updates'][0]._id['$oid']" style="position: relative; text-align: center;">
+                                <div v-if="editUpdateTarget == targetVenue['updates'][0].id" style="position: relative; text-align: center;">
                                     <!-- image -->
-                                    <!-- <img :src="(editUpdateContent[targetVenue['updates'][0]._id['$oid']].newPhoto || defaultPhoto)" alt="" style="width: 128px; height: 128px; z-index: 1; opacity: 50%"> -->
-                                    <img :src="(selectedEditUpdate|| editUpdateContent[targetVenue['updates'][0]._id['$oid']].newPhoto || defaultPhoto)" alt="" style="width: 128px; height: 128px; z-index: 1; opacity: 50%">
+                                    <!-- <img :src="(editUpdateContent[targetVenue['updates'][0].id].newPhoto || defaultPhoto)" alt="" style="width: 128px; height: 128px; z-index: 1; opacity: 50%"> -->
+                                    <img :src="(selectedEditUpdate|| editUpdateContent[targetVenue['updates'][0].id].newPhoto || defaultPhoto)" alt="" style="width: 128px; height: 128px; z-index: 1; opacity: 50%">
                                     <!-- change option -->
-                                    <label :for="'fileSelectEditUpdate' + targetVenue['updates'][0]._id['$oid']" class="btn primary-light-dropdown" style="position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%); z-index: 2;">Choose</label>
-                                    <input :id="'fileSelectEditUpdate' + targetVenue['updates'][0]._id['$oid']" type="file" @change="handleFileSelectEditUpdate" ref="fileInput" style="width: 0px; height: 0px; display: none;">">
+                                    <label :for="'fileSelectEditUpdate' + targetVenue['updates'][0].id" class="btn primary-light-dropdown" style="position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%); z-index: 2;">Choose</label>
+                                    <input :id="'fileSelectEditUpdate' + targetVenue['updates'][0].id" type="file" @change="handleFileSelectEditUpdate" ref="fileInput" style="width: 0px; height: 0px; display: none;">">
                                     <!-- reset image option -->
-                                    <button class="btn primary-light-dropdown m-1" @click="editUpdateContent[targetVenue['updates'][0]._id['$oid']].newPhoto = targetVenue['updates'][0].photo; selectedEditUpdate =''">Revert</button>
+                                    <button class="btn primary-light-dropdown m-1" @click="editUpdateContent[targetVenue['updates'][0].id].newPhoto = targetVenue['updates'][0].photo; selectedEditUpdate =''">Revert</button>
                                     <!-- remove image option -->
-                                    <button class="btn primary-light-dropdown m-1" @click="editUpdateContent[targetVenue['updates'][0]._id['$oid']].newPhoto = ''; selectedEditUpdate = ''">Remove</button>
+                                    <button class="btn primary-light-dropdown m-1" @click="editUpdateContent[targetVenue['updates'][0].id].newPhoto = ''; selectedEditUpdate = ''">Remove</button>
                                     
                                 </div>
 
@@ -384,13 +384,13 @@
                                 <!-- Like Symbol -->
                                 <div v-if="Array.isArray(targetVenue['updates'][0].likes) && viewerType !== null" class="col-6 text-end">
                                     <!-- [if] Liked -->
-                                    <div v-if="targetVenue['updates'][0].likes.some(like => like['$oid'] == viewerID)" class="d-inline-block" @click="unlikeUpdates(targetVenue['updates'][0]._id['$oid'])">
+                                    <div v-if="targetVenue['updates'][0].likes.some(like => like == viewerID)" class="d-inline-block" @click="unlikeUpdates(targetVenue['updates'][0].id)">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="red" class="bi bi-heart-fill producer-profile-latest-updates-heart" viewBox="0 0 16 16">
                                             <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"/>
                                         </svg>
                                     </div>
                                     <!-- [else] Not Liked -->
-                                    <div v-else class="d-inline-block" @click="likeUpdates(targetVenue['updates'][0]._id['$oid'])">
+                                    <div v-else class="d-inline-block" @click="likeUpdates(targetVenue['updates'][0].id)">
                                         <svg xmlns="http://www.w3.org/2000/svg"  fill="currentColor" class="bi bi-heart producer-profile-latest-updates-heart" viewBox="0 0 16 16">
                                             <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.920 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.090.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15"/>
                                         </svg>
@@ -413,9 +413,9 @@
                         </div>
                         
                         <!-- Description -->
-                        <div v-if="editUpdateTarget == targetVenue['updates'][0]._id['$oid']" class="col-xl-10 col-md-9 col-8 text-start p-text-lg">
-                            <label :for="'editUpdateText' + targetVenue['updates'][0]._id['$oid']"> Update Text </label>
-                            <textarea type="text" class="form-control" :id="'editUpdateText' + targetVenue['updates'][0]._id['$oid']" aria-describedby="editUpdateText" v-model="editUpdateContent[targetVenue['updates'][0]._id['$oid']].newText"></textarea>
+                        <div v-if="editUpdateTarget == targetVenue['updates'][0].id" class="col-xl-10 col-md-9 col-8 text-start p-text-lg">
+                            <label :for="'editUpdateText' + targetVenue['updates'][0].id"> Update Text </label>
+                            <textarea type="text" class="form-control" :id="'editUpdateText' + targetVenue['updates'][0].id" aria-describedby="editUpdateText" v-model="editUpdateContent[targetVenue['updates'][0].id].newText"></textarea>
                         </div>
                         <div v-else class="col-xl-10 col-md-9 col-8">
                             <p class="text-start p-text-lg">{{ targetVenue['updates'][0].text }}</p>
@@ -502,7 +502,7 @@
                             <p v-else class="fs-5 fst-italic m-0">There are no more updates to view!</p>
                             -->
                             <!-- For Each Update -->
-                            <div v-for="updateMore in targetVenue['updates'].slice(1)" v-bind:key="updateMore._id">
+                            <div v-for="updateMore in targetVenue['updates'].slice(1)" v-bind:key="updateMore.id">
 
                                 <!-- Update Information -->
                                 <div class="row">
@@ -514,21 +514,21 @@
                                         </div>
                                         <div v-if="selfView || powerView" class="col-xl-4 col-md-6 col-12 text-end">
                                             <!-- [if] not editing -->
-                                            <button v-if="editUpdateTarget != updateMore._id['$oid']" type="button" class="btn btn-warning rounded-0" @click="editUpdate(updateMore)">
+                                            <button v-if="editUpdateTarget != updateMore.id" type="button" class="btn btn-warning rounded-0" @click="editUpdate(updateMore)">
                                                 Edit
                                             </button>
-                                            <button v-if="editUpdateTarget != updateMore._id['$oid']" type="button" class="btn btn-danger rounded-0 ms-1" @click="deleteUpdate(updateMore)">
+                                            <button v-if="editUpdateTarget != updateMore.id" type="button" class="btn btn-danger rounded-0 ms-1" @click="deleteUpdate(updateMore)">
                                                 Delete
                                             </button>
                                             
                                             <!-- [else] if editing -->
-                                            <button v-if="editUpdateTarget == updateMore._id['$oid']" type="button" class="btn btn-success rounded-0 reverse-clickable-text" @click="saveUpdate(updateMore)" :disabled="!(editUpdateContent[updateMore._id['$oid']].newText.length > 0)">
+                                            <button v-if="editUpdateTarget == updateMore.id" type="button" class="btn btn-success rounded-0 reverse-clickable-text" @click="saveUpdate(updateMore)" :disabled="!(editUpdateContent[updateMore.id].newText.length > 0)">
                                                 Save
                                             </button>
-                                            <button v-if="editUpdateTarget == updateMore._id['$oid']" type="button" class="btn btn-warning rounded-0 reverse-clickable-text ms-1" @click="editUpdateTarget = null">
+                                            <button v-if="editUpdateTarget == updateMore.id" type="button" class="btn btn-warning rounded-0 reverse-clickable-text ms-1" @click="editUpdateTarget = null">
                                                 Cancel
                                             </button>
-                                            <button v-if="editUpdateTarget == updateMore._id['$oid']" type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1" @click="editUpdateContent[updateMore._id['$oid']] = {newText: updateMore.text, newPhoto: updateMore.photo}">
+                                            <button v-if="editUpdateTarget == updateMore.id" type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1" @click="editUpdateContent[updateMore.id] = {newText: updateMore.text, newPhoto: updateMore.photo}">
                                                 Reset
                                             </button>
                                         </div>
@@ -541,16 +541,16 @@
                                         <div class="image-container">
 
                                             <!-- [if] editing update -->
-                                            <div v-if="editUpdateTarget == updateMore._id['$oid']" style="position: relative; text-align: center;">
+                                            <div v-if="editUpdateTarget == updateMore.id" style="position: relative; text-align: center;">
                                                 <!-- image -->
-                                                <img :src="(selectedEditUpdate || editUpdateContent[updateMore._id['$oid']].newPhoto || defaultPhoto)" alt="" style="width: 128px; height: 128px; z-index: 1; opacity: 50%">
+                                                <img :src="(selectedEditUpdate || editUpdateContent[updateMore.id].newPhoto || defaultPhoto)" alt="" style="width: 128px; height: 128px; z-index: 1; opacity: 50%">
                                                 <!-- change option -->
-                                                <label :for="'fileSelectEditUpdate' + updateMore._id['$oid']" class="btn primary-light-dropdown" style="position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%); z-index: 2;">Choose</label>
-                                                <input :id="'fileSelectEditUpdate' + updateMore._id['$oid']" type="file" @change="handleFileSelectEditUpdate" ref="fileInput" style="width: 0px; height: 0px; display: none;">
+                                                <label :for="'fileSelectEditUpdate' + updateMore.id" class="btn primary-light-dropdown" style="position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%); z-index: 2;">Choose</label>
+                                                <input :id="'fileSelectEditUpdate' + updateMore.id" type="file" @change="handleFileSelectEditUpdate" ref="fileInput" style="width: 0px; height: 0px; display: none;">
                                                 <!-- reset image option -->
-                                                <button class="btn primary-light-dropdown m-1" @click="editUpdateContent[updateMore._id['$oid']].newPhoto = updateMore.photo; selectedEditUpdate =''">Revert</button>
+                                                <button class="btn primary-light-dropdown m-1" @click="editUpdateContent[updateMore.id].newPhoto = updateMore.photo; selectedEditUpdate =''">Revert</button>
                                                 <!-- remove image option -->
-                                                <button class="btn primary-light-dropdown m-1" @click="editUpdateContent[updateMore._id['$oid']].newPhoto = ''; selectedEditUpdate = ''">Remove</button>
+                                                <button class="btn primary-light-dropdown m-1" @click="editUpdateContent[updateMore.id].newPhoto = ''; selectedEditUpdate = ''">Remove</button>
                                                 
                                             </div>
 
@@ -566,13 +566,13 @@
                                             <!-- Like Symbol -->
                                             <div v-if="Array.isArray(updateMore.likes)" class="col-6 text-end">
                                                 <!-- [if] Liked -->
-                                                <div v-if="updateMore.likes.some(like => like['$oid'] == viewerID)" class="d-inline-block" @click="unlikeUpdates(updateMore._id['$oid'])">
+                                                <div v-if="updateMore.likes.some(like => like == viewerID)" class="d-inline-block" @click="unlikeUpdates(updateMore.id)">
                                                     <svg xmlns="http://www.w3.org/2000/svg"  fill="red" class="bi bi-heart-fill producer-profile-latest-updates-heart" viewBox="0 0 16 16">
                                                         <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"/>
                                                     </svg>
                                                 </div>
                                                 <!-- [else] Not Liked -->
-                                                <div v-else class="d-inline-block" @click="likeUpdates(updateMore._id['$oid'])">
+                                                <div v-else class="d-inline-block" @click="likeUpdates(updateMore.id)">
                                                     <svg xmlns="http://www.w3.org/2000/svg"  fill="currentColor" class="bi bi-heart producer-profile-latest-updates-heart" viewBox="0 0 16 16">
                                                         <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.920 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.090.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15"/>
                                                     </svg>
@@ -595,9 +595,9 @@
                                     </div>
                                     
                                     <!-- Description -->
-                                    <div v-if="editUpdateTarget == updateMore._id['$oid']" class="col-xl-10 col-md-9 col-8 text-start p-text-lg mobile-ps-0 mobile-pe-0">
-                                        <label :for="'editUpdateText' + updateMore._id['$oid']"> Update Text </label>
-                                        <textarea type="text" class="form-control" :id="'editUpdateText' + updateMore._id['$oid']" aria-describedby="editUpdateText" v-model="editUpdateContent[updateMore._id['$oid']].newText"></textarea>
+                                    <div v-if="editUpdateTarget == updateMore.id" class="col-xl-10 col-md-9 col-8 text-start p-text-lg mobile-ps-0 mobile-pe-0">
+                                        <label :for="'editUpdateText' + updateMore.id"> Update Text </label>
+                                        <textarea type="text" class="form-control" :id="'editUpdateText' + updateMore.id" aria-describedby="editUpdateText" v-model="editUpdateContent[updateMore.id].newText"></textarea>
                                     </div>
                                     <div v-else class="col-xl-10 col-md-9 col-8 mobile-ps-0 mobile-pe-0">
                                         <p class="text-start p-text-lg mobile-rating-smaller-text-2">{{ updateMore.text }}</p>
@@ -644,7 +644,7 @@
                                             <!-- [if] Self Venue -->
                                             <div v-if="selfView" class="mr-auto">
                                                 <h4> Q&A for You! </h4>
-                                                <router-link :to="{ path: '/Venues/VenuesQA/' + targetVenue._id['$oid'] }" class="default-text-no-background">
+                                                <router-link :to="{ path: '/Venues/VenuesQA/' + targetVenue.id }" class="default-text-no-background">
                                                     <p class="reverse-text no-margin text-decoration-underline text-start pb-2"> View All </p>
                                                 </router-link>
                                             </div>
@@ -690,18 +690,18 @@
 
                                                         <!-- Answered Questions -->
                                                         <div v-if="qaMode == 'answered'">
-                                                            <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
+                                                            <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa.id" v-bind:class="{ 'active': index === 0 }">
                                                                 <p> <b> Q: {{ qa["question"] }} </b> </p>
                                                                 <!-- [if] not editing -->
-                                                                <button v-if="editingQA == false || editingQAID != qa._id.$oid" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="editQA(qa)">
+                                                                <button v-if="editingQA == false || editingQAID != qa.id" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="editQA(qa)">
                                                                     Edit answer
                                                                 </button>
                                                                 <!-- [else] if editing -->
-                                                                <button v-if="editingQAID == qa._id.$oid" type="button" class="btn success-btn rounded-0 me-1" v-on:click="saveQAEdit(qa)">
+                                                                <button v-if="editingQAID == qa.id" type="button" class="btn success-btn rounded-0 me-1" v-on:click="saveQAEdit(qa)">
                                                                     Save
                                                                 </button>
                                                                 <!-- [else] if editing -->
-                                                                <button v-if="editingQAID == qa._id.$oid" type="button" class="btn secondary-btn rounded-0 me-1" v-on:click="cancelQAEdit(qa)">
+                                                                <button v-if="editingQAID == qa.id" type="button" class="btn secondary-btn rounded-0 me-1" v-on:click="cancelQAEdit(qa)">
                                                                     Cancel
                                                                 </button>
                                                                 <!-- delete -->
@@ -710,14 +710,14 @@
                                                                 </button>
                                                                 <!-- spacer -->
                                                                 <div class="mt-2"></div>
-                                                                <p v-if="editingQA == false || editingQAID != qa._id.$oid"> A: {{ qa["answer"] }} </p>
-                                                                <textarea v-else-if="editingQAID == qa._id.$oid" class="search-bar form-control rounded fst-italic question-box flex-grow-1" type="text" placeholder="Edit answer." v-model="edit_answer[qa._id.$oid]"></textarea>
+                                                                <p v-if="editingQA == false || editingQAID != qa.id"> A: {{ qa["answer"] }} </p>
+                                                                <textarea v-else-if="editingQAID == qa.id" class="search-bar form-control rounded fst-italic question-box flex-grow-1" type="text" placeholder="Edit answer." v-model="edit_answer[qa.id]"></textarea>
                                                             </div>
                                                         </div>
 
                                                         <!-- Unanswered Questions -->
                                                         <div v-if="qaMode == 'unanswered'">
-                                                            <div class="carousel-item" v-for="(qa, index) in unansweredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
+                                                            <div class="carousel-item" v-for="(qa, index) in unansweredQuestions" v-bind:key="qa.id" v-bind:class="{ 'active': index === 0 }">
                                                                 <p class="fw-bold">Q: {{ qa["question"] }}</p>
                                                                 <div class="input-group centered pt-2">
                                                                     <textarea class="search-bar form-control rounded fst-italic question-box" type="text" placeholder="Respond to your fans' latest questions." v-model="qaAnswer"></textarea>
@@ -736,7 +736,7 @@
                                                     <div v-else>
 
                                                         <!-- Answered Questions -->
-                                                        <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
+                                                        <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa.id" v-bind:class="{ 'active': index === 0 }">
                                                             <p class="fw-bold">Q: {{ qa["question"] }}</p>
                                                             <p> A: {{ qa["answer"] }} </p>
                                                             
@@ -1075,7 +1075,7 @@
 
                                         <!-- Item Image tzh removed style="width: 150px; height: 150px;" from img tag-->
                                         <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
-                                            <router-link :to="{ path: '/listing/view/' + sectionItem.itemID['$oid'] }" class="default-text-no-background">
+                                            <router-link :to="{ path: '/listing/view/' + sectionItem.itemID }" class="default-text-no-background">
                                                 <!-- <img :src=" 'data:image/jpeg;base64,' + (sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" > -->
                                                 <img :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" >
                                             </router-link>
@@ -1091,7 +1091,7 @@
 
                                                 <!-- Item Name -->
                                                 <div class="col-12 mobile-pe-0">
-                                                    <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + sectionItem.itemID['$oid'] }">
+                                                    <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + sectionItem.itemID }">
                                                         <p class="mobile-fs-6 fs-5 fw-bold text-start text-decoration-underline m-0" style="margin-bottom:0.3rem;">{{ sectionItem.itemDetails['itemName'] }}</p>
                                                     </router-link>
                                                 </div>
@@ -1173,7 +1173,7 @@
 
                                         <!-- Item Image -->
                                         <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0">
-                                            <router-link :to="{ path: '/listing/view/' + sectionItem.itemID['$oid'] }" class="default-text-no-background">
+                                            <router-link :to="{ path: '/listing/view/' + sectionItem.itemID }" class="default-text-no-background">
                                                 <!-- <img :src=" 'data:image/jpeg;base64,' + (sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" style="width: 150px; height: 150px;"> -->
                                                 <img :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" style="width: 150px; height: 150px;">
                                             </router-link>
@@ -1189,19 +1189,19 @@
 
                                                 <!-- Item Name -->
                                                 <div class="col-7">
-                                                    <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + sectionItem.itemID['$oid'] }">
+                                                    <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + sectionItem.itemID }">
                                                         <p class="fs-5 fw-bold text-start text-decoration-underline m-0" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">{{ sectionItem.itemDetails['itemName'] }}</p>
                                                     </router-link>
                                                 </div>
 
                                                 <!-- Bookmark: Have Tried -->
                                                 <div v-if="viewerType == 'user'" class="col-2 pe-0">
-                                                    <div v-html="checkDrinkLists(sectionItem.itemID['$oid']).buttons.haveTried" class="d-grid" @click="addToBookmarks('tried', sectionItem.itemID)"></div>
+                                                    <div v-html="checkDrinkLists(sectionItem.itemID).buttons.haveTried" class="d-grid" @click="addToBookmarks('tried', sectionItem.itemID)"></div>
                                                 </div>
 
                                                 <!-- Bookmark: Want to Try -->
                                                 <div v-if="viewerType == 'user'" class="col-2 ps-0">
-                                                    <div v-html="checkDrinkLists(sectionItem.itemID['$oid']).buttons.wantToTry" class="d-grid" @click="addToBookmarks('want', sectionItem.itemID)"> </div>
+                                                    <div v-html="checkDrinkLists(sectionItem.itemID).buttons.wantToTry" class="d-grid" @click="addToBookmarks('want', sectionItem.itemID)"> </div>
                                                 </div>
 
                                                 <!-- Bookmark Icon -->
@@ -1209,7 +1209,7 @@
                                                     <BookmarkIcon 
                                                         v-if="viewerType == 'user' && dataLoaded && Object.keys(userInfo).length > 0" 
                                                         :user="userInfo" 
-                                                        :listing="loadedListings.find(item => item._id['$oid'] === sectionItem.itemID['$oid'])" 
+                                                        :listing="loadedListings.find(item => item.id === sectionItem.itemID)" 
                                                         :overlay="false"
                                                         size="30"
                                                         @icon-clicked="handleIconClick" />
@@ -1233,7 +1233,7 @@
                                                         <span v-if="sectionItem.itemDetails['itemABV']">{{ sectionItem.itemDetails['itemABV'] }} ABV | </span>
                                                         <span v-if="sectionItem.itemDetails['itemCountry']">{{ sectionItem.itemDetails['itemCountry'] }}</span>
                                                     </p>
-                                                    <div v-if="!showFullItemDescription"> <!--tzh needs help with ._id.$oid code -->
+                                                    <div v-if="!showFullItemDescription"> <!--tzh needs help with .id code -->
                                                         <p class="text-start fst-italic mb-1" style="height: 50px; max-height: 50px; overflow-y: auto;">
                                                             <span v-if="sectionItem.itemDetails['itemDesc']">{{ sectionItem.itemDetails['itemDesc'].slice(0, 140) + (sectionItem.itemDetails['itemDesc'].length > 140 ? '...' : '') }}</span>
                                                             <a @click="showFullItemDescription = true"  style="font-weight: bold;">(Read More)</a>
@@ -1271,7 +1271,7 @@
 
                                                 <!-- See User Reviews -->
                                                 <div class="col-4">
-                                                    <router-link :to="{ path: '/listing/view/' + sectionItem.itemID['$oid'] }">
+                                                    <router-link :to="{ path: '/listing/view/' + sectionItem.itemID }">
                                                         <button type="button" class="btn primary-btn-outline-thick p-1 px-2"> See User Reviews </button>
                                                     </router-link>
                                                 </div>
@@ -1508,7 +1508,7 @@
                                                             <div class="input-group">
                                                                 <span class="input-group-text fw-bold p-1">/</span>
                                                                 <select class="form-select p-1" v-model="menuItem.itemServingType">
-                                                                    <option v-for="servingType in servingTypes" :key="servingType._id" :value="servingType._id">{{ servingType.servingType }}</option>
+                                                                    <option v-for="servingType in servingTypes" :key="servingType.id" :value="servingType.id">{{ servingType.servingType }}</option>
                                                                 </select>
                                                             </div>
                                                         </div>
@@ -1607,7 +1607,7 @@
                                                                     <div class="input-group">
                                                                         <span class="input-group-text fw-bold">/</span>
                                                                         <select class="form-select" v-model="menuItem.itemServingType">
-                                                                            <option v-for="servingType in servingTypes" :key="servingType._id" :value="servingType._id">{{ servingType.servingType }}</option>
+                                                                            <option v-for="servingType in servingTypes" :key="servingType.id" :value="servingType.id">{{ servingType.servingType }}</option>
                                                                         </select>
                                                                     </div>
                                                                 </div>
@@ -1690,7 +1690,7 @@
                                         <div class="form-group mb-3">
                                             <p class="text-start mb-1"> Menu Item Serving Type </p>
                                             <select class="form-select" v-model="newMenuItemServingType">
-                                                <option v-for="servingType in servingTypes" :key="servingType._id" :value="servingType._id">{{ servingType.servingType }}</option>
+                                                <option v-for="servingType in servingTypes" :key="servingType.id" :value="servingType.id">{{ servingType.servingType }}</option>
                                             </select>
                                         </div>
 
@@ -1754,7 +1754,7 @@
 
                                                         <!-- Item Price / Item Serving Type -->
                                                         <div class="col-4">
-                                                            <p class="text-start fs-5 fw-bold default-text-no-background">$ {{ newMenuItemPrice || "-" }} / {{ servingTypes.find(i => i._id == newMenuItemServingType).servingType || "-" }}</p>
+                                                            <p class="text-start fs-5 fw-bold default-text-no-background">$ {{ newMenuItemPrice || "-" }} / {{ servingTypes.find(i => i.id == newMenuItemServingType).servingType || "-" }}</p>
                                                         </div>
 
                                                         <!-- See User Reviews -->
@@ -1928,7 +1928,7 @@
 
                 <!-- View Analytics Button (Admin) -->
                 <!-- <div v-if="powerView" class="row">
-                    <router-link class="d-grid pb-3 text-decoration-none" :to="{ path: '/dashboard/venue/' + targetVenue._id['$oid'] }">
+                    <router-link class="d-grid pb-3 text-decoration-none" :to="{ path: '/dashboard/venue/' + targetVenue.id }">
                         <button type="button" class="btn secondary-btn-not-rounded rounded-0"> View Venue's Analytics </button>
                     </router-link>
                 </div> -->
@@ -1947,7 +1947,7 @@
                                 <!-- [if] Self Venue -->
                                 <div v-if="selfView" class="mr-auto">
                                     <h4> Q&A for You! </h4>
-                                    <router-link :to="{ path: '/Venues/VenuesQA/' + targetVenue._id['$oid'] }" class="default-text-no-background">
+                                    <router-link :to="{ path: '/Venues/VenuesQA/' + targetVenue.id }" class="default-text-no-background">
                                         <p class="reverse-text no-margin text-decoration-underline text-start pb-2"> View All </p>
                                     </router-link>
                                 </div>
@@ -1993,18 +1993,18 @@
 
                                             <!-- Answered Questions -->
                                             <div v-if="qaMode == 'answered'">
-                                                <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
+                                                <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa.id" v-bind:class="{ 'active': index === 0 }">
                                                     <p> <b> Q: {{ qa["question"] }} </b> </p>
                                                     <!-- [if] not editing -->
-                                                    <button v-if="editingQA == false || editingQAID != qa._id.$oid" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="editQA(qa)">
+                                                    <button v-if="editingQA == false || editingQAID != qa.id" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="editQA(qa)">
                                                         Edit answer
                                                     </button>
                                                     <!-- [else] if editing -->
-                                                    <button v-if="editingQAID == qa._id.$oid" type="button" class="btn success-btn rounded-0 me-1" v-on:click="saveQAEdit(qa)">
+                                                    <button v-if="editingQAID == qa.id" type="button" class="btn success-btn rounded-0 me-1" v-on:click="saveQAEdit(qa)">
                                                         Save
                                                     </button>
                                                     <!-- [else] if editing -->
-                                                    <button v-if="editingQAID == qa._id.$oid" type="button" class="btn secondary-btn rounded-0 me-1" v-on:click="cancelQAEdit(qa)">
+                                                    <button v-if="editingQAID == qa.id" type="button" class="btn secondary-btn rounded-0 me-1" v-on:click="cancelQAEdit(qa)">
                                                         Cancel
                                                     </button>
                                                     <!-- delete -->
@@ -2013,14 +2013,14 @@
                                                     </button>
                                                     <!-- spacer -->
                                                     <div class="mt-2"></div>
-                                                    <p v-if="editingQA == false || editingQAID != qa._id.$oid"> A: {{ qa["answer"] }} </p>
-                                                    <textarea v-else-if="editingQAID == qa._id.$oid" class="search-bar form-control rounded fst-italic question-box flex-grow-1" type="text" placeholder="Edit answer." v-model="edit_answer[qa._id.$oid]"></textarea>
+                                                    <p v-if="editingQA == false || editingQAID != qa.id"> A: {{ qa["answer"] }} </p>
+                                                    <textarea v-else-if="editingQAID == qa.id" class="search-bar form-control rounded fst-italic question-box flex-grow-1" type="text" placeholder="Edit answer." v-model="edit_answer[qa.id]"></textarea>
                                                 </div>
                                             </div>
 
                                             <!-- Unanswered Questions -->
                                             <div v-if="qaMode == 'unanswered'">
-                                                <div class="carousel-item" v-for="(qa, index) in unansweredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
+                                                <div class="carousel-item" v-for="(qa, index) in unansweredQuestions" v-bind:key="qa.id" v-bind:class="{ 'active': index === 0 }">
                                                     <p class="fw-bold">Q: {{ qa["question"] }}</p>
                                                     <div class="input-group centered pt-2">
                                                         <textarea class="search-bar form-control rounded fst-italic question-box" type="text" placeholder="Respond to your fans' latest questions." v-model="qaAnswer"></textarea>
@@ -2039,7 +2039,7 @@
                                         <div v-else>
 
                                             <!-- Answered Questions -->
-                                            <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
+                                            <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa.id" v-bind:class="{ 'active': index === 0 }">
                                                 <p class="fw-bold">Q: {{ qa["question"] }}</p>
                                                 <p> A: {{ qa["answer"] }} </p>
                                                 
@@ -2630,7 +2630,7 @@
                         // Format updates
                         if (this.targetVenue["updates"].length > 0) {
                             this.targetVenue["updates"].sort((a, b) => {
-                                return new Date(b.date.$date) - new Date(a.date.$date);
+                                return new Date(b.date) - new Date(a.date);
                             });
                             for (let update of this.targetVenue["updates"]) {
                                 update.date = update.date['$date'].split('T')[0].split('-').reverse().join('/');
@@ -2672,7 +2672,7 @@
                             var claimStatus = false                        
                             // check for active subscription if last check status date before today
                             const claimStatusCheckDate = this.targetVenue['claimStatusCheckDate']
-                            if ((claimStatusCheckDate.$date.split('T')[0] < new Date().toISOString().split('T')[0]) || !claimStatusCheckDate) {
+                            if ((claimStatusCheckDate.split('T')[0] < new Date().toISOString().split('T')[0]) || !claimStatusCheckDate) {
                                 console.log('checking subscription');
                                 // check for active subscription
                                 try {
@@ -2706,7 +2706,7 @@
                                     try {
                                         await this.$axios.post(`http://127.0.0.1:5300/editVenueProfile/updateVenueClaimStatus`, 
                                             {
-                                                businessId: this.targetVenue._id['$oid'],
+                                                businessId: this.targetVenue.id,
                                                 claimStatus: claimStatus,
                                             }, {
                                             headers: {
@@ -2722,7 +2722,7 @@
                                 try {
                                     await this.$axios.post(`http://127.0.0.1:5300/editVenueProfile/updateVenueClaimStatusCheckDate`, 
                                         {
-                                            businessId: this.targetVenue._id['$oid'],
+                                            businessId: this.targetVenue.id,
                                             claimStatusCheckDate: new Date().toISOString(),
                                         }, {
                                         headers: {
@@ -2766,22 +2766,22 @@
                         for (let item of section.sectionMenu) {
 
                             // Find item in loadedListings
-                            let listingData = this.loadedListings.find(i => i._id['$oid'] == item.itemID['$oid']);
+                            let listingData = this.loadedListings.find(i => i.id == item.itemID);
 
                             // If not found, get from server
                             if (listingData == undefined) {
-                                let response = await this.$axios.get('http://127.0.0.1:5000/getData/getListing/' + item.itemID['$oid']);
+                                let response = await this.$axios.get('http://127.0.0.1:5000/getData/getListing/' + item.itemID);
                                 listingData = response.data;
 
                                 if (Array.isArray(listingData) && listingData.length == 0) {
                                     // Remove item from section
-                                    section.sectionMenu = section.sectionMenu.filter(i => i.itemID['$oid'] != item.itemID['$oid']);
+                                    section.sectionMenu = section.sectionMenu.filter(i => i.itemID != item.itemID);
                                 }
                                 // If found, obtain additional data and add to loadedListings
                                 else if (listingData != null && listingData != "") {
 
                                     // Get reviews
-                                    let reviewResponse = await this.$axios.get('http://127.0.0.1:5000/getData/getReviewByTarget/' + item.itemID['$oid']);
+                                    let reviewResponse = await this.$axios.get('http://127.0.0.1:5000/getData/getReviewByTarget/' + item.itemID);
                                     let reviewData = reviewResponse.data;
 
                                     if (Array.isArray(reviewData) && reviewData.length == 0) {
@@ -2798,16 +2798,16 @@
                                     }
 
                                     // Find producer in loadedProducers
-                                    let producerData = this.loadedProducers.find(p => p._id['$oid'] == listingData["producerID"]['$oid']);
+                                    let producerData = this.loadedProducers.find(p => p.id == listingData["producerID"]);
 
                                     // If not found, get from server
                                     if (producerData == undefined) {
-                                        let producerResponse = await this.$axios.get('http://127.0.0.1:5000/getData/getProducer/' + listingData["producerID"]['$oid']);
+                                        let producerResponse = await this.$axios.get('http://127.0.0.1:5000/getData/getProducer/' + listingData["producerID"]);
                                         producerData = producerResponse.data;
 
                                         if (Array.isArray(producerData) && producerData.length == 0) {
                                             // Remove item from section
-                                            section.sectionMenu = section.sectionMenu.filter(i => i.itemID['$oid'] != item.itemID['$oid']);
+                                            section.sectionMenu = section.sectionMenu.filter(i => i.itemID != item.itemID);
                                         }
                                         // If found, add to loadedProducers
                                         else if (producerData != null && producerData != "") {
@@ -2850,11 +2850,11 @@
                                     itemDesc: listingData["officialDesc"],
                                     itemRating: listingData["avgRating"].toFixed(2),
                                     itemProducer: listingData["producerName"],
-                                    itemProducerID: listingData["producerID"]['$oid'],
+                                    itemProducerID: listingData["producerID"],
                                 };
 
                                 // Get serving type name
-                                let servingTypeData = this.servingTypes.find(s => s._id['$oid'] == item["itemServingType"]['$oid']);
+                                let servingTypeData = this.servingTypes.find(s => s.id == item["itemServingType"]);
                                 if (servingTypeData != undefined) {
                                     item.itemDetails.itemServingTypeName = servingTypeData["servingType"];
                                 }
@@ -2906,12 +2906,12 @@
                                 }
 
                                 // Check if user is following venue
-                                this.userFollowing = JSON.stringify(this.userInfo.followLists.venues).includes(JSON.stringify({$oid: this.targetVenue._id['$oid']}));
+                                this.userFollowing = JSON.stringify(this.userInfo.followLists.venues).includes(JSON.stringify(this.targetVenue.id));
 
                                 // Get user's bookmarks
                                 for (let drinkList in this.userInfo.drinkLists) {
                                     for (let item of this.userInfo.drinkLists[drinkList].listItems) {
-                                        this.userBookmarks.push(item[1]['$oid']);
+                                        this.userBookmarks.push(item[1]);
                                     }
                                 }
                                 
@@ -2925,14 +2925,14 @@
 
                 // Get profile views
                 try {
-                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getVenuesProfileViewsByVenue/' + this.targetVenue._id['$oid']);
+                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getVenuesProfileViewsByVenue/' + this.targetVenue.id);
                     let venueProfileViewInfo = {};
                     if (Array.isArray(response.data) && response.data.length != 0) {
                         venueProfileViewInfo = response.data[0];
                     }
 
                     // ensure that it is not the producer viewing their own page
-                    if (this.viewerID != this.targetVenue._id["$oid"]) {
+                    if (this.viewerID != this.targetVenue.id) {
                         // get current date
                             let currDate = new Date().toISOString();
 
@@ -2944,11 +2944,11 @@
 
                             // get current view
                             let views = venueProfileViewInfo.views.find(view => view.date["$date"] == currDate);
-                            let viewsID = views._id["$oid"];
+                            let viewsID = views.id;
                             try {
                                 this.$axios.post('http://127.0.0.1:5300/editVenueProfile/addProfileCount', 
                                     {
-                                        venueID: venueProfileViewInfo._id["$oid"],
+                                        venueID: venueProfileViewInfo.id,
                                         viewsID: viewsID,
                                     },
                                     {
@@ -2967,7 +2967,7 @@
                             try {
                                 this.$axios.post('http://127.0.0.1:5300/editVenueProfile/addNewProfileCount', 
                                     {
-                                        venueID: this.targetVenue._id["$oid"],
+                                        venueID: this.targetVenue.id,
                                         date: currDate,
                                     },
                                     {
@@ -3201,7 +3201,7 @@
                 try {
                     await this.$axios.post('http://127.0.0.1:5300/editVenueProfile/editDetails', 
                         {
-                            venueID: this.targetVenue['_id']['$oid'],
+                            venueID: this.targetVenue['id'],
                             image64: this.editProfilePhoto,
                             venueName: this.editVenueName,
                             venueDesc: this.editVenueDesc,
@@ -3227,7 +3227,7 @@
                 try {
                     await this.$axios.post('http://127.0.0.1:5300/editVenueProfile/addUpdates', 
                         {
-                            venueID: this.targetVenue['_id']['$oid'],
+                            venueID: this.targetVenue['id'],
                             date: new Date().toISOString(),
                             text: this.newUpdateText,
                             image64: this.newUpdatePhoto,
@@ -3250,7 +3250,7 @@
 
             // Edit Update
             editUpdate(update) {
-                this.editUpdateTarget = update['_id']['$oid'];
+                this.editUpdateTarget = update['id'];
                 if (!this.editUpdateContent[this.editUpdateTarget]) {
                     this.editUpdateContent[this.editUpdateTarget] = {
                         newText: update['text'],
@@ -3264,10 +3264,10 @@
                 try {
                     await this.$axios.post('http://127.0.0.1:5300/editVenueProfile/editUpdate', 
                         {
-                            venueID: this.targetVenue['_id']['$oid'],
-                            updateID: update['_id']['$oid'],
-                            update: this.editUpdateContent[update['_id']['$oid']].newText,
-                            image64: this.editUpdateContent[update['_id']['$oid']].newPhoto,
+                            venueID: this.targetVenue['id'],
+                            updateID: update['id'],
+                            update: this.editUpdateContent[update['id']].newText,
+                            image64: this.editUpdateContent[update['id']].newPhoto,
                         },
                         {
                         headers: {
@@ -3278,7 +3278,7 @@
                 catch (error) {
                     alert("An error occurred while attempting to save your changes, please try again!\nWe have tried to copy your update's text to your clipboard.");
                     // console.error(error);
-                    this.copyToClipboard(this.editUpdateContent[update['_id']['$oid']].newText);
+                    this.copyToClipboard(this.editUpdateContent[update['id']].newText);
                 }
 
                 // Refresh page
@@ -3290,8 +3290,8 @@
                 try {
                     await this.$axios.post('http://127.0.0.1:5300/editVenueProfile/deleteUpdate', 
                         {
-                            venueID: this.targetVenue['_id']['$oid'],
-                            updateID: update['_id']['$oid'],
+                            venueID: this.targetVenue['id'],
+                            updateID: update['id'],
                         },
                         {
                         headers: {
@@ -3313,8 +3313,8 @@
                 try {
                     await this.$axios.post('http://127.0.0.1:5300/editVenueProfile/sendAnswers', 
                         {
-                            venueID: this.targetVenue['_id']['$oid'],
-                            questionsAnswersID: qa._id['$oid'],
+                            venueID: this.targetVenue['id'],
+                            questionsAnswersID: qa.id,
                             answer: this.qaAnswer,
                         },
                         {
@@ -3343,7 +3343,7 @@
                 try {
                     await this.$axios.post('http://localhost:5300/editVenueProfile/editAddress', 
                         {
-                            venueID: this.targetVenue['_id']['$oid'],
+                            venueID: this.targetVenue['id'],
                             updatedAddress: this.newAddress,
                         },
                         {
@@ -3400,7 +3400,7 @@
                 try {
                     await this.$axios.post('http://localhost:5300/editVenueProfile/editOpeningHours', 
                         {
-                            venueID: this.targetVenue['_id']['$oid'],
+                            venueID: this.targetVenue['id'],
                             updatedOpeningHours: this.newOpeningHours,
                         },
                         {
@@ -3427,7 +3427,7 @@
                 try {
                     await this.$axios.post('http://localhost:5300/editVenueProfile/editPublicHolidays', 
                         {
-                            venueID: this.targetVenue['_id']['$oid'],
+                            venueID: this.targetVenue['id'],
                             updatedPublicHolidays: this.newPublicHolidays,
                         },
                         {
@@ -3454,7 +3454,7 @@
                 try {
                     await this.$axios.post('http://localhost:5300/editVenueProfile/editReservationDetails', 
                         {
-                            venueID: this.targetVenue['_id']['$oid'],
+                            venueID: this.targetVenue['id'],
                             updatedReservationDetails: this.newReservationDetails,
                         },
                         {
@@ -3530,7 +3530,7 @@
                 // get error message element
                 let newMenuItemTargetError = document.getElementById("newMenuItemTargetError");
 
-                let itemData = this.allListings.find(i => i._id['$oid'] == this.newMenuItemID);
+                let itemData = this.allListings.find(i => i.id == this.newMenuItemID);
                 if (itemData != undefined) {
                     this.newMenuItemTarget = itemData;
                     newMenuItemTargetError.innerText = "";
@@ -3555,7 +3555,7 @@
                     newMenuItemTargetSectionError.innerText = "";
 
                     // Check if item already exists in section
-                    let itemExists = this.newMenuItemTargetSection.sectionMenu.find(i => i.itemID['$oid'] == this.newMenuItemID);
+                    let itemExists = this.newMenuItemTargetSection.sectionMenu.find(i => i.itemID == this.newMenuItemID);
                     if (itemExists != undefined) {
                         newMenuItemTargetSectionNotice.innerText = "Are you sure you want to add a duplicate item to this section?"
                     }
@@ -3571,7 +3571,7 @@
 
             // Get Default Serving Type
             getDefaultServingType() {
-                this.newMenuItemServingType = this.servingTypes.find(s => s.servingType == "-")['_id'];
+                this.newMenuItemServingType = this.servingTypes.find(s => s.servingType == "-")['id'];
             },
 
             // Add Menu Item
@@ -3579,7 +3579,7 @@
                     
                 // Add item to section
                 this.newMenuItemTargetSection.sectionMenu.push({
-                    itemID: this.newMenuItemTarget['_id'],
+                    itemID: this.newMenuItemTarget['id'],
                     itemOrder: this.newMenuItemTargetSection.sectionMenu.length,
                     itemPrice: this.newMenuItemPrice,
                     itemServingType: this.newMenuItemServingType,
@@ -3594,7 +3594,7 @@
                         itemDesc: this.newMenuItemTarget.officialDesc,
                         itemRating: this.newMenuItemTarget.avgRating,
                         itemProducer: this.newMenuItemTarget.producerName,
-                        itemProducerID: this.newMenuItemTarget.producerID['$oid'],
+                        itemProducerID: this.newMenuItemTarget.producerID,
                         itemServingTypeName: "Serving",
                     }
                 });
@@ -3640,7 +3640,7 @@
                         for (let listingData of this.allListings) {
 
                             // Get reviews
-                            let listingReviews = reviewData.filter(r => r.reviewTarget['$oid'] == listingData._id['$oid']);
+                            let listingReviews = reviewData.filter(r => r.reviewTarget == listingData.id);
 
                             if (Array.isArray(listingReviews) && listingReviews.length == 0) {
                                 listingData["reviews"] = [];
@@ -3656,11 +3656,11 @@
                             }
 
                             // Find producer in loadedProducers
-                            let producerData = this.loadedProducers.find(p => p._id['$oid'] == listingData["producerID"]['$oid']);
+                            let producerData = this.loadedProducers.find(p => p.id == listingData["producerID"]);
 
                             // If not found, remove item from valid listings
                             if (producerData == undefined) {
-                                this.allListings = this.allListings.filter(i => i._id['$oid'] != listingData._id['$oid']);
+                                this.allListings = this.allListings.filter(i => i.id != listingData.id);
                             }
                             // If found, set producer name
                             else {
@@ -3703,7 +3703,7 @@
                 try {
                     await this.$axios.post('http://127.0.0.1:5300/editVenueProfile/editMenu', 
                         {
-                            venueID: this.targetVenue['_id']['$oid'],
+                            venueID: this.targetVenue['id'],
                             updatedMenu: this.editMenu,
                         },
                         {
@@ -3740,7 +3740,7 @@
                             userID: this.viewerID,
                             action: action,
                             target: "venues",
-                            followerID: this.targetVenue['_id']['$oid'],
+                            followerID: this.targetVenue['id'],
                         }, {
                         headers: {
                             'Content-Type': 'application/json'
@@ -3758,7 +3758,7 @@
                 try {
                     await this.$axios.post('http://127.0.0.1:5300/editVenueProfile/unlikeUpdates', 
                         {
-                            venueID: this.targetVenue['_id']['$oid'],
+                            venueID: this.targetVenue['id'],
                             updateID: unlikeUpdateID,
                             userID: this.viewerID,
                         },
@@ -3781,7 +3781,7 @@
                 try {
                     await this.$axios.post('http://127.0.0.1:5300/editVenueProfile/likeUpdates', 
                         {
-                            venueID: this.targetVenue['_id']['$oid'],
+                            venueID: this.targetVenue['id'],
                             updateID: likeUpdateID,
                             userID: this.viewerID,
                         },
@@ -3804,7 +3804,7 @@
                 try {
                     await this.$axios.post('http://127.0.0.1:5300/editVenueProfile/sendQuestions', 
                         {
-                            venueID: this.targetVenue['_id']['$oid'],
+                            venueID: this.targetVenue['id'],
                             question: this.qaQuestion,
                             answer: "",
                             date: new Date().toISOString(),
@@ -3891,7 +3891,7 @@
                     // Prepare data
                     let reportData = {
                         "userID": this.viewerID,
-                        "venueID": this.targetVenue['_id']['$oid'],
+                        "venueID": this.targetVenue['id'],
                         "listingID": this.reportItem,
                         "inaccurateReason": "[ Menu Section: " + this.detailedMenu[this.reportSection].sectionName + " ]\nReason: " + this.reportReason,
                     }
@@ -3933,8 +3933,8 @@
 
             // check if user has already added listing to shelf, add colour to button accordingly
             checkDrinkLists(listingID) {
-                const haveTried = this.userInfo.drinkLists["Drinks I Have Tried"].listItems.some(item => item[1].$oid == listingID);
-                const wantToTry = this.userInfo.drinkLists["Drinks I Want To Try"].listItems.some(item => item[1].$oid == listingID);
+                const haveTried = this.userInfo.drinkLists["Drinks I Have Tried"].listItems.some(item => item[1] == listingID);
+                const wantToTry = this.userInfo.drinkLists["Drinks I Want To Try"].listItems.some(item => item[1] == listingID);
 
                 const haveTriedButton = `
                 <button type="button" class="btn custom-drink-list-btn rounded-0 ${haveTried ? 'disabled' : ''}">
@@ -3966,7 +3966,7 @@
                     submitAPI += "Tried/";
 
                     // Check if listing is already in "tried" list
-                    if (this.userInfo.drinkLists["Drinks I Have Tried"].listItems.some(item => item[1].$oid == listingID['$oid'])) {
+                    if (this.userInfo.drinkLists["Drinks I Have Tried"].listItems.some(item => item[1] == listingID)) {
                         return;
                     }
                 }
@@ -3974,7 +3974,7 @@
                     submitAPI += "Want/";
 
                     // Check if listing is already in "want" list
-                    if (this.userInfo.drinkLists["Drinks I Want To Try"].listItems.some(item => item[1].$oid == listingID['$oid'])) {
+                    if (this.userInfo.drinkLists["Drinks I Want To Try"].listItems.some(item => item[1] == listingID)) {
                         return;
                     }
                 }
@@ -4001,20 +4001,20 @@
             editQA(qa) {
                 this.editingQA = true;
                 // set the current details to the edit details
-                this.edit_answer[qa._id.$oid] = qa.answer
-                this.editingQAID = qa._id.$oid;
+                this.edit_answer[qa.id] = qa.answer
+                this.editingQAID = qa.id;
             }, 
             
             async saveQAEdit(qa) {
                 // set editing status to false
                 this.editingQA = false;
-                let q_and_a_id = qa._id.$oid;
+                let q_and_a_id = qa.id;
                 try {
                     await this.$axios.post('http://127.0.0.1:5300/editVenueProfile/editQA', 
                         {
-                            venueID: this.targetVenue['_id']['$oid'],
+                            venueID: this.targetVenue['id'],
                             questionsAnswersID: q_and_a_id,
-                            answer: this.edit_answer[qa._id.$oid],
+                            answer: this.edit_answer[qa.id],
                         },
                         {
                             headers: {
@@ -4030,11 +4030,11 @@
             },
 
             async deleteQAEdit(qa) {
-                let q_and_a_id = qa._id.$oid;
+                let q_and_a_id = qa.id;
                 try {
                     const response = await this.$axios.post('http://127.0.0.1:5300/editVenueProfile/deleteQA', 
                         {
-                            venueID: this.targetVenue['_id']['$oid'],
+                            venueID: this.targetVenue['id'],
                             questionsAnswersID: q_and_a_id,
                             answer: "",
                         },
@@ -4056,7 +4056,7 @@
             // cancel Q&A edit
             cancelQAEdit(qa) {
                 this.editingQA = false;
-                this.edit_answer[qa._id.$oid] = "";
+                this.edit_answer[qa.id] = "";
                 this.editingQAID = "";
             },
 
@@ -4117,7 +4117,7 @@
             async confirmUpdatePassword(){
                 let oldHash = this.hashPassword(this.targetVenue.venueName, this.oldPassword)
                 let newHash = this.hashPassword(this.targetVenue.venueName, this.newPassword)
-                let submitURL = 'http://127.0.0.1:5000/authcheck/editPassword/' + this.targetVenue._id.$oid 
+                let submitURL = 'http://127.0.0.1:5000/authcheck/editPassword/' + this.targetVenue.id 
                 let submitData = {
                     oldHash: oldHash.toString(),
                     newHash: newHash.toString(),
@@ -4148,7 +4148,7 @@
                 setTimeout(() => {
                     this.isButtonDisabled = false;
                 }, 60000);
-            let submitURL = 'http://127.0.0.1:5000/authcheck/sendResetPin/' + this.targetVenue._id.$oid
+            let submitURL = 'http://127.0.0.1:5000/authcheck/sendResetPin/' + this.targetVenue.id
             let submitData = {
                 userType: "venue",
             }
@@ -4175,7 +4175,7 @@
 
         async verifyOTP(){
             // call api to verify the pin
-            let submitURL = "http://127.0.0.1:5000/authcheck/verifyPin/" + this.targetVenue._id.$oid
+            let submitURL = "http://127.0.0.1:5000/authcheck/verifyPin/" + this.targetVenue.id
             let submitData ={
                 userType:"venue",
                 pin:this.resetPin
@@ -4203,7 +4203,7 @@
 
         async resetPassword(){
             this.resettingPassword=true
-            let submitURL = "http://127.0.0.1:5000/authcheck/resetPassword/" + this.targetVenue._id.$oid
+            let submitURL = "http://127.0.0.1:5000/authcheck/resetPassword/" + this.targetVenue.id
             let submitData = {
                 userType:"venue",
                 pin:this.resetPin

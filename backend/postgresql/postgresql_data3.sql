@@ -204,6 +204,14 @@ CREATE TABLE "producersUpdates" (
     -- need to add likes?
 );
 
+-- ========= [NEW!] "producerUpdateLikes" =========
+CREATE TABLE "producerUpdateLikes" (
+    "id" SERIAL PRIMARY KEY,
+    "updateId" INTEGER REFERENCES "producersUpdates"("id") ON DELETE CASCADE,
+    "userId" INTEGER REFERENCES "users"("id") ON DELETE CASCADE,
+    UNIQUE ("updateId", "userId")
+);
+
 -- ========= "producersProfileViews" =========
 CREATE TABLE "producersProfileViews" (
     "id" SERIAL PRIMARY KEY,
@@ -352,6 +360,14 @@ CREATE TABLE "venuesUpdates" (
     -- need add likes?
 );
 
+-- ========= [NEW!] "venueUpdateLikes" =========
+CREATE TABLE "venueUpdateLikes" (
+    "id" SERIAL PRIMARY KEY,
+    "updateId" INTEGER REFERENCES "venuesUpdates"("id") ON DELETE CASCADE,
+    "userId" INTEGER REFERENCES "users"("id") ON DELETE CASCADE,
+    UNIQUE ("updateId", "userId")
+);
+
 -- -- ========= [NEW!] "venuesProfileViewsViews" =========
 -- CREATE TABLE "venuesProfileViewsViews" (
 --     "id" SERIAL PRIMARY KEY,
@@ -410,8 +426,8 @@ CREATE TABLE "requestListings" (
 CREATE TABLE "requestEdits" (
     "id" SERIAL PRIMARY KEY,
     "editDesc" TEXT,
-    "listingId" INTEGER REFERENCES "listings"("id") ON DELETE SET NULL, -- [!] References listings FK
-    "userId" INTEGER REFERENCES "users"("id") ON DELETE SET NULL, -- [!] References users FK
+    "listingID" INTEGER REFERENCES "listings"("id") ON DELETE SET NULL, -- [!] References listings FK
+    "userID" INTEGER REFERENCES "users"("id") ON DELETE SET NULL, -- [!] References users FK
     "brandRelation" VARCHAR(255),
     "reviewStatus" BOOLEAN,
     "duplicateLink" VARCHAR(255),

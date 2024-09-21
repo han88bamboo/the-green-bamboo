@@ -88,40 +88,33 @@ def editDetails():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/addUpdates', methods=['POST'])
 def addUpdates():
-    db = g.db
-
-    # fetch sent data
+    conn = g.db
+    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
-    # extract components of the data
-    producerID = data['producerID']
+    producerID = int(data['producerID'])
     date = datetime.strptime(data['date'], "%Y-%m-%dT%H:%M:%S.%fZ")
     text = data['text']
-    image64 = s3Images.uploadBase64ImageToS3(data['image64']) 
+
+    image64 = ''
+
+    if data.get('image64'):
+        image64 = s3Images.uploadBase64ImageToS3(data['image64'])
 
     try:
-        submitReq = db.producers.update_one(
-            {'_id': ObjectId(producerID)},
-            {'$push': {'updates': 
-                        {
-                            '_id': ObjectId(),
-                            'date': date,
-                            'text': text,
-                            'photo': image64,
-                            'likes': []
-                        }
-                    }
-            }
-        )
+        cur.execute('INSERT INTO "producersUpdates" ("date", "text", "photo", "producerId") VALUES (%s, %s, %s, %s)', (date, text, image64, producerID))
+        conn.commit()
 
-        return jsonify( 
+        return jsonify(
             {   
                 "code": 201,
                 "message": "Update added successfully!"
             }
         ), 201
+    
     except Exception as e:
+        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -130,6 +123,9 @@ def addUpdates():
                 "message": "An error occurred creating the update!"
             }
         ), 500
+    
+    finally:
+        cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [POST] Send questions to producer
@@ -137,41 +133,37 @@ def addUpdates():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/sendQuestions', methods=['POST'])
 def sendQuestions():
-    db = g.db
+    conn = g.db
+    cur = conn.cursor()
 
-    # fetch sent data
     data = request.get_json()
     print(data)
 
-    # extract components of the data
-    producerID = data['producerID']
+    producerID = int(data['producerID'])
     question = data['question']
     answer = data['answer']
     date = datetime.strptime(data['date'], "%Y-%m-%dT%H:%M:%S.%fZ")
-    userID = data['userID']
+    userID = int(data['userID'])
 
     try:
-        submitReq = db.producers.update_one(
-            {'_id': ObjectId(producerID)},
-            {'$push': {'questionsAnswers': 
-                        {
-                            '_id': ObjectId(),
-                            'question': question,
-                            'answer': answer,
-                            'date': date,
-                            'userID': ObjectId(userID)
-                        }
-                    }
-            }
+        cur.execute(
+            """
+                INSERT INTO "producersQuestionAnswers" (question, answer, date, "userId", "producerId")
+                VALUES (%s, %s, %s, %s, %s)
+            """,
+            (question, answer, date, userID, producerID)
         )
+        conn.commit()
 
-        return jsonify( 
-            {   
+        return jsonify(
+            {
                 "code": 201,
                 "message": "Question sent successfully!"
             }
         ), 201
+    
     except Exception as e:
+        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -180,6 +172,9 @@ def sendQuestions():
                 "message": "An error occurred sending the question!"
             }
         ), 500
+    
+    finally:
+        cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [POST] Send answers to questions
@@ -187,37 +182,38 @@ def sendQuestions():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/sendAnswers', methods=['POST'])
 def sendAnswers():
-    db = g.db
-
-    # fetch sent data
+    conn = g.db
+    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
-    # extract components of the data
-    producerID = data['producerID']
-    questionsAnswersID = data['questionsAnswersID']
+    producerID = int(data['producerID'])
+    questionsAnswersID = int(data['questionsAnswersID'])
     answer = data['answer']
 
     try:
-        submitReq = db.producers.update_one(
-            {'_id': ObjectId(producerID), 'questionsAnswers._id': ObjectId(questionsAnswersID)},
-            {'$set': {'questionsAnswers.$.answer': answer}}
-        )
-        return jsonify( 
+        cur.execute('UPDATE "producersQuestionAnswers" SET "answer" = %s WHERE "producerId" = %s AND id = %s', (answer, producerID, questionsAnswersID))
+        conn.commit()
+
+        return jsonify(
             {   
                 "code": 201,
                 "message": "Answer sent successfully!"
             }
         ), 201
+    
     except Exception as e:
+        conn.rollback()
         print(str(e))
         return jsonify(
             {
                 "code": 500,
-                "data": data,
                 "message": "An error occurred sending the answer!"
             }
         ), 500
+    
+    finally:
+        cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [POST] Like updates
@@ -225,33 +221,56 @@ def sendAnswers():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/likeUpdates', methods=['POST'])
 def likeUpdates():
-    db = g.db
+    conn = g.db
+    cur = conn.cursor()
     data = request.get_json()
     print(data)
-    producerID = data['producerID']
-    updateID = data['updateID']
-    userID = data['userID']
 
-    try: 
-        likeUpdate = db.producers.update_one(
-            {'_id': ObjectId(producerID), 'updates._id': ObjectId(updateID)},
-            {'$push': {'updates.$.likes': ObjectId(userID)}}
-        )
+    producerID = int(data['producerID'])
+    updateID = int(data['updateID'])
+    userID = int(data['userID'])
+
+    try:
+        # Verify that the update exists and belongs to the producer
+        cur.execute('SELECT "producerId" FROM "producersUpdates" WHERE "id" = %s', (updateID,))
+        existingUpdate = cur.fetchone()
+
+        if not existingUpdate or existingUpdate['producerId'] != producerID:
+            return jsonify(
+                {
+                    "code": 404,
+                    "message": "Update not found."
+                }
+            ), 404
+        
+        # Insert into the likes table
+        cur.execute("""
+            INSERT INTO "producerUpdateLikes" ("updateId", "userId")
+            VALUES (%s, %s)
+            ON CONFLICT DO NOTHING
+        """, (updateID, userID))
+        conn.commit()
+
         return jsonify(
-            {   
+            {
                 "code": 201,
                 "message": "Update liked successfully!"
             }
         ), 201
+    
     except Exception as e:
+        conn.rollback()
         print(str(e))
         return jsonify(
             {
                 "code": 500,
                 "data": data,
-                "message": "An error occurred liking the update!"
+                "message": "An error occurred liking the update."
             }
         ), 500
+    
+    finally:
+        cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [POST] Unlike updates
@@ -259,25 +278,41 @@ def likeUpdates():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/unlikeUpdates', methods=['POST'])
 def unlikeUpdates():
-    db = g.db
+    conn = g.db
+    cur = conn.cursor()
     data = request.get_json()
     print(data)
-    producerID = data['producerID']
-    updateID = data['updateID']
-    userID = data['userID']
 
-    try: 
-        unlikeUpdate = db.producers.update_one(
-            {'_id': ObjectId(producerID), 'updates._id': ObjectId(updateID)},
-            {'$pull': {'updates.$.likes': ObjectId(userID)}}
-        )
+    producerID = int(data['producerID'])
+    updateID = int(data['updateID'])
+    userID = int(data['userID'])
+
+    try:
+        # Verify that the update exists and belongs to the producer
+        cur.execute('SELECT "producerId" FROM "producersUpdates" WHERE "id" = %s', (updateID,))
+        existingUpdate = cur.fetchone()
+
+        if not existingUpdate or existingUpdate['producerId'] != producerID:
+            return jsonify(
+                {
+                    "code": 404,
+                    "message": "Update not found."
+                }
+            ), 404
+        
+        # Remove from the likes table
+        cur.execute('DELETE FROM "producerUpdateLikes" WHERE "updateId" = %s AND "userId" = %s', (updateID, userID))
+        conn.commit()
+
         return jsonify(
-            {   
+            {
                 "code": 201,
                 "message": "Update unliked successfully!"
             }
         ), 201
+    
     except Exception as e:
+        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -286,6 +321,9 @@ def unlikeUpdates():
                 "message": "An error occurred unliking the update."
             }
         ), 500
+
+    finally:
+        cur.close()
     
 # -----------------------------------------------------------------------------------------
 # [POST] Edit producer profile
@@ -347,26 +385,36 @@ def updateProducerStatus():
 # [POST] Add profile view count
 # - Add profile view count
 # - Possible return codes: 201 (Updated), 500 (Error during update)
+# -- ========= "producersProfileViews" =========
+# CREATE TABLE "producersProfileViews" (
+#     "id" SERIAL PRIMARY KEY,
+#     "date" TIMESTAMP, 
+#     "count" INTEGER, -- do i need this?
+#     "producerId" INTEGER REFERENCES "producers"("id") ON DELETE SET NULL -- [!] reference "producers" FK
+#     -- "views" INTEGER REFERENCES "producersProfileViewsViews"("id") ON DELETE SET NULL  -- [!] reference "producersProfileViewsViews" FK
+# );
 @blueprint.route('/addProfileCount', methods=['POST'])
 def addProfileCount():
-    db = g.db
+    conn = g.db
+    cur = conn.cursor()
     data = request.get_json()
     print(data)
-    producerID = data['producerID']
-    viewsID = data['viewsID']
+    producerID = int(data['businessId'])
+    viewsID = int(data['viewsId'])
 
-    try: 
-        addProfileCount = db.producersProfileViews.update_one(
-            {'_id': ObjectId(producerID), 'views._id': ObjectId(viewsID)},
-            {'$inc': {'views.$.count': 1}}
-        )
+    try:
+        cur.execute('UPDATE "producersProfileViews" SET "count" = "count" + 1 WHERE "producerId" = %s AND id = %s', (producerID, viewsID))
+        conn.commit()
+
         return jsonify(
             {   
                 "code": 201,
                 "message": "Profile view count updated successfully!"
             }
         ), 201
+    
     except Exception as e:
+        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -374,6 +422,9 @@ def addProfileCount():
                 "message": "An error occurred updating the profile view count."
             }
         ), 500
+    
+    finally:
+        cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [POST] Add new profile view count
@@ -381,45 +432,35 @@ def addProfileCount():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/addNewProfileCount', methods=['POST'])
 def addNewProfileCount():
-    db = g.db
+    conn = g.db
+    cur = conn.cursor()
     data = request.get_json()
     print(data)
-    producerID = data['producerID']
+    producerID = int(data['businessId'])
     date = datetime.strptime(data['date'], "%Y-%m-%dT%H:%M:%S.%fZ")
 
-    try: 
-        addNewProfileCount = db.producersProfileViews.update_one(
-            {'_id': ObjectId(producerID)},
-            {'$push': {'views': 
-                        {
-                            '_id': ObjectId(),
-                            'date': date,
-                            'count': 1
-                        }
-                    }
-            }
-        )
-        # If addNewProfileCount does not update any documents, create a new document
-        if addNewProfileCount.matched_count == 0:
-            addNewProfileCount = db.producersProfileViews.insert_one(
-                {
-                    '_id': ObjectId(producerID),
-                    'producerID': ObjectId(producerID),
-                    'views': 
-                        [{
-                            '_id': ObjectId(),
-                            'date': date,
-                            'count': 1
-                        }]
-                }
-            )
+    try:
+        cur.execute('SELECT * FROM "producersProfileViews" WHERE "producerId" = %s', (producerID,))
+        existingProfileView = cur.fetchone()
+
+        if existingProfileView:
+            cur.execute('INSERT INTO "producersProfileViewsViews" ("date", "count", "viewsId") VALUES (%s, 1, %s)', (date, existingProfileView['id']))
+            conn.commit()
+        else:
+            cur.execute('INSERT INTO "producersProfileViews" ("date", "count", "producerId") VALUES (%s, 1, %s) RETURNING id', (date, producerID))
+            viewsID = cur.fetchone()['id']
+            cur.execute('INSERT INTO "producersProfileViewsViews" ("date", "count", "viewsId") VALUES (%s, 1, %s)', (date, viewsID))
+            conn.commit()
+
         return jsonify(
             {   
                 "code": 201,
                 "message": "New profile view count updated successfully!"
             }
         ), 201
+    
     except Exception as e:
+        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -427,6 +468,9 @@ def addNewProfileCount():
                 "message": "An error occurred updating the new profile view count."
             }
         ), 500
+    
+    finally:
+        cur.close()
 
 # -----------------------------------------------------------------------------------------
 
@@ -435,67 +479,59 @@ def addNewProfileCount():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/editUpdate', methods=['POST'])
 def editUpdate():
-    db = g.db
-
-    # fetch sent data
+    conn = g.db
+    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
-    # extract components of the data
-    producerID = data['producerID']
-    updateID = data['updateID']
+    producerID = int(data['producerID'])
+    updateID = int(data['updateID'])
     update = data['update']
+    image64 = data.get('image64', '')
 
-    # find existing update and check if photo exists, if it does, delete it from s3 bucket, then upload new image to bucket
-    # Aggregation pipeline bye chatgpt
-    # pipeline = [
-    #     {
-    #         "$match": {
-    #             "_id": ObjectId(producerID),
-    #             "updates._id": ObjectId(updateID)
-    #         }
-    #     },
-    #     {
-    #         "$project": {
-    #             "updates": {
-    #                 "$filter": {
-    #                     "input": "$updates",
-    #                     "as": "update",
-    #                     "cond": { "$eq": ["$$update._id", ObjectId(updateID)] }
-    #                 }
-    #             }
-    #         }
-    #     }
-    # ]
-    # result = list(db.producers.aggregate(pipeline))
-    # if result and 'updates' in result[0] and result[0]['updates']:
-    #     photo = result[0]['updates'][0].get('photo', None)
-    #     s3Images.deleteImageFromS3(photo)
-    
-    existingProducer = db.producers.find_one({"_id": ObjectId(producerID)})
-    for updates in existingProducer['updates']:
-        if updates['_id'] == ObjectId(updateID):
-            if(updates['photo']):
-                s3Images.deleteImageFromS3(updates['photo']) 
-    if(data['image64']):
-        image64 = s3Images.uploadBase64ImageToS3(data['image64'])
-    
-    try: 
-        update = db.producers.update_one(
-            {'_id': ObjectId(producerID), 'updates._id': ObjectId(updateID)},
-            {'$set': 
-                {'updates.$.text': update,
-                'updates.$.photo': image64}
-            }
-        )
+    try:
+        # Find existing producer and check for the existing update
+        cur.execute('SELECT * FROM "producersUpdates" WHERE "producerId" = %s AND id = %s', (producerID, updateID))
+        existingUpdate = cur.fetchone()
 
-        return jsonify(
-            {   
-                "code": 201,
-                "message": "Updated producer's update!"
-            }
-        ), 201
+        if existingUpdate:
+            # Delete old photo from S3 if it exists
+            if existingUpdate['photo']:
+                s3Images.deleteImageFromS3(existingUpdate['photo'])
+
+            # Upload new image to S3 if it exists
+            if image64:
+                image64 = s3Images.uploadBase64ImageToS3(image64)
+
+            # Update the producer's update in the database
+            cur.execute(
+                """
+                UPDATE "producersUpdates"
+                SET 
+                    "text" = %s,
+                    "photo" = %s
+                WHERE "producerId" = %s AND id = %s
+                """,
+                (update, image64, producerID, updateID)
+            )
+            conn.commit()
+
+            return jsonify(
+                {
+                    "code": 201,
+                    "message": "Updated producer's update!"
+                }
+            ), 201
+        else:
+            return jsonify(
+                {
+                    "code": 404,
+                    "message": "Update not found."
+                }
+            ), 404
+        
     except Exception as e:
+        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -504,6 +540,9 @@ def editUpdate():
                 "message": "An error occurred updating producer's update!"
             }
         ), 500
+    
+    finally:
+        cur.close()
 
 # -----------------------------------------------------------------------------------------
 
@@ -512,36 +551,44 @@ def editUpdate():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/deleteUpdate', methods=['POST'])
 def deleteUpdate():
-    db = g.db
-
-    # fetch sent data
+    conn = g.db
+    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
-    # extract components of the data
-    producerID = data['producerID']
-    updateID = data['updateID']
+    producerID = int(data['producerID'])
+    updateID = int(data['updateID'])
 
-    # find update and see if photo exist, if it does delete it from s3 bucket
-    existingProducer = db.producers.find_one({"_id": ObjectId(producerID)})
-    for update in existingProducer['updates']:
-        if update['_id'] == ObjectId(updateID):
-            if(update['photo']):
-                s3Images.deleteImageFromS3(update['photo']) 
+    try:
+        # Find existing producer and see if photo exists, if it does delete it from S3 bucket
+        cur.execute('SELECT * FROM "producersUpdates" WHERE "producerId" = %s AND id = %s', (producerID, updateID))
+        existingUpdate = cur.fetchone()
 
-    try: 
-        deleteUpdate = db.producers.update_one(
-            {'_id': ObjectId(producerID)},
-            {'$pull': {'updates': {'_id': ObjectId(updateID)}}}
-        )
+        if existingUpdate:
+            if existingUpdate['photo']:
+                s3Images.deleteImageFromS3(existingUpdate['photo'])
 
-        return jsonify(
-            {   
-                "code": 201,
-                "message": "Deleted producer's update!"
-            }
-        ), 201
+            # Delete the producer's update from the database
+            cur.execute('DELETE FROM "producersUpdates" WHERE "producerId" = %s AND id = %s', (producerID, updateID))
+            conn.commit()
+
+            return jsonify(
+                {
+                    "code": 201,
+                    "message": "Deleted producer's update!"
+                }
+            ), 201
+        
+        else:
+            return jsonify(
+                {
+                    "code": 404,
+                    "message": "Update not found."
+                }
+            ), 404
+        
     except Exception as e:
+        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -550,6 +597,9 @@ def deleteUpdate():
                 "message": "An error occurred deleting producer's update!"
             }
         ), 500
+    
+    finally:
+        cur.close()
 
 # -----------------------------------------------------------------------------------------
 
@@ -558,22 +608,18 @@ def deleteUpdate():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/editQA', methods=['POST'])
 def editQA():
-    db = g.db
-
-    # fetch sent data
+    conn = g.db
+    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
-    # extract components of the data
-    producerID = data['producerID']
-    questionsAnswersID = data['questionsAnswersID']
+    producerID = int(data['producerID'])
+    questionsAnswersID = int(data['questionsAnswersID'])
     answer = data['answer']
 
-    try: 
-        updateQA = db.producers.update_one(
-            {'_id': ObjectId(producerID), 'questionsAnswers._id': ObjectId(questionsAnswersID)},
-            {'$set': {'questionsAnswers.$.answer': answer}}
-        )
+    try:
+        cur.execute('UPDATE "producersQuestionAnswers" SET "answer" = %s WHERE "producerId" = %s AND id = %s', (answer, producerID, questionsAnswersID))
+        conn.commit()
 
         return jsonify(
             {   
@@ -581,7 +627,9 @@ def editQA():
                 "message": "Updated producer's Q&A!"
             }
         ), 201
+    
     except Exception as e:
+        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -590,6 +638,9 @@ def editQA():
                 "message": "An error occurred updating producer's Q&A!"
             }
         ), 500
+    
+    finally:
+        cur.close()
 
 # -----------------------------------------------------------------------------------------
 
@@ -598,22 +649,18 @@ def editQA():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/deleteQA', methods=['POST'])
 def deleteQA():
-    db = g.db
-
-    # fetch sent data
+    print("deleteQA")
+    conn = g.db
+    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
-    # extract components of the data
-    producerID = data['producerID']
-    questionsAnswersID = data['questionsAnswersID']
-    answer = data['answer']
+    producerID = int(data['producerID'])
+    questionsAnswersID = int(data['questionsAnswersID'])
 
-    try: 
-        deleteQA = db.producers.update_one(
-            {'_id': ObjectId(producerID), 'questionsAnswers._id': ObjectId(questionsAnswersID)},
-            {'$set': {'questionsAnswers.$.answer': answer}}
-        )
+    try:
+        cur.execute('DELETE FROM "producersQuestionAnswers" WHERE "producerId" = %s AND id = %s', (producerID, questionsAnswersID))
+        conn.commit()
 
         return jsonify(
             {   
@@ -621,7 +668,9 @@ def deleteQA():
                 "message": "Deleted producer's Q&A!"
             }
         ), 201
+    
     except Exception as e:
+        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -630,6 +679,9 @@ def deleteQA():
                 "message": "An error occurred deleting producer's Q&A!"
             }
         ), 500
+    
+    finally:
+        cur.close()
     
 
 # -----------------------------------------------------------------------------------------

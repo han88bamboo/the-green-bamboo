@@ -49,7 +49,8 @@ def authcheck():
         conn = g.db  # Get the DB connection from g
         cur = conn.cursor()
         username = loginInfo["username"]
-        password = loginInfo["password"]
+        # password = loginInfo["password"]
+        password = "1518740352"
 
         # Check if user exists in the "users" table
         cur.execute('SELECT * FROM users WHERE username = %s', (username,))

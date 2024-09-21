@@ -209,14 +209,16 @@ def requestListingModify(requestID):
 # - Possible return codes: 201 (Created), 400 (Invalid Listing), 500 (Error during creation)
 @blueprint.route("/requestEdits", methods= ['POST'])
 def requestEdits():
-    db = g.db
+    conn = g.db
+    cur = conn.cursor()
     rawRequest = request.get_json()
 
-    # Check if edit request is linked to a listing that exists in the database
-    rawListingID = rawRequest["listingID"]["$oid"]
-    existingListing = db.listings.find_one({"_id": ObjectId(rawListingID)})
+    rawListingID = int(rawRequest["listingID"])
 
-    if (existingListing == None):
+    cur.execute('SELECT * FROM listings WHERE "id" = %s', (rawListingID,))
+    existingListing = cur.fetchone()
+
+    if existingListing is None:
         return jsonify(
             {
                 "code": 400,
@@ -227,10 +229,24 @@ def requestEdits():
             }
         ), 400
     
-    # Insert new edit request into database
-    newRequest = data.requestEdits(**rawRequest)
+    newRequest = {
+        "editDesc": rawRequest["editDesc"],
+        "listingID": rawListingID,
+        "userID": int(rawRequest["userID"]),
+        "brandRelation": rawRequest["brandRelation"],
+        "reviewStatus": rawRequest["reviewStatus"],
+        "duplicateLink": rawRequest.get("duplicateLink", ''),
+        "sourceLink": rawRequest.get("sourceLink", '')
+    }
+
     try:
-        insertResult = db.requestEdits.insert_one(data.asdict(newRequest))
+        # Insert new edit request into the database
+        columns = ', '.join(f'"{key}"' for key in newRequest.keys())
+        placeholders = ', '.join(['%s'] * len(newRequest))
+        sql = f'INSERT INTO "requestEdits" ({columns}) VALUES ({placeholders})'
+        
+        cur.execute(sql, list(newRequest.values()))
+        conn.commit()
 
         return jsonify(
             {
@@ -241,16 +257,19 @@ def requestEdits():
     
     except Exception as e:
         print(str(e))
-
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,
                 "data": {
-                    "listingName": rawListingID
+                    "listingID": rawListingID
                 },
                 "message": "An error occurred while submitting the request."
             }
         ), 500
+
+    finally:
+        cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [POST] Edit submitted request for listing modification

@@ -220,7 +220,7 @@
                         <div class="row" v-if="hasUpdates">
                             <div class="row">
                                 <div class="col-xl-8 col-md-6 col-12">
-                                    <p class="text-decoration-underline text-start fs-5 m-0 pb-3 mobile-fs-6">Posted on: {{ this.formatDate(latestUpdate.date.$date) }}</p>
+                                    <p class="text-decoration-underline text-start fs-5 m-0 pb-3 mobile-fs-6">Posted on: {{ this.formatDate(latestUpdate.date) }}</p>
                                 </div>
                                 <div v-if="correctProducer || isAdmin" class="col-xl-4 col-md-6 col-12 text-end">
                                     <!-- edit & delete button -->
@@ -374,11 +374,11 @@
                                 <p v-else class="fs-5 fst-italic m-0 mobile-fs-6 mobile-mb-2">There are no more updates to view!</p>
                                 -->
                                 <!-- for each update -->
-                                <div v-for="update in remainingUpdates" v-bind:key="update._id">
+                                <div v-for="update in remainingUpdates" v-bind:key="update.id">
                                     <div class="row">
                                         <div class="row">
                                             <div class="col-xl-8 col-md-6 col-12">
-                                                <p class="text-start text-decoration-underline fs-5 m-0 pb-3 mobile-fs-6">Posted on: {{ this.formatDate(update.date.$date) }}</p>
+                                                <p class="text-start text-decoration-underline fs-5 m-0 pb-3 mobile-fs-6">Posted on: {{ this.formatDate(update.date) }}</p>
                                             </div>
 
                                             <div v-if="correctProducer || isAdmin" class="col-xl-4 col-md-6 col-12 text-end">
@@ -550,7 +550,7 @@
                                                     <div v-if="correctProducer">
                                                         <!-- show answered questions -->
                                                         <div v-if="answerStatus">
-                                                            <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
+                                                            <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa.id" v-bind:class="{ 'active': index === 0 }">
                                                                 <p> <b> Q: {{ qa["question"] }} </b> </p>
                                                                 <!-- [if] not editing -->
                                                                 <button v-if="correctProducer && (editingQA == false || editingQAID != qa.id)" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="editQA(qa)">
@@ -577,7 +577,7 @@
 
                                                         <!-- show unanswered questions -->
                                                         <div v-else>
-                                                                <div class="carousel-item" v-for="(qa, index) in unansweredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
+                                                                <div class="carousel-item" v-for="(qa, index) in unansweredQuestions" v-bind:key="qa.id" v-bind:class="{ 'active': index === 0 }">
                                                                 <p> <b> Q: {{ qa["question"] }} </b> </p>
                                                                 <div class="input-group centered">
                                                                     <div class="input-group centered pt-2">
@@ -594,7 +594,7 @@
                                                     </div>
                                                     <!-- [else] user type is NOT producer -->
                                                     <div v-else>
-                                                        <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
+                                                        <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa.id" v-bind:class="{ 'active': index === 0 }">
                                                             <div>
                                                                 <p> <b> Q: {{ qa["question"] }} </b> </p>
                                                                 <p> A: {{ qa["answer"] }} </p>
@@ -759,7 +759,7 @@
                     <div class="row scrollable-expressions-none mobile-view-hide">
                         <!-- v-loop for each listing -->
                         <div class="container text-start">
-                            <div v-for="listing in lazyListings" v-bind:key="listing._id" class="p-3 mobile-pb-0">
+                            <div v-for="listing in lazyListings" v-bind:key="listing.id" class="p-3 mobile-pb-0">
                                 <div class="row">
                                     <!-- image  remove style="width: 150px; height: 150px;" from img tag-->
                                     <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
@@ -917,7 +917,7 @@
                         <div class="row  mobile-view-show">
                         <!-- v-loop for each listing -->
                         <div class="container text-start">
-                            <div v-for="listing in lazyListings" v-bind:key="listing._id" class="p-3 mobile-pb-0">
+                            <div v-for="listing in lazyListings" v-bind:key="listing.id" class="p-3 mobile-pb-0">
                                 <div class="row">
                                     <!-- image  remove style="width: 150px; height: 150px;" from img tag-->
                                     <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
@@ -1137,7 +1137,7 @@
                                             <div v-if="correctProducer">
                                                 <!-- show answered questions -->
                                                 <div v-if="answerStatus">
-                                                    <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
+                                                    <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa.id" v-bind:class="{ 'active': index === 0 }">
                                                         <p> <b> Q: {{ qa["question"] }} </b> </p>
                                                         <!-- [if] not editing -->
                                                         <button v-if="correctProducer && (editingQA == false || editingQAID != qa.id)" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="editQA(qa)">
@@ -1164,7 +1164,7 @@
 
                                                 <!-- show unanswered questions -->
                                                 <div v-else>
-                                                        <div class="carousel-item" v-for="(qa, index) in unansweredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
+                                                        <div class="carousel-item" v-for="(qa, index) in unansweredQuestions" v-bind:key="qa.id" v-bind:class="{ 'active': index === 0 }">
                                                         <p> <b> Q: {{ qa["question"] }} </b> </p>
                                                         <div class="input-group centered">
                                                             <div class="input-group centered pt-2">
@@ -1181,7 +1181,7 @@
                                             </div>
                                             <!-- [else] user type is NOT producer -->
                                             <div v-else>
-                                                <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
+                                                <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa.id" v-bind:class="{ 'active': index === 0 }">
                                                     <div>
                                                         <p> <b> Q: {{ qa["question"] }} </b> </p>
                                                         <p> A: {{ qa["answer"] }} </p>
@@ -1843,7 +1843,7 @@
                 let firstFiveItems = Object.entries(averageRatings).slice(0, 5);
                 firstFiveItems = firstFiveItems.map(item => {
                     const listing = this.listings.find(listing => listing.listingName === item[0]);
-                    return listing ? [...item, listing._id] : item;
+                    return listing ? [...item, listing.id] : item;
                 });
                 // if firstFiveItems is less than 5, get the remaining from this.allDrinks
                 if (firstFiveItems.length < 5) {
@@ -1851,7 +1851,7 @@
                         if (!firstFiveItems.some(item => item[0] == drink.listingName)) {
                             let drinkName = drink.listingName;
                             let drinkCount = this.drinkCounts[drink.listingName];
-                            let drinkID = drink._id
+                            let drinkID = drink.id
                             firstFiveItems.push([drinkName, drinkCount, drinkID]);
                         }
                     });
@@ -1871,7 +1871,7 @@
                 let firstFiveItems = Object.entries(drinkCounts).slice(0, 5);
                 firstFiveItems = firstFiveItems.map(item => {
                     const listing = this.listings.find(listing => listing.listingName === item[0]);
-                    return listing ? [...item, listing._id] : item;
+                    return listing ? [...item, listing.id] : item;
                 });
                 // if firstFiveItems is less than 5, get the remaining from this.allDrinks
                 if (firstFiveItems.length < 5) {
@@ -1879,7 +1879,7 @@
                         if (!firstFiveItems.some(item => item[0] == drink.listingName)) {
                             let drinkName = drink.listingName;
                             let drinkCount = this.drinkCounts[drink.listingName];
-                            let drinkID = drink._id
+                            let drinkID = drink.id
                             firstFiveItems.push([drinkName, drinkCount, drinkID]);
                         }
                     });
@@ -2187,7 +2187,7 @@
                         this.remainingUpdates = updatesList.slice(0, updatesList.length - 1);
                         // sort remaining updates in descending order by date
                         this.remainingUpdates.sort((a, b) => {
-                            return new Date(b.date.$date) - new Date(a.date.$date);
+                            return new Date(b.date) - new Date(a.date);
                         });
                         for (let update of this.remainingUpdates) {
                             let remainingUpdateLike = update["likes"];
@@ -2732,24 +2732,26 @@
                 // set editing status to false
                 this.editingQA = false;
                 let q_and_a_id = qa.id;
-                try {
-                    this.$axios.post('http://127.0.0.1:5000/editProducerProfile/editQA', 
-                        {
-                            producerID: this.producer_id,
-                            questionsAnswersID: q_and_a_id,
-                            answer: this.edit_answer[qa.id],
-                        },
-                        {
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
-                        });
-                } 
-                catch (error) {
-                    console.error(error);
-                }
-                // force page to reload
-                window.location.reload();
+
+                this.$axios.post('http://127.0.0.1:5000/editProducerProfile/editQA', 
+                    {
+                        producerID: this.producer_id,
+                        questionsAnswersID: q_and_a_id,
+                        answer: this.edit_answer[qa.id],
+                    },
+                    {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then((response) => {
+                        console.log(response.data);
+                        window.location.reload();
+                    })
+                    .catch((error) => {
+                        // Handle the error
+                        console.error(error);
+                    });
             },
 
             deleteQAEdit(qa) {
@@ -2773,7 +2775,7 @@
                 }
 
                 // force page to reload
-                window.location.reload();
+                // window.location.reload();
             },
 
             // cancel Q&A edit

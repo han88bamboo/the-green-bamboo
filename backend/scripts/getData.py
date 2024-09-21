@@ -170,12 +170,35 @@ def getProducers():
                 p.id, p."producerName", p."producerDesc", p."originCountry", p."mainDrinks", p.photo, 
                 p."hashedPassword", p."claimStatus", p."statusOB", p.username, p."producerLink", 
                 p."stripeCustomerId",
-                COALESCE(json_agg(DISTINCT qa) FILTER (WHERE qa IS NOT NULL), '[]') AS "questionsAnswers",
-                COALESCE(json_agg(DISTINCT u) FILTER (WHERE u IS NOT NULL), '[]') AS updates
+                COALESCE((
+                    SELECT json_agg(json_build_object(
+                        'id', qa.id,
+                        'question', qa.question,
+                        'answer', qa.answer,
+                        'date', qa.date,
+                        'userId', qa."userId",
+                        'producerId', qa."producerId"
+                    ))
+                    FROM "producersQuestionAnswers" qa
+                    WHERE qa."producerId" = p.id
+                ), '[]') AS "questionsAnswers",
+                COALESCE((
+                    SELECT json_agg(json_build_object(
+                        'id', u.id,
+                        'date', u.date,
+                        'text', u.text,
+                        'photo', u.photo,
+                        'producerId', u."producerId",
+                        'likes', COALESCE((
+                            SELECT json_agg(l."userId")
+                            FROM "producerUpdateLikes" l
+                            WHERE l."updateId" = u.id
+                        ), '[]')
+                    ) ORDER BY u.id)
+                    FROM "producersUpdates" u
+                    WHERE u."producerId" = p.id
+                ), '[]') AS updates
             FROM producers p
-            LEFT JOIN "producersQuestionAnswers" qa ON p.id = qa."producerId"
-            LEFT JOIN "producersUpdates" u ON p.id = u."producerId"
-            GROUP BY p.id
             ORDER BY p.id
         """
 
@@ -219,13 +242,36 @@ def getProducer(id):
                 p.id, p."producerName", p."producerDesc", p."originCountry", p."mainDrinks", p.photo, 
                 p."hashedPassword", p."claimStatus", p."statusOB", p.username, p."producerLink", 
                 p."stripeCustomerId",
-                COALESCE(json_agg(DISTINCT qa) FILTER (WHERE qa IS NOT NULL), '[]') AS "questionsAnswers",
-                COALESCE(json_agg(DISTINCT u) FILTER (WHERE u IS NOT NULL), '[]') AS updates
+                COALESCE((
+                    SELECT json_agg(json_build_object(
+                        'id', qa.id,
+                        'question', qa.question,
+                        'answer', qa.answer,
+                        'date', qa.date,
+                        'userId', qa."userId",
+                        'producerId', qa."producerId"
+                    ))
+                    FROM "producersQuestionAnswers" qa
+                    WHERE qa."producerId" = p.id
+                ), '[]') AS "questionsAnswers",
+                COALESCE((
+                    SELECT json_agg(json_build_object(
+                        'id', u.id,
+                        'date', u.date,
+                        'text', u.text,
+                        'photo', u.photo,
+                        'producerId', u."producerId",
+                        'likes', COALESCE((
+                            SELECT json_agg(l."userId")
+                            FROM "producerUpdateLikes" l
+                            WHERE l."updateId" = u.id
+                        ), '[]')
+                    ))
+                    FROM "producersUpdates" u
+                    WHERE u."producerId" = p.id
+                ), '[]') AS updates
             FROM producers p
-            LEFT JOIN "producersQuestionAnswers" qa ON p.id = qa."producerId"
-            LEFT JOIN "producersUpdates" u ON p.id = u."producerId"
             WHERE p.id = %s
-            GROUP BY p.id
         """
 
         cur.execute(query, (id,))
@@ -259,19 +305,39 @@ def getProducerByRequestId(id):
     cur = conn.cursor()
 
     try:
-        # Query to get a specific producer and related data
         query = """
             SELECT 
                 p.id, p."producerName", p."producerDesc", p."originCountry", p."mainDrinks", p.photo, 
                 p."hashedPassword", p."claimStatus", p."statusOB", p.username, p."producerLink", 
                 p."stripeCustomerId",
-                COALESCE(json_agg(DISTINCT qa) FILTER (WHERE qa IS NOT NULL), '[]') AS "questionsAnswers",
-                COALESCE(json_agg(DISTINCT u) FILTER (WHERE u IS NOT NULL), '[]') AS updates
-            FROM producers p
-            LEFT JOIN "producersQuestionAnswers" qa ON p.id = qa."producerId"
-            LEFT JOIN "producersUpdates" u ON p.id = u."producerId"
-            WHERE p."requestId" = %s
-            GROUP BY p.id
+                COALESCE((
+                    SELECT json_agg(json_build_object(
+                        'id', qa.id,
+                        'question', qa.question,
+                        'answer', qa.answer,
+                        'date', qa.date,
+                        'userId', qa."userId",
+                        'producerId', qa."producerId"
+                    ))
+                    FROM "producersQuestionAnswers" qa
+                    WHERE qa."producerId" = p.id
+                ), '[]') AS "questionsAnswers",
+                COALESCE((
+                    SELECT json_agg(json_build_object(
+                        'id', u.id,
+                        'date', u.date,
+                        'text', u.text,
+                        'photo', u.photo,
+                        'producerId', u."producerId",
+                        'likes', COALESCE((
+                            SELECT json_agg(l."userId")
+                            FROM "producerUpdateLikes" l
+                            WHERE l."updateId" = u.id
+                        ), '[]')
+                    ))
+                    FROM "producersUpdates" u
+                    WHERE u."producerId" = p.id
+                ), '[]') AS updates
         """
 
         cur.execute(query, (id,))
@@ -493,6 +559,7 @@ def getUsers():
 # [GET] Specific User by ID
 @blueprint.route("/getUser/<id>")
 def getUser(id):
+    print("Getting user with id: ", id)
     conn = g.db
     
     try:
@@ -1060,7 +1127,7 @@ def getServingTypes():
         serving_types_data = cursor.fetchall()
 
     if not serving_types_data:
-        return jsonify([]), 404
+        return jsonify([])
     
     return jsonify(serving_types_data), 200
 
@@ -1181,7 +1248,7 @@ def getVenuesProfileViews():
         profile_views_data = cur.fetchall()
 
         if not profile_views_data:
-            return jsonify([]), 404
+            return jsonify([])
 
         return jsonify(profile_views_data), 200
     
@@ -1204,11 +1271,11 @@ def getVenuesProfileViewsByVenue(id):
     cur = conn.cursor()
 
     try:
-        cur.execute('SELECT * FROM "venuesProfileViews" WHERE "venueID" = %s', (id,))
+        cur.execute('SELECT * FROM "venuesProfileViews" WHERE "venueId" = %s', (id,))
         profile_views_data = cur.fetchall()
 
         if not profile_views_data:
-            return jsonify([]), 404
+            return jsonify([])
 
         return jsonify(profile_views_data), 200
     
@@ -1269,11 +1336,11 @@ def getRequestInaccuracyByVenue(id):
     cur = conn.cursor()
 
     try:
-        cur.execute('SELECT * FROM "requestInaccuracy" WHERE "venueID" = %s AND "reviewStatus" = FALSE', (id,))
+        cur.execute('SELECT * FROM "requestInaccuracy" WHERE "venueId" = %s AND "reviewStatus" = FALSE', (id,))
         request_inaccuracy_data = cur.fetchall()
 
         if not request_inaccuracy_data:
-            return jsonify([]), 404
+            return jsonify([])
 
         return jsonify(request_inaccuracy_data), 200
     

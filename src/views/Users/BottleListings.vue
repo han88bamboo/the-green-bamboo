@@ -100,7 +100,7 @@
                                     <div style="height: 85%;">
                                         <!-- [if] drinks in drink shelf -->
                                         <div v-if="drinkShelf.length != 0" class="overflow-auto" style="max-height: 100%;">
-                                            <div class="text-start mb-2" v-for="listing in drinkShelf" v-bind:key="listing._id">
+                                            <div class="text-start mb-2" v-for="listing in drinkShelf" v-bind:key="listing.id">
                                                 <div class="d-flex align-items-start">
                                                     <router-link :to="{ path: '/listing/view/' +listing.id}" class="reverse-clickable-text">
                                                         <img :src="(listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;">
@@ -151,7 +151,7 @@
                                                     <br/>
                                                     updated status: "<b>{{ update.text }}</b>"
                                                     <br>
-                                                    <i>{{ getTimeDifference(update.date.$date) }}</i>
+                                                    <i>{{ getTimeDifference(update.date) }}</i>
                                                     <br><br>
                                                 </span>
                                             </div>
@@ -327,7 +327,7 @@
                                             <div class="dropdown-column ms-2 mt-2">
                                                 <h6 class="ms-3"> Filter by Drink Type </h6>
                                                 <hr>
-                                                <div v-for="drinkType in drinkTypes" v-bind:key="drinkType._id">
+                                                <div v-for="drinkType in drinkTypes" v-bind:key="drinkType.id">
                                                     <!-- Filter button for drink type -->
                                                     <a class="dropdown-item" :class="{ 'active': selectedDrinkType === drinkType }" @click="selectDrinkType(drinkType)"> 
                                                         <span>{{ drinkType['drinkType'] }}</span>
@@ -356,7 +356,7 @@
                                                 <h6 class="ms-3"> Filter by Drink Type </h6>
                                                 <p class="ms-3" style="font-size: 12px;">(Scroll down to filter by Sub-Category)</p>
                                                 <hr>
-                                                <div v-for="drinkType in drinkTypes" v-bind:key="drinkType._id">
+                                                <div v-for="drinkType in drinkTypes" v-bind:key="drinkType.id">
                                                     <!-- Filter button for drink type -->
                                                     <a class="dropdown-item" :class="{ 'active': selectedDrinkType === drinkType }" @click="selectDrinkType(drinkType)"> 
                                                         <span>{{ drinkType['drinkType'] }}</span>
@@ -412,7 +412,7 @@
                                 <h5 v-if="filteredListings==''" style="display: inline-block;" class="pt-5"> There is no listing available for the selected filter </h5>
                                 <!-- v-loop for each listing -->
                                 <div class="container text-start mobile-ps-0 mobile-pe-0">
-                                    <div v-for="listing in filteredListings" v-bind:key="listing._id" class="p-3 mobile-pt-0">
+                                    <div v-for="listing in filteredListings" v-bind:key="listing.id" class="p-3 mobile-pt-0">
 
                                         <div class="row">
                                             <!-- image -->
@@ -588,7 +588,7 @@
                                 <!-- v-loop for each listing -->
                                 <div class="container text-start">
                                     <h5 v-if="recentlyAdded==''" style="display: inline-block;"> There is no listing available for the selected filter </h5>
-                                    <div v-for="listing in recentlyAdded" v-bind:key="listing._id" class="p-3 mobile-pt-0">
+                                    <div v-for="listing in recentlyAdded" v-bind:key="listing.id" class="p-3 mobile-pt-0">
 
                                         <div class="row">
                                             <!-- image -->
@@ -712,7 +712,7 @@
 
                         </button>
                         <ul class="dropdown-menu"> <!-- Filter button for drink type -->
-                            <li v-for="drinkType in drinkTypes" v-bind:key="drinkType._id" class= "p-3">
+                            <li v-for="drinkType in drinkTypes" v-bind:key="drinkType.id" class= "p-3">
                                 <a class="dropdown-item" @click="selectDrinkType(drinkType)"> {{ drinkType['drinkType'] }} </a>
                             </li>       
                         </ul>
@@ -739,7 +739,7 @@
             <div class="row">
                 <!-- v-loop for each listing -->
                 <div class="container text-start">
-                    <div v-for="listing in filteredListings" v-bind:key="listing._id" class="p-3 mobile-pt-0">
+                    <div v-for="listing in filteredListings" v-bind:key="listing.id" class="p-3 mobile-pt-0">
                         <div class="row">
                             <!-- image -->
                             <div class="col-3 image-container homepage">
@@ -1149,16 +1149,16 @@
 
             // get username of user accessing page
             getUsername() {
-                let user = this.users.find(user => user.id == this.userID)
-                let producer = this.producers.find(producer => producer.id == this.userID)
-                let venue = this.venues.find(venue => venue.id == this.userID)
-                if (user) {
+                let user = this.users.find(user => user.id == parseInt(this.userID))
+                let producer = this.producers.find(producer => producer.id == parseInt(this.userID))
+                let venue = this.venues.find(venue => venue.id == parseInt(this.userID))
+                if (user && this.userType == 'user') {
                     this.username = user.username
                     this.displayName = user.displayName
                     // drink shelf
                     let allDrinkShelf = Object.values(user.drinkLists).flatMap(obj => obj.listItems);
                     allDrinkShelf.sort((a, b) => {
-                        return new Date(b[0].$date) - new Date(a[0].$date);
+                        return new Date(b[0]) - new Date(a[0]);
                     })
                     let allDrinks = []
                     for (const item of allDrinkShelf) {
@@ -1169,7 +1169,7 @@
                     }
                     this.drinkShelf = [...new Set(allDrinks)];
                 }
-                else if (producer) {
+                else if (producer && this.userType == 'producer') {
                     this.username = producer.producerName
                     // Q&A
                     let answeredQuestions = producer["questionsAnswers"];
@@ -1429,13 +1429,13 @@
                 // #3: Date (Newest - Oldest)
                 else if (category == 'Date (Newest - Oldest)') {
                     this.filteredListings.sort((a, b) => {
-                        return new Date(b.addedDate.$date) - new Date(a.addedDate.$date);
+                        return new Date(b.addedDate) - new Date(a.addedDate);
                     });
                 }
                 // [DEFAULT] #4: Date (Oldest - Newest)
                 else if (category == '' || category == 'Date (Oldest - Newest)') {
                     this.filteredListings.sort((a, b) => {
-                        return new Date(a.addedDate.$date) - new Date(b.addedDate.$date);
+                        return new Date(a.addedDate) - new Date(b.addedDate);
                     });
                 }
                 // #5: Ratings (Highest - Lowest)
@@ -1718,7 +1718,7 @@
         getQuestionsUpdates() {
             // get all following producers updates
             const producerUpdates = this.producers
-                .filter(producer => JSON.stringify(this.followedProducers).includes(JSON.stringify(producer._id)))
+                .filter(producer => JSON.stringify(this.followedProducers).includes(JSON.stringify(producer.id)))
                 .reduce((arr, producer) => {
                     if (producer.updates && producer.updates.length > 0) {
                         let updatesWithProducerName = producer.updates.map(update => ({
@@ -1735,7 +1735,7 @@
 
             // get all following venues updates
             const venueUpdates = this.venues
-                .filter(venue => JSON.stringify(this.followedVenues).includes(JSON.stringify(venue._id)))
+                .filter(venue => JSON.stringify(this.followedVenues).includes(JSON.stringify(venue.id)))
                 .reduce((arr, venue) => {
                     if (venue.updates && venue.updates.length > 0) {
                         let updatesWithVenueName = venue.updates.map(update => ({
@@ -1752,7 +1752,7 @@
 
             // get all following producers questions with answers
             const producerQuestions = this.producers
-                .filter(producer => JSON.stringify(this.followedProducers).includes(JSON.stringify(producer._id)))
+                .filter(producer => JSON.stringify(this.followedProducers).includes(JSON.stringify(producer.id)))
                 .reduce((arr, producer) => {
                     if (producer.questionsAnswers && producer.questionsAnswers.some(qa => qa.answer)) {
                         let questionsWithProducerName = producer.questionsAnswers.map(question => ({
@@ -1767,7 +1767,7 @@
 
             // get all following venues questions with answers
             const venueQuestions = this.venues
-                .filter(venue => JSON.stringify(this.followedVenues).includes(JSON.stringify(venue._id)))
+                .filter(venue => JSON.stringify(this.followedVenues).includes(JSON.stringify(venue.id)))
                 .reduce((arr, venue) => {
                     if (venue.questionsAnswers && venue.questionsAnswers.some(qa => qa.answer)) {
                         let questionsWithVenueName = venue.questionsAnswers.map(question => ({
@@ -1787,7 +1787,7 @@
             
             // sort by date
             this.questionsUpdates.sort((a, b) => {
-                return new Date(b.date.$date) - new Date(a.date.$date);
+                return new Date(b.date) - new Date(a.date);
             });
 
            
