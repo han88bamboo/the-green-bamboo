@@ -2043,11 +2043,11 @@
 
                 // check if image is uploaded
                 console.log(this.image64);
-                if (this.image64 == null) {
-                    // set default image
-                    console.log(this.specified_producer)
-                    this.image64 = this.specified_producer["photo"];
-                }
+                // if (this.image64 == null) {
+                //     // set default image
+                //     console.log(this.specified_producer)
+                //     this.image64 = this.specified_producer["photo"];
+                // }
                 
                 try {
                     const response = await this.$axios.post('http://127.0.0.1:5000/editProducerProfile/editDetails', 

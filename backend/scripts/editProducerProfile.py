@@ -26,19 +26,18 @@ def editDetails():
     producerName = data['producerName']
     producerDesc = data['producerDesc']
     originCountry = data['originCountry']
-    image64 = data.get('image64', '')
 
     try:
         cur.execute('SELECT * FROM producers WHERE id = %s', (producerID,))
         existingProducer = cur.fetchone()
 
         if existingProducer:
-            if existingProducer['photo']:
-                s3Images.deleteImageFromS3(existingProducer['photo'])
-
-            if image64:
-                image64 = s3Images.uploadBase64ImageToS3(image64)
-
+            if data['image64']:
+                if(existingProducer['photo']):
+                    s3Images.deleteImageFromS3(existingProducer['photo'])
+                image64 = s3Images.uploadBase64ImageToS3(data['image64'])
+            else:
+                image64 = existingProducer['photo']
             cur.execute(
                 """
                 UPDATE producers 
