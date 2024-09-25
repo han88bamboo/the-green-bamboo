@@ -272,8 +272,8 @@
                 user_id: null,
                 user_type: null,
 
-                monthlyPriceId: "price_1PV7PCDnjokAiSGzX84MZogY",
-                yearlyPriceId: "price_1PV7PsDnjokAiSGz02ZZTJdu",
+                monthlyPriceId: "price_1Q2wvTILhk1xtKohjMfP1Gr0",
+                yearlyPriceId: "price_1Q2zOvILhk1xtKohtZSFuDeb",
 
                 business: null,
                 businessName: null,
@@ -326,9 +326,10 @@
                 try {
                     const response = await this.$axios.get(`http://127.0.0.1:5000/getData/get${this.userType.charAt(0).toUpperCase()}${this.userType.slice(1)}/${this.user_id}`);
                     this.business = response.data;
+                    console.log("This busoiness", this.business);
                     this.businessName = this.business[this.userType + "Name"];
                     this.photo = this.business.photo;
-                    this.requestId = this.business.requestId
+                    this.requestId = this.business.id;
                     this.stripeCustomerId = this.business.stripeCustomerId;
                 } 
                 catch (error) {
@@ -337,7 +338,7 @@
                 }
                 // request
                 try {
-                    const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getAccountRequest/${this.requestId.$oid}`);
+                    const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getAccountRequest/${this.requestId}`);
                     this.request = response.data;
                 } 
                 catch (error) {
@@ -572,7 +573,7 @@
             },
 
             async reSubscribe() {
-                const link = await this.generateToken(this.user_id, this.requestId.$oid);
+                const link = await this.generateToken(this.user_id, this.requestId);
                 window.location.href = link;
             }
 

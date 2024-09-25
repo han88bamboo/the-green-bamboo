@@ -196,7 +196,7 @@
                         const response = await this.$axios.get('http://127.0.0.1:5000/getData/getUsers');
                         this.users = response.data;
                         if (this.userType == "user") {
-                            this.user = this.users.find(user => user["_id"]["$oid"] == this.userID);
+                            this.user = this.users.find(user => user["id"] == this.userID);
                             if(!this.user.isAdmin){
                                 this.$router.push('/');
                             }
@@ -247,7 +247,7 @@
                         for (let i = 0; i < this.producers.length; i++) {
                             if (!this.producers[i].producerName) {
                                 console.log("no name");
-                                console.log(this.producers[i]._id.$oid);
+                                console.log(this.producers[i].id);
                             }
                         }
                     } 

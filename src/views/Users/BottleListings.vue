@@ -1689,7 +1689,7 @@
         // get listings by venue
         getListingsByVenue() {
             this.followedVenues.forEach(venue => {
-                const venueID = venue.followerID.id;
+                const venueID = parseInt(venue);
                 const venueObject = this.venues.find(v => v.id === venueID);
                 let allMenuItems = venueObject["menu"]
                 let allSectionMenus = allMenuItems.reduce((acc, menuItem) => {
@@ -1700,8 +1700,7 @@
                     return acc.concat(menuItem.itemID); 
                 }, []);
 
-                let uniqueListingsIDs = [...new Set(allListingsIDs.map(item => item["id"]))];
-                console.log(uniqueListingsIDs)
+                let uniqueListingsIDs = [...new Set(allListingsIDs.map(item => item))];
                 let allVenueDrinks = this.listings.filter(listing => {
                     let listing_id = listing.id;
                     return uniqueListingsIDs.includes(listing_id);

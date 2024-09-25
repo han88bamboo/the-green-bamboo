@@ -156,8 +156,8 @@
         data(){
             return{
                 dataLoaded: false,
-                monthlyPriceId: "price_1PV7PCDnjokAiSGzX84MZogY",
-                yearlyPriceId: "price_1PV7PsDnjokAiSGz02ZZTJdu",
+                monthlyPriceId: "price_1Q2wvTILhk1xtKohjMfP1Gr0",
+                yearlyPriceId: "price_1Q2zOvILhk1xtKohtZSFuDeb",
 
                 // owner details
                 stripe: null,
@@ -256,9 +256,9 @@
                 // get token
                 try {
                     const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getToken/${this.token}`);
-                    this.tokenData = response.data;
-                    this.businessId = response.data.userId;
-                    this.requestId = response.data.requestId;
+                    this.tokenData = response.data.data;
+                    this.businessId = this.tokenData.userId,
+                    this.requestId = this.tokenData.requestId;
                 } 
                 catch (error) {
                     console.error(error);
@@ -267,7 +267,7 @@
 
                 // get request
                 try {
-                    const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getAccountRequest/${this.requestId.$oid}`);
+                    const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getAccountRequest/${this.requestId}`);
                     this.accountRequest = response.data;
                     this.businessType = this.accountRequest.businessType;
                     this.customerName = this.accountRequest.firstName + " " + this.accountRequest.lastName;
@@ -282,7 +282,7 @@
 
                 // get business
                 try {
-                    const response = await this.$axios.get(`http://127.0.0.1:5000/getData/get${this.businessType.charAt(0).toUpperCase()}${this.businessType.slice(1)}/${this.businessId.$oid}`);
+                    const response = await this.$axios.get(`http://127.0.0.1:5000/getData/get${this.businessType.charAt(0).toUpperCase()}${this.businessType.slice(1)}/${this.businessId}`);
                     this.business = response.data;
                     this.username = this.business.username;
                 }
@@ -396,7 +396,7 @@
                     try {
                         await this.$axios.post('http://127.0.0.1:5000/createAccount/updateAccountRequest', 
                             {
-                                requestID: this.requestId.$oid,
+                                requestID: this.requestId,
                                 isPending: false,
                                 isApproved: true,
                             }, {
@@ -410,11 +410,9 @@
                     
                     // update business claim status
                     try {
-                        await this.$axios.post(`http://127.0.0.1:5000/
-                                                edit${this.businessType.charAt(0).toUpperCase()}${this.businessType.slice(1)}Profile/
-                                                update${this.businessType.charAt(0).toUpperCase()}${this.businessType.slice(1)}ClaimStatus`, 
+                        await this.$axios.post(`http://127.0.0.1:5000/edit${this.businessType.charAt(0).toUpperCase()}${this.businessType.slice(1)}Profile/update${this.businessType.charAt(0).toUpperCase()}${this.businessType.slice(1)}ClaimStatus`, 
                             {
-                                businessId: this.businessId.$oid,
+                                businessId: this.businessId,
                                 claimStatus: true,
                             }, {
                             headers: {
@@ -456,6 +454,7 @@
                 if (!this.paymentFilled) {
                     return;
                 }
+                console.log("creating account");
 
                 var updateSuccess = false;
 
@@ -480,10 +479,10 @@
                 if ( (updateSuccess || !this.accountRequest.isNew) && paymentSuccess ) {
                     await this.deleteToken();
                     // save details to local storage 
-                    localStorage.setItem("88B_accID", this.businessId.$oid);
+                    localStorage.setItem("88B_accID", this.businessId);
                     localStorage.setItem("88B_accType", this.businessType);
                     // redirect to profile page
-                    this.$router.push(`/profile/${this.businessType}/${this.businessId.$oid}`)
+                    this.$router.push(`/profile/${this.businessType}/${this.businessId}`)
                 }
                 
             }, 
@@ -491,11 +490,12 @@
             async verifyToken() {
                 try {
                     const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getToken/${this.token}`);
-                    this.tokenData = response.data;
+                    this.tokenData = response.data.data;
                     console.log(this.tokenData);
                     if (Object.keys(this.tokenData).length > 0) {
-                        const expiry = new Date(this.tokenData.expiry.$date);
+                        const expiry = new Date(this.tokenData.expiry);
                         const now = new Date();
+                        console.log(expiry);
                         if (expiry > now) {
                             this.validToken = true;
                             return;

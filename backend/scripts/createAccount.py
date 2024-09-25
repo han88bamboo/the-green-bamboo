@@ -201,42 +201,6 @@ def createAccountRequest():
 # [POST] Updates a Business Account Request
 @blueprint.route("/updateAccountRequest", methods= ['POST'])
 def updateAccountRequest():
-    # db = g.db
-    # data = request.get_json()
-    # print(data)
-    # requestID = data['requestID']
-    # isPending = data['isPending']
-    # isApproved = data['isApproved']
-
-    # try: 
-    #     updateReviewStatus = db.accountRequests.update_one({'_id': ObjectId(requestID)}, {'$set': {'isPending': isPending, 'isApproved': isApproved}})
-
-    #     return jsonify(
-    #         {   
-    #             "code": 201,
-    #             "data": {
-    #                 "requestID": requestID,
-    #                 "isPending": isPending, 
-    #                 "isApproved": isApproved
-    #             }
-    #         }
-    #     ), 201
-    # except Exception as e:
-    #     print(str(e))
-    #     return jsonify(
-    #         {
-    #             "code": 500,
-    #             "data": {
-    #                 "data": {
-    #                     "requestID": requestID,
-    #                     "isPending": isPending,
-    #                     "isApproved": isApproved
-    #                 }
-    #             },
-    #             "message": "An error occurred updating the mod request."
-    #         }
-    #     ), 500
-
     conn = g.db
     cur = conn.cursor()
     data = request.get_json()
@@ -367,10 +331,7 @@ def createProducerAccount():
         return jsonify( 
             {   
                 "code": 201,
-                "data": {
-                    "id": newProducerId,
-                    "producerName": newBusinessData['producerName']
-                }
+                "data": newProducerId
             }
         ), 201
 
@@ -503,10 +464,7 @@ def createVenueAccount():
         return jsonify( 
             {   
                 "code": 201,
-                "data": {
-                    "id": newVenueId,
-                    "venueName": newBusinessData['venueName']
-                }
+                "data": newVenueId
             }
         ), 201
 
@@ -538,9 +496,19 @@ def createToken():
 
     businessId = int(data['businessId'])
     requestId = int(data['requestId'])
+    businessType = data['businessType']
 
     try:
-        cur.execute('SELECT * FROM "tokens" WHERE "userId" = %s', (businessId,))
+        # Determine the correct ID field and table based on businessType
+        if businessType == 'producer':
+            id_field = 'producerId'
+        elif businessType == 'venue':
+            id_field = 'venueId'
+        else:
+            id_field = 'userId' # Default to 'userId'
+
+        # Check for existing token
+        cur.execute(f'SELECT * FROM "tokens" WHERE "{id_field}" = %s', (businessId,))
         existingToken = cur.fetchone()
 
         if existingToken is not None:
@@ -549,20 +517,12 @@ def createToken():
         token = secrets.token_urlsafe(16)
         expiry = datetime.now() + timedelta(days=3)
 
-        newToken = {
-            "token": token,
-            "userId": businessId,
-            "requestId": requestId,
-            "expiry": expiry,
-        }
-
-        cur.execute(
-            """
-                INSERT INTO tokens ("token", "userId", "requestId", "expiry")
-                VALUES (%s, %s, %s, %s)
-            """,
-            (token, businessId, requestId, expiry)
-        )
+        # Insert new token
+        query = f"""
+            INSERT INTO "tokens" ("token", "{id_field}", "requestId", "expiry")
+            VALUES (%s, %s, %s, %s)
+        """
+        cur.execute(query, (token, businessId, requestId, expiry))
         conn.commit()
 
         return jsonify(
@@ -595,98 +555,139 @@ def createToken():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/updateCustomerId', methods=['POST'])
 def updateCustomerId():
-    db = g.db
-
+    conn = g.db
+    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
-    businessId = data['businessId']['$oid']
+    businessId = int(data['businessId'])
     customerId = data['customerId']
-    businessType = data['businessType'] + 's'
+    businessType = data['businessType']
 
-    try: 
-        update = db[businessType].update_one({'_id': ObjectId(businessId)}, {'$set': {'stripeCustomerId': customerId} })
+    try:
+        cur.execute(
+            f"""
+            UPDATE "{businessType}s"
+            SET "stripeCustomerId" = %s
+            WHERE "id" = %s
+            """,
+            (customerId, businessId)
+        )
+        conn.commit()
+
         return jsonify(
-            {   
+            {
                 "code": 201,
-                "message": "Updated customerId successfully!"
+                "data": {
+                    "businessId": businessId,
+                    "customerId": customerId
+                }
             }
         ), 201
+    
     except Exception as e:
+        conn.rollback()
         print(str(e))
         return jsonify(
             {
                 "code": 500,
                 "data": data,
-                "message": "An error occurred updating profile!"
+                "message": "An error occurred updating the profile."
             }
         ), 500
+    
+    finally:
+        cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [POST] Delete Token
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/deleteToken', methods=['POST'])
 def deleteToken():
-    db = g.db
-
+    conn = g.db
+    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
     token = data['token']
 
-    try: 
-        delete_result = db.tokens.delete_one({'token': token})
+    try:
+        cur.execute('DELETE FROM "tokens" WHERE "token" = %s', (token,))
+        conn.commit()
+
         return jsonify(
-            {   
+            {
                 "code": 201,
-                "message": "Deleted token successfully!"
+                "data": {
+                    "token": token
+                }
             }
         ), 201
+    
     except Exception as e:
+        conn.rollback()
         print(str(e))
         return jsonify(
             {
                 "code": 500,
-                "data": data,
-                "message": "An error occurred deleting token!"
+                "data": {
+                    "token": token
+                },
+                "message": "An error occurred deleting the token."
             }
         ), 500
+    
+    finally:
+        cur.close()
     
 # [POST] Update business username and password
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/updateUsernamePassword', methods=['POST'])
 def updateUsernamePassword():
-    db = g.db
-
+    conn = g.db
+    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
-    businessId = data['businessId']['$oid']
+    businessId = int(data['businessId'])
     username = data['username']
     hashedPassword = data['hashedPassword']
-    businessType = data['businessType'] + 's'
+    businessType = data['businessType']
 
-    try: 
-        update = db[businessType].update_one({'_id': ObjectId(businessId)}, {'$set': {
-                                                                                    'username': username,
-                                                                                    'hashedPassword': hashedPassword},
-                                                                                    })
+    try:
+        cur.execute(
+            f"""
+            UPDATE "{businessType}s"
+            SET "username" = %s, "hashedPassword" = %s
+            WHERE "id" = %s
+            """,
+            (username, hashedPassword, businessId)
+        )
+        conn.commit()
+
         return jsonify(
-            {   
+            {
                 "code": 201,
-                "message": "Updated username and password successfully!"
+                "data": {
+                    "businessId": businessId,
+                    "username": username
+                }
             }
         ), 201
+    
     except Exception as e:
+        conn.rollback()
         print(str(e))
         return jsonify(
             {
                 "code": 500,
                 "data": data,
-                "message": "An error occurred updating profile!"
+                "message": "An error occurred updating the profile."
             }
         ), 500
     
+    finally:
+        cur.close()
 
 @blueprint.route('/sendEmail', methods=['POST'])
 def sendEmail():

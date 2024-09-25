@@ -527,7 +527,7 @@
                     "joinDate": joinDate,
                     "isPending": true,
                     "isApproved": false,
-                    // "isNew": true
+                    "isNew": true
                 }
                 this.createAccount(submitAPI,submitData)
             },

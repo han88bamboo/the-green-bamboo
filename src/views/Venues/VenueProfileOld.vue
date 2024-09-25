@@ -107,7 +107,7 @@
                                                 <div class="input-group">
                                                     <select v-model="inaccurateDrink" class="form-select" style="max-width: 100%;">
                                                         <option disabled value="" > Select a drink listing </option>
-                                                        <option v-for="bottle in allDrinks" v-bind:key="bottle._id" v-bind:value="bottle._id">{{ bottle.listingName }}</option>
+                                                        <option v-for="bottle in allDrinks" v-bind:key="bottle.id" v-bind:value="bottle.id">{{ bottle.listingName }}</option>
                                                     </select>
                                                 </div>      
                                                 <span v-if="missingInaccurateDrink" class="text-danger">Please select a drink.</span>         
@@ -388,7 +388,7 @@
 
                         <!-- [if] more updates -->
                         <div v-if="remainingUpdates.length > 0">
-                            <div v-for="(update, index) in remainingUpdates" v-bind:key="update._id" v-bind:class="{ 'active': index === 0 }">
+                            <div v-for="(update, index) in remainingUpdates" v-bind:key="update.id" v-bind:class="{ 'active': index === 0 }">
                                 <div class="row">
                                     <div class="col-6">
                                         <h5 class="text-decoration-underline text-start pb-3">
@@ -398,8 +398,8 @@
                                     </div>
                                     <div v-if="correctVenue" class="col-6 text-end">
                                         <!-- edit & delete button -->
-                                        <button v-if="editingRemainingUpdate == false || editingRemainingUpdateID != update._id.$oid" type="button" class="btn btn-warning rounded-0 me-1" @click="editUpdate(update, 'remaining')"> Edit </button>
-                                        <button v-else-if="editingRemainingUpdateID == update._id.$oid" type="button" class="btn success-btn rounded-0 reverse-clickable-text me-1" @click="saveUpdateEdit(update, 'remaining')"> Save Changes </button>
+                                        <button v-if="editingRemainingUpdate == false || editingRemainingUpdateID != update.id" type="button" class="btn btn-warning rounded-0 me-1" @click="editUpdate(update, 'remaining')"> Edit </button>
+                                        <button v-else-if="editingRemainingUpdateID == update.id" type="button" class="btn success-btn rounded-0 reverse-clickable-text me-1" @click="saveUpdateEdit(update, 'remaining')"> Save Changes </button>
                                         <button type="button" class="btn btn-danger rounded-0 ms-1" @click="deleteUpdate(update)"> Delete </button>
                                     </div>
                                 </div>
@@ -409,7 +409,7 @@
                                     <div class="col-2 image-container">
                                         <!-- image -->
                                         <!-- [if] editing -->
-                                        <div v-if="editingRemainingUpdate && editingRemainingUpdateID == update._id.$oid" style="position: relative; text-align: center;">
+                                        <div v-if="editingRemainingUpdate && editingRemainingUpdateID == update.id" style="position: relative; text-align: center;">
                                             <!-- image -->
                                             <img :src="selectedRemainingUpdateImage || 'data:image/jpeg;base64,' + (update['photo'] || defaultProfilePhoto)" 
                                                 alt="" style="width: 150px; height: 150px; z-index: 1; opacity: 50%">
@@ -443,12 +443,12 @@
                                         <div class="row">
                                             <!-- description -->
                                             <div class="col text-start p-text-lg"> 
-                                                <p v-if="editingRemainingUpdate == false || editingRemainingUpdateID != update._id.$oid">
+                                                <p v-if="editingRemainingUpdate == false || editingRemainingUpdateID != update.id">
                                                     {{update['text']}}
                                                 </p>
-                                                <p v-else-if="editingRemainingUpdateID == update._id.$oid">
+                                                <p v-else-if="editingRemainingUpdateID == update.id">
                                                     <label for="remainingUpdateText"> Update Text </label>
-                                                    <textarea class="form-control mb-3" id="remainingUpdateText" aria-describedby="remainingUpdateText" v-model="edit_remainingUpdateText[update._id.$oid]"></textarea>
+                                                    <textarea class="form-control mb-3" id="remainingUpdateText" aria-describedby="remainingUpdateText" v-model="edit_remainingUpdateText[update.id]"></textarea>
                                                 </p>
                                             </div>
                                         </div>
@@ -483,11 +483,11 @@
                     <div class="container">
                         <div class="row">
                             <div v-for="drinkInfo in mostPopular" v-bind:key="drinkInfo[0]"  class="add-drink-photo-container image-container-150">
-                                <router-link :to="{ path: '/listing/view/' + drinkInfo[2].$oid }" class="default-text-no-background">
+                                <router-link :to="{ path: '/listing/view/' + drinkInfo[2] }" class="default-text-no-background">
                                     <img :src=" 'data:image/jpeg;base64,' + (getPhotoFromDrink(drinkInfo[0]) || defaultProfilePhoto)" class="add-drink-photo-background centered rounded"> 
                                 </router-link>
                                 <!-- bookmark icon -->
-                                <svg v-if="checkBookmarkStatus(drinkInfo[2].$oid) && user" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-bookmark-fill overlay-icon" viewBox="0 0 16 16"
+                                <svg v-if="checkBookmarkStatus(drinkInfo[2]) && user" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-bookmark-fill overlay-icon" viewBox="0 0 16 16"
                                     data-bs-toggle="modal" data-bs-target="#bookmarkModal" @click="populateBookmarkModal(drinkInfo[2])">
                                     <path d="M2 2v13.5a.5.5 0 0 0 .74.439L8 13.069l5.26 2.87A.5.5 0 0 0 14 15.5V2a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2"/>
                                 </svg>
@@ -499,7 +499,7 @@
                         </div>
                         <div class="row">
                             <div v-for="drinkInfo in mostPopular" v-bind:key="drinkInfo[0]"  class="add-drink-photo-container-text scrollable">
-                                <router-link :to="{ path: '/listing/view/' + drinkInfo[2].$oid }" class="default-clickable-text">
+                                <router-link :to="{ path: '/listing/view/' + drinkInfo[2] }" class="default-clickable-text">
                                     {{ drinkInfo[0] }}
                                 </router-link>
                             </div>
@@ -513,11 +513,11 @@
                     <div class="container">
                         <div class="row">
                             <div v-for="drinkInfo in mostDiscussed" v-bind:key="drinkInfo[0]"  class="add-drink-photo-container image-container">
-                                <router-link :to="{ path: '/listing/view/' + drinkInfo[2].$oid }" class="default-text-no-background">
+                                <router-link :to="{ path: '/listing/view/' + drinkInfo[2] }" class="default-text-no-background">
                                     <img :src=" 'data:image/jpeg;base64,' + (getPhotoFromDrink(drinkInfo[0]) || defaultProfilePhoto)" class="add-drink-photo-background centered rounded"> 
                                 </router-link>
                                 <!-- bookmark icon -->
-                                <svg v-if="checkBookmarkStatus(drinkInfo[2].$oid) && user" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-bookmark-fill overlay-icon" viewBox="0 0 16 16"
+                                <svg v-if="checkBookmarkStatus(drinkInfo[2]) && user" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-bookmark-fill overlay-icon" viewBox="0 0 16 16"
                                     data-bs-toggle="modal" data-bs-target="#bookmarkModal" @click="populateBookmarkModal(drinkInfo[2])">
                                     <path d="M2 2v13.5a.5.5 0 0 0 .74.439L8 13.069l5.26 2.87A.5.5 0 0 0 14 15.5V2a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2"/>
                                 </svg>
@@ -529,7 +529,7 @@
                         </div>
                         <div class="row">
                             <div v-for="drinkInfo in mostDiscussed" v-bind:key="drinkInfo[0]"  class="add-drink-photo-container-text scrollable">
-                                <router-link :to="{ path: '/listing/view/' + drinkInfo[2].$oid }" class="default-clickable-text">
+                                <router-link :to="{ path: '/listing/view/' + drinkInfo[2] }" class="default-clickable-text">
                                     {{ drinkInfo[0] }}
                                 </router-link>
                             </div>
@@ -542,24 +542,24 @@
                     </h3>
                     <div class="container">
                         <div class="row">
-                            <div v-for="drinkInfo in recentlyAdded" v-bind:key="drinkInfo._id"  class="add-drink-photo-container image-container">
-                                <router-link :to="{ path: '/listing/view/' + drinkInfo._id.$oid }" class="default-text-no-background">
+                            <div v-for="drinkInfo in recentlyAdded" v-bind:key="drinkInfo.id"  class="add-drink-photo-container image-container">
+                                <router-link :to="{ path: '/listing/view/' + drinkInfo.id }" class="default-text-no-background">
                                     <img :src=" 'data:image/jpeg;base64,' + (drinkInfo['photo'] || defaultProfilePhoto)" class="add-drink-photo-background centered rounded"> 
                                 </router-link>
                                 <!-- bookmark icon -->
-                                <svg v-if="checkBookmarkStatus(drinkInfo._id.$oid) && user" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-bookmark-fill overlay-icon" viewBox="0 0 16 16"
-                                    data-bs-toggle="modal" data-bs-target="#bookmarkModal" @click="populateBookmarkModal(drinkInfo._id)">
+                                <svg v-if="checkBookmarkStatus(drinkInfo.id) && user" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-bookmark-fill overlay-icon" viewBox="0 0 16 16"
+                                    data-bs-toggle="modal" data-bs-target="#bookmarkModal" @click="populateBookmarkModal(drinkInfo.id)">
                                     <path d="M2 2v13.5a.5.5 0 0 0 .74.439L8 13.069l5.26 2.87A.5.5 0 0 0 14 15.5V2a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2"/>
                                 </svg>
                                 <svg v-else-if="user" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-bookmark overlay-icon" viewBox="0 0 16 16"
-                                    data-bs-toggle="modal" data-bs-target="#bookmarkModal" @click="populateBookmarkModal(drinkInfo._id)">
+                                    data-bs-toggle="modal" data-bs-target="#bookmarkModal" @click="populateBookmarkModal(drinkInfo.id)">
                                     <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/>
                                 </svg>
                             </div>
                         </div>
                         <div class="row">
-                            <div v-for="drinkInfo in recentlyAdded" v-bind:key="drinkInfo._id" class="add-drink-photo-container-text scrollable">
-                                <router-link :to="{ path: '/listing/view/' + drinkInfo._id.$oid }" class="default-clickable-text">
+                            <div v-for="drinkInfo in recentlyAdded" v-bind:key="drinkInfo.id" class="add-drink-photo-container-text scrollable">
+                                <router-link :to="{ path: '/listing/view/' + drinkInfo.id }" class="default-clickable-text">
                                     {{ drinkInfo["listingName"] }}
                                 </router-link>
                             </div>
@@ -679,7 +679,7 @@
                     <div class="row">
                         <!-- v-loop for each listing -->
                         <div class="container text-start scrollable-listings">
-                            <div v-for="listing in filteredListings" v-bind:key="listing._id" class="p-3">
+                            <div v-for="listing in filteredListings" v-bind:key="listing.id" class="p-3">
                                 <div class="row">
                                     <!-- image -->
                                     <div class="col-2 image-container text-center mx-auto">
@@ -726,11 +726,11 @@
                                             <div class="col-1 text-end">
                                                 <!-- bookmark icon -->
                                                 <svg v-if="checkBookmarkStatus(listing.id) && user" xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-bookmark-fill" viewBox="0 0 16 16"
-                                                    data-bs-toggle="modal" data-bs-target="#bookmarkModal" @click="populateBookmarkModal(listing._id)">
+                                                    data-bs-toggle="modal" data-bs-target="#bookmarkModal" @click="populateBookmarkModal(listing.id)">
                                                     <path d="M2 2v13.5a.5.5 0 0 0 .74.439L8 13.069l5.26 2.87A.5.5 0 0 0 14 15.5V2a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2"/>
                                                 </svg>
                                                 <svg v-else-if="user" xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-bookmark" viewBox="0 0 16 16"
-                                                    data-bs-toggle="modal" data-bs-target="#bookmarkModal" @click="populateBookmarkModal(listing._id)">
+                                                    data-bs-toggle="modal" data-bs-target="#bookmarkModal" @click="populateBookmarkModal(listing.id)">
                                                     <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/>
                                                 </svg>
                                             </div>
@@ -860,7 +860,7 @@
                                         <div v-if="correctVenue">
                                             <!-- show answered questions -->
                                             <div v-if="answerStatus">
-                                                <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
+                                                <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa.id" v-bind:class="{ 'active': index === 0 }">
                                                     <p> <b> Q: {{ qa["question"] }} </b> </p>
                                                     <p> A: {{ qa["answer"] }} </p>
                                                 </div>
@@ -868,7 +868,7 @@
 
                                             <!-- show unanswered questions -->
                                             <div v-else>
-                                                    <div class="carousel-item" v-for="(qa, index) in unansweredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
+                                                    <div class="carousel-item" v-for="(qa, index) in unansweredQuestions" v-bind:key="qa.id" v-bind:class="{ 'active': index === 0 }">
                                                     <p> <b> Q: {{ qa["question"] }} </b> </p>
                                                     <div class="input-group centered">
                                                         <div class="input-group centered pt-2">
@@ -885,7 +885,7 @@
                                         </div>
                                         <!-- [else] user type is NOT venue -->
                                         <div v-else>
-                                            <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
+                                            <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa.id" v-bind:class="{ 'active': index === 0 }">
                                                 <div>
                                                     <p> <b> Q: {{ qa["question"] }} </b> </p>
                                                     <p> A: {{ qa["answer"] }} </p>
@@ -1311,8 +1311,8 @@
                         const response = await this.$axios.get('http://127.0.0.1:5000/getUsers');
                         this.users = response.data;
                         if (this.userType == 'user') {
-                            this.user = this.users.find(user => user["_id"]["$oid"] == this.user_id);
-                            this.following = JSON.stringify(this.user.followLists.venues).includes(JSON.stringify({$oid: this.venue_id}));
+                            this.user = this.users.find(user => user["id"] == this.user_id);
+                            this.following = JSON.stringify(this.user.followLists.venues).includes(JSON.stringify({id: this.venue_id}));
                             this.userBookmarks = this.user.drinkLists;
                         }
                     } 
@@ -1324,7 +1324,7 @@
                     try {
                         const response = await this.$axios.get('http://127.0.0.1:5000/getVenues');
                         this.venues = response.data;
-                        this.specified_venue = this.venues.find(venue => venue["_id"]["$oid"] == this.venue_id); // find specified venue
+                        this.specified_venue = this.venues.find(venue => venue["id"] == this.venue_id); // find specified venue
                         this.venue_claimed = this.specified_venue["claimStatus"]; 
                         // this.venue_claimed = true // (for testing only, to be removed later when db is updated)
                         this.openingHours = this.specified_venue["openingHours"];
@@ -1453,9 +1453,9 @@
                     return acc.concat(menuItem.itemID); 
                 }, []);
 
-                let uniqueListingsIDs = [...new Set(allListingsIDs.map(item => item["$oid"]))];
+                let uniqueListingsIDs = [...new Set(allListingsIDs.map(item => item))];
                 let allVenueDrinks = this.listings.filter(listing => {
-                    let listing_id = listing._id["$oid"];
+                    let listing_id = listing.id;
                     return uniqueListingsIDs.includes(listing_id);
                 });
                 this.allDrinks = allVenueDrinks;
@@ -1465,9 +1465,9 @@
             // get all reviews that a venue has
             async getAllReviews() {
                 let allVenueReviews = this.reviews.filter(review => {
-                    let review_target = review.reviewTarget["$oid"];
+                    let review_target = review.reviewTarget;
                     let all_drinks = this.allDrinks;
-                    return all_drinks.some(drink => drink._id["$oid"] === review_target);
+                    return all_drinks.some(drink => drink.id === review_target);
                 });
                 this.allReviews = allVenueReviews;
                 this.allReviewsCount = allVenueReviews.length
@@ -1475,7 +1475,7 @@
 
             // find drink name given reviewTarget
             findDrinkNameForReview(reviewTarget) {
-                let drink_name = this.listings.find(listing => listing._id["$oid"] == reviewTarget["$oid"]).listingName;
+                let drink_name = this.listings.find(listing => listing.id == reviewTarget).listingName;
                 return drink_name;
             },
 
@@ -1539,7 +1539,7 @@
                 let firstFiveItems = Object.entries(averageRatings).slice(0, 5);
                 firstFiveItems = firstFiveItems.map(item => {
                     const listing = this.listings.find(listing => listing.listingName === item[0]);
-                    return listing ? [...item, listing._id] : item;
+                    return listing ? [...item, listing.id] : item;
                 });
                 // if firstFiveItems is less than 5, get the remaining from this.allDrinks
                 if (firstFiveItems.length < 5) {
@@ -1547,7 +1547,7 @@
                         if (!firstFiveItems.some(item => item[0] == drink.listingName)) {
                             let drinkName = drink.listingName;
                             let drinkCount = this.drinkCounts[drink.listingName];
-                            let drinkID = drink._id
+                            let drinkID = drink.id
                             firstFiveItems.push([drinkName, drinkCount, drinkID]);
                         }
                     });
@@ -1564,7 +1564,7 @@
                 let firstFiveItems = Object.entries(drinkCounts).slice(0, 5);
                 firstFiveItems = firstFiveItems.map(item => {
                     const listing = this.listings.find(listing => listing.listingName === item[0]);
-                    return listing ? [...item, listing._id] : item;
+                    return listing ? [...item, listing.id] : item;
                 });
                 // if firstFiveItems is less than 5, get the remaining from this.allDrinks
                 if (firstFiveItems.length < 5) {
@@ -1572,7 +1572,7 @@
                         if (!firstFiveItems.some(item => item[0] == drink.listingName)) {
                             let drinkName = drink.listingName;
                             let drinkCount = this.drinkCounts[drink.listingName];
-                            let drinkID = drink._id
+                            let drinkID = drink.id
                             firstFiveItems.push([drinkName, drinkCount, drinkID]);
                         }
                     });
@@ -1613,7 +1613,7 @@
             // get ratings for a listing
             getRatings(listing) {
                 const ratings = this.reviews.filter((rating) => {
-                    rating["reviewTarget"]["$oid"] == listing["_id"]["$oid"];
+                    rating["reviewTarget"] == listing["id"];
                 });
                 // if there are no ratings
                 if (ratings.length == 0) {
@@ -1774,7 +1774,7 @@
 
             // send answer that venues give to users
             async sendAnswer (qa) {
-                let q_and_a_id = qa._id.$oid;
+                let q_and_a_id = qa.id;
                 try {
                     await this.$axios.post('http://127.0.0.1:5300/sendAnswers', 
                         {
@@ -1870,7 +1870,7 @@
                         this.remainingUpdates = updatesList.slice(0, updatesList.length - 1);
                         // sort remaining updates in descending order by date
                         this.remainingUpdates.sort((a, b) => {
-                            return new Date(b.date.$date) - new Date(a.date.$date);
+                            return new Date(b.date) - new Date(a.date);
                         });
                     }
 
@@ -1957,7 +1957,7 @@
             // check if user liked the post
             checkLiked() {
                 for (let i in this.updateLikes) {
-                    if (this.updateLikes[i]["$oid"] == this.user_id) {
+                    if (this.updateLikes[i] == this.user_id) {
                         this.likeStatus = true;
                     }
                 }
@@ -2208,7 +2208,7 @@
             checkBookmarkStatus(listingID) {
                 for (const category of Object.values(this.userBookmarks)) {
                     if (category.listItems) {
-                        if (category.listItems.some(item => item[1].$oid === listingID)) {
+                        if (category.listItems.some(item => item[1] === listingID)) {
                             return true;
                         }
                     }
@@ -2216,13 +2216,13 @@
             },
             getListingName(listingID) {
                 if (this.listings) {
-                    return this.listings.find(listing => listing.id === listingID.$oid).listingName;
+                    return this.listings.find(listing => listing.id === listingID).listingName;
                 }
             },
             getListingID(listingName) {
                 const listing = this.listings.find(listing => listing.listingName === listingName);
                 console.log(listing);
-                return listing._id;
+                return listing.id;
             },
             // checks which lists the item is in
             populateBookmarkModal(listingID) {
@@ -2233,7 +2233,7 @@
                     if (Object.hasOwnProperty.call(this.userBookmarks, listName)) {
                         const bookmarkItems = this.userBookmarks[listName].listItems;
                         if (bookmarkItems) {
-                            if (bookmarkItems.some(item => item[1].$oid === listingID.$oid)) {
+                            if (bookmarkItems.some(item => item[1] === listingID)) {
                                 if (!this.selectedBookmarkList.includes(listName)) {
                                     this.selectedBookmarkList.push(listName);
                                 }
@@ -2250,14 +2250,14 @@
                 for (const listName in this.userBookmarks) {
                     if (Object.hasOwnProperty.call(this.userBookmarks, listName)) {
                         const bookmarkItems = this.userBookmarks[listName].listItems;
-                        let itemExist = bookmarkItems.some(item => item[1].$oid === addListingId.$oid);
+                        let itemExist = bookmarkItems.some(item => item[1] === addListingId);
                         if (this.selectedBookmarkList.includes(listName)) {
                             if (!itemExist) {
                                 bookmarkItems.push([new Date(), addListingId]);
                             }
                         } else {
                             if (itemExist) {
-                                const index = bookmarkItems.findIndex(item => item[1].$oid === addListingId.$oid);
+                                const index = bookmarkItems.findIndex(item => item[1] === addListingId);
                                 bookmarkItems.splice(index, 1);
                             }
                         }
@@ -2423,14 +2423,14 @@
                 // #3: Date (Newest - Oldest)
                 else if (category == 'Date (Newest - Oldest)') {
                     this.filteredListings.sort((a, b) => {
-                        return new Date(b.addedDate.$date) - new Date(a.addedDate.$date);
+                        return new Date(b.addedDate) - new Date(a.addedDate);
                     });
                 }
 
                 // [DEFAULT] #4: Date (Oldest - Newest)
                 else if (category == '' || category == 'Date (Oldest - Newest)') {
                     this.filteredListings.sort((a, b) => {
-                        return new Date(a.addedDate.$date) - new Date(b.addedDate.$date);
+                        return new Date(a.addedDate) - new Date(b.addedDate);
                     });
                 }
 
@@ -2464,7 +2464,7 @@
             // get ratings (search function) --> main difference is if there are no ratings, return 0 instead of "-" so that it can be sorted
             getRatingsSearch(listing) {
                 const ratings = this.reviews.filter((rating) => {
-                    return rating["reviewTarget"]["$oid"] == listing["_id"]["$oid"];
+                    return rating["reviewTarget"] == listing["id"];
                 });
                 // if there are no ratings
                 if (ratings.length == 0) {
@@ -2488,10 +2488,10 @@
                     this.edit_latestUpdateText = update.text
                 }
                 else if (status == "remaining") {
-                    this.editingRemainingUpdateID = update._id.$oid;
+                    this.editingRemainingUpdateID = update.id;
                     this.editingRemainingUpdate = true;
                     // set the current details to the edit details
-                    this.edit_remainingUpdateText[update._id.$oid] = update.text
+                    this.edit_remainingUpdateText[update.id] = update.text
                 }
             },
 
@@ -2546,7 +2546,7 @@
                         const response = this.$axios.post('http://127.0.0.1:5300/editUpdate', 
                             {
                                 venueID: this.venue_id,
-                                updateID: update._id.$oid,
+                                updateID: update.id,
                                 update: this.edit_latestUpdateText,
                                 image64: this.image64LatestUpdate,
                             },
@@ -2564,13 +2564,13 @@
                 else if (status == "remaining") {
                     this.editingRemainingUpdate = false;
                     this.editingRemainingUpdateID = ""
-                    let newUpdate = this.edit_remainingUpdateText[update._id.$oid];
+                    let newUpdate = this.edit_remainingUpdateText[update.id];
                     // send to backend
                     try {
                         const response = this.$axios.post('http://127.0.0.1:5300/editUpdate', 
                             {
                                 venueID: this.venue_id,
-                                updateID: update._id.$oid,
+                                updateID: update.id,
                                 update: newUpdate,
                                 image64: this.image64RemainingUpdate,
                             },
@@ -2597,7 +2597,7 @@
                     const response = this.$axios.post('http://127.0.0.1:5300/deleteUpdate', 
                         {
                             venueID: this.venue_id,
-                            updateID: update._id.$oid,
+                            updateID: update.id,
                         },
                         {
                             headers: {

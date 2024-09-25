@@ -1604,7 +1604,8 @@
                             this.claimStatus = false                        
                             // check for active subscription if last check status date before today
                             const claimStatusCheckDate = this.specified_producer['claimStatusCheckDate']
-                            if (claimStatusCheckDate) {
+                            // if (claimStatusCheckDate) {
+                            if ((claimStatusCheckDate?.split('T')[0] < new Date().toISOString().split('T')[0]) || !claimStatusCheckDate) {
                                 console.log('checking subscription');
                                 // check for active subscription
                                 try {
@@ -1650,19 +1651,19 @@
                                 }
     
                                 // upqdate last check status date
-                                // try {
-                                //     await this.$axios.post(`http://127.0.0.1:5000/editProducerProfile/updateProducerClaimStatusCheckDate`, 
-                                //         {
-                                //             businessId: this.producer_id,
-                                //             claimStatusCheckDate: new Date().toISOString(),
-                                //         }, {
-                                //         headers: {
-                                //             'Content-Type': 'application/json'
-                                //         }
-                                //     });
-                                // } catch (error) {
-                                //     console.error(error);
-                                // }
+                                try {
+                                    await this.$axios.post(`http://127.0.0.1:5000/editProducerProfile/updateProducerClaimStatusCheckDate`, 
+                                        {
+                                            businessId: this.producer_id,
+                                            claimStatusCheckDate: new Date().toISOString(),
+                                        }, {
+                                        headers: {
+                                            'Content-Type': 'application/json'
+                                        }
+                                    });
+                                } catch (error) {
+                                    console.error(error);
+                                }
                             } else {
                                 this.claimStatus = this.specified_producer.claimStatus // get claim status of producer
                             }

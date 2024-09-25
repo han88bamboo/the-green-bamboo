@@ -1,4 +1,4 @@
-<!-- Search page from navigation bar. Globally available, and should still use NavBar for new search queries. -->
+x<!-- Search page from navigation bar. Globally available, and should still use NavBar for new search queries. -->
 
 <template>
     <NavBar />
@@ -112,7 +112,7 @@
                                 <ul class="dropdown-menu">
                                     <li><span class="dropdown-item" @click="filterByDrinkType('')">Clear Filter</span></li>
                                     <li><hr class="dropdown-divider"></li>
-                                    <li v-for="drinkType in drinkTypeList" :key="drinkType._id">
+                                    <li v-for="drinkType in drinkTypeList" :key="drinkType.id">
                                         <span class="dropdown-item" @click="filterByDrinkType(drinkType['drinkType'])">{{ drinkType['drinkType'] }}</span>
                                     </li>
                                 </ul>
@@ -330,7 +330,7 @@
                     <p class="fw-bold fst-italic fs-5 m-0 py-2" v-else>No Producer Results Found!</p>
                     
                     <div class="container text-start">
-                        <div class="row" v-for="producer in producerListings" :key="producer._id">
+                        <div class="row" v-for="producer in producerListings" :key="producer.id">
                             <hr>
                             <!-- Image -->
                             <div class="col-lg-3 col-12 image-container mb-3 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
@@ -408,11 +408,11 @@
                     <p class="fw-bold fst-italic fs-5 m-0 py-2" v-else>No Venue Results Found!</p>
                     
                     <div class="container text-start">
-                        <div class="row" v-for="venue in venueListings" :key="venue._id">
+                        <div class="row" v-for="venue in venueListings" :key="venue.id">
                             <hr>
                             <!-- Image -->
                             <div class="col-lg-3 col-12 image-container mb-3 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
-                                <router-link :to="{ path: '/profile/venue/' + venue._id['$oid'] }">
+                                <router-link :to="{ path: '/profile/venue/' + venue.id }">
                                     <img v-if="venue['photo']" :src="venue['photo']" class="img-border img-fluid object-fit-cover" style="/*width:256px; height:256px*/">
                                     <img v-else src="../../Images/Drinks/Placeholder.png" class="img-border img-fluid object-fit-cover" style="/*width:256px; height:256px*/"> 
                                 </router-link>
@@ -423,7 +423,7 @@
 
                                 <div class="col-lg-8 col-12">
                                     <!-- Venue Name + Router Link -->
-                                    <router-link class="text-dark text-decoration-none" :to="{ path: '/profile/venue/' + venue._id['$oid'] }">
+                                    <router-link class="text-dark text-decoration-none" :to="{ path: '/profile/venue/' + venue.id }">
                                         <h4 class="fw-bold my-1">{{ venue['venueName'] }}</h4>
                                     </router-link>
                                     <!-- Country of Origin -->
@@ -474,7 +474,7 @@
 
                                 <div class="col-lg-8 col-12">
                                     <!-- Venue Name + Router Link -->
-                                    <router-link class="text-dark text-decoration-none" :to="{ path: '/profile/venue/' + venue._id['$oid'] }">
+                                    <router-link class="text-dark text-decoration-none" :to="{ path: '/profile/venue/' + venue.id }">
                                         <h4 class="fw-bold my-1">{{ venue['venueName'] }}</h4>
                                     </router-link>
                                    
@@ -630,7 +630,7 @@
 
                     for (let listing of response.data) {
                         let producer = this.producerList.find((producer) => {
-                            return producer["_id"]["$oid"] == listing["producerID"]["$oid"];
+                            return producer['id'] == listing["producerID"];
                         });
                         if (producer) {
                             listing["producerName"] = producer["producerName"];
@@ -868,7 +868,7 @@
             // get ratings for a listing --> return "-" if no ratings
             getRatings(listing) {
                 const ratings = this.reviews.filter((rating) => {
-                    return rating["reviewTarget"]["$oid"] == listing["_id"]["$oid"];
+                    return rating["reviewTarget"] == listing['id'];
                 });
                 // if there are no ratings
                 if (ratings.length == 0) {
@@ -886,7 +886,7 @@
             // get ratings for a listing --> return 0 if no ratings
             getAllRatings(listing) {
                 const ratings = this.reviews.filter((rating) => {
-                    return rating["reviewTarget"]["$oid"] == listing["_id"]["$oid"];
+                    return rating["reviewTarget"] == listing['id'];
                 });
                 // if there are no ratings
                 if (ratings.length == 0) {
@@ -904,9 +904,9 @@
             // get average rating for producer --> return "-" if no ratings
             getAllProducerRating(producer) {
                 let allProducerReviews = this.reviews.filter(review => {
-                    let review_target = review.reviewTarget["$oid"];
-                    let all_drinks = this.listings.filter(listing => listing.producerID["$oid"] == producer._id.$oid);
-                    return all_drinks.some(drink => drink._id["$oid"] === review_target);
+                    let review_target = review.reviewTarget;
+                    let all_drinks = this.listings.filter(listing => listing.producerID == producer.id);
+                    return all_drinks.some(drink => drink.id === review_target);
                 });
                 // if there are no ratings
                 if (allProducerReviews.length == 0) {
@@ -924,9 +924,9 @@
             // get average rating for producer --> return 0 if no ratings
             getAvgProducerRating(producer) {
                 let allProducerReviews = this.reviews.filter(review => {
-                    let review_target = review.reviewTarget["$oid"];
-                    let all_drinks = this.listings.filter(listing => listing.producerID["$oid"] == producer._id.$oid);
-                    return all_drinks.some(drink => drink._id["$oid"] === review_target);
+                    let review_target = review.reviewTarget;
+                    let all_drinks = this.listings.filter(listing => listing.producerID == producer.id);
+                    return all_drinks.some(drink => drink.id === review_target);
                 });
                 // if there are no ratings
                 if (allProducerReviews.length == 0) {
@@ -950,9 +950,9 @@
                 let allListingsIDs = allSectionMenus.reduce((acc, menuItem) => {
                     return acc.concat(menuItem.itemID); 
                 }, []);
-                let uniqueListingsIDs = [...new Set(allListingsIDs.map(item => item["$oid"]))];
+                let uniqueListingsIDs = [...new Set(allListingsIDs.map(item => item))];
                 let allVenueDrinks = this.listings.filter(listing => {
-                    let listing_id = listing._id["$oid"];
+                    let listing_id = listing.id;
                     return uniqueListingsIDs.includes(listing_id);
                 });
                 return allVenueDrinks
@@ -961,9 +961,9 @@
             // get average rating for venue --> return "-" if no ratings
             getAllVenueRating(venue) {
                 let allVenueReviews = this.reviews.filter(review => {
-                    let review_target = review.reviewTarget["$oid"];
+                    let review_target = review.reviewTarget;
                     let all_drinks = this.getAllVenueDrinks(venue)
-                    return all_drinks.some(drink => drink._id["$oid"] === review_target);
+                    return all_drinks.some(drink => drink.id === review_target);
                 });
                 // if there are no ratings
                 if (allVenueReviews.length == 0) {
@@ -981,9 +981,9 @@
             // get average rating for venue --> return 0 if no ratings
             getAvgVenueRating(venue) {
                 let allVenueReviews = this.reviews.filter(review => {
-                    let review_target = review.reviewTarget["$oid"];
+                    let review_target = review.reviewTarget;
                     let all_drinks = this.getAllVenueDrinks(venue)
-                    return all_drinks.some(drink => drink._id["$oid"] === review_target);
+                    return all_drinks.some(drink => drink.id === review_target);
                 });
                 // if there are no ratings
                 if (allVenueReviews.length == 0) {
@@ -1046,7 +1046,7 @@
                 
                 let submitData = {
                             "date": new Date(),
-                            "listingID": resultListing._id,
+                            "listingID": resultListing.id,
                             "userID": this.userID,
                             
                 }
@@ -1071,7 +1071,7 @@
                 let responseCode = "";
                 let submitData = {
                             "date": new Date(),
-                            "listingID": resultListing._id,
+                            "listingID": resultListing.id,
                             "userID": this.userID,
                             
                 }

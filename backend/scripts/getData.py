@@ -169,7 +169,7 @@ def getProducers():
             SELECT 
                 p.id, p."producerName", p."producerDesc", p."originCountry", p."mainDrinks", p.photo, 
                 p."hashedPassword", p."claimStatus", p."statusOB", p.username, p."producerLink", 
-                p."stripeCustomerId",
+                p."stripeCustomerId", p."claimStatusCheckDate",
                 COALESCE((
                     SELECT json_agg(json_build_object(
                         'id', qa.id,
@@ -241,7 +241,7 @@ def getProducer(id):
             SELECT 
                 p.id, p."producerName", p."producerDesc", p."originCountry", p."mainDrinks", p.photo, 
                 p."hashedPassword", p."claimStatus", p."statusOB", p.username, p."producerLink", 
-                p."stripeCustomerId",
+                p."stripeCustomerId", p."claimStatusCheckDate",
                 COALESCE((
                     SELECT json_agg(json_build_object(
                         'id', qa.id,
@@ -309,7 +309,7 @@ def getProducerByRequestId(id):
             SELECT 
                 p.id, p."producerName", p."producerDesc", p."originCountry", p."mainDrinks", p.photo, 
                 p."hashedPassword", p."claimStatus", p."statusOB", p.username, p."producerLink", 
-                p."stripeCustomerId",
+                p."stripeCustomerId", p."claimStatusCheckDate",
                 COALESCE((
                     SELECT json_agg(json_build_object(
                         'id', qa.id,
@@ -338,6 +338,8 @@ def getProducerByRequestId(id):
                     FROM "producersUpdates" u
                     WHERE u."producerId" = p.id
                 ), '[]') AS updates
+            FROM "producers" p
+            WHERE p.id = %s
         """
 
         cur.execute(query, (id,))
@@ -684,18 +686,65 @@ def getVenues():
         query = """
             SELECT 
                 v.id, v.address, v."claimStatus", v."hashedPassword", v."venueName", v."venueDesc", 
-                v."originLocation", v.photo, v."publicHolidays", v."reservationDetails", 
+                v."originLocation", v.photo, v."publicHolidays", v."reservationDetails", v."claimStatusCheckDate",
                 v.username, v."venueType", v."stripeCustomerId", v.pin,
-                COALESCE(json_agg(DISTINCT m) FILTER (WHERE m IS NOT NULL), '[]') AS menu,
-                COALESCE(json_agg(DISTINCT oh) FILTER (WHERE oh IS NOT NULL), '[]') AS "openingHours",
-                COALESCE(json_agg(DISTINCT qa) FILTER (WHERE qa IS NOT NULL), '[]') AS "questionsAnswers",
-                COALESCE(json_agg(DISTINCT u) FILTER (WHERE u IS NOT NULL), '[]') AS updates
+                -- Build the menu JSON
+                COALESCE((
+                    SELECT json_agg(json_build_object(
+                        'sectionOrder',vm."sectionOrder",
+                        'sectionName', vm."sectionName",
+                        'sectionId', vm.id,
+                        'sectionMenu', COALESCE((
+                            SELECT json_agg(json_build_object(
+                                'itemOrder', mi."itemOrder",
+                                'itemPrice', mi."itemPrice",
+                                'itemAvailability', mi."itemAvailability",
+                                'itemID', mi."itemID",
+                                'itemServingType', mi."itemServingType"
+                            ) ORDER BY mi."itemOrder")
+                            FROM "menuItems" mi
+                            WHERE mi."sectionId" = vm.id
+                        ), '[]')
+                    ) ORDER BY vm."sectionOrder")
+                    FROM "venuesMenu" vm
+                    WHERE vm."venueId" = v.id
+                ), '[]') AS menu,
+                -- Build openingHours JSON
+                COALESCE((
+                    SELECT row_to_json(oh)
+                    FROM "venuesOpeningHours" oh
+                    WHERE oh."venueId" = v.id
+                ), '{}'::json) AS "openingHours",
+                -- Build questionsAnswers JSON
+                COALESCE((
+                    SELECT json_agg(json_build_object(
+                        'id', qa.id,
+                        'question', qa.question,
+                        'answer', qa.answer,
+                        'date', qa.date,
+                        'userId', qa."userId"
+                    ))
+                    FROM "venuesQuestionAnswers" qa
+                    WHERE qa."venueId" = v.id
+                ), '[]') AS "questionsAnswers",
+                -- Build updates JSON
+                COALESCE((
+                    SELECT json_agg(json_build_object(
+                        'id', u.id,
+                        'date', u.date,
+                        'text', u.text,
+                        'photo', u.photo,
+                        'venueId', u."venueId",
+                        'likes', COALESCE((
+                            SELECT json_agg(l."userId")
+                            FROM "venueUpdateLikes" l
+                            WHERE l."updateId" = u.id
+                        ), '[]')
+                    ) ORDER BY u.date DESC)
+                    FROM "venuesUpdates" u
+                    WHERE u."venueId" = v.id
+                ), '[]') AS updates
             FROM venues v
-            LEFT JOIN "venuesMenu" m ON v.id = m."venueId"
-            LEFT JOIN "venuesOpeningHours" oh ON v.id = oh."venueId"
-            LEFT JOIN "venuesQuestionAnswers" qa ON v.id = qa."venueId"
-            LEFT JOIN "venuesUpdates" u ON v.id = u."venueId"
-            GROUP BY v.id
             ORDER BY v.id
         """
 
@@ -739,17 +788,65 @@ def getVenue(id):
         query = """
             SELECT 
                 v.id, v.address, v."claimStatus", v."hashedPassword", v."venueName", v."venueDesc", 
-                v."originLocation", v.photo, v."publicHolidays", v."reservationDetails", 
+                v."originLocation", v.photo, v."publicHolidays", v."reservationDetails", v."claimStatusCheckDate",
                 v.username, v."venueType", v."stripeCustomerId", v.pin,
-                COALESCE(json_agg(DISTINCT m) FILTER (WHERE m IS NOT NULL), '[]') AS menu,
-                COALESCE(json_agg(DISTINCT oh) FILTER (WHERE oh IS NOT NULL), '[]') AS "openingHours",
-                COALESCE(json_agg(DISTINCT qa) FILTER (WHERE qa IS NOT NULL), '[]') AS "questionsAnswers",
-                COALESCE(json_agg(DISTINCT u) FILTER (WHERE u IS NOT NULL), '[]') AS updates
+                -- Build the menu JSON
+                COALESCE((
+                    SELECT json_agg(json_build_object(
+                        'sectionOrder', vm."sectionOrder",
+                        'sectionName', vm."sectionName",
+                        'sectionId', vm.id,
+                        'sectionMenu', COALESCE((
+                            SELECT json_agg(json_build_object(
+                                'itemOrder', mi."itemOrder",
+                                'itemPrice', mi."itemPrice",
+                                'itemAvailability', mi."itemAvailability",
+                                'itemID', mi."itemID",
+                                'itemServingType', mi."itemServingType"
+                            ) ORDER BY mi."itemOrder")
+                            FROM "menuItems" mi
+                            WHERE mi."sectionId" = vm.id
+                        ), '[]')
+                    ) ORDER BY vm."sectionOrder")
+                    FROM "venuesMenu" vm
+                    WHERE vm."venueId" = v.id
+                ), '[]') AS menu,
+                -- Build openingHours JSON
+                COALESCE((
+                    SELECT row_to_json(oh)
+                    FROM "venuesOpeningHours" oh
+                    WHERE oh."venueId" = v.id
+                ), '{}'::json) AS "openingHours",
+                -- Build questionsAnswers JSON
+                COALESCE((
+                    SELECT json_agg(json_build_object(
+                        'id', qa.id,
+                        'question', qa.question,
+                        'answer', qa.answer,
+                        'date', qa.date,
+                        'userId', qa."userId"
+                    ))
+                    FROM "venuesQuestionAnswers" qa
+                    WHERE qa."venueId" = v.id
+                ), '[]') AS "questionsAnswers",
+                -- Build updates JSON
+                COALESCE((
+                    SELECT json_agg(json_build_object(
+                        'id', u.id,
+                        'date', u.date,
+                        'text', u.text,
+                        'photo', u.photo,
+                        'venueId', u."venueId",
+                        'likes', COALESCE((
+                            SELECT json_agg(l."userId")
+                            FROM "venueUpdateLikes" l
+                            WHERE l."updateId" = u.id
+                        ), '[]')
+                    ) ORDER BY u.date DESC)
+                    FROM "venuesUpdates" u
+                    WHERE u."venueId" = v.id
+                ), '[]') AS updates
             FROM venues v
-            LEFT JOIN "venuesMenu" m ON v.id = m."venueId"
-            LEFT JOIN "venuesOpeningHours" oh ON v.id = oh."venueId"
-            LEFT JOIN "venuesQuestionAnswers" qa ON v.id = qa."venueId"
-            LEFT JOIN "venuesUpdates" u ON v.id = u."venueId"
             WHERE v.id = %s
             GROUP BY v.id
         """
@@ -791,18 +888,66 @@ def getVenueByRequestId(id):
         query = """
             SELECT 
                 v.id, v.address, v."claimStatus", v."hashedPassword", v."venueName", v."venueDesc", 
-                v."originLocation", v.photo, v."publicHolidays", v."reservationDetails", 
+                v."originLocation", v.photo, v."publicHolidays", v."reservationDetails", v."claimStatusCheckDate",
                 v.username, v."venueType", v."stripeCustomerId", v.pin,
-                COALESCE(json_agg(DISTINCT m) FILTER (WHERE m IS NOT NULL), '[]') AS menu,
-                COALESCE(json_agg(DISTINCT oh) FILTER (WHERE oh IS NOT NULL), '[]') AS "openingHours",
-                COALESCE(json_agg(DISTINCT qa) FILTER (WHERE qa IS NOT NULL), '[]') AS "questionsAnswers",
-                COALESCE(json_agg(DISTINCT u) FILTER (WHERE u IS NOT NULL), '[]') AS updates
+                -- Build the menu JSON
+                COALESCE((
+                    SELECT json_agg(json_build_object(
+                        'sectionOrder', vm."sectionOrder",
+                        'sectionName', vm."sectionName",
+                        'sectionId', vm.id,
+                        'sectionMenu', COALESCE((
+                            SELECT json_agg(json_build_object(
+                                'itemOrder', mi."itemOrder",
+                                'itemPrice', mi."itemPrice",
+                                'itemAvailability', mi."itemAvailability",
+                                'itemID', mi."itemID",
+                                'itemServingType', mi."itemServingType"
+                            ) ORDER BY mi."itemOrder")
+                            FROM "menuItems" mi
+                            WHERE mi."sectionId" = vm.id
+                        ), '[]')
+                    ) ORDER BY vm."sectionOrder")
+                    FROM "venuesMenu" vm
+                    WHERE vm."venueId" = v.id
+                ), '[]') AS menu,
+                -- Build openingHours JSON
+                COALESCE((
+                    SELECT row_to_json(oh)
+                    FROM "venuesOpeningHours" oh
+                    WHERE oh."venueId" = v.id
+                ), '{}'::json) AS "openingHours",
+                -- Build questionsAnswers JSON
+                COALESCE((
+                    SELECT json_agg(json_build_object(
+                        'id', qa.id,
+                        'question', qa.question,
+                        'answer', qa.answer,
+                        'date', qa.date,
+                        'userId', qa."userId"
+                    ))
+                    FROM "venuesQuestionAnswers" qa
+                    WHERE qa."venueId" = v.id
+                ), '[]') AS "questionsAnswers",
+                -- Build updates JSON
+                COALESCE((
+                    SELECT json_agg(json_build_object(
+                        'id', u.id,
+                        'date', u.date,
+                        'text', u.text,
+                        'photo', u.photo,
+                        'venueId', u."venueId",
+                        'likes', COALESCE((
+                            SELECT json_agg(l."userId")
+                            FROM "venueUpdateLikes" l
+                            WHERE l."updateId" = u.id
+                        ), '[]')
+                    ) ORDER BY u.date DESC)
+                    FROM "venuesUpdates" u
+                    WHERE u."venueId" = v.id
+                ), '[]') AS updates
             FROM venues v
-            LEFT JOIN "venuesMenu" m ON v.id = m."venueId"
-            LEFT JOIN "venuesOpeningHours" oh ON v.id = oh."venueId"
-            LEFT JOIN "venuesQuestionAnswers" qa ON v.id = qa."venueId"
-            LEFT JOIN "venuesUpdates" u ON v.id = u."venueId"
-            WHERE v."requestId" = %s
+            WHERE v.id = %s
             GROUP BY v.id
         """
 
@@ -1385,9 +1530,36 @@ def getToken(token):
         token_data = cur.fetchone()
 
         if token_data is None:
-            return jsonify([]), 404
+            return jsonify({
+                "code": 404,
+                "message": "Token not found."
+            }), 404
         
-        return jsonify(token_data), 200
+        if token_data['userId'] is not None:
+            user_id = token_data['userId']
+        elif token_data['producerId'] is not None:
+            user_id = token_data['producerId']
+        elif token_data['venueId'] is not None:
+            user_id = token_data['venueId']
+        else:
+            return jsonify({
+                "code": 500,
+                "message": "Token does not have a valid associated user."
+            }), 500
+        
+        response_data = {
+            "id": token_data['id'],
+            "token": token_data['token'],
+            "requestId": token_data['requestId'],
+            "expiry": token_data['expiry'],
+            "userId": user_id
+        }
+
+        
+        return jsonify({
+            "code": 200,
+            "data": response_data
+        }), 200
     
     except Exception as e:
         print(str(e))
@@ -1413,9 +1585,35 @@ def getTokenByRequestId(requestId):
         token_data = cur.fetchone()
 
         if token_data is None:
-            return jsonify([]), 404
+            return jsonify({
+                "code": 404,
+                "message": "Token not found."
+            }), 404
         
-        return jsonify(token_data), 200
+        if token_data['userId'] is not None:
+            user_id = token_data['userId']
+        elif token_data['producerId'] is not None:
+            user_id = token_data['producerId']
+        elif token_data['venueId'] is not None:
+            user_id = token_data['venueId']
+        else:
+            return jsonify({
+                "code": 500,
+                "message": "Token does not have a valid associated user."
+            }), 500
+        
+        response_data = {
+            "id": token_data['id'],
+            "token": token_data['token'],
+            "requestId": token_data['requestId'],
+            "expiry": token_data['expiry'],
+            "userId": user_id
+        }
+
+        return jsonify({
+            "code": 200,
+            "data": response_data
+        }), 200
     
     except Exception as e:
         print(str(e))

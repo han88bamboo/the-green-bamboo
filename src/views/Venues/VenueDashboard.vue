@@ -1211,7 +1211,7 @@
 
                     // Get listing data
                     for (let report of this.pendingReports) {
-                        let listingData = this.loadedListings.find(i => i.id == report.listingID);
+                        let listingData = this.loadedListings.find(i => i.id == report.listingId);
                         if (listingData != undefined) {
                             report.listingData = listingData;
                         }
@@ -1226,7 +1226,7 @@
                     // Get venue views data
                     let viewsResponse = await this.$axios.get('http://127.0.0.1:5000/getData/getVenuesProfileViewsByVenue/' + this.targetVenue.id);
                     if (viewsResponse.data.length > 0) {
-                        this.venueViews = viewsResponse.data[0].views;
+                        this.venueViews = viewsResponse.data;
                     }
 
                     // Set data loaded flag

@@ -689,38 +689,6 @@ def deleteQA():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/updateProducerClaimStatus', methods=['POST'])
 def updateProducerClaimStatus():
-    # db = g.db
-
-    # # fetch sent data
-    # data = request.get_json()
-    # print(data)
-
-    # # extract components of the data
-    # producerID = data['businessId']
-    # claimStatus = data["claimStatus"]
-
-    # try: 
-    #     update = db.producers.update_one({'_id': ObjectId(producerID)}, 
-    #                                      {'$set': {
-    #                                             'claimStatus': claimStatus
-    #                                         }})
-
-    #     return jsonify(
-    #         {   
-    #             "code": 201,
-    #             "message": "Updated claim status successfully!"
-    #         }
-    #     ), 201
-    # except Exception as e:
-    #     print(str(e))
-    #     return jsonify(
-    #         {
-    #             "code": 500,
-    #             "data": data,
-    #             "message": "An error occurred updating claim status!"
-    #         }
-    #     ), 500
-
     conn = g.db
     cur = conn.cursor()
     data = request.get_json()
@@ -760,22 +728,17 @@ def updateProducerClaimStatus():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/updateProducerClaimStatusCheckDate', methods=['POST'])
 def updateProducerClaimStatusCheckDate():
-    db = g.db
-
-    # fetch sent data
+    conn = g.db
+    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
-    # extract components of the data
-    producerID = data['businessId']
-    # claimStatusCheckDate = data["claimStatusCheckDate"]
+    producerID = int(data['businessId'])
     claimStatusCheckDate = datetime.strptime(data["claimStatusCheckDate"], "%Y-%m-%dT%H:%M:%S.%fZ")
 
-    try: 
-        update = db.producers.update_one({'_id': ObjectId(producerID)}, 
-                                         {'$set': {
-                                                'claimStatusCheckDate': claimStatusCheckDate
-                                            }})
+    try:
+        cur.execute('UPDATE producers SET "claimStatusCheckDate" = %s WHERE id = %s', (claimStatusCheckDate, producerID))
+        conn.commit()
 
         return jsonify(
             {   
@@ -783,7 +746,9 @@ def updateProducerClaimStatusCheckDate():
                 "message": "Updated claim status check date successfully!"
             }
         ), 201
+    
     except Exception as e:
+        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -792,3 +757,6 @@ def updateProducerClaimStatusCheckDate():
                 "message": "An error occurred updating claim status check date!"
             }
         ), 500
+    
+    finally:
+        cur.close()

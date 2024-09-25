@@ -1872,13 +1872,16 @@
                                 });
                             }
                             for (let drink of this.user.drinkLists["Drinks I Have Tried"]["listItems"]) {
-                                let triedDrink = this.listings.find(listing => listing.id === parseInt(drink)).listingName;
-                                // let triedDrinkName = triedDrink ? triedDrink.listingName : null;
-                                triedDrinks.push(triedDrink)
+                                let triedDrink = this.listings.find(listing => listing.id === parseInt(drink))?.listingName;
+                                if (triedDrink) {
+                                    triedDrinks.push(triedDrink)
+                                }
                             }
                             for (let drink of this.user.drinkLists["Drinks I Want To Try"]["listItems"]) {
-                                let wantDrinkName = this.listings.find(listing => listing.id === parseInt(drink)).listingName;   
-                                wantToTryDrinks.push(wantDrinkName)
+                                let wantDrinkName = this.listings.find(listing => listing.id === parseInt(drink))?.listingName;   
+                                if (wantDrinkName) {
+                                    wantToTryDrinks.push(wantDrinkName)
+                                }
                             }
                             this.drinkList = {
                                 haveTried: triedDrinks,

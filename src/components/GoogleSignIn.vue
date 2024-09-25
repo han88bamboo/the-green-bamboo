@@ -41,13 +41,13 @@
                 if (response2 != null && response2.data != null && response2.data != "" && !(Array.isArray(response2.data) && response2.data.length == 0)) {
                     if(this.base64Image !== response2.data.photo){
                         let submitData2 = {
-                            "userID" : response2.data._id.$oid,
+                            "userID" : response2.data.id,
                             "image64": this.base64Image,
                             "drinkChoice": response2.data.choiceDrinks,
                         }
                         await this.$axios.post('http://127.0.0.1:5000/editProfile/editDetails', submitData2)
                     }
-                    localStorage.setItem("88B_accID", response2.data._id.$oid);
+                    localStorage.setItem("88B_accID", response2.data.id);
                     localStorage.setItem("88B_accType", "user");
                     this.$router.push({path: '/'});
                 }
@@ -128,7 +128,7 @@
                     if(responseCode==201){
                         // Route them in  after setting details
                         const response4 = await this.$axios.get('http://127.0.0.1:5000/getData/getUserByUsername/' + userDetails.email);
-                        localStorage.setItem("88B_accID", response4.data._id.$oid);
+                        localStorage.setItem("88B_accID", response4.data.id);
                         localStorage.setItem("88B_accType", "user");
                         this.$router.push({path: '/'});
                     }else{
