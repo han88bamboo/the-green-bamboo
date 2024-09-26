@@ -64,7 +64,7 @@
                 </div>
                 <!-- Admin Version -->
                 <div v-if="powerView" class="row pt-3 mobile-view-hide">
-                    <router-link :to="{ path: '/profile/venue/' + targetVenue._id['$oid'] }" class="d-grid default-clickable-text">
+                    <router-link :to="{ path: '/profile/venue/' + targetVenue.id }" class="d-grid default-clickable-text">
                         <button type="button" class="btn primary-btn-outline-thick rounded-0"> Return To Profile </button>
                     </router-link>
                 </div>
@@ -100,7 +100,7 @@
                                 <!-- [if] Self Venue -->
                                 <div v-if="selfView" class="mr-auto">
                                     <h4> Q&A for You! </h4>
-                                    <router-link :to="{ path: '/Venues/VenuesQA/' + targetVenue._id['$oid'] }" class="default-text-no-background">
+                                    <router-link :to="{ path: '/Venues/VenuesQA/' + targetVenue.id }" class="default-text-no-background">
                                         <p class="reverse-text no-margin text-decoration-underline text-start pb-2"> View All </p>
                                     </router-link>
                                 </div>
@@ -131,18 +131,18 @@
 
                                         <!-- Answered Questions -->
                                         <div v-if="qaMode == 'answered'">
-                                            <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
+                                            <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa.id" v-bind:class="{ 'active': index === 0 }">
                                                 <p> <b> Q: {{ qa["question"] }} </b> </p>
                                                 <!-- [if] not editing -->
-                                                <button v-if="editingQA == false || editingQAID != qa._id.$oid" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="editQA(qa)">
+                                                <button v-if="editingQA == false || editingQAID != qa.id" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="editQA(qa)">
                                                     Edit answer
                                                 </button>
                                                 <!-- [else] if editing -->
-                                                <button v-if="editingQAID == qa._id.$oid" type="button" class="btn btn-success rounded-0 me-1" v-on:click="saveQAEdit(qa)">
+                                                <button v-if="editingQAID == qa.id" type="button" class="btn btn-success rounded-0 me-1" v-on:click="saveQAEdit(qa)">
                                                     Save
                                                 </button>
                                                 <!-- [else] if editing -->
-                                                <button v-if="editingQAID == qa._id.$oid" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="cancelQAEdit(qa)">
+                                                <button v-if="editingQAID == qa.id" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="cancelQAEdit(qa)">
                                                     Cancel
                                                 </button>
                                                 <!-- delete -->
@@ -151,14 +151,14 @@
                                                 </button>
                                                 <!-- spacer -->
                                                 <div class="mt-2"></div>
-                                                <p v-if="editingQA == false || editingQAID != qa._id.$oid"> A: {{ qa["answer"] }} </p>
-                                                <textarea v-else-if="editingQAID == qa._id.$oid" class="search-bar form-control rounded fst-italic question-box flex-grow-1" type="text" placeholder="Edit answer." v-model="edit_answer[qa._id.$oid]"></textarea>
+                                                <p v-if="editingQA == false || editingQAID != qa.id"> A: {{ qa["answer"] }} </p>
+                                                <textarea v-else-if="editingQAID == qa.id" class="search-bar form-control rounded fst-italic question-box flex-grow-1" type="text" placeholder="Edit answer." v-model="edit_answer[qa.id]"></textarea>
                                             </div>
                                         </div>
 
                                         <!-- Unanswered Questions -->
                                         <div v-if="qaMode == 'unanswered'">
-                                            <div class="carousel-item" v-for="(qa, index) in unansweredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
+                                            <div class="carousel-item" v-for="(qa, index) in unansweredQuestions" v-bind:key="qa.id" v-bind:class="{ 'active': index === 0 }">
                                                 <p class="fw-bold">Q: {{ qa["question"] }}</p>
                                                 <div class="input-group centered pt-2">
                                                     <textarea class="search-bar form-control rounded fst-italic question-box" type="text" placeholder="Respond to your fans' latest questions." v-model="qaAnswer"></textarea>
@@ -200,7 +200,7 @@
                                 <!-- [if] Self Venue -->
                                 <div v-if="selfView" class="mr-auto">
                                     <h4> Q&A for You! </h4>
-                                    <router-link :to="{ path: '/Venues/VenuesQA/' + targetVenue._id['$oid'] }" class="default-text-no-background">
+                                    <router-link :to="{ path: '/Venues/VenuesQA/' + targetVenue.id }" class="default-text-no-background">
                                         <p class="reverse-text no-margin text-decoration-underline text-start pb-2"> View All </p>
                                     </router-link>
                                 </div>
@@ -231,18 +231,18 @@
 
                                         <!-- Answered Questions -->
                                         <div v-if="qaMode == 'answered'">
-                                            <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
+                                            <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa.id" v-bind:class="{ 'active': index === 0 }">
                                                 <p> <b> Q: {{ qa["question"] }} </b> </p>
                                                 <!-- [if] not editing -->
-                                                <button v-if="editingQA == false || editingQAID != qa._id.$oid" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="editQA(qa)">
+                                                <button v-if="editingQA == false || editingQAID != qa.id" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="editQA(qa)">
                                                     Edit answer
                                                 </button>
                                                 <!-- [else] if editing -->
-                                                <button v-if="editingQAID == qa._id.$oid" type="button" class="btn btn-success rounded-0 me-1" v-on:click="saveQAEdit(qa)">
+                                                <button v-if="editingQAID == qa.id" type="button" class="btn btn-success rounded-0 me-1" v-on:click="saveQAEdit(qa)">
                                                     Save
                                                 </button>
                                                 <!-- [else] if editing -->
-                                                <button v-if="editingQAID == qa._id.$oid" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="cancelQAEdit(qa)">
+                                                <button v-if="editingQAID == qa.id" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="cancelQAEdit(qa)">
                                                     Cancel
                                                 </button>
                                                 <!-- delete -->
@@ -251,14 +251,14 @@
                                                 </button>
                                                 <!-- spacer -->
                                                 <div class="mt-2"></div>
-                                                <p v-if="editingQA == false || editingQAID != qa._id.$oid"> A: {{ qa["answer"] }} </p>
-                                                <textarea v-else-if="editingQAID == qa._id.$oid" class="search-bar form-control rounded fst-italic question-box flex-grow-1" type="text" placeholder="Edit answer." v-model="edit_answer[qa._id.$oid]"></textarea>
+                                                <p v-if="editingQA == false || editingQAID != qa.id"> A: {{ qa["answer"] }} </p>
+                                                <textarea v-else-if="editingQAID == qa.id" class="search-bar form-control rounded fst-italic question-box flex-grow-1" type="text" placeholder="Edit answer." v-model="edit_answer[qa.id]"></textarea>
                                             </div>
                                         </div>
 
                                         <!-- Unanswered Questions -->
                                         <div v-if="qaMode == 'unanswered'">
-                                            <div class="carousel-item" v-for="(qa, index) in unansweredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
+                                            <div class="carousel-item" v-for="(qa, index) in unansweredQuestions" v-bind:key="qa.id" v-bind:class="{ 'active': index === 0 }">
                                                 <p class="fw-bold">Q: {{ qa["question"] }}</p>
                                                 <div class="input-group centered pt-2">
                                                     <textarea class="search-bar form-control rounded fst-italic question-box" type="text" placeholder="Respond to your fans' latest questions." v-model="qaAnswer"></textarea>
@@ -329,7 +329,7 @@
                                 <!-- [else] -->
                                 <div v-else class="mr-auto">
                                     <h4> User Menu Reports </h4>
-                                    <router-link :to="{ path: '/profile/venue/' + targetVenue._id['$oid'] }" class="default-text-no-background">
+                                    <router-link :to="{ path: '/profile/venue/' + targetVenue.id }" class="default-text-no-background">
                                         <p class="reverse-text no-margin text-decoration-underline text-start pb-2"> Go to Venue Profile </p>
                                     </router-link>
                                 </div>
@@ -345,14 +345,14 @@
                                             <p class="fst-italic text-center">( No Pending User Reports! )</p>
                                         </div>
 
-                                        <div class="carousel-item" v-for="(userReport, index) in pendingReports" v-bind:key="userReport._id" v-bind:class="{ 'active': index === 0 }">
+                                        <div class="carousel-item" v-for="(userReport, index) in pendingReports" v-bind:key="userReport.id" v-bind:class="{ 'active': index === 0 }">
                                             <p class="fw-bold">Menu Item:<br>{{ userReport.listingData["listingName"] }}</p>
                                             <p> {{ userReport["inaccurateReason"] }} </p>
                                             <div class="input-group pt-2" v-if="selfView">
-                                                <button type="button" class="btn btn-success rounded-0 reverse-clickable-text" @click="updateReportStatus(userReport._id['$oid'], 'approve')">
+                                                <button type="button" class="btn btn-success rounded-0 reverse-clickable-text" @click="updateReportStatus(userReport.id, 'approve')">
                                                     Clear
                                                 </button>
-                                                <button type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1" @click="updateReportStatus(userReport._id['$oid'], 'reject')">
+                                                <button type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1" @click="updateReportStatus(userReport.id, 'reject')">
                                                     Delete
                                                 </button>
                                             </div>
@@ -395,7 +395,7 @@
                                 <!-- [else] -->
                                 <div v-else class="mr-auto">
                                     <h4> User Menu Reports </h4>
-                                    <router-link :to="{ path: '/profile/venue/' + targetVenue._id['$oid'] }" class="default-text-no-background">
+                                    <router-link :to="{ path: '/profile/venue/' + targetVenue.id }" class="default-text-no-background">
                                         <p class="reverse-text no-margin text-decoration-underline text-start pb-2"> Go to Venue Profile </p>
                                     </router-link>
                                 </div>
@@ -411,14 +411,14 @@
                                             <p class="fst-italic text-center">( No Pending User Reports! )</p>
                                         </div>
 
-                                        <div class="carousel-item" v-for="(userReport, index) in pendingReports" v-bind:key="userReport._id" v-bind:class="{ 'active': index === 0 }">
+                                        <div class="carousel-item" v-for="(userReport, index) in pendingReports" v-bind:key="userReport.id" v-bind:class="{ 'active': index === 0 }">
                                             <p class="fw-bold">Menu Item:<br>{{ userReport.listingData["listingName"] }}</p>
                                             <p> {{ userReport["inaccurateReason"] }} </p>
                                             <div class="input-group pt-2" v-if="selfView">
-                                                <button type="button" class="btn btn-success rounded-0 reverse-clickable-text" @click="updateReportStatus(userReport._id['$oid'], 'approve')">
+                                                <button type="button" class="btn btn-success rounded-0 reverse-clickable-text" @click="updateReportStatus(userReport.id, 'approve')">
                                                     Clear
                                                 </button>
-                                                <button type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1" @click="updateReportStatus(userReport._id['$oid'], 'reject')">
+                                                <button type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1" @click="updateReportStatus(userReport.id, 'reject')">
                                                     Delete
                                                 </button>
                                             </div>
@@ -492,7 +492,7 @@
                     <!-- col 1: most reviewed drinks on the menu -->
                     <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0">
                         <h3> Most Reviewed Drinks </h3>
-                        <div class="text-start pb-2" v-for="listing in listingsMostReviewed" v-bind:key="listing._id">
+                        <div class="text-start pb-2" v-for="listing in listingsMostReviewed" v-bind:key="listing.id">
                             <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
                                 <div class="d-flex align-items-center">
                                     <!-- <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;"> -->
@@ -509,7 +509,7 @@
                     <!-- col 2: best rated drinks on the menu -->
                     <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0">
                         <h3> Best Rated Drinks </h3>
-                        <div class="text-start pb-2" v-for="listing in listingsBestRated" v-bind:key="listing._id">
+                        <div class="text-start pb-2" v-for="listing in listingsBestRated" v-bind:key="listing.id">
                             <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
                                 <div class="d-flex align-items-center">
                                     <!-- <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;"> -->
@@ -533,7 +533,7 @@
                     <!-- col 1: most reviewed sections -->
                     <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0">
                         <h3> Most Reviewed Sections </h3>
-                        <div class="text-start pb-2" v-for="(section, index) in sectionsMostReviewed" v-bind:key="section._id">
+                        <div class="text-start pb-2" v-for="(section, index) in sectionsMostReviewed" v-bind:key="section.id">
                             <div class="row ms-0 default-clickable-text"> 
                                 <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
                                     <h5 class="my-auto"> {{ index + 1 }} </h5>
@@ -549,7 +549,7 @@
                     <!-- col 2: best rated sections -->
                     <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0">
                         <h3> Best Rated Sections </h3>
-                        <div class="text-start pb-2" v-for="(section, index) in sectionsBestRated" v-bind:key="section._id">
+                        <div class="text-start pb-2" v-for="(section, index) in sectionsBestRated" v-bind:key="section.id">
                             <div class="row ms-0 default-clickable-text"> 
                                 <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
                                     <h5 class="my-auto"> {{ index + 1 }} </h5>
@@ -650,7 +650,7 @@
                         <div id="MostReviewedExpressions" class="tab-pane fade show active col-lg-5 col-md-12 col-sm-12 text-start pt-3 mx-lg-3 ps-lg-0 pe-lg-0">
                             <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0">
                         
-                        <div class="text-start pb-2" v-for="listing in listingsMostReviewed" v-bind:key="listing._id">
+                        <div class="text-start pb-2" v-for="listing in listingsMostReviewed" v-bind:key="listing.id">
                             <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
                                 <div class="d-flex align-items-center">
                                     <!-- <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;"> -->
@@ -668,7 +668,7 @@
                         <div id="BestRatedExpressions" class="tab-pane fade col-lg-5 col-md-12 col-sm-12 text-start pt-3 mx-lg-3 ps-lg-0 pe-lg-0">
                             <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0">
                         
-                        <div class="text-start pb-2" v-for="listing in listingsBestRated" v-bind:key="listing._id">
+                        <div class="text-start pb-2" v-for="listing in listingsBestRated" v-bind:key="listing.id">
                             <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
                                 <div class="d-flex align-items-center">
                                     <!-- <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;"> -->
@@ -689,7 +689,7 @@
                         <div id="MostReviewedSections" class="tab-pane fade col text-start pt-3 mx-lg-3 ps-lg-0 pe-lg-0">
                             <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0">
                         
-                        <div class="text-start pb-2" v-for="(section, index) in sectionsMostReviewed" v-bind:key="section._id">
+                        <div class="text-start pb-2" v-for="(section, index) in sectionsMostReviewed" v-bind:key="section.id">
                             <div class="row ms-0 default-clickable-text"> 
                                 <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
                                     <h5 class="my-auto"> {{ index + 1 }} </h5>
@@ -706,7 +706,7 @@
                         <div id="BestRatedSections" class="tab-pane fade col text-start pt-3 mx-lg-3 ps-lg-0 pe-lg-0">
                             <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0">
                        
-                        <div class="text-start pb-2" v-for="(section, index) in sectionsBestRated" v-bind:key="section._id">
+                        <div class="text-start pb-2" v-for="(section, index) in sectionsBestRated" v-bind:key="section.id">
                             <div class="row ms-0 default-clickable-text"> 
                                 <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
                                     <h5 class="my-auto"> {{ index + 1 }} </h5>
@@ -875,7 +875,7 @@
         computed: {
             // Number of reviews
             reviewsData() {
-                const dates = [...new Set(this.allReviews.map(review => this.formatDateMonthYear(review.createdDate.$date)))];
+                const dates = [...new Set(this.allReviews.map(review => this.formatDateMonthYear(review.createdDate)))];
                 dates.sort((a, b) => {
                     const [monthA, yearA] = a.split('/');
                     const [monthB, yearB] = b.split('/');
@@ -885,7 +885,7 @@
                         return monthA - monthB;
                     }
                 });
-                const counts = dates.map(date => this.allReviews.filter(review => this.formatDateMonthYear(review.createdDate.$date) === date).length);
+                const counts = dates.map(date => this.allReviews.filter(review => this.formatDateMonthYear(review.createdDate) === date).length);
                 return {
                     labels: dates,
                     datasets: [
@@ -917,7 +917,7 @@
 
             // Profile visits
             profileData() {
-                const dates = [...new Set(this.venueViews.map(view => this.formatDateMonthYear(view.date.$date)))];
+                const dates = [...new Set(this.venueViews.map(view => this.formatDateMonthYear(view.date)))];
                 dates.sort((a, b) => {
                     const [monthA, yearA] = a.split('/');
                     const [monthB, yearB] = b.split('/');
@@ -927,7 +927,7 @@
                         return monthA - monthB;
                     }
                 });
-                const counts = dates.map(date => this.venueViews.filter(view => this.formatDateMonthYear(view.date.$date) === date).reduce((total, view) => total + view.count, 0));
+                const counts = dates.map(date => this.venueViews.filter(view => this.formatDateMonthYear(view.date) === date).reduce((total, view) => total + view.count, 0));
                 return {
                     labels: dates,
                     datasets: [
@@ -1072,6 +1072,7 @@
 
             // Load other data
             async loadData() {
+                console.log("Loading data...");
 
                 try {
 
@@ -1087,22 +1088,22 @@
                         for (let item of section.sectionMenu) {
 
                             // Find item in loadedListings
-                            let listingData = this.loadedListings.find(i => i._id['$oid'] == item.itemID['$oid']);
+                            let listingData = this.loadedListings.find(i => i.id == item.itemID);
 
                             // If not found, get from server
                             if (listingData == undefined) {
-                                let response = await this.$axios.get('http://127.0.0.1:5000/getData/getListing/' + item.itemID['$oid']);
+                                let response = await this.$axios.get('http://127.0.0.1:5000/getData/getListing/' + item.itemID);
                                 listingData = response.data;
 
                                 if (Array.isArray(listingData) && listingData.length == 0) {
                                     // Remove item from section
-                                    section.sectionMenu = section.sectionMenu.filter(i => i.itemID['$oid'] != item.itemID['$oid']);
+                                    section.sectionMenu = section.sectionMenu.filter(i => i.itemID != item.itemID);
                                 }
                                 // If found, obtain additional data and add to loadedListings
                                 else if (listingData != null && listingData != "") {
 
                                     // Get reviews
-                                    let reviewResponse = await this.$axios.get('http://127.0.0.1:5000/getData/getReviewByTarget/' + item.itemID['$oid']);
+                                    let reviewResponse = await this.$axios.get('http://127.0.0.1:5000/getData/getReviewByTarget/' + item.itemID);
                                     let reviewData = reviewResponse.data;
 
                                     if (Array.isArray(reviewData) && reviewData.length == 0) {
@@ -1145,8 +1146,8 @@
                                 };
 
                                 // Push item reviews to sectionDetails
-                                if (!section.sectionDetails.sectionUniqueDrinks.includes(listingData["_id"])) {
-                                    section.sectionDetails.sectionUniqueDrinks.push(listingData["_id"]);
+                                if (!section.sectionDetails.sectionUniqueDrinks.includes(listingData["id"])) {
+                                    section.sectionDetails.sectionUniqueDrinks.push(listingData["id"]);
                                     section.sectionDetails.sectionReviews.push(...listingData["reviews"]);
                                 }
 
@@ -1205,12 +1206,12 @@
                     });
 
                     // Get report data for venue
-                    let reportResponse = await this.$axios.get('http://127.0.0.1:5000/getData/getRequestInaccuracyByVenue/' + this.targetVenue['_id']['$oid']);
+                    let reportResponse = await this.$axios.get('http://127.0.0.1:5000/getData/getRequestInaccuracyByVenue/' + this.targetVenue['id']);
                     this.pendingReports = reportResponse.data;
 
                     // Get listing data
                     for (let report of this.pendingReports) {
-                        let listingData = this.loadedListings.find(i => i._id['$oid'] == report.listingID['$oid']);
+                        let listingData = this.loadedListings.find(i => i.id == report.listingId);
                         if (listingData != undefined) {
                             report.listingData = listingData;
                         }
@@ -1220,12 +1221,12 @@
                     this.pendingReports = this.pendingReports.filter(r => r.listingData != undefined);
 
                     // Sort reports by date
-                    this.pendingReports.sort((a, b) => (a.reportDate.$date > b.reportDate.$date) ? 1 : -1);
+                    this.pendingReports.sort((a, b) => (a.reportDate > b.reportDate) ? 1 : -1);
 
                     // Get venue views data
-                    let viewsResponse = await this.$axios.get('http://127.0.0.1:5000/getData/getVenuesProfileViewsByVenue/' + this.targetVenue._id['$oid']);
+                    let viewsResponse = await this.$axios.get('http://127.0.0.1:5000/getData/getVenuesProfileViewsByVenue/' + this.targetVenue.id);
                     if (viewsResponse.data.length > 0) {
-                        this.venueViews = viewsResponse.data[0].views;
+                        this.venueViews = viewsResponse.data;
                     }
 
                     // Set data loaded flag
@@ -1269,8 +1270,8 @@
                 try {
                     await this.$axios.post('http://127.0.0.1:5000/editVenueProfile/sendAnswers', 
                         {
-                            venueID: this.targetVenue['_id']['$oid'],
-                            questionsAnswersID: qa._id['$oid'],
+                            venueID: this.targetVenue['id'],
+                            questionsAnswersID: qa.id,
                             answer: this.qaAnswer,
                         },
                         {
@@ -1330,20 +1331,20 @@
             editQA(qa) {
                 this.editingQA = true;
                 // set the current details to the edit details
-                this.edit_answer[qa._id.$oid] = qa.answer
-                this.editingQAID = qa._id.$oid;
+                this.edit_answer[qa.id] = qa.answer
+                this.editingQAID = qa.id;
             }, 
             
             async saveQAEdit(qa) {
                 // set editing status to false
                 this.editingQA = false;
-                let q_and_a_id = qa._id.$oid;
+                let q_and_a_id = qa.id;
                 try {
                     await this.$axios.post('http://127.0.0.1:5000/editVenueProfile/editQA', 
                         {
-                            venueID: this.targetVenue['_id']['$oid'],
+                            venueID: this.targetVenue['id'],
                             questionsAnswersID: q_and_a_id,
-                            answer: this.edit_answer[qa._id.$oid],
+                            answer: this.edit_answer[qa.id],
                         },
                         {
                             headers: {
@@ -1359,11 +1360,11 @@
             },
 
             async deleteQAEdit(qa) {
-                let q_and_a_id = qa._id.$oid;
+                let q_and_a_id = qa.id;
                 try {
                     const response = await this.$axios.post('http://127.0.0.1:5000/editVenueProfile/deleteQA', 
                         {
-                            venueID: this.targetVenue['_id']['$oid'],
+                            venueID: this.targetVenue['id'],
                             questionsAnswersID: q_and_a_id,
                             answer: "",
                         },
@@ -1385,7 +1386,7 @@
             // cancel Q&A edit
             cancelQAEdit(qa) {
                 this.editingQA = false;
-                this.edit_answer[qa._id.$oid] = "";
+                this.edit_answer[qa.id] = "";
                 this.editingQAID = "";
             },
 

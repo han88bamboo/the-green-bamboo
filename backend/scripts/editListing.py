@@ -25,16 +25,24 @@ def parse_json(data):
 # - Possible return codes: 200 (Updated), 410 (Duplicate Detected), 420 (Invalid ID), 440 (Not Found), 450 (Error during update)
 @blueprint.route("/updateListing/<id>", methods=['POST'])
 def updateListing(id):
-    db = g.db
-    listing_id=ObjectId(id)
+    conn = g.db
+    cur = conn.cursor()
+
     updatedListing = request.get_json()
-    updatedListing['producerID'] = ObjectId(updatedListing['producerID'])
-    
-    # Duplicate listing check: Reject if listing with the same bottle name already exists in the database
+    updatedListing['producerID'] = int(updatedListing['producerID'])
+
+    if 'abv' in updatedListing:
+        abv_value = updatedListing['abv'].replace('%', '')
+        updatedListing['abv'] = float(abv_value)
+
     updatedListingName = updatedListing["listingName"]
-    existingBottle = db.listings.find_one({"listingName": updatedListingName})
-    if(existingBottle != None):
-        if(existingBottle["_id"] != listing_id):
+
+    try:
+        # Check if listing with the same name exists
+        cur.execute("SELECT * FROM listings WHERE \"listingName\" = %s", (updatedListingName,))
+        existingBottle = cur.fetchone()
+
+        if existingBottle is not None and existingBottle['id'] != int(id):
             return jsonify(
                 {   
                     "code": 410,
@@ -44,82 +52,52 @@ def updateListing(id):
                     "message": "Bottle already exists."
                 }
             ), 410
-        else:
-            # delete the old image and upload new one
+        
+        # If it's an existing bottle, delete the old image from S3 and upload the new one
+        if existingBottle and updatedListing.get('photo'):
             try:
-                if existingBottle['photo']:
+                if existingBottle['photo'] is not None and existingBottle['photo'] != '':
                     s3Images.deleteImageFromS3(existingBottle['photo'])
-                if updatedListing['photo']:
-                    updatedListing['photo'] = s3Images.uploadBase64ImageToS3(updatedListing['photo'])
-
+                updatedListing['photo'] = s3Images.uploadBase64ImageToS3(updatedListing['photo'])
             except Exception as e:
                 print(str(e))
                 return jsonify(
                     {
                         "code": 450,
                         "data": {
-                            "_id": id
+                            "id": id
                         },
                         "message": "An error occurred updating the listing."
                     }
                 ), 450
-    
-    # Update the listing entry with the specified id
-    # updatedBottle = data.listings(**updatedListing)
-    # print(updatedBottle)
-    try: 
-        result = db.listings.update_one(
-            {"_id": listing_id},
-            # {"$set": data.asdict(updatedBottle)}
-            {"$set": updatedListing}
+            
+        # Update the listing
+        columns = ', '.join(f'"{col}" = %s' for col in updatedListing.keys())
+        sql = f'UPDATE listings SET {columns} WHERE "id" = %s'
+        cur.execute(sql, list(updatedListing.values()) + [id])
+        conn.commit()
 
-        )
-
-        if result.matched_count > 0:
-            return jsonify(
-                {
-                    "code": 200,
-                    "data": {
-                        "_id": id
-                    },
-                    "message": "Listing updated successfully."
-                }
-            ), 200
-        else:
-            return jsonify(
-                {
-                    "code": 440,
-                    "data": {
-                        "_id":  id
-                    },
-                    "message": "Listing was not updated"
-                }
-            ), 440
-        
-    # If Id is invalid
-    except InvalidId:
         return jsonify(
             {
-                "code": 420,
-                "data": {
-                    "_id": id
-                },
-                "message": "Invalid listing ID."
+                "code": 200,
+                "data": id,
+                "message": "Listing updated successfully."
             }
-        ), 420
+        ), 200
     
-    # If listing does not work
     except Exception as e:
         print(str(e))
+        conn.rollback()
         return jsonify(
             {
                 "code": 450,
-                "data": {
-                    "_id": id
-                },
+                "data": id,
                 "message": "An error occurred updating the listing."
             }
         ), 450
+    
+    finally:
+        cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [DELETE] Deletes a listing
@@ -127,11 +105,14 @@ def updateListing(id):
 # - Possible return codes: 201 (Deleted), 400 (Listing doesn't exist), 500 (Error during deletion)
 @blueprint.route("/deleteListing/<id>", methods=['DELETE'])
 def deleteListing(id):
-    db = g.db
-        
+    conn = g.db
+    cur = conn.cursor()
+    
     # Find the listing entry with the specified id
-    existingListing = db.listings.find_one({"_id": ObjectId(id)})
-    if(existingListing == None):
+    cur.execute('SELECT * FROM listings WHERE "id" = %s', (id,))
+    existingListing = cur.fetchone()
+
+    if existingListing is None:
         return jsonify(
             {   
                 "code": 400,
@@ -141,15 +122,14 @@ def deleteListing(id):
                 "message": "Listing doesn't exist."
             }
         ), 400
+    
+    try:
+        # Delete image from S3 bucket only if it exists
+        if existingListing['photo'] is not None and existingListing['photo'] != '':
+            s3Images.deleteImageFromS3(existingListing['photo'])
 
-
-    # Delete the listing entry with the specified id
-    try: 
-        # delete image from s3 bucket
-        s3Images.deleteImageFromS3(existingListing['photo'])
-
-        # delete listing
-        result = db.listings.delete_one({"_id": ObjectId(id)})
+        cur.execute('DELETE FROM listings WHERE "id" = %s', (id,))
+        conn.commit()
 
         return jsonify(
             {   
@@ -157,8 +137,10 @@ def deleteListing(id):
                 "message": "Listing deleted successfully!"
             }
         ), 201
+    
     except Exception as e:
         print(str(e))
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,

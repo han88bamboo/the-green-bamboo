@@ -413,7 +413,7 @@ export default {
     if (this.reviewData?.location) {
       this.selectedLocationId = this.reviewData.location;
       this.selectedLocation = this.locationOptions
-            .filter(option=>option.id['$oid'].toLowerCase().includes(this.reviewData.location['$oid'].toLowerCase()))
+            .filter(option=>option.id.toLowerCase().includes(this.reviewData.location.toLowerCase()))
     }
     if (this.reviewData?.colour) {
       this.selectedColour = this.reviewData.colour;
@@ -499,9 +499,7 @@ export default {
                 let submitAPI = "http://127.0.0.1:5000/createReview/createReview"
                 let submitData = {
                     "userID" : this.userID,
-                    "reviewTarget" : {
-                        "$oid": this.listing_id
-                    },
+                    "reviewTarget" : this.listing_id,
                     "rating" : this.rating,
                     "reviewDesc": this.reviewDesc,
                     "reviewType": "Listing",

@@ -107,18 +107,18 @@
                                             <div v-if="correctProducer || isAdmin">
                                                 <!-- show answered questions -->
                                                 <div v-if="answerStatus">
-                                                    <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
+                                                    <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa.id" v-bind:class="{ 'active': index === 0 }">
                                                         <p> <b> Q: {{ qa["question"] }} </b> </p>
                                                         <!-- [if] not editing -->
-                                                        <button v-if="correctProducer && (editingQA == false || editingQAID != qa._id.$oid)" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="editQA(qa)">
+                                                        <button v-if="correctProducer && (editingQA == false || editingQAID != qa.id)" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="editQA(qa)">
                                                             Edit answer
                                                         </button>
                                                         <!-- [else] if editing -->
-                                                        <button v-if="correctProducer && editingQAID == qa._id.$oid" type="button" class="btn btn-success rounded-0 me-1" v-on:click="saveQAEdit(qa)">
+                                                        <button v-if="correctProducer && editingQAID == qa.id" type="button" class="btn btn-success rounded-0 me-1" v-on:click="saveQAEdit(qa)">
                                                             Save
                                                         </button>
                                                         <!-- [else] if editing -->
-                                                        <button v-if="correctProducer && editingQAID == qa._id.$oid" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="cancelQAEdit(qa)">
+                                                        <button v-if="correctProducer && editingQAID == qa.id" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="cancelQAEdit(qa)">
                                                             Cancel
                                                         </button>
                                                         <!-- delete -->
@@ -127,14 +127,14 @@
                                                         </button>
                                                         <!-- spacer -->
                                                         <div class="mt-2"></div>
-                                                        <p v-if="editingQA == false || editingQAID != qa._id.$oid"> A: {{ qa["answer"] }} </p>
-                                                        <textarea v-else-if="editingQAID == qa._id.$oid" class="search-bar form-control rounded fst-italic question-box flex-grow-1" type="text" placeholder="Edit answer." v-model="edit_answer[qa._id.$oid]"></textarea>
+                                                        <p v-if="editingQA == false || editingQAID != qa.id"> A: {{ qa["answer"] }} </p>
+                                                        <textarea v-else-if="editingQAID == qa.id" class="search-bar form-control rounded fst-italic question-box flex-grow-1" type="text" placeholder="Edit answer." v-model="edit_answer[qa.id]"></textarea>
                                                     </div>
                                                 </div>
 
                                                 <!-- show unanswered questions -->
                                                 <div v-else>
-                                                        <div class="carousel-item" v-for="(qa, index) in unansweredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
+                                                        <div class="carousel-item" v-for="(qa, index) in unansweredQuestions" v-bind:key="qa.id" v-bind:class="{ 'active': index === 0 }">
                                                         <p> <b> Q: {{ qa["question"] }} </b> </p>
                                                         <div class="input-group centered">
                                                             <div class="input-group centered pt-2">
@@ -151,7 +151,7 @@
                                             </div>
                                             <!-- [else] user type is NOT producer -->
                                             <div v-else>
-                                                <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
+                                                <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa.id" v-bind:class="{ 'active': index === 0 }">
                                                     <div>
                                                         <p> <b> Q: {{ qa["question"] }} </b> </p>
                                                         <p> A: {{ qa["answer"] }} </p>
@@ -222,18 +222,18 @@
                                     <div v-if="correctProducer || isAdmin">
                                         <!-- show answered questions -->
                                         <div v-if="answerStatus">
-                                            <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
+                                            <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa.id" v-bind:class="{ 'active': index === 0 }">
                                                 <p> <b> Q: {{ qa["question"] }} </b> </p>
                                                 <!-- [if] not editing -->
-                                                <button v-if="correctProducer && (editingQA == false || editingQAID != qa._id.$oid)" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="editQA(qa)">
+                                                <button v-if="correctProducer && (editingQA == false || editingQAID != qa.id)" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="editQA(qa)">
                                                     Edit answer
                                                 </button>
                                                 <!-- [else] if editing -->
-                                                <button v-if="correctProducer && editingQAID == qa._id.$oid" type="button" class="btn btn-success rounded-0 me-1" v-on:click="saveQAEdit(qa)">
+                                                <button v-if="correctProducer && editingQAID == qa.id" type="button" class="btn btn-success rounded-0 me-1" v-on:click="saveQAEdit(qa)">
                                                     Save
                                                 </button>
                                                 <!-- [else] if editing -->
-                                                <button v-if="correctProducer && editingQAID == qa._id.$oid" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="cancelQAEdit(qa)">
+                                                <button v-if="correctProducer && editingQAID == qa.id" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="cancelQAEdit(qa)">
                                                     Cancel
                                                 </button>
                                                 <!-- delete -->
@@ -242,14 +242,14 @@
                                                 </button>
                                                 <!-- spacer -->
                                                 <div class="mt-2"></div>
-                                                <p v-if="editingQA == false || editingQAID != qa._id.$oid"> A: {{ qa["answer"] }} </p>
-                                                <textarea v-else-if="editingQAID == qa._id.$oid" class="search-bar form-control rounded fst-italic question-box flex-grow-1" type="text" placeholder="Edit answer." v-model="edit_answer[qa._id.$oid]"></textarea>
+                                                <p v-if="editingQA == false || editingQAID != qa.id"> A: {{ qa["answer"] }} </p>
+                                                <textarea v-else-if="editingQAID == qa.id" class="search-bar form-control rounded fst-italic question-box flex-grow-1" type="text" placeholder="Edit answer." v-model="edit_answer[qa.id]"></textarea>
                                             </div>
                                         </div>
 
                                         <!-- show unanswered questions -->
                                         <div v-else>
-                                                <div class="carousel-item" v-for="(qa, index) in unansweredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
+                                                <div class="carousel-item" v-for="(qa, index) in unansweredQuestions" v-bind:key="qa.id" v-bind:class="{ 'active': index === 0 }">
                                                 <p> <b> Q: {{ qa["question"] }} </b> </p>
                                                 <div class="input-group centered">
                                                     <div class="input-group centered pt-2">
@@ -266,7 +266,7 @@
                                     </div>
                                     <!-- [else] user type is NOT producer -->
                                     <div v-else>
-                                        <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }">
+                                        <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa.id" v-bind:class="{ 'active': index === 0 }">
                                             <div>
                                                 <p> <b> Q: {{ qa["question"] }} </b> </p>
                                                 <p> A: {{ qa["answer"] }} </p>
@@ -332,13 +332,13 @@
                         <div style="height: 85%;">
                             <div class="overflow-auto" style="max-height: 100%;">
                                 <!-- v-for loop here-->
-                                <div v-for="review in allReviews" v-bind:key="review._id" class="py-2">
-                                    <router-link :to="{ path: '/profile/user/' + review.userID.$oid }" class="reverse-clickable-text">
-                                        <b> @{{ getUsernameFromID(review.userID.$oid) }}</b>
+                                <div v-for="review in allReviews" v-bind:key="review.id" class="py-2">
+                                    <router-link :to="{ path: '/profile/user/' + review.userID }" class="reverse-clickable-text">
+                                        <b> @{{ getUsernameFromID(review.userID) }}</b>
                                     </router-link> 
                                     rated 
-                                    <router-link :to="{ path: '/listing/view/' + getListingFromID(review.reviewTarget.$oid)._id.$oid }" class="reverse-clickable-text">
-                                        <u> {{ getListingFromID(review.reviewTarget.$oid).listingName }} </u>
+                                    <router-link :to="{ path: '/listing/view/' + getListingFromID(review.reviewTarget).id }" class="reverse-clickable-text">
+                                        <u> {{ getListingFromID(review.reviewTarget).listingName }} </u>
                                     </router-link>
                                     <span class="ps-2">
                                         <i> {{ review.rating }} 
@@ -363,13 +363,13 @@
                         <div style="height: 85%;">
                             <div class="overflow-auto" style="max-height: 100%;">
                                 <!-- v-for loop here-->
-                                <div v-for="review in allReviews" v-bind:key="review._id" class="py-2">
-                                    <router-link :to="{ path: '/profile/user/' + review.userID.$oid }" class="reverse-clickable-text">
-                                        <b> @{{ getUsernameFromID(review.userID.$oid) }}</b>
+                                <div v-for="review in allReviews" v-bind:key="review.id" class="py-2">
+                                    <router-link :to="{ path: '/profile/user/' + review.userID }" class="reverse-clickable-text">
+                                        <b> @{{ getUsernameFromID(review.userID) }}</b>
                                     </router-link> 
                                     rated 
-                                    <router-link :to="{ path: '/listing/view/' + getListingFromID(review.reviewTarget.$oid)._id.$oid }" class="reverse-clickable-text">
-                                        <u> {{ getListingFromID(review.reviewTarget.$oid).listingName }} </u>
+                                    <router-link :to="{ path: '/listing/view/' + getListingFromID(review.reviewTarget).id }" class="reverse-clickable-text">
+                                        <u> {{ getListingFromID(review.reviewTarget).listingName }} </u>
                                     </router-link>
                                     <span class="ps-2">
                                         <i> {{ review.rating }} 
@@ -442,7 +442,7 @@
                         <!-- col 1: your best rated expressions -->
                         <div id="BestRatedExpressions" class="tab-pane fade show active col-lg-5 col-md-12 col-sm-12 text-start pt-3 mx-lg-3 ps-lg-0 pe-lg-0">
                             
-                            <div class="text-start pb-2" v-for="listing in mostPopular" v-bind:key="listing._id">
+                            <div class="text-start pb-2" v-for="listing in mostPopular" v-bind:key="listing.id">
                                 <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
                                     <div class="d-flex align-items-center">
                                         <img :src="(listing.photo || defaultPhoto)" style="width: 70px; height: 70px;">
@@ -462,7 +462,7 @@
                         <!-- col 2: your most reviewed expressions -->
                         <div id="MostReviewedExpressions" class="tab-pane fade col-lg-5 col-md-12 col-sm-12 text-start pt-3 mx-lg-3 ps-lg-0 pe-lg-0">
                             
-                            <div class="text-start pb-2" v-for="listing in mostDiscussed" v-bind:key="listing._id">
+                            <div class="text-start pb-2" v-for="listing in mostDiscussed" v-bind:key="listing.id">
                                 <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
                                     <div class="d-flex align-items-center">
                                         <img :src="(listing.photo || defaultPhoto)" style="width: 70px; height: 70px;">
@@ -519,7 +519,7 @@
                     <!-- col 1: your best rated expressions -->
                     <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-lg-3 ps-lg-0 pe-lg-0">
                         <h3> Your Best Rated Expressions </h3>
-                        <div class="text-start pb-2" v-for="listing in mostPopular" v-bind:key="listing._id">
+                        <div class="text-start pb-2" v-for="listing in mostPopular" v-bind:key="listing.id">
                             <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
                                 <div class="d-flex align-items-center">
                                     <img :src="(listing.photo || defaultPhoto)" style="width: 70px; height: 70px;">
@@ -539,7 +539,7 @@
                     <!-- col 2: your most reviewed expressions -->
                     <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-lg-3 ps-lg-0 pe-lg-0">
                         <h3> Your Most Reviewed Expressions </h3>
-                        <div class="text-start pb-2" v-for="listing in mostDiscussed" v-bind:key="listing._id">
+                        <div class="text-start pb-2" v-for="listing in mostDiscussed" v-bind:key="listing.id">
                             <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
                                 <div class="d-flex align-items-center">
                                     <img :src="(listing.photo || defaultPhoto)" style="width: 70px; height: 70px;">
@@ -613,7 +613,7 @@
         },
         computed: {
             reviewsData() {
-                const dates = [...new Set(this.allReviews.map(review => this.formatDateMonthYear(review.createdDate.$date)))];
+                const dates = [...new Set(this.allReviews.map(review => this.formatDateMonthYear(review.createdDate)))];
                 dates.sort((a, b) => {
                     const [monthA, yearA] = a.split('/');
                     const [monthB, yearB] = b.split('/');
@@ -623,7 +623,7 @@
                         return monthA - monthB;
                     }
                 });
-                const counts = dates.map(date => this.allReviews.filter(review => this.formatDateMonthYear(review.createdDate.$date) === date).length);
+                const counts = dates.map(date => this.allReviews.filter(review => this.formatDateMonthYear(review.createdDate) === date).length);
                 return {
                     labels: dates,
                     datasets: [
@@ -636,7 +636,7 @@
                 }
             },
             profileData() {
-                const dates = [...new Set(this.producerViews.map(view => this.formatDateMonthYear(view.date.$date)))];
+                const dates = [...new Set(this.producerViews.map(view => this.formatDateMonthYear(view.date)))];
                 dates.sort((a, b) => {
                     const [monthA, yearA] = a.split('/');
                     const [monthB, yearB] = b.split('/');
@@ -646,7 +646,7 @@
                         return monthA - monthB;
                     }
                 });
-                const counts = dates.map(date => this.producerViews.filter(view => this.formatDateMonthYear(view.date.$date) === date).reduce((total, view) => total + view.count, 0));
+                const counts = dates.map(date => this.producerViews.filter(view => this.formatDateMonthYear(view.date) === date).reduce((total, view) => total + view.count, 0));
                 return {
                     labels: dates,
                     datasets: [
@@ -792,7 +792,7 @@
                 try {
                         const response = await this.$axios.get('http://127.0.0.1:5000/getData/getProducers');
                         this.producers = response.data;
-                        this.specified_producer = this.producers.find(producer => producer["_id"]["$oid"] == this.producer_id); // find specified producer
+                        this.specified_producer = this.producers.find(producer => producer["id"] == this.producer_id); // find specified producer
                         this.checkProducerAnswered()
 
                     } 
@@ -835,13 +835,13 @@
                 try {
                         const response = await this.$axios.get('http://127.0.0.1:5000/getData/getProducersProfileViews');
                         this.producersProfileViews = response.data;
-                        let producerProfileViewInfo = this.producersProfileViews.find(view => view.producerID["$oid"] == this.producer_id);
+                        let producerProfileViewInfo = this.producersProfileViews.find(view => view.producerID == this.producer_id);
                         let producerViews = producerProfileViewInfo.views;
                         this.producerViews = producerViews
                     }
                     catch (error) {
                         console.error(error);
-                        this.dataLoaded = null;
+                        // this.dataLoaded = null;
                     }
 
                 // fetch all methods
@@ -904,7 +904,7 @@
 
             // send answer that producers give to users
             async sendAnswer (qa) {
-                let q_and_a_id = qa._id.$oid;
+                let q_and_a_id = qa.id;
                 try {
                     const response = await this.$axios.post('http://127.0.0.1:5000/editProducerProfile/sendAnswers', 
                         {
@@ -929,22 +929,22 @@
 
             // get all drinks that a producer has
             getAllDrinks() {
-                let allProducerDrinks = this.listings.filter(listing => listing.producerID["$oid"] == this.producer_id);
+                let allProducerDrinks = this.listings.filter(listing => listing.producerID == this.producer_id);
                 this.allDrinks = allProducerDrinks;
             },
 
             // get all reviews that a producer has
             getAllReviews() {
                 let allProducerReviews = this.reviews.filter(review => {
-                    let review_target = review.reviewTarget["$oid"];
+                    let review_target = review.reviewTarget;
                     let all_drinks = this.allDrinks;
-                    return all_drinks.some(drink => drink._id["$oid"] === review_target);
+                    return all_drinks.some(drink => drink.id === review_target);
                 });
                 this.allReviews = allProducerReviews;
             },
 
             getUserFromID(userID) {
-                let user = this.users.find(user => user._id["$oid"] == userID);
+                let user = this.users.find(user => user.id == userID);
                 if (user) {
                     return user
                 }
@@ -960,7 +960,7 @@
 
             // get listing from listingID
             getListingFromID(listingID) {
-                let listing = this.listings.find(listing => listing._id["$oid"] == listingID);
+                let listing = this.listings.find(listing => listing.id == listingID);
                 if (listing) {
                     return listing
                 }
@@ -968,7 +968,7 @@
 
             // find drink name given reviewTarget
             findDrinkNameForReview(reviewTarget) {
-                let drink_name = this.listings.find(listing => listing._id["$oid"] == reviewTarget["$oid"]).listingName;
+                let drink_name = this.listings.find(listing => listing.id == reviewTarget).listingName;
                 return drink_name;
             },
 
@@ -1065,7 +1065,7 @@
                 // Iterate through all reviews
                 this.allReviews.forEach(review => {
                     const reviewTarget = review.reviewTarget;
-                    const reviewListing = this.listings.find(listing => listing._id["$oid"] === reviewTarget["$oid"]);
+                    const reviewListing = this.listings.find(listing => listing.id === reviewTarget);
                     const drinkType = this.findDrinkTypeForListing(reviewListing);
                     // Check if reviewTargetId is already in reviewCounts
                     if (drinkType in categoryReviewCounts) {
@@ -1119,7 +1119,7 @@
                 let firstFiveItems = Object.entries(averageRatings).slice(0, 5);
                 firstFiveItems = firstFiveItems.map(item => {
                     const listing = this.listings.find(listing => listing.listingName === item[0]);
-                    return listing ? [...item, listing._id] : item;
+                    return listing ? [...item, listing.id] : item;
                 });
                 // if firstFiveItems is less than 5, get the remaining from this.allDrinks
                 if (firstFiveItems.length < 5) {
@@ -1127,7 +1127,7 @@
                         if (!firstFiveItems.some(item => item[0] == drink.listingName)) {
                             let drinkName = drink.listingName;
                             let drinkCount = this.drinkCounts[drink.listingName];
-                            let drinkID = drink._id
+                            let drinkID = drink.id
                             firstFiveItems.push([drinkName, drinkCount, drinkID]);
                         }
                     });
@@ -1135,7 +1135,7 @@
                 firstFiveItems = firstFiveItems.slice(0,5)
                 this.mostPopular = firstFiveItems;
                 this.mostPopular = this.mostPopular.map(item => {
-                    return this.listings.find(listing => listing._id["$oid"] == item[2]["$oid"]);
+                    return this.listings.find(listing => listing.id == item[2]);
                 });
             },
 
@@ -1147,7 +1147,7 @@
                 let firstFiveItems = Object.entries(drinkCounts).slice(0, 5);
                 firstFiveItems = firstFiveItems.map(item => {
                     const listing = this.listings.find(listing => listing.listingName === item[0]);
-                    return listing ? [...item, listing._id] : item;
+                    return listing ? [...item, listing.id] : item;
                 });
                 // if firstFiveItems is less than 5, get the remaining from this.allDrinks
                 if (firstFiveItems.length < 5) {
@@ -1155,7 +1155,7 @@
                         if (!firstFiveItems.some(item => item[0] == drink.listingName)) {
                             let drinkName = drink.listingName;
                             let drinkCount = this.drinkCounts[drink.listingName];
-                            let drinkID = drink._id
+                            let drinkID = drink.id
                             firstFiveItems.push([drinkName, drinkCount, drinkID]);
                         }
                     });
@@ -1163,7 +1163,7 @@
                 firstFiveItems = firstFiveItems.slice(0,5)
                 this.mostDiscussed = firstFiveItems;
                 this.mostDiscussed = this.mostDiscussed.map(item => {
-                    return this.listings.find(listing => listing._id["$oid"] == item[2]["$oid"]);
+                    return this.listings.find(listing => listing.id == item[2]);
                 });
             },
 
@@ -1186,6 +1186,7 @@
             },
 
             formatDateMonthYear(dateTimeString) {
+                console.log("This is the date time string: ", dateTimeString);
                 let datePart = dateTimeString.split("T")[0];
                 // splitting the date into year, month, and day
                 let [year, month] = datePart.split("-");
@@ -1198,20 +1199,20 @@
             editQA(qa) {
                 this.editingQA = true;
                 // set the current details to the edit details
-                this.edit_answer[qa._id.$oid] = qa.answer
-                this.editingQAID = qa._id.$oid;
+                this.edit_answer[qa.id] = qa.answer
+                this.editingQAID = qa.id;
             }, 
 
             saveQAEdit(qa) {
                 // set editing status to false
                 this.editingQA = false;
-                let q_and_a_id = qa._id.$oid;
+                let q_and_a_id = qa.id;
                 try {
                     this.$axios.post('http://127.0.0.1:5000/editProducerProfile/editQA', 
                         {
                             producerID: this.producer_id,
                             questionsAnswersID: q_and_a_id,
-                            answer: this.edit_answer[qa._id.$oid],
+                            answer: this.edit_answer[qa.id],
                         },
                         {
                             headers: {
@@ -1227,7 +1228,7 @@
             },
 
             deleteQAEdit(qa) {
-                let q_and_a_id = qa._id.$oid;
+                let q_and_a_id = qa.id;
                 try {
                     const response = this.$axios.post('http://127.0.0.1:5000/editProducerProfile/deleteQA', 
                         {
@@ -1253,7 +1254,7 @@
             // cancel Q&A edit
             cancelQAEdit(qa) {
                 this.editingQA = false;
-                this.edit_answer[qa._id.$oid] = "";
+                this.edit_answer[qa.id] = "";
                 this.editingQAID = "";
             },
             // to check if producer QnA should be shown

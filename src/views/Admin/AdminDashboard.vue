@@ -1004,7 +1004,7 @@
                         return "This user is currently not a moderator!"
                     }
                     else{
-                        return "This use is currently a moderator for <b>" + this.selectedRemoveMod.modType.join(', ') +"</b>!";
+                        return "This user is currently a moderator for <b>" + this.selectedRemoveMod.modType.join(', ') +"</b>!";
                     }
                 },
             },
@@ -1560,7 +1560,7 @@
                         // delete token if exist
                         try {
                             const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getTokenByRequestId/${requestID}`);
-                            const tokenData = response.data;
+                            const tokenData = response.data.data;
                             if (Object.keys(tokenData).length > 0) {
                                 this.deleteToken(tokenData.token)
                             }
@@ -1585,13 +1585,10 @@
                     else if (action == "resend") {
                         try {
                             const requestId = request.id;
-                            console.log(requestId);
-                            const response = await this.$axios.get(`http://127.0.0.1:5000/getData/get${request.businessType.charAt(0).toUpperCase()}${request.businessType.slice(1)}ByRequestId/${requestId}`);
-                            console.log(response);
+                            const businessType = request.businessType;
+                            const response = await this.$axios.get(`http://127.0.0.1:5000/getData/get${businessType.charAt(0).toUpperCase()}${businessType.slice(1)}ByRequestId/${requestId}`);
                             const businessId = response.data.id;
-                            console.log(businessId);
                             const link = await this.generateToken(businessId, requestId)
-                            console.log(link);
                             this.emailLink(request, link);
                         } catch (error) {
                             console.error(error);
@@ -1716,6 +1713,7 @@
                             {
                                 businessId: businessId,
                                 requestId: requestId,
+                                businessType: this.businessType,
                                 isNew: true,
                             }, {
                             headers: {
@@ -1731,6 +1729,7 @@
                 },
 
                 async emailLink(request, link) {
+                    console.log(request, link);
 
                     const emailDetails = {
                         recipient: request.email,

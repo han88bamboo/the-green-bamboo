@@ -12,6 +12,7 @@ DROP TABLE IF EXISTS "observationTags";
 DROP TABLE IF EXISTS "producers";
 DROP TABLE IF EXISTS "producersQuestionAnswers";
 DROP TABLE IF EXISTS "producersUpdates";
+DROP TABLE IF EXISTS "producerUpdateLikes";
 DROP TABLE IF EXISTS "producersProfileViews";
 DROP TABLE IF EXISTS "producersProfileViewsViews";
 DROP TABLE IF EXISTS "requestEdits";
@@ -31,6 +32,7 @@ DROP TABLE IF EXISTS "venuesMenu";
 DROP TABLE IF EXISTS "venuesOpeningHours";
 DROP TABLE IF EXISTS "venuesQuestionAnswers";
 DROP TABLE IF EXISTS "venuesUpdates";
+DROP TABLE IF EXISTS "venueUpdateLikes";
 DROP TABLE IF EXISTS "venuesProfileViews";
 DROP TABLE IF EXISTS "venuesProfileViewsViews";
 
@@ -49,11 +51,12 @@ CREATE TABLE "accountRequests" (
     "relationship" VARCHAR(255),
     "email" VARCHAR(255),
     "contact" VARCHAR(255),
-    "referenceDocument" VARCHAR(255),
+    "referenceDocument" TEXT,  -- Changed to TEXT
     "photo" TEXT,
     "joinDate" TIMESTAMP,
     "isPending" BOOLEAN,
-    "isApproved" BOOLEAN
+    "isApproved" BOOLEAN,
+    "isNew" BOOLEAN,
 );
 
 -- ========= "servingTypes" =========
@@ -134,6 +137,7 @@ CREATE TABLE "producers" (
     "photo" TEXT,
     "hashedPassword" VARCHAR(255),
     "claimStatus" BOOLEAN,
+    "claimStatusCheckDate" TIMESTAMP,
     "statusOB" VARCHAR(255),
     -- "questionAnswers" INTEGER REFERENCES "producersQuestionAnswers"("id") ON DELETE SET NULL, -- Alternative ON DELETE CASCADE to delete all related child records[!] reference "producersQuestionAnswers" as FK
     -- "updates" INTEGER REFERENCES "producersUpdates"("id") ON DELETE SET NULL, -- Alternative ON DELETE CASCADE to delete all related child records[!] reference "producersUpdates" as FK
@@ -154,6 +158,7 @@ CREATE TABLE "venues" (
     "hashedPassword" VARCHAR(255),
     "photo" TEXT,
     "claimStatus" BOOLEAN,
+    "claimStatusCheckDate" TIMESTAMP,
     -- "openingHours" SERIAL, -- [!] reference "venuesOpeningHours"
     -- "questionAnswers" SERIAL, -- [!] reference "venuesQuestionAnswers"
     -- "updates" SERIAL, -- [!] reference "venuesUpdates"
@@ -202,6 +207,14 @@ CREATE TABLE "producersUpdates" (
     "photo" TEXT,
     "producerId" INTEGER REFERENCES "producers"("id") ON DELETE SET NULL
     -- need to add likes?
+);
+
+-- ========= [NEW!] "producerUpdateLikes" =========
+CREATE TABLE "producerUpdateLikes" (
+    "id" SERIAL PRIMARY KEY,
+    "updateId" INTEGER REFERENCES "producersUpdates"("id") ON DELETE CASCADE,
+    "userId" INTEGER REFERENCES "users"("id") ON DELETE CASCADE,
+    UNIQUE ("updateId", "userId")
 );
 
 -- ========= "producersProfileViews" =========
@@ -306,6 +319,8 @@ CREATE TABLE "tokens" (
     "id" SERIAL PRIMARY KEY,
     "token" VARCHAR(255),
     "userId" INTEGER REFERENCES "users"("id") ON DELETE SET NULL, -- [!] reference "users" FK
+    "producerId" INTEGER REFERENCES "producers"("id") ON DELETE SET NULL, -- [!] reference "producers" FK
+    "venueId" INTEGER REFERENCES "venues"("id") ON DELETE SET NULL, -- [!] reference "venues" FK
     "requestId" INTEGER REFERENCES "accountRequests"("id") ON DELETE SET NULL, -- [!] reference "accountRequests" FK
     "expiry" TIMESTAMP
 );
@@ -315,8 +330,19 @@ CREATE TABLE "venuesMenu" (
     "id" SERIAL PRIMARY KEY,
     "sectionName" VARCHAR(255),
     "sectionOrder" VARCHAR(255),
-    "sectionMenu" TEXT[], -- [!] Contains listings(id)
+    -- "sectionMenu" TEXT[], -- [!] Contains listings(id)
     "venueId" INTEGER REFERENCES "venues"("id") ON DELETE SET NULL -- [!] References venues FK
+);
+
+-- ========= [NEW] "menuItems" =========
+CREATE TABLE "menuItems" (
+    "id" SERIAL PRIMARY KEY,
+    "itemOrder" INTEGER,
+    "itemPrice" DECIMAL(10,2),
+    "itemAvailability" BOOLEAN,
+    "itemID" INTEGER REFERENCES "listings"("id") ON DELETE SET NULL,
+    "itemServingType" INTEGER REFERENCES "servingTypes"("id") ON DELETE SET NULL,
+    "sectionId" INTEGER REFERENCES "venuesMenu"("id") ON DELETE CASCADE
 );
 
 -- ========= [NEW!] "venuesOpeningHours" =========
@@ -350,6 +376,14 @@ CREATE TABLE "venuesUpdates" (
     "photo" TEXT,
     "venueId" INTEGER REFERENCES "venues"("id") ON DELETE SET NULL -- [!] References venues FK
     -- need add likes?
+);
+
+-- ========= [NEW!] "venueUpdateLikes" =========
+CREATE TABLE "venueUpdateLikes" (
+    "id" SERIAL PRIMARY KEY,
+    "updateId" INTEGER REFERENCES "venuesUpdates"("id") ON DELETE CASCADE,
+    "userId" INTEGER REFERENCES "users"("id") ON DELETE CASCADE,
+    UNIQUE ("updateId", "userId")
 );
 
 -- -- ========= [NEW!] "venuesProfileViewsViews" =========
@@ -410,8 +444,8 @@ CREATE TABLE "requestListings" (
 CREATE TABLE "requestEdits" (
     "id" SERIAL PRIMARY KEY,
     "editDesc" TEXT,
-    "listingId" INTEGER REFERENCES "listings"("id") ON DELETE SET NULL, -- [!] References listings FK
-    "userId" INTEGER REFERENCES "users"("id") ON DELETE SET NULL, -- [!] References users FK
+    "listingID" INTEGER REFERENCES "listings"("id") ON DELETE SET NULL, -- [!] References listings FK
+    "userID" INTEGER REFERENCES "users"("id") ON DELETE SET NULL, -- [!] References users FK
     "brandRelation" VARCHAR(255),
     "reviewStatus" BOOLEAN,
     "duplicateLink" VARCHAR(255),

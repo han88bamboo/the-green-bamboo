@@ -163,7 +163,7 @@
                     // originally, make filteredListings the entire collection of listings
                     this.filteredListings = this.listings;
                     this.editable = this.listings[0];
-                    this.ID = this.editable["_id"]["$oid"];
+                    this.ID = this.editable["id"];
                     this.tempExpressionName = this.editable["listingName"];
                     this.tempProducerID = this.editable["producerID"];
                     this.tempBottler = this.editable["bottler"];
@@ -186,7 +186,7 @@
                     this.producers = response.data;
 
                     for (let producer of this.producers) {
-                    if (JSON.stringify(producer._id) == JSON.stringify(this.tempProducerID)) {
+                    if (JSON.stringify(producer.id) == JSON.stringify(this.tempProducerID)) {
                         this.tempProducer = producer.producerName;
                         
                     }

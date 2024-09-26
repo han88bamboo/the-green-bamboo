@@ -728,7 +728,7 @@
                 }
 
                 // If abv has % sign, remove it. Change abv to number.
-                if (previousData.abv.includes("%")) {
+                if (toString(previousData.abv).includes("%")) {
                     this.form["abv"] = parseFloat(previousData.abv.slice(0, -1));
                 } else {
                     this.form["abv"] = previousData.abv;

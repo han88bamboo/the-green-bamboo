@@ -209,14 +209,16 @@ def requestListingModify(requestID):
 # - Possible return codes: 201 (Created), 400 (Invalid Listing), 500 (Error during creation)
 @blueprint.route("/requestEdits", methods= ['POST'])
 def requestEdits():
-    db = g.db
+    conn = g.db
+    cur = conn.cursor()
     rawRequest = request.get_json()
 
-    # Check if edit request is linked to a listing that exists in the database
-    rawListingID = rawRequest["listingID"]["$oid"]
-    existingListing = db.listings.find_one({"_id": ObjectId(rawListingID)})
+    rawListingID = int(rawRequest["listingID"])
 
-    if (existingListing == None):
+    cur.execute('SELECT * FROM listings WHERE "id" = %s', (rawListingID,))
+    existingListing = cur.fetchone()
+
+    if existingListing is None:
         return jsonify(
             {
                 "code": 400,
@@ -227,10 +229,24 @@ def requestEdits():
             }
         ), 400
     
-    # Insert new edit request into database
-    newRequest = data.requestEdits(**rawRequest)
+    newRequest = {
+        "editDesc": rawRequest["editDesc"],
+        "listingID": rawListingID,
+        "userID": int(rawRequest["userID"]),
+        "brandRelation": rawRequest["brandRelation"],
+        "reviewStatus": rawRequest["reviewStatus"],
+        "duplicateLink": rawRequest.get("duplicateLink", ''),
+        "sourceLink": rawRequest.get("sourceLink", '')
+    }
+
     try:
-        insertResult = db.requestEdits.insert_one(data.asdict(newRequest))
+        # Insert new edit request into the database
+        columns = ', '.join(f'"{key}"' for key in newRequest.keys())
+        placeholders = ', '.join(['%s'] * len(newRequest))
+        sql = f'INSERT INTO "requestEdits" ({columns}) VALUES ({placeholders})'
+        
+        cur.execute(sql, list(newRequest.values()))
+        conn.commit()
 
         return jsonify(
             {
@@ -241,16 +257,19 @@ def requestEdits():
     
     except Exception as e:
         print(str(e))
-
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,
                 "data": {
-                    "listingName": rawListingID
+                    "listingID": rawListingID
                 },
                 "message": "An error occurred while submitting the request."
             }
         ), 500
+
+    finally:
+        cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [POST] Edit submitted request for listing modification
@@ -258,14 +277,16 @@ def requestEdits():
 # - Possible return codes: 201 (Updated), 400 (Invalid Listing), 500 (Error during update)
 @blueprint.route("/requestEditsModify/<string:requestID>", methods= ['POST'])
 def requestEditsModify(requestID):
-    db = g.db
+    conn = g.db
+    cur = conn.cursor()
     rawRequest = request.get_json()
 
-    # Check if edit request is linked to a listing that exists in the database
-    rawListingID = rawRequest["listingID"]["$oid"]
-    existingListing = db.listings.find_one({"_id": ObjectId(rawListingID)})
+    rawListingID = int(rawRequest["listingID"])
 
-    if (existingListing == None):
+    cur.execute('SELECT * FROM listings WHERE "id" = %s', (rawListingID,))
+    existingListing = cur.fetchone()
+
+    if existingListing is None:
         return jsonify(
             {
                 "code": 400,
@@ -275,11 +296,25 @@ def requestEditsModify(requestID):
                 "message": "Linked listing is not valid!"
             }
         ), 400
+    
+    newRequest = {
+        "editDesc": rawRequest["editDesc"],
+        "listingID": rawListingID,
+        "userID": int(rawRequest["userID"]),
+        "brandRelation": rawRequest["brandRelation"],
+        "reviewStatus": rawRequest["reviewStatus"],
+        "duplicateLink": rawRequest.get("duplicateLink", ''),
+        "sourceLink": rawRequest.get("sourceLink", '')
+    }
 
-    # Update existing request in database
-    updateRequest = data.requestEdits(**rawRequest)
     try:
-        updateResult = db.requestEdits.update_one({"_id": ObjectId(requestID)}, {"$set": data.asdict(updateRequest)})
+        # Insert new edit request into the database
+        columns = ', '.join(f'"{key}"' for key in newRequest.keys())
+        placeholders = ', '.join(['%s'] * len(newRequest))
+        sql = f'UPDATE "requestEdits" SET ({columns}) = ({placeholders}) WHERE id = %s'
+        
+        cur.execute(sql, list(newRequest.values()) + [requestID])
+        conn.commit()
 
         return jsonify(
             {
@@ -290,16 +325,19 @@ def requestEditsModify(requestID):
     
     except Exception as e:
         print(str(e))
-
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,
                 "data": {
-                    "listingName": rawListingID
+                    "listingID": rawListingID
                 },
                 "message": "An error occurred while submitting the request."
             }
         ), 500
+    
+    finally:
+        cur.close()
     
 # -----------------------------------------------------------------------------------------
 # [POST] Request for listing modification in venue menu
@@ -307,16 +345,22 @@ def requestEditsModify(requestID):
 # - Possible return codes: 201 (Created), 400 (Duplicate request), 500 (Error during creation)
 @blueprint.route("/requestInaccuracy", methods= ['POST'])
 def requestInaccuracy():
-    db = g.db
+    conn = g.db
+    cur = conn.cursor()
     rawRequest = request.get_json()
 
-    # Check if inaccuracy request is already submitted for the same bottle for a venue in the database
-    rawListingID = rawRequest["listingID"]["$oid"]
-    rawVenueID = rawRequest["venueID"]
-    rawUserID = rawRequest["userID"]
-    existingListing = db.requestInaccuracy.find_one({"listingID": ObjectId(rawListingID), "venueID":ObjectId(rawVenueID), "userID":ObjectId(rawUserID)})
+    rawListingID = int(rawRequest["listingID"])
+    rawVenueID = int(rawRequest["venueID"])
+    rawUserID = int(rawRequest["userID"])
 
-    if (existingListing != None):
+    # Check if inaccuracy request is already submitted for the same bottle for a venue
+    cur.execute("""
+        SELECT * FROM "requestInaccuracy"
+        WHERE "listingId" = %s AND "venueId" = %s AND "userId" = %s;
+    """, (rawListingID, rawVenueID, rawUserID))
+    existingListing = cur.fetchone()
+
+    if existingListing is not None:
         return jsonify(
             {
                 "code": 400,
@@ -327,16 +371,19 @@ def requestInaccuracy():
             }
         ), 400
     
-    # Insert new edit request into database
-    rawRequest["venueID"] = ObjectId(rawVenueID)
-    rawRequest["userID"] = ObjectId(rawUserID)
-    rawRequest["listingID"] = ObjectId(rawListingID)
-    rawRequest["reviewStatus"] = False
-    rawRequest["reportDate"] = datetime.now(pytz.timezone('Etc/GMT-8'))
-    newRequest = data.requestInaccuracy(**rawRequest)
+    # Prepare new request
+    reportDate = datetime.now(pytz.timezone('Etc/GMT-8'))
+    inaccurateReason = rawRequest.get("inaccurateReason", "")
 
     try:
-        insertResult = db.requestInaccuracy.insert_one(data.asdict(newRequest))
+        cur.execute(
+            """
+                INSERT INTO "requestInaccuracy" ("listingId", "userId", "venueId", "reportDate", "inaccurateReason", "reviewStatus")
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """,
+            (rawListingID, rawUserID, rawVenueID, reportDate, inaccurateReason, False)
+        )
+        conn.commit()
 
         return jsonify(
             {
@@ -347,16 +394,19 @@ def requestInaccuracy():
     
     except Exception as e:
         print(str(e))
-
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,
                 "data": {
-                    "listingName": rawListingID
+                    "listingID": rawListingID
                 },
                 "message": "An error occurred while submitting the request."
             }
         ), 500
+    
+    finally:
+        cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [POST] Edit review status of a submitted request
@@ -365,15 +415,23 @@ def requestInaccuracy():
 
 @blueprint.route("/requestReviewStatus/<string:requestID>", methods= ['POST'])
 def requestReviewStatus(requestID):
-    db = g.db
+    conn = g.db
+    cur = conn.cursor()
 
-    requestIDObject = ObjectId(requestID)
     updateRequest = request.get_json()
     targetCollection = updateRequest["targetCollection"]
     status = updateRequest["reviewStatus"]
 
     try:
-        updateResult = db[targetCollection].update_one({"_id": requestIDObject}, {"$set": {"reviewStatus": status}})
+        if targetCollection == "requestInaccuracy":
+            print(f"Handling requestInaccuracy for requestID: {requestID}")
+
+        cur.execute(
+            f'UPDATE "{targetCollection}" SET "reviewStatus" = %s WHERE id = %s;',
+            (status, requestID)
+        )
+
+        conn.commit()
 
         return jsonify(
             {
@@ -383,8 +441,8 @@ def requestReviewStatus(requestID):
         ), 201
     
     except Exception as e:
-        print(str(e))
-
+        conn.rollback()
+        print(f"Error: {str(e)}")
         return jsonify(
             {
                 "code": 500,
@@ -394,3 +452,6 @@ def requestReviewStatus(requestID):
                 "message": "An error occurred while updating the review status."
             }
         ), 500
+    
+    finally:
+        cur.close()

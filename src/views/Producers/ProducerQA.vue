@@ -63,7 +63,7 @@
                 <h5 v-if="answeredQuestions.length == 0"> No answered questions! </h5>
                 <h5 v-else> {{ answeredQuestions.length }} answered questions! </h5>
                 <!-- show all questions -->
-                <div v-for="qa in answeredQuestions" :key="qa._id" class="py-3">
+                <div v-for="qa in answeredQuestions" :key="qa.id" class="py-3">
                     <div class="card text-start">
                         <div class="card-body qa-card-body">
                             <div class="row">
@@ -75,15 +75,15 @@
                                 </div>
                                 <div class="col-lg-3 col-md-12  mb-2 text-end">
                                     <!-- [if] not editing -->
-                                    <button v-if="editingQA == false || editingQAID != qa._id.$oid" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="editQA(qa)">
+                                    <button v-if="editingQA == false || editingQAID != qa.id" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="editQA(qa)">
                                         Edit answer
                                     </button>
                                     <!-- [else] if editing -->
-                                    <button v-if="editingQAID == qa._id.$oid" type="button" class="btn success-btn rounded-0 me-1" v-on:click="saveQAEdit(qa)">
+                                    <button v-if="editingQAID == qa.id" type="button" class="btn success-btn rounded-0 me-1" v-on:click="saveQAEdit(qa)">
                                         Save
                                     </button>
                                     <!-- [else] if editing -->
-                                    <button v-if="editingQAID == qa._id.$oid" type="button" class="btn secondary-btn rounded-0 me-1" v-on:click="cancelQAEdit(qa)">
+                                    <button v-if="editingQAID == qa.id" type="button" class="btn secondary-btn rounded-0 me-1" v-on:click="cancelQAEdit(qa)">
                                         Cancel
                                     </button>
                                     <!-- delete -->
@@ -93,11 +93,11 @@
                                 </div>
                             </div>
                             <div class="card-text"> 
-                                <p v-if="editingQA == false || editingQAID != qa._id.$oid"> A: {{ qa["answer"] }} </p>
-                                <textarea v-else-if="editingQAID == qa._id.$oid" class="search-bar form-control rounded fst-italic question-box flex-grow-1" type="text" placeholder="Edit answer." v-model="edit_answer[qa._id.$oid]"></textarea>
+                                <p v-if="editingQA == false || editingQAID != qa.id"> A: {{ qa["answer"] }} </p>
+                                <textarea v-else-if="editingQAID == qa.id" class="search-bar form-control rounded fst-italic question-box flex-grow-1" type="text" placeholder="Edit answer." v-model="edit_answer[qa.id]"></textarea>
                             </div>
                             <hr>
-                            <b> Date: </b> {{ this.formatDate(qa.date.$date) }}
+                            <b> Date: </b> {{ this.formatDate(qa.date) }}
                         </div>
                     </div>
                 </div>
@@ -111,7 +111,7 @@
                 <h5 v-if="unansweredQuestions.length == 0"> No unanswered questions! </h5>
                 <h5 v-else> {{ unansweredQuestions.length }} unanswered questions! </h5>
                 <!-- show all questions -->
-                <div v-for="(qa, index) in unansweredQuestions" v-bind:key="qa._id" v-bind:class="{ 'active': index === 0 }" class="py-3">
+                <div v-for="(qa, index) in unansweredQuestions" v-bind:key="qa.id" v-bind:class="{ 'active': index === 0 }" class="py-3">
                     <div class="card text-start">
                         <div class="card-body qa-card-body">
                             <h5 class="card-title"> 
@@ -121,7 +121,7 @@
                             <div class="card-text"> 
                                 <b> Answer: </b>
                                 <div class="d-flex align-items-center">
-                                    <textarea class="search-bar form-control rounded fst-italic question-box flex-grow-1" type="text" placeholder="Respond to your fans latest questions." v-model="answers[qa._id.$oid]"></textarea>
+                                    <textarea class="search-bar form-control rounded fst-italic question-box flex-grow-1" type="text" placeholder="Respond to your fans latest questions." v-model="answers[qa.id]"></textarea>
                                     <div v-on:click="sendAnswer(qa)" class="send-icon ps-1">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
                                             <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
@@ -130,7 +130,7 @@
                                 </div>
                             </div>
                             <hr>
-                            <b> Date: </b> {{ this.formatDate(qa.date.$date) }}
+                            <b> Date: </b> {{ this.formatDate(qa.date) }}
                         </div>
                     </div>
                 </div>
@@ -216,7 +216,7 @@
                 try {
                         const response = await this.$axios.get('http://127.0.0.1:5000/getData/getProducers');
                         this.producers = response.data;
-                        this.specified_producer = this.producers.find(producer => producer["_id"]["$oid"] == this.producer_id); // find specified producer
+                        this.specified_producer = this.producers.find(producer => producer["id"] == this.producer_id); // find specified producer
                         this.checkProducerQuestions();
                         this.dataLoaded = true;
                     } 
@@ -259,7 +259,7 @@
 
             // send answer that producers give to users
             async sendAnswer (qa) {
-                let q_and_a_id = qa._id.$oid;
+                let q_and_a_id = qa.id;
                 let answer = this.answers[q_and_a_id];
                 try {
                     const response = await this.$axios.post('http://127.0.0.1:5000/editProducerProfile/sendAnswers', 
@@ -287,20 +287,20 @@
             editQA(qa) {
                 this.editingQA = true;
                 // set the current details to the edit details
-                this.edit_answer[qa._id.$oid] = qa.answer
-                this.editingQAID = qa._id.$oid;
+                this.edit_answer[qa.id] = qa.answer
+                this.editingQAID = qa.id;
             }, 
             
             saveQAEdit(qa) {
                 // set editing status to false
                 this.editingQA = false;
-                let q_and_a_id = qa._id.$oid;
+                let q_and_a_id = qa.id;
                 try {
                     this.$axios.post('http://127.0.0.1:5000/editProducerProfile/editQA', 
                         {
                             producerID: this.producer_id,
                             questionsAnswersID: q_and_a_id,
-                            answer: this.edit_answer[qa._id.$oid],
+                            answer: this.edit_answer[qa.id],
                         },
                         {
                             headers: {
@@ -316,33 +316,31 @@
             },
 
             deleteQAEdit(qa) {
-                let q_and_a_id = qa._id.$oid;
-                try {
-                    const response = this.$axios.post('http://127.0.0.1:5000/editProducerProfile/deleteQA', 
-                        {
-                            producerID: this.producer_id,
-                            questionsAnswersID: q_and_a_id,
-                            answer: "",
-                        },
-                        {
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
-                        });
-                    console.log(response.data);
-                } 
-                catch (error) {
-                    console.error(error);
-                }
-
-                // force page to reload
-                window.location.reload();
+                let q_and_a_id = qa.id;
+                this.$axios.post('http://127.0.0.1:5000/editProducerProfile/deleteQA', 
+                    {
+                        producerID: this.producer_id,
+                        questionsAnswersID: q_and_a_id,
+                        answer: "",
+                    },
+                    {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then((response) => {
+                        console.log(response.data);
+                        window.location.reload();
+                    })
+                    .catch((error) => {
+                        console.error(error);
+                    });
             },
 
             // cancel Q&A edit
             cancelQAEdit(qa) {
                 this.editingQA = false;
-                this.edit_answer[qa._id.$oid] = "";
+                this.edit_answer[qa.id] = "";
                 this.editingQAID = "";
             },
         }

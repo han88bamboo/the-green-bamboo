@@ -124,56 +124,102 @@ def updateBookmark():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/updateFollowLists', methods=['POST'])
 def updateFollowList():
-    db = g.db
+    conn = g.db
+    cur = conn.cursor()
     data = request.get_json()
     print(data)
-    userID = data['userID']
+
+    userID = int(data['userID'])
     action = data['action']
     target = data['target']
     followerID = data['followerID']
 
-    user_document = db.users.find_one({"_id": ObjectId(userID)})
-    followLists = user_document['followLists']
+    try:
+        cur.execute('SELECT "users", "producers", "venues" FROM "usersFollowLists" WHERE "userId" = %s', (userID,))
+        row = cur.fetchone()
 
-    if action == "unfollow":
-        followLists[target] = [user for user in user_document['followLists'][target] if user["followerID"] != ObjectId(followerID)]
-    else:
-        followLists[target].append({
-            "followerID": ObjectId(followerID),
-            "date": datetime.now(pytz.timezone('Etc/GMT-8'))
-            })
+        if row:
+            follow_list = {
+                "users": row['users'],
+                "producers": row['producers'],
+                "venues": row['venues']
+            }
+        else:
+            follow_list = {
+                "users": [],
+                "producers": [],
+                "venues": []
+            }
 
-    try: 
-        updateFollowLists = db.users.update_one({'_id': ObjectId(userID)}, {'$set': {'followLists': followLists}})
+        if target not in ['users', 'producers', 'venues']:
+            return jsonify({"code": 400, "message": "Invalid target."}), 400
 
+        target_list = follow_list[target]
+
+        if action == "unfollow":
+            if followerID in target_list:
+                target_list.remove(followerID)
+        else:
+            if followerID not in target_list:
+                target_list.append(followerID)
+
+        if row:
+            cur.execute(
+                """
+                UPDATE "usersFollowLists"
+                SET 
+                    "users" = %s,
+                    "producers" = %s,
+                    "venues" = %s
+                WHERE "userId" = %s
+                """,
+                (
+                    follow_list['users'],
+                    follow_list['producers'],
+                    follow_list['venues'],
+                    userID
+                )
+            )
+        else:
+            cur.execute(
+                """
+                INSERT INTO "usersFollowLists" ("userId", "users", "producers", "venues")
+                VALUES (%s, %s, %s, %s)
+                """,
+                (
+                    userID,
+                    follow_list['users'],
+                    follow_list['producers'],
+                    follow_list['venues']
+                )
+            )
+        
+        conn.commit()
 
         return jsonify(
-            {   
+            {
                 "code": 201,
                 "data": {
                     "userID": userID,
                     "action": action,
                     "target": target,
                     "followerID": followerID
-                }
+                },
+                "message": f"{action.capitalize()}d successfully!"
             }
         ), 201
     except Exception as e:
         print(str(e))
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,
-                "data": {
-                    "data": {
-                        "userID": userID,
-                        "action": action,
-                        "target": target,
-                        "followerID": followerID
-                    }
-                },
-                "message": "An error occurred follow list."
+                "data": data,
+                "message": "An error occurred updating follow list."
             }
         ), 500
+    finally:
+        cur.close()
     
 # -----------------------------------------------------------------------------------------
 # [POST] Update mod type

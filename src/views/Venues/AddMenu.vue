@@ -87,7 +87,7 @@
                                     </div>
                                     <!-- producer -->
                                     <div class="row">
-                                        <router-link :to="{ path: '/Producers/Profile-Page/' + selectedListing.producerID.$oid }" class="primary-clickable-text">
+                                        <router-link :to="{ path: '/Producers/Profile-Page/' + selectedListing.producerID }" class="primary-clickable-text">
                                             <h5> <b> {{ getProducerName(selectedListing) }} </b> </h5>
                                         </router-link>
                                     </div>
@@ -213,7 +213,7 @@
                     try {
                         const response = await this.$axios.get('http://127.0.0.1:5000/getData/getVenues');
                         this.venues = response.data;
-                        this.specified_venue = this.venues.find(venue => venue["_id"]["$oid"] == this.venue_id); // find specified venue
+                        this.specified_venue = this.venues.find(venue => venue["id"] == this.venue_id); // find specified venue
                         this.getMenuSections();
                     } 
                     catch (error) {
@@ -273,7 +273,7 @@
 
             updateServingType() {
                 // get id of servingType 
-                this.servingTypeId = this.selectedServingType._id.$oid
+                this.servingTypeId = this.selectedServingType.id
                 // get error message element
                 let servingTypeError = document.getElementById("servingTypeError")
                 if (this.selectedServingType != "") {
@@ -307,7 +307,7 @@
                     this.menuOrder = menuSectionLength
 
                     // if there are items in the menu
-                    if (existingMenuItems.some(item => item.$oid === this.selectedBottle)) {
+                    if (existingMenuItems.some(item => item === this.selectedBottle)) {
                         // The selected bottle is already in this menu section
                         this.menuSectionOK = false;
                         menuSectionError.innerHTML = "This bottle is already in this menu section";
@@ -323,7 +323,7 @@
             // get producerName for a listing based on listing
             getProducerName(listing) {
                 const producer = this.producers.find((producer) => {
-                    return producer["_id"]["$oid"] == listing["producerID"]["$oid"];
+                    return producer["id"] == listing["producerID"];
                 });
                 // ensures that producer is found before accessing "producerName"
                 if (producer) {

@@ -36,33 +36,33 @@ def parse_json(data):
 # - Insert entry into the "listings" collection. Follows listings dataclass requirements.
 # - Duplicate listing check: If a listing with the same name exists, reject the request
 # - Possible return codes: 201 (Created), 400 (Duplicate Detected), 500 (Error during creation)
-@blueprint.route("/createListing", methods= ['POST'])
-def createListings():
-    db = g.db
-    rawBottle = request.get_json()
+# @blueprint.route("/createListing", methods= ['POST'])
+# def createListings():
+    # db = g.db
+    # rawBottle = request.get_json()
     # Add current datetime to the listing
-    rawBottle['addedDate'] = datetime.now(pytz.timezone('Etc/GMT-8'))
-    rawBottle["allowMod"] = True
+    # rawBottle['addedDate'] = datetime.now(pytz.timezone('Etc/GMT-8'))
+    # rawBottle["allowMod"] = True
 # [OLD] TO BE DELETED FOR POSTGRES:
 # ------------------------------------------------------    
-    rawBottle['producerID'] = ObjectId(rawBottle['producerID'])
+    # rawBottle['producerID'] = ObjectId(rawBottle['producerID'])
 # ======================================================
     # Duplicate listing check: Reject if listing with the same bottle name already exists in the database
-    rawBottleName = rawBottle["listingName"]
+    # rawBottleName = rawBottle["listingName"]
 
 # [OLD] TO BE DELETED FOR POSTGRES:
 # ------------------------------------------------------    
-    existingBottle = db.listings.find_one({"listingName": rawBottleName})
-    if(existingBottle != None):
-        return jsonify(
-            {   
-                "code": 400,
-                "data": {
-                    "listingName": rawBottleName
-                },
-                "message": "Bottle already exists."
-            }
-        ), 400
+    # existingBottle = db.listings.find_one({"listingName": rawBottleName})
+    # if(existingBottle != None):
+    #     return jsonify(
+    #         {   
+    #             "code": 400,
+    #             "data": {
+    #                 "listingName": rawBottleName
+    #             },
+    #             "message": "Bottle already exists."
+    #         }
+    #     ), 400
 # ======================================================    
 # [NEW] TO BE ADDED FOR POSTGRES:
 # ------------------------------------------------------
@@ -84,11 +84,11 @@ def createListings():
 # ======================================================
 
     # Upload image into s3 bucket and retrieve url
-    rawBottle['photo'] = s3Images.uploadBase64ImageToS3(rawBottle['photo'])
+    # rawBottle['photo'] = s3Images.uploadBase64ImageToS3(rawBottle['photo'])
 # [OLD] TO BE DELETED FOR POSTGRES:
 # ------------------------------------------------------      
     # Insert new listing into database
-    newBottle = data.listings(**rawBottle)
+    # newBottle = data.listings(**rawBottle)
 # ======================================================
 # [NEW] TO BE ADDED FOR POSTGRES:
 # ------------------------------------------------------
@@ -99,10 +99,10 @@ def createListings():
     # cursor.execute(sql, list(rawBottle.values()))
     # db.commit()
 # ======================================================
-    try:
+    # try:
 # [OLD] TO BE DELETED FOR POSTGRES:
 # ------------------------------------------------------             
-        insertResult = db.listings.insert_one(data.asdict(newBottle))
+        # insertResult = db.listings.insert_one(data.asdict(newBottle))
 # ======================================================
 # [NEW] TO BE ADDED FOR POSTGRES:
 # ------------------------------------------------------
@@ -112,14 +112,86 @@ def createListings():
         # cursor.execute(sql, list(rawBottle.values()))
         # db.commit()  # Commit the transaction
 # ======================================================        
-        return jsonify( 
+    #     return jsonify( 
+    #         {   
+    #             "code": 201,
+    #             "data": rawBottleName
+    #         }
+    #     ), 201
+    # except Exception as e:
+    #     print(str(e))
+    #     return jsonify(
+    #         {
+    #             "code": 500,
+    #             "data": {
+    #                 "listingName": rawBottleName
+    #             },
+    #             "message": "An error occurred creating the listing."
+    #         }
+    #     ), 500
+# ======================================================
+
+# -----------------------------------------------------------------------------------------
+# [POST] Creates a listing
+# - Insert entry into the "listings" collection. Follows listings dataclass requirements.
+# - Duplicate listing check: If a listing with the same name exists, reject the request
+# - Possible return codes: 201 (Created), 400 (Duplicate Detected), 500 (Error during creation)
+@blueprint.route("/createListing", methods=['POST'])
+def createListings():
+    conn = g.db
+    cur = conn.cursor()
+
+    rawBottle = request.get_json()
+    rawBottle['addedDate'] = datetime.now(pytz.timezone('Etc/GMT-8'))
+    rawBottle["allowMod"] = True
+    rawBottle['producerID'] = int(rawBottle['producerID'])
+    rawBottleName = rawBottle["listingName"]
+
+    try:
+        # Check for duplicate listing
+        cur.execute('SELECT * FROM listings WHERE "listingName" = %s', (rawBottleName,))
+        existingBottle = cur.fetchone()
+
+        if existingBottle is not None:
+            return jsonify(
+                {   
+                    "code": 400,
+                    "data": {
+                        "listingName": rawBottleName
+                    },
+                    "message": "Bottle already exists."
+                }
+            ), 400
+        
+        # Convert abv from string to float if necessary
+        if 'abv' in rawBottle:
+            abv_value = rawBottle['abv'].replace('%', '')  # Remove the '%' sign
+            rawBottle['abv'] = float(abv_value)
+
+        if rawBottle['photo'] is not None and rawBottle['photo'] != "":
+            rawBottle['photo'] = s3Images.uploadBase64ImageToS3(rawBottle['photo'])
+
+        columns = ', '.join(f'"{col}"' for col in rawBottle.keys())
+        placeholders = ', '.join(['%s'] * len(rawBottle))
+        sql = f"INSERT INTO listings ({columns}) VALUES ({placeholders}) RETURNING id"
+        
+        cur.execute(sql, list(rawBottle.values()))
+        new_id = cur.fetchone()['id']  # Corrected to access the first element
+        conn.commit()
+
+        return jsonify(
             {   
                 "code": 201,
-                "data": rawBottleName
+                "data": {
+                    "listingName": rawBottleName,
+                    "id": new_id
+                }
             }
         ), 201
+    
     except Exception as e:
         print(str(e))
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,
@@ -129,7 +201,9 @@ def createListings():
                 "message": "An error occurred creating the listing."
             }
         ), 500
-
+    
+    finally:
+        cur.close()
 
 # ======================================================
 # Optimize + simple rework (code not tested.)

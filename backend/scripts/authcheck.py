@@ -277,13 +277,13 @@ def editPassword(id):
             ), 401
         else:
             if data["userType"] == "user":
-                cur.execute('UPDATE users set hashedPassword = %s WHERE id = %s', (newHash ,id,))
+                cur.execute('UPDATE users set "hashedPassword" = %s WHERE id = %s', (newHash ,id,))
                 # updatePassword = db.users.update_one({'_id': ObjectId(id)}, {'$set': {'hashedPassword': data['newHash']}})
             if data["userType"] == "producer":
-                cur.execute('UPDATE producers set hashedPassword = %s WHERE id = %s', (newHash ,id,))
+                cur.execute('UPDATE producers set "hashedPassword" = %s WHERE id = %s', (newHash ,id,))
                 # updatePassword = db.producers.update_one({'_id': ObjectId(id)}, {'$set': {'hashedPassword': data['newHash']}})
             if data["userType"] == "venue":
-                cur.execute('UPDATE venues set hashedPassword = %s WHERE id = %s', (newHash ,id,))
+                cur.execute('UPDATE venues set "hashedPassword" = %s WHERE id = %s', (newHash ,id,))
                 # updatePassword = db.venues.update_one({'_id': ObjectId(id)}, {'$set': {'hashedPassword': data['newHash']}})
             conn.commit()
 
