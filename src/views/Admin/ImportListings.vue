@@ -288,6 +288,7 @@
 
                 // Calling of backend to import csv file
                 async importCSV() {
+                    console.log(this.csvFile)
                     
                     if (this.csvFile != []) {
                         const formData = new FormData();

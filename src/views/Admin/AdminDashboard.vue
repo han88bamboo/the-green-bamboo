@@ -1721,7 +1721,6 @@
                             }
                         });
                         const link = `http://localhost:8080/billingSecurity?token=${response.data.data.token}`;
-                        console.log(link);
                         return link;
                     } catch (error) {
                         console.error(error);
@@ -1729,7 +1728,6 @@
                 },
 
                 async emailLink(request, link) {
-                    console.log(request, link);
 
                     const emailDetails = {
                         recipient: request.email,

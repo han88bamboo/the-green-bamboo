@@ -643,7 +643,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
 
                     // search by listingName, originCountry, drinkType, typeCategory
                     this.resultListings = this.resultListings.filter((listing) => {
-                        return listing["listingName"].toLowerCase().includes(this.searchTerm) || listing["originCountry"].toLowerCase().includes(this.searchTerm) || listing["drinkType"].toLowerCase().includes(this.searchTerm) || listing["typeCategory"].toLowerCase().includes(this.searchTerm);
+                        return listing["listingName"].toLowerCase().includes(this.searchTerm) || listing["originCountry"].toLowerCase().includes(this.searchTerm) || listing["drinkType"].toLowerCase().includes(this.searchTerm) || listing["typeCategory"]?.toLowerCase().includes(this.searchTerm);
                     });
                     this.originalResults = this.resultListings;
                 }
@@ -698,12 +698,12 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                         let triedDrinks=[]
                         let wantToTryDrinks=[]
                         for (let drink of this.user.drinkLists["Drinks I Have Tried"]["listItems"]) {
-                            let triedDrink = this.listings.find(listing => listing.id === drink[1].id).listingName;
+                            let triedDrink = this.listings.find(listing => listing.id === parseInt(drink)).listingName;
                             // let triedDrinkName = triedDrink ? triedDrink.listingName : null;
                             triedDrinks.push(triedDrink)
                         }
                         for (let drink of this.user.drinkLists["Drinks I Want To Try"]["listItems"]) {
-                            let wantDrinkName = this.listings.find(listing => listing.id === drink[1].id).listingName;   
+                            let wantDrinkName = this.listings.find(listing => listing.id === parseInt(drink)).listingName;   
                             wantToTryDrinks.push(wantDrinkName)
                         }
                         this.drinkList = {
