@@ -558,45 +558,64 @@ def editReservationDetails():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/addListingToMenu', methods=['POST'])
 def addListingToMenu():
-    db = g.db
+    conn = g.db
+    cur = conn.cursor()
     data = request.get_json()
     print(data)
-    venueID = data['venueID']
-    menuOrder = data['menuOrder']
-    listingID = data['listingID']
+
+    venueID = int(data['venueID'])
+    menuOrder = int(data['menuOrder'])
+    listingID = int(data['listingID'])
     itemPrice = data['itemPrice']
-    servingType = data['servingType']
+    servingType = int(data['servingType'])
     sectionName = data['sectionName']
 
-    try: 
-        addListing = db.venues.update_one(
-            {'_id': ObjectId(venueID), 'menu.sectionName': sectionName},
-            {'$push': {'menu.$.listingsID': 
-                        {
-                            'itemOrder': menuOrder,
-                            'itemID': ObjectId(listingID),
-                            'itemPrice': itemPrice,
-                            'servingType': ObjectId(servingType),
-                            'itemAvailability': True,
-                        }
-                    }
-                }
+    try:
+        # Get sectionId based on the sectionName
+        cur.execute(
+            'SELECT id FROM "venuesMenu" WHERE "sectionName" = %s AND "venueId" = %s',
+            (sectionName, venueID)
         )
+        section = cur.fetchone()
+
+        if section is None:
+            return jsonify(
+                {
+                    "code": 404,
+                    "message": "Menu section not found."
+                }
+            ), 404
+        
+        sectionId = section['id']
+
+        cur.execute(
+            """
+                INSERT INTO "menuItems" ("itemOrder", "itemPrice", "itemAvailability", "itemID", "itemServingType", "sectionId")
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """,
+            (menuOrder, itemPrice, True, listingID, servingType, sectionId)
+        )
+        conn.commit()
+
         return jsonify(
-            {   
+            {
                 "code": 201,
                 "message": "Listing added to menu successfully!"
             }
         ), 201
+    
     except Exception as e:
+        conn.rollback()
         print(str(e))
         return jsonify(
             {
                 "code": 500,
-                "data": data,
                 "message": "An error occurred adding the listing to menu!"
             }
         ), 500
+    
+    finally:
+        cur.close()
 # -----------------------------------------------------------------------------------------
 
 
@@ -606,32 +625,45 @@ def addListingToMenu():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/editSectionName', methods=['PUT'])
 def editSectionName():
-    db = g.db
+    conn = g.db
+    cur = conn.cursor()
     data = request.get_json()
     print(data)
-    venueID = data['venueID']
-    sectionOrder = data['order']
+
+    venueID = int(data['venueID'])
+    sectionOrder = int(data['order'])
     sectionName = data['sectionName']
 
-    try: 
-        addListing = db.venues.update_one(
-            {'_id': ObjectId(venueID), 'menu.order': 0},
-            {'$set': {'menu.$.sectionName': sectionName}}
+    try:
+        cur.execute(
+            '''
+            UPDATE "venuesMenu"
+            SET "sectionName" = %s
+            WHERE "venueId" = %s AND "sectionOrder" = %s
+            ''',
+            (sectionName, venueID, sectionOrder)
         )
+        conn.commit()
+
         return jsonify(
-            {   
+            {
                 "code": 201,
-                "message": "Section Name changed successfully!"
+                "message": "Section name changed successfully!"
             }
         ), 201
+    
     except Exception as e:
+        conn.rollback()
         print(str(e))
         return jsonify(
             {
                 "code": 500,
-                "data": data,
-                "message": "Section Name was not changed"}
+                "message": "An error occurred changing the section name!"
+            }
         ), 500
+    
+    finally:
+        cur.close()
 # -----------------------------------------------------------------------------------------
     
 # -----------------------------------------------------------------------------------------
@@ -703,45 +735,42 @@ def editMenu():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/updateVenueStatus', methods=['POST'])
 def updateVenueStatus():
-    db = g.db
-    # fetch sent data
+    conn = g.db
+    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
-    # extract components of the data
-    venueID = data['businessID']
+    venueID = int(data['businessID'])
     venueName = data['newBusinessData']["businessName"]
     venueDesc = data['newBusinessData']["businessDesc"]
     originLocation = data['newBusinessData']["country"]
     hashedPassword = data['newBusinessData']["hashedPassword"]
     claimStatus = data['newBusinessData']["claimStatus"]
-    requestId = data['newBusinessData']["requestId"]
+    requestId = int(data['newBusinessData']["requestId"])
 
-    try: 
-        update = db.venues.update_one({'_id': ObjectId(venueID)}, 
-                                         {'$set': {
-                                                'venueName': venueName,
-                                                'venueDesc': venueDesc,
-                                                'originLocation': originLocation,
-                                                'hashedPassword': hashedPassword,
-                                                'claimStatus': claimStatus, 
-                                                'requestId': ObjectId(requestId)
-                                            }})
+    try:
+        cur.execute('UPDATE venues SET "venueName" = %s, "venueDesc" = %s, "originLocation" = %s, "hashedPassword" = %s, "claimStatus" = %s, "requestId" = %s WHERE "id" = %s', (venueName, venueDesc, originLocation, hashedPassword, claimStatus, requestId, venueID))
+        conn.commit()
+
         return jsonify(
-            {   
+            {
                 "code": 201,
                 "message": "Updated claim status successfully!"
             }
         ), 201
+    
     except Exception as e:
+        conn.rollback()
         print(str(e))
         return jsonify(
             {
                 "code": 500,
-                "data": data,
                 "message": "An error occurred updating claim status!"
             }
         ), 500
+    
+    finally:
+        cur.close()
 
 # -----------------------------------------------------------------------------------------
 

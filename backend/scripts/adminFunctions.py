@@ -562,165 +562,179 @@ def hash_password(id, password):
 # - Possible return codes: 201 (Updated), 400(Observation tag not found), 500 (Error during update)
 @blueprint.route('/importListings', methods=['POST'])
 def importListings():
-    db = g.db
-
-    
+    conn = g.db
+    cur = conn.cursor()
     file = request.files['file']
 
-    # Specify data types for each column
-    column_data_types = [str, str, str, str, str, str, str, str, str, str, str, str]
-
-    #Read the CSV file
+    column_data_types = [str, str, str, str, str, str, str, float, str, str, str, str]
     csv_data = csv.reader(io.TextIOWrapper(file, 'utf-8'))
 
-    # Skip to the data import rows
-    next(csv_data)
-    next(csv_data)
-    next(csv_data)
-    next(csv_data)
+    for _ in range(4):
+        next(csv_data)
 
-    # Create a list to store all the documents to be inserted
-    documents = []
+    # Fetch all existing producers and built a name to id mapping
+    cur.execute('SELECT "producerName", "id" FROM "producers"')
+    producers = cur.fetchall()
+    producer_name_id_dict = {row['producerName']: row['id'] for row in producers}
 
-    # Create a dict to store all the id and name of producer in producer collection 
-    producer_name_id_dict={}
-    for doc in db.producers.find({}):
-        producer_name_id_dict[doc["producerName"]]=doc["_id"]
-    
-    # print(producer_name_id_dict)
-
-    for row in csv_data:
-            
-        # Convert each value to the specified data type
-        converted_row = [data_type(value) for data_type, value in zip(column_data_types, row)]
-        
-        # Lookup producer ID based on producer name
-
-        producer_name = converted_row[1]  # Assuming producerName is at index 1
-        producer_id=producer_name_id_dict.get(producer_name)
-
-        if producer_id == None:
-            producer_to_insert =   {
-                "producerName": producer_name,
-                "producerDesc": "",
-                "originCountry": "",
-                "statusOB": "",
-                "mainDrinks": [],
-                "photo": "",
-                "hashedPassword": hash_password(producer_name, "admin1234"),
-                "questionsAnswers": [],
-                "updates": [],
-                "producerLink": "",
-                "claimStatus": False,
-            }
-            new_producer_result = db.producers.insert_one(producer_to_insert)
-            producer_id = new_producer_result.inserted_id
-        
-            # Cache the new producer ID to avoid future database queries for this producer
-            producer_name_id_dict[producer_name] = producer_id
-
-
-        # Convert the image URL to base64
-        base64_str = image_url_to_base64(converted_row[11])
-        
-        # upload image to S3 object and retrieve the URL
-        s3_url = s3Images.uploadBase64ImageToS3(base64_str)
-
-        # Create a dictionary representing the row
-        row_dict = {
-            'listingName': converted_row[0],
-            'producerID': producer_id,
-            'bottler': converted_row[2],
-            'originCountry': converted_row[3],
-            'drinkType': converted_row[4],
-            'typeCategory': converted_row[5],
-            'age': converted_row[6],
-            'abv': converted_row[7],
-            'reviewLink': converted_row[8],
-            'officialDesc': converted_row[9],
-            'sourceLink': converted_row[10],
-            'photo': s3_url,
-            'allowMod':True,
-            'addedDate': datetime.now()
-        }
-        
-        # Insert the row into MongoDB
-        documents.append(row_dict)
+    listings_to_insert = []
 
     try:
-        db.listings.insert_many(documents)
+        for row in csv_data:
+            converted_row = []
+            for data_type, value in zip(column_data_types, row):
+                if data_type == float:
+                    value = value.replace('%', '').strip()
+                    converted_value = data_type(value) if value else None
+                else:
+                    converted_value = data_type(value) if value else None
+                converted_row.append(converted_value)
 
+            # Lookup producer ID based on producer name
+            print(converted_row)
+            producer_name = converted_row[1]
+            producer_id = producer_name_id_dict.get(producer_name)
 
-    # If error occurs, return 500 error
+            if producer_id is None:
+                producer_to_insert = {
+                    "producerName": producer_name,
+                    "producerDesc": "",
+                    "originCountry": "",
+                    "mainDrinks": [],
+                    "photo": "",
+                    "hashedPassword": hash_password(producer_name, "admin1234"),
+                    "claimStatus": False,
+                    "statusOB": "",
+                    "username": None,
+                    "producerLink": "",
+                    "stripeCustomerId": None,
+                    "claimStatusCheckDate": None
+                }
+
+                cur.execute("""
+                    INSERT INTO producers (
+                        "producerName", "producerDesc", "originCountry", "mainDrinks", "photo", "hashedPassword",
+                        "claimStatus", "statusOB", "username", "producerLink", "stripeCustomerId", "claimStatusCheckDate"
+                    )
+                    VALUES (%(producerName)s, %(producerDesc)s, %(originCountry)s, %(mainDrinks)s, %(photo)s, %(hashedPassword)s,
+                            %(claimStatus)s, %(statusOB)s, %(username)s, %(producerLink)s, %(stripeCustomerId)s, %(claimStatusCheckDate)s)
+                    RETURNING "id"
+                """, producer_to_insert)
+
+                new_producer_id = cur.fetchone()['id']
+                conn.commit()
+
+                producer_name_id_dict[producer_name] = new_producer_id
+                producer_id = new_producer_id
+
+            # Convert the image URL to base64
+            base64_str = image_url_to_base64(converted_row[11]) if converted_row[11] else None
+
+            # upload image to S3 object and retrieve the URL
+            s3_url = s3Images.uploadBase64ImageToS3(base64_str) if base64_str else ''
+
+            # Build the listing data
+            listing_data = {
+                'listingName': converted_row[0],
+                'producerID': producer_id,
+                'bottler': converted_row[2],
+                'originCountry': converted_row[3],
+                'drinkType': converted_row[4],
+                'typeCategory': converted_row[5],
+                'age': converted_row[6],
+                'abv': converted_row[7],
+                'reviewLink': converted_row[8],
+                'officialDesc': converted_row[9],
+                'sourceLink': converted_row[10],
+                'photo': s3_url,
+                'allowMod': True,
+                'addedDate': datetime.now()
+            }
+
+            # Append to listings to insert
+            listings_to_insert.append(listing_data)
+
+        # Now, insert the listings into the 'strings' table
+        for listing in listings_to_insert:
+            columns = ', '.join(f'"{col}"' for col in listing.keys())
+            placeholders = ', '.join(['%s'] * len(listing))
+            sql = f"INSERT INTO listings ({columns}) VALUES ({placeholders})"
+            cur.execute(sql, list(listing.values()))
+        conn.commit()
+        
     except Exception as e:
-        print(str(e))
+        import traceback
+        traceback.print_exc()
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,
                 "message": "Bulk Import Listings Failed. An error occurred."
             }
         ), 500
+    
+    finally:
+        cur.close()
 
-    # If successful, return 201
     return jsonify(
         {
             "code": 201,
             "message": "Bulk Import Listings Successful"
-        }), 201
+        }
+    ), 201
 
 
 
+    # # for loop for each observation tag and update
+    # updates = []
+    # for elem in data:
 
-    # for loop for each observation tag and update
-    updates = []
-    for elem in data:
+    #     existingObservationTag = db.observationTags.find_one({'_id': ObjectId(elem["_id"]["$oid"])})
 
-        existingObservationTag = db.observationTags.find_one({'_id': ObjectId(elem["_id"]["$oid"])})
+    #     if(existingObservationTag == None):
+    #         return jsonify(
+    #             {   
+    #                 "code": 400,
+    #                 "data": {
+    #                     "observationTag": elem['observationTag']
+    #                 },
+    #                 "message": "Observation Tag does not exist."
+    #             }
+    #         ), 400
 
-        if(existingObservationTag == None):
-            return jsonify(
-                {   
-                    "code": 400,
-                    "data": {
-                        "observationTag": elem['observationTag']
-                    },
-                    "message": "Observation Tag does not exist."
-                }
-            ), 400
-
-        tag_key, tag_value = list(elem.items())[1]
-        tag_dict = {"$set":{tag_key: tag_value}}
-        updates.append({"filter": {"_id": ObjectId(elem["_id"]["$oid"])}, "update": tag_dict})
+    #     tag_key, tag_value = list(elem.items())[1]
+    #     tag_dict = {"$set":{tag_key: tag_value}}
+    #     updates.append({"filter": {"_id": ObjectId(elem["_id"]["$oid"])}, "update": tag_dict})
 
 
-    try: 
-        for update in updates:
-            filter_criteria = update["filter"]
-            update_data = update["update"]
-            db.observationTags.update_many(filter_criteria, update_data)
-        return jsonify(
-            {   
-                "code": 201,
-                "data": elem['observationTag']
-            }
-        ), 201
-    except Exception as e:
-        print(str(e))
-        return jsonify(
-            {
-                "code": 500,
-                "data": {
-                    "data": elem['observationTag']
-                },
-                "message": "An error occurred updating the observation tags."
-            }
-        ), 500
+    # try: 
+    #     for update in updates:
+    #         filter_criteria = update["filter"]
+    #         update_data = update["update"]
+    #         db.observationTags.update_many(filter_criteria, update_data)
+    #     return jsonify(
+    #         {   
+    #             "code": 201,
+    #             "data": elem['observationTag']
+    #         }
+    #     ), 201
+    # except Exception as e:
+    #     print(str(e))
+    #     return jsonify(
+    #         {
+    #             "code": 500,
+    #             "data": {
+    #                 "data": elem['observationTag']
+    #             },
+    #             "message": "An error occurred updating the observation tags."
+    #         }
+    #     ), 500
 
 # -----------------------------------------------------------------------------------------
 @blueprint.route('/readCSV', methods=['GET'])
 def readCSV():
     db = g.db
-    with codecs.open('Dataset/listingsFormat.csv', 'r', encoding='utf-8-sig') as file:
+    with codecs.open('../Dataset/listingsFormat.csv', 'r', encoding='utf-8-sig') as file:
         reader = csv.reader(file)
         data = [row for row in reader]
     return jsonify(
