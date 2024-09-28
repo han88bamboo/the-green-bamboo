@@ -38,38 +38,13 @@ def submitModRequest():
 
 # [OLD] TO BE DELETED FOR POSTGRES:
 # ------------------------------------------------------
-    try: 
-        submitReq = db.modRequests.insert_one({
-            'userID': ObjectId(userID),
-            'drinkType': drinkType,
-            'modDesc': modDesc, 
-            'reviewStatus': True
-        })
-
-        return jsonify(
-            {   
-                "code": 201,
-                "data": {
-                    "userID": userID,
-                    "drinkType": drinkType,
-                    "modDesc": modDesc, 
-                    "reviewStatus": True
-                }
-            }
-        ), 201
-# ======================================================    
-# [NEW] TO BE ADDED FOR POSTGRES:
-# ------------------------------------------------------
     # try: 
-    #     cur = db.cursor()
-    #     cur.execute(
-    #         """
-    #         INSERT INTO modRequests (userID, drinkType, modDesc, reviewStatus)
-    #         VALUES (%s, %s, %s, %s)
-    #         """,
-    #         (userID, drinkType, modDesc, True)
-    #     )
-    #     db.commit()
+    #     submitReq = db.modRequests.insert_one({
+    #         'userID': ObjectId(userID),
+    #         'drinkType': drinkType,
+    #         'modDesc': modDesc, 
+    #         'reviewStatus': True
+    #     })
 
     #     return jsonify(
     #         {   
@@ -82,6 +57,31 @@ def submitModRequest():
     #             }
     #         }
     #     ), 201
+# ======================================================    
+# [NEW] TO BE ADDED FOR POSTGRES:
+# ------------------------------------------------------
+    try: 
+        cur = db.cursor()
+        cur.execute(
+            """
+            INSERT INTO modRequests (userID, drinkType, modDesc, reviewStatus)
+            VALUES (%s, %s, %s, %s)
+            """,
+            (userID, drinkType, modDesc, True)
+        )
+        db.commit()
+
+        return jsonify(
+            {   
+                "code": 201,
+                "data": {
+                    "userID": userID,
+                    "drinkType": drinkType,
+                    "modDesc": modDesc, 
+                    "reviewStatus": True
+                }
+            }
+        ), 201
 # ======================================================
 
     except Exception as e:
