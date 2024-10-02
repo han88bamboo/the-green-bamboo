@@ -27,7 +27,7 @@ def editDetails():
         if 'image64' in data:
             cursor.execute("SELECT photo FROM users WHERE id = %s", (userID,))
             existingUser = cursor.fetchone()
-            if existingUser:
+            if existingUser and existingUser['photo']:
                 s3Images.deleteImageFromS3(existingUser['photo'])
 
             image64 = s3Images.uploadBase64ImageToS3(data['image64'])
@@ -55,7 +55,7 @@ def editDetails():
                 "code": 500,
                 "data": {
                     "userID": userID,
-                    "drinkChoice": drinkChoice
+                    "drinkChoice": data["drinkChoice"]
                 },
                 "message": "An error occurred updating the image or drink choice."
             }

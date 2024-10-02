@@ -56,7 +56,7 @@ CREATE TABLE "accountRequests" (
     "joinDate" TIMESTAMP,
     "isPending" BOOLEAN,
     "isApproved" BOOLEAN,
-    "isNew" BOOLEAN,
+    "isNew" BOOLEAN
 );
 
 -- ========= "servingTypes" =========

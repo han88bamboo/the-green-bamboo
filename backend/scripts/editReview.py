@@ -126,8 +126,8 @@ def updateReview(id):
     # Update review photo
     if existing_review['photo']:
         s3Images.deleteImageFromS3(existing_review['photo'])
-        if data['photo']:
-            data['photo'] = s3Images.uploadBase64ImageToS3(data['photo'])
+    if data['photo']:
+        data['photo'] = s3Images.uploadBase64ImageToS3(data['photo'])
 
     # Update review
     tagged_users = '{' + ','.join(map(str, data.get('taggedUsers', []))) + '}'

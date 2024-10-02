@@ -447,7 +447,6 @@
 
             // Get userID
             this.form['userID'] = localStorage.getItem('88B_accID');
-
             this.userType = localStorage.getItem('88B_accType');
             if (this.userType == "producer") {
                 this.form.brandRelation = "Employee"
@@ -492,9 +491,10 @@
 
                         if (this.types.length > 0) {
                             powerValid = true;
-                            if (response.data["isAdmin"] == true) {
-                                this.types = [];
-                            }
+                        }
+                        if (response.data["isAdmin"] == true) {
+                            this.types = [];
+                            powerValid = true;
                         }
                     } 
                     catch (error) {
