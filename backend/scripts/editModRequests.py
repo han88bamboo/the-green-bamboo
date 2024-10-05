@@ -64,7 +64,7 @@ def submitModRequest():
         cur = db.cursor()
         cur.execute(
             """
-            INSERT INTO modRequests (userID, drinkType, modDesc, reviewStatus)
+            INSERT INTO "modRequests" ("userID", "drinkType", "modDesc", "reviewStatus")
             VALUES (%s, %s, %s, %s)
             """,
             (userID, drinkType, modDesc, True)
@@ -108,6 +108,7 @@ def submitModRequest():
 @blueprint.route('/updateModRequest', methods=['POST'])
 def updateModRequest():
     db = g.db
+    cur = db.cursor()
     data = request.get_json()
     print(data)
     requestID = data['requestID']
@@ -116,21 +117,21 @@ def updateModRequest():
 
 # [OLD] TO BE DELETED FOR POSTGRES:
 # ------------------------------------------------------
-    try: 
-        updateReviewStatus = db.modRequests.update_one({'_id': ObjectId(requestID)}, {'$set': {'reviewStatus': reviewStatus}})
+    # try: 
+    #     updateReviewStatus = db.modRequests.update_one({'_id': ObjectId(requestID)}, {'$set': {'reviewStatus': reviewStatus}})
 # ======================================================
 # [NEW] TO BE ADDED FOR POSTGRES:
 # ------------------------------------------------------
-    # try:
-    #     cur.execute(
-    #         """
-    #         UPDATE modRequests
-    #         SET reviewStatus = %s
-    #         WHERE id = %s
-    #         """,
-    #         (reviewStatus, requestID)
-    #     )
-    #     db.commit()
+    try:
+        cur.execute(
+            """
+            UPDATE "modRequests"
+            SET "reviewStatus" = %s
+            WHERE id = %s
+            """,
+            (reviewStatus, requestID)
+        )
+        db.commit()
 
 # ======================================================
         return jsonify(

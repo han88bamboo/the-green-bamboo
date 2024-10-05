@@ -734,7 +734,7 @@ def importListings():
 @blueprint.route('/readCSV', methods=['GET'])
 def readCSV():
     db = g.db
-    with codecs.open('../Dataset/listingsFormat.csv', 'r', encoding='utf-8-sig') as file:
+    with codecs.open('Dataset/listingsFormat.csv', 'r', encoding='utf-8-sig') as file:
         reader = csv.reader(file)
         data = [row for row in reader]
     return jsonify(
