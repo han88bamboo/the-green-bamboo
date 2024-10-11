@@ -2,7 +2,6 @@
 # docker-compose up -d
 # =============================
 
-version: '3'
 services:
   # build backend (backend's Dockerfile is in ./backend/Dockerfile.backend)
   backend:
@@ -11,27 +10,27 @@ services:
       dockerfile: Dockerfile.backend
     ports:
       - "5000:5000"
-      - "5001:5001"
-      - "5002:5002"
-      - "5011:5011"
-      - "5021:5021"
-      - "5022:5022"
-      - "5023:5023"
-      - "5030:5030"
-      - "5031:5031"
-      - "5051:5051"
-      - "5052:5052"
-      - "5070:5070"
-      - "5100:5100"
-      - "5101:5101"
-      - "5200:5200"
-      - "5300:5300"
+      
   # build frontend (frontend's Dockerfile is in ./Dockerfile.frontend)
   frontend:
     build:
       context: ./
       dockerfile: Dockerfile.frontend
     ports:
-      - "8080:8080"
-    depends_on:
-    - backend
+      - "8080:80"
+    # depends_on:
+    # - backend
+
+  # build postgres db
+  db:
+    image: postgres:15.8
+    restart: unless-stopped
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./backend/postgresql/final:/docker-entrypoint-initdb.d  # Use your custom directory name
+    environment:
+      POSTGRES_PASSWORD: "P@ssw0rd"
+      POSTGRES_USER: drinkx
+      POSTGRES_DB: drinkx
+volumes:
+  postgres-data:

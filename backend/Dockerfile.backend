@@ -5,7 +5,7 @@
 # =============================
 
 # Use a base image with Python pre-installed
-FROM python:latest
+FROM python:3.11-slim
 
 # Set working directory for backend
 WORKDIR /app/backend
@@ -13,12 +13,15 @@ WORKDIR /app/backend
 # Copy all Python files and requirements.txt into the container
 COPY requirements.txt ./
 COPY ./ .
+COPY .env .env
 
 # Install dependencies from requirements.txt and supervisord
-RUN pip install --verbose --no-cache-dir -r requirements.txt supervisor
+# RUN pip install --verbose --no-cache-dir -r requirements.txt supervisor
+RUN pip install --no-cache-dir -r requirements.txt
 
 # # Expose ports for each backend service
-EXPOSE 5000 5001 5002 5011 5021 5022 5023 5030 5031 5051 5052 5070 5100 5101 5200 5300
+EXPOSE 5000 
 
 # Command to run supervisord
-CMD ["supervisord", "-c", "supervisord.conf"]
+CMD ["python", "app.py"]
+# CMD ["supervisord", "-c", "supervisord.conf"]
