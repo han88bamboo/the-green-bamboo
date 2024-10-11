@@ -1,0 +1,3 @@
+listingName,producerNew,producerID,bottler,originCountry,drinkType,typeCategory,age,abv,reviewLink,sourceLink,brandRelation,reviewStatus,userID,photo
+Test Request 260124 Minimal,,defaultProducer,OB,,type test,,,,,https://88bamboo.co/,Others,FALSE,defaultUser,defaultPhoto
+Test Request 260124 Detailed,Producer name test,defaultProducer,independent bottlers test,Singapore,type test,cat test,5,0.45,https://88bamboo.co/,https://88bamboo.co/,Public Relations,FALSE,defaultUser,defaultPhoto

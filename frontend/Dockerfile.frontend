@@ -1,0 +1,36 @@
+################################################################################
+# Step 1: Serve static website with Nginx
+################################################################################
+FROM node:14-slim as builder
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Copy package.json and package-lock.json to the container
+COPY ./package*.json ./
+
+# Install dependencies
+RUN npm install
+
+COPY .env .env
+COPY .eslintrc.js .eslintrc.js 
+COPY babel.config.js babel.config.js
+COPY vue.config.js vue.config.js
+
+COPY ./src ./src
+COPY ./Images ./Images
+
+# build app for production with minification
+RUN npm run build
+
+################################################################################
+# Step 2: Serve static website with Nginx
+################################################################################
+FROM nginx:1.26-alpine AS runner
+
+WORKDIR /usr/share/nginx/html
+
+COPY --from=builder /app/dist/ /usr/share/nginx/html
+
+COPY ./nginx.conf /etc/nginx/conf.d/default.conf
+COPY ./nginx-backend-not-found.conf /etc/nginx/extra-conf.d/backend-not-found.conf

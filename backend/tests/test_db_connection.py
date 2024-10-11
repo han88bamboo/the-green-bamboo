@@ -1,5 +1,5 @@
 # Test the connection to the PostgreSQL database
-# Command to run file: python3 backend/postgresql/test_connection.py
+# Command to run file: python3 database/postgresql/test_connection.py
 
 # ======================================================================
 
@@ -14,13 +14,13 @@ connection = None
 
 try:
     # Connect to the PostgreSQL database using the URL from the .env file
-    connection = psycopg2.connect(os.getenv("POSTGRESQL_DB_URL"))
+    connection = psycopg2.connect(os.getenv("POSTGRES_URI"))
     cursor = connection.cursor()
-    
+
     # Test the connection
     cursor.execute("SELECT 1;")
     print("Connection to PostgreSQL DB successful!")
-    
+
 except Exception as error:
     print(f"Error connecting to PostgreSQL DB: {error}")
 

@@ -1,7 +1,9 @@
 import unittest
 
+
 def add_numbers(a, b):
     return a + b
+
 
 class TestAddNumbers(unittest.TestCase):
     def test_add_numbers(self):
@@ -10,5 +12,6 @@ class TestAddNumbers(unittest.TestCase):
         self.assertEqual(add_numbers(0, 0), 0)
         self.assertEqual(add_numbers(10, -5), 5)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

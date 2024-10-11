@@ -1,0 +1,21 @@
+---
+name: "drink-x"
+services:
+  backend:
+    build:
+      context: backend
+      dockerfile: Dockerfile.backend
+    container_name: flask
+    ports:
+      - "127.0.0.1:5000:5000"
+    env_file:
+      - .env
+    environment:
+      LANG: "en_US.UTF-8"
+      LC_COLLATE: "en_US.UTF-8"
+      LC_CTYPE: "en_US.UTF-8"
+      POSTGRES_URI: ${POSTGRES_URI?Variable not set}
+    restart: "unless-stopped"
+    depends_on:
+      db:
+        condition: "service_healthy"
