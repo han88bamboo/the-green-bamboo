@@ -1295,7 +1295,7 @@ def getProducersProfileViews():
         producers_profile_views_data = cur.fetchall()
 
         if not producers_profile_views_data:
-            return jsonify([]), 404
+            return jsonify([])
 
         return jsonify(producers_profile_views_data), 200
     

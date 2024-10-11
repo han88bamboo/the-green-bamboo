@@ -435,7 +435,7 @@ def addNewProfileCount():
     cur = conn.cursor()
     data = request.get_json()
     print(data)
-    producerID = int(data['businessId'])
+    producerID = int(data['producerID'])
     date = datetime.strptime(data['date'], "%Y-%m-%dT%H:%M:%S.%fZ")
 
     try:
@@ -443,18 +443,17 @@ def addNewProfileCount():
         existingProfileView = cur.fetchone()
 
         if existingProfileView:
-            cur.execute('INSERT INTO "producersProfileViewsViews" ("date", "count", "viewsId") VALUES (%s, 1, %s)', (date, existingProfileView['id']))
+            cur.execute('UPDATE "producersProfileViews" SET "count" = "count" + 1 WHERE "producerId" = %s', (producerID,))
             conn.commit()
+
         else:
-            cur.execute('INSERT INTO "producersProfileViews" ("date", "count", "producerId") VALUES (%s, 1, %s) RETURNING id', (date, producerID))
-            viewsID = cur.fetchone()['id']
-            cur.execute('INSERT INTO "producersProfileViewsViews" ("date", "count", "viewsId") VALUES (%s, 1, %s)', (date, viewsID))
+            cur.execute('INSERT INTO "producersProfileViews" ("date", "count", "producerId") VALUES (%s, 1, %s)', (date, producerID))
             conn.commit()
 
         return jsonify(
             {   
                 "code": 201,
-                "message": "New profile view count updated successfully!"
+                "message": "New profile view count added successfully!"
             }
         ), 201
     

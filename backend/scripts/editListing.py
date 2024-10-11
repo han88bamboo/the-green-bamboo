@@ -100,6 +100,59 @@ def updateListing(id):
         cur.close()
 
 # -----------------------------------------------------------------------------------------
+# [POST] Updates listing moderation status
+# - Update entry with specified id from the "listings" collection. Follows listings dataclass requirements.
+# - Possible return codes: 200 (Updated), 420 (Invalid ID), 440 (Not Found), 450 (Error during update)
+@blueprint.route("/updateListingMod/<id>", methods=['POST'])
+def updateListingMod(id):
+    conn = g.db
+    cur = conn.cursor()
+
+    updatedListing = request.get_json()
+    allowMod = updatedListing["allowMod"]
+    listingName = updatedListing["listingName"]
+
+    try:
+        cur.execute("SELECT * FROM listings WHERE \"id\" = %s", (id,))
+        existingListing = cur.fetchone()
+
+        if existingListing is None:
+            return jsonify(
+                {   
+                    "code": 440,
+                    "data": {
+                        "id": id
+                    },
+                    "message": "Listing doesn't exist."
+                }
+            ), 440
+        
+        cur.execute('UPDATE listings SET "allowMod" = %s WHERE "id" = %s', (allowMod, id))
+        conn.commit()
+
+        return jsonify(
+            {
+                "code": 200,
+                "data": id,
+                "message": "Listing moderation status updated successfully."
+            }
+        ), 200
+    
+    except Exception as e:
+        print(str(e))
+        conn.rollback()
+        return jsonify(
+            {
+                "code": 450,
+                "data": id,
+                "message": "An error occurred updating the listing moderation status."
+            }
+        ), 450
+    
+    finally:
+        cur.close()
+
+# -----------------------------------------------------------------------------------------
 # [DELETE] Deletes a listing
 # - Delete entry with specified id from the "listings" collection
 # - Possible return codes: 201 (Deleted), 400 (Listing doesn't exist), 500 (Error during deletion)

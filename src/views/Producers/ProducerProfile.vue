@@ -1733,7 +1733,7 @@
                         this.producersProfileViews = response.data;
 
                         if (this.producersProfileViews.length > 0) {
-                            this.producerProfileViewInfo = this.producersProfileViews.find(view => view.producerID == this.producer_id);
+                            this.producerProfileViewInfo = this.producersProfileViews.find(view => view.producerId == this.producer_id);
                             if (this.producerProfileViewInfo) {
                                 this.producerProfileID = this.producerProfileViewInfo.id;
                             }
@@ -2447,7 +2447,7 @@
                 // #3: Date (Newest - Oldest)
                 else if (category == 'Date (Newest - Oldest)') {
                     this.filteredListings.sort((a, b) => {
-                        return new Date(b.addedDate.$date) - new Date(a.addedDate.$date);
+                        return new Date(b.addedDate) - new Date(a.addedDate);
                     });
                     this.lazyListings = this.filteredListings.slice(0, 10);
                 }
@@ -2455,7 +2455,7 @@
                 // [DEFAULT] #4: Date (Oldest - Newest)
                 else if (category == '' || category == 'Date (Oldest - Newest)') {
                     this.filteredListings.sort((a, b) => {
-                        return new Date(a.addedDate.$date) - new Date(b.addedDate.$date);
+                        return new Date(a.addedDate) - new Date(b.addedDate);
                     });
                     this.lazyListings = this.filteredListings.slice(0, 10);
                 }
@@ -2515,14 +2515,13 @@
                         let currDate = this.currDate
 
                     // check if currDate exists in the producerProfileViewInfo
-                    let dateExists = this.producerProfileViewInfo.views.some(view => view.date["$date"] == currDate);
+                    let dateExists = (this.producerProfileViewInfo?.date == currDate) || false;
 
                     // if current date already exists, increment the count
                     if (dateExists) {
 
                         // get current view
-                        let views = this.producerProfileViewInfo.views.find(view => view.date["$date"] == currDate);
-                        let viewsID = views.id;
+                        let viewsID = this.producerProfileViewInfo.id;
                         try {
                             const response = this.$axios.post('http://127.0.0.1:5000/editProducerProfile/addProfileCount', 
                                 {

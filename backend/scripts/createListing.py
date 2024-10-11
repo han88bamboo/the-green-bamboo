@@ -142,6 +142,7 @@ def createListings():
     cur = conn.cursor()
 
     rawBottle = request.get_json()
+    print(rawBottle)
     rawBottle['addedDate'] = datetime.now(pytz.timezone('Etc/GMT-8'))
     rawBottle["allowMod"] = True
     rawBottle['producerID'] = int(rawBottle['producerID'])
