@@ -1,5 +1,7 @@
 import os
 import importlib
+
+import urllib
 import stripe
 from flask import Flask, g
 from flask_pymongo import PyMongo
@@ -22,14 +24,18 @@ load_dotenv()
 
 # NEW CONNECTOR ------------------------------------------------------------------
 # Connect to Postgresql
-app.config["POSTGRES_URI"] = os.getenv("POSTGRES_URI")
+app.config["POSTGRES_USER"] = os.getenv("POSTGRES_USER")
+app.config["POSTGRES_PASSWORD"] = os.getenv("POSTGRES_PASSWORD")
+app.config["POSTGRES_HOST"] = os.getenv("POSTGRES_HOST")
+app.config["POSTGRES_PORT"] = os.getenv("POSTGRES_PORT")
+app.config["POSTGRES_DB"] = os.getenv("POSTGRES_DB")
 
 
 # Function to get or create a PostgreSQL connection
 def get_db_connection():
     if "db_conn" not in g:
         g.db_conn = psycopg2.connect(
-            dsn=app.config["POSTGRES_URI"],
+            f"dbname={app.config['POSTGRES_DB']} user={app.config['POSTGRES_USER']} password={app.config['POSTGRES_PASSWORD']} host={app.config['POSTGRES_HOST']} port={app.config['POSTGRES_PORT']}",
             cursor_factory=RealDictCursor,
         )
     return g.db_conn

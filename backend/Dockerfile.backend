@@ -1,18 +1,31 @@
-FROM python:3.11-slim
+########################################################################################
+# Stage 1: Install dependencies
+FROM python:3.11-slim AS builder
 
 WORKDIR /app
 
 # Copy all Python files and requirements.txt into the container
-COPY requirements.txt ./
-COPY ./ .
-COPY .env .env
+COPY ./requirements.txt ./
 
-# Install dependencies from requirements.txt and supervisord
-# RUN pip install --verbose --no-cache-dir -r requirements.txt supervisor
+# Install dependencies from requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# # Expose ports for each backend service
+########################################################################################
+# Stage 2: Set up the actual application
+FROM python:3.11-slim AS runner
+
+WORKDIR /app
+
+# Copy the installed dependencies from the builder stage
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+
+# Copy the application files into the container
+COPY ./ ./
+COPY .env .env
+
+# Expose ports for each backend service
 EXPOSE 5000
 
-# Command to run supervisord
+# Command to run the application
 CMD ["python", "app.py"]
