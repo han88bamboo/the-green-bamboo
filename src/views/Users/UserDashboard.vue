@@ -497,7 +497,6 @@
                 return this.reviews.filter(review => review.userID === parseInt(this.userID) && review.reviewType === 'Listing');
             },
             reviewsData() {
-                console.log(this.userReviews)
                 const dates = [...new Set(this.userReviews.map(review => this.formatDateMonthYear(review.createdDate)))];
                 dates.sort((a, b) => {
                     const [monthA, yearA] = a.split('/');
