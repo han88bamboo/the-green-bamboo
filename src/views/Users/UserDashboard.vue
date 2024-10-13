@@ -497,6 +497,7 @@
                 return this.reviews.filter(review => review.userID === parseInt(this.userID) && review.reviewType === 'Listing');
             },
             reviewsData() {
+                console.log(this.userReviews)
                 const dates = [...new Set(this.userReviews.map(review => this.formatDateMonthYear(review.createdDate)))];
                 dates.sort((a, b) => {
                     const [monthA, yearA] = a.split('/');
@@ -928,12 +929,11 @@
             },
 
             formatDateMonthYear(dateTimeString) {
-                let datePart = dateTimeString.split("T")[0];
-                // splitting the date into year, month, and day
-                let [year, month] = datePart.split("-");
-                // formatting the date
+                let date = new Date(dateTimeString);
+                let month = date.toLocaleString('default', { month: 'short' });
+                let year = date.getFullYear();
                 let formattedDate = `${month}/${year}`;
-                return formattedDate
+                return formattedDate;
             }, 
 
             getTimeDifference(date) {
