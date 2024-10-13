@@ -190,7 +190,7 @@ def getProducers():
                         'photo', u.photo,
                         'producerId', u."producerId",
                         'likes', COALESCE((
-                            SELECT json_agg(l."userId")
+                            SELECT json_agg(json_build_object('userId', l."userId", 'userType', l."userType"))
                             FROM "producerUpdateLikes" l
                             WHERE l."updateId" = u.id
                         ), '[]')
@@ -262,7 +262,7 @@ def getProducer(id):
                         'photo', u.photo,
                         'producerId', u."producerId",
                         'likes', COALESCE((
-                            SELECT json_agg(l."userId")
+                            SELECT json_agg(json_build_object('userId', l."userId", 'userType', l."userType"))
                             FROM "producerUpdateLikes" l
                             WHERE l."updateId" = u.id
                         ), '[]')
@@ -330,7 +330,7 @@ def getProducerByRequestId(id):
                         'photo', u.photo,
                         'producerId', u."producerId",
                         'likes', COALESCE((
-                            SELECT json_agg(l."userId")
+                            SELECT json_agg(json_build_object('userId', l."userId", 'userType', l."userType"))
                             FROM "producerUpdateLikes" l
                             WHERE l."updateId" = u.id
                         ), '[]')
@@ -736,7 +736,7 @@ def getVenues():
                         'photo', u.photo,
                         'venueId', u."venueId",
                         'likes', COALESCE((
-                            SELECT json_agg(l."userId")
+                            SELECT json_agg(json_build_object('userId', l."userId", 'userType', l."userType"))
                             FROM "venueUpdateLikes" l
                             WHERE l."updateId" = u.id
                         ), '[]')
@@ -838,7 +838,7 @@ def getVenue(id):
                         'photo', u.photo,
                         'venueId', u."venueId",
                         'likes', COALESCE((
-                            SELECT json_agg(l."userId")
+                            SELECT json_agg(json_build_object('userId', l."userId", 'userType', l."userType"))
                             FROM "venueUpdateLikes" l
                             WHERE l."updateId" = u.id
                         ), '[]')
@@ -938,7 +938,7 @@ def getVenueByRequestId(id):
                         'photo', u.photo,
                         'venueId', u."venueId",
                         'likes', COALESCE((
-                            SELECT json_agg(l."userId")
+                            SELECT json_agg(json_build_object('userId', l."userId", 'userType', l."userType"))
                             FROM "venueUpdateLikes" l
                             WHERE l."updateId" = u.id
                         ), '[]')

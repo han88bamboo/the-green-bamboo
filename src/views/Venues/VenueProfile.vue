@@ -384,7 +384,7 @@
                                 <!-- Like Symbol -->
                                 <div v-if="Array.isArray(targetVenue['updates'][0].likes) && viewerType !== null" class="col-6 text-end">
                                     <!-- [if] Liked -->
-                                    <div v-if="targetVenue['updates'][0].likes.some(like => like == viewerID)" class="d-inline-block" @click="unlikeUpdates(targetVenue['updates'][0].id)">
+                                    <div v-if="targetVenue['updates'][0].likes.some(like => ((like.userId == viewerID) && (like.userType === userType)))" class="d-inline-block" @click="unlikeUpdates(targetVenue['updates'][0].id)">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="red" class="bi bi-heart-fill producer-profile-latest-updates-heart" viewBox="0 0 16 16">
                                             <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"/>
                                         </svg>
@@ -2526,7 +2526,9 @@
                 showFullDescription: false,
 
                 // truncation of official description <!-- tzh added  --->
-                showFullItemDescription: false
+                showFullItemDescription: false,
+
+                userType: 'user'
             }
         },
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -2573,6 +2575,15 @@
                 this.venueExists = false;
             }
 
+            var userID = localStorage.getItem('88B_accID')
+            if(userID != null){
+                this.user_id = userID;
+            }
+
+            var userType = localStorage.getItem('88B_accType');
+            if(userType != null){
+                this.userType = userType;
+            }
         },
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         methods: {
@@ -3773,6 +3784,7 @@
                             venueID: this.targetVenue['id'],
                             updateID: unlikeUpdateID,
                             userID: this.viewerID,
+                            userType:this.userType
                         },
                         {
                         headers: {
@@ -3796,6 +3808,7 @@
                             venueID: this.targetVenue['id'],
                             updateID: likeUpdateID,
                             userID: this.viewerID,
+                            userType:this.userType
                         },
                         {
                         headers: {

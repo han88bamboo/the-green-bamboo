@@ -259,6 +259,7 @@ def likeUpdates():
     venueID = int(data['venueID'])
     updateID = int(data['updateID'])
     userID = int(data['userID'])
+    userType = data['userType']
 
     try:
         # Verify that the update exists and belongs to the venue
@@ -275,10 +276,9 @@ def likeUpdates():
         
         # Insert into the likes table
         cur.execute("""
-            INSERT INTO "venueUpdateLikes" ("updateId", "userId")
-            VALUES (%s, %s)
-            ON CONFLICT DO NOTHING
-        """, (updateID, userID))
+            INSERT INTO "venueUpdateLikes" ("updateId", "userId", "userType")
+            VALUES (%s, %s, %s)
+        """, (updateID, userID, userType))
         conn.commit()
 
         return jsonify(
@@ -315,6 +315,7 @@ def unlikeUpdates():
     venueID = int(data['venueID'])
     updateID = int(data['updateID'])
     userID = int(data['userID'])
+    userType = data['userType']
 
     try:
         # Verify that the update exists and belongs to the venue
@@ -332,8 +333,8 @@ def unlikeUpdates():
         # Remove from the likes table
         cur.execute("""
             DELETE FROM "venueUpdateLikes"
-            WHERE "updateId" = %s AND "userId" = %s
-        """, (updateID, userID))
+            WHERE "updateId" = %s AND "userId" = %s AND "userType" = %s
+        """, (updateID, userID, userType))
         conn.commit()
 
         return jsonify(

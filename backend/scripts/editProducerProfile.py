@@ -228,6 +228,7 @@ def likeUpdates():
     producerID = int(data['producerID'])
     updateID = int(data['updateID'])
     userID = int(data['userID'])
+    userType = data['userType']
 
     try:
         # Verify that the update exists and belongs to the producer
@@ -244,10 +245,9 @@ def likeUpdates():
         
         # Insert into the likes table
         cur.execute("""
-            INSERT INTO "producerUpdateLikes" ("updateId", "userId")
-            VALUES (%s, %s)
-            ON CONFLICT DO NOTHING
-        """, (updateID, userID))
+            INSERT INTO "producerUpdateLikes" ("updateId", "userId", "userType")
+            VALUES (%s, %s, %s)
+        """, (updateID, userID, userType))
         conn.commit()
 
         return jsonify(
@@ -285,6 +285,7 @@ def unlikeUpdates():
     producerID = int(data['producerID'])
     updateID = int(data['updateID'])
     userID = int(data['userID'])
+    userType = data['userType']
 
     try:
         # Verify that the update exists and belongs to the producer
@@ -300,7 +301,7 @@ def unlikeUpdates():
             ), 404
         
         # Remove from the likes table
-        cur.execute('DELETE FROM "producerUpdateLikes" WHERE "updateId" = %s AND "userId" = %s', (updateID, userID))
+        cur.execute('DELETE FROM "producerUpdateLikes" WHERE "updateId" = %s AND "userId" = %s AND "userType" = %s', (updateID, userID, userType))
         conn.commit()
 
         return jsonify(

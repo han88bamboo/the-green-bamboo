@@ -2287,7 +2287,7 @@
             checkLiked(status) {
                 if (status == 'latest') {
                     for (let i in this.updateLikes) {
-                        if (this.updateLikes[i] == this.user_id) {
+                        if ((this.updateLikes[i].userId == this.user_id) && this.updateLikes[i].userType == this.userType) {
                             this.likeStatus = true;
                         }
                     }
@@ -2311,6 +2311,7 @@
                             producerID: this.producer_id,
                             updateID: updateID,
                             userID: this.user_id,
+                            userType: this.userType
                         },
                         {
                         headers: {
@@ -2335,6 +2336,7 @@
                             producerID: this.producer_id,
                             updateID: updateID,
                             userID: this.user_id,
+                            userType:this.userType
                         },
                         {
                         headers: {
