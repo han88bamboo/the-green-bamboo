@@ -215,9 +215,9 @@ def createReviews():
             "message": "Review already exists."
         }), 400
 
-    tagged_users = '{' + ','.join(map(str, raw_review.get('taggedUsers', []))) + '}'
-    flavour_tags = '{' + ','.join(map(str, raw_review.get('flavourTag', []))) + '}'
-    observation_tags = '{' + ','.join(map(str, raw_review.get('observationTag', []))) + '}'
+    tagged_users = raw_review.get('taggedUsers', [])
+    flavour_tags = raw_review.get('flavourTag', [])
+    observation_tags = raw_review.get('observationTag', [])
 
     # Insert new venue if necessary
     venue_id = None

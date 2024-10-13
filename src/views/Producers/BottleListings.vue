@@ -1064,7 +1064,7 @@
                                     <!-- flavour tag -->
                                     <div class="text-start mb-2">
                                         <!-- flavor tag -->
-                                            <span v-for="(tag, index) in review.flavorTag" :key="index" class="badge rounded-pill me-2" :style="{ backgroundColor: getTagColor(tag) }">{{ getTagName(tag) }}</span>
+                                            <span v-for="(tag, index) in review.flavourTag" :key="index" class="badge rounded-pill me-2" :style="{ backgroundColor: getTagColor(parseInt(tag)) }">{{ getTagName(parseInt(tag)) }}</span>
                                             <span v-for="(tag, index) in review.observationTag" :key="index" class="badge rounded-pill me-2" style="background-color: grey;">{{ tag }}</span>
                                     </div>
                                     <div style="display: inline;" class="text-start">
@@ -1275,9 +1275,9 @@
                                                 <div class="col-9">
                                                     <span v-for="(user, index) in detailedReview.taggedUsers" :key="index">
                                                         <b>
-                                                            @<router-link :to="`/profile/user/${user.id}`" style="text-decoration-color: #535C72;">
+                                                            @<router-link :to="`/profile/user/${user}`" style="text-decoration-color: #535C72;">
                                                                 <span class="default-clickable-text">
-                                                                    {{ getUsernameFromId(user.id) }}
+                                                                    {{ getUsernameFromId(parseInt(user)) }}
                                                                 </span>
                                                             </router-link>
                                                         </b>
@@ -1290,7 +1290,7 @@
                                                     <b>Flavour Tags</b>
                                                 </div>
                                                 <div class="col-9">
-                                                    <span v-for="(tag, index) in detailedReview.flavorTag" :key="index" class="badge rounded-pill me-2" :style="{ backgroundColor: getTagColor(tag) }">{{ getTagName(tag) }}</span>
+                                                    <span v-for="(tag, index) in detailedReview.flavourTag" :key="index" class="badge rounded-pill me-2" :style="{ backgroundColor: getTagColor(parseInt(tag)) }">{{ getTagName(parseInt(tag)) }}</span>
                                                 </div>
                                             </div>
                                             <!-- observation tag -->
@@ -1860,7 +1860,7 @@
                             let triedDrinks=[]
                             let wantToTryDrinks=[]
                             this.followList = this.users.filter(user => {
-                                return this.user.followLists.users.some(item => item.followerID.id === user.id);
+                                return this.user.followLists.users.some(item => parseInt(item) === user.id);
                             });
                             if(this.specificReview.length >0){
                                 this.showFriendTagList = this.friendTagList.map(id => {
@@ -1953,6 +1953,7 @@
                 // Check if logged in, then check if moderator is allowed to edit listing
                 if(this.userID!='defaultUser' && this.userType=='user'){
                     if((this.user.modType.includes(this.specified_listing.drinkType) && this.specified_listing.allowMod)|| this.user.isAdmin){
+                        console.log(this.user.modType, this.specified_listing.drinkType, this.specified_listing.allowMod, this.user.isAdmin)
                         this.correctModerator = true
                     }else{
                         this.correctModerator = false
@@ -2213,10 +2214,11 @@
                     this.finish= specificReview[0].finish
                     this.rating= specificReview[0].rating
                     // reconcile id with flavourtags
-                    // this.selectedFlavourTags= specificReview[0].flavorTag
-                    if(specificReview[0].flavorTag!=null){
-                        specificReview[0].flavorTag.forEach(subtag=>{
-                            const subTag = this.subTags.find(subTag=>subtag.id===subTag.id)                       
+                    // this.selectedFlavourTags= specificReview[0].flavourTag
+                    if(specificReview[0].flavourTag!=null){
+                        specificReview[0].flavourTag.forEach(subtag=>{
+                            console.log(this.subTag)
+                            const subTag = this.subTags.find(subTag => parseInt(subtag)===subTag.id)         
                             if(subTag){
                                 const familyTag = this.flavourTags.find(family=>subTag.familyTagId===family.id)
                                 if(familyTag){
@@ -2229,9 +2231,9 @@
                             }
                         })
                     }
-                    this.finalSelectedFlavourTags = specificReview[0].flavorTag
+                    this.finalSelectedFlavourTags = specificReview[0].flavourTag
                     if(specificReview[0].taggedUsers !=null){
-                        this.friendTagList = specificReview[0].taggedUsers.map(user => user.id);
+                        this.friendTagList = specificReview[0].taggedUsers.map(userId => parseInt(userId));
                     }
                     this.selectedObservations= specificReview[0].observationTag
                     this.image64= specificReview[0].photo
@@ -2401,7 +2403,7 @@
                     "rating" : Number(this.rating),
                     "reviewDesc": this.reviewDesc,
                     "reviewType": "Listing",
-                    "flavorTag" : this.finalSelectedFlavourTags,
+                    "flavourTag" : this.finalSelectedFlavourTags,
                     "photo" : this.image64,
                     "colour" : this.selectedColour,
                     "language" : this.selectedLanguage,
@@ -2496,7 +2498,9 @@
             },
 
             toggleObservationSelection(observation) {
+                console.log(observation)
                 const index = this.selectedObservations.indexOf(observation);
+                console.log(index)
                 if (index === -1) {
                     // Observation is not selected, so add it to the array
                     this.selectedObservations.push(observation);
@@ -2507,7 +2511,9 @@
             },
 
             toggleFlavourSelection(flavour, hexcode, id) {
+                console.log(flavour, hexcode, id)
                 const index = this.selectedFlavourTags.indexOf(flavour+hexcode);
+                console.log(index)
                 if (index === -1) {
                     // Observation is not selected, so add it to the array
                     this.selectedFlavourTags.push(flavour+hexcode);
@@ -2616,7 +2622,7 @@
                 this.$router.push('/'); // Navigate to root 
             },
             getTagName(tag) {
-                const subTag = this.subTags.find(subTag=>subTag.id === tag.id)
+                const subTag = this.subTags.find(subTag=>subTag.id === tag)
                 if(subTag){
                     const familyTag = this.flavourTags.find(family=>subTag.familyTagId===family.id)
                     if(familyTag){
@@ -2631,7 +2637,7 @@
                 }
             },
             getTagColor(tag) {
-                const subTag = this.subTags.find(subTag=>subTag.id === tag.id)
+                const subTag = this.subTags.find(subTag=>subTag.id === tag)
                 if(subTag){
                     const familyTag = this.flavourTags.find(family=>subTag.familyTagId===family.id)
                     if(familyTag){
@@ -2674,7 +2680,7 @@
                             "listingName": this.specified_listing.listingName,
                             "allowMod": this.specified_listing.allowMod,
                 }
-                const response = await this.$axios.post('http://127.0.0.1:5000/editListing/updateListing/' + this.listing_id, submitData)
+                const response = await this.$axios.post('http://127.0.0.1:5000/editListing/updateListingMod/' + this.listing_id, submitData)
                 .then((response)=>{
                     responseCode = response.data.code
                 })
