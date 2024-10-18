@@ -182,8 +182,8 @@
                                                         <div style="height: 85%;">
                                                             <div class="text-start pt-2 overflow-auto" style="max-height: 100%;">
                                                                 <!-- [function] where to buy -->
-                                                                <div v-for="producer in producerListings" v-bind:key="producer.id">
-                                                                    <router-link :to="{ path: '/profile/producer/' + producer.id }" class="reverse-clickable-text">
+                                                                <div v-for="producer in producerListings" v-bind:key="producer">
+                                                                    <router-link :to="{ path: '/profile/producer/' + producer }" class="reverse-clickable-text">
                                                                         <p> {{ getProducerName(producer) }} </p>
                                                                     </router-link>
                                                                 </div>
@@ -1358,8 +1358,8 @@
                         <div style="height: 85%;">
                             <div class="text-start pt-2 overflow-auto" style="max-height: 100%;">
                                 <!-- [function] where to buy -->
-                                <div v-for="producer in producerListings" v-bind:key="producer.id">
-                                    <router-link :to="{ path: '/profile/producer/' + producer.id }" class="reverse-clickable-text">
+                                <div v-for="producer in producerListings" v-bind:key="producer">
+                                    <router-link :to="{ path: '/profile/producer/' + producer }" class="reverse-clickable-text">
                                         <p> {{ getProducerName(producer) }} </p>
                                     </router-link>
                                 </div>
@@ -2217,7 +2217,6 @@
                     // this.selectedFlavourTags= specificReview[0].flavourTag
                     if(specificReview[0].flavourTag!=null){
                         specificReview[0].flavourTag.forEach(subtag=>{
-                            console.log(this.subTag)
                             const subTag = this.subTags.find(subTag => parseInt(subtag)===subTag.id)         
                             if(subTag){
                                 const familyTag = this.flavourTags.find(family=>subTag.familyTagId===family.id)
