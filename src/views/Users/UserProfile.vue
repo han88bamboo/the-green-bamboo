@@ -438,7 +438,7 @@
                         <div v-else class="container text-center mb-3">
                             <!-- badges for different drink types -->
                             <div class="row">
-                                <div class="mobile-col-3 col-12 col-sm-4 col-md-6 col-xl-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2 " v-for="drinkTypeDetails in matchedDrinkTypes" :key="drinkTypeDetails._id">
+                                <div class="mobile-col-3 col-12 col-sm-4 col-md-6 col-xl-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2 " v-for="drinkTypeDetails in matchedDrinkTypes" :key="drinkTypeDetails.id">
                                     <!-- image of actual badge  style="width: 100px; height: 100px;"  -->
                                     <!-- <img :src="'data:image/png;base64,'+ (drinkTypeDetails.badgePhoto || defaultProfilePhoto)" 
                                         alt="" class="rounded-circle-white-bg border border-dark badge-img"> -->
@@ -1455,7 +1455,7 @@ export default {
         // return oid from name of drink listing
         getListingID(listingName) {
             const listing = this.listings.find(listing => listing.listingName === listingName);
-            return listing._id;
+            return listing.id;
         },
         // return search items for bookmarking
         searchResult() {
@@ -1468,10 +1468,9 @@ export default {
         async addDrinkToList(listName) {
             for (const drink of this.drinksToAdd) {
                 let addListingId = this.getListingID(drink);
-                console.log(this.userBookmarks)
                 let itemExist = this.userBookmarks[listName].listItems.find(item => item === addListingId);
                 if (!itemExist) {
-                    this.userBookmarks[listName].listItems.push([new Date(), addListingId]);
+                    this.userBookmarks[listName].listItems.push(addListingId);
                 }
             }
 
@@ -1490,7 +1489,7 @@ export default {
                 console.error(error);
             }
             
-            window.location.reload();
+           window.location.reload();
         },
         // add new list
         async addNewList() {
