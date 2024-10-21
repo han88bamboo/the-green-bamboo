@@ -8,6 +8,7 @@ WORKDIR /app
 COPY ./requirements.txt ./
 
 # Install dependencies from requirements.txt
+RUN apt-get update && apt install -y build-essential
 RUN pip install --no-cache-dir -r requirements.txt
 
 ########################################################################################
@@ -15,6 +16,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 FROM python:3.11-slim AS runner
 
 WORKDIR /app
+
+# This is for health check by AWS services: ECS, ALB, etc.
+RUN apt-get update && apt install -y curl
 
 # Copy the installed dependencies from the builder stage
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages

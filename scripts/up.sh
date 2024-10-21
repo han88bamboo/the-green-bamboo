@@ -4,8 +4,6 @@ set -ex
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 cd "${SCRIPT_DIR}"/..
 
-PG_VERSION=15.8
-
 docker compose --project-name drink-x \
     --env-file=.env \
     -f docker-compose-db.yml \
