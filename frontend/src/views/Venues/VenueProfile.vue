@@ -2579,7 +2579,7 @@
             // Obtain venue data
             async getVenueData() {
                 try {
-                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getVenue/' + this.targetVenue);
+                    const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getVenue/' + this.targetVenue);
 
                     if (response != null && response.data != null && response.data != "" && !(Array.isArray(response.data) && response.data.length == 0)) {
 
@@ -2639,7 +2639,7 @@
                         }
 
                         // Obtain servingTypes
-                        const servingTypesResponse = await this.$axios.get('http://127.0.0.1:5000/getData/getServingTypes');
+                        const servingTypesResponse = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getServingTypes');
                         this.servingTypes = servingTypesResponse.data;
                         this.getDefaultServingType();
 
@@ -2647,7 +2647,7 @@
                         const mapResponse = await this.$axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
                             params: {
                                 address: this.targetVenue["address"],
-                                key: process.env.VUE_APP_API_KEY
+                                key: process.env.VUE_APP_GOOGLE_MAPS_API_KEY
                             }
                         });
 
@@ -2677,7 +2677,7 @@
                                 console.log('checking subscription');
                                 // check for active subscription
                                 try {
-                                    const response = await this.$axios.post('http://127.0.0.1:5000/payment/retrieve-latest-subscription', {
+                                    const response = await this.$axios.post('${process.env.VUE_APP_API_URL}/payment/retrieve-latest-subscription', {
                                         customerId: this.targetVenue.stripeCustomerId,
                                     }, {
                                         headers: {
@@ -2705,7 +2705,7 @@
                                 if (this.targetVenue.claimStatus != claimStatus) {
                                     this.targetVenue.claimStatus = claimStatus;
                                     try {
-                                        await this.$axios.post(`http://127.0.0.1:5000/editVenueProfile/updateVenueClaimStatus`, 
+                                        await this.$axios.post(`${process.env.VUE_APP_API_URL}/editVenueProfile/updateVenueClaimStatus`, 
                                             {
                                                 businessId: this.targetVenue.id,
                                                 claimStatus: claimStatus,
@@ -2721,7 +2721,7 @@
     
                                 // upqdate last check status date
                                 try {
-                                    await this.$axios.post(`http://127.0.0.1:5000/editVenueProfile/updateVenueClaimStatusCheckDate`, 
+                                    await this.$axios.post(`${process.env.VUE_APP_API_URL}/editVenueProfile/updateVenueClaimStatusCheckDate`, 
                                         {
                                             businessId: this.targetVenue.id,
                                             claimStatusCheckDate: new Date().toISOString(),
@@ -2772,7 +2772,7 @@
 
                             // If not found, get from server
                             if (listingData == undefined) {
-                                let response = await this.$axios.get('http://127.0.0.1:5000/getData/getListing/' + item.itemID);
+                                let response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getListing/' + item.itemID);
                                 listingData = response.data;
 
                                 if (Array.isArray(listingData) && listingData.length == 0) {
@@ -2783,7 +2783,7 @@
                                 else if (listingData != null && listingData != "") {
 
                                     // Get reviews
-                                    let reviewResponse = await this.$axios.get('http://127.0.0.1:5000/getData/getReviewByTarget/' + item.itemID);
+                                    let reviewResponse = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getReviewByTarget/' + item.itemID);
                                     let reviewData = reviewResponse.data;
 
                                     if (Array.isArray(reviewData) && reviewData.length == 0) {
@@ -2804,7 +2804,7 @@
 
                                     // If not found, get from server
                                     if (producerData == undefined) {
-                                        let producerResponse = await this.$axios.get('http://127.0.0.1:5000/getData/getProducer/' + listingData["producerID"]);
+                                        let producerResponse = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getProducer/' + listingData["producerID"]);
                                         producerData = producerResponse.data;
 
                                         if (Array.isArray(producerData) && producerData.length == 0) {
@@ -2895,7 +2895,7 @@
                     // Check if viewer is a user and get their data
                     if (this.viewerType == 'user') {
                         try {
-                            const response = await this.$axios.get('http://127.0.0.1:5000/getData/getUser/' + this.viewerID);
+                            const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getUser/' + this.viewerID);
                             if (Array.isArray(response.data) && response.data.length == 0) {
                                 throw "User not found!";
                             }
@@ -2928,7 +2928,7 @@
 
                 // Get profile views
                 try {
-                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getVenuesProfileViewsByVenue/' + this.targetVenue.id);
+                    const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getVenuesProfileViewsByVenue/' + this.targetVenue.id);
                     let venueProfileViewInfo = {};
                     if (Array.isArray(response.data) && response.data.length != 0) {
                         venueProfileViewInfo = response.data[0];
@@ -2949,7 +2949,7 @@
                             let views = venueProfileViewInfo.views.find(view => view.date == currDate);
                             let viewsID = views.id;
                             try {
-                                this.$axios.post('http://127.0.0.1:5000/editVenueProfile/addProfileCount', 
+                                this.$axios.post('${process.env.VUE_APP_API_URL}/editVenueProfile/addProfileCount', 
                                     {
                                         venueID: venueProfileViewInfo.id,
                                         viewsID: viewsID,
@@ -2968,7 +2968,7 @@
                         // if current date does not exist, add a new view
                         else {
                             try {
-                                this.$axios.post('http://127.0.0.1:5000/editVenueProfile/addNewProfileCount', 
+                                this.$axios.post('${process.env.VUE_APP_API_URL}/editVenueProfile/addNewProfileCount', 
                                     {
                                         venueID: this.targetVenue.id,
                                         date: currDate,
@@ -3202,7 +3202,7 @@
                 this.editProfile = false;
 
                 try {
-                    await this.$axios.post('http://127.0.0.1:5000/editVenueProfile/editDetails', 
+                    await this.$axios.post('${process.env.VUE_APP_API_URL}/editVenueProfile/editDetails', 
                         {
                             venueID: this.targetVenue['id'],
                             image64: this.editProfilePhoto,
@@ -3228,7 +3228,7 @@
             // Submit New Update
             async submitNewUpdate() {
                 try {
-                    await this.$axios.post('http://127.0.0.1:5000/editVenueProfile/addUpdates', 
+                    await this.$axios.post('${process.env.VUE_APP_API_URL}/editVenueProfile/addUpdates', 
                         {
                             venueID: this.targetVenue['id'],
                             date: new Date().toISOString(),
@@ -3265,7 +3265,7 @@
             // Save Update Edits
             async saveUpdate(update) {
                 try {
-                    await this.$axios.post('http://127.0.0.1:5000/editVenueProfile/editUpdate', 
+                    await this.$axios.post('${process.env.VUE_APP_API_URL}/editVenueProfile/editUpdate', 
                         {
                             venueID: this.targetVenue['id'],
                             updateID: update['id'],
@@ -3291,7 +3291,7 @@
             // Delete Update
             async deleteUpdate(update) {
                 try {
-                    await this.$axios.post('http://127.0.0.1:5000/editVenueProfile/deleteUpdate', 
+                    await this.$axios.post('${process.env.VUE_APP_API_URL}/editVenueProfile/deleteUpdate', 
                         {
                             venueID: this.targetVenue['id'],
                             updateID: update['id'],
@@ -3314,7 +3314,7 @@
             // Send Answer to a Question
             async sendAnswer(qa) {
                 try {
-                    await this.$axios.post('http://127.0.0.1:5000/editVenueProfile/sendAnswers', 
+                    await this.$axios.post('${process.env.VUE_APP_API_URL}/editVenueProfile/sendAnswers', 
                         {
                             venueID: this.targetVenue['id'],
                             questionsAnswersID: qa.id,
@@ -3637,15 +3637,15 @@
 
                     try {
                         // Obtain all listings
-                        const listingResponse = await this.$axios.get('http://127.0.0.1:5000/getData/getListings');
+                        const listingResponse = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getListings');
                         this.allListings = listingResponse.data;
 
                         // Obtain all reviews
-                        let reviewResponse = await this.$axios.get('http://127.0.0.1:5000/getData/getReviews');
+                        let reviewResponse = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getReviews');
                         let reviewData = reviewResponse.data;
 
                         // Obtain all producers
-                        let producerResponse = await this.$axios.get('http://127.0.0.1:5000/getData/getProducers');
+                        let producerResponse = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getProducers');
                         this.loadedProducers = producerResponse.data;
 
                         // Get reviews + producer name for each listing
@@ -3713,7 +3713,7 @@
                 }
 
                 try {
-                    await this.$axios.post('http://127.0.0.1:5000/editVenueProfile/editMenu', 
+                    await this.$axios.post('${process.env.VUE_APP_API_URL}/editVenueProfile/editMenu', 
                         {
                             venueID: this.targetVenue['id'],
                             updatedMenu: this.editMenu,
@@ -3747,7 +3747,7 @@
                 }
 
                 try {
-                    await this.$axios.post('http://127.0.0.1:5000/editProfile/updateFollowLists', 
+                    await this.$axios.post('${process.env.VUE_APP_API_URL}/editProfile/updateFollowLists', 
                         {
                             userID: this.viewerID,
                             action: action,
@@ -3768,7 +3768,7 @@
             // Unlike Updates
             async unlikeUpdates(unlikeUpdateID) {
                 try {
-                    await this.$axios.post('http://127.0.0.1:5000/editVenueProfile/unlikeUpdates', 
+                    await this.$axios.post('${process.env.VUE_APP_API_URL}/editVenueProfile/unlikeUpdates', 
                         {
                             venueID: this.targetVenue['id'],
                             updateID: unlikeUpdateID,
@@ -3791,7 +3791,7 @@
             // Like Updates
             async likeUpdates(likeUpdateID) {
                 try {
-                    await this.$axios.post('http://127.0.0.1:5000/editVenueProfile/likeUpdates', 
+                    await this.$axios.post('${process.env.VUE_APP_API_URL}/editVenueProfile/likeUpdates', 
                         {
                             venueID: this.targetVenue['id'],
                             updateID: likeUpdateID,
@@ -3814,7 +3814,7 @@
             // Send Question
             async sendQuestion() {
                 try {
-                    await this.$axios.post('http://127.0.0.1:5000/editVenueProfile/sendQuestions', 
+                    await this.$axios.post('${process.env.VUE_APP_API_URL}/editVenueProfile/sendQuestions', 
                         {
                             venueID: this.targetVenue['id'],
                             question: this.qaQuestion,
@@ -3972,7 +3972,7 @@
             // Add listing to user's drink lists
             async addToBookmarks(targetList, listingID){
 
-                let submitAPI = "http://127.0.0.1:5000/addToList/addTo";
+                let submitAPI = "${process.env.VUE_APP_API_URL}/addToList/addTo";
 
                 if (targetList == "tried") {
                     submitAPI += "Tried/";
@@ -4022,7 +4022,7 @@
                 this.editingQA = false;
                 let q_and_a_id = qa.id;
                 try {
-                    await this.$axios.post('http://127.0.0.1:5000/editVenueProfile/editQA', 
+                    await this.$axios.post('${process.env.VUE_APP_API_URL}/editVenueProfile/editQA', 
                         {
                             venueID: this.targetVenue['id'],
                             questionsAnswersID: q_and_a_id,
@@ -4044,7 +4044,7 @@
             async deleteQAEdit(qa) {
                 let q_and_a_id = qa.id;
                 try {
-                    const response = await this.$axios.post('http://127.0.0.1:5000/editVenueProfile/deleteQA', 
+                    const response = await this.$axios.post('${process.env.VUE_APP_API_URL}/editVenueProfile/deleteQA', 
                         {
                             venueID: this.targetVenue['id'],
                             questionsAnswersID: q_and_a_id,
@@ -4129,7 +4129,7 @@
             async confirmUpdatePassword(){
                 let oldHash = this.hashPassword(this.targetVenue.venueName, this.oldPassword)
                 let newHash = this.hashPassword(this.targetVenue.venueName, this.newPassword)
-                let submitURL = 'http://127.0.0.1:5000/authcheck/editPassword/' + this.targetVenue.id 
+                let submitURL = '${process.env.VUE_APP_API_URL}/authcheck/editPassword/' + this.targetVenue.id 
                 let submitData = {
                     oldHash: oldHash.toString(),
                     newHash: newHash.toString(),
@@ -4160,7 +4160,7 @@
                 setTimeout(() => {
                     this.isButtonDisabled = false;
                 }, 60000);
-            let submitURL = 'http://127.0.0.1:5000/authcheck/sendResetPin/' + this.targetVenue.id
+            let submitURL = '${process.env.VUE_APP_API_URL}/authcheck/sendResetPin/' + this.targetVenue.id
             let submitData = {
                 userType: "venue",
             }
@@ -4187,7 +4187,7 @@
 
         async verifyOTP(){
             // call api to verify the pin
-            let submitURL = "http://127.0.0.1:5000/authcheck/verifyPin/" + this.targetVenue.id
+            let submitURL = "${process.env.VUE_APP_API_URL}/authcheck/verifyPin/" + this.targetVenue.id
             let submitData ={
                 userType:"venue",
                 pin:this.resetPin
@@ -4215,7 +4215,7 @@
 
         async resetPassword(){
             this.resettingPassword=true
-            let submitURL = "http://127.0.0.1:5000/authcheck/resetPassword/" + this.targetVenue.id
+            let submitURL = "${process.env.VUE_APP_API_URL}/authcheck/resetPassword/" + this.targetVenue.id
             let submitData = {
                 userType:"venue",
                 pin:this.resetPin

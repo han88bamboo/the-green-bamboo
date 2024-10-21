@@ -324,7 +324,7 @@
                 }
                 // business
                 try {
-                    const response = await this.$axios.get(`http://127.0.0.1:5000/getData/get${this.userType.charAt(0).toUpperCase()}${this.userType.slice(1)}/${this.user_id}`);
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/get${this.userType.charAt(0).toUpperCase()}${this.userType.slice(1)}/${this.user_id}`);
                     this.business = response.data;
                     console.log("This busoiness", this.business);
                     this.businessName = this.business[this.userType + "Name"];
@@ -338,7 +338,7 @@
                 }
                 // request
                 try {
-                    const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getAccountRequest/${this.requestId}`);
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getAccountRequest/${this.requestId}`);
                     this.request = response.data;
                 } 
                 catch (error) {
@@ -348,7 +348,7 @@
 
                 // subscription
                 try {
-                    const response = await this.$axios.post('http://127.0.0.1:5000/payment/retrieve-latest-subscription', {
+                    const response = await this.$axios.post('${process.env.VUE_APP_API_URL}/payment/retrieve-latest-subscription', {
                         customerId: this.stripeCustomerId,
                     }, {
                         headers: {
@@ -388,7 +388,7 @@
                 if (this.activeSubscription) {
                     // upcoming invoice
                     try {
-                        const response = await this.$axios.post('http://127.0.0.1:5000/payment/retrieve-upcoming-invoice', {
+                        const response = await this.$axios.post('${process.env.VUE_APP_API_URL}/payment/retrieve-upcoming-invoice', {
                             subscription_id: this.subscription.id,
                         }, {
                             headers: {
@@ -404,7 +404,7 @@
 
                     // payment method
                     try {
-                        const response = await this.$axios.post('http://127.0.0.1:5000/payment/retrieve-payment-method', {
+                        const response = await this.$axios.post('${process.env.VUE_APP_API_URL}/payment/retrieve-payment-method', {
                             subscription: this.subscription,
                         }, {
                             headers: {
@@ -419,7 +419,7 @@
 
                     // subscription details
                     try {
-                        const response = await this.$axios.post('http://127.0.0.1:5000/payment/retrieve-subscription-details', {
+                        const response = await this.$axios.post('${process.env.VUE_APP_API_URL}/payment/retrieve-subscription-details', {
                             subscription: this.subscription,
                         }, {
                             headers: {
@@ -444,7 +444,7 @@
 
             async getPaymentMethodIdFromCustomerId(customerId) {
                 try {
-                    const response = await this.$axios.get(`http://127.0.0.1:5000/getData/get-payment-method-id/${customerId}`);
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/get-payment-method-id/${customerId}`);
                     if (response.data && response.data.paymentMethodId) {
                         return response.data.paymentMethodId;
                     } else {
@@ -487,7 +487,7 @@
 
             async editSubscription(interval) {
                 try {
-                    await this.$axios.post('http://127.0.0.1:5000/payment/change-subscription-plan', {
+                    await this.$axios.post('${process.env.VUE_APP_API_URL}/payment/change-subscription-plan', {
                         subscription: this.subscription,
                         subscription_id: this.subscription.id,
                         new_price_id: interval === 'month' ? this.monthlyPriceId : this.yearlyPriceId,
@@ -510,7 +510,7 @@
 
             async cancelSubscription() {
                 try {
-                    await this.$axios.post('http://127.0.0.1:5000/payment/cancel-subscription', {
+                    await this.$axios.post('${process.env.VUE_APP_API_URL}/payment/cancel-subscription', {
                         subscription: this.subscription,
                         subscription_id: this.subscription.id,
                     }, {
@@ -532,7 +532,7 @@
 
             async resumeSubscription() {
                 try {
-                    await this.$axios.post('http://127.0.0.1:5000/payment/resume-subscription', {
+                    await this.$axios.post('${process.env.VUE_APP_API_URL}/payment/resume-subscription', {
                         subscription: this.subscription,
                         subscription_id: this.subscription.id,
                     }, {
@@ -554,7 +554,7 @@
             async generateToken(businessId, requestId) {
                 console.log(businessId, requestId);
                 try {
-                    const response = await this.$axios.post('http://127.0.0.1:5000/createAccount/createToken', 
+                    const response = await this.$axios.post('${process.env.VUE_APP_API_URL}/createAccount/createToken', 
                         {
                             businessId: businessId,
                             requestId: requestId,

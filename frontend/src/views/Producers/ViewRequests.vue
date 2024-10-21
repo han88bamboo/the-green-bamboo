@@ -263,7 +263,7 @@
                 async loadData() {
                     // Listings
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getListings');
+                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getListings');
                         this.listings = response.data;
                     } 
                     catch (error) {
@@ -272,7 +272,7 @@
                     }
                     // Producers
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getProducers');
+                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getProducers');
                         this.producers = response.data;
                     } 
                     catch (error) {
@@ -281,7 +281,7 @@
                     }
                     // Users
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getUsers');
+                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getUsers');
                         this.users = response.data;
 
                         if (this.role == 'user') {
@@ -307,7 +307,7 @@
                     }
                     // Request Listings
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getRequestListings');
+                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getRequestListings');
 
                         // Filter requests based on user role
                         if (this.role == 'producer') {
@@ -333,7 +333,7 @@
                     }
                     // Request Edits
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getRequestEdits');
+                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getRequestEdits');
                         let unreviewedRequests = response.data.filter((request) => {
                             return request["reviewStatus"] == false;
                         });

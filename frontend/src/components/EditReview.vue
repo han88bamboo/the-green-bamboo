@@ -496,7 +496,7 @@ export default {
                 if (this.finish !== "") {
                     this.finish = this.finish.trim();
                 }
-                let submitAPI = "http://127.0.0.1:5000/createReview/createReview"
+                let submitAPI = "${process.env.VUE_APP_API_URL}/createReview/createReview"
                 let submitData = {
                     "userID" : this.userID,
                     "reviewTarget" : this.listing_id,

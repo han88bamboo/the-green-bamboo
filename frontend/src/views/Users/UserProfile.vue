@@ -1060,7 +1060,7 @@ export default {
 
         this.accType = localStorage.getItem('88B_accType');
         let accID = localStorage.getItem('88B_accID');
-        let url = 'http://127.0.0.1:5000/getData/get';
+        let url = '${process.env.VUE_APP_API_URL}/getData/get';
 
         if (this.accType == 'user') {
             url = url + 'User/' + accID;
@@ -1165,7 +1165,7 @@ export default {
 
             // Listings
             try {
-                const response = await this.$axios.get('http://127.0.0.1:5000/getData/getListings');
+                const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getListings');
                 this.listings = response.data;
                 // originally, make filteredListings the entire collection of listings
                 this.filteredListings = this.listings;
@@ -1176,7 +1176,7 @@ export default {
             }
             // Reviews
             try {
-                const response = await this.$axios.get('http://127.0.0.1:5000/getData/getReviews');
+                const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getReviews');
                 this.reviews = response.data;
                 this.reversedReviews = this.reviews.reverse();
                 this.recentReviews = this.reversedReviews.filter(review => review.userID === this.displayUserID && review.reviewType === 'Listing');
@@ -1187,7 +1187,7 @@ export default {
             }
             // Producers
             try {
-                const response = await this.$axios.get('http://127.0.0.1:5000/getData/getProducers');
+                const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getProducers');
                 this.producers = response.data;
                 this.dataLoaded = true;
             } 
@@ -1197,7 +1197,7 @@ export default {
             }
             // Venues
             try {
-                const response = await this.$axios.get('http://127.0.0.1:5000/getData/getVenues');
+                const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getVenues');
                 this.venues = response.data;
                 this.dataLoaded = true;
             } 
@@ -1207,7 +1207,7 @@ export default {
             }
             // for Badges
             try {
-                const response = await this.$axios.get('http://127.0.0.1:5000/getData/getBadges');
+                const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getBadges');
                 this.badges = response.data;
                 this.dataLoaded = true;
             } 
@@ -1217,7 +1217,7 @@ export default {
             }
             // Users
             try {
-                const response = await this.$axios.get('http://127.0.0.1:5000/getData/getUsers');
+                const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getUsers');
                 this.users = response.data;
                 this.user = this.getUser(this.userID);
                 this.displayUser = this.getUser(this.displayUserID);
@@ -1284,7 +1284,7 @@ export default {
             }
             // mod requests
             try {
-                const response = await this.$axios.get('http://127.0.0.1:5000/getData/getModRequests');
+                const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getModRequests');
                 this.modRequests = response.data;
                 this.modRequestsType = this.modRequests
                     .filter(request => request.userID === this.userID && request.reviewStatus === true)
@@ -1296,7 +1296,7 @@ export default {
             }
             // drinkCategories
             try {
-                const response = await this.$axios.get('http://127.0.0.1:5000/getData/getDrinkTypes');
+                const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getDrinkTypes');
                 this.drinkTypes = response.data;
                 // retrieve the drink type and put them into an array
                 this.drinkType = this.drinkTypes.map(category => category.drinkType);
@@ -1329,7 +1329,7 @@ export default {
             // flavourTags
             // _id, hexcode, familyTag, subtag, showbox
             try {
-                const response = await this.$axios.get('http://127.0.0.1:5000/getData/getFlavourTags');
+                const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getFlavourTags');
                 this.flavourTags = response.data.map(item => {
                     return { ...item, showBox: false };
                 })
@@ -1341,7 +1341,7 @@ export default {
             // subTags
             // _id, familyTagId, subtag
             try {
-                const response = await this.$axios.get('http://127.0.0.1:5000/getData/getSubTags');
+                const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getSubTags');
                 this.subTags = response.data
                 this.flavourTags.forEach(flavourTag => {
                     // Filter subtags belonging to the current flavor tag
@@ -1412,7 +1412,7 @@ export default {
             }
             
             try {
-                const response = await this.$axios.post('http://127.0.0.1:5000/editProfile/editDetails', 
+                const response = await this.$axios.post('${process.env.VUE_APP_API_URL}/editProfile/editDetails', 
                     {
                         userID: this.userID,
                         image64: this.image64,
@@ -1476,7 +1476,7 @@ export default {
             }
 
             try {
-                const response = await this.$axios.post('http://127.0.0.1:5000/editProfile/updateBookmark', 
+                const response = await this.$axios.post('${process.env.VUE_APP_API_URL}/editProfile/updateBookmark', 
                     {
                         userID: this.userID,
                         bookmark: this.userBookmarks,
@@ -1508,7 +1508,7 @@ export default {
             this.userBookmarks[this.newListName].listItems = [];
 
             try {
-                const response = await this.$axios.post('http://127.0.0.1:5000/editProfile/updateBookmark', 
+                const response = await this.$axios.post('${process.env.VUE_APP_API_URL}/editProfile/updateBookmark', 
                     {
                         userID: this.userID,
                         bookmark: this.userBookmarks,
@@ -1532,7 +1532,7 @@ export default {
             this.userBookmarks[listName].listItems.splice(index, 1);
 
             try {
-                const response = await this.$axios.post('http://127.0.0.1:5000/editProfile/updateBookmark', 
+                const response = await this.$axios.post('${process.env.VUE_APP_API_URL}/editProfile/updateBookmark', 
                     {
                         userID: this.userID,
                         bookmark: this.userBookmarks,
@@ -1552,7 +1552,7 @@ export default {
             delete this.userBookmarks[listName];
 
             try {
-                const response = await this.$axios.post('http://127.0.0.1:5000/editProfile/updateBookmark', 
+                const response = await this.$axios.post('${process.env.VUE_APP_API_URL}/editProfile/updateBookmark', 
                     {
                         userID: this.userID,
                         bookmark: this.userBookmarks,
@@ -1596,7 +1596,7 @@ export default {
             this.userBookmarks[this.editListName].listDesc = this.editListDesc;
 
             try {
-                const response = await this.$axios.post('http://127.0.0.1:5000/editProfile/updateBookmark', 
+                const response = await this.$axios.post('${process.env.VUE_APP_API_URL}/editProfile/updateBookmark', 
                     {
                         userID: this.userID,
                         bookmark: this.userBookmarks,
@@ -1618,7 +1618,7 @@ export default {
         // submit moderator application
         async submitModeratorApplication() {
             try {
-                const response = await this.$axios.post('http://127.0.0.1:5000/editModRequests/submitModRequest', 
+                const response = await this.$axios.post('${process.env.VUE_APP_API_URL}/editModRequests/submitModRequest', 
                     {
                         userID: this.userID,
                         drinkType: this.modCat,
@@ -1766,7 +1766,7 @@ export default {
                 this.following = true
             }
             try {
-                const response = await this.$axios.post('http://127.0.0.1:5000/editProfile/updateFollowLists', 
+                const response = await this.$axios.post('${process.env.VUE_APP_API_URL}/editProfile/updateFollowLists', 
                     {
                         userID: this.userID,
                         action: action,
@@ -1927,14 +1927,14 @@ export default {
                 let submitURL = ''
                 let submitData = {}
                 if(this.chooseMod=='remove'){
-                    submitURL = 'http://127.0.0.1:5000/editProfile/removeModType'
+                    submitURL = '${process.env.VUE_APP_API_URL}/editProfile/removeModType'
                     submitData={
                         userID: this.displayUser.id,
                         removeModType: this.selectedRemoveType.drinkType,
                     }
                 }
                 if(this.chooseMod=='add'){
-                    submitURL = 'http://127.0.0.1:5000/editProfile/updateModType'
+                    submitURL = '${process.env.VUE_APP_API_URL}/editProfile/updateModType'
                     submitData = {
                         userID: this.displayUser.id,
                         newModType: this.selectedPromotedType.drinkType,
@@ -2037,7 +2037,7 @@ export default {
         async confirmUpdatePassword(){
             let oldHash = this.hashPassword(this.user.username, this.oldPassword)
             let newHash = this.hashPassword(this.user.username, this.newPassword)
-            let submitURL = 'http://127.0.0.1:5000/authcheck/editPassword/' + this.user.id 
+            let submitURL = '${process.env.VUE_APP_API_URL}/authcheck/editPassword/' + this.user.id 
             let submitData = {
                 oldHash: oldHash.toString(),
                 newHash: newHash.toString(),
@@ -2068,7 +2068,7 @@ export default {
                 setTimeout(() => {
                     this.isButtonDisabled = false;
                 }, 60000);
-            let submitURL = 'http://127.0.0.1:5000/authcheck/sendResetPin/' + this.user.id
+            let submitURL = '${process.env.VUE_APP_API_URL}/authcheck/sendResetPin/' + this.user.id
             let submitData = {
                 userType: "user",
             }
@@ -2095,7 +2095,7 @@ export default {
 
         async verifyOTP(){
             // call api to verify the pin
-            let submitURL = "http://127.0.0.1:5000/authcheck/verifyPin/" + this.user.id
+            let submitURL = "${process.env.VUE_APP_API_URL}/authcheck/verifyPin/" + this.user.id
             let submitData ={
                 userType:"user",
                 pin:this.resetPin
@@ -2123,7 +2123,7 @@ export default {
 
         async resetPassword(){
             this.resettingPassword=true
-            let submitURL = "http://127.0.0.1:5000/authcheck/resetPassword/" + this.user.id
+            let submitURL = "${process.env.VUE_APP_API_URL}/authcheck/resetPassword/" + this.user.id
             let submitData = {
                 userType:"user",
                 pin:this.resetPin
@@ -2211,7 +2211,7 @@ export default {
 
         // get all countries user has tagged location in reviews
         async getAllCountriesTagged() {
-            const apiKey = process.env.VUE_APP_API_KEY;
+            const apiKey = process.env.VUE_APP_GOOGLE_MAPS_API_KEY;
             const promises = this.recentReviews.map(async (review) => {
                 const address = encodeURIComponent(review.address);
                 if (address) {

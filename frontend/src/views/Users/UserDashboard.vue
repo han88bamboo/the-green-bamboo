@@ -787,7 +787,7 @@
                 // listings
                 // _id, listingName, producerID, bottler, originCountry, drinkType, typeCategory, age, abv, reviewLink, officialDesc, sourceLink, photo
                 try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getListings');
+                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getListings');
                         this.listings = response.data;
                     } 
                     catch (error) {
@@ -796,7 +796,7 @@
                     }
                 // Producers
                 try {
-                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getProducers');
+                    const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getProducers');
                     this.producers = response.data;
                     this.dataLoaded = true;
                 } 
@@ -806,7 +806,7 @@
                 }
                 // Venues
                 try {
-                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getVenues');
+                    const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getVenues');
                     this.venues = response.data;
                     this.dataLoaded = true;
                 } 
@@ -817,7 +817,7 @@
                 // reviews
                 // _id, userID, reviewTarget, date, rating, reviewDesc, taggedUsers, reviewTitle, reviewType, flavorTag, photo
                 try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getReviews');
+                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getReviews');
                         this.reviews = response.data;
                         this.reversedReviews = this.reviews.reverse();
                         this.recentReviews = this.reversedReviews.filter(review => review.userID === this.displayUserID && review.reviewType === 'Listing');
@@ -834,7 +834,7 @@
                 
                 // for Badges
                 try {
-                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getBadges');
+                    const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getBadges');
                     this.badges = response.data;
                     this.dataLoaded = true;
                 } 
@@ -845,7 +845,7 @@
                 // users
                 // _id, username, displayName, choiceDrinks, drinkLists, modType, photo
                 try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getData/getUsers');
+                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getUsers');
                         this.users = response.data;
                         this.user = this.users.find(user => user.id == this.userID);
                         this.displayUser = this.getUser(this.displayUserID);
@@ -891,7 +891,7 @@
                     }
                 // drinkCategories
                 try {
-                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getDrinkTypes');
+                    const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getDrinkTypes');
                     this.drinkTypes = response.data;
 
                     // ==== for badges ====
@@ -1059,7 +1059,7 @@
 
             // get all countries user has tagged location in reviews
             async getAllCountriesTagged() {
-                const apiKey = process.env.VUE_APP_API_KEY;
+                const apiKey = process.env.VUE_APP_GOOGLE_MAPS_API_KEY;
                 const promises = this.recentReviews.map(async (review) => {
                     const address = encodeURIComponent(review.address);
                     if (address) {

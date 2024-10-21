@@ -1281,7 +1281,7 @@
                 // countries
                 // _id, originCountry
                 // try {
-                //         const response = await this.$axios.get('http://127.0.0.1:5000/getCountries');
+                //         const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getCountries');
                 //         this.countries = response.data;
                 //     } 
                 //     catch (error) {
@@ -1290,7 +1290,7 @@
                 // producers
                 // _id, producerName, producerDesc, originCountry, statusOB, mainDrinks
                 try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getProducers');
+                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getProducers');
                         this.producers = response.data;
                     } 
                     catch (error) {
@@ -1299,7 +1299,7 @@
                 // listings
                 // _id, listingName, producerID, bottler, originCountry, drinkType, typeCategory, age, abv, reviewLink, officialDesc, sourceLink, photo
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getListings');
+                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getListings');
                         this.listings = response.data;
                     } 
                     catch (error) {
@@ -1308,7 +1308,7 @@
                 // users
                 // _id, username, displayName, choiceDrinks, drinkLists, modType, photo
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getUsers');
+                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getUsers');
                         this.users = response.data;
                         if (this.userType == 'user') {
                             this.user = this.users.find(user => user["id"] == this.user_id);
@@ -1322,7 +1322,7 @@
                 // venues
                 // _id, venueName, venueDesc, originCountry, address, openingHours
                     try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getVenues');
+                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getVenues');
                         this.venues = response.data;
                         this.specified_venue = this.venues.find(venue => venue["id"] == this.venue_id); // find specified venue
                         this.venue_claimed = this.specified_venue["claimStatus"]; 
@@ -1349,7 +1349,7 @@
                 // reviews
                 // _id, userID, reviewTarget, date, rating, reviewDesc, taggedUsers, reviewTitle, reviewType, flavorTag, photo
                 try {
-                        const response = await this.$axios.get('http://127.0.0.1:5000/getReviews');
+                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getReviews');
                         this.reviews = response.data;
                         // get all reviews
                         this.getAllReviews()
@@ -1363,7 +1363,7 @@
                 // venuesAPI
                 // _id, venueName, venueDesc, originCountry
                 // try {
-                //         const response = await this.$axios.get('http://127.0.0.1:5000/getVenuesAPI');
+                //         const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getVenuesAPI');
                 //         this.venuesAPI = response.data;
                 //     } 
                 //     catch (error) {
@@ -1372,7 +1372,7 @@
                 // drinkTypes
                 // _id, drinkType, typeCategory
                     // try {
-                    //     const response = await this.$axios.get('http://127.0.0.1:5000/getDrinkTypes');
+                    //     const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getDrinkTypes');
                     //     this.drinkTypes = response.data;
                     // } 
                     // catch (error) {
@@ -1381,7 +1381,7 @@
                 // requestListings
                 // _id, listingName, producerNew, producerID, bottler, originCountry, drinkType, typeCategory, age, abv, reviewLink, sourceLink, brandRelation, reviewStatus, userID, photo
                     // try {
-                    //         const response = await this.$axios.get('http://127.0.0.1:5000/getRequestListings');
+                    //         const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getRequestListings');
                     //         this.requestListings = response.data;
                     //     } 
                     // catch (error) {
@@ -1390,7 +1390,7 @@
                 // requestEdits
                 // _id, duplicateLink, editDesc, sourceLink, brandRelation, listingID, userID, reviewStatus
                     // try {
-                    //         const response = await this.$axios.get('http://127.0.0.1:5000/getRequestEdits');
+                    //         const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getRequestEdits');
                     //         this.requestEdits = response.data;
                     //     } 
                     // catch (error) {
@@ -1399,7 +1399,7 @@
                 // modRequests
                 // _id, userID, drinkType, modDesc
                     // try {
-                    //         const response = await this.$axios.get('http://127.0.0.1:5000/getModRequests');
+                    //         const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getModRequests');
                     //         this.modRequests = response.data;
                     //     } 
                     // catch (error) {

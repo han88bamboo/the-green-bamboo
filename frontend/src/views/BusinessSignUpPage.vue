@@ -384,7 +384,7 @@
             },
             async loadData(){
                 try {
-                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getCountries');
+                    const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getCountries');
                     for (let country of response.data) {
                         this.countries.push(country.originCountry);
                     }
@@ -509,7 +509,7 @@
                 }
 
                 let joinDate = new Date().toISOString();
-                let submitAPI =  "http://127.0.0.1:5000/createAccount/createAccountRequest"
+                let submitAPI =  "${process.env.VUE_APP_API_URL}/createAccount/createAccountRequest"
                 let submitData = {
                     "businessName": this.businessName,
                     "businessType": this.businessType,

@@ -1005,7 +1005,7 @@
             // Obtain user data
             async getUserData() {
                 try {
-                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getUser/' + this.viewerID);
+                    const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getUser/' + this.viewerID);
 
                     if (response != null && response.data != null && response.data != "" && !(Array.isArray(response.data) && response.data.length == 0)) {
 
@@ -1031,7 +1031,7 @@
             // Obtain venue data
             async getVenueData() {
                 try {
-                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getVenue/' + this.targetVenue);
+                    const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getVenue/' + this.targetVenue);
 
                     if (response != null && response.data != null && response.data != "" && !(Array.isArray(response.data) && response.data.length == 0)) {
 
@@ -1092,7 +1092,7 @@
 
                             // If not found, get from server
                             if (listingData == undefined) {
-                                let response = await this.$axios.get('http://127.0.0.1:5000/getData/getListing/' + item.itemID);
+                                let response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getListing/' + item.itemID);
                                 listingData = response.data;
 
                                 if (Array.isArray(listingData) && listingData.length == 0) {
@@ -1103,7 +1103,7 @@
                                 else if (listingData != null && listingData != "") {
 
                                     // Get reviews
-                                    let reviewResponse = await this.$axios.get('http://127.0.0.1:5000/getData/getReviewByTarget/' + item.itemID);
+                                    let reviewResponse = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getReviewByTarget/' + item.itemID);
                                     let reviewData = reviewResponse.data;
 
                                     if (Array.isArray(reviewData) && reviewData.length == 0) {
@@ -1206,7 +1206,7 @@
                     });
 
                     // Get report data for venue
-                    let reportResponse = await this.$axios.get('http://127.0.0.1:5000/getData/getRequestInaccuracyByVenue/' + this.targetVenue['id']);
+                    let reportResponse = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getRequestInaccuracyByVenue/' + this.targetVenue['id']);
                     this.pendingReports = reportResponse.data;
 
                     // Get listing data
@@ -1224,7 +1224,7 @@
                     this.pendingReports.sort((a, b) => (a.reportDate > b.reportDate) ? 1 : -1);
 
                     // Get venue views data
-                    let viewsResponse = await this.$axios.get('http://127.0.0.1:5000/getData/getVenuesProfileViewsByVenue/' + this.targetVenue.id);
+                    let viewsResponse = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getVenuesProfileViewsByVenue/' + this.targetVenue.id);
                     if (viewsResponse.data.length > 0) {
                         this.venueViews = viewsResponse.data;
                     }
@@ -1268,7 +1268,7 @@
             // Send Answer to a Question
             async sendAnswer(qa) {
                 try {
-                    await this.$axios.post('http://127.0.0.1:5000/editVenueProfile/sendAnswers', 
+                    await this.$axios.post('${process.env.VUE_APP_API_URL}/editVenueProfile/sendAnswers', 
                         {
                             venueID: this.targetVenue['id'],
                             questionsAnswersID: qa.id,
@@ -1294,7 +1294,7 @@
             async updateReportStatus(reportID, status) {
 
                 let responseCode = "";
-                let submitAPI = "http://127.0.0.1:5000/requestListing/requestReviewStatus/" + reportID;
+                let submitAPI = "${process.env.VUE_APP_API_URL}/requestListing/requestReviewStatus/" + reportID;
                 let submitData = {
                     "targetCollection": "requestInaccuracy",
                     "reviewStatus": false,
@@ -1340,7 +1340,7 @@
                 this.editingQA = false;
                 let q_and_a_id = qa.id;
                 try {
-                    await this.$axios.post('http://127.0.0.1:5000/editVenueProfile/editQA', 
+                    await this.$axios.post('${process.env.VUE_APP_API_URL}/editVenueProfile/editQA', 
                         {
                             venueID: this.targetVenue['id'],
                             questionsAnswersID: q_and_a_id,
@@ -1362,7 +1362,7 @@
             async deleteQAEdit(qa) {
                 let q_and_a_id = qa.id;
                 try {
-                    const response = await this.$axios.post('http://127.0.0.1:5000/editVenueProfile/deleteQA', 
+                    const response = await this.$axios.post('${process.env.VUE_APP_API_URL}/editVenueProfile/deleteQA', 
                         {
                             venueID: this.targetVenue['id'],
                             questionsAnswersID: q_and_a_id,

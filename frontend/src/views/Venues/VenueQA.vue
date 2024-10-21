@@ -214,7 +214,7 @@
                 // venues
                 // _id, venueName, venueDesc, originCountry, address, openingHours
                 try {
-                    const response = await this.$axios.get('http://127.0.0.1:5000/getData/getVenues');
+                    const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getVenues');
                         this.venues = response.data;
                         this.specified_venue = this.venues.find(venue => venue["id"] == this.venue_id); // find specified venue
                         this.checkVenueQuestions();
@@ -263,7 +263,7 @@
                 let q_and_a_id = qa.id;
                 let answer = this.answers[q_and_a_id];
                 try {
-                    const response = await this.$axios.post('http://127.0.0.1:5000/editVenueProfile/sendAnswers', 
+                    const response = await this.$axios.post('${process.env.VUE_APP_API_URL}/editVenueProfile/sendAnswers', 
                         {
                             venueID: this.venue_id,
                             questionsAnswersID: q_and_a_id,
@@ -297,7 +297,7 @@
                 this.editingQA = false;
                 let q_and_a_id = qa.id;
                 try {
-                    this.$axios.post('http://127.0.0.1:5000/editQA', 
+                    this.$axios.post('${process.env.VUE_APP_API_URL}/editQA', 
                         {
                             venueID: this.venue_id,
                             questionsAnswersID: q_and_a_id,
@@ -319,7 +319,7 @@
             deleteQAEdit(qa) {
                 let q_and_a_id = qa.id;
                 try {
-                    const response = this.$axios.post('http://127.0.0.1:5000/deleteQA', 
+                    const response = this.$axios.post('${process.env.VUE_APP_API_URL}/deleteQA', 
                         {
                             venueID: this.venue_id,
                             questionsAnswersID: q_and_a_id,

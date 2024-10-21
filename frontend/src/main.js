@@ -21,7 +21,7 @@ app.config.globalProperties.$axios = axios;
 // Set up Google Maps
 app.use(VueGoogleMaps, {
     load: {
-        key: process.env.VUE_APP_API_KEY,
+        key: process.env.VUE_APP_GOOGLE_MAPS_API_KEY,
         libraries: 'places', // This is required if you use the Auto complete plug-in
     },
 })

@@ -149,7 +149,7 @@
                 }
 
                 try {
-                    const response = await this.$axios.post('http://127.0.0.1:5000/editProfile/updateBookmark', 
+                    const response = await this.$axios.post('${process.env.VUE_APP_API_URL}/editProfile/updateBookmark', 
                         {
                             userID: this.userID,
                             bookmark: this.userBookmarks,
