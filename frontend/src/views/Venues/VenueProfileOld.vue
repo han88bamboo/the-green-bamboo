@@ -1281,7 +1281,7 @@
                 // countries
                 // _id, originCountry
                 // try {
-                //         const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getCountries');
+                //         const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getCountries`);
                 //         this.countries = response.data;
                 //     } 
                 //     catch (error) {
@@ -1290,7 +1290,7 @@
                 // producers
                 // _id, producerName, producerDesc, originCountry, statusOB, mainDrinks
                 try {
-                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getProducers');
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getProducers`);
                         this.producers = response.data;
                     } 
                     catch (error) {
@@ -1299,7 +1299,7 @@
                 // listings
                 // _id, listingName, producerID, bottler, originCountry, drinkType, typeCategory, age, abv, reviewLink, officialDesc, sourceLink, photo
                     try {
-                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getListings');
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getListings`);
                         this.listings = response.data;
                     } 
                     catch (error) {
@@ -1308,7 +1308,7 @@
                 // users
                 // _id, username, displayName, choiceDrinks, drinkLists, modType, photo
                     try {
-                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getUsers');
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getUsers`);
                         this.users = response.data;
                         if (this.userType == 'user') {
                             this.user = this.users.find(user => user["id"] == this.user_id);
@@ -1322,7 +1322,7 @@
                 // venues
                 // _id, venueName, venueDesc, originCountry, address, openingHours
                     try {
-                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getVenues');
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getVenues`);
                         this.venues = response.data;
                         this.specified_venue = this.venues.find(venue => venue["id"] == this.venue_id); // find specified venue
                         this.venue_claimed = this.specified_venue["claimStatus"]; 
@@ -1349,7 +1349,7 @@
                 // reviews
                 // _id, userID, reviewTarget, date, rating, reviewDesc, taggedUsers, reviewTitle, reviewType, flavorTag, photo
                 try {
-                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getReviews');
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getReviews`);
                         this.reviews = response.data;
                         // get all reviews
                         this.getAllReviews()
@@ -1363,7 +1363,7 @@
                 // venuesAPI
                 // _id, venueName, venueDesc, originCountry
                 // try {
-                //         const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getVenuesAPI');
+                //         const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getVenuesAPI`);
                 //         this.venuesAPI = response.data;
                 //     } 
                 //     catch (error) {
@@ -1372,7 +1372,7 @@
                 // drinkTypes
                 // _id, drinkType, typeCategory
                     // try {
-                    //     const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getDrinkTypes');
+                    //     const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getDrinkTypes`);
                     //     this.drinkTypes = response.data;
                     // } 
                     // catch (error) {
@@ -1381,7 +1381,7 @@
                 // requestListings
                 // _id, listingName, producerNew, producerID, bottler, originCountry, drinkType, typeCategory, age, abv, reviewLink, sourceLink, brandRelation, reviewStatus, userID, photo
                     // try {
-                    //         const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getRequestListings');
+                    //         const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getRequestListings`);
                     //         this.requestListings = response.data;
                     //     } 
                     // catch (error) {
@@ -1390,7 +1390,7 @@
                 // requestEdits
                 // _id, duplicateLink, editDesc, sourceLink, brandRelation, listingID, userID, reviewStatus
                     // try {
-                    //         const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getRequestEdits');
+                    //         const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getRequestEdits`);
                     //         this.requestEdits = response.data;
                     //     } 
                     // catch (error) {
@@ -1399,7 +1399,7 @@
                 // modRequests
                 // _id, userID, drinkType, modDesc
                     // try {
-                    //         const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getModRequests');
+                    //         const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getModRequests`);
                     //         this.modRequests = response.data;
                     //     } 
                     // catch (error) {
@@ -1727,7 +1727,7 @@
                 }
                 
                 try {
-                    await this.$axios.post('http://127.0.0.1:5300/editDetails', 
+                    await this.$axios.post(`${process.env.VUE_APP_API_URL}/editDetails`, 
                         {
                             venueID: this.venue_id,
                             image64: this.image64,
@@ -1752,7 +1752,7 @@
             // send questions that users ask to venues
             async sendQuestion () {
                 try {
-                    await this.$axios.post('http://127.0.0.1:5300/sendQuestions', 
+                    await this.$axios.post(`${process.env.VUE_APP_API_URL}/sendQuestions`, 
                         {
                             venueID: this.venue_id,
                             question: this.question,
@@ -1776,7 +1776,7 @@
             async sendAnswer (qa) {
                 let q_and_a_id = qa.id;
                 try {
-                    await this.$axios.post('http://127.0.0.1:5300/sendAnswers', 
+                    await this.$axios.post(`${process.env.VUE_APP_API_URL}/sendAnswers`, 
                         {
                             venueID: this.venue_id,
                             questionsAnswersID: q_and_a_id,
@@ -1933,7 +1933,7 @@
             // for venue to add updates
             async addUpdates() {
                 try {
-                    await this.$axios.post('http://127.0.0.1:5300/addUpdates', 
+                    await this.$axios.post(`${process.env.VUE_APP_API_URL}/addUpdates`, 
                         {
                             venueID: this.venue_id,
                             date: this.currDate,
@@ -1966,7 +1966,7 @@
             // like updates
             async likeUpdates() {
                 try {
-                    await this.$axios.post('http://127.0.0.1:5300/likeUpdates', 
+                    await this.$axios.post(`${process.env.VUE_APP_API_URL}/likeUpdates`, 
                         {
                             venueID: this.venue_id,
                             updateID: this.update_id,
@@ -1989,7 +1989,7 @@
             // unlike updates
             async unlikeUpdates() {
                 try {
-                    await this.$axios.post('http://127.0.0.1:5300/unlikeUpdates', 
+                    await this.$axios.post(`${process.env.VUE_APP_API_URL}/unlikeUpdates`, 
                         {
                             venueID: this.venue_id,
                             updateID: this.update_id,
@@ -2017,7 +2017,7 @@
                     this.following = true
                 }
                 try {
-                    await this.$axios.post('http://127.0.0.1:5100/updateFollowLists', 
+                    await this.$axios.post(`${process.env.VUE_APP_API_URL}/updateFollowLists`, 
                         {
                             userID: this.user_id,
                             action: action,
@@ -2110,7 +2110,7 @@
 
                 // update database
                 try {
-                    this.$axios.post('http://localhost:5300/editOpeningHours', 
+                    this.$axios.post(`${process.env.VUE_APP_API_URL}/editOpeningHours`, 
                         {
                             venueID: this.venue_id,
                             updatedOpeningHours: this.edited_openingHours,
@@ -2145,7 +2145,7 @@
                 if(errorCount > 0){
                     return null
                 }
-                let submitAPI = 'http://localhost:5011/requestInaccuracy'
+                let submitAPI = `${process.env.VUE_APP_API_URL}/requestInaccuracy`
                 let submitData= {
                     "listingID": this.inaccurateDrink,
                     "userID": this.user_id,
@@ -2281,7 +2281,7 @@
                 }
 
                 try {
-                    const response = await this.$axios.post('http://127.0.0.1:5100/updateBookmark', 
+                    const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/updateBookmark`, 
                         {
                             userID: this.user_id,
                             bookmark: this.userBookmarks,
@@ -2324,7 +2324,7 @@
 
                 // update database
                 try {
-                    this.$axios.post('http://localhost:5300/editPublicHolidays', 
+                    this.$axios.post(`${process.env.VUE_APP_API_URL}/editPublicHolidays`, 
                         {
                             venueID: this.venue_id,
                             updatedPublicHolidays: this.edited_publicHolidays
@@ -2356,7 +2356,7 @@
 
                 // update database
                 try {
-                    this.$axios.post('http://localhost:5300/editReservationDetails', 
+                    this.$axios.post(`${process.env.VUE_APP_API_URL}/editReservationDetails`, 
                         {
                             venueID: this.venue_id,
                             updatedReservationDetails: this.edited_reservationDetails,
@@ -2386,7 +2386,7 @@
                 let responseCode = "";
                 
                 
-                await this.$axios.put('http://127.0.0.1:5300/editSectionName', submitData)
+                await this.$axios.put(`${process.env.VUE_APP_API_URL}/editSectionName`, submitData)
                     .then((response) => {
                         responseCode = response.data.code;
                     })
@@ -2543,7 +2543,7 @@
                     this.editingLatestUpdate = false;
                     // send to backend
                     try {
-                        const response = this.$axios.post('http://127.0.0.1:5300/editUpdate', 
+                        const response = this.$axios.post(`${process.env.VUE_APP_API_URL}/editUpdate`, 
                             {
                                 venueID: this.venue_id,
                                 updateID: update.id,
@@ -2567,7 +2567,7 @@
                     let newUpdate = this.edit_remainingUpdateText[update.id];
                     // send to backend
                     try {
-                        const response = this.$axios.post('http://127.0.0.1:5300/editUpdate', 
+                        const response = this.$axios.post(`${process.env.VUE_APP_API_URL}/editUpdate`, 
                             {
                                 venueID: this.venue_id,
                                 updateID: update.id,
@@ -2594,7 +2594,7 @@
             deleteUpdate(update) {
 
                 try {
-                    const response = this.$axios.post('http://127.0.0.1:5300/deleteUpdate', 
+                    const response = this.$axios.post(`${process.env.VUE_APP_API_URL}/deleteUpdate`, 
                         {
                             venueID: this.venue_id,
                             updateID: update.id,

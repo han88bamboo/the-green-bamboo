@@ -298,7 +298,7 @@
                 // create customer
                 console.log("creating customer");
                 try {
-                    const response = await this.$axios.post('${process.env.VUE_APP_API_URL}/payment/create-customer',
+                    const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/payment/create-customer`,
                         {
                             customerEmail: this.customerEmail,
                             customerName: this.customerName,
@@ -335,7 +335,7 @@
                     this.priceId = this.yearlyPriceId;
                 }
                 try {
-                    const response = await this.$axios.post('${process.env.VUE_APP_API_URL}/payment/create-subscription',
+                    const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/payment/create-subscription`,
                         {
                             priceId: this.priceId,
                             customerId: this.customerId,
@@ -394,7 +394,7 @@
 
                     // update account request
                     try {
-                        await this.$axios.post('${process.env.VUE_APP_API_URL}/createAccount/updateAccountRequest', 
+                        await this.$axios.post(`${process.env.VUE_APP_API_URL}/createAccount/updateAccountRequest`, 
                             {
                                 requestID: this.requestId,
                                 isPending: false,

@@ -316,7 +316,7 @@
         methods:{
             async loadData(){
                 try {
-                    const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getCountries');
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getCountries`);
                     this.countries = response.data.sort((a,b)=>{
                             return a.originCountry.localeCompare(b.originCountry)
                             })
@@ -541,7 +541,7 @@
 
             async checkUsername(username){
                 try {
-                    const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getUsers');
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUsers`);
                     let duplicateUser = response.data.filter((user)=>{
                         return user.username == username
                     })
@@ -560,7 +560,7 @@
             async loginUser(){
                 // Get specific user by username and set local storage then redirect
                 try {
-                    const submitURL = '${process.env.VUE_APP_API_URL}/getData/getUserByUsername/' + this.username
+                    const submitURL = `${process.env.VUE_APP_API_URL}/getData/getUserByUsername/` + this.username
                     const response = await this.$axios.get(submitURL);
                     if(response.data.username== this.username){
                         localStorage.setItem("88B_accID", response.data['id']);

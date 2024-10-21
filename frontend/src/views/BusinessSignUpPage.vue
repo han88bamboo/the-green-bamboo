@@ -384,7 +384,7 @@
             },
             async loadData(){
                 try {
-                    const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getCountries');
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getCountries`);
                     for (let country of response.data) {
                         this.countries.push(country.originCountry);
                     }

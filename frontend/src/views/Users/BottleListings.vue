@@ -945,7 +945,7 @@
                 // countries
                 // _id, originCountry
                     // try {
-                    //     const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getCountries');
+                    //     const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getCountries`);
                     //     this.countries = response.data;
                     // } 
                     // catch (error) {
@@ -954,7 +954,7 @@
                 // listings
                 // _id, listingName, producerID, bottler, originCountry, drinkType, typeCategory, age, abv, reviewLink, officialDesc, sourceLink, photo
                     try {
-                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getListings');
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListings`);
                         this.listings = response.data;
                         // originally, make filteredListings the entire collection of listings
                         this.filteredListings = this.listings;
@@ -966,7 +966,7 @@
                 // producers
                 // _id, producerName, producerDesc, originCountry, statusOB, mainDrinks
                     try {
-                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getProducers');
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducers`);
                         this.producers = response.data;
                     } 
                     catch (error) {
@@ -976,7 +976,7 @@
                 // reviews
                 // _id, userID, reviewTarget, date, rating, reviewDesc, taggedUsers, reviewTitle, reviewType, flavorTag, photo
                     try {
-                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getReviews');
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getReviews`);
                         this.reviews = response.data;
                         this.getAllReviews()
                         this.getMostReviews()
@@ -988,7 +988,7 @@
                 // venues
                 // _id, venueName, venueDesc, originCountry, address, openingHours
                 try {
-                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getVenues');
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenues`);
                         this.venues = response.data;
                     } 
                     catch (error) {
@@ -998,7 +998,7 @@
                 // users
                 // _id, username, displayName, choiceDrinks, drinkLists, modType, photo
                     try {
-                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getUsers');
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUsers`);
                         this.users = response.data;
                         if (this.userType == 'user') {
                             this.types = this.users.find((user) => {
@@ -1031,7 +1031,7 @@
                 // venuesAPI
                 // _id, venueName, venueDesc, originCountry
                 // try {
-                //         const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getVenuesAPI');
+                //         const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenuesAPI`);
                 //         this.venuesAPI = response.data;
                 //     } 
                 //     catch (error) {
@@ -1040,7 +1040,7 @@
                 // drinkTypes
                 // _id, drinkType, typeCategory
                     try {
-                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getDrinkTypes');
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getDrinkTypes`);
                         this.drinkTypes = response.data;
                         this.drinkTypes.sort((a,b)=>{
                             return a.drinkType.localeCompare(b.drinkType)
@@ -1053,7 +1053,7 @@
                 // requestListings
                 // _id, listingName, producerNew, producerID, bottler, originCountry, drinkType, typeCategory, age, abv, reviewLink, sourceLink, brandRelation, reviewStatus, userID, photo
                     try {
-                            const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getRequestListings');
+                            const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getRequestListings`);
                             this.requestListings = response.data;
                             // Filter requests based on user role
                             if (this.userType == 'producer') {
@@ -1080,7 +1080,7 @@
                 // requestEdits
                 // _id, duplicateLink, editDesc, sourceLink, brandRelation, listingID, userID, reviewStatus
                     try {
-                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getRequestEdits');
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getRequestEdits`);
                         let unreviewedRequests = response.data.filter((request) => {
                             return request["reviewStatus"] == false;
                         });
@@ -1130,7 +1130,7 @@
                 // modRequests
                 // _id, userID, drinkType, modDesc
                     // try {
-                    //         const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getModRequests');
+                    //         const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getModRequests`);
                     //         this.modRequests = response.data;
                     //     } 
                     // catch (error) {

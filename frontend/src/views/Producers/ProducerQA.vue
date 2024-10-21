@@ -214,7 +214,7 @@
                 // producers
                 // _id, producerName, producerDesc, originCountry, statusOB, mainDrinks
                 try {
-                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getProducers');
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducers`);
                         this.producers = response.data;
                         this.specified_producer = this.producers.find(producer => producer["id"] == this.producer_id); // find specified producer
                         this.checkProducerQuestions();
@@ -262,7 +262,7 @@
                 let q_and_a_id = qa.id;
                 let answer = this.answers[q_and_a_id];
                 try {
-                    const response = await this.$axios.post('${process.env.VUE_APP_API_URL}/editProducerProfile/sendAnswers', 
+                    const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProducerProfile/sendAnswers`, 
                         {
                             producerID: this.producer_id,
                             questionsAnswersID: q_and_a_id,
@@ -296,7 +296,7 @@
                 this.editingQA = false;
                 let q_and_a_id = qa.id;
                 try {
-                    this.$axios.post('${process.env.VUE_APP_API_URL}/editProducerProfile/editQA', 
+                    this.$axios.post(`${process.env.VUE_APP_API_URL}/editProducerProfile/editQA`, 
                         {
                             producerID: this.producer_id,
                             questionsAnswersID: q_and_a_id,
@@ -317,7 +317,7 @@
 
             deleteQAEdit(qa) {
                 let q_and_a_id = qa.id;
-                this.$axios.post('${process.env.VUE_APP_API_URL}/editProducerProfile/deleteQA', 
+                this.$axios.post(`${process.env.VUE_APP_API_URL}/editProducerProfile/deleteQA`, 
                     {
                         producerID: this.producer_id,
                         questionsAnswersID: q_and_a_id,

@@ -612,7 +612,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
 
                 // Drink Types
                 try {
-                    const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getDrinkTypes');
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getDrinkTypes`);
                     this.drinkTypeList = response.data;
                 }
                 catch (error) {
@@ -622,7 +622,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
 
                 // Listings
                 try {
-                    const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getListings');
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListings`);
                     this.listings = response.data;
 
                     // clear previous results
@@ -654,7 +654,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
 
                 // Producers
                 try {
-                    const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getProducers');
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducers`);
                     this.producerList = response.data;
 
                     // clear previous results
@@ -672,7 +672,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
 
                 // Venues
                 try {
-                    const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getVenues');
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenues`);
                     this.venueList = response.data;
 
                     // clear previous results
@@ -690,7 +690,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
 
                 // Users
                 try {
-                    const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getUsers');
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUsers`);
                     this.users = response.data;
                     this.user = this.users.find(user => user.id == this.userID)
                     if (this.user) {
@@ -718,7 +718,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
 
                 // Reviews
                 try {
-                    const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getReviews');
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getReviews`);
                     this.reviews = response.data;
                 }
                 catch (error) {
@@ -1050,7 +1050,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                             "userID": this.userID,
                             
                 }
-                await this.$axios.put('${process.env.VUE_APP_API_URL}/addToList/addToTried/', submitData)
+                await this.$axios.put(`${process.env.VUE_APP_API_URL}/addToList/addToTried/`, submitData)
                     .then((response) => {
                         responseCode = response.data.code;
                     })
@@ -1075,7 +1075,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                             "userID": this.userID,
                             
                 }
-                await this.$axios.put('${process.env.VUE_APP_API_URL}/addToList/addToWant/', submitData)
+                await this.$axios.put(`${process.env.VUE_APP_API_URL}/addToList/addToWant/`, submitData)
                     .then((response) => {
                         responseCode = response.data.code;
                     })

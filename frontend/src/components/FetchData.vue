@@ -20,7 +20,7 @@
             async loadData() {
                 // Countries
                 try {
-                    const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getCountries');
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getCountries`);
                     this.countries = response.data;
                 } 
                 catch (error) {
@@ -28,7 +28,7 @@
                 }
                 // Listings
                 try {
-                    const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getListings');
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListings`);
                     this.listings = response.data;
                     // originally, make filteredListings the entire collection of listings
                     this.filteredListings = this.listings;
@@ -38,7 +38,7 @@
                 }
                 // Producers
                 try {
-                    const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getProducers');
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducers`);
                     this.producers = response.data;
                 } 
                 catch (error) {
@@ -46,7 +46,7 @@
                 }
                 // Reviews
                 try {
-                    const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getReviews');
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getReviews`);
                     this.reviews = response.data;
                 }
                 catch (error) {
@@ -54,7 +54,7 @@
                 }
                 // Users
                 try {
-                    const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getUsers');
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUsers`);
                     this.users = response.data;
                 } 
                 catch (error) {
@@ -62,7 +62,7 @@
                 }
                 // Venues
                 try {
-                    const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getVenues');
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenues`);
                     this.venues = response.data;
                 } 
                 catch (error) {
@@ -70,7 +70,7 @@
                 }
                 // Drink Categories
                 try {
-                    const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getDrinkCategories'); // Outdated? Please check.
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getDrinkCategories`); // Outdated? Please check.
                     this.drinkCategories = response.data;
                 } 
                 catch (error) {

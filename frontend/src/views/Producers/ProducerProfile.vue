@@ -1609,7 +1609,7 @@
                                 console.log('checking subscription');
                                 // check for active subscription
                                 try {
-                                    const response = await this.$axios.post('${process.env.VUE_APP_API_URL}/payment/retrieve-latest-subscription', {
+                                    const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/payment/retrieve-latest-subscription`, {
                                         customerId: this.specified_producer.stripeCustomerId,
                                     }, {
                                         headers: {
@@ -1699,7 +1699,7 @@
                 // reviews
                 // _id, userID, reviewTarget, date, rating, reviewDesc, taggedUsers, reviewTitle, reviewType, flavorTag, photo
                     try {
-                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getReviews');
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getReviews`);
                         this.reviews = response.data;
                         // get all reviews
                         this.getAllReviews()
@@ -1729,7 +1729,7 @@
                 // producersProfileViews
                 // _id, producerID, views
                     try {
-                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getProducersProfileViews');
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducersProfileViews`);
                         this.producersProfileViews = response.data;
 
                         if (this.producersProfileViews.length > 0) {
@@ -2051,7 +2051,7 @@
                 // }
                 
                 try {
-                    const response = await this.$axios.post('${process.env.VUE_APP_API_URL}/editProducerProfile/editDetails', 
+                    const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProducerProfile/editDetails`, 
                         {
                             producerID: this.producer_id,
                             image64: this.image64,
@@ -2077,7 +2077,7 @@
             // send questions that users ask to producers
             async sendQuestion () {
                 try {
-                    const response = await this.$axios.post('${process.env.VUE_APP_API_URL}/editProducerProfile/sendQuestions', 
+                    const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProducerProfile/sendQuestions`, 
                         {
                             producerID: this.producer_id,
                             question: this.question,
@@ -2106,7 +2106,7 @@
             async sendAnswer (qa) {
                 let q_and_a_id = qa.id;
                 try {
-                    const response = await this.$axios.post('${process.env.VUE_APP_API_URL}/editProducerProfile/sendAnswers', 
+                    const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProducerProfile/sendAnswers`, 
                         {
                             producerID: this.producer_id,
                             questionsAnswersID: q_and_a_id,
@@ -2261,7 +2261,7 @@
             // for producer to add updates
             async addUpdates() {
                 try {
-                    const response = await this.$axios.post('${process.env.VUE_APP_API_URL}/editProducerProfile/addUpdates', 
+                    const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProducerProfile/addUpdates`, 
                         {
                             producerID: this.producer_id,
                             date: this.currDate,
@@ -2306,7 +2306,7 @@
             // like updates
             async likeUpdates(updateID) {
                 try {
-                    const response = await this.$axios.post('${process.env.VUE_APP_API_URL}/editProducerProfile/likeUpdates', 
+                    const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProducerProfile/likeUpdates`, 
                         {
                             producerID: this.producer_id,
                             updateID: updateID,
@@ -2330,7 +2330,7 @@
             // unlike updates
             async unlikeUpdates(updateID) {
                 try {
-                    const response = await this.$axios.post('${process.env.VUE_APP_API_URL}/editProducerProfile/unlikeUpdates', 
+                    const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProducerProfile/unlikeUpdates`, 
                         {
                             producerID: this.producer_id,
                             updateID: updateID,
@@ -2372,7 +2372,7 @@
                     this.following = true
                 }
                 try {
-                    const response = await this.$axios.post('${process.env.VUE_APP_API_URL}/editProfile/updateFollowLists', 
+                    const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/updateFollowLists`, 
                         {
                             userID: this.user_id,
                             action: action,
@@ -2524,7 +2524,7 @@
                         let views = this.producerProfileViewInfo.views.find(view => view.date["$date"] == currDate);
                         let viewsID = views.id;
                         try {
-                            const response = this.$axios.post('${process.env.VUE_APP_API_URL}/editProducerProfile/addProfileCount', 
+                            const response = this.$axios.post(`${process.env.VUE_APP_API_URL}/editProducerProfile/addProfileCount`, 
                                 {
                                     producerID: this.producerProfileID,
                                     viewsID: viewsID,
@@ -2544,7 +2544,7 @@
                     // if current date does not exist, add a new view
                     else {
                         try {
-                            const response = this.$axios.post('${process.env.VUE_APP_API_URL}/editProducerProfile/addNewProfileCount', 
+                            const response = this.$axios.post(`${process.env.VUE_APP_API_URL}/editProducerProfile/addNewProfileCount`, 
                                 {
                                     producerID: this.producer_id,
                                     date: currDate,
@@ -2630,7 +2630,7 @@
                     }
                     // send to backend
                     try {
-                        const response = this.$axios.post('${process.env.VUE_APP_API_URL}/editProducerProfile/editUpdate', 
+                        const response = this.$axios.post(`${process.env.VUE_APP_API_URL}/editProducerProfile/editUpdate`, 
                             {
                                 producerID: this.producer_id,
                                 updateID: update.id,
@@ -2659,7 +2659,7 @@
                     }
                     // send to backend
                     try {
-                        const response = this.$axios.post('${process.env.VUE_APP_API_URL}/editProducerProfile/editUpdate', 
+                        const response = this.$axios.post(`${process.env.VUE_APP_API_URL}/editProducerProfile/editUpdate`, 
                             {
                                 producerID: this.producer_id,
                                 updateID: update.id,
@@ -2686,7 +2686,7 @@
             deleteUpdate(update) {
 
                 try {
-                    const response = this.$axios.post('${process.env.VUE_APP_API_URL}/editProducerProfile/deleteUpdate', 
+                    const response = this.$axios.post(`${process.env.VUE_APP_API_URL}/editProducerProfile/deleteUpdate`, 
                         {
                             producerID: this.producer_id,
                             updateID: update.id,
@@ -2734,7 +2734,7 @@
                 this.editingQA = false;
                 let q_and_a_id = qa.id;
 
-                this.$axios.post('${process.env.VUE_APP_API_URL}/editProducerProfile/editQA', 
+                this.$axios.post(`${process.env.VUE_APP_API_URL}/editProducerProfile/editQA`, 
                     {
                         producerID: this.producer_id,
                         questionsAnswersID: q_and_a_id,
@@ -2758,7 +2758,7 @@
             deleteQAEdit(qa) {
                 let q_and_a_id = qa.id;
                 try {
-                    const response = this.$axios.post('${process.env.VUE_APP_API_URL}/editProducerProfile/deleteQA', 
+                    const response = this.$axios.post(`${process.env.VUE_APP_API_URL}/editProducerProfile/deleteQA`, 
                         {
                             producerID: this.producer_id,
                             questionsAnswersID: q_and_a_id,
@@ -2872,7 +2872,7 @@
             async confirmUpdatePassword(){
                 let oldHash = this.hashPassword(this.specified_producer.producerName, this.oldPassword)
                 let newHash = this.hashPassword(this.specified_producer.producerName, this.newPassword)
-                let submitURL = '${process.env.VUE_APP_API_URL}/authcheck/editPassword/' + this.specified_producer.id 
+                let submitURL = `${process.env.VUE_APP_API_URL}/authcheck/editPassword/` + this.specified_producer.id 
                 let submitData = {
                     oldHash: oldHash.toString(),
                     newHash: newHash.toString(),
@@ -2903,7 +2903,7 @@
                 setTimeout(() => {
                     this.isButtonDisabled = false;
                 }, 60000);
-            let submitURL = '${process.env.VUE_APP_API_URL}/authcheck/sendResetPin/' + this.specified_producer.id
+            let submitURL = `${process.env.VUE_APP_API_URL}/authcheck/sendResetPin/` + this.specified_producer.id
             let submitData = {
                 userType: "producer",
             }

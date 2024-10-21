@@ -1025,7 +1025,7 @@
                     // Check if admin, if not reroute to home page
                     // users
                     try {
-                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getUsers');
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUsers`);
                         this.users = response.data;
                         if (this.userType == "user") {
                             this.user = this.users.find(user => user["id"] == this.userID);
@@ -1043,7 +1043,7 @@
                     }
                     // observation tags
                     try {
-                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getObservationTags');
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getObservationTags`);
                         this.observationTags = response.data;
                         this.editedObservationTags = JSON.parse(JSON.stringify(response.data));
                     } 
@@ -1053,7 +1053,7 @@
                     }
                     // mod requests
                     try {
-                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getModRequests');
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getModRequests`);
                         this.modRequests = response.data;
                         this.pendingModRequests = this.modRequests.filter(request => request.reviewStatus);
                     } 
@@ -1063,7 +1063,7 @@
                     }
                     // account requests
                     try {
-                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getAccountRequests');
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getAccountRequests`);
                         this.accountRequests = response.data;
 
                         this.accountRequests = response.data.map(request => {
@@ -1097,7 +1097,7 @@
                     }
                     // producer
                     try {
-                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getProducers');
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducers`);
                         this.producers = response.data;
                         // check for producer with no producer name and retrieve id
                         // [TO BE REMOVED?]
@@ -1114,7 +1114,7 @@
                     }
                     // venues
                     try {
-                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getVenues');
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenues`);
                         this.venues = response.data;
                     } 
                     catch (error) {
@@ -1123,7 +1123,7 @@
                     }
                     // countries
                     try {
-                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getCountries');
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getCountries`);
                         this.countries = response.data;
                     } 
                     catch (error) {
@@ -1132,7 +1132,7 @@
                     }
                     // drinkType
                     try {
-                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getDrinkTypes');
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getDrinkTypes`);
                         this.drinkTypes = response.data;
                     } 
                     catch (error) {
@@ -1141,7 +1141,7 @@
                     }
                     // flavour tag
                     try {
-                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getFlavourTags');
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getFlavourTags`);
                         this.flavourTags = response.data.map(item => {
                             return { ...item, showBox: false };
                         })                            
@@ -1152,7 +1152,7 @@
                     }
                     // sub tags
                     try {
-                        const response = await this.$axios.get('${process.env.VUE_APP_API_URL}/getData/getSubTags');
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getSubTags`);
                         this.subTags = response.data
                         this.flavourTags.forEach(flavourTag => {
                             // Filter subtags belonging to the current flavor tag
@@ -1376,7 +1376,7 @@
                         const newModType = request.drinkType;
 
                         try {
-                            await this.$axios.post('${process.env.VUE_APP_API_URL}/editProfile/updateModType', 
+                            await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/updateModType`, 
                                 {
                                     userID: userID,
                                     newModType: newModType,
@@ -1392,7 +1392,7 @@
                     
                     // update mod request db
                     try {
-                        await this.$axios.post('${process.env.VUE_APP_API_URL}/editModRequests/updateModRequest', 
+                        await this.$axios.post(`${process.env.VUE_APP_API_URL}/editModRequests/updateModRequest`, 
                             {
                                 requestID: requestID,
                                 reviewStatus: false,
@@ -1463,11 +1463,11 @@
     
                             // producers
                             if (request.businessType == "producer") {
-                                apiURL = '${process.env.VUE_APP_API_URL}/editProducerProfile/updateProducerStatus';
+                                apiURL = `${process.env.VUE_APP_API_URL}/editProducerProfile/updateProducerStatus`;
                             }
                             // venues 
                             else if (request.businessType == "venue") {
-                                apiURL = '${process.env.VUE_APP_API_URL}/editVenueProfile/updateVenueStatus';
+                                apiURL = `${process.env.VUE_APP_API_URL}/editVenueProfile/updateVenueStatus`;
                             }
     
                             if (apiURL != '') {
@@ -1515,7 +1515,7 @@
 
                         // update review status
                         try {
-                            await this.$axios.post('${process.env.VUE_APP_API_URL}/createAccount/updateAccountRequest', 
+                            await this.$axios.post(`${process.env.VUE_APP_API_URL}/createAccount/updateAccountRequest`, 
                                 {
                                     requestID: requestID,
                                     isPending: true,
@@ -1543,7 +1543,7 @@
                     else if (action == "reject") {
                         // update review status
                         try {
-                            await this.$axios.post('${process.env.VUE_APP_API_URL}/createAccount/updateAccountRequest', 
+                            await this.$axios.post(`${process.env.VUE_APP_API_URL}/createAccount/updateAccountRequest`, 
                                 {
                                     requestID: requestID,
                                     isPending: false,
@@ -1622,7 +1622,7 @@
                                 requestId: this.requestId
                             }
                             try {
-                                const response = await this.$axios.post('${process.env.VUE_APP_API_URL}/createAccount/createProducerAccount', 
+                                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/createAccount/createProducerAccount`, 
                                     {
                                         newBusinessData
                                     }, {
@@ -1670,7 +1670,7 @@
                                 requestId: this.requestId
                             }
                             try {
-                                const response = await this.$axios.post('${process.env.VUE_APP_API_URL}/createAccount/createVenueAccount', 
+                                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/createAccount/createVenueAccount`, 
                                     {
                                         newBusinessData
                                     }, {
@@ -1709,7 +1709,7 @@
 
                 async generateToken(businessId, requestId) {
                     try {
-                        const response = await this.$axios.post('${process.env.VUE_APP_API_URL}/createAccount/createToken', 
+                        const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/createAccount/createToken`, 
                             {
                                 businessId: businessId,
                                 requestId: requestId,
@@ -1735,7 +1735,7 @@
                         message: `Hi ${request.firstName}, \n\nClick on the link below to reset your password: \n${link} \n\nIf you did not initiate this request, please contact us immediately. \n\nThank you, \nDrinkX`
                     };
                     try {
-                        await this.$axios.post('${process.env.VUE_APP_API_URL}/createAccount/sendEmail', emailDetails);
+                        await this.$axios.post(`${process.env.VUE_APP_API_URL}/createAccount/sendEmail`, emailDetails);
                     } catch (error) {
                         console.error('Failed to send email:', error);
                     }
@@ -1859,7 +1859,7 @@
 
                 async confirmAddModerator(){
                     try {
-                        await this.$axios.post('${process.env.VUE_APP_API_URL}/editProfile/updateModType', 
+                        await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/updateModType`, 
                             {
                                 userID: this.selectedPromotedUser.id,
                                 newModType: this.selectedPromotedType.drinkType,
@@ -1883,7 +1883,7 @@
                 },
                 async confirmDowngradeModerator(){
                     try {
-                        await this.$axios.post('${process.env.VUE_APP_API_URL}/editProfile/removeModType', 
+                        await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/removeModType`, 
                             {
                                 userID: this.selectedRemoveMod.id,
                                 removeModType: this.selectedRemoveType.drinkType,
@@ -2004,7 +2004,7 @@
                     let submitData= {}
                     
                     if(this.addFlavour == 'family'){
-                        submitURL = '${process.env.VUE_APP_API_URL}/adminFunctions/createFamilyTag'
+                        submitURL = `${process.env.VUE_APP_API_URL}/adminFunctions/createFamilyTag`
                         submitData = {
                             hexcode: '#' + this.hexcode,
                             familyTag: this.newFamily
@@ -2012,7 +2012,7 @@
 
                     }
                     else if(this.addFlavour == 'sub'){
-                        submitURL = '${process.env.VUE_APP_API_URL}/adminFunctions/createSubTag'
+                        submitURL = `${process.env.VUE_APP_API_URL}/adminFunctions/createSubTag`
                         submitData = {
                             familyTagId: this.chosenTagParent.id,
                             subTag: this.newSub
@@ -2161,7 +2161,7 @@
                     let submitData=[]
                     let submitURL=''
                     if(this.editFlavour=='family'){
-                        submitURL = '${process.env.VUE_APP_API_URL}/adminFunctions/updateFamilyTag'
+                        submitURL = `${process.env.VUE_APP_API_URL}/adminFunctions/updateFamilyTag`
                         for( let i=0;i<this.editedFlavourTags.length;i++){
                             if(this.editedFlavourTags[i].familyTag!= this.flavourTags[i].familyTag || this.editedFlavourTags[i].hexcode!= this.flavourTags[i].hexcode){
                                 submitData.push(
@@ -2175,7 +2175,7 @@
                         }
                     }
                     if(this.editFlavour=='sub'){
-                        submitURL = '${process.env.VUE_APP_API_URL}/adminFunctions/updateSubTag'
+                        submitURL = `${process.env.VUE_APP_API_URL}/adminFunctions/updateSubTag`
                         for( let i=0;i<this.editedFlavourTags.length;i++){
                             for(let j=0; j<this.editedFlavourTags[i].subTag2.length;j++){
                                 if(this.editedFlavourTags[i].subTag2[j].subTag != this.flavourTags[i].subTag2[j].subTag){
@@ -2232,10 +2232,10 @@
                 confirmDeleteFlavourTag(){
                     let submitURL = ''
                     if(this.deleteFlavour=='family'){
-                        submitURL = '${process.env.VUE_APP_API_URL}/adminFunctions/deleteFamilyTag/' + this.familyTagToDelete.id
+                        submitURL = `${process.env.VUE_APP_API_URL}/adminFunctions/deleteFamilyTag/` + this.familyTagToDelete.id
                     }
                     if(this.deleteFlavour=='sub'){
-                        submitURL = '${process.env.VUE_APP_API_URL}/adminFunctions/deleteSubTag/' + this.subTagToDelete.id
+                        submitURL = `${process.env.VUE_APP_API_URL}/adminFunctions/deleteSubTag/` + this.subTagToDelete.id
                     }
                     this.writeDeleteTag(submitURL)
                 },

@@ -167,7 +167,7 @@
 
                 this.accType = localStorage.getItem('88B_accType');
                 let accID = localStorage.getItem('88B_accID');
-                let url = '${process.env.VUE_APP_API_URL}/getData/get';
+                let url = `${process.env.VUE_APP_API_URL}/getData/get`;
 
                 if (this.accType == 'user') {
                     url = url + 'User/' + accID;
