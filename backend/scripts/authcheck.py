@@ -365,9 +365,16 @@ def sendResetPin(id):
         
         conn.commit()
 
-        server = smtplib.SMTP('smtp.gmail.com:587')
-        server.ehlo()
-        server.starttls()
+        mail_server = os.getenv('MAIL_SERVER')
+        mail_port = int(os.getenv('MAIL_PORT', 587))
+        mail_use_tls = os.getenv('MAIL_USE_TLS', 'false').lower() == 'true'
+        if mail_use_tls:
+            server = smtplib.SMTP(mail_server, mail_port)
+            server.ehlo()
+            server.starttls()
+        else:
+            server = smtplib.SMTP_SSL(mail_server, mail_port)
+        
         server.login(email_address, password)
 
         message = 'Subject: Drink-X Reset Password\n\n Your pin is {} and expires in 1 hour, please ignore this message if you did not try to reset your password, alternatively, you can email us'.format(pin)
@@ -568,11 +575,17 @@ def resetPassword(id):
             conn.commit()
 
             # send email containing the password
-            server = smtplib.SMTP('smtp.gmail.com:587')
-            server.ehlo()
-            server.starttls()
-            server.ehlo()
-            server.login(email_address, email_password)
+            mail_server = os.getenv('MAIL_SERVER')
+            mail_port = int(os.getenv('MAIL_PORT', 587))
+            mail_use_tls = os.getenv('MAIL_USE_TLS', 'false').lower() == 'true'
+            if mail_use_tls:
+                server = smtplib.SMTP(mail_server, mail_port)
+                server.ehlo()
+                server.starttls()
+            else:
+                server = smtplib.SMTP_SSL(mail_server, mail_port)
+        
+            server.login(email_address, password)
 
             message = 'Subject: Drink-X Reset Password\n\n Your new password is {}, please email us if you did not authorise this'.format(password)
             server.sendmail(email_address, userRaw["email"], message)
