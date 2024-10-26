@@ -129,10 +129,9 @@ def updateReview(id):
     if data['photo']:
         data['photo'] = s3Images.uploadBase64ImageToS3(data['photo'])
 
-    # Update review
-    tagged_users = '{' + ','.join(map(str, data.get('taggedUsers', []))) + '}'
-    flavour_tags = '{' + ','.join(map(str, data.get('flavourTag', []))) + '}'
-    observation_tags = '{' + ','.join(map(str, data.get('observationTag', []))) + '}'
+    tagged_users = data.get('taggedUsers', [])
+    flavour_tags = data.get('flavourTag', [])
+    observation_tags = data.get('observationTag', [])
 
     update_review_sql = """
         UPDATE "reviews"

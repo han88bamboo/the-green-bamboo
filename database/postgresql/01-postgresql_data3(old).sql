@@ -213,8 +213,8 @@ CREATE TABLE "producersUpdates" (
 CREATE TABLE "producerUpdateLikes" (
     "id" SERIAL PRIMARY KEY,
     "updateId" INTEGER REFERENCES "producersUpdates"("id") ON DELETE CASCADE,
-    "userId" INTEGER,
-    "userType" VARCHAR(50)
+    "userId" INTEGER REFERENCES "users"("id") ON DELETE CASCADE,
+    UNIQUE ("updateId", "userId")
 );
 
 -- ========= "producersProfileViews" =========
@@ -382,8 +382,8 @@ CREATE TABLE "venuesUpdates" (
 CREATE TABLE "venueUpdateLikes" (
     "id" SERIAL PRIMARY KEY,
     "updateId" INTEGER REFERENCES "venuesUpdates"("id") ON DELETE CASCADE,
-    "userId" INTEGER,
-    "userType" VARCHAR(50)
+    "userId" INTEGER REFERENCES "users"("id") ON DELETE CASCADE,
+    UNIQUE ("updateId", "userId")
 );
 
 -- -- ========= [NEW!] "venuesProfileViewsViews" =========

@@ -928,12 +928,11 @@
             },
 
             formatDateMonthYear(dateTimeString) {
-                let datePart = dateTimeString.split("T")[0];
-                // splitting the date into year, month, and day
-                let [year, month] = datePart.split("-");
-                // formatting the date
+                let date = new Date(dateTimeString);
+                let month = date.toLocaleString('default', { month: 'short' });
+                let year = date.getFullYear();
                 let formattedDate = `${month}/${year}`;
-                return formattedDate
+                return formattedDate;
             }, 
 
             getTimeDifference(date) {

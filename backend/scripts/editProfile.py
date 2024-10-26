@@ -72,14 +72,24 @@ def editDetails():
 def updateBookmark():
     conn = g.db
     data = request.get_json()
-    print(data)
-    userID = data['userID']
+    userID = int(data['userID'])
     bookmark = data['bookmark']
 
     try:
         cursor = conn.cursor()
+
+        cursor.execute('SELECT "listName" FROM "usersDrinkLists" WHERE "userId" = %s', (userID,))
+        existing_lists = cursor.fetchall()
+        existing_list_names = set([row['listName'] for row in existing_lists])
+
+        bookmark_list_names = set(bookmark.keys())
+
+        lists_to_delete = existing_list_names - bookmark_list_names
+
+        for listName in lists_to_delete:
+            cursor.execute('DELETE FROM "usersDrinkLists" WHERE "userId" = %s AND "listName" = %s', (userID, listName))
+
         for listName in bookmark:
-            listDesc = bookmark[listName]["listDesc"]
             listItems = bookmark[listName]["listItems"]
 
             query = """
@@ -89,7 +99,7 @@ def updateBookmark():
                 SET "drinks" = EXCLUDED."drinks";
             """
             cursor.execute(query, (userID, listName, listItems))
-        
+
         conn.commit()
         cursor.close()
 
@@ -109,10 +119,8 @@ def updateBookmark():
             {
                 "code": 500,
                 "data": {
-                    "data": {
-                        "userID": userID,
-                        "bookmark": bookmark
-                    }
+                    "userID": userID,
+                    "bookmark": bookmark
                 },
                 "message": "An error occurred updating the drink lists."
             }

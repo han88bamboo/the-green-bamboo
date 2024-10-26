@@ -835,9 +835,9 @@
                 try {
                         const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducersProfileViews`);
                         this.producersProfileViews = response.data;
-                        let producerProfileViewInfo = this.producersProfileViews.find(view => view.producerID == this.producer_id);
-                        let producerViews = producerProfileViewInfo.views;
-                        this.producerViews = producerViews
+                        // let producerProfileViewInfo = this.producersProfileViews?.find(view => view.producerId == this.producer_id);
+                        // let producerViews = producerProfileViewInfo?.count;
+                        this.producerViews = response.data
                     }
                     catch (error) {
                         console.error(error);
@@ -1186,13 +1186,11 @@
             },
 
             formatDateMonthYear(dateTimeString) {
-                console.log("This is the date time string: ", dateTimeString);
-                let datePart = dateTimeString.split("T")[0];
-                // splitting the date into year, month, and day
-                let [year, month] = datePart.split("-");
-                // formatting the date
+                let date = new Date(dateTimeString);
+                let month = date.toLocaleString('default', { month: 'short' });
+                let year = date.getFullYear();
                 let formattedDate = `${month}/${year}`;
-                return formattedDate
+                return formattedDate;
             },
 
             // for editing Q&A answers

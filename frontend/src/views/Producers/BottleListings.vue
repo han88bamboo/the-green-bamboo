@@ -182,8 +182,8 @@
                                                         <div style="height: 85%;">
                                                             <div class="text-start pt-2 overflow-auto" style="max-height: 100%;">
                                                                 <!-- [function] where to buy -->
-                                                                <div v-for="producer in producerListings" v-bind:key="producer.id">
-                                                                    <router-link :to="{ path: '/profile/producer/' + producer.id }" class="reverse-clickable-text">
+                                                                <div v-for="producer in producerListings" v-bind:key="producer">
+                                                                    <router-link :to="{ path: '/profile/producer/' + producer }" class="reverse-clickable-text">
                                                                         <p> {{ getProducerName(producer) }} </p>
                                                                     </router-link>
                                                                 </div>
@@ -1064,7 +1064,7 @@
                                     <!-- flavour tag -->
                                     <div class="text-start mb-2">
                                         <!-- flavor tag -->
-                                            <span v-for="(tag, index) in review.flavorTag" :key="index" class="badge rounded-pill me-2" :style="{ backgroundColor: getTagColor(tag) }">{{ getTagName(tag) }}</span>
+                                            <span v-for="(tag, index) in review.flavourTag" :key="index" class="badge rounded-pill me-2" :style="{ backgroundColor: getTagColor(parseInt(tag)) }">{{ getTagName(parseInt(tag)) }}</span>
                                             <span v-for="(tag, index) in review.observationTag" :key="index" class="badge rounded-pill me-2" style="background-color: grey;">{{ tag }}</span>
                                     </div>
                                     <div style="display: inline;" class="text-start">
@@ -1275,9 +1275,9 @@
                                                 <div class="col-9">
                                                     <span v-for="(user, index) in detailedReview.taggedUsers" :key="index">
                                                         <b>
-                                                            @<router-link :to="`/profile/user/${user.id}`" style="text-decoration-color: #535C72;">
+                                                            @<router-link :to="`/profile/user/${user}`" style="text-decoration-color: #535C72;">
                                                                 <span class="default-clickable-text">
-                                                                    {{ getUsernameFromId(user.id) }}
+                                                                    {{ getUsernameFromId(parseInt(user)) }}
                                                                 </span>
                                                             </router-link>
                                                         </b>
@@ -1290,7 +1290,7 @@
                                                     <b>Flavour Tags</b>
                                                 </div>
                                                 <div class="col-9">
-                                                    <span v-for="(tag, index) in detailedReview.flavorTag" :key="index" class="badge rounded-pill me-2" :style="{ backgroundColor: getTagColor(tag) }">{{ getTagName(tag) }}</span>
+                                                    <span v-for="(tag, index) in detailedReview.flavourTag" :key="index" class="badge rounded-pill me-2" :style="{ backgroundColor: getTagColor(parseInt(tag)) }">{{ getTagName(parseInt(tag)) }}</span>
                                                 </div>
                                             </div>
                                             <!-- observation tag -->
@@ -1358,8 +1358,8 @@
                         <div style="height: 85%;">
                             <div class="text-start pt-2 overflow-auto" style="max-height: 100%;">
                                 <!-- [function] where to buy -->
-                                <div v-for="producer in producerListings" v-bind:key="producer.id">
-                                    <router-link :to="{ path: '/profile/producer/' + producer.id }" class="reverse-clickable-text">
+                                <div v-for="producer in producerListings" v-bind:key="producer">
+                                    <router-link :to="{ path: '/profile/producer/' + producer }" class="reverse-clickable-text">
                                         <p> {{ getProducerName(producer) }} </p>
                                     </router-link>
                                 </div>
@@ -1860,7 +1860,7 @@
                             let triedDrinks=[]
                             let wantToTryDrinks=[]
                             this.followList = this.users.filter(user => {
-                                return this.user.followLists.users.some(item => item.followerID.id === user.id);
+                                return this.user.followLists.users.some(item => parseInt(item) === user.id);
                             });
                             if(this.specificReview.length >0){
                                 this.showFriendTagList = this.friendTagList.map(id => {
@@ -2213,10 +2213,10 @@
                     this.finish= specificReview[0].finish
                     this.rating= specificReview[0].rating
                     // reconcile id with flavourtags
-                    // this.selectedFlavourTags= specificReview[0].flavorTag
-                    if(specificReview[0].flavorTag!=null){
-                        specificReview[0].flavorTag.forEach(subtag=>{
-                            const subTag = this.subTags.find(subTag=>subtag.id===subTag.id)                       
+                    // this.selectedFlavourTags= specificReview[0].flavourTag
+                    if(specificReview[0].flavourTag!=null){
+                        specificReview[0].flavourTag.forEach(subtag=>{
+                            const subTag = this.subTags.find(subTag => parseInt(subtag)===subTag.id)         
                             if(subTag){
                                 const familyTag = this.flavourTags.find(family=>subTag.familyTagId===family.id)
                                 if(familyTag){
@@ -2229,9 +2229,9 @@
                             }
                         })
                     }
-                    this.finalSelectedFlavourTags = specificReview[0].flavorTag
+                    this.finalSelectedFlavourTags = specificReview[0].flavourTag
                     if(specificReview[0].taggedUsers !=null){
-                        this.friendTagList = specificReview[0].taggedUsers.map(user => user.id);
+                        this.friendTagList = specificReview[0].taggedUsers.map(userId => parseInt(userId));
                     }
                     this.selectedObservations= specificReview[0].observationTag
                     this.image64= specificReview[0].photo
@@ -2401,7 +2401,7 @@
                     "rating" : Number(this.rating),
                     "reviewDesc": this.reviewDesc,
                     "reviewType": "Listing",
-                    "flavorTag" : this.finalSelectedFlavourTags,
+                    "flavourTag" : this.finalSelectedFlavourTags,
                     "photo" : this.image64,
                     "colour" : this.selectedColour,
                     "language" : this.selectedLanguage,
@@ -2616,7 +2616,7 @@
                 this.$router.push('/'); // Navigate to root 
             },
             getTagName(tag) {
-                const subTag = this.subTags.find(subTag=>subTag.id === tag.id)
+                const subTag = this.subTags.find(subTag=>subTag.id === tag)
                 if(subTag){
                     const familyTag = this.flavourTags.find(family=>subTag.familyTagId===family.id)
                     if(familyTag){
@@ -2631,7 +2631,7 @@
                 }
             },
             getTagColor(tag) {
-                const subTag = this.subTags.find(subTag=>subTag.id === tag.id)
+                const subTag = this.subTags.find(subTag=>subTag.id === tag)
                 if(subTag){
                     const familyTag = this.flavourTags.find(family=>subTag.familyTagId===family.id)
                     if(familyTag){
@@ -2674,7 +2674,7 @@
                             "listingName": this.specified_listing.listingName,
                             "allowMod": this.specified_listing.allowMod,
                 }
-                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editListing/updateListing/` + this.listing_id, submitData)
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editListing/updateListingMod/` + this.listing_id, submitData)
                 .then((response)=>{
                     responseCode = response.data.code
                 })
@@ -3015,7 +3015,7 @@
             // Check whether listing exists
             async checkListingExists() {
                 try {
-                    const listing = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListing/` + this.listing_id);
+                    const listing = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListing/`+ this.listing_id);
                     if (listing.data.length !== 0) {
                         this.loadData();
                         // Load local storage variables

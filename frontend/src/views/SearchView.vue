@@ -773,13 +773,13 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                     // #3: Date (Newest - Oldest)
                     else if (category == 'Date (Newest - Oldest)') {
                         this.resultListings.sort((a, b) => {
-                            return new Date(b.addedDate.$date) - new Date(a.addedDate.$date);
+                            return new Date(b.addedDate) - new Date(a.addedDate);
                         });
                     }
                     // [DEFAULT] #4: Date (Oldest - Newest)
                     else if (category == '' || category == 'Date (Oldest - Newest)') {
                         this.resultListings.sort((a, b) => {
-                            return new Date(a.addedDate.$date) - new Date(b.addedDate.$date);
+                            return new Date(a.addedDate) - new Date(b.addedDate);
                         });
                     }
                     // #5: Ratings (Highest - Lowest)

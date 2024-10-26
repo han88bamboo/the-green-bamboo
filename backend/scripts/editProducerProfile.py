@@ -228,6 +228,7 @@ def likeUpdates():
     producerID = int(data['producerID'])
     updateID = int(data['updateID'])
     userID = int(data['userID'])
+    userType = data['userType']
 
     try:
         # Verify that the update exists and belongs to the producer
@@ -244,10 +245,9 @@ def likeUpdates():
         
         # Insert into the likes table
         cur.execute("""
-            INSERT INTO "producerUpdateLikes" ("updateId", "userId")
-            VALUES (%s, %s)
-            ON CONFLICT DO NOTHING
-        """, (updateID, userID))
+            INSERT INTO "producerUpdateLikes" ("updateId", "userId", "userType")
+            VALUES (%s, %s, %s)
+        """, (updateID, userID, userType))
         conn.commit()
 
         return jsonify(
@@ -285,6 +285,7 @@ def unlikeUpdates():
     producerID = int(data['producerID'])
     updateID = int(data['updateID'])
     userID = int(data['userID'])
+    userType = data['userType']
 
     try:
         # Verify that the update exists and belongs to the producer
@@ -300,7 +301,7 @@ def unlikeUpdates():
             ), 404
         
         # Remove from the likes table
-        cur.execute('DELETE FROM "producerUpdateLikes" WHERE "updateId" = %s AND "userId" = %s', (updateID, userID))
+        cur.execute('DELETE FROM "producerUpdateLikes" WHERE "updateId" = %s AND "userId" = %s AND "userType" = %s', (updateID, userID, userType))
         conn.commit()
 
         return jsonify(
@@ -435,7 +436,7 @@ def addNewProfileCount():
     cur = conn.cursor()
     data = request.get_json()
     print(data)
-    producerID = int(data['businessId'])
+    producerID = int(data['producerID'])
     date = datetime.strptime(data['date'], "%Y-%m-%dT%H:%M:%S.%fZ")
 
     try:
@@ -443,18 +444,17 @@ def addNewProfileCount():
         existingProfileView = cur.fetchone()
 
         if existingProfileView:
-            cur.execute('INSERT INTO "producersProfileViewsViews" ("date", "count", "viewsId") VALUES (%s, 1, %s)', (date, existingProfileView['id']))
+            cur.execute('UPDATE "producersProfileViews" SET "count" = "count" + 1 WHERE "producerId" = %s', (producerID,))
             conn.commit()
+
         else:
-            cur.execute('INSERT INTO "producersProfileViews" ("date", "count", "producerId") VALUES (%s, 1, %s) RETURNING id', (date, producerID))
-            viewsID = cur.fetchone()['id']
-            cur.execute('INSERT INTO "producersProfileViewsViews" ("date", "count", "viewsId") VALUES (%s, 1, %s)', (date, viewsID))
+            cur.execute('INSERT INTO "producersProfileViews" ("date", "count", "producerId") VALUES (%s, 1, %s)', (date, producerID))
             conn.commit()
 
         return jsonify(
             {   
                 "code": 201,
-                "message": "New profile view count updated successfully!"
+                "message": "New profile view count added successfully!"
             }
         ), 201
     

@@ -1341,7 +1341,7 @@
                 }
 
                 // Determine the drinkType searched, might not be neccessary
-                const drinkTypeSearch = this.selectedDrinkType['drinkType'].toLowerCase();
+                const drinkTypeSearch = this.selectedDrinkType['drinkType']?.toLowerCase();
 
 
                 // Search listings for when input is in the searchbar
@@ -1367,9 +1367,11 @@
                     // if nothing found
                     if(searchResults == null){
                         this.mostReviews = []
+                        this.filteredListings = []
                     }
                     else{
                         this.mostReviews=searchResults
+                        this.filteredListings = searchResults
                     }
 
                 }
@@ -1481,11 +1483,13 @@
                         this.errorFound = true;
                         this.errorMessage = 'No results found, please try again.';
                         this.mostReviews = [];
+                        this.filteredListings = [];
                     } 
                     else {
                         this.errorFound = false;
                         this.errorMessage = '';
                         this.mostReviews = searchResults;
+                        this.filteredListings = searchResults;
                     }
                 }
                 else if(this.following){
