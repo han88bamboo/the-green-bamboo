@@ -509,7 +509,7 @@
                 }
 
                 let joinDate = new Date().toISOString();
-                let submitAPI =  "${process.env.VUE_APP_API_URL}/createAccount/createAccountRequest"
+                let submitAPI =  `${process.env.VUE_APP_API_URL}/createAccount/createAccountRequest`
                 let submitData = {
                     "businessName": this.businessName,
                     "businessType": this.businessType,

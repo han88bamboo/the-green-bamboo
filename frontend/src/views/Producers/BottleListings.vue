@@ -2337,7 +2337,7 @@
                 if (this.finish !== "") {
                     this.finish = this.finish.trim();
                 }
-                let submitAPI = "${process.env.VUE_APP_API_URL}/createReview/createReview"
+                let submitAPI = `${process.env.VUE_APP_API_URL}/createReview/createReview`
                 let submitData = {
                     "userID" : this.userID,
                     "reviewTarget" :this.listing_id,
@@ -2394,7 +2394,7 @@
                 if (this.finish !== "") {
                     this.finish = this.finish.trim();
                 }
-                let submitAPI = "${process.env.VUE_APP_API_URL}/editReview/updateReview/" + this.specificReview[0].id
+                let submitAPI = `${process.env.VUE_APP_API_URL}/editReview/updateReview/` + this.specificReview[0].id
                 let submitData = {
                     "userID" : this.userID,
                     "reviewTarget" :this.listing_id,
@@ -2540,7 +2540,7 @@
             },
 
             async deleteReview(){
-                let deleteAPI = "${process.env.VUE_APP_API_URL}/deleteReview/deleteReview/" + this.deleteID
+                let deleteAPI = `${process.env.VUE_APP_API_URL}/deleteReview/deleteReview/` + this.deleteID
                 const response = await this.$axios.delete(deleteAPI)
                 .then((response)=>{
                     this.deleteReviewCode = response.data.code
@@ -2986,7 +2986,7 @@
 
             // delete bottle listing
             async deleteListings(listing) {
-                let deleteAPI = "${process.env.VUE_APP_API_URL}/editListing/deleteListing/" + listing.id
+                let deleteAPI = `${process.env.VUE_APP_API_URL}/editListing/deleteListing/` + listing.id
                 const response = await this.$axios.delete(deleteAPI)
                 .then((response)=>{
                     this.deleteListingCode = response.data.code

@@ -8,11 +8,9 @@ services:
     container_name: vuejs
     ports:
       - "127.0.0.1:3000:80"
-    depends_on:
-      - db
-      - backend
     env_file:
-      - .env
-    environment:
-      - NODE_ENV=${NODE_ENV?development}
-      - BASE_URL=${BASE_URL?http://localhost:3000}
+      - frontend/.env
+    restart: "unless-stopped"
+    depends_on:
+      backend:
+        condition: "service_healthy"

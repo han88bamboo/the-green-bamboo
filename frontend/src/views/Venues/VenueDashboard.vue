@@ -1291,7 +1291,7 @@
             async updateReportStatus(reportID, status) {
 
                 let responseCode = "";
-                let submitAPI = "${process.env.VUE_APP_API_URL}/requestListing/requestReviewStatus/" + reportID;
+                let submitAPI = `${process.env.VUE_APP_API_URL}/requestListing/requestReviewStatus/` + reportID;
                 let submitData = {
                     "targetCollection": "requestInaccuracy",
                     "reviewStatus": false,

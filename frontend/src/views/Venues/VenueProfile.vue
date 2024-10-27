@@ -3985,7 +3985,7 @@
             // Add listing to user's drink lists
             async addToBookmarks(targetList, listingID){
 
-                let submitAPI = "${process.env.VUE_APP_API_URL}/addToList/addTo";
+                let submitAPI = `${process.env.VUE_APP_API_URL}/addToList/addTo`;
 
                 if (targetList == "tried") {
                     submitAPI += "Tried/";
@@ -4200,7 +4200,7 @@
 
         async verifyOTP(){
             // call api to verify the pin
-            let submitURL = "${process.env.VUE_APP_API_URL}/authcheck/verifyPin/" + this.targetVenue.id
+            let submitURL = `${process.env.VUE_APP_API_URL}/authcheck/verifyPin/` + this.targetVenue.id
             let submitData ={
                 userType:"venue",
                 pin:this.resetPin
@@ -4228,7 +4228,7 @@
 
         async resetPassword(){
             this.resettingPassword=true
-            let submitURL = "${process.env.VUE_APP_API_URL}/authcheck/resetPassword/" + this.targetVenue.id
+            let submitURL = `${process.env.VUE_APP_API_URL}/authcheck/resetPassword/` + this.targetVenue.id
             let submitData = {
                 userType:"venue",
                 pin:this.resetPin

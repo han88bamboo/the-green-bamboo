@@ -887,7 +887,7 @@
 
                         // Request Creation Mode
                         if (this.formMode == "new") {
-                            submitAPI = "${process.env.VUE_APP_API_URL}/requestListing/requestListing"
+                            submitAPI = `${process.env.VUE_APP_API_URL}/requestListing/requestListing`
                             submitData = {
                                 "sourceLink": this.form["sourceLink"].trim(),
                                 "listingName": this.form["listingName"].trim(),
@@ -909,13 +909,13 @@
                             }
 
                             if (this.prevListing) {
-                                submitAPI = "${process.env.VUE_APP_API_URL}/requestListing/requestListingModify/" + this.$route.params.requestID
+                                submitAPI = `${process.env.VUE_APP_API_URL}/requestListing/requestListingModify/` + this.$route.params.requestID
                             }
                         }
 
                         // Request Edit / Duplicate Mode
                         else if (this.formMode == "edit" || this.formMode == "dup") {
-                            submitAPI = "${process.env.VUE_APP_API_URL}/requestListing/requestEdits"
+                            submitAPI = `${process.env.VUE_APP_API_URL}/requestListing/requestEdits`
                             submitData = {
                                 "editDesc": this.form["editDesc"].trim(),
                                 "sourceLink": this.form["sourceLink"].trim(),
@@ -928,7 +928,7 @@
                             }
 
                             if (this.prevListing) {
-                                submitAPI = "${process.env.VUE_APP_API_URL}/requestListing/requestEditsModify/" + this.$route.params.requestID;
+                                submitAPI = `${process.env.VUE_APP_API_URL}/requestListing/requestEditsModify/` + this.$route.params.requestID;
                             }
                         }
 
@@ -959,12 +959,12 @@
 
                         // Listing Creation Mode
                         if (this.formMode == "new") {
-                            submitAPI = "${process.env.VUE_APP_API_URL}/createListing/createListing"
+                            submitAPI = `${process.env.VUE_APP_API_URL}/createListing/createListing`
                         }
 
                         // Listing Edit Mode
                         else if (this.formMode == "edit") {
-                            submitAPI = "${process.env.VUE_APP_API_URL}/editListing/updateListing/" + this.$route.params.listingID
+                            submitAPI = `${process.env.VUE_APP_API_URL}/editListing/updateListing/` + this.$route.params.listingID
                         }
 
                         else {
@@ -1051,7 +1051,7 @@
             async updateRequestStatus(status) {
 
                 let responseCode = "";
-                let submitAPI = "${process.env.VUE_APP_API_URL}/requestListing/requestReviewStatus/" + this.$route.params.requestID;
+                let submitAPI = `${process.env.VUE_APP_API_URL}/requestListing/requestReviewStatus/` + this.$route.params.requestID;
                 let submitData = {};
 
                 // Set up submission data

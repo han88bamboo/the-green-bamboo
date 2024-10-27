@@ -60,7 +60,7 @@
                     await this.convertImageToBase64(userDetails.picture).then(base64String => {
                         this.base64Image = base64String // Outputs the Base64 string representation of the image
                     })
-                    let submitAPI =  "${process.env.VUE_APP_API_URL}/createAccount/createAccount"
+                    let submitAPI =  `${process.env.VUE_APP_API_URL}/createAccount/createAccount`
                     let submitData = {
                         // pass in first name, last name, email, isadmin
                         "username": userDetails.email,

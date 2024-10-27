@@ -2931,7 +2931,7 @@
 
         async verifyOTP(){
             // call api to verify the pin
-            let submitURL = "${process.env.VUE_APP_API_URL}/authcheck/verifyPin/" + this.specified_producer.id
+            let submitURL = `${process.env.VUE_APP_API_URL}/authcheck/verifyPin/` + this.specified_producer.id
             let submitData ={
                 userType:"producer",
                 pin:this.resetPin
@@ -2959,7 +2959,7 @@
 
         async resetPassword(){
             this.resettingPassword=true
-            let submitURL = "${process.env.VUE_APP_API_URL}/authcheck/resetPassword/" + this.specified_producer.id
+            let submitURL = `${process.env.VUE_APP_API_URL}/authcheck/resetPassword/` + this.specified_producer.id
             let submitData = {
                 userType:"producer",
                 pin:this.resetPin

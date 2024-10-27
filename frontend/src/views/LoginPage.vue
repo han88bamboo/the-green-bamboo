@@ -194,7 +194,7 @@
                     // Check login validity
                     let hashedPassword = this.hashPassword(this.ID, this.password)
                     let loginInfo = { "username": this.ID, "password": hashedPassword }
-                    this.auth(loginInfo, "${process.env.VUE_APP_API_URL}/authcheck/authcheck");
+                    this.auth(loginInfo, `${process.env.VUE_APP_API_URL}/authcheck/authcheck`);
                 }
 
             },

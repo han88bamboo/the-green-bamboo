@@ -435,7 +435,7 @@
 
                 let hashedPassword = this.hashPassword(this.username, this.password)
                 let joinDate = new Date().toISOString();
-                let submitAPI =  "${process.env.VUE_APP_API_URL}/createAccount/createAccount"
+                let submitAPI =  `${process.env.VUE_APP_API_URL}/createAccount/createAccount`
                 let submitData = {
                     // pass in first name, last name, email, isadmin
                     "username": this.username,

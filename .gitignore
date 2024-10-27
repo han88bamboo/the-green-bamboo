@@ -497,6 +497,7 @@ typings/
 # Project.gitignore
 ##############################
 # Ignore file in webscrapper
-Webscrape Untappd/Webscrapper/cookies.pkl
-Webscrape Untappd/Results/
+database/postgresql/data
+database/Webscrape/Webscrapper
+database/Webscrape/Results
 backend/postgresql/mongo_test.py

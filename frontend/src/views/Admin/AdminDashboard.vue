@@ -1235,7 +1235,7 @@
                     if(this.observationTags.find((tag)=> tag.observationTag == '')){
                         this.emptyObservation = true
                     }
-                    let submitAPI = "${process.env.VUE_APP_API_URL}/adminFunctions/updateObservationTag"
+                    let submitAPI = `${process.env.VUE_APP_API_URL}/adminFunctions/updateObservationTag`
                     this.updateTags(submitAPI,submitData)
                 },
 
@@ -1287,7 +1287,7 @@
                     }
                     this.submittingObservation=true
                     this.addingObservation=false
-                    let submitAPI = "${process.env.VUE_APP_API_URL}/adminFunctions/createObservationTag"
+                    let submitAPI = `${process.env.VUE_APP_API_URL}/adminFunctions/createObservationTag`
                     let submitData = {"observationTag":this.newObservation}
                     this.createTag(submitAPI, submitData)
                 },
@@ -1333,7 +1333,7 @@
                 },
                 async confirmDeleteTag(){
                     let responseCode = ''
-                    let deleteAPI = "${process.env.VUE_APP_API_URL}/adminFunctions/deleteObservationTag/" + this.observationToDelete.tagId
+                    let deleteAPI = `${process.env.VUE_APP_API_URL}/adminFunctions/deleteObservationTag/` + this.observationToDelete.tagId
                     const response = await this.$axios.delete(deleteAPI)
                     .then((response)=>{
                         responseCode = response.data.code

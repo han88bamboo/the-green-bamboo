@@ -18,7 +18,15 @@ FROM python:3.11-slim AS runner
 WORKDIR /app
 
 # This is for health check by AWS services: ECS, ALB, etc.
-RUN apt-get update && apt install -y curl
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y ca-certificates libpq-dev curl wget \
+    && rm -rf /var/lib/apt/lists/*
+
+# Environment variables for build
+ARG HOST=0.0.0.0
+ENV HOST=${HOST}
+ARG PORT=5000
+ENV PORT=${PORT}
 
 # Copy the installed dependencies from the builder stage
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
@@ -29,7 +37,7 @@ COPY ./ ./
 COPY .env .env
 
 # Expose ports for each backend service
-EXPOSE 5000
+EXPOSE ${PORT}
 
 # Command to run the application
-CMD ["python", "app.py"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--access-logfile", "-", "--error-logfile", "-", "--log-level", "info", "--workers", "1", "--worker-class", "gevent", "app:app"]
