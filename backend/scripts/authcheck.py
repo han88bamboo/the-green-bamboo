@@ -4,14 +4,15 @@
 
 import os
 import json
-import smtplib
+# import smtplib
 import random
 import string
 
+from scripts.mail import send_email, send_email_aws
 from bson import json_util
-from flask import request, jsonify, g, Blueprint
-from bson.objectid import ObjectId
+# from bson.objectid import ObjectId
 from datetime import datetime
+from flask import request, jsonify, g, Blueprint
 
 # import psycopg2
 # from psycopg2.extras import RealDictCursor
@@ -318,8 +319,8 @@ def sendResetPin(id):
     data = request.get_json()
     print(data)
     
-    email_address = os.getenv('EMAIL_ADDRESS')
-    password = os.getenv('PASSWORD')
+    # email_address = os.getenv('EMAIL_ADDRESS')
+    # password = os.getenv('PASSWORD')
     pin = random.randint(100000, 999999)
     time = datetime.now()
     time = time.strftime("%Y-%m-%d %H:%M:%S")
@@ -365,22 +366,27 @@ def sendResetPin(id):
         
         conn.commit()
 
-        mail_server = os.getenv('MAIL_SERVER')
-        mail_port = int(os.getenv('MAIL_PORT', 587))
-        mail_use_tls = os.getenv('MAIL_USE_TLS', 'false').lower() == 'true'
-        if mail_use_tls:
-            server = smtplib.SMTP(mail_server, mail_port)
-            server.ehlo()
-            server.starttls()
-        else:
-            server = smtplib.SMTP_SSL(mail_server, mail_port)
-        
-        server.login(email_address, password)
+        # mail_server = os.getenv('MAIL_SERVER')
+        # mail_port = int(os.getenv('MAIL_PORT', 587))
+        # mail_use_tls = os.getenv('MAIL_USE_TLS', 'false').lower() == 'true'
+        # if mail_use_tls:
+        #     server = smtplib.SMTP(mail_server, mail_port)
+        #     server.ehlo()
+        #     server.starttls()
+        # else:
+        #     server = smtplib.SMTP_SSL(mail_server, mail_port)
+
+        # server.login(email_address, password)
 
         message = 'Subject: Drink-X Reset Password\n\n Your pin is {} and expires in 1 hour, please ignore this message if you did not try to reset your password, alternatively, you can email us'.format(pin)
-        server.sendmail(email_address, userRaw["email"], message)
-        server.quit()
-        print(email_address)
+        # server.sendmail(email_address, userRaw["email"], message)
+        # server.quit()
+        send_email_aws(
+            subject="Drink-X Reset Password",
+            recipient=userRaw["email"],
+            body=message,
+        )
+        # print(email_address)
         print("Success: Email sent!")
         
         return jsonify(
@@ -403,7 +409,7 @@ def sendResetPin(id):
                 "message": "An error occurred sending the email."
             }
         ), 500
-    
+
 # -----------------------------------------------------------------------------------------
 # [POST] Check sent pin actual reset pin
 # - Check whether user sent pin equals to generated pin
@@ -487,7 +493,7 @@ def verifyPin(id):
                 "message": "An error verifying the pin. Please resend pin or try again"
             }
         ), 500
-    
+
 # -----------------------------------------------------------------------------------------
 # [POST] Reset Password
 # - Check whether user exists and then changes the hash value
@@ -500,8 +506,8 @@ def resetPassword(id):
 
     data = request.get_json()
     print(data)
-    email_address = os.getenv('EMAIL_ADDRESS')
-    email_password = os.getenv('PASSWORD')
+    # email_address = os.getenv('EMAIL_ADDRESS')
+    # email_password = os.getenv('PASSWORD')
     try:
         # check user type
         if data["userType"] == "user":
@@ -537,7 +543,7 @@ def resetPassword(id):
         # get actual pin
         splitPinData = userRaw['pin'].split(',')
         actualPin = splitPinData[0]
-        
+
         # check if pin is correct just in case someone accesses the url
         if str(actualPin) == str(data['pin']):
 
@@ -551,7 +557,7 @@ def resetPassword(id):
 
             combinedString = str(username) + password
             hash = 0
-            
+
             # hash it here
             for i in range(len(combinedString)):
                 char = ord(combinedString[i])
@@ -561,11 +567,10 @@ def resetPassword(id):
             if hash & (1 << 31):  # If the highest bit is set
                 hash -= 1 << 32  # Convert to a signed integer
 
-
             # Update the hash with new hash and remove the pin used to prevent re-reset
             if data["userType"] == "user":
                 # updatePassword = db.users.update_one({'_id': ObjectId(id)}, {'$set': {'hashedPassword': str(hash), 'pin':''}})
-                cur.execute('UPDATE users set hashedPassword = %s, pin = %s WHERE id = %s', (str(hash), '' ,id,))
+                cur.execute('UPDATE users SET hashedPassword = %s, pin = %s WHERE id = %s', (str(hash), '' ,id,))
             if data["userType"] == "producer":
                 # updatePassword = db.producers.update_one({'_id': ObjectId(id)}, {'$set': {'hashedPassword': str(hash), 'pin':''}})
                 cur.execute('UPDATE producers set hashedPassword = %s, pin = %s WHERE id = %s', (str(hash), '' ,id,))
@@ -575,21 +580,26 @@ def resetPassword(id):
             conn.commit()
 
             # send email containing the password
-            mail_server = os.getenv('MAIL_SERVER')
-            mail_port = int(os.getenv('MAIL_PORT', 587))
-            mail_use_tls = os.getenv('MAIL_USE_TLS', 'false').lower() == 'true'
-            if mail_use_tls:
-                server = smtplib.SMTP(mail_server, mail_port)
-                server.ehlo()
-                server.starttls()
-            else:
-                server = smtplib.SMTP_SSL(mail_server, mail_port)
-        
-            server.login(email_address, password)
+            # mail_server = os.getenv('MAIL_SERVER')
+            # mail_port = int(os.getenv('MAIL_PORT', 587))
+            # mail_use_tls = os.getenv('MAIL_USE_TLS', 'false').lower() == 'true'
+            # if mail_use_tls:
+            #     server = smtplib.SMTP(mail_server, mail_port)
+            #     server.ehlo()
+            #     server.starttls()
+            # else:
+            #     server = smtplib.SMTP_SSL(mail_server, mail_port)
+
+            # server.login(email_address, password)
 
             message = 'Subject: Drink-X Reset Password\n\n Your new password is {}, please email us if you did not authorise this'.format(password)
-            server.sendmail(email_address, userRaw["email"], message)
-            server.quit()
+            # server.sendmail(email_address, userRaw["email"], message)
+            # server.quit()
+            send_email_aws(
+                subject="Drink-X Reset Password",
+                recipient=userRaw["email"],
+                body=message,
+            )
             print("Success: Email sent!")
 
             return jsonify(

@@ -43,12 +43,12 @@ def get_db_connection():
 
 # Connect to Mail Server
 app.config["MAIL_SERVER"] = os.getenv("MAIL_SERVER")
-app.config["MAIL_PORT"] = os.getenv("MAIL_PORT")
+app.config["MAIL_PORT"] = os.getenv("MAIL_PORT", 587)
 app.config["MAIL_USE_TLS"] = True
 app.config['MAIL_USE_SSL'] = False
 app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")
 app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
-app.config['MAIL_DEFAULT_SENDER'] = 'noreply@drink-x.com'
+app.config['MAIL_DEFAULT_SENDER'] = 'Drink-X <noreply@drink-x.com>'
 
 mail = Mail(app)
 

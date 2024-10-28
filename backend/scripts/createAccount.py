@@ -7,11 +7,12 @@ import data
 import s3Images
 import os
 
+from scripts.mail import send_email, send_email_aws
 from bson import json_util
 from flask import Blueprint, g, request, jsonify
-from flask_mail import Message
 from bson.objectid import ObjectId
 from datetime import datetime, timedelta
+
 import secrets
 
 from psycopg2 import sql
@@ -691,15 +692,13 @@ def updateUsernamePassword():
 
 @blueprint.route('/sendEmail', methods=['POST'])
 def sendEmail():
-    db = g.db
-    mail = g.mail
     data = request.json
     print(data)
-    msg = Message(data['subject'], 
-                  sender=os.getenv('MAIL_USERNAME'), 
-                  recipients=[data['recipient']])
-    msg.body = data['message']
-    mail.send(msg)
+    send_email_aws(
+        subject=data['subject'],
+        recipient=data['recipient'],
+        body=data['message']
+    )
     return jsonify({'message': 'Email sent successfully!'}), 200
 
 
