@@ -2,21 +2,25 @@
 # Routes: /createObservationTag (POST), /updateObservationTag (PUT), /deleteObservationTag/<id> (DELETE), /updateFamilyTag (POST), /updateSubTag (PUT), /deleteFamilyTag/<id> (DELETE), /deleteSubTag/<id> (DELETE), /importListings (POST), /createFamilyTag (POST), /createSubTag (POST), /importListings (POST), /readCSV (GET)
 # -----------------------------------------------------------------------------------------
 
+import logging
 import os
 import csv
 import io
 import codecs
-import data
 import s3Images
 import base64
 
 from flask import Blueprint, g, request, jsonify
-from bson.objectid import ObjectId
 from datetime import datetime
 from urllib.request import urlopen
 
+logger = logging.getLogger(__name__)
+
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
+
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+logger.info(project_root)
 
 # -- ========= "observationTags" =========
 # CREATE TABLE "observationTags" (
@@ -525,7 +529,6 @@ def createSubTag():
     
 # To convert image URL to base64    
 def image_url_to_base64(url):
-    db = g.db
     try:
         # Fetch the image from the URL
         with urlopen(url) as response:
@@ -583,7 +586,7 @@ def importListings():
         for row in csv_data:
             converted_row = []
             for data_type, value in zip(column_data_types, row):
-                if data_type == float:
+                if data_type is float:
                     value = value.replace('%', '').strip()
                     converted_value = data_type(value) if value else None
                 else:
@@ -733,8 +736,10 @@ def importListings():
 # -----------------------------------------------------------------------------------------
 @blueprint.route('/readCSV', methods=['GET'])
 def readCSV():
-    db = g.db
-    with codecs.open('Dataset/listingsFormat.csv', 'r', encoding='utf-8-sig') as file:
+    data_path = os.path.join(project_root, "scripts", "listingsFormat.csv")
+    logger.info(data_path)
+
+    with codecs.open(data_path, 'r', encoding='utf-8-sig') as file:
         reader = csv.reader(file)
         data = [row for row in reader]
     return jsonify(

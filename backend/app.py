@@ -11,6 +11,19 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
 
+import logging.config
+
+logging.config.fileConfig(
+    os.path.abspath(
+        os.path.join(
+            os.path.dirname(__file__),
+            "logging.conf",
+        )
+    ),
+    disable_existing_loggers=False,
+)
+logger = logging.getLogger(__name__)
+
 # Allow all requests
 app = Flask(__name__)
 CORS(app)
@@ -108,9 +121,10 @@ create_routes()
 
 
 HOST = os.getenv("HOST", "0.0.0.0")
-PORT = os.getenv("PORT", 5000)
-FLASK_DEBUG = os.getenv("FLASK_DEBUG", False)
+PORT = int(os.getenv("PORT", 5000))
+FLASK_DEBUG = bool(os.getenv("FLASK_DEBUG", False))
 
 
 if __name__ == "__main__":
+    logger.info(f"Starting Flask server at {HOST}:{PORT}")
     app.run(host=HOST, port=PORT, debug=FLASK_DEBUG)

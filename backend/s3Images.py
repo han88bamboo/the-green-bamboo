@@ -8,14 +8,14 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
+bucket_name = 'tf-drinkx-prod-fe-images'
 
 def uploadBase64ImageToS3(base64_string):
-    bucket_name = 'drinkximages'
-    region='us-east-1'
+    region='ap-southeast-1'
     # Decode the base64 string
     credentials = { 
-        'aws_access_key_id': os.getenv('AWS_ACCESS_KEY'),
-        'aws_secret_access_key': os.getenv('AWS_SECRET_KEY')
+        'aws_access_key_id': os.getenv('AWS_ACCESS_KEY_ID'),
+        'aws_secret_access_key': os.getenv('AWS_SECRET_ACCESS_KEY')
     }
     try:
         image_data = base64.b64decode(base64_string)
@@ -36,15 +36,13 @@ def uploadBase64ImageToS3(base64_string):
     except NoCredentialsError:
         print("Credentials not available")
         return base64_string
-    
 
 
 def deleteImageFromS3(url):
-    bucket_name = 'drinkximages'
-    region='us-east-1'
+    region='ap-southeast-1'
     credentials = { 
-        'aws_access_key_id': os.getenv('AWS_ACCESS_KEY'),
-        'aws_secret_access_key': os.getenv('AWS_SECRET_KEY')
+        'aws_access_key_id': os.getenv('AWS_ACCESS_KEY_ID'),
+        'aws_secret_access_key': os.getenv('AWS_SECRET_ACCESS_KEY')
     }
     # Get the key from the url by stripping https://testbucketdrinkx.s3.amazonaws.com/xxxx
     object_key = url[48:]
