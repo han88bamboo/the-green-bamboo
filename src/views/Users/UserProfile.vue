@@ -536,7 +536,7 @@
                                             <span v-for="(tag, index) in review.flavorTag" :key="index" class="mobile-view-hide badge rounded-pill-user-profile me-2 mb-1 mobile-me-0_5 mobile-mb-0_5 " :style="{ backgroundColor: getTagColor(tag) }"> {{ getTagName(tag) }}</span>
                                             <span v-for="(tag, index) in review.observationTag" :key="index" class="mobile-view-hide badge rounded-pill-user-profile me-2 mb-1 mobile-me-0_5 mobile-mb-0_5" style="background-color: grey;">{{ tag }}</span>
 
-                                            <span v-for="(tag, index) in review.flavorTag.slice(0, 2)" :key="index" class="mobile-view-show badge rounded-pill-user-profile me-2 mb-1 mobile-me-0_5 mobile-mb-0_5 " :style="{ backgroundColor: getTagColor(tag) }"> {{ getTagName(tag) }}</span>
+                                            <span v-for="(tag, index) in review.flavorTag?.slice(0, 2)" :key="index" class="mobile-view-show badge rounded-pill-user-profile me-2 mb-1 mobile-me-0_5 mobile-mb-0_5 " :style="{ backgroundColor: getTagColor(tag) }"> {{ getTagName(tag) }}</span>
                                             <span v-for="(tag, index) in review.observationTag.slice(0, 1)" :key="index" class="mobile-view-show badge rounded-pill-user-profile me-2 mb-1 mobile-me-0_5 mobile-mb-0_5" style="background-color: grey;">{{ tag }}</span>                                        
                                         <p class="mobile-fs-7">
                                             <b>{{ review.reviewTitle }}</b> <br v-if="review.reviewTitle">
@@ -1179,7 +1179,7 @@ export default {
                 const response = await this.$axios.get('http://127.0.0.1:5000/getData/getReviews');
                 this.reviews = response.data;
                 this.reversedReviews = this.reviews.reverse();
-                this.recentReviews = this.reversedReviews.filter(review => review.userID === this.displayUserID && review.reviewType === 'Listing');
+                this.recentReviews = this.reversedReviews.filter(review => review.userID === parseInt(this.displayUserID) && review.reviewType === 'Listing');
             }
             catch (error) {
                 console.error(error);
@@ -2292,9 +2292,12 @@ export default {
 
         // get total number of locations tagged in reviews
         getTotalLocationsTagged() {
-            // loop through all reviews and get the number of locations tagged for each review
-            // add up all the locations tagged
-            this.pointSystem.tagLocation[0] = this.recentReviews.reduce((sum, review) => sum + (review.location.length !== 0 ? 1 : 0), 0);
+            this.pointSystem.tagLocation[0] = this.recentReviews.reduce((sum, review) => {
+                if (review.location) {
+                    return sum + 1;
+                }
+                return sum;
+            }, 0);
         },
 
         // get total number of countries user tagged in reviews
