@@ -642,3 +642,610 @@ INSERT INTO "observationTags" ("observationTag") VALUES
 ('Daily Drinker'),
 ('Netflix & Chill 🍆'),
 ('Healthy');
+
+INSERT INTO "users" ("username","displayName","choiceDrinks","modType","photo","hashedPassword","joinDate","firstName","lastName","email","isAdmin","birthday","pin") VALUES
+	 ('admin','admin','{}','{}','','-1522920846','2024-10-28 18:45:31.403','admin','admin','admin@drink-x.com',false,'2000-01-01 00:00:00','175029,2024-10-28 18:46:29'),
+	 ('Lotusroot518','Lotusroot518','{}','{}','','-289780632','2024-10-29 01:31:56.379','Lotusroot518','Lotusroot518','Kailinchoo@gmail.com',true,'1995-08-11 00:00:00',NULL),
+	 ('charsiucharlie','charsiucharlie','{}','{}','','-65180891','2024-10-30 13:48:46.277','charsiucharlie','charsiucharlie','tzhehan@gmail.com',true,'1993-06-29 00:00:00',NULL),
+	 ('DumplingBoy','DumplingBoy','{}','{}','','2108394495','2024-11-03 09:49:51.179','DumplingBoy','DumplingBoy','jwleong.199@gmail.com',false,'1999-10-21 00:00:00',NULL);
+
+INSERT INTO "drinkTypes" ("drinkType", "badgePhoto", "typeCategory")
+VALUES (
+    'Whiskey / Whisky',                           -- drinkType
+    NULL,                                         -- badgePhoto (set a URL if available)
+    ARRAY[
+        'Single Malt',
+        'Single Grain',
+        'Blended Malt',
+        'Blended Grain',
+        'Blended Malt & Grain',
+        'Single Blended (Malt & Grain from the Same Distillery)',
+        'Irish Pot Still Whisk(e)y',
+        'Irish Blended Whisk(e)y',
+        'Bourbon Whisk(e)y',
+        'Tennessee Whisk(e)y',
+        'Rye Whisk(e)y',
+        'Rye Malt Whisk(e)y',
+        'Malt Whisk(e)y',
+        'Corn Whisk(e)y',
+        'Wheat Whisk(e)y',
+        'American Whisk(e)y (Others)',
+        'Rice Whisk(e)y',
+        'Flavoured',
+        'New Make / Moonshine / White Dog',
+        'Others'
+    ]
+);
+
+INSERT INTO "drinkTypes" ("drinkType", "badgePhoto", "typeCategory")
+VALUES (
+    'Whiskey / Whisky',                           -- drinkType
+    NULL,                                         -- badgePhoto (set a URL if available)
+    ARRAY[
+        'Single Malt',
+        'Single Grain',
+        'Blended Malt',
+        'Blended Grain',
+        'Blended Malt & Grain',
+        'Single Blended (Malt & Grain from the Same Distillery)',
+        'Irish Pot Still Whisk(e)y',
+        'Irish Blended Whisk(e)y',
+        'Bourbon Whisk(e)y',
+        'Tennessee Whisk(e)y',
+        'Rye Whisk(e)y',
+        'Rye Malt Whisk(e)y',
+        'Malt Whisk(e)y',
+        'Corn Whisk(e)y',
+        'Wheat Whisk(e)y',
+        'American Whisk(e)y (Others)',
+        'Rice Whisk(e)y',
+        'Flavoured',
+        'New Make / Moonshine / White Dog',
+        'Others'
+    ]
+);
+
+INSERT INTO "drinkTypes" ("drinkType", "badgePhoto", "typeCategory")
+VALUES (
+    'Cocktails',                                 -- drinkType
+    NULL,                                        -- badgePhoto (set a URL if available)
+    ARRAY[
+        'Classics',
+        'Punch',
+        'Milk Punch',
+        'Sling',
+        'Sour',
+        'Cobbler',
+        'Highball',
+        'Highball - Canned'
+    ]
+);
+
+INSERT INTO "drinkTypes" ("drinkType", "badgePhoto", "typeCategory")
+VALUES (
+    'Tequila',                                   -- drinkType
+    NULL,                                        -- badgePhoto (set a URL if available)
+    ARRAY[
+        'Blanco (Unaged / White)',
+        'Joven / Oro (Young / Gold)',
+        'Reposado (Aged)',
+        'Añejo (Extra Aged)',
+        'Extra Añejo (Ultra Aged)',
+        'Cristalino',
+        'Curado (Flavoured)',
+        'Others'
+    ]
+);
+
+INSERT INTO "drinkTypes" ("drinkType", "badgePhoto", "typeCategory")
+VALUES (
+    'Rum / Rhum',                                -- drinkType
+    NULL,                                        -- badgePhoto (set a URL if available)
+    ARRAY[
+        'Juice - Rhum Agricole (Column Still)',
+        'Juice - Pure Single Rum (Pot Still)',
+        'Juice - Single Blended Rum (Pot & Column Still)',
+        'Juice - All Others (Excluding White Unaged and Including Multi-Distillery Blend, Excluding Clairin / Cachaca / Aguardiente)',
+        'Juice - White Unaged',
+        'Syrup - Traditional Rum (Column Still)',
+        'Syrup - Pure Single Rum (Pot Still)',
+        'Syrup - Single Blended Rum (Pot & Column Still)',
+        'Syrup - All Others (Excluding White Unaged and Including Multi-Distillery Blend, Excluding Clairin / Cachaca / Aguardiente)',
+        'Syrup - White / Unaged',
+        'Syrup / Juice - Clairin / Cachaca / Aguardiente',
+        'Molasses - Traditional Rum (Column Still)',
+        'Molasses - Pure Single Rum (Pot Still)',
+        'Molasses - Single Blended Rum (Pot & Column Still)',
+        'Molasses - All Others (Excluding White Unaged and Including Multi-Distillery Blend)',
+        'Molasses - White Unaged',
+        'Others - Excluding 100% Juice / 100% Syrup / 100% Molasses',
+        'Flavoured / Spiced',
+        'White Unaged Blend of Molasses, Juice, and/or Syrup'
+    ]
+);
+
+INSERT INTO "drinkTypes" ("drinkType", "badgePhoto", "typeCategory")
+VALUES (
+    'Beer', -- drinkType
+    NULL, -- badgePhoto (replace with a URL if applicable)
+    ARRAY[
+        'Aged Beer',
+        'Ale - All Styles',
+        'Altbier - All Styles',
+        'Barleywine - All Styles',
+        'Barrel Aged Beer',
+        'Belgian Style - Blonde / Brown / Dark Ale',
+        'Belgian Style - Contemporary Spontaneous Fermented',
+        'Belgian Style - Dubbel',
+        'Belgian Style - Golden Ale',
+        'Belgian Style - Quadrupel',
+        'Belgian Style - Saison',
+        'Belgian Style - Tripel',
+        'Belgian Style - All Others',
+        'Bitter Ale - All Styles',
+        'Blonde Ale',
+        'Brett Beer',
+        'Brown Ale - All Styles',
+        'California Common / Steam Beer',
+        'Cider - Aged / Barrel Aged',
+        'Cider - Apfelwein / German Style',
+        'Cider - Cidre / French Style',
+        'Cider - Dry',
+        'Cider - Fruited / Flavoured',
+        'Cider - Graff',
+        'Cider - Herbed / Spiced',
+        'Cider - Hopped',
+        'Cider - Ice',
+        'Cider - Mulled',
+        'Cider - Perry',
+        'Cider - Poiré',
+        'Cider - Pommeau',
+        'Cider - Rosé',
+        'Cider - Sitra / Spanish Style',
+        'Cider - Sour',
+        'Cider - Sweet',
+        'Cider - Traditional',
+        'Cider - All Others',
+        'Cider - Other Fruit',
+        'Corn Beer / Chicha de Jora',
+        'Cream Ale',
+        'Dark Ale',
+        'Farmhouse Ale - Bière de Coupage',
+        'Farmhouse Ale - Bière de Garde',
+        'Farmhouse Ale - Bière de Mars',
+        'Farmhouse Ale - Classic French & Belgian Style',
+        'Farmhouse Ale - Finnish Style Sahti',
+        'Farmhouse Ale - Grisette',
+        'Farmhouse Ale - Saison',
+        'Farmhouse Ale - All Others',
+        'Field Beer',
+        'Flavored Malt Beverage',
+        'Freeze-Distilled Beer',
+        'Fruit Beer',
+        'German Style - Bock',
+        'German Style - Doppelbock',
+        'German Style - Eisbock',
+        'German Style - Festbier',
+        'German Style - Helles Bock / Maibock',
+        'German Style - Historical',
+        'German Style - Kellerbier / Zwickelbier',
+        'German Style - Kölsch / Koelsch',
+        'German Style - Märzen',
+        'German Style - Oktoberfestbier/Wiesn',
+        'German Style - Rauchbier',
+        'German Style - Roggenbier',
+        'German Style - Rotbier',
+        'German Style - Schwarzbier',
+        'German Style - All Others',
+        'Ginger Beer / Hard Ginger Beer',
+        'Golden Ale - All Styles',
+        'Grape Ale - All Styles',
+        'Grodziskie / Grätzer',
+        'Happoshu',
+        'Hard Kombucha',
+        'Hard Seltzer',
+        'Historical Beer - All Others',
+        'Honey Beer',
+        'Hybrid Beer / Hybrid Style Beer / Hybrid Lager / Hybrid Ale',
+        'IPA (India Pale Ale)',
+        'IPA - American Style (All)',
+        'IPA - Barrel Aged',
+        'IPA - Belgian Style',
+        'IPA - Black / Cascadian Dark Ale',
+        'IPA - Brett',
+        'IPA - Brown',
+        'IPA - Brut',
+        'IPA - Cold',
+        'IPA - Double (DIPA) / Imperial',
+        'IPA - Double Dry Hopped (DDH)',
+        'IPA - Dry Hopped',
+        'IPA - Fruited',
+        'IPA - New England / Hazy / Juicy',
+        'IPA - Hazy Double (DIPA)',
+        'IPA - Hazy Triple (TIPA)',
+        'IPA - Milkshake / Double Milkshake / Imperial',
+        'IPA - Quadruple',
+        'IPA - Red',
+        'IPA - Rye',
+        'IPA - Session',
+        'IPA - Single Hop',
+        'IPA - Sour',
+        'IPA - Triple (TIPA)',
+        'IPA - Triple Dry Hopped (TDH)',
+        'IPA - West Coast',
+        'IPA - White / Wheat',
+        'IPA - All Others',
+        'Koji Beer / Ginjo Beer / Sake Yeast Beer',
+        'Kvass',
+        'Lager - Amber / Red',
+        'Lager - American Style (All Styles)',
+        'Lager - Dark',
+        'Lager - Dortmunder / Export',
+        'Lager - Dunkel',
+        'Lager - European Style',
+        'Lager - Helles',
+        'Lager - IPL (India Pale Lager)',
+        'Lager - Japanese Rice / All Rice',
+        'Lager - Leichtbier',
+        'Lager - Mexican',
+        'Lager - Pale',
+        'Lager - Strong',
+        'Lager - Vienna Style',
+        'Lager - Winter',
+        'Lager - All Others',
+        'Lambic - Framboise',
+        'Lambic - Other Fruit',
+        'Lambic - Gueuze',
+        'Lambic - Kriek',
+        'Lambic - All Others',
+        'Malt Beverage - All Styles',
+        'Mead - Traditional / Sack / Great / Imperial / Session',
+        'Mead - Fruited',
+        'Mead - Herbed & Spiced',
+        'Mild Ale - All Styles',
+        'Non Alcohlic - Lager',
+        'Non Alcoholic - Beer',
+        'Non Alcoholic - Cider',
+        'Non Alcoholic - IPA',
+        'Non Alcoholic - Malt Beverage',
+        'Non Alcoholic - Mead',
+        'Non Alcoholic - Pale Ale',
+        'Non Alcoholic - Porter',
+        'Non Alcoholic - Sour',
+        'Non Alcoholic - Stout',
+        'Non Alcoholic - Wheat Beer',
+        'Non Alcoholic - All Others',
+        'Old Ale',
+        'Pale Ale - All American Styles',
+        'Pale Ale - All Australian Style',
+        'Pale Ale - Barrel Aged',
+        'Pale Ale - All Belgian Styles',
+        'Pale Ale - English Style',
+        'Pale Ale - Hazy / Juicy',
+        'Pale Ale - Milkshake',
+        'Pale Ale - All Others',
+        'Pilsner - All Styles',
+        'Porter - All Styles',
+        'Stout',
+        'Stout - Barrel Aged',
+        'Stout - Foreign / Export',
+        'Stout - Imperial / Double',
+        'Stout - Imperial / Pastry',
+        'Stout - Oyster',
+        'Stout - Pastry',
+        'Pumpkin Beer',
+        'Red Ale - American Style / American Amber',
+        'Red Ale - Imperial / Double',
+        'Red Ale - All Others',
+        'Root Beer',
+        'Rye Beer',
+        'Scotch Ale - Export',
+        'Scotch Ale - Heavy / Wee Heavy',
+        'Scotch Ale - Light',
+        'Shandy / Radler',
+        'Smoke Beer / Smoked Beer',
+        'Sorghum / Millet Beer',
+        'Sour - American Style (All)',
+        'Sour - Barrel Aged',
+        'Sour - Berliner Weisse / Fruited',
+        'Sour - Flanders Oud Bruin / Oud Red Ale',
+        'Sour - Fruited',
+        'Sour - Gose (All)',
+        'Sour - Smoothie / Pastry',
+        'Sour - All Others',
+        'Specialty Beer - All Styles',
+        'Specialty Grain',
+        'Squash Beer',
+        'Strong Ale - All Others',
+        'Summer Ale - All Styles',
+        'Table Beer / Small Beer',
+        'Wheat Beer - American Style',
+        'Wheat Beer - German / Bavarian Style',
+        'Wheat Beer - All Others',
+        'Wild Beer / Wild Ale - All Styles',
+        'Yam Beer'
+    ]
+);
+
+INSERT INTO "drinkTypes" ("drinkType", "badgePhoto", "typeCategory")
+VALUES (
+    'Shochu', -- drinkType
+    NULL, -- badgePhoto (replace with a URL if applicable)
+    ARRAY[
+        'Mugi (Barley)',
+        'Imo (Sweet Potato)',
+        'Kome (Rice)',
+        'Soba (Buckwheat)',
+        'Kokuto (Brown Sugar)',
+        'Kuri (Chestnut)',
+        'Awamori (Jasmine Rice Okinawan Shochu)',
+        'Kasutori (Sake lees)',
+        'Flavoured',
+        'Kusu (Aged Awamori)',
+        'Shisho (Perilla)',
+        'All Others (Undisclosed ingredients Incl. milk, perilla, sesame, corn, sugarcane etc)',
+        'Kasu (Sake Lees)'
+    ]
+);
+
+INSERT INTO "drinkTypes" ("drinkType", "badgePhoto", "typeCategory")
+VALUES (
+    'Sake', -- drinkType
+    NULL, -- badgePhoto (replace with a URL if needed)
+    ARRAY[
+        'Futsushu (Table sakes) & All Others – NOT including Flavoured',
+        'Honjozo (Alcohol added)',
+        'Junmai',
+        'Ginjo (Alcohol added)',
+        'Junmai Ginjo',
+        'Daiginjo (Alcohol added)',
+        'Junmai Daiginjo',
+        'Only Nigori (Cloudy) – all grades, NOT including Sparkling-Nigori, NOT including Kijoshu-Nigori',
+        'Only Sparkling – all grades, NOT including Sparkling-Nigori, NOT including Kijoshu-Sparkling',
+        'Only Sparkling-Nigoris – all grades',
+        'Only Kijoshu (Concentrated) – all grades, including Kijoshu-Nigori or Kijoshu-Sparkling sakes',
+        'Amazake',
+        'Doburoku',
+        'Flavoured (Umeshu sakes, fruit-flavoured sakes, flavoured nigoris, others)',
+        'Uncategorised',
+        'Komodaru (Traditional Barrel Aged)'
+    ]
+);
+
+INSERT INTO "drinkTypes" ("drinkType", "badgePhoto", "typeCategory")
+VALUES (
+    'Soju', -- drinkType
+    NULL, -- badgePhoto (replace with a URL if needed)
+    ARRAY[
+        'Modern (Grocery store soju, usually in green glass bottles)',
+        'Craft (Small batch distilled, not matured)',
+        'Flavoured',
+        'Traditional (Onggi Matured)',
+        'Barrel Aged'
+    ]
+);
+
+INSERT INTO "drinkTypes" ("drinkType", "badgePhoto", "typeCategory")
+VALUES (
+    'Makgeolli & Korean Rice Wines', -- drinkType
+    NULL, -- badgePhoto (replace with a URL if needed)
+    ARRAY[
+        'Modern Makgeolli/Takju (Grocery store makgeolli) - Unflavoured',
+        'Artisanal Makgeolli/Takju (Craft, Traditional)',
+        'Cheongju / Yakju (Clarified Makgeolli)',
+        'Flavoured Makgeolli - All types'
+    ]
+);
+
+INSERT INTO "drinkTypes" ("drinkType", "badgePhoto", "typeCategory")
+VALUES (
+    'Wine (Grape wine)', -- drinkType
+    NULL, -- badgePhoto (replace with a URL if needed)
+    ARRAY[
+        'Red Wine - Single Varietal',
+        'Red Wine - Blend of Varietals',
+        'White Wine - Single Varietal',
+        'White Wine - Blend of Varietals',
+        'Orange Wine - Single Varietal',
+        'Orange Wine - Blend of Varietals',
+        'Rosé - Single Varietal',
+        'Rosé - Blend of Varietals',
+        'Sparkling White (Incl Champagne) - Single Varietal, NOT natural wine',
+        'Sparkling White (Incl Champagne) - Blend of Varietals, NOT natural wine',
+        'Sparkling Rosé - Single Varietal, NOT natural wine',
+        'Sparkling Rosé - Blend of Varietals, NOT natural wine',
+        'Sparkling Red - Single Varietal, NOT natural wine',
+        'Sparkling Red - Blend of Varietals, NOT natural wine',
+        'Fortified Wine (Incl. Port, Sherry, Apera) - Single Varietal',
+        'Fortified Wine (Incl. Port, Sherry, Apera) - Blend of Varietals',
+        'Only Natural Wine (Incl. Pét Nat, Organic, Biodynamic) – All grades, all colours, including sparkling',
+        'All Others'
+    ]
+);
+
+INSERT INTO "drinkTypes" ("drinkType", "badgePhoto", "typeCategory")
+VALUES (
+    'Brandy', -- drinkType
+    NULL, -- badgePhoto (replace with a URL if needed)
+    ARRAY[
+        'Armagnac - Bas-Armagnac',
+        'Armagnac - Haut-Armagnac',
+        'Armagnac - Ténarèze',
+        'Armagnac - Blend',
+        'Armagnac - All Others / Undisclosed Region',
+        'Cognac - Single Estate',
+        'Cognac - Blend',
+        'Cognac - All Others / Undisclosed Region',
+        'Grappa / Pomace / Marc Brandy - Mono-Varietal',
+        'Grappa / Pomace / Marc Brandy - Poli-Varietal',
+        'Grappa / Pomace / Marc Brandy - All Others / Undisclosed Varietal',
+        'Pisco - Puro',
+        'Pisco - Acholado',
+        'Pisco - Mosto Verde',
+        'Pisco - All Others / Undisclosed Varietal',
+        'Calvados - Pays d''Auge',
+        'Calvados - Domfrontais',
+        'Calvados - Blend',
+        'Calvados - All Others / Undisclosed Region',
+        'All Others - Aged',
+        'All Others - Unaged',
+        'All Others - Flavoured'
+    ]
+);
+
+INSERT INTO "drinkTypes" ("drinkType", "badgePhoto", "typeCategory")
+VALUES (
+    'Baijiu', -- drinkType
+    NULL, -- badgePhoto (replace with a URL if needed)
+    ARRAY[
+        'Strong Aroma (Nong Xiang)',
+        'Light Aroma (Qing Xiang)',
+        'Sauce Aroma (Jiang Xiang)',
+        'Rice Aroma (Mi Xiang)',
+        'Sesame Aroma (Zhima Xiang)',
+        'Phoenix Aroma (Feng Xiang)',
+        'Fat Aroma (Zhi Xiang)',
+        'Medicinal Aroma (Yao Xiang)',
+        'Mixed Aroma (Jian Xiang)',
+        'All Others (Including Baijiu Liqueur)'
+    ]
+);
+
+INSERT INTO "drinkTypes" ("drinkType", "badgePhoto", "typeCategory")
+VALUES (
+    'Vodka', -- drinkType
+    NULL, -- badgePhoto (replace with a URL if needed)
+    ARRAY[
+        'Classic',
+        'Infused',
+        'Flavoured',
+        'Barrel Aged'
+    ]
+);
+
+INSERT INTO "drinkTypes" ("drinkType", "badgePhoto", "typeCategory")
+VALUES (
+    'Liqueur', -- drinkType
+    NULL, -- badgePhoto (replace with a URL if needed)
+    ARRAY[
+        'Cream',
+        'Coffee',
+        'Chocolate',
+        'Fruit',
+        'Herbs & Spices',
+        'Floral',
+        'Nuts',
+        'Others'
+    ]
+);
+
+INSERT INTO "drinkTypes" ("drinkType", "badgePhoto", "typeCategory")
+VALUES (
+    'All Other Drinks', -- drinkType
+    NULL, -- badgePhoto (replace with a URL if needed)
+    ARRAY[
+        'Absinthe',
+        'Arrack',
+        'Ready-To-Drink Cocktails (Canned Chuhai, Canned Negroni, etc)',
+        'Other Spirits (Feni, Huangjiu etc)',
+        'Other Fermented Drinks (Palm Wine, Pulque, etc)',
+        'Destilado de Agave (unregistered ''mezcals'')',
+        'Sotol'
+    ]
+);
+
+INSERT INTO "producers" (
+    "id", 
+    "producerName", 
+    "producerDesc", 
+    "originCountry", 
+    "mainDrinks", 
+    "photo", 
+    "hashedPassword", 
+    "claimStatus", 
+    "claimStatusCheckDate", 
+    "statusOB", 
+    "username", 
+    "producerLink", 
+    "stripeCustomerId"
+) VALUES (
+    1, 
+    'Hennessy', 
+    'This is Hennessy', 
+    'France', 
+    '{}', 
+    NULL, 
+    '-6552510', 
+    true, 
+    NULL, 
+    NULL, 
+    'Hennessy', 
+    NULL, 
+    NULL
+);
+
+INSERT INTO "venues" (
+    "id", 
+    "venueName", 
+    "address", 
+    "venueType", 
+    "originLocation", 
+    "venueDesc", 
+    "hashedPassword", 
+    "photo", 
+    "claimStatus", 
+    "claimStatusCheckDate", 
+    "reservationDetails", 
+    "username", 
+    "publicHolidays", 
+    "stripeCustomerId", 
+    "pin"
+) VALUES (
+    1, 
+    'Orh Gao Taproom', 
+    'Singapore', 
+    'Bar', 
+    'Singapore', 
+    'Best venue for drinks', 
+    '-1918297408', 
+    NULL, 
+    true, 
+    NULL, 
+    'Cannot reserve anything', 
+    'orhgaotaproom', 
+    'Not open on Christmas', 
+    NULL, 
+    NULL
+);
+
+INSERT INTO "producers" (
+	"id", "producerName", "producerDesc", "originCountry", "mainDrinks", "photo", "hashedPassword", "claimStatus", "claimStatusCheckDate", "statusOB", "username", "producerLink", "stripeCustomerId")
+	VALUES (1, "When are you going to release the next promotion?", "SOON! CHECK FOR UPDATES!", "2024-10-04 16:08:59.899", 1, 1);
+
+INSERT INTO "listings" (
+	"id", "listingName", "producerID", "bottler", "originCountry", "drinkType", "abv", "officialDesc", "allowMod", "addedDate", "typeCategory", "age", "reviewLink", "sourceLink", "photo")
+	VALUES (1, "Hennessy VS", 1, "OB", "Japan", "Whiskey", 12, "BEST EVEERRRR", false, "2024-10-05 00:14:37.661786", "Spirit", NULL);
+
+INSERT INTO "usersFollowLists" (
+    "id", "userId", "users", "producers", "venues")
+    VALUES (1, 1, {}, {}, {}), (2, 2, {}, {}, {}), (3, 3, {}, {}, {}), (4, 4, {}, {}, {})
+
+INSERT INTO "usersDrinkLists" (
+    "id", "userId", "listName ", "drinks")
+    VALUES 
+    (1, 1, "Drinks I Have Tried", {}, {}), 
+    (1, 1, "Drinks I Want To Try", {}, {}), 
+    (2, 2, "Drinks I Have Tried", {}, {}), 
+    (2, 2, "Drinks I Want To Try", {}, {}), 
+    (3, 3, "Drinks I Have Tried", {}, {}), 
+    (3, 3, "Drinks I Want To Try", {}, {}), 
+    (4, 4, "Drinks I Have Tried", {}, {}), 
+    (4, 14 "Drinks I Want To Try", {}, {})
+
+INSERT INTO "venuesMenu" (
+    "id","sectionName", "sectionOrder","venueId")
+    VALUES(1, "Created1", "0", 1)
+    
+INSERT INTO "menuItems"(
+    "id", "itemOrder", "itemPrice", "itemAvailability", "itemID", "itemServingType", "sectionId")
+VALUES(1, 0, 12.00, true, 1, 1, 1)
