@@ -458,7 +458,7 @@
                                                 <div class="row pt-3 mobile-pt-0">
                                                     <div class="mobile-col-9 mobile-pe-0">
                                                     <router-link :to="{ path: '/listing/view/' +listing.id }" class="default-clickable-text fst-italic scrollable-user-bottle-listings-description-box">
-                                                        <div v-if="listing.officialDesc.length > 300">  
+                                                        <div v-if="listing.officialDesc?.length > 300">  
                                                             <p class="homepage-bottle-listing-description"> {{ listing["officialDesc"].slice(0, 300) + (listing["officialDesc"].length > 300 ? '...' : '') }} </p>
                                                         </div>
                                                         <div v-else>  

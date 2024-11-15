@@ -287,7 +287,7 @@
                                 <div class="col-lg-12 padding-right-for-suggesteditslink-large-screen">
                                     <!--<div class="py-2"></div>-->
                                     <!-- below truncated-->
-                                    <div v-if="specified_listing.officialDesc.length > 250">
+                                    <div v-if="specified_listing.officialDesc?.length > 250">
                                         <p v-if="!showFullDescription" class="mobile-rating-smaller-text-2" style="margin-bottom:0.2rem;"><!-- tzh added truncated description --->
                                             <em>{{ specified_listing["officialDesc"].slice(0, 250) + (specified_listing["officialDesc"].length > 250 ? '...' : '') }}</em>
                                             <a @click="showFullDescription = true" style="font-weight: bold;">(Read More)</a>
@@ -309,7 +309,7 @@
                 <div class="row scrollable mobile-view-show text-start">
                                 <div class="col-lg-12 padding-right-for-suggesteditslink-large-screen">
                                     <!--<div class="py-2"></div>-->
-                                    <div v-if="specified_listing.officialDesc.length > 250">
+                                    <div v-if="specified_listing.officialDesc?.length > 250">
                                         <p v-if="!showFullDescription" class="mobile-rating-smaller-text-2 " style="margin-bottom:0.2rem; padding-left:0.8rem !important;"><!-- tzh added truncated description --->
                                             <em>{{ specified_listing["officialDesc"].slice(0, 250) + (specified_listing["officialDesc"].length > 250 ? '...' : '') }}</em>
                                             <a @click="showFullDescription = true" style="font-weight: bold;">(Read More)</a>
