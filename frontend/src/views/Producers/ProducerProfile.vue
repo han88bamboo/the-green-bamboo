@@ -839,7 +839,7 @@
                                             <!-- official description --->
                                             <div class="col-10 mobile-view-hide">
                                                 <div class="row">
-                                                    <div v-if="listing.officialDesc.length > 142">
+                                                    <div v-if="listing.officialDesc?.length > 142">
                                                         <p v-if="!showFullDescription[listing.id]" style="margin-bottom:0.2rem;"><!-- tzh added truncated description --->
                                                             <em>{{ listing["officialDesc"].slice(0, 142) + (listing["officialDesc"].length > 142 ? '...' : '') }}</em>
                                                             <a @click="showFullDescription[listing.id] = true" style="font-weight: bold;">(Read More)</a>
@@ -997,7 +997,7 @@
                                             <!-- official description --->
                                             <div class="col-10 mobile-view-hide">
                                                 <div class="row">
-                                                    <div v-if="listing.officialDesc.length > 142">
+                                                    <div v-if="listing.officialDesc?.length > 142">
                                                         <p v-if="!showFullDescription[listing.id]" style="margin-bottom:0.2rem;"><!-- tzh added truncated description --->
                                                             <em>{{ listing["officialDesc"].slice(0, 142) + (listing["officialDesc"].length > 142 ? '...' : '') }}</em>
                                                             <a @click="showFullDescription[listing.id] = true" style="font-weight: bold;">(Read More)</a>
