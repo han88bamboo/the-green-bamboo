@@ -1180,7 +1180,7 @@ INSERT INTO "producers" (
     NULL, 
     NULL, 
     'Hennessy', 
-    NULL, 
+    '', 
     NULL
 );
 
@@ -1218,33 +1218,33 @@ INSERT INTO "venues" (
     NULL
 );
 
-INSERT INTO "producers" (
-	"id", "producerName", "producerDesc", "originCountry", "mainDrinks", "photo", "hashedPassword", "claimStatus", "claimStatusCheckDate", "statusOB", "username", "producerLink", "stripeCustomerId")
-	VALUES (1, "When are you going to release the next promotion?", "SOON! CHECK FOR UPDATES!", "2024-10-04 16:08:59.899", 1, 1);
+INSERT INTO "producersQuestionAnswers" (
+	"id", "question", "answer", "date", "userId", "producerId")
+    VALUES (1, 'When are you going to release the next promotion?', 'SOON! CHECK FOR UPDATES!', '2024-10-04 16:08:59.899', 1, 1);
 
 INSERT INTO "listings" (
 	"id", "listingName", "producerID", "bottler", "originCountry", "drinkType", "abv", "officialDesc", "allowMod", "addedDate", "typeCategory", "age", "reviewLink", "sourceLink", "photo")
-	VALUES (1, "Hennessy VS", 1, "OB", "Japan", "Whiskey", 12, "BEST EVEERRRR", false, "2024-10-05 00:14:37.661786", "Spirit", NULL);
+	VALUES (1, 'Hennessy VS', 1, 'OB', 'Japan', 'Whiskey', 12, 'BEST EVEERRRR', true, '2024-10-05 00:14:37.661786', 'Spirit', 12, '', '', '');
 
 INSERT INTO "usersFollowLists" (
     "id", "userId", "users", "producers", "venues")
-    VALUES (1, 1, {}, {}, {}), (2, 2, {}, {}, {}), (3, 3, {}, {}, {}), (4, 4, {}, {}, {})
+    VALUES (1, 1, '{}', '{}', '{}'), (2, 2, '{}', '{}', '{}'), (3, 3, '{}', '{}', '{}'), (4, 4, '{}', '{}', '{}');
 
 INSERT INTO "usersDrinkLists" (
-    "id", "userId", "listName ", "drinks")
+    "id", "userId", "listName", "drinks")
     VALUES 
-    (1, 1, "Drinks I Have Tried", {}, {}), 
-    (1, 1, "Drinks I Want To Try", {}, {}), 
-    (2, 2, "Drinks I Have Tried", {}, {}), 
-    (2, 2, "Drinks I Want To Try", {}, {}), 
-    (3, 3, "Drinks I Have Tried", {}, {}), 
-    (3, 3, "Drinks I Want To Try", {}, {}), 
-    (4, 4, "Drinks I Have Tried", {}, {}), 
-    (4, 14 "Drinks I Want To Try", {}, {})
+    (1, 1, 'Drinks I Have Tried', '{}'), 
+    (2, 1, 'Drinks I Want To Try', '{}'), 
+    (3, 2, 'Drinks I Have Tried', '{}'), 
+    (4, 2, 'Drinks I Want To Try', '{}'), 
+    (5, 3, 'Drinks I Have Tried', '{}'), 
+    (6, 3, 'Drinks I Want To Try', '{}'), 
+    (7, 4, 'Drinks I Have Tried', '{}'), 
+    (8, 4, 'Drinks I Want To Try', '{}');
 
 INSERT INTO "venuesMenu" (
     "id","sectionName", "sectionOrder","venueId")
-    VALUES(1, "Created1", "0", 1)
+    VALUES(1, 'Created1', '0', 1);
     
 INSERT INTO "menuItems"(
     "id", "itemOrder", "itemPrice", "itemAvailability", "itemID", "itemServingType", "sectionId")
