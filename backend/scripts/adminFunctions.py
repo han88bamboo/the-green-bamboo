@@ -630,11 +630,14 @@ def importListings():
                 producer_name_id_dict[producer_name] = new_producer_id
                 producer_id = new_producer_id
 
-            # Convert the image URL to base64
-            base64_str = image_url_to_base64(converted_row[11]) if converted_row[11] else None
+            # Upload url to s3 bucket to store as own image
+            s3_url = s3Images.uploadURLtoS3(converted_row[11]) if converted_row[11] else None
 
-            # upload image to S3 object and retrieve the URL
-            s3_url = s3Images.uploadBase64ImageToS3(base64_str) if base64_str else ''
+            # # Convert the image URL to base64
+            # base64_str = image_url_to_base64(converted_row[11]) if converted_row[11] else None
+
+            # # upload image to S3 object and retrieve the URL
+            # s3_url = s3Images.uploadBase64ImageToS3(base64_str) if base64_str else ''
 
             # Build the listing data
             listing_data = {
