@@ -386,11 +386,11 @@
                     
                     <!-- have tried button -->
                     <div class="col-2 col-lg-2 p-0">
-                        <div v-if="user" v-html="checkDrinkLists(specified_listing).buttons.haveTried" class="d-grid" @click="addToTriedList"> </div>
+                        <div v-if="user && Object.keys(user.drinkLists).length > 0" v-html="checkDrinkLists(specified_listing).buttons.haveTried" class="d-grid" @click="addToTriedList"> </div>
                     </div>
                     <!-- want to try button -->
                     <div class="col-2 col-lg-2 p-0">
-                        <div v-if="user" v-html="checkDrinkLists(specified_listing).buttons.wantToTry" class="d-grid" @click="addToWantList"> </div>
+                        <div v-if="user && Object.keys(user.drinkLists).length > 0" v-html="checkDrinkLists(specified_listing).buttons.wantToTry" class="d-grid" @click="addToWantList"> </div>
                     </div>
                     <!-- bookmark button -->
                     <div class="col-1 col-lg-1 text-center d-flex justify-content-start make-bookmark-bigger" >
@@ -1871,16 +1871,18 @@
                                     };
                                 });
                             }
-                            for (let drink of this.user.drinkLists["Drinks I Have Tried"]["listItems"]) {
-                                let triedDrink = this.listings.find(listing => listing.id === parseInt(drink))?.listingName;
-                                if (triedDrink) {
-                                    triedDrinks.push(triedDrink)
+                            if (this.user.drinkLists && Object.keys(this.user.drinkLists).length > 0) {
+                                for (let drink of this.user.drinkLists["Drinks I Have Tried"]["listItems"]) {
+                                    let triedDrink = this.listings.find(listing => listing.id === parseInt(drink))?.listingName;
+                                    if (triedDrink) {
+                                        triedDrinks.push(triedDrink)
+                                    }
                                 }
-                            }
-                            for (let drink of this.user.drinkLists["Drinks I Want To Try"]["listItems"]) {
-                                let wantDrinkName = this.listings.find(listing => listing.id === parseInt(drink))?.listingName;   
-                                if (wantDrinkName) {
-                                    wantToTryDrinks.push(wantDrinkName)
+                                for (let drink of this.user.drinkLists["Drinks I Want To Try"]["listItems"]) {
+                                    let wantDrinkName = this.listings.find(listing => listing.id === parseInt(drink))?.listingName;   
+                                    if (wantDrinkName) {
+                                        wantToTryDrinks.push(wantDrinkName)
+                                    }
                                 }
                             }
                             this.drinkList = {

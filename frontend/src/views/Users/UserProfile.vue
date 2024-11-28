@@ -468,12 +468,12 @@
                                     <!-- image of actual badge style="width: 100px; height: 100px;" -->
                                     <!-- <img :src="'data:image/png;base64,'+ (getBadgeInfo(badge).badgePhoto)" 
                                         alt="" class="rounded-circle-white-bg border border-dark badge-img"> -->
-                                    <img :src="(getBadgeInfo(badge).badgePhoto)" 
+                                    <img :src="(getBadgeInfo(badge)?.badgePhoto)" 
                                         alt="" class="rounded-circle-white-bg border border-dark badge-img">
                                     <!-- badge description -->
                                     <p class="pt-1" style="line-height: 1;"> 
                                         <small> 
-                                            <b> {{ getBadgeInfo(badge).badgeDesc }} </b>
+                                            <b> {{ getBadgeInfo(badge)?.badgeDesc }} </b>
                                         </small> 
                                     </p>
                                 </div>
