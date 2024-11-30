@@ -851,7 +851,7 @@
                     if (this.formType == "power") {
 
                         // Validate Official Description
-                        if (!this.form["officialDesc"].trim()) {
+                        if (!this.form["officialDesc"] || !this.form["officialDesc"].trim()) {
                             this.errors.push("Official Description is required.");
                         }
 

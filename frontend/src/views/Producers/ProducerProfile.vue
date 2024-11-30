@@ -1713,18 +1713,20 @@
                     }
                 // users
                 // _id, username, displayName, choiceDrinks, drinkLists, modType, photo
-                    try {
-                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUser/${this.user_id}`);
-                        this.user = response.data;
-                        if (this.userType == "user") {
-                            // this.user = this.users.find(user => user['id'] == this.user_id);
-                            this.following = JSON.stringify(this.user.followLists.producers).includes(this.producer_id);
-                            this.isAdmin = this.user.isAdmin // check if user is admin
+                    if (this.user_id) {
+                        try {
+                            const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUser/${this.user_id}`);
+                            this.user = response.data;
+                            if (this.userType == "user") {
+                                // this.user = this.users.find(user => user['id'] == this.user_id);
+                                this.following = JSON.stringify(this.user.followLists.producers).includes(this.producer_id);
+                                this.isAdmin = this.user.isAdmin // check if user is admin
+                            }
+                        } 
+                        catch (error) {
+                            console.error(error);
+                            this.dataLoaded = null;
                         }
-                    } 
-                    catch (error) {
-                        console.error(error);
-                        this.dataLoaded = null;
                     }
                 // producersProfileViews
                 // _id, producerID, views
@@ -2356,6 +2358,8 @@
             // to format deepdive link
             formatDeepDiveLink() {
                 let unformattedLink = this.specified_producer["producerLink"];
+                if (!unformattedLink) return;
+                
                 // extract segment after the last "/"
                 const segment = unformattedLink.substring(unformattedLink.lastIndexOf("/") + 1);
                 // split the segment by "-"
@@ -2545,7 +2549,7 @@
                     // if current date does not exist, add a new view
                     else {
                         try {
-                            const response = this.$axios.post(`${process.env.VUE_APP_API_URL}/editProducerProfile/addNewProfileCount`, 
+                            this.$axios.post(`${process.env.VUE_APP_API_URL}/editProducerProfile/addNewProfileCount`, 
                                 {
                                     producerID: this.producer_id,
                                     date: currDate,
@@ -2555,7 +2559,6 @@
                                     'Content-Type': 'application/json'
                                 }
                             });
-                            console.log(response.data);
                         } 
                         catch (error) {
                             console.error(error);
@@ -2777,7 +2780,7 @@
                 }
 
                 // force page to reload
-                // window.location.reload();
+                window.location.reload();
             },
 
             // cancel Q&A edit
