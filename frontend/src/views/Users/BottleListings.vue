@@ -1482,12 +1482,16 @@
 
         // find drink name given reviewTarget
         findDrinkNameForReview(reviewTarget) {
-                let drink = this.listings.find(listing => listing.id == reviewTarget["id"]);
+            if (reviewTarget) {
+                let drink = this.listings.find(listing => listing.id == reviewTarget);
                 if (drink) {
                     let drink_name = drink.listingName; 
                     return drink_name;
                 }
-            },
+            }
+
+            return '';
+        },
 
         // get all reviews that a producer has
         getAllReviews() {
@@ -1548,7 +1552,7 @@
         // get listings by producer
         getListingsByProducer() {
             this.followedProducers.forEach(producer => {
-                const producerListings = this.listings.filter(listing => listing.producerID == producer.id);
+                const producerListings = this.listings.filter(listing => listing.producerID == parseInt(producer));
                 this.allProducerDrinks  = producerListings;
             });
         },
