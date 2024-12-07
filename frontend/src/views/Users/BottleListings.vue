@@ -406,7 +406,7 @@
                         <!-- listings  TZH removed class scrollable-listings--->
                         <div class="row">
 
-                            <!-- [if] discovery & following not clicked changed && to ||-->
+                            <!-- [if] discovery mode-->
                             <div v-if="discovery == true || following == false" class="mobile-ps-0 mobile-pe-0">
                                 <!-- Display error message when no results for filter-->
 
@@ -502,86 +502,6 @@
                                     </div>
                                 </div>
                             </div> <!-- end of listings -->
-                            
-                            <!-- [else] discovery clicked 
-                            <div v-else-if="discovery" class="mobile-ps-0 mobile-pe-0">
-                                <!- most reviews ->
-                                <h3 class="text-body-secondary text-start pt-3"> 
-                                    <b> Most Reviews </b> 
-                                </h3>
-                                <!- v-loop for each listing ->
-                                <div class="container text-start">
-                                    <h5 v-if="mostReviews==''" style="display: inline-block;"> There is no listing available for the selected filter </h5>
-                                    <div v-for="listing in mostReviews" v-bind:key="listing" class="p-3 mobile-pt-0">
-
-                                        <div class="row" v-if="listing != null">
-                                            <!- image ->
-                                            <div class="col-xl-5 col-12 mb-3">
-                                                <div class="image-container homepage">
-                                                    <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" class="img-border homepage">
-                                                    <div class="mobile-view-hide">
-                                                    <BookmarkIcon 
-                                                        v-if="user" 
-                                                        :user="user" 
-                                                        :listing="listing" 
-                                                        :overlay="true"
-                                                        size="30"
-                                                        @icon-clicked="handleIconClick" />
-                                                    </div>    
-                                                </div>
-                                            </div>
-                                            <!- details ->
-                                            <div class="col-xl-7 col-12">
-                                                <!- expression name ->
-                                                <div class="row pt-1">
-                                                    <router-link :to="{ path: '/listing/view/' +listing.id }" class="primary-clickable-text mobile-col-10">
-                                                        <h4> <b> {{ listing["listingName"] }} </b> </h4>
-                                                    </router-link>
-                                                    <div class="mobile-col-2 mobile-view-show">
-                                                    <BookmarkIcon 
-                                                        v-if="user" 
-                                                        :user="user" 
-                                                        :listing="listing" 
-                                                        :overlay="true"
-                                                        size="30"
-                                                        @icon-clicked="handleIconClick" />
-                                                    </div>  
-                                                </div>
-                                                <!- producer ->
-                                                <div class="row">
-                                                    <router-link :to="{ path: '/profile/producer/' + listing.producerID }" class="primary-clickable-text">
-                                                        <h5 class="mobile-rating-smaller-text"> <b> {{ getProducerName(listing) }} </b> </h5>
-                                                    </router-link>
-                                                </div>
-                                                <!- review ->
-                                                <div class="row pt-3">
-                                                    <router-link :to="{ path: '/listing/view/' +listing.id }" class="default-clickable-text fst-italic scrollable">
-                                                        <h5> {{ listing["officialDesc"] }}. </h5>
-                                                    </router-link>
-                                                </div>
-                                                <!- rating ->
-                                                <div class="row pt-4"> 
-                                                    <div class="col-6 d-flex align-items-center">
-                                                        <h1 class="rating-text text-end d-flex align-items-center">
-                                                            {{ getRatings(listing) }}
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
-                                                                <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                                            </svg>
-                                                        </h1>
-                                                    </div>
-                                                    <div class="col-6">
-                                                        <div class="d-grid gap-5">
-                                                            <router-link :to="{ path: '/listing/view/' +listing.id }" class="primary-clickable-text">
-                                                                <a class="btn secondary-btn btn-md"> Read what the crowd thinks </a>
-                                                            </router-link>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>-->
 
                             <!-- [else] following clicked -->
                             <div v-else-if="following || discovery == false" class="mobile-ps-0 mobile-pe-0">
@@ -1246,6 +1166,9 @@
                     else{
                         this.mostReviews=searchResults
                         this.filteredListings = searchResults
+                        if(this.filteredListings.length<30){
+                            this.retrieveListings();
+                        }
                     }
 
                 }
@@ -1265,26 +1188,6 @@
                         this.recentlyAdded=searchResults
                     }
                 }
-                // Filter listings for when no input, main listings page
-                else{
-                    const searchResults = this.listings.filter((listing) => {
-                        const drinkTypeListing = listing["drinkType"].toLowerCase();
-                        return drinkTypeListing.includes(drinkTypeSearch);
-                    });
-                    this.filterSearchResult=searchResults
-
-                    // if nothing found
-                    if (this.filterSearchResult.length==0||this.filterSearchResult==null) {
-                        this.filteredListings = [];
-                        this.retrieveListings()
-                    } 
-                    else {
-                        this.errorFound = false;
-                        this.errorMessage = '';
-                        this.filteredListings = this.filterSearchResult;
-                    }
-                }
-
             },
 
             sortResults() {
@@ -1364,6 +1267,9 @@
                         this.errorMessage = '';
                         this.mostReviews = searchResults;
                         this.filteredListings = searchResults;
+                        if (this.filteredListings.length<30){
+                            this.retrieveListings();
+                        }
                     }
                 }
                 else if(this.following){
@@ -1380,23 +1286,6 @@
                         this.errorFound = false;
                         this.errorMessage = '';
                         this.recentlyAdded = searchResults;
-                    }
-                }
-                else{
-                    const searchResults = this.filteredListings.filter((listing) => {
-                        const drinkCategory = listing["typeCategory"].toLowerCase();
-                        return drinkCategory.includes(drinkCategorySearch);
-                    });
-                    // if nothing found
-                    if (searchResults == null) {
-                        this.errorFound = true;
-                        this.errorMessage = 'No results found, please try again.';
-                        this.filteredListings = null;
-                    } 
-                    else {
-                        this.errorFound = false;
-                        this.errorMessage = '';
-                        this.filteredListings = searchResults;
                     }
                 }
         },
@@ -1448,13 +1337,11 @@
 
         // change status of discovery
         changeDiscoveryStatus() {
-            if (this.discovery == false) {
+            if (!this.discovery) {
                 this.discovery = true;
+                this.moreListings = true;
             } 
-            else {
-                this.discovery = false;
-            }
-            if (this.following == true) {
+            if (this.following) {
                 this.following = false;
             }
             this.clearSelection()
@@ -1462,13 +1349,11 @@
 
         // change status of following
         changeFollowingStatus() {
-            if (this.following == false) {
+            if (!this.following) {
                 this.following = true;
+                this.moreListings = true;
             } 
-            else {
-                this.following = false;
-            }
-            if (this.discovery == true) {
+            if (this.discovery) {
                 this.discovery = false;
             }
             this.clearSelection()
@@ -1549,7 +1434,7 @@
         getListingsByProducer() {
             this.followedProducers.forEach(producer => {
                 const producerListings = this.listings.filter(listing => listing.producerID == producer.id);
-                this.allProducerDrinks  = producerListings;
+                this.allProducerDrinks = producerListings;
             });
         },
 
@@ -1702,30 +1587,33 @@
 
         async retrieveListings(){
             // if selectedDrinkType not empty, meaning listings are filtered, retrieve based off the drink type and/or drink category
-            if(this.selectedDrinkType != ''){
-                let lastFilteredId = 0
-                if(this.filteredListings.length>0){
-                    lastFilteredId = this.filteredListings[this.filteredListings.length-1].id
+            if(this.discovery){
+                if(this.selectedDrinkType != ''){
+                    let lastFilteredId = 0
+                    if(this.filteredListings.length>0){
+                        lastFilteredId = this.filteredListings[this.filteredListings.length-1].id
+                    }
+                    let params = {
+                        "drinkType" : this.selectedDrinkType.drinkType,
+                        "drinkCategory": this.selectedCategory
+                    }
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getFiltered30` + '/' + lastFilteredId, { params });
+                    this.filteredListings.push(...response.data);
+                    if(response.data.length == 0){
+                        this.moreListings = false
+                    }
                 }
-                let params = {
-                    "drinkType" : this.selectedDrinkType.drinkType,
-                    "drinkCategory": this.selectedCategory
-                }
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getFiltered30` + '/' + lastFilteredId, { params });
-                this.filteredListings.push(...response.data);
-                if(response.data.length == 0){
-                    this.moreListings = false
+                // if not, meaning listings are not filtered, retrieve next 30 listings in DB
+                else{
+                    let lastId = this.listings[this.listings.length-1].id
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getNext30` + '/' + lastId);
+                    this.listings.push(...response.data);
+                    if(response.data.length == 0){
+                        this.moreListings = false
+                    }
                 }
             }
-            // if not, meaning listings are not filtered, retrieve next 30 listings in DB
-            else{
-                let lastId = this.listings[this.listings.length-1].id
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getNext30` + '/' + lastId);
-                this.listings.push(...response.data);
-                if(response.data.length == 0){
-                    this.moreListings = false
-                }
-            }
+            //TODO: Add in lazy loading for following
         }
 
     }
