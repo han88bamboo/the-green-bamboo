@@ -114,4 +114,4 @@ def deleteImageFromS3(url):
 #     print(f"Image URL: {url}")
 # if isDeleted:
 #     print(f"Image URL: {isDeleted}")
-deleteImageFromS3('https://drinkximages.s3.us-east-1.amazonaws.com/b6ef0fed-58a9-4c6c-bdca-0f4f87d5b1de.jpg')
+# deleteImageFromS3('https://drinkximages.s3.us-east-1.amazonaws.com/b6ef0fed-58a9-4c6c-bdca-0f4f87d5b1de.jpg')
