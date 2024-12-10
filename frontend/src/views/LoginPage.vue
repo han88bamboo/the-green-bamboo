@@ -9,7 +9,7 @@
             <div class="row">
                 <div class="col-12 col-sm-10 col-md-8 m-auto mobile-ps-0 mobile-pe-0">
                     <div class="pt-5 mobile-pt-0">
-                        <form id="login" v-on:submit.prevent="checkLogin" style="background-color:#DDC8A9;" class="rounded">
+                        <form id="login" v-if="!showResetPWForm" v-on:submit.prevent="checkLogin" style="background-color:#DDC8A9;" class="rounded">
                             <!-- login header text -->
                             <p class="fw-bold fs-1 pt-4 mx-3 mobile-fs-4 mobile-mb-1" style="font-style: italic; ">
                                 Join a community of drink lovers.
@@ -41,12 +41,18 @@
                                     <!-- Use Bootstrap grid classes for layout -->
                                     <div class="row g-2">
                                         <!-- Column for the checkbox -->
-                                        <div class="col-12 text-start">
+                                        <div class="col text-start">
                                             <input type="checkbox" v-on:click="showPassword()" class="form-check-input">
                                             <label for="password" class="form-check-label"> &nbsp; Show password </label>
                                         </div>
+
+                                        <!-- Column for forget password link -->
+                                        <div class="col text-end">
+                                            <p class="default-body-text-no-background hover-text-primary text-decoration-underline" role="button" @click="showResetPWForm = true">Forgot password?</p>
+                                        </div>
                                     </div>
                                 </div>
+
                             </div>
 
                             <!-- error handling -->
@@ -105,6 +111,9 @@
                                 </div>
                             </div>
                         </form>
+
+                        <!-- forgot password form-->
+                        <ForgotPasswordForm v-if="showResetPWForm" v-on:close="showResetPWForm = false" style="background-color:#DDC8A9;" class="rounded" @returnToLogin="hideResetForm" />
                     </div>
                 </div>
             </div>
@@ -113,17 +122,26 @@
 
 </template>
 
+<!-- CSS -->
+<style scoped>
+.hover-text-primary:hover {
+    color: var(--bs-primary);
+}
+</style>
+
 <script>
     // import components used
     import NavBar from '@/components/NavBar.vue';
     import GoogleSignIn from '@/components/GoogleSignIn.vue';
+    import ForgotPasswordForm from '@/components/ForgotPasswordForm.vue';
 
     // specify components used
     export default {
         name: 'LoginPage',
         components: {
             NavBar,
-            GoogleSignIn
+            GoogleSignIn,
+            ForgotPasswordForm
         },
 
         data() {
@@ -136,6 +154,9 @@
                 role: '',
                 ID: '',
                 password: '',
+
+                // variable to toggle password reset form
+                showResetPWForm: false,
             };
         },
         mounted() {
@@ -261,6 +282,11 @@
                 if (this.role == "venue") {
                     this.$router.push({path: `/profile/venue`});
                 }
+            },
+
+            // Hide reset password form
+            hideResetForm() {
+                this.showResetPWForm = false;
             }
         }
     };

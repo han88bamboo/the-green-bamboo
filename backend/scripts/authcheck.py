@@ -632,3 +632,74 @@ def resetPassword(id):
                 "message": "An error resetting the password. Please resend pin and try again. Please resend pin and try again."
             }
         ), 500
+
+
+# -----------------------------------------------------------------------------------------
+# [POST] Reset Password (will not create a new password but instead will require the user to input a new password)
+# - Possible return codes: 200 (Success), 500 (Error during update) 
+@blueprint.route('/resetPasswordLogin', methods=['POST'])
+def resetPasswordLogin():
+    conn = g.db
+    cur = conn.cursor()
+
+    data = request.get_json()
+
+    # Check if required fields are present
+    if data.get("id") is None or data.get("username") is None or data.get("password") is None or data.get("userType") is None:
+        return jsonify(
+            {
+                "code": 400,
+                "message": "Please provide all required fields."
+            }
+        ), 400
+    
+    # Check if required fields are not empty
+    if data["id"] == "" or data["username"] == "" or data["password"] == "" or data["userType"] == "":
+        return jsonify(
+            {
+                "code": 400,
+                "message": "Please provide all required fields."
+            }
+        ), 400
+
+
+    # Hash the password here
+    combinedString = data["username"] + data["password"]
+    hash = 0
+    for i in range(len(combinedString)):
+        char = ord(combinedString[i])
+        hash = (hash << 5) - hash + char
+        hash &= 0xFFFFFFFF  # Convert to 32-bit integer
+
+    if hash & (1 << 31):  # If the highest bit is set
+        hash -= 1 << 32  # Convert to a signed integer
+
+    try:
+        if data["userType"] == "user":
+            # Update the hash with new hash and remove the pin used to prevent re-reset 
+            cur.execute('UPDATE users set "hashedPassword" = %s, pin = %s WHERE id = %s', (str(hash), '', data["id"],))
+
+        if data["userType"] == "producer":
+            # Update the hash with new hash and remove the pin used to prevent re-reset 
+            cur.execute('UPDATE producers set "hashedPassword" = %s, pin = %s WHERE id = %s', (str(hash), '', data["id"],))
+
+        if data["userType"] == "venue":
+            # Update the hash with new hash and remove the pin used to prevent re-reset 
+            cur.execute('UPDATE venues set "hashedPassword" = %s, pin = %s WHERE id = %s', (str(hash), '', data["id"],))
+
+        conn.commit()
+        return jsonify(
+            {
+                "code": 200,
+                "message": "Password successfully reset."
+            }
+        ), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred resetting the password. Please try again."
+            }
+        ), 500

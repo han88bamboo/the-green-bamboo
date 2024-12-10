@@ -1737,3 +1737,61 @@ def getUsernames():
     
     finally:
         cur.close()
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Any User Regardless of Type by Email
+@blueprint.route("/getUserByEmail/<email>")
+def getUserByEmail(email):
+    conn = g.db
+    cur = conn.cursor()
+
+    # Define return data
+    return_data = None
+
+    try:
+        # Check if user is a user and retrieve the id 
+        cur.execute('SELECT * FROM "users" WHERE "email" = %s', (email,))
+        user_data = cur.fetchone()
+
+        if user_data is not None:
+            return_data = {'id': user_data['id'], 'type': 'user', 'username': user_data['username']}
+            
+            return jsonify(return_data), 200
+        
+        # Check if user is a producer and retrieve the id
+        cur.execute('SELECT * FROM "producers" WHERE "email" = %s', (email,))
+        producer_data = cur.fetchone()
+
+        if producer_data is not None:
+            return_data = {'id': producer_data['id'], 'type': 'producer', 'username': producer_data['username']}
+            
+            return jsonify(return_data), 200
+        
+        # Check if user is a venue and retrieve the id
+        cur.execute('SELECT * FROM "venues" WHERE "email" = %s', (email,))
+        venue_data = cur.fetchone()
+
+        if venue_data is not None:
+            return_data = {'id': venue_data['id'], 'type': 'venue', 'username': venue_data['username']}
+            
+            return jsonify(return_data), 200
+        
+        return jsonify(
+            {
+                "code": 404,
+                "message": "Email not found."
+            }
+        ), 404
+    
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": str(e)
+            }
+        ), 500
+    
+    finally:
+        cur.close()
