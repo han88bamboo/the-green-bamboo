@@ -113,10 +113,10 @@
                     <div class="row mx-2 mb-3">
                         <div v-if="subscription">
                             <!-- stripe -->
-                            <img v-if="paymentMethod.brand == 'visa'" src="../../Images/Others/visa.png" alt="" style="height: 40px;" class="me-3">
-                            <img v-else-if="paymentMethod.brand == 'mastercard'" src="../../Images/Others/mastercard.png" alt="" style="height: 40px;" class="me-3">
+                            <img v-if="paymentMethod?.brand == 'visa'" src="../../Images/Others/visa.png" alt="" style="height: 40px;" class="me-3">
+                            <img v-else-if="paymentMethod?.brand == 'mastercard'" src="../../Images/Others/mastercard.png" alt="" style="height: 40px;" class="me-3">
                             <img v-else src="../../Images/Others/credit-card.png" alt="" style="height: 30px;" class="me-3">
-                            •••• •••• •••• {{paymentMethod.last4}}
+                            •••• •••• •••• {{paymentMethod?.last4}}
                         </div>
                         <div v-else>
                             <div>No active subscription.</div>
@@ -131,13 +131,13 @@
                     <div v-if="subscription" class="row mx-2">
                         <!-- stripe -->
                         <div class="col-6 fw-bold">Business Plan: 
-                            <span v-if="subscriptionDetails.interval == 'month'">Monthly</span> 
-                            <span v-if="subscriptionDetails.interval == 'year'">Yearly</span> 
+                            <span v-if="subscriptionDetails?.interval == 'month'">Monthly</span> 
+                            <span v-if="subscriptionDetails?.interval == 'year'">Yearly</span> 
                             Plan
                         </div>
                         <div v-if="activeSubscription" class="col-6 text-end">
-                            <div class="fw-bold fs-3">${{subscriptionDetails.price}} p/{{subscriptionDetails.interval}}</div>
-                            <div class="fst-italic">Next billing cycle: {{ formatDate(subscriptionDetails.next_billing_date) }}</div>
+                            <div class="fw-bold fs-3">${{subscriptionDetails?.price}} p/{{subscriptionDetails?.interval}}</div>
+                            <div class="fst-italic">Next billing cycle: {{ formatDate(subscriptionDetails?.next_billing_date) }}</div>
                             <div class="fst-italic">Amount due: ${{ (this.upcomingInvoice.amount_due / 100).toFixed(2) }}</div>
                             <button type="button" class="btn primary-btn-outline-not-round mt-2" style="font-weight:bold; width: 200px;" data-bs-toggle="modal" data-bs-target="#editSubscriptionModal">Edit Subscription</button>
                         </div>
@@ -204,16 +204,16 @@
                                 </button>
                             </div>
                         </div>
-                        <div v-if="selectedMonthlyPricing && subscriptionDetails.interval!='month'" class="alert alert-danger" role="alert">You are changing your subscription plan to <span class="fw-bold">monthly</span>. </div>
-                        <div v-else-if="selectedYearlyPricing && subscriptionDetails.interval!='year'" class="alert alert-success" role="alert">You are changing your subscription plan to <span class="fw-bold">yearly</span>. </div>
+                        <div v-if="selectedMonthlyPricing && subscriptionDetails?.interval!='month'" class="alert alert-danger" role="alert">You are changing your subscription plan to <span class="fw-bold">monthly</span>. </div>
+                        <div v-else-if="selectedYearlyPricing && subscriptionDetails?.interval!='year'" class="alert alert-success" role="alert">You are changing your subscription plan to <span class="fw-bold">yearly</span>. </div>
                         <div v-else class="alert alert-light" role="alert">No changes selected.</div>
                         <hr>
                         <div>If you wish to pause your subscription, please click <span data-bs-toggle="modal" data-bs-target="#cancelSubscriptionModal" style="text-decoration: underline; cursor: pointer;">here</span>.</div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button v-if="selectedMonthlyPricing && subscriptionDetails.interval!='month'" type="button" class="btn btn-primary" @click="editSubscription('month')" data-bs-dismiss="modal">Confirm</button>
-                        <button v-else-if="selectedYearlyPricing && subscriptionDetails.interval!='year'" type="button" class="btn btn-primary" @click="editSubscription('year')" data-bs-dismiss="modal">Confirm</button>
+                        <button v-if="selectedMonthlyPricing && subscriptionDetails?.interval!='month'" type="button" class="btn btn-primary" @click="editSubscription('month')" data-bs-dismiss="modal">Confirm</button>
+                        <button v-else-if="selectedYearlyPricing && subscriptionDetails?.interval!='year'" type="button" class="btn btn-primary" @click="editSubscription('year')" data-bs-dismiss="modal">Confirm</button>
                         <button v-else type="button" class="btn btn-primary" disabled>Confirm</button>
                     </div>
                     </div>
@@ -427,8 +427,8 @@
                             }
                         });
                         this.subscriptionDetails = response.data;
-                        this.selectedMonthlyPricing = this.subscriptionDetails.interval === 'month';
-                        this.selectedYearlyPricing = this.subscriptionDetails.interval === 'year';
+                        this.selectedMonthlyPricing = this.subscriptionDetails?.interval === 'month';
+                        this.selectedYearlyPricing = this.subscriptionDetails?.interval === 'year';
                     } catch (error) {
                         console.error('Error retrieving customer payment methods:', error);
                         this.dataLoaded = null;

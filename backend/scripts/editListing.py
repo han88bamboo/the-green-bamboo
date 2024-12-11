@@ -181,7 +181,22 @@ def deleteListing(id):
         if existingListing['photo'] is not None and existingListing['photo'] != '':
             s3Images.deleteImageFromS3(existingListing['photo'])
 
+        # Find and delete associated reviews and votes
+        cur.execute('SELECT "id" FROM reviews WHERE "reviewTarget" = %s', (id,))
+        reviews = cur.fetchall()
+
+        for review in reviews:
+            review_id = review['id']
+
+            # Delete associated votes for each review
+            cur.execute('DELETE FROM "reviewsUserVotes" WHERE "reviewId" = %s', (review_id,))
+
+        # Delete associated reviews
+        cur.execute('DELETE FROM reviews WHERE "reviewTarget" = %s', (id,))
+
+        # Delete the listing
         cur.execute('DELETE FROM listings WHERE "id" = %s', (id,))
+
         conn.commit()
 
         return jsonify(
