@@ -1438,7 +1438,7 @@
         getListingsByProducer() {
             this.followedProducers.forEach(producer => {
                 const producerListings = this.listings.filter(listing => listing.producerID == parseInt(producer));
-                this.allProducerDrinks  = producerListings;
+                this.allProducerDrinks.push(...producerListings);
             });
         },
 
