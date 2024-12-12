@@ -577,13 +577,13 @@ def resetPassword(id):
             # Update the hash with new hash and remove the pin used to prevent re-reset
             if data["userType"] == "user":
                 # updatePassword = db.users.update_one({'_id': ObjectId(id)}, {'$set': {'hashedPassword': str(hash), 'pin':''}})
-                cur.execute('UPDATE users SET hashedPassword = %s, pin = %s WHERE id = %s', (str(hash), '' ,id,))
+                cur.execute("""UPDATE users SET "hashedPassword" = %s, pin = %s WHERE id = %s""", (str(hash), '' ,id,))
             if data["userType"] == "producer":
                 # updatePassword = db.producers.update_one({'_id': ObjectId(id)}, {'$set': {'hashedPassword': str(hash), 'pin':''}})
-                cur.execute('UPDATE producers set hashedPassword = %s, pin = %s WHERE id = %s', (str(hash), '' ,id,))
+                cur.execute("""UPDATE producers set "hashedPassword" = %s, pin = %s WHERE id = %s""", (str(hash), '' ,id,))
             if data["userType"] == "venue":
                 # updatePassword = db.venues.update_one({'_id': ObjectId(id)}, {'$set': {'hashedPassword': str(hash), 'pin':''}})
-                cur.execute('UPDATE venues set hashedPassword = %s, pin = %s WHERE id = %s', (str(hash), '' ,id,))
+                cur.execute("""UPDATE venues set "hashedPassword" = %s, pin = %s WHERE id = %s""", (str(hash), '' ,id,))
             conn.commit()
 
             # send email containing the password
