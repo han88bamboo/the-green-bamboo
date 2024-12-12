@@ -4,7 +4,7 @@
 
 import os
 import json
-# import smtplib
+# import smtplib # For local development
 import random
 import string
 
@@ -319,12 +319,14 @@ def sendResetPin(id):
     data = request.get_json()
     print(data)
     
-    # email_address = os.getenv('EMAIL_ADDRESS')
-    # password = os.getenv('PASSWORD')
+    # email_address and password (the 2 lines below) is for local development
+    # email_address = os.getenv('MAIL_USERNAME')
+    # password = os.getenv('MAIL_PASSWORD')
     pin = random.randint(100000, 999999)
     time = datetime.now()
     time = time.strftime("%Y-%m-%d %H:%M:%S")
     updatePin = str(pin) +',' + time
+
     try:
         # check user type
         if data["userType"] == "user":
@@ -365,10 +367,13 @@ def sendResetPin(id):
             ), 404
         
         conn.commit()
-
+        
+        # The 13 lines below is for local development (including empty lines)
         # mail_server = os.getenv('MAIL_SERVER')
         # mail_port = int(os.getenv('MAIL_PORT', 587))
         # mail_use_tls = os.getenv('MAIL_USE_TLS', 'false').lower() == 'true'
+
+
         # if mail_use_tls:
         #     server = smtplib.SMTP(mail_server, mail_port)
         #     server.ehlo()
@@ -379,6 +384,8 @@ def sendResetPin(id):
         # server.login(email_address, password)
 
         message = 'Subject: Drink-X Reset Password\n\n Your pin is {} and expires in 1 hour, please ignore this message if you did not try to reset your password, alternatively, you can email us'.format(pin)
+        
+        # The 2 lines below is for local development
         # server.sendmail(email_address, userRaw["email"], message)
         # server.quit()
         send_email_aws(

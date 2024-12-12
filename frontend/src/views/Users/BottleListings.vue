@@ -1288,7 +1288,8 @@
                         this.recentlyAdded = searchResults;
                     }
                 }
-        },
+            },
+
             clearSelection() {
                 // Handle the click event here
                 this.resetListings()
@@ -1302,322 +1303,323 @@
                 if(this.following){
                     this.getRecentlyAdded()
                 }
-        },
+            },
+
             clearCategory() {
                 // Handle the click event here
                 this.resetListings()
                 this.selectDrinkType(this.selectedDrinkType)
                 this.moreListings=true
-        },
+            },
 
-        // check if user has already added listing to shelf, add colour to button accordingly
-        checkDrinkLists(listing) {
-            const haveTried = this.drinkList.haveTried.includes(listing.listingName);
-            const wantToTry = this.drinkList.wantToTry.includes(listing.listingName);
+            // check if user has already added listing to shelf, add colour to button accordingly
+            checkDrinkLists(listing) {
+                const haveTried = this.drinkList.haveTried.includes(listing.listingName);
+                const wantToTry = this.drinkList.wantToTry.includes(listing.listingName);
 
-            const haveTriedButton = `
-            <button type="button" class="btn custom-drink-list-btn rounded-0 ${haveTried ? 'disabled' : ''}">
-                Have tried
-            </button>
-            `;
+                const haveTriedButton = `
+                <button type="button" class="btn custom-drink-list-btn rounded-0 ${haveTried ? 'disabled' : ''}">
+                    Have tried
+                </button>
+                `;
 
-            const wantToTryButton = `
-            <button type="button" class="btn custom-drink-list-btn rounded-0 ${wantToTry ? 'disabled' : ''}">
-                Want to try
-            </button>
-            `;
+                const wantToTryButton = `
+                <button type="button" class="btn custom-drink-list-btn rounded-0 ${wantToTry ? 'disabled' : ''}">
+                    Want to try
+                </button>
+                `;
 
-            return {
-                buttons: {
-                    haveTried: haveTriedButton,
-                    wantToTry: wantToTryButton,
-                }
-            }
-        },
-
-        // change status of discovery
-        changeDiscoveryStatus() {
-            if (!this.discovery) {
-                this.discovery = true;
-                this.moreListings = true;
-            } 
-            if (this.following) {
-                this.following = false;
-            }
-            this.clearSelection()
-        },
-
-        // change status of following
-        changeFollowingStatus() {
-            if (!this.following) {
-                this.following = true;
-                this.moreListings = true;
-            } 
-            if (this.discovery) {
-                this.discovery = false;
-            }
-            this.clearSelection()
-        },
-
-        // find drink name given listing
-        findDrinkNameForListing(listing) {
-            let drink_name = listing.listingName;
-            return drink_name;
-        },
-
-        // find drink name given reviewTarget
-        findDrinkNameForReview(reviewTarget) {
-                let drink = this.listings.find(listing => listing.id == reviewTarget["id"]);
-                if (drink) {
-                    let drink_name = drink.listingName; 
-                    return drink_name;
+                return {
+                    buttons: {
+                        haveTried: haveTriedButton,
+                        wantToTry: wantToTryButton,
+                    }
                 }
             },
 
-        // get all reviews that a producer has
-        getAllReviews() {
-            const reviewCounts = {};
-            // Iterate through all reviews
-            this.reviews.forEach(review => {
-                const reviewTargetName = this.findDrinkNameForReview(review.reviewTarget);
-                // Check if reviewTargetId is already in reviewCounts
-                if (reviewTargetName in reviewCounts) {
-                    reviewCounts[reviewTargetName]++;
-                } else {
-                    reviewCounts[reviewTargetName] = 1;
+            // change status of discovery
+            changeDiscoveryStatus() {
+                if (!this.discovery) {
+                    this.discovery = true;
+                    this.moreListings = true;
+                } 
+                if (this.following) {
+                    this.following = false;
                 }
-            });
+                this.clearSelection()
+            },
 
-            // Iterate through all drinks
-            this.listings.forEach(drink => {
-                const drinkName = drink.listingName;
-                // Check if drinkId is not in reviewCounts
-                if (! (drinkName in reviewCounts)) {
-                    reviewCounts[drinkName] = 0;
+            // change status of following
+            changeFollowingStatus() {
+                if (!this.following) {
+                    this.following = true;
+                    this.moreListings = true;
+                } 
+                if (this.discovery) {
+                    this.discovery = false;
                 }
-            });
+                this.clearSelection()
+            },
 
-            this.allReviews = reviewCounts;
-        },
-        
-        // get top 5 most reviewed items by producer
-        getMostReviews() {
-            this.mostReviews = []
-            let mostProducerReviews = Object.keys(this.allReviews).sort((a, b) => {
-                return this.allReviews[b] - this.allReviews[a];
-            }) // to get top five, add .slice(0, 5)
-            mostProducerReviews.forEach(drink => {
-                let review = this.getListingByName(drink);
-                if(review && review !=''){
-                    this.mostReviews.push(review);
-                }
-            });
-        },
+            // find drink name given listing
+            findDrinkNameForListing(listing) {
+                let drink_name = listing.listingName;
+                return drink_name;
+            },
 
-        // get listing by name
-        getListingByName(name) {
-            let listing = this.listings.find(listing => {
-                return listing.listingName == name;
-            });
-            return listing;
-        },
-
-        // get producers that user follows
-        getFollowedProducers() {
-            const user = this.users.find(user => {
-                return user["id"] == this.userID;
-            });
-            this.followedProducers = user.followLists.producers;
-        },
-
-        // get listings by producer
-        getListingsByProducer() {
-            this.followedProducers.forEach(producer => {
-                const producerListings = this.listings.filter(listing => listing.producerID == producer.id);
-                this.allProducerDrinks = producerListings;
-            });
-        },
-
-        // get venues that user follows
-        getFollowedVenues() {
-            const user = this.users.find(user => {
-                return user["id"] == this.userID;
-            });
-            if (user) {
-                this.followedVenues = user.followLists.venues;
-            }
-        },
-
-        // get listings by venue
-        getListingsByVenue() {
-            this.followedVenues.forEach(venue => {
-                const venueID = parseInt(venue);
-                const venueObject = this.venues.find(v => v.id === venueID);
-                let allMenuItems = venueObject["menu"]
-                let allSectionMenus = allMenuItems.reduce((acc, menuItem) => {
-                    return acc.concat(menuItem.sectionMenu);
-                }, []);
-
-                let allListingsIDs = allSectionMenus.reduce((acc, menuItem) => {
-                    return acc.concat(menuItem.itemID); 
-                }, []);
-
-                let uniqueListingsIDs = [...new Set(allListingsIDs.map(item => item))];
-                let allVenueDrinks = this.listings.filter(listing => {
-                    let listing_id = listing.id;
-                    return uniqueListingsIDs.includes(listing_id);
-                }).map(listing => ({ ...listing }));
-                this.allVenueDrinks = allVenueDrinks;
-            });
-        },
-
-        // get recently added
-        getRecentlyAdded() {
-            this.recentlyAdded = [...new Map(this.allProducerDrinks.concat(this.allVenueDrinks).map(item => [item.id, item])).values()];
-        },
-
-        getQuestionsUpdates() {
-            // get all following producers updates
-            const producerUpdates = this.producers
-                .filter(producer => JSON.stringify(this.followedProducers).includes(JSON.stringify(producer.id)))
-                .reduce((arr, producer) => {
-                    if (producer.updates && producer.updates.length > 0) {
-                        let updatesWithProducerName = producer.updates.map(update => ({
-                            ...update,
-                            name: producer.producerName, 
-                            id: producer.id,
-                            photo: producer.photo,
-                            type: 'producerUpdate'
-                        }));
-                        arr.push(...updatesWithProducerName);
+            // find drink name given reviewTarget
+            findDrinkNameForReview(reviewTarget) {
+                    let drink = this.listings.find(listing => listing.id == reviewTarget["id"]);
+                    if (drink) {
+                        let drink_name = drink.listingName; 
+                        return drink_name;
                     }
-                    return arr;
-                }, []);
+                },
 
-            // get all following venues updates
-            const venueUpdates = this.venues
-                .filter(venue => JSON.stringify(this.followedVenues).includes(JSON.stringify(venue.id)))
-                .reduce((arr, venue) => {
-                    if (venue.updates && venue.updates.length > 0) {
-                        let updatesWithVenueName = venue.updates.map(update => ({
-                            ...update,
-                            name: venue.venueName, 
-                            id: venue.id,
-                            photo: venue.photo,
-                            type: 'venueUpdate'
-                        }));
-                        arr.push(...updatesWithVenueName);
+            // get all reviews that a producer has
+            getAllReviews() {
+                const reviewCounts = {};
+                // Iterate through all reviews
+                this.reviews.forEach(review => {
+                    const reviewTargetName = this.findDrinkNameForReview(review.reviewTarget);
+                    // Check if reviewTargetId is already in reviewCounts
+                    if (reviewTargetName in reviewCounts) {
+                        reviewCounts[reviewTargetName]++;
+                    } else {
+                        reviewCounts[reviewTargetName] = 1;
                     }
-                    return arr;
-                }, []);
+                });
 
-            // get all following producers questions with answers
-            const producerQuestions = this.producers
-                .filter(producer => JSON.stringify(this.followedProducers).includes(JSON.stringify(producer.id)))
-                .reduce((arr, producer) => {
-                    if (producer.questionsAnswers && producer.questionsAnswers.some(qa => qa.answer)) {
-                        let questionsWithProducerName = producer.questionsAnswers.map(question => ({
-                            ...question,
-                            name: producer.producerName, 
-                            type: 'producerQuestion'
-                        }));
-                        arr.push(...questionsWithProducerName);
+                // Iterate through all drinks
+                this.listings.forEach(drink => {
+                    const drinkName = drink.listingName;
+                    // Check if drinkId is not in reviewCounts
+                    if (! (drinkName in reviewCounts)) {
+                        reviewCounts[drinkName] = 0;
                     }
-                    return arr;
-                }, []);
+                });
 
-            // get all following venues questions with answers
-            const venueQuestions = this.venues
-                .filter(venue => JSON.stringify(this.followedVenues).includes(JSON.stringify(venue.id)))
-                .reduce((arr, venue) => {
-                    if (venue.questionsAnswers && venue.questionsAnswers.some(qa => qa.answer)) {
-                        let questionsWithVenueName = venue.questionsAnswers.map(question => ({
-                            ...question,
-                            name: venue.venueName, 
-                            type: 'venueQuestion'
-                        }));
-                        arr.push(...questionsWithVenueName);
-                    }
-                    return arr;
-                }, []);
-
-            this.questionsUpdates = [...producerUpdates, ...venueUpdates, ...producerQuestions, ...venueQuestions];
-
-            // TO REMOVE after date is added to question answers
-            this.questionsUpdates = [...producerUpdates, ...venueUpdates];
+                this.allReviews = reviewCounts;
+            },
             
-            // sort by date
-            this.questionsUpdates.sort((a, b) => {
-                return new Date(b.date) - new Date(a.date);
-            });
-
-           
-        }, 
-
-        // get time difference
-        getTimeDifference(date) {
-            let currentDate = new Date();
-            let updateDate = new Date(date);
-            let timeDifference = currentDate - updateDate;
-            let seconds = Math.floor(timeDifference / 1000);
-            let minutes = Math.floor(seconds / 60);
-            let hours = Math.floor(minutes / 60);
-            let days = Math.floor(hours / 24);
-            let months = Math.floor(days / 30);
-            let years = Math.floor(months / 12);
-            if (years > 0) {
-                return years + (years === 1 ? ' year ago' : ' years ago');
-            } else if (months > 0) {
-                return months + (months === 1 ? ' month ago' : ' months ago');
-            } else if (days > 0) {
-                return days + (days === 1 ? ' day ago' : ' days ago');
-            } else if (hours > 0) {
-                return hours + (hours === 1 ? ' hour ago' : ' hours ago');
-            } else if (minutes > 0) {
-                return minutes + (minutes === 1 ? ' minute ago' : ' minutes ago');
-            } else {
-                return seconds + (seconds === 1 ? ' second ago' : ' seconds ago');
-            }
-        }, 
-
-        // for bookmark component
-        handleIconClick(data) {
-            this.bookmarkListingID = data
-        },
-
-        async retrieveListings(){
-            // if selectedDrinkType not empty, meaning listings are filtered, retrieve based off the drink type and/or drink category
-            if(this.discovery){
-                if(this.selectedDrinkType != ''){
-                    let lastFilteredId = 0
-                    if(this.filteredListings.length>0){
-                        lastFilteredId = this.filteredListings[this.filteredListings.length-1].id
+            // get top 5 most reviewed items by producer
+            getMostReviews() {
+                this.mostReviews = []
+                let mostProducerReviews = Object.keys(this.allReviews).sort((a, b) => {
+                    return this.allReviews[b] - this.allReviews[a];
+                }) // to get top five, add .slice(0, 5)
+                mostProducerReviews.forEach(drink => {
+                    let review = this.getListingByName(drink);
+                    if(review && review !=''){
+                        this.mostReviews.push(review);
                     }
-                    let params = {
-                        "drinkType" : this.selectedDrinkType.drinkType,
-                        "drinkCategory": this.selectedCategory
+                });
+            },
+
+            // get listing by name
+            getListingByName(name) {
+                let listing = this.listings.find(listing => {
+                    return listing.listingName == name;
+                });
+                return listing;
+            },
+
+            // get producers that user follows
+            getFollowedProducers() {
+                const user = this.users.find(user => {
+                    return user["id"] == this.userID;
+                });
+                this.followedProducers = user.followLists.producers;
+            },
+
+            // get listings by producer
+            getListingsByProducer() {
+                this.followedProducers.forEach(producer => {
+                    const producerListings = this.listings.filter(listing => listing.producerID == producer.id);
+                    this.allProducerDrinks = producerListings;
+                });
+            },
+
+            // get venues that user follows
+            getFollowedVenues() {
+                const user = this.users.find(user => {
+                    return user["id"] == this.userID;
+                });
+                if (user) {
+                    this.followedVenues = user.followLists.venues;
+                }
+            },
+
+            // get listings by venue
+            getListingsByVenue() {
+                this.followedVenues.forEach(venue => {
+                    const venueID = parseInt(venue);
+                    const venueObject = this.venues.find(v => v.id === venueID);
+                    let allMenuItems = venueObject["menu"]
+                    let allSectionMenus = allMenuItems.reduce((acc, menuItem) => {
+                        return acc.concat(menuItem.sectionMenu);
+                    }, []);
+
+                    let allListingsIDs = allSectionMenus.reduce((acc, menuItem) => {
+                        return acc.concat(menuItem.itemID); 
+                    }, []);
+
+                    let uniqueListingsIDs = [...new Set(allListingsIDs.map(item => item))];
+                    let allVenueDrinks = this.listings.filter(listing => {
+                        let listing_id = listing.id;
+                        return uniqueListingsIDs.includes(listing_id);
+                    }).map(listing => ({ ...listing }));
+                    this.allVenueDrinks = allVenueDrinks;
+                });
+            },
+
+            // get recently added
+            getRecentlyAdded() {
+                this.recentlyAdded = [...new Map(this.allProducerDrinks.concat(this.allVenueDrinks).map(item => [item.id, item])).values()];
+            },
+
+            getQuestionsUpdates() {
+                // get all following producers updates
+                const producerUpdates = this.producers
+                    .filter(producer => JSON.stringify(this.followedProducers).includes(JSON.stringify(producer.id)))
+                    .reduce((arr, producer) => {
+                        if (producer.updates && producer.updates.length > 0) {
+                            let updatesWithProducerName = producer.updates.map(update => ({
+                                ...update,
+                                name: producer.producerName, 
+                                id: producer.id,
+                                photo: producer.photo,
+                                type: 'producerUpdate'
+                            }));
+                            arr.push(...updatesWithProducerName);
+                        }
+                        return arr;
+                    }, []);
+
+                // get all following venues updates
+                const venueUpdates = this.venues
+                    .filter(venue => JSON.stringify(this.followedVenues).includes(JSON.stringify(venue.id)))
+                    .reduce((arr, venue) => {
+                        if (venue.updates && venue.updates.length > 0) {
+                            let updatesWithVenueName = venue.updates.map(update => ({
+                                ...update,
+                                name: venue.venueName, 
+                                id: venue.id,
+                                photo: venue.photo,
+                                type: 'venueUpdate'
+                            }));
+                            arr.push(...updatesWithVenueName);
+                        }
+                        return arr;
+                    }, []);
+
+                // get all following producers questions with answers
+                const producerQuestions = this.producers
+                    .filter(producer => JSON.stringify(this.followedProducers).includes(JSON.stringify(producer.id)))
+                    .reduce((arr, producer) => {
+                        if (producer.questionsAnswers && producer.questionsAnswers.some(qa => qa.answer)) {
+                            let questionsWithProducerName = producer.questionsAnswers.map(question => ({
+                                ...question,
+                                name: producer.producerName, 
+                                type: 'producerQuestion'
+                            }));
+                            arr.push(...questionsWithProducerName);
+                        }
+                        return arr;
+                    }, []);
+
+                // get all following venues questions with answers
+                const venueQuestions = this.venues
+                    .filter(venue => JSON.stringify(this.followedVenues).includes(JSON.stringify(venue.id)))
+                    .reduce((arr, venue) => {
+                        if (venue.questionsAnswers && venue.questionsAnswers.some(qa => qa.answer)) {
+                            let questionsWithVenueName = venue.questionsAnswers.map(question => ({
+                                ...question,
+                                name: venue.venueName, 
+                                type: 'venueQuestion'
+                            }));
+                            arr.push(...questionsWithVenueName);
+                        }
+                        return arr;
+                    }, []);
+
+                this.questionsUpdates = [...producerUpdates, ...venueUpdates, ...producerQuestions, ...venueQuestions];
+
+                // TO REMOVE after date is added to question answers
+                this.questionsUpdates = [...producerUpdates, ...venueUpdates];
+                
+                // sort by date
+                this.questionsUpdates.sort((a, b) => {
+                    return new Date(b.date) - new Date(a.date);
+                });
+
+            
+            }, 
+
+            // get time difference
+            getTimeDifference(date) {
+                let currentDate = new Date();
+                let updateDate = new Date(date);
+                let timeDifference = currentDate - updateDate;
+                let seconds = Math.floor(timeDifference / 1000);
+                let minutes = Math.floor(seconds / 60);
+                let hours = Math.floor(minutes / 60);
+                let days = Math.floor(hours / 24);
+                let months = Math.floor(days / 30);
+                let years = Math.floor(months / 12);
+                if (years > 0) {
+                    return years + (years === 1 ? ' year ago' : ' years ago');
+                } else if (months > 0) {
+                    return months + (months === 1 ? ' month ago' : ' months ago');
+                } else if (days > 0) {
+                    return days + (days === 1 ? ' day ago' : ' days ago');
+                } else if (hours > 0) {
+                    return hours + (hours === 1 ? ' hour ago' : ' hours ago');
+                } else if (minutes > 0) {
+                    return minutes + (minutes === 1 ? ' minute ago' : ' minutes ago');
+                } else {
+                    return seconds + (seconds === 1 ? ' second ago' : ' seconds ago');
+                }
+            }, 
+
+            // for bookmark component
+            handleIconClick(data) {
+                this.bookmarkListingID = data
+            },
+
+            async retrieveListings(){
+                // if selectedDrinkType not empty, meaning listings are filtered, retrieve based off the drink type and/or drink category
+                if(this.discovery){
+                    if(this.selectedDrinkType != ''){
+                        let lastFilteredId = 0
+                        if(this.filteredListings.length>0){
+                            lastFilteredId = this.filteredListings[this.filteredListings.length-1].id
+                        }
+                        let params = {
+                            "drinkType" : this.selectedDrinkType.drinkType,
+                            "drinkCategory": this.selectedCategory
+                        }
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getFiltered30` + '/' + lastFilteredId, { params });
+                        this.filteredListings.push(...response.data);
+                        if(response.data.length == 0){
+                            this.moreListings = false
+                        }
                     }
-                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getFiltered30` + '/' + lastFilteredId, { params });
-                    this.filteredListings.push(...response.data);
-                    if(response.data.length == 0){
-                        this.moreListings = false
+                    // if not, meaning listings are not filtered, retrieve next 30 listings in DB
+                    else{
+                        let lastId = this.listings[this.listings.length-1].id
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getNext30` + '/' + lastId);
+                        this.listings.push(...response.data);
+                        if(response.data.length == 0){
+                            this.moreListings = false
+                        }
                     }
                 }
-                // if not, meaning listings are not filtered, retrieve next 30 listings in DB
-                else{
-                    let lastId = this.listings[this.listings.length-1].id
-                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getNext30` + '/' + lastId);
-                    this.listings.push(...response.data);
-                    if(response.data.length == 0){
-                        this.moreListings = false
-                    }
-                }
+                //TODO: Add in lazy loading for following
             }
-            //TODO: Add in lazy loading for following
+
         }
-
-    }
-};
+    };
 </script>
 
 

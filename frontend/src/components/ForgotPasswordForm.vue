@@ -14,8 +14,11 @@
         <p v-if="email.length > 0 && !emailIsValid" class="text-danger">Please enter a valid email address</p>
         <!-- Error message if email is not valid -->
         <p v-if="resetStage == 'email' && userNotFound" class="text-danger">User not found</p>
+        <!-- Error message if sending email encounters error -->
+        <p v-if="resetStage == 'email' && sendPinError" class="text-danger">{{sendPinError}}</p>
         <!-- Success message if OTP is sent -->
         <p v-if="resetStage == 'otp' && sendPinSuccess" class="text-success">{{sendPinSuccess}}</p>
+
 
 
         <!-- 2nd Stage: Input box to enter OTP -->
@@ -28,8 +31,11 @@
         <!-- 3rd Stage: Input boxes to enter new password -->
         <input type="password" v-if="resetStage == 'password'" v-model="newPassword" placeholder="Enter new password" class="rounded p-2" required>
         <input type="password" v-if="resetStage == 'password'" v-model="confirmPassword" placeholder="Confirm new password" class="rounded p-2" required>
+        <!-- Loading message -->
         <!-- Error message if both password do not match -->
         <p v-if="resetStage == 'password' && newPassword != confirmPassword" class="text-danger">Passwords do not match</p>
+        <!-- Success message -->
+        <p v-if="resetStage == 'password' && resetSuccessMsg" class="text-success">{{resetSuccessMsg}}</p>
 
 
 
@@ -44,7 +50,7 @@
             <button v-if="resetStage == 'otp'" @click="verifyOTP" class="btn secondary-btn-border-thick btn-md px-3">Verify OTP</button>
 
             <!-- Button to reset password -->
-            <button v-if="resetStage == 'password'" @click="resetPassword" class="btn secondary-btn-border-thick btn-md px-3">Reset Password</button>
+            <button v-if="resetStage == 'password' && newPassword == confirmPassword" @click="resetPassword" class="btn secondary-btn-border-thick btn-md px-3">Reset Password</button>
         </div>
     </div>  
 
@@ -84,6 +90,7 @@ export default {
             // password stage variables
             newPassword: "",
             confirmPassword: "",
+            resetSuccessMsg: "",
 
         }
     },
@@ -141,6 +148,7 @@ export default {
             }
             else{
                 this.sendPinError = "Error sending OTP, please try again in 60 seconds"
+                this.resetStage = "email"
             }
         },
 
@@ -196,7 +204,7 @@ export default {
                     // Wait for 3 seconds before returning to login page
                     setTimeout(() => {
                         this.returnToLogin()
-                    }, 3000);
+                    }, 5000);
                 })
                 .catch((error)=>{
                     console.error(error);
