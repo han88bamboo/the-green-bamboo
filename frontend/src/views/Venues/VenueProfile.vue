@@ -2137,9 +2137,9 @@
                             </div>
 
                             <!-- Section Content (Edit Mode) -->
-                            <!-- <div v-if="editAddress">
+                            <div v-if="editAddress">
                                 <textarea v-model="newAddress" class="form-control" id="addressTextArea" rows="3" placeholder="Enter venue address"></textarea>
-                            </div> -->
+                            </div>
 
                             <!-- Section Content (View Mode) -->
                             <div>
