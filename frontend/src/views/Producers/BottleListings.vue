@@ -386,21 +386,26 @@
                     
                     <!-- have tried button -->
                     <div class="col-2 col-lg-2 p-0">
-                        <div v-if="user && Object.keys(user.drinkLists).length > 0" v-html="checkDrinkLists(specified_listing).buttons.haveTried" class="d-grid" @click="addToTriedList"> </div>
+                        <!-- <div v-if="user && Object.keys(user.drinkLists).length > 0" v-html="checkDrinkLists(specified_listing).buttons.haveTried" class="d-grid" @click="addToTriedList"> </div> -->
+                        <!-- CP edits: Removed the if logic so public users can also view and click -->
+                        <div v-html="checkDrinkLists(specified_listing).buttons.haveTried" class="d-grid" @click="addToTriedList"> </div>
                     </div>
                     <!-- want to try button -->
                     <div class="col-2 col-lg-2 p-0">
-                        <div v-if="user && Object.keys(user.drinkLists).length > 0" v-html="checkDrinkLists(specified_listing).buttons.wantToTry" class="d-grid" @click="addToWantList"> </div>
+                        <!-- <div v-if="user && Object.keys(user.drinkLists).length > 0" v-html="checkDrinkLists(specified_listing).buttons.wantToTry" class="d-grid" @click="addToWantList"> </div> -->
+                        <!-- CP edits: Removed the if logic so public users can also view and click -->
+                        <div v-html="checkDrinkLists(specified_listing).buttons.wantToTry" class="d-grid" @click="addToWantList"> </div>
                     </div>
                     <!-- bookmark button -->
                     <div class="col-1 col-lg-1 text-center d-flex justify-content-start make-bookmark-bigger" >
+                        <!-- CP edits: removed v-if logic for public users to view and click -->
                         <BookmarkIcon 
-                            v-if="user" 
                             :user="user" 
                             :listing="specified_listing" 
                             :overlay="false"
                             size="30"
                             @icon-clicked="handleIconClick" />
+
                     </div>
                     
                 </div>
@@ -531,7 +536,7 @@
                         </div>
 
                     </div>
-                    <div v-else-if="userType == 'user'" class="col-5 mobile-view-hide">
+                    <div v-if="userID == 'defaultUser'" class="col-5 mobile-view-hide">
                         <div class="d-grid gap-2">
                             <router-link :to="{ path: '/login' }" class="reverse-clickable-text">
                                 <button class="btn primary-btn-less-round btn-lg"> 
@@ -775,7 +780,7 @@
                                     <!-- row 7: colours -->
                                     <div class="row">
                                         <div class="col-6 col-md-12 justify-content-start">
-                                            <p class = 'text-start mb-2 fw-bold'>Colour <span class="text-danger">*</span></p>
+                                            <p class = 'text-start mb-2 fw-bold'>Colour</p>
                                         </div>
                                     </div>
 
@@ -828,15 +833,15 @@
                                     <div class="row pt-2">
                                         <div class = 'col justify-content-start mb-3'>
                                             <div class="form-group mb-3">
-                                                <p class='text-start mb-2 fw-bold'>Aroma<span class="text-danger">*</span></p>
+                                                <p class='text-start mb-2 fw-bold'>Aroma</p>
                                                 <input v-model="aroma" type="text" class="form-control" id="aroma">
                                             </div>
                                             <div class="form-group mb-3">
-                                                <p class='text-start mb-2 fw-bold'>Taste<span class="text-danger">*</span></p>
+                                                <p class='text-start mb-2 fw-bold'>Taste</p>
                                                 <input v-model="taste" type="text" class="form-control" id="taste">
                                             </div>
                                             <div class="form-group mb-2">
-                                                <p class='text-start mb-2 fw-bold'>Finish<span class="text-danger">*</span></p>
+                                                <p class='text-start mb-2 fw-bold'>Finish</p>
                                                 <input v-model="finish" type="text" class="form-control" id="finish">
                                             </div>
                                         </div>
@@ -2697,6 +2702,12 @@
             },
             async addToTriedList(){
                 
+                // CP edits: Check if user is logged in
+                if (this.userID == "defaultUser") {
+                    // Redirect to login page
+                    this.$router.push('/login');
+                    return;
+                }
                 
                 let responseCode = "";
                 
@@ -2723,6 +2734,14 @@
                 }
             },
             async addToWantList(){
+
+                // CP edits: Check if user is logged in
+                if (this.userID == "defaultUser") {
+                    // Redirect to login page
+                    this.$router.push('/login');
+                    return;
+                }
+
                 let responseCode = "";
                 
                 let submitData = {
@@ -2836,7 +2855,12 @@
             },
             // for bookmark component
             handleIconClick(data) {
-                this.bookmarkListingID = data
+                if (data == 'login') {
+                    this.$router.push('/login');
+                }
+                else {
+                    this.bookmarkListingID = data
+                }
             },
 
             // Get current location using browser's Geolocation API

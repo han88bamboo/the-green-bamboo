@@ -139,6 +139,7 @@
                                     <div style="height: 85%;">
                                         <div v-if="questionsUpdates.length > 0" class="overflow-auto" style="max-height: 100%;">
                                             <div v-for="(update, index) in questionsUpdates" :key="index">
+                                                <!--Show if it's either producer or venue update-->
                                                 <span v-if="update.type == 'producerUpdate' || update.type == 'venueUpdate'">
                                                         <router-link v-if="update.type == 'producerUpdate'" :to="{ path: '/profile/producer/' + update.id }" class="reverse-text">
                                                             <img :src="(update.photo || defaultProfilePhoto)" style="width: 35px; height: 35px;" class="img-border">
@@ -154,6 +155,8 @@
                                                     <i>{{ getTimeDifference(update.date) }}</i>
                                                     <br><br>
                                                 </span>
+
+                                                <!-- Show if it's either producer or venue question? (Kai Lin wants to show newly added expressions)-->
                                             </div>
                                         </div>
                                         <div v-else-if="userID" style="display: flex; align-items: center; justify-content: center; height: 100%;">
@@ -1531,7 +1534,7 @@
                         }
                         return arr;
                     }, []);
-
+                console.log(producerQuestions)
                 // get all following venues questions with answers
                 const venueQuestions = this.venues
                     .filter(venue => JSON.stringify(this.followedVenues).includes(JSON.stringify(venue.id)))
@@ -1548,10 +1551,10 @@
                     }, []);
 
                 this.questionsUpdates = [...producerUpdates, ...venueUpdates, ...producerQuestions, ...venueQuestions];
-
-                // TO REMOVE after date is added to question answers
-                this.questionsUpdates = [...producerUpdates, ...venueUpdates];
                 
+                // TO REMOVE after date is added to question answers
+                // this.questionsUpdates = [...producerUpdates, ...venueUpdates];
+
                 // sort by date
                 this.questionsUpdates.sort((a, b) => {
                     return new Date(b.date) - new Date(a.date);
