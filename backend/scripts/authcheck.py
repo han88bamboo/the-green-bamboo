@@ -388,7 +388,7 @@ def sendResetPin(id):
         # The 2 lines below is for local development
         # server.sendmail(email_address, userRaw["email"], message)
         # server.quit()
-        send_email_aws(
+        send_email(
             subject="Drink-X Reset Password",
             recipient=userRaw["email"],
             body=message,
@@ -602,7 +602,7 @@ def resetPassword(id):
             message = 'Subject: Drink-X Reset Password\n\n Your new password is {}, please email us if you did not authorise this'.format(password)
             # server.sendmail(email_address, userRaw["email"], message)
             # server.quit()
-            send_email_aws(
+            send_email(
                 subject="Drink-X Reset Password",
                 recipient=userRaw["email"],
                 body=message,
