@@ -4,7 +4,7 @@
 
 import os
 import json
-# import smtplib # For local development
+import smtplib # For local development
 import random
 import string
 
@@ -320,8 +320,9 @@ def sendResetPin(id):
     print(data)
     
     # email_address and password (the 2 lines below) is for local development
-    # email_address = os.getenv('MAIL_USERNAME')
-    # password = os.getenv('MAIL_PASSWORD')
+    email_address = os.getenv('MAIL_USERNAME')
+    password = os.getenv('MAIL_PASSWORD')
+
     pin = random.randint(100000, 999999)
     time = datetime.now()
     time = time.strftime("%Y-%m-%d %H:%M:%S")
@@ -369,30 +370,32 @@ def sendResetPin(id):
         conn.commit()
         
         # The 13 lines below is for local development (including empty lines)
-        # mail_server = os.getenv('MAIL_SERVER')
-        # mail_port = int(os.getenv('MAIL_PORT', 587))
-        # mail_use_tls = os.getenv('MAIL_USE_TLS', 'false').lower() == 'true'
+        mail_server = os.getenv('MAIL_SERVER')
+        mail_port = int(os.getenv('MAIL_PORT', 587))
+        mail_use_tls = os.getenv('MAIL_USE_TLS', 'false').lower() == 'true'
 
 
-        # if mail_use_tls:
-        #     server = smtplib.SMTP(mail_server, mail_port)
-        #     server.ehlo()
-        #     server.starttls()
-        # else:
-        #     server = smtplib.SMTP_SSL(mail_server, mail_port)
+        if mail_use_tls:
+            server = smtplib.SMTP(mail_server, mail_port)
+            server.ehlo()
+            server.starttls()
+        else:
+            server = smtplib.SMTP_SSL(mail_server, mail_port)
 
-        # server.login(email_address, password)
+        server.login(email_address, password)
 
         message = 'Subject: Drink-X Reset Password\n\n Your pin is {} and expires in 1 hour, please ignore this message if you did not try to reset your password, alternatively, you can email us'.format(pin)
         
         # The 2 lines below is for local development
-        # server.sendmail(email_address, userRaw["email"], message)
-        # server.quit()
-        send_email_aws(
-            subject="Drink-X Reset Password",
-            recipient=userRaw["email"],
-            body=message,
-        )
+        server.sendmail(email_address, userRaw["email"], message)
+        server.quit()
+
+        # The 5 lines below is used for the deployed version
+        # send_email_aws(
+        #     subject="Drink-X Reset Password",
+        #     recipient=userRaw["email"],
+        #     body=message,
+        # )
         # print(email_address)
         print("Success: Email sent!")
         
@@ -513,8 +516,10 @@ def resetPassword(id):
 
     data = request.get_json()
     print(data)
-    # email_address = os.getenv('EMAIL_ADDRESS')
-    # email_password = os.getenv('PASSWORD')
+
+    # email_address and password (the 2 lines below) is for local development
+    mail_email_address = os.getenv('MAIL_USERNAME')
+    mail_password = os.getenv('MAIL_PASSWORD')
     try:
         # check user type
         if data["userType"] == "user":
@@ -577,36 +582,42 @@ def resetPassword(id):
             # Update the hash with new hash and remove the pin used to prevent re-reset
             if data["userType"] == "user":
                 # updatePassword = db.users.update_one({'_id': ObjectId(id)}, {'$set': {'hashedPassword': str(hash), 'pin':''}})
-                cur.execute('UPDATE users SET hashedPassword = %s, pin = %s WHERE id = %s', (str(hash), '' ,id,))
+                cur.execute('UPDATE users SET "hashedPassword" = %s, pin = %s WHERE id = %s', (str(hash), '' ,id,))
             if data["userType"] == "producer":
                 # updatePassword = db.producers.update_one({'_id': ObjectId(id)}, {'$set': {'hashedPassword': str(hash), 'pin':''}})
-                cur.execute('UPDATE producers set hashedPassword = %s, pin = %s WHERE id = %s', (str(hash), '' ,id,))
+                cur.execute('UPDATE producers set "hashedPassword" = %s, pin = %s WHERE id = %s', (str(hash), '' ,id,))
             if data["userType"] == "venue":
                 # updatePassword = db.venues.update_one({'_id': ObjectId(id)}, {'$set': {'hashedPassword': str(hash), 'pin':''}})
-                cur.execute('UPDATE venues set hashedPassword = %s, pin = %s WHERE id = %s', (str(hash), '' ,id,))
+                cur.execute('UPDATE venues set "hashedPassword" = %s, pin = %s WHERE id = %s', (str(hash), '' ,id,))
             conn.commit()
 
-            # send email containing the password
-            # mail_server = os.getenv('MAIL_SERVER')
-            # mail_port = int(os.getenv('MAIL_PORT', 587))
-            # mail_use_tls = os.getenv('MAIL_USE_TLS', 'false').lower() == 'true'
-            # if mail_use_tls:
-            #     server = smtplib.SMTP(mail_server, mail_port)
-            #     server.ehlo()
-            #     server.starttls()
-            # else:
-            #     server = smtplib.SMTP_SSL(mail_server, mail_port)
+            print("email server not working")
 
-            # server.login(email_address, password)
+            # send email containing the password (The 13 lines below is for local development)
+            mail_server = os.getenv('MAIL_SERVER')
+            mail_port = int(os.getenv('MAIL_PORT', 587))
+            mail_use_tls = os.getenv('MAIL_USE_TLS', 'false').lower() == 'true'
+            if mail_use_tls:
+                server = smtplib.SMTP(mail_server, mail_port)
+                server.ehlo()
+                server.starttls()
+            else:
+                server = smtplib.SMTP_SSL(mail_server, mail_port)
+
+            server.login(mail_email_address, mail_password)
 
             message = 'Subject: Drink-X Reset Password\n\n Your new password is {}, please email us if you did not authorise this'.format(password)
-            # server.sendmail(email_address, userRaw["email"], message)
-            # server.quit()
-            send_email_aws(
-                subject="Drink-X Reset Password",
-                recipient=userRaw["email"],
-                body=message,
-            )
+            
+            # The 2 lines below is for local development
+            server.sendmail(mail_email_address, userRaw["email"], message)
+            server.quit()
+
+            # The 5 lines below is used for the deployed version
+            # send_email_aws(
+            #     subject="Drink-X Reset Password",
+            #     recipient=userRaw["email"],
+            #     body=message,
+            # )
             print("Success: Email sent!")
 
             return jsonify(
