@@ -227,13 +227,14 @@ def createReviews():
         cur.execute("""SELECT id FROM venues WHERE "venueName" = %s AND "address" = %s""", (location_name, address))
         venue = cur.fetchone()
         if not venue:
-            username = create_username(location_name, conn)
-            insert_venue_sql = """INSERT INTO venues ("venueName", "address", "venueType", "originLocation", "venueDesc", menu,
+            username = create_username(location_name)
+            insert_venue_sql = """INSERT INTO venues ("venueName", "address", "venueType", "originLocation", "venueDesc",
                                   "hashedPassword", "claimStatus", photo, "reservationDetails", username)
-                                  VALUES (%s, %s, '', '', '', NULL, %s, FALSE, '', '', %s) RETURNING id"""
+                                  VALUES (%s, %s, '', '', '', %s, FALSE, '', '', %s) RETURNING id"""
             hashed_password = 'hashed_password'  # Replace with actual password hashing logic
             cur.execute(insert_venue_sql, (location_name, address, hashed_password, username))
-            venue_id = cur.fetchone()[0]
+            venue_id = cur.fetchone()['id']
+            print(venue_id)
             conn.commit()
 
     # Upload image into S3
@@ -268,22 +269,4 @@ def createReviews():
             },
             "message": "An error occurred creating the listing."
         }), 500
-
-    try:
-        cur.execute(insert_review_sql, review_values)
-        conn.commit()
-        return jsonify({
-            "code": 201,
-            "data": raw_review['reviewDesc']
-        }), 201
-    except Exception as e:
-        print(str(e))
-        return jsonify({
-            "code": 500,
-            "data": {
-                "listingName": raw_review['reviewDesc']
-            },
-            "message": "An error occurred creating the listing."
-        }), 500
-
 # ======================================================
