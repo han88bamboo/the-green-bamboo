@@ -516,7 +516,7 @@
                                 </h3>
                                 <!-- v-loop for each review -->
                                 <div class="container text-start">
-                                    <h5 v-if="latestReviews==''" style="display: inline-block;"> There is no listing available for the selected filter </h5>
+                                    <h5 v-if="latestReviews.length == 0" style="display: inline-block;"> There is no listing available for the selected filter </h5>
                                     <div v-else v-for="review in latestReviews" v-bind:key="review.id" class="p-3 mobile-pt-0">
 
                                         <!-- For latest reviews -->
@@ -893,7 +893,12 @@
                         this.getListingsByVenue()
                         this.getRecentlyAdded()
                         this.getQuestionsUpdates();
-                        this.getUsersLatestReviews()
+                        
+                        if (this.user.followLists.users.length > 0) {
+                            this.userFollowing = this.user.followLists.users;
+                            // Get the latest reviews from users that the current user is following
+                            this.getUsersLatestReviews()
+                        }
                         // check if user is an admin
                         if (this.user.isAdmin) {
                             this.isAdmin = true
@@ -1516,9 +1521,15 @@
 
                 // Get the list of users that the current user is following
                 let user_ids = this.user.followLists.users.join(",");
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getReviewsByUserIds?user_ids=${user_ids}`);
-                this.latestReviews = response.data.data;
-                console.log(this.latestReviews);
+
+                try {
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getReviewsByUserIds?user_ids=${user_ids}`);
+                    this.latestReviews = response.data.data;
+                }
+                catch (error) {
+                    console.error(error);
+                    this.latestReviews = [];
+                }
             },
 
             // get producers that user follows
