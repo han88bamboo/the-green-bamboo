@@ -60,7 +60,7 @@
                         <div v-if="userType == 'user' || userType == ''" class="row">
                             <!-- [moderator] listing requests -->
                             <div v-if="isAdmin || isModerator" class="col-12">
-                                <div class="square primary-square rounded p-3 mb-3">
+                                <div class="square primary-square-green-outline rounded p-3 mb-3">
                                     <!-- header text -->
                                     <div class="square-inline text-start">
                                         <span v-if="totalRequests != 0" class="square-inline text-start mr-auto">
@@ -81,15 +81,15 @@
                                                 <span class="title-card-text"> {{requestDupes.length}} </span> Duplicate Reports
                                             </p>
                                             <router-link :to="{ path: '/request/view' }">
-                                                <button class="btn secondary-btn-border btn-sm py-2 px-3" style="font-weight: bold;"> View all requests </button>
-                                            </router-link>
+                                                <button class="btn secondary-btn-blue btn-sm py-2 px-3" style="font-weight: bold;"> View all requests </button>
+                                            </router-link> <!-- TZH changed secondary-btn-border to secondary-btn-blue -->
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <!-- your drinks shelf -->
                             <div class="col-12">
-                                <div class="square primary-square rounded p-3 mb-3 text-start" style="height: 325px;">
+                                <div class="square primary-square-green rounded p-3 mb-3 text-start" style="height: 325px;">
                                     <!-- header text -->
                                     <div class="square-inline">
                                         <router-link :to="{ path: '/profile/user/'+userID }" class="reverse-clickable-text">
@@ -130,7 +130,7 @@
                             </div>
                             <!-- brands you follow -->
                             <div class="col-12">
-                                <div class="square primary-square rounded p-3 mb-3 text-start" style="height: 325px;">
+                                <div class="square primary-square-green rounded p-3 mb-3 text-start" style="height: 325px;">
                                     <!-- header text -->
                                     <div class="square-inline">
                                         <h4 class="square-inline text-start mr-auto"> Brands You Follow </h4>
@@ -175,8 +175,8 @@
                         <!-- [producer] listing requests / fan questions / activity -->
                         <div v-else-if="userType == 'producer'" class="row">
                             <!-- listing requests -->
-                            <div class="col-12">
-                                <div class="square primary-square rounded p-3 mb-3">
+                            <div class="col-12"> 
+                                <div class="square primary-square-green-outline rounded p-3 mb-3"> <!--tzh changed to green outline -->
                                     <!-- header text -->
                                     <div class="square-inline text-start">
                                         <span v-if="totalRequests != 0" class="square-inline text-start mr-auto">
@@ -205,7 +205,7 @@
                             </div>
                             <!-- fan questions -->
                             <div class="col-12">
-                                <div class="square primary-square rounded p-3 mb-3">
+                                <div class="square primary-square-green-outline rounded p-3 mb-3">   <!--tzh changed to green outline -->
                                     <!-- header text -->
                                     <div class="square-inline">
                                         <span v-if="unansweredQuestions.length != 0" class="square-inline text-start mr-auto">
@@ -227,7 +227,7 @@
                             </div>
                             <!-- activity -->
                             <div class="col-12">
-                                <div class="square primary-square rounded p-3 mb-3">
+                                <div class="square primary-square-green-outline rounded p-3 mb-3">  <!--tzh changed to green outline -->
                                     <!-- header text -->
                                     <div class="square-inline">
                                         <h4 class="square-inline text-start mr-auto"> Activity on Your Listings </h4>
@@ -248,7 +248,7 @@
                         <div v-else-if="userType == 'venue'" class="row">
                             <!-- fan questions -->
                             <div class="col-12">
-                                <div class="square primary-square rounded p-3 mb-3">
+                                <div class="square primary-square-green-outline rounded p-3 mb-3">  <!--tzh changed to green outline -->
                                     <!-- header text -->
                                     <div class="square-inline">
                                         <span v-if="unansweredQuestions.length != 0" class="square-inline text-start mr-auto">
@@ -270,7 +270,7 @@
                             </div>
                             <!-- check ins at your venue -->
                             <div class="col-12">
-                                <div class="square primary-square rounded p-3 mb-3">
+                                <div class="square primary-square-green-outline rounded p-3 mb-3">  <!--tzh changed to green outline -->
                                     <!-- header text -->
                                     <div class="square-inline">
                                         <h4 class="square-inline text-start mr-auto"> Activity on Your Listings </h4>
@@ -297,8 +297,8 @@
                             <div class="col-xl-3 col-lg-4 col-4 mb-3 mobile-view-no-right-padding">
                                 <div class="d-grid gap-2">
                                     <button class="btn btn-sm mobile-ps-0" 
-                                        :class="{ 'primary-btn mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0': discovery, 'primary-btn-outline mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0': !discovery }"
-                                        v-on:click="changeDiscoveryStatus()">
+                                        :class="{ 'primary-btn-green mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0': discovery, 'primary-btn-green-outline mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0': !discovery }"
+                                        v-on:click="changeDiscoveryStatus()"> <!--tzh added -green and green-outline -->
                                         <p class="mb-1 discover-and-following mobile-mb-0"> Discover </p>
                                     </button>
                                 </div>
@@ -307,7 +307,7 @@
                             <div class="col-xl-3 col-lg-4 col-4 mb-3 mobile-view-no-padding">
                                 <div class="d-grid gap-2">
                                     <button class="btn btn-sm mobile-ps-0"
-                                        :class="{ 'primary-btn mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0': following, 'primary-btn-outline mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0': !following }"
+                                        :class="{ 'primary-btn-green mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0': following, 'primary-btn-green-outline mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0': !following }"
                                         v-on:click="changeFollowingStatus()">
                                         <p class="mb-1 discover-and-following mobile-mb-0"> Following </p>
                                     </button>

@@ -86,10 +86,10 @@
 
                         <!-- buttons -->
                         <div class="row mt-3">
-                            <button v-if="ownProfile && user" type="button" class="btn primary-btn-outline-not-round" data-bs-toggle="modal" data-bs-target="#editProfileModal" style="font-weight:bold;">Edit Profile</button>
+                            <button v-if="ownProfile && user" type="button" class="btn tertiary-btn-blue-outline xprimary-btn-outline-not-round" data-bs-toggle="modal" data-bs-target="#editProfileModal" style="font-weight:bold;">Edit Profile</button>
                             <button v-else-if="following && user" type="button" class="btn primary-btn-outline-less-round" @click="editFollow('unfollow')">Following</button>
                             <button v-else-if="user" type="button" class="btn primary-btn-less-round" @click="editFollow('follow')"  style="font-weight:bold;">+ Follow User</button>
-                            <router-link v-if="ownProfile && user" :to="{ path: '/dashboard/user' }" class="btn secondary-btn-not-rounded rounded-0 mt-3" style=" font-weight: bold;">
+                            <router-link v-if="ownProfile && user" :to="{ path: '/dashboard/user' }" class="btn primary-btn-less-round-blue xsecondary-btn-not-rounded rounded-0 mt-3" style=" font-weight: bold;">
                                 View My Analytics
                             </router-link>
                             <span style="position: relative; display: inline-block" class="m-0 p-0">
@@ -495,14 +495,14 @@
 
                     <!-- reviews button -->
                     <button 
-                        class="btn mx-1"
-                        :class="{ 'active-toggle-button-user-profile': activeTab === 'reviews', 'inactive-toggle-button-user-profile': activeTab !== 'reviews' }"
+                        class="btn mx-1 fw-bold no-hover"
+                        :class="{ 'primary-btn-green active-toggle-button-user-profile': activeTab === 'reviews', 'primary-btn-green-thin-outline inactive-toggle-button-user-profile': activeTab !== 'reviews' }"
                         @click="switchTab('reviews')"> 
                         Reviews 
                     </button>
                     <button 
-                        class="btn mx-1"
-                        :class="{ 'active-toggle-button-user-profile': activeTab !== 'reviews', 'inactive-toggle-button-user-profile': activeTab === 'reviews' }"
+                        class="btn mx-1 fw-bold no-hover"
+                        :class="{ 'primary-btn-green active-toggle-button-user-profile': activeTab !== 'reviews', 'primary-btn-green-thin-outline inactive-toggle-button-user-profile': activeTab === 'reviews' }"
                         @click="switchTab('lists')"> 
                         <span v-if="ownProfile">My Drink List</span>
                         <span v-if="!ownProfile">Drink List</span> 
@@ -574,7 +574,7 @@
 
                         <!-- lists tab -->
                         <div v-if="activeTab == 'lists'" id="lists">
-                            <button v-if="ownProfile" type="button" class="btn primary-btn-outline-less-round mb-3" data-bs-toggle="modal" data-bs-target="#createNewListModal" >Create New List</button>
+                            <button v-if="ownProfile" type="button" class="btn fw-bold primary-btn-less-round-blue xprimary-btn-outline-less-round mb-3" data-bs-toggle="modal" data-bs-target="#createNewListModal" >Create New List</button>
 
                             <!-- create new list modal -->
                             <div class="modal fade" id="createNewListModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
