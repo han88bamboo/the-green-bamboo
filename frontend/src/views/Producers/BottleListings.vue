@@ -1036,7 +1036,7 @@
                                                 <a style="color: inherit" > 
                                                     at
                                                     <router-link :to="'/profile/venue/' + checkVenue(review.address)" style="color: inherit">
-                                                        <b>{{ review.location }}</b>
+                                                        <b>{{ getVenueNameFromID(review.location) }}</b>
                                                     </router-link>
                                                 </a>
                                             </span>
