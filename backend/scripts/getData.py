@@ -411,6 +411,41 @@ def getProducerByRequestId(id):
     finally:
         cur.close()
 
+# [GET] List of unique producers names and id
+@blueprint.route("/getUniqueProducersNamesID")
+def getUniqueProducersNamesID():
+    conn = g.db
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT DISTINCT "producerName", "id" FROM "producers"')
+        producers_data = cursor.fetchall()
+
+    if not producers_data:
+        return jsonify({
+            "code": 404,
+            "message": "No producers found."
+        })
+    
+    # Convert the data to a list of dictionaries
+
+    producers_list = []
+    for producer in producers_data:
+        if producer["producerName"] == None:
+            continue
+        producer_dict = {
+            "producerName": producer["producerName"],
+            "id": producer["id"]
+        }
+        producers_list.append(producer_dict)
+
+    return jsonify({
+        "code": 200,
+        "message": "Producers fetched successfully.",
+        "data": producers_list
+    })
+
+
+
+
 # ----------------------
 # [NEW] TO BE ADDED:
 # ----------------------

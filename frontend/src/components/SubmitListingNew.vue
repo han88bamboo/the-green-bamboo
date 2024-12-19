@@ -556,8 +556,8 @@
 
                     // populate "producerList" form data variable
                     try {
-                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducers`);
-                        this.producerList = response.data;
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUniqueProducersNamesID`);
+                        this.producerList = response.data.data;
                         this.producerList.sort((a,b)=>{
                             return a.producerName.localeCompare(b.producerName)
                         })
