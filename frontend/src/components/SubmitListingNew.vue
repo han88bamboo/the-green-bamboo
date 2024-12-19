@@ -170,6 +170,35 @@
                     <!-- Form: Listing Details -->
                     <div v-if="formType == 'power' || formMode == 'new'">
 
+                        <!-- Input: Producer Name -->
+                        <!-- [IF] Producer is creating listing, lock Producer selection -->
+                        <div class="form-group mb-3" v-if="isProducer != false">
+                            <p class="text-start mb-1">Producer Name <span class="text-danger">*</span></p>
+                            <select class="form-select" disabled>
+                                <option selected>{{ isProducer }}</option>
+                            </select>
+                        </div>
+                        <!-- [ELSE] Dropdown menu tied to producerID, show producerNew textbox only if "Other" selected (no producerID). -->
+                        <!-- set name only, then before submitting request, put the id, save computation -->
+                        <div class="form-group mb-3" v-else>
+                            <p class="text-start mb-1">New Producer Name <span class="text-danger">*</span></p>
+                            <input list="producer-names" v-model="form['producerNew']" class="form-control" id="bottleName" placeholder="Enter Producer Name" @input="getProducerID">
+                            <datalist id="producer-names">
+                                <option v-for="producer in producerList" :key="producer.producerName" :value="producer.producerName">
+                                    {{ producer.producerName }}
+                                </option>
+                            </datalist>
+
+                            <!-- Redirect to CreateProducer page to create a producer -->
+                            <p v-if="!isProducer && formType == 'power'" class="text-start text-muted pt-2" style="font-size: 14px;">Can't find a producer?
+                                <router-link :to="'/admin/dashboard'" class="text-decoration-none">
+                                    Click here to create!
+                                </router-link>
+                            </p>
+                            
+                                
+                        </div>
+
                         <!-- Input: Bottle Name -->
                         <div class="form-group mb-3">
                             <p class="text-start mb-1">Name of Bottle <span class="text-danger">*</span></p>
@@ -236,26 +265,6 @@
                             <!-- <img :src="'data:image/jpeg;base64,' + (this.form['photo'] || defaultPhoto)" class="rounded d-flex mb-3" alt="" style="width: 100px; height: 100px; object-fit: cover;"> -->
                             <img :src="selectedImage || (this.form['photo'] || defaultPhoto)" class="rounded d-flex mb-3" alt="" style="width: 100px; height: 100px; object-fit: cover;">
                             <input class="form-control" type="file" id="formFile" @change="handleFileSelect">
-                        </div>
-
-                        <!-- Input: Producer Name -->
-                        <!-- [IF] Producer is creating listing, lock Producer selection -->
-                        <div class="form-group mb-3" v-if="isProducer != false">
-                            <p class="text-start mb-1">Producer Name <span class="text-danger">*</span></p>
-                            <select class="form-select" disabled>
-                                <option selected>{{ isProducer }}</option>
-                            </select>
-                        </div>
-                        <!-- [ELSE] Dropdown menu tied to producerID, show producerNew textbox only if "Other" selected (no producerID). -->
-                        <!-- set name only, then before submitting request, put the id, save computation -->
-                        <div class="form-group mb-3" v-else>
-                            <p class="text-start mb-1">New Producer Name <span class="text-danger">*</span></p>
-                            <input list="producer-names" v-model="form['producerNew']" class="form-control" id="bottleName" placeholder="Enter Producer Name" @input="getProducerID">
-                            <datalist id="producer-names">
-                                <option v-for="producer in producerList" :key="producer.producerName" :value="producer.producerName">
-                                    {{ producer.producerName }}
-                                </option>
-                            </datalist>
                         </div>
 
                         <!-- Input: Independent Bottler Check -->
@@ -672,6 +681,7 @@
                 this.dataLoaded = true;
                 this.fillForm = true;
             },
+
             // Function to check user editing permissions
             checkUserPermissions(checkData) {
                 if (this.formType == "req") {
@@ -688,6 +698,7 @@
                     }
                 }
             },
+
             // Function to populate form with previous data
             populateForm(previousData) {
                 
@@ -752,15 +763,18 @@
                     this.$router.go(0);
                 }
             },
+
             // Helper function to return to previous page
             goBack() {
                 this.$router.go(-1)
             },
+
             // Helper function to get drink category list for selected drink type ("tempDrinkType")
             getDrinkCategoryList() {
                 this.tempTypeCategoryList = this.drinkCategories.find(cat => cat.drinkType == this.tempDrinkType).typeCategory;
                 this.tempTypeCategory = "";
             },
+
             // Helper function to handle file selection for photo
             handleFileSelect(event){
                 try {
@@ -779,6 +793,7 @@
                     // console.error(error);
                 }
             },
+
             // Helper function to get producerID from tempProducer
             getProducerID() {
                 let producer = this.producerList.find(producer => producer.producerName == this.form['producerNew'])
@@ -1109,7 +1124,6 @@
                 return response
 
             },
-
         }
     }
 </script>

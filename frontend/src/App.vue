@@ -27,4 +27,13 @@ nav a {
 nav a.router-link-exact-active {
   color: #42b983;
 }
+
+.hover-underline {
+    text-decoration: none; /* Ensure no underline by default */
+}
+
+.hover-underline:hover {
+    text-decoration: underline; /* Add underline on hover */
+}
+
 </style>
