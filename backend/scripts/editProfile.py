@@ -140,7 +140,7 @@ def updateFollowList():
     userID = int(data['userID'])
     action = data['action']
     target = data['target']
-    followerID = data['followerID']
+    followerID = int(data['followerID'])
 
     try:
         cur.execute('SELECT "users", "producers", "venues" FROM "usersFollowLists" WHERE "userId" = %s', (userID,))
@@ -165,11 +165,11 @@ def updateFollowList():
         target_list = follow_list[target]
 
         if action == "unfollow":
-            if followerID in target_list:
-                target_list.remove(followerID)
+            if str(followerID) in target_list:
+                target_list.remove(str(followerID))
         else:
-            if followerID not in target_list:
-                target_list.append(followerID)
+            if str(followerID) not in target_list:
+                target_list.append(str(followerID))
 
         if row:
             cur.execute(

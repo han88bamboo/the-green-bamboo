@@ -17,10 +17,11 @@ region='us-east-1'
 
 def uploadBase64ImageToS3(base64_string):
 
-    # credentials = { 
-    #     'aws_access_key_id': os.getenv('AWS_ACCESS_KEY_ID'),
-    #     'aws_secret_access_key': os.getenv('AWS_SECRET_ACCESS_KEY')
-    # }
+    credentials = { 
+        'aws_access_key_id': os.getenv('AWS_ACCESS_KEY_ID'),
+        'aws_secret_access_key': os.getenv('AWS_SECRET_ACCESS_KEY')
+    }
+
 
     # Decode the base64 string
     try:
@@ -31,8 +32,8 @@ def uploadBase64ImageToS3(base64_string):
 
     # Initialize a session using Amazon S3
     #Create an S3 client using boto3, which will automatically use the credentials provided by the IAM role associated with the ECS task.
-    s3 = boto3.client('s3')
-    # s3 = boto3.client('s3', region_name=region, **credentials)
+    # s3 = boto3.client('s3')
+    s3 = boto3.client('s3', region_name=region, **credentials)
 
     object_key = f'{uuid.uuid4()}.jpg'
     try:
@@ -67,27 +68,27 @@ def uploadURLtoS3(url):
 
 def deleteImageFromS3(url):
 
-    # credentials = { 
-    #     'aws_access_key_id': os.getenv('AWS_ACCESS_KEY_ID'),
-    #     'aws_secret_access_key': os.getenv('AWS_SECRET_ACCESS_KEY')
-    # }
+    credentials = { 
+        'aws_access_key_id': os.getenv('AWS_ACCESS_KEY_ID'),
+        'aws_secret_access_key': os.getenv('AWS_SECRET_ACCESS_KEY')
+    }
 
     # Get the key from the url by stripping https://testbucketdrinkx.s3.amazonaws.com/xxxx
     # object_key = url[48:]
     
-    # if('https://drinkximages.s3.us-east-1.amazonaws.com/' in url):
-    #     object_key =  url.replace('https://drinkximages.s3.us-east-1.amazonaws.com/','')
-    # else:
-    #     object_key = 'None'
-
-    if('https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/' in url):
+    if('https://drinkximages.s3.us-east-1.amazonaws.com/' in url):
         object_key =  url.replace('https://drinkximages.s3.us-east-1.amazonaws.com/','')
     else:
         object_key = 'None'
 
+    # if('https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/' in url):
+    #     object_key =  url.replace('https://drinkximages.s3.us-east-1.amazonaws.com/','')
+    # else:
+    #     object_key = 'None'
+
     # Initialize a session using Amazon S3
-    # s3_client = boto3.client('s3', region_name=region, **credentials)
-    s3 = boto3.client('s3')
+    s3 = boto3.client('s3', region_name=region, **credentials)
+    # s3 = boto3.client('s3')
 
     try:
         # Upload the image to S3

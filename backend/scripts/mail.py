@@ -28,7 +28,8 @@ def send_email(
     body: str,
 ):
     mail = g.mail
-    sender = "Drink-X <noreply@drink-x.com>"
+    # sender = "Drink-X <noreply@drink-x.com>"
+    sender = "hellodrinkx@gmail.com"
     msg = Message(subject, sender=sender, recipients=[recipient],)
     msg.body = body
     mail.send(msg)

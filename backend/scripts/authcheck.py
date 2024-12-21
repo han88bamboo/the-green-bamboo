@@ -609,7 +609,7 @@ def resetPassword(id):
             # The 2 lines below is for local development
             # server.sendmail(mail_email_address, userRaw["email"], message)
             # server.quit()
-
+            
             # The 5 lines below is used for the deployed version
             send_email_aws(
                 subject="Drink-X Reset Password",
