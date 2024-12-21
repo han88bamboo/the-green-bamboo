@@ -79,7 +79,6 @@
 
                         
                         <!-- Profile Type -->
-                        <!-- Radio for would recommend and would buy again -->
                             <div class='row justify-content-start mb-3 text-start'>
                                 <p class="text-start mb-1">Choose Your Profile Type <span style="color: red;">*</span></p>
                                 <div class="col-md-12 justify-content-between">
@@ -110,19 +109,19 @@
                             </div>
 
                         <!-- Input: Country of Origin -->
-                        <div class="form-group mb-3">
-                            <div class=" mb-3">
-                                <p class="text-start mb-1">Country of Origin/Location <span style="color: red;">*</span></p>
-                                <div class="input-group">
-                                    <select class="form-select" id="countrySelect" v-model="selectedCountry" style="border-color: black;">
-                                        <option v-for="country in countries" :key="country" :value="country">
-                                        {{ country }}
-                                        </option>
-                                    </select>
+                            <div class="form-group mb-3">
+                                <div class=" mb-3">
+                                    <p class="text-start mb-1">Country of Origin/Location <span style="color: red;">*</span></p>
+                                    <div class="input-group">
+                                        <select class="form-select" id="countrySelect" v-model="selectedCountry" style="border-color: black;">
+                                            <option v-for="country in countries" :key="country" :value="country">
+                                            {{ country }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <span v-if="missingSelectedCountry" class="text-danger">Please choose the country you are based in.</span>
                                 </div>
-                                <span v-if="missingSelectedCountry" class="text-danger">Please choose the country you are based in.</span>
                             </div>
-                        </div>
 
 
 

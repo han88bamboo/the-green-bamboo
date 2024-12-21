@@ -128,7 +128,7 @@
                                     </div>
                                 </div>   
                                 <p><b>{{ displayUser.displayName }} is a moderator of the following communities:</b></p> 
-                                <p>{{ drinkChoice }}</p>
+                                <p>{{ displayUser.modType.join(', ') }}</p>
                                 <p><b><em>Moderators help shape the drinks community and ensure drink reviews remain fun, useful and respectful!</em></b></p>        
                                 
                                 <b><a v-if="user && !user.isAdmin" href="#" class="mt-3" data-bs-toggle="modal" data-bs-target="#applyModerator" style="color: black">Want to be a moderator? Apply here!</a></b>                    
