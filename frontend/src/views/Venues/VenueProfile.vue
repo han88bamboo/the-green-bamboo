@@ -2632,7 +2632,6 @@
                         this.newOpeningHours = JSON.parse(JSON.stringify(this.openingHours));
 
                         // Set and sort menu data
-                        console.log("Target Venue", this.targetVenue);
                         this.detailedMenu = this.targetVenue["menu"];
                         this.detailedMenu.sort((a, b) => (a.sectionOrder > b.sectionOrder) ? 1 : -1); // Sort by section order
                         for (let section of this.detailedMenu) {
@@ -2685,7 +2684,6 @@
                             // check for active subscription if last check status date before today
                             const claimStatusCheckDate = this.targetVenue['claimStatusCheckDate']
                             if ((claimStatusCheckDate?.split('T')[0] < new Date().toISOString().split('T')[0]) || !claimStatusCheckDate) {
-                                console.log('checking subscription');
                                 // check for active subscription
                                 try {
                                     const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/payment/retrieve-latest-subscription`, {
@@ -2696,7 +2694,6 @@
                                         }
                                     });
                                     const subscription = response.data;
-                                    console.log(subscription);
     
                                     if (subscription && subscription.status == "active") {
                                         claimStatus = true;
@@ -2774,7 +2771,6 @@
 
                 // Get listing data for each item in menu
                 try {
-                    console.log("Detailed Menu", this.detailedMenu);
                     for (let section of this.detailedMenu) {
                         for (let item of section.sectionMenu) {
 
@@ -3756,7 +3752,6 @@
                 else if (action == 'unfollow') {
                     this.userFollowing = false;
                 }
-
                 try {
                     await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/updateFollowLists`, 
                         {
@@ -4057,7 +4052,7 @@
             async deleteQAEdit(qa) {
                 let q_and_a_id = qa.id;
                 try {
-                    const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editVenueProfile/deleteQA`, 
+                    await this.$axios.post(`${process.env.VUE_APP_API_URL}/editVenueProfile/deleteQA`, 
                         {
                             venueID: this.targetVenue['id'],
                             questionsAnswersID: q_and_a_id,
@@ -4068,7 +4063,6 @@
                                 'Content-Type': 'application/json'
                             }
                         });
-                    console.log(response.data);
                 } 
                 catch (error) {
                     console.error(error);
@@ -4243,7 +4237,6 @@
                     console.error(error);
                     responseCode = error.response.data.code
                 });
-            console.log(responseCode)
             this.resettingPassword= false
             if(responseCode==201){
                 this.passwordSuccess=true; // Display success message

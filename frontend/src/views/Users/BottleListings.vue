@@ -1221,7 +1221,7 @@
                 this.selectedDrinkType = drinkType;
                 for(let drinks of this.drinkTypes){
                     if(drinks['drinkType'] == drinkType['drinkType']){
-                        this.selectedTypeCategory = drinks['typeCategory'].sort()
+                        this.selectedTypeCategory = drinks['typeCategory']
                     }
                 }
 
