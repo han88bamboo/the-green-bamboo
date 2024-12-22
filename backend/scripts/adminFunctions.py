@@ -7,8 +7,10 @@ import os
 import csv
 import io
 import codecs
+import unicodedata
 import s3Images
 import base64
+import chardet
 
 from flask import Blueprint, g, request, jsonify
 from datetime import datetime
@@ -419,7 +421,6 @@ def createFamilyTag():
     conn = g.db
     cur = conn.cursor()
     rawTag = request.get_json()
-    print(rawTag)
     rawFamily= rawTag['familyTag']
 
     try:
@@ -477,7 +478,6 @@ def createSubTag():
     conn = g.db
     cur = conn.cursor()
     rawTag = request.get_json()
-    print(rawTag)
     rawSub= rawTag['subTag']
 
     # Duplicate listing check: Reject if review with the same observation exists in the database
@@ -568,20 +568,17 @@ def importListings():
     conn = g.db
     cur = conn.cursor()
     file = request.files['file']
-
+    returnFile = convert_to_utf8(file)
     column_data_types = [str, str, str, str, str, str, str, float, str, str, str, str]
-    csv_data = csv.reader(io.TextIOWrapper(file, 'utf-8'))
-
+    csv_data = csv.reader(io.TextIOWrapper(returnFile, 'utf-8'))
     for _ in range(4):
         next(csv_data)
-
     # Fetch all existing producers and built a name to id mapping
     cur.execute('SELECT "producerName", "id" FROM "producers"')
     producers = cur.fetchall()
     producer_name_id_dict = {row['producerName']: row['id'] for row in producers}
 
     listings_to_insert = []
-
     try:
         for row in csv_data:
             converted_row = []
@@ -594,7 +591,6 @@ def importListings():
                 converted_row.append(converted_value)
 
             # Lookup producer ID based on producer name
-            print(converted_row)
             producer_name = converted_row[1]
             producer_id = producer_name_id_dict.get(producer_name)
 
@@ -750,3 +746,29 @@ def readCSV():
             "code": 201,
             "data": data
         }), 201
+# -----------------------------------------------------------------------------------------
+# This function is to convert non utf-8 encoded files to utf-8 files
+def convert_to_utf8(file):
+    raw_data = file.read()
+
+    # Detect encoding using chardet
+    detected_encoding = chardet.detect(raw_data)['encoding']
+
+    if(detected_encoding== 'ascii' or detected_encoding == 'utf-8'):
+        return file
+
+    # Decode the raw data using the detected encoding
+    text = raw_data.decode(detected_encoding)
+    
+    # Normalize text (optional step depending on use case)
+    normalized_text = normalize_unicode(text)
+
+    # Create a new in-memory file with UTF-8 encoding
+    output_file = io.BytesIO()
+    output_file.write(normalized_text.encode('utf-8'))
+    output_file.seek(0)  # Reset the pointer to the start of the file
+    return output_file
+    
+# This function is to normalise the data in the rows
+def normalize_unicode(text):
+    return unicodedata.normalize('NFKC', str(text)) if text else text
