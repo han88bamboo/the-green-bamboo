@@ -257,6 +257,7 @@ def getUserLikesPost(userID, clubID):
     finally:
         cur.close()
 
+
 # -----------------------------------------------------------------------------------------
 # [GET] getUserLikesComments
 # Purpose: Get the comments that a specific user has liked in a specific post
@@ -346,4 +347,97 @@ def createClub():
     finally:
         cur.close()
 
+
+# -----------------------------------------------------------------------------------------
+# [POST] addPost
+# Purpose: Add a new post to the club
+# Used: SpecificClubPost.vue [components folder]
+@blueprint.route('/addPost', methods=['POST'])
+def addPost():
+    conn = g.db
+    cur = conn.cursor()
+
+    try:
+        data = request.get_json()
+
+        # Get all the required data
+        poster_id = data['posterID']
+        club_id = data['clubID']
+        post_content = data['postContent']
+
+        # Step 1: Get today's date
+        post_date = datetime.now()
+
+        # Step 2: Check if the post has an image
+        if 'image64' in data:
+            image64 = s3Images.uploadBase64ImageToS3(data['image64'])
+        else:
+            image64 = None
+
+        # Step 3: Insert the new post into the database
+        cur.execute('INSERT INTO "clubPosts" ("clubID", "postDate", "postContent", "postPhoto", "posterID") VALUES (%s, %s, %s, %s, %s) RETURNING id', 
+                    (club_id, post_date, post_content, image64, poster_id,))
+        post_id = cur.fetchone()['id']
+        conn.commit()
+
+        return jsonify({
+            'message': 'Post added successfully',
+            'postID': post_id
+        }), 201
+
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred adding the post."
+            }
+        ), 500
+    
+    finally:
+        cur.close()
+
+
+# -----------------------------------------------------------------------------------------
+# [POST] addComment
+# Purpose: Add a new comment to the post
+# Used: SpecificClubPost.vue [components folder]
+@blueprint.route('/addComment', methods=['POST'])
+def addComment():
+    conn = g.db
+    cur = conn.cursor()
+
+    try:
+        data = request.get_json()
+
+        # Get all the required data
+        commenter_id = data['commenterID']
+        post_id = data['postID']
+        comment_content = data['commentContent']
+
+        # Step 1: Get today's date
+        comment_date = datetime.now()
+
+        # Step 2: Insert the new comment into the database
+        cur.execute('INSERT INTO "clubPostComments" ("postID", "commentDate", "commentContent", "commenterID") VALUES (%s, %s, %s, %s) RETURNING id', 
+                    (post_id, comment_date, comment_content, commenter_id,))
+        comment_id = cur.fetchone()['id']
+        conn.commit()
+
+        return jsonify({
+            'message': 'Comment added successfully',
+            'commentID': comment_id
+        }), 201
+
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred adding the comment."
+            }
+        ), 500
+    
+    finally:
+        cur.close()
 
