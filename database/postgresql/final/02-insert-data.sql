@@ -1245,3 +1245,39 @@ INSERT INTO "venuesMenu" (
 INSERT INTO "menuItems"(
     "itemOrder", "itemPrice", "itemAvailability", "itemID", "itemServingType", "sectionId")
 VALUES(0, 12.00, true, 1, 1, 1)
+
+INSERT INTO "clubs"(
+    "clubName", "clubDesc", "isInviteOnly", "clubLink", "clubBanner", "dateCreated")
+VALUES
+    ("Whisky Club", "A group with people who has interest in Whisky - all kinds and all types", false, "www.google.com", "", "2024-10-28 18:45:31.403" ),
+    ("Vodka Club", "Vodka lovers or beginners are welcome!", false, "www.google.com", "", "2024-11-28 18:50:31.403"),
+    ("Suntory Lovers", "A community for those who appreciate the art, craft and history behind Suntory beverages", false, "www.suntory.com", "2024-10-28 18:45:31.403");
+
+INSERT INTO "clubMembers"(
+    "clubID", "memberID", "joinDate". "isAdmin", "joinStatus")
+VALUES
+    (1, 1, "2024-10-28 18:47:31.403", true, true),
+    (1, 2, "2024-10-30 18:45:31.403", false, true),
+    (1, 3, "2024-10-30 18:45:31.403", false, false),
+    (2, 1, "2024-10-28 18:55:31.403", true, true);
+
+INSERT INTO "clubPosts"(
+    "clubID", "postDate", "postContent", "postPhoto", "posterID")
+VALUES 
+    (1, "2024-10-31 18:45:31.403", "First taste of Yamazaki 12-Year\n\nSmooth with notes of honesy, dried fruits, vanilla, and a touch of spice. Enjoyed it neat - how do you prefer yours?\n\nAny recommendations for what I should try next?", "", 1);
+
+INSERT INTO "clubPostsLikes"(
+    "postID", "userID")
+VALUES
+    (1, 2),
+    (1, 3);
+
+INSERT INTO "clubPostComments"(
+    "postID", "commentDate", "commentContent", "commenterID")
+VALUES
+    (1, "2024-11-01 18:45:31.403", "I usually enjoy it neat as well. Sometimes I add a drop or 2 of water to open up the flavors even more.\n\nFor your next try, I'd recommend Hakushu 12 if you want something lighter and herbal.", 2);
+
+INSERT INTO "clubPostCommentsLikes"(
+    "commentID", "userID")
+VALUES
+    (1, 3);
