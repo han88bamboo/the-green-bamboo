@@ -1327,7 +1327,7 @@ VALUES
     (1, '2024-11-29 18:25:31.403', 'GlenDronach 12-Year is a hidden gem. Rich, sherry-forward, and affordable. Highly recommend it!', '', 3);
 
 INSERT INTO "clubPostsLikes"(
-    "clubID", "postID", "userID")
+    "clubID", "postID", "memberID")
 VALUES
     (1, 1, 2),
     (1, 1, 3);
@@ -1367,6 +1367,6 @@ VALUES
     (1, '2024-11-01 23:40:31.403', 'Yamazaki is best savored slowly. I think Redbreast 12-Year is a great one to explore next.', 3);
 
 INSERT INTO "clubPostCommentsLikes"(
-    "postID", "commentID", "userID")
+    "postID", "commentID", "memberID")
 VALUES
     (1, 1, 3);
