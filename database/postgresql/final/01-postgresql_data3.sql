@@ -474,7 +474,8 @@ CREATE TABLE "clubs" (
 CREATE TABLE "clubMembers" (
     "id" SERIAL PRIMARY KEY,
     "clubID" INTEGER REFERENCES "clubs"("id") ON DELETE SET NULL, -- [!] References clubs FK
-    "memberID" INTEGER REFERENCES "users"("id") ON DELETE SET NULL, -- [!] References users FK
+    "userID" INTEGER,
+    "userType" VARCHAR(255),
     "joinDate" TIMESTAMP,
     "isAdmin" BOOLEAN,
     "joinStatus" BOOLEAN
@@ -487,7 +488,7 @@ CREATE TABLE "clubPosts" (
     "postDate" TIMESTAMP,
     "postContent" TEXT,
     "postPhoto" TEXT,
-    "posterID" INTEGER REFERENCES "users"("id") ON DELETE SET NULL -- [!] References users FK
+    "posterID" INTEGER REFERENCES "clubMembers"("id") ON DELETE SET NULL -- [!] References clubMembers FK
 );
 
 -- ========= "clubPostsLikes" =========
@@ -495,7 +496,7 @@ CREATE TABLE "clubPostsLikes" (
     "id" SERIAL PRIMARY KEY,
     "clubID" INTEGER REFERENCES "clubs"("id") ON DELETE SET NULL, -- [!] References clubs FK
     "postID" INTEGER REFERENCES "clubPosts"("id") ON DELETE SET NULL, -- [!] References clubPOsts FK
-    "userID" INTEGER REFERENCES "users"("id") ON DELETE SET NULL -- [!] References users FK
+    "userID" INTEGER REFERENCES "clubMembers"("id") ON DELETE SET NULL -- [!] References clubMembers FK
 );
 
 -- ========= "clubPostComments" =========
@@ -504,7 +505,7 @@ CREATE TABLE "clubPostComments" (
     "postID" INTEGER REFERENCES "clubPosts"("id") ON DELETE SET NULL, -- [!] References clubPosts FK
     "commentDate" TIMESTAMP,
     "commentContent" TEXT,
-    "commenterID" INTEGER REFERENCES "users"("id") ON DELETE SET NULL -- [!] References users FK
+    "commenterID" INTEGER REFERENCES "clubMembers"("id") ON DELETE SET NULL -- [!] References clubMembers FK
 );
 
 -- ========= "clubPostCommentsLikes" =========
@@ -512,5 +513,5 @@ CREATE TABLE "clubPostCommentsLikes" (
     "id" SERIAL PRIMARY KEY,
     "postID" INTEGER REFERENCES "clubPosts"("id") ON DELETE SET NULL, -- [!] References clubPosts FK
     "commentID" INTEGER REFERENCES "clubPostComments"("id") ON DELETE SET NULL, -- [!] References clubPostComments FK
-    "userID" INTEGER REFERENCES "users"("id") ON DELETE SET NULL -- [!] References users FK
+    "userID" INTEGER REFERENCES "clubMembers"("id") ON DELETE SET NULL -- [!] References clubMembers FK
 )

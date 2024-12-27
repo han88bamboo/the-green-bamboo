@@ -200,7 +200,27 @@ const routes = [
     path: '/admin/importListings',
     name: 'adminimportlistings',
     component: () => import('../views/Admin/ImportListings.vue')
+  },
+  // -------------------------------------------------------------------------------------
+  // ----------------- CLUB PAGES -----------------
 
+  {
+    path: '/club/create',
+    name: 'clubcreate',
+    component: () => import('../views/Users/CreateClub.vue')
+  },
+
+  {
+    path: '/clubs/view',
+    name: 'browseclubs',
+    component: () => import('../views/Users/BrowseClubs.vue')
+
+  },
+
+  {
+    path: '/club/view/:clubID',
+    name: 'clubview',
+    component: () => import('../views/Users/ClubView.vue')
   },
 
   // -------------------------------------------------------------------------------------
