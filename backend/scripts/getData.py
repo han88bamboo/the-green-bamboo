@@ -1776,16 +1776,24 @@ def getTokenByRequestId(requestId):
 def getAccountRequest(id):
     conn = g.db
     cur = conn.cursor()
-
     try:
-        cur.execute("""
-            SELECT * FROM "accountRequests" WHERE "id" = %s
-        """, (id,))
+        # check if theres parameters, only for profile + profile settings, will it send this
+        if request.args:
+            businessType = request.args.get('businessType')  # e.g. ?businessType=venue
+
+            cur.execute("""
+                SELECT * FROM "accountRequests" WHERE "businessId" = %s AND "businessType" = %s
+            """, (id, businessType,))
+
+        else:
+            cur.execute("""
+                SELECT * FROM "accountRequests" WHERE "businessId" = %s
+            """, (id,))
 
         request_data = cur.fetchone()
 
         if request_data is None:
-            return jsonify([]), 404
+            return jsonify([]), 200
         
         return jsonify(request_data), 200
     

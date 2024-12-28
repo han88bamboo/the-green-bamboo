@@ -41,6 +41,7 @@ DROP TABLE IF EXISTS "venuesUpdates" CASCADE;
 -- ========= "accountRequests" =========
 CREATE TABLE "accountRequests" (
     "id" SERIAL PRIMARY KEY,
+    "businessId" INTEGER,
     "businessName" VARCHAR(255),
     "businessType" VARCHAR(255),
     "businessDesc" TEXT,

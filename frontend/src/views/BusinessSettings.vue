@@ -380,7 +380,10 @@ export default {
             }
             // request
             try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getAccountRequest/${this.requestId}`);
+                let params = {
+                    "businessType" : this.userType
+                }
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getAccountRequest/${this.requestId}`, { params });
                 this.request = response.data;
             }
             catch (error) {
