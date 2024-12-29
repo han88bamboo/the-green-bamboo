@@ -1084,9 +1084,13 @@
                             <button class="btn secondary-btn-not-rounded rounded-0" type="button" style=" font-weight: bold;"> View My Analytics </button>
                         </router-link> 
 
-                        <router-link :to="{ path: '/business/settings'}" class="col-12 d-grid gap-2 pb-3 default-clickable-text">
+                        <!-- v-if admincreated account, if yes dont show -->
+                        <router-link v-if="!adminCreated" :to="{ path: '/business/settings'}" class="col-12 d-grid gap-2 pb-3 default-clickable-text">
                             <button class="btn secondary-btn-not-rounded rounded-0" type="button" style=" font-weight: bold;"> Settings </button>
                         </router-link> 
+                        <div v-else class="col-12 d-grid gap-2 pb-3 default-clickable-text">
+                            <button class="btn secondary-btn-not-rounded rounded-0" type="button" style="font-weight: bold;" disabled> Settings </button>
+                        </div>
 
                         <!-- Button for change/reset password -->
                         <button type="button" class="btn secondary-btn-not-rounded rounded-0 mb-3 col-12 d-grid gap-2 default-clickable-text" data-bs-toggle="modal" data-bs-target="#changePasswordModal">Change/Reset Password</button>
@@ -1591,6 +1595,27 @@
                         // check if user_id same as producer_id
                         if (this.user_id == this.producer_id && this.userType == "producer") {
                             this.correctProducer = true;
+
+                            // check if account is admin created by checking if theres accountrequest. No accountreuest if manually created
+                            // if have, check if approved, if not approved, means not claimed yet/manually created but submitted request so disable
+                            let params = {
+                                "businessType" : this.userType
+                            }
+                            try{
+                                let response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getAccountRequest/${this.producer_id}`, { params })
+                                if(response.data.length === 0){
+                                    this.adminCreated = true
+                                }else if(!response.data['isApproved']){
+                                    this.adminCreated = true
+                                }
+                            }
+                            catch(error){
+                                if (error.response && error.response.status === 404) {
+                                    this.adminCreated = true;
+                                } else {
+                                    console.error("An unexpected error occurred:", error);
+                                }
+                            }
                         }
                     }
                 // producers
@@ -1713,7 +1738,7 @@
                     }
                 // users
                 // _id, username, displayName, choiceDrinks, drinkLists, modType, photo
-                    if (this.user_id) {
+                    if (this.userType == "user") {
                         try {
                             const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUser/${this.user_id}`);
                             this.user = response.data;

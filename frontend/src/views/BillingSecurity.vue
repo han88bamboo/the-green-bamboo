@@ -257,7 +257,7 @@
                 try {
                     const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getToken/${this.token}`);
                     this.tokenData = response.data.data;
-                    this.businessId = this.tokenData.userId,
+                    this.businessId = this.tokenData.userId;
                     this.requestId = this.tokenData.requestId;
                 } 
                 catch (error) {

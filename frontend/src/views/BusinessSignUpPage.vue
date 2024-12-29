@@ -130,6 +130,7 @@
                             <div class="form-group mb-3">
                                 <p class="text-start mb-1">Is your brand/venue profile already on the site? If yes, Enter Link:</p>
                                 <input type="text" class="form-control" style="border-color: black" v-model="businessLink" id="businessLink" placeholder="Profile Link">
+                                <span v-if="invalidBusinessLink" class="text-danger">Please enter a valid business link.</span>
                             </div>
 
 
@@ -316,6 +317,7 @@
                 missingSelectedCountry:false,
                 missingPlan:false,
                 missingDocument:false,
+                invalidBusinessLink:false,
 
                 // form variables
                 businessType:'',
@@ -423,9 +425,6 @@
             },
 
             signUp(){
-                console.log(this.businessType)
-                console.log(this.businessName)
-                console.log(this.businessDesc)
                 this.resetError()
                 this.selectedPricing=''
 
@@ -502,14 +501,25 @@
                     this.missingDocument = true
                     errorCount++
                 }
-
+                
+                if(this.businessLink!=''){
+                    if (!this.businessLink.includes('/')){
+                        this.invalidBusinessLink = true
+                    }
+                    errorCount++
+                }
                 if(errorCount>0){
                     return null
                 }
+                let businessId =null
 
+                if(this.businessLink!=''){
+                    businessId = this.businessLink.split("/").pop()
+                }
                 let joinDate = new Date().toISOString();
                 let submitAPI =  `${process.env.VUE_APP_API_URL}/createAccount/createAccountRequest`
                 let submitData = {
+                    "businessId" : businessId,
                     "businessName": this.businessName,
                     "businessType": this.businessType,
                     "businessDesc": this.businessDesc,
@@ -589,6 +599,7 @@
                 this.missingSelectedCountry=false
                 this.missingPlan=false
                 this.missingDocument=false
+                this.invalidBusinessLink=false
             },
         },
     }

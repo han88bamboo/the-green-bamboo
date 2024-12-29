@@ -1840,9 +1840,14 @@
                         <button type="button" class="btn secondary-btn-not-rounded rounded-0" style=" font-weight: bold;"> View My Analytics </button>
                     </router-link>
 
-                    <router-link class="d-grid pb-3 text-decoration-none" :to="{ path: '/business/settings' }">
+                    <!-- v-if admincreated account, if yes dont show -->
+                    <router-link v-if="!adminCreated" class="d-grid pb-3 text-decoration-none" :to="{ path: '/business/settings' }">
                         <button type="button" class="btn secondary-btn-not-rounded rounded-0" style=" font-weight: bold;"> Settings </button>
                     </router-link>
+
+                    <div v-else class="d-grid pb-3 text-decoration-none">
+                        <button class="btn secondary-btn-not-rounded rounded-0" type="button" style=" font-weight: bold;" disabled> Settings </button>
+                    </div>
 
                     <!-- Button for change/reset password -->
                     <div class="d-grid pb-3 text-decoration-none">
@@ -2416,6 +2421,7 @@
                 powerView: false,
                 editProfile: false,
                 clipboardItem: false,
+                adminCreated: false,
 
                 // Editable fields
                 editVenueName: '',
@@ -2995,6 +3001,30 @@
                 catch (error) {
                     // console.error(error);
                 }
+
+                if(this.selfView){
+                    // check if account is admin created by checking if theres accountrequest. No accountreuest if manually created
+                    // if have, check if approved, if not approved, means not claimed yet/manually created but submitted request so disable
+                    let params = {
+                        "businessType" : this.viewerType
+                    }
+                    try{
+                        let response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getAccountRequest/${this.targetVenue['id']}`, { params })
+                        if(response.data.length === 0){
+                            this.adminCreated = true
+                        }else if(!response.data['isApproved']){
+                            this.adminCreated = true
+                        }
+                    }
+                    catch(error){
+                        if (error.response && error.response.status === 404) {
+                            this.adminCreated = true;
+                        } else {
+                            console.error("An unexpected error occurred:", error);
+                        }
+                    }
+                }
+
 
                 // Set data loaded flag
                 if (this.dataLoaded != null) {

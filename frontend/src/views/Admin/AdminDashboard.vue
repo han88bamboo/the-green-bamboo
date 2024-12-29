@@ -1617,6 +1617,7 @@
                                 hashedPassword: hashedPassword,
                                 questionsAnswers: [],
                                 updates: [],
+                                username: this.businessName,
                                 producerLink: "",
                                 claimStatus: this.businessClaimStatus === "false",
                                 requestId: this.requestId
@@ -1647,6 +1648,7 @@
                             const newBusinessData = {
                                 venueName: this.businessName,
                                 venueDesc: this.businessDesc,
+                                username: this.businessName,
                                 originLocation: this.businessCountry,
                                 address: this.venueAddress,
                                 venueType: this.venueType,
