@@ -5,6 +5,7 @@
   <router-view/>
 </template>
 
+
 <style>
 /* Styling from App.vue */
 #app {

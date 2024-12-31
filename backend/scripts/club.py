@@ -1,10 +1,13 @@
 # Routes: /getClubs (GET), /getClubwSearch (GET), /getSpecificClubInfo (GET),
 #         /getClubPosts (GET), /getClubPostDetails (GET), /checkUserMembership (GET),
 #         /getUserLikesPost (GET), /getUserLikesComments (GET)
-#         /createClubs (POST), /addPost (POST), /addComment (POST), 
-#         /addClubMembers (PUT), /joinClub (PUT), /editPost (PUT), /editComment (PUT)
-#         /likeUnlikePost (PUT), /likeUnlikeComment (PUT)
-#         /removeMembers (DELETE), /removePost (DELETE), /removeComment (DELETE)
+#         /createClubs (POST), /addClubMembers (POST), /joinClub (POST), 
+#         /addPost (POST), /addComment (POST), 
+#         /acceptClubInvite (PUT), /editPost (PUT), /editComment (PUT)
+#         /likeUnlikePost (PUT), /likeUnlikeComment (PUT), /makeAdmin (PUT), 
+#         /updateClubInfo (PUT),
+#         /removeMembers (DELETE), /removePost (DELETE), /removeComment (DELETE),
+#         /leaveClub (DELETE), /deleteClub (DELETE)
 # -----------------------------------------------------------------------------------------
 
 import os
@@ -194,6 +197,9 @@ def getSpecificClubInfo(clubID):
 # [GET] getClubPosts
 # Purpose: Get the latest 10 posts in the club. 
 # Used: ClubView.vue [views folder inside User folder]
+# Input: 
+#   1. Club ID, 
+#   2. Offset (number of records to skip before fetching the next set of records) [initially set to 0, then increment by 10 on the frontend]
 # Output: Possible return codes [200 - Retreival success, 404 - No post/club found in database, 500 - An error occurred retrieving the request]
 @blueprint.route('/getClubPosts/<clubID>/<offset>', methods=['GET']) # offset is the number of records to skip before fetching the next set of records
 def getClubPosts(clubID, offset):
@@ -226,7 +232,7 @@ def getClubPosts(clubID, offset):
                 'error': 'No post yet'
             }), 404
         
-        # Step 2: Get the number of likes for each post and the poster's id, displayName, photo
+        # Step 2: Get the number of likes and number of comments for each post and the poster's id, displayName, photo
         for post in post_info:
             posterID = post['posterID'] # This is the club member's ID
             postID = post['id']
@@ -250,11 +256,19 @@ def getClubPosts(clubID, offset):
             else:
                 post['posterInfo'] = users_retrieved_list[posterID]
 
+            # Get the total number of likes for each post
             cur.execute('SELECT COUNT(*) AS "totalLikes" FROM "clubPostsLikes" WHERE "postID" = %s', (postID,))
             total_likes = cur.fetchone()
 
             # Add total likes into post
             post['totalLikes'] = total_likes['totalLikes']
+
+            # Get the total number of comments for each post
+            cur.execute('SELECT COUNT(*) AS "totalComments" FROM "clubPostComments" WHERE "postID" = %s', (postID,))
+            total_comments = cur.fetchone()
+
+            # Add total comments into post
+            post['totalComments'] = total_comments['totalComments']
 
             # Add post into filtered_post_list
             filtered_post_list.append(post)
@@ -401,7 +415,7 @@ def checkUserMembership(userID, userType, clubID):
 # -----------------------------------------------------------------------------------------
 # [GET] getUserLikesPost
 # Purpose: Get the posts that a specific user has liked in a specific club
-# Used: ClubPost.vue [components folder]
+# Used: ClubView.vue [components folder]
 # Output: Possible return codes [200 - Retreival success, 404 - No liked posts found, 500 - An error occurred retrieving the request]
 @blueprint.route('/getUserLikesPost/<memberID>/<clubID>', methods=['GET'])
 def getUserLikesPost(memberID, clubID):
@@ -416,6 +430,9 @@ def getUserLikesPost(memberID, clubID):
             return jsonify({
                 'error': 'No liked posts found'
             }), 404
+        
+        # Format the liked_posts into a list of postID
+        liked_posts = [post['postID'] for post in liked_posts]
     
         return jsonify({
             'liked_posts': liked_posts
@@ -526,6 +543,133 @@ def createClub():
             {
                 "code": 500,
                 "message": "An error occurred creating the club."
+            }
+        ), 500
+    
+    finally:
+        cur.close()
+
+
+# -----------------------------------------------------------------------------------------
+# [POST] addClubMembers
+# Purpose: Add new members to the club
+# Used: 
+# Input: 
+#   1. A list of new member objects containing the user's ID, user type and isAdmin status (e.g., [{'userID': 1, 'userType': 'user', 'isAdmin': true}, {'userID': 2, 'userType': 'producer', isAdmin: false}])
+#   2. Club ID
+# Output: Possible return codes [201 - New member added successfully, 404 - No such club exist, 500 - An error occurred adding the new member]
+@blueprint.route('/addClubMembers', methods=['POST'])
+def addClubMembers():
+    conn = g.db
+    cur = conn.cursor()
+
+    try:
+        data = request.get_json()
+
+        # Get all the required data
+        club_id = data['clubID']
+
+        # List of members to be added to the club
+        new_members_list = data['new_members']
+
+        join_date = datetime.now()
+
+        # Step 1: Check if the club exist
+        cur.execute('SELECT * FROM "clubs" WHERE id = %s', (club_id,))
+        club = cur.fetchone()
+
+        if not club:
+            return jsonify({
+                'error': 'No such club exist'
+            }), 404
+
+        # Step 2: Insert the new member into the clubMembers table
+        for user in new_members_list:
+            user_id = user['userID']
+            is_admin = user['isAdmin']
+            user_type = user['userType']
+
+            # Check if the user exist
+            if user_type == 'user':
+                cur.execute('SELECT * FROM "users" WHERE id = %s', (user_id,))
+                user = cur.fetchone()
+            elif user_type == 'producer':
+                cur.execute('SELECT * FROM "producers" WHERE id = %s', (user_id,))
+                user = cur.fetchone()
+            else:
+                cur.execute('SELECT * FROM "venues" WHERE id = %s', (user_id,))
+                user = cur.fetchone()
+            
+            # Skip to the next member if the user does not exist
+            if not user:
+                continue
+
+            cur.execute('INSERT INTO "clubMembers" ("clubID", "userID", "userType", "joinDate", "isAdmin", "joinStatus") VALUES (%s, %s, %s, %s, FALSE)', (club_id, user_id, user_type, join_date, is_admin,))
+            conn.commit()
+
+        return jsonify({
+            'message': 'New member added to the club'
+        }), 201
+
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred adding the new member."
+            }
+        ), 500
+    
+    finally:
+        cur.close()
+
+
+# -----------------------------------------------------------------------------------------
+# [POST] joinClub
+# Purpose: Join a club (not through invite and only for public clubs)
+# Used: ClubView.vue [views folder inside User folder]
+# Input:
+#   1. Club ID
+#   2. User ID (i.e., the user's ID in the 'users', 'producers' or 'venues' table)
+#   3. User Type
+# Output: Possible return codes [201 - User joined the club successfully, 404 - No such club exist, 500 - An error occurred joining the club]
+@blueprint.route('/joinClub', methods=['POST'])
+def joinClub():
+    conn = g.db
+    cur = conn.cursor()
+
+    try:
+        data = request.get_json()
+
+        # Get all the required data
+        club_id = data['clubID']
+        user_id = data['userID']
+        user_type = data['userType']
+
+        # Step 1: Check if the club exist
+        cur.execute('SELECT * FROM "clubs" WHERE id = %s', (club_id,))
+        club = cur.fetchone()
+
+        if not club:
+            return jsonify({
+                'error': 'No such club exist'
+            }), 404
+
+        # Step 2: Insert the user into the clubMembers table
+        join_date = datetime.now()
+        cur.execute('INSERT INTO "clubMembers" ("clubID", "userID", "userType", "joinDate", "isAdmin", "joinStatus") VALUES (%s, %s, %s, %s, FALSE, TRUE)', (club_id, user_id, user_type, join_date,))
+        conn.commit()
+
+        return jsonify({
+            'message': 'User joined the club successfully'
+        }), 201
+
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred joining the club."
             }
         ), 500
     
@@ -648,90 +792,16 @@ def addComment():
 
 
 # -----------------------------------------------------------------------------------------
-# [PUT] addClubMembers
-# Purpose: Add new members to the club
-# Used: 
-# Input: 
-#   1. A list of new member objects containing the user's ID, user type and isAdmin status (e.g., [{'userID': 1, 'userType': 'user', 'isAdmin': true}, {'userID': 2, 'userType': 'producer', isAdmin: false}])
-#   2. Club ID
-# Output: Possible return codes [200 - New member added successfully, 404 - No such club exist, 500 - An error occurred adding the new member]
-@blueprint.route('/addClubMembers', methods=['PUT'])
-def addClubMembers():
-    conn = g.db
-    cur = conn.cursor()
-
-    try:
-        data = request.get_json()
-
-        # Get all the required data
-        club_id = data['clubID']
-
-        # List of members to be added to the club
-        new_members_list = data['new_members']
-
-        join_date = datetime.now()
-
-        # Step 1: Check if the club exist
-        cur.execute('SELECT * FROM "clubs" WHERE id = %s', (club_id,))
-        club = cur.fetchone()
-
-        if not club:
-            return jsonify({
-                'error': 'No such club exist'
-            }), 404
-
-        # Step 2: Insert the new member into the clubMembers table
-        for user in new_members_list:
-            user_id = user['userID']
-            is_admin = user['isAdmin']
-            user_type = user['userType']
-
-            # Check if the user exist
-            if user_type == 'user':
-                cur.execute('SELECT * FROM "users" WHERE id = %s', (user_id,))
-                user = cur.fetchone()
-            elif user_type == 'producer':
-                cur.execute('SELECT * FROM "producers" WHERE id = %s', (user_id,))
-                user = cur.fetchone()
-            else:
-                cur.execute('SELECT * FROM "venues" WHERE id = %s', (user_id,))
-                user = cur.fetchone()
-            
-            # Skip to the next member if the user does not exist
-            if not user:
-                continue
-
-            cur.execute('INSERT INTO "clubMembers" ("clubID", "userID", "userType", "joinDate", "isAdmin", "joinStatus") VALUES (%s, %s, %s, %s, FALSE)', (club_id, user_id, user_type, join_date, is_admin,))
-            conn.commit()
-
-        return jsonify({
-            'message': 'New member added to the club'
-        }), 200
-
-    except Exception as e:
-        print(str(e))
-        return jsonify(
-            {
-                "code": 500,
-                "message": "An error occurred adding the new member."
-            }
-        ), 500
-    
-    finally:
-        cur.close()
-
-
-# -----------------------------------------------------------------------------------------
-# [PUT] joinClub
-# Purpose: Join a club (i.e., change joinStatus to TRUE)
+# [PUT] acceptClubInvite
+# Purpose: Join a club after accepting friend's invite to the club (i.e., change joinStatus to TRUE)
 # Used: 
 # Input: 
 #   1. User ID
 #   2. UserType
 #   2. Club ID
 # Output: Possible return codes [200 - User joined the club successfully, 404 - No such club/user exist or user not yet invited to the club, 500 - An error occurred joining the club]
-@blueprint.route('/joinClub', methods=['PUT'])
-def joinClub():
+@blueprint.route('/acceptClubInvite', methods=['PUT'])
+def acceptClubInvite():
     conn = g.db
     cur = conn.cursor()
 
@@ -989,7 +1059,8 @@ def likePost():
             conn.commit()
 
             return jsonify({
-                'message': 'Post unliked successfully'
+                'message': 'Post unliked successfully',
+                "liked": False
             }), 200
 
         # Step 4: Insert the like into the clubPostsLikes table
@@ -997,7 +1068,8 @@ def likePost():
         conn.commit()
 
         return jsonify({
-            'message': 'Post liked successfully'
+            'message': 'Post liked successfully',
+            "liked": True
         }), 200
     
     except Exception as e:
@@ -1079,6 +1151,150 @@ def likeUnlikeComment():
             {
                 "code": 500,
                 "message": "An error occurred liking the comment."
+            }
+        ), 500
+    
+    finally:
+        cur.close()
+
+
+# -----------------------------------------------------------------------------------------
+# [PUT] makeAdmin
+# Purpose: Make a member an admin of the club
+# Used:
+# Input:
+#   1. Member ID (i.e., the member ID who is being made an admin)
+#   2. Club ID
+#   3. Admin ID (i.e., the member ID who is making the member an admin)
+# Output: Possible return codes [200 - Member is now an admin, 403 - No permission to make member an admin, 404 - No such club/member exist, 500 - An error occurred making the member an admin]
+@blueprint.route('/makeAdmin', methods=['PUT'])
+def makeAdmin():
+    conn = g.db
+    cur = conn.cursor()
+
+    try:
+        data = request.get_json()
+
+        # Get all the required data
+        member_id = data['memberID']
+        club_id = data['clubID']
+        admin_id = data['adminID']
+
+        # Step 1: Check if the club exist
+        cur.execute('SELECT * FROM "clubs" WHERE id = %s', (club_id,))
+        club = cur.fetchone()
+
+        if not club:
+            return jsonify({
+                'error': 'No such club exist'
+            }), 404
+
+        # Step 2: Check if the user who is making someone an admin is an admin of the club
+        cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s AND "memberID" = %s AND "isAdmin" = TRUE', (club_id, admin_id,))
+        isAdmin = cur.fetchone()
+
+        if not isAdmin:
+            return jsonify({
+                'error': 'You do not have the permission to make a member an admin of this club'
+            }), 403
+
+        # Step 3: Check if the member exist
+        cur.execute('SELECT * FROM "clubMembers" WHERE id = %s', (member_id,))
+        member = cur.fetchone()
+
+        if not member:
+            return jsonify({
+                'error': 'No such member exist'
+            }), 404
+
+        # Step 4: Make the member an admin
+        cur.execute('UPDATE "clubMembers" SET "isAdmin" = TRUE WHERE "clubID" = %s AND id = %s', (club_id, member_id,))
+        conn.commit()
+
+        return jsonify({
+            'message': 'Member is now an admin'
+        }), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred making the member an admin."
+            }
+        ), 500
+    
+    finally:
+        cur.close()
+
+
+# -----------------------------------------------------------------------------------------
+# [PUT] updateClubInfo
+# Purpose: Update the club information
+# Used: ClubSettings.vue [views folder inside User folder]
+# Input:
+#   1. Club ID
+#   2. Club Name 
+#   3. Club Description
+#   4. Is Invite Only (boolean: True = Private, False = Public)
+#   5. Club Banner (optional)
+#   6. Editor ID (i.e., the user who is updating the club information)
+# Output: Possible return codes [200 - Club information updated successfully, 403 - No permission to edit the club information, 404 - No such club exist, 500 - An error occurred updating the club information]
+@blueprint.route('/updateClubInfo', methods=['PUT'])
+def updateClubInfo():
+    conn = g.db
+    cur = conn.cursor()
+
+    try:
+        data = request.get_json()
+
+        # Get all the required data
+        club_id = data['clubID']
+        club_name = data['clubName']
+        club_desc = data['clubDesc']
+        is_invite_only = data['isInviteOnly']
+        editor_id = data['editorID']
+
+        # Step 1: Check if the club exist
+        cur.execute('SELECT * FROM "clubs" WHERE id = %s', (club_id,))
+        club = cur.fetchone()
+
+        if not club:
+            return jsonify({
+                'error': 'No such club exist'
+            }), 404
+
+        # Step 2: Check if the user who is updating the club information is an admin of the club
+        cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s AND "memberID" = %s AND "isAdmin" = TRUE', (club_id, editor_id,))
+        isAdmin = cur.fetchone()
+
+        if not isAdmin:
+            return jsonify({
+                'error': 'You do not have the permission to edit the club information'
+            }), 403
+
+        # Step 3: Check if the club banner is provided
+        if 'image64' in data:
+            image64 = s3Images.uploadBase64ImageToS3(data['image64'])
+
+            # Update the club banner
+            cur.execute('UPDATE "clubs" SET "clubBanner" = %s WHERE id = %s', (image64, club_id,))
+            conn.commit()
+
+        # Step 4: Update the club information
+        cur.execute('UPDATE "clubs" SET "clubName" = %s, "clubDesc" = %s, "isInviteOnly" = %s WHERE id = %s', (club_name, club_desc, is_invite_only, club_id,))
+        conn.commit()
+
+        return jsonify({
+            'message': 'Club information updated successfully'
+        }), 200
+    
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred updating the club information."
             }
         ), 500
     
@@ -1295,6 +1511,130 @@ def removeComment():
             {
                 "code": 500,
                 "message": "An error occurred removing the comment."
+            }
+        ), 500
+    
+    finally:
+        cur.close()
+
+
+# -----------------------------------------------------------------------------------------
+# [DELETE] leaveClub
+# Purpose: Leave the club
+# Used: ClubView.vue [views folder inside User folder]
+# Input:
+#   1. Member ID
+#   2. Club ID
+# Output: Possible return codes [200 - Member left the club successfully, 404 - No such club/member exist, 500 - An error occurred leaving the club]
+@blueprint.route('/leaveClub', methods=['DELETE'])
+def leaveClub():
+    conn = g.db
+    cur = conn.cursor()
+
+    try:
+        data = request.get_json()
+
+        # Get all the required data
+        member_id = data['memberID']
+        club_id = data['clubID']
+
+        # Step 1: Check if the club exist
+        cur.execute('SELECT * FROM "clubs" WHERE id = %s', (club_id,))
+        club = cur.fetchone()
+
+        if not club:
+            return jsonify({
+                'error': 'No such club exist'
+            }), 404
+
+        # Step 2: Check if the member exist
+        cur.execute('SELECT * FROM "clubMembers" WHERE id = %s', (member_id,))
+        member = cur.fetchone()
+
+        if not member:
+            return jsonify({
+                'error': 'No such member exist'
+            }), 404
+        
+        # Step 3: Remove comments, likes and posts of the member
+        cur.execute('DELETE FROM "clubPostCommentsLikes" WHERE "memberID" = %s', (member_id,))
+        cur.execute('DELETE FROM "clubPostComments" WHERE "memberID" = %s', (member_id,))
+        cur.execute('DELETE FROM "clubPostsLikes" WHERE "memberID" = %s', (member_id,))
+        cur.execute('DELETE FROM "clubPosts" WHERE "memberID" = %s', (member_id,))
+        
+        # Step 3: Leave the club
+        cur.execute('DELETE FROM "clubMembers" WHERE "clubID" = %s AND id = %s', (club_id, member_id,))
+        conn.commit()
+
+        return jsonify({
+            'message': 'Member left the club successfully'
+        }), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred leaving the club."
+            }
+        ), 500
+    
+    finally:
+        cur.close()
+
+
+# -----------------------------------------------------------------------------------------
+# [DELETE] deleteClub
+# Purpose: Delete the club
+# Used: ClubSettings.vue [views folder inside User folder]
+# Input:
+#   1. Club ID
+# Output: Possible return codes [200 - Club deleted successfully, 404 - No such club exist, 500 - An error occurred deleting the club]
+@blueprint.route('/deleteClub', methods=['DELETE'])
+def deleteClub():
+    conn = g.db
+    cur = conn.cursor()
+
+    try:
+        data = request.get_json()
+
+        # Get all the required data
+        club_id = data['clubID']
+
+        # Step 1: Check if the club exist
+        cur.execute('SELECT * FROM "clubs" WHERE id = %s', (club_id,))
+        club = cur.fetchone()
+
+        if not club:
+            return jsonify({
+                'error': 'No such club exist'
+            }), 404
+        
+        # Step 2: Remove all the club members
+        cur.execute('DELETE FROM "clubMembers" WHERE "clubID" = %s', (club_id,))
+
+        # Step 3: Remove all the post in the club
+        cur.execute('DELETE FROM "clubPosts" WHERE "clubID" = %s', (club_id,))
+
+        # Step 4: Remove all the likes for the post, comments for deleted posts and likes for the comments where the post ID is null
+        cur.execute('DELETE FROM "clubPostsLikes" WHERE "clubID" = %s', (club_id,))
+        cur.execute('DELETE FROM "clubPostComments" WHERE "postID" IS NULL')
+        cur.execute('DELETE FROM "clubPostCommentsLikes" WHERE "postID" IS NULL')
+
+        # Step 5: Remove the club
+        cur.execute('DELETE FROM "clubs" WHERE id = %s', (club_id,))
+        conn.commit()
+
+        return jsonify({
+            'message': 'Club deleted successfully'
+        }), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred deleting the club."
             }
         ), 500
     
