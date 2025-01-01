@@ -297,6 +297,7 @@
                         try {
                             const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/adminFunctions/importListings`, 
                                 formData, {
+                                timeout:600000,
                                 headers: {
                                     'Content-Type': 'multipart/form-data'
                                 }
@@ -310,9 +311,12 @@
                             }
                             })
                             .catch((error)=>{
+                                if (error.code === 'ECONNABORTED'){
+                                    console.error('>Request timed out!!!)')
+                                } else{    
                                 console.error(error);
                                 this.responseCode = error.response.data.code
-                                
+                                }
                             });
                             
                             

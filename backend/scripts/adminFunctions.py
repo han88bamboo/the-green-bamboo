@@ -753,12 +753,18 @@ def convert_to_utf8(file):
 
     # Detect encoding using chardet
     detected_encoding = chardet.detect(raw_data)['encoding']
+    print(f">detecting encoding...")
 
-    if(detected_encoding== 'ascii' or detected_encoding == 'utf-8'):
-        return file
+    # # if(detected_encoding== 'ascii' or detected_encoding == 'utf-8'):
+    # #     return file
+
+    # if(detected_encoding== 'ascii' or detected_encoding == 'utf-8'):
+    #     print(f">detected either ascii or utf-8")
+    #     return file
 
     # Decode the raw data using the detected encoding
     text = raw_data.decode(detected_encoding)
+    print(f">Decode the raw data using the detected encoding")
     
     # Normalize text (optional step depending on use case)
     normalized_text = normalize_unicode(text)
