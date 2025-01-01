@@ -568,123 +568,131 @@ def importListings():
     conn = g.db
     cur = conn.cursor()
     file = request.files['file']
-    returnFile = convert_to_utf8(file)
+
+    # detect encoding of CSV file
+    file_encoding = detect_encoding(file)
+
+    # define column data types
     column_data_types = [str, str, str, str, str, str, str, float, str, str, str, str]
-    csv_data = csv.reader(io.TextIOWrapper(returnFile, 'utf-8'))
-    for _ in range(4):
-        next(csv_data)
-    # Fetch all existing producers and built a name to id mapping
-    cur.execute('SELECT "producerName", "id" FROM "producers"')
-    producers = cur.fetchall()
-    producer_name_id_dict = {row['producerName']: row['id'] for row in producers}
+    print(file_encoding)
+    # Wrap csv in context manager to process safely
+    with io.TextIOWrapper(file, encoding=file_encoding, errors='replace') as csv_file:
+        print("enters here")
+        # read csv data
+        csv_data = csv.reader(csv_file)
+        for _ in range(4):
+            next(csv_data)
+        # Fetch all existing producers and built a name to id mapping
+        cur.execute('SELECT "producerName", "id" FROM "producers"')
+        producers = cur.fetchall()
+        producer_name_id_dict = {row['producerName']: row['id'] for row in producers}
 
-    listings_to_insert = []
-    try:
-        for row in csv_data:
-            converted_row = []
-            for data_type, value in zip(column_data_types, row):
-                if data_type is float:
-                    value = value.replace('%', '').strip()
-                    converted_value = data_type(value) if value else None
-                else:
-                    converted_value = data_type(value) if value else None
-                converted_row.append(converted_value)
+        listings_to_insert = []
+        try:
+            for row in csv_data:
+                converted_row = []
+                for data_type, value in zip(column_data_types, row):
+                    if data_type is float:
+                        value = value.replace('%', '').strip()
+                        converted_value = data_type(value) if value else None
+                    else:
+                        converted_value = data_type(value) if value else None
+                    converted_row.append(converted_value)
 
-            # Lookup producer ID based on producer name
-            producer_name = converted_row[1]
-            producer_id = producer_name_id_dict.get(producer_name)
+                # Lookup producer ID based on producer name
+                producer_name = converted_row[1]
+                producer_id = producer_name_id_dict.get(producer_name)
 
-            if producer_id is None:
-                producer_to_insert = {
-                    "producerName": producer_name,
-                    "producerDesc": "",
-                    "originCountry": "",
-                    "mainDrinks": [],
-                    "photo": "",
-                    "hashedPassword": hash_password(producer_name, "admin1234"),
-                    "claimStatus": False,
-                    "statusOB": "",
-                    "username": None,
-                    "producerLink": "",
-                    "stripeCustomerId": None,
-                    "claimStatusCheckDate": None
+                if producer_id is None:
+                    producer_to_insert = {
+                        "producerName": producer_name,
+                        "producerDesc": "",
+                        "originCountry": "",
+                        "mainDrinks": [],
+                        "photo": "",
+                        "hashedPassword": hash_password(producer_name, "admin1234"),
+                        "claimStatus": False,
+                        "statusOB": "",
+                        "username": None,
+                        "producerLink": "",
+                        "stripeCustomerId": None,
+                        "claimStatusCheckDate": None
+                    }
+
+                    cur.execute("""
+                        INSERT INTO producers (
+                            "producerName", "producerDesc", "originCountry", "mainDrinks", "photo", "hashedPassword",
+                            "claimStatus", "statusOB", "username", "producerLink", "stripeCustomerId", "claimStatusCheckDate"
+                        )
+                        VALUES (%(producerName)s, %(producerDesc)s, %(originCountry)s, %(mainDrinks)s, %(photo)s, %(hashedPassword)s,
+                                %(claimStatus)s, %(statusOB)s, %(username)s, %(producerLink)s, %(stripeCustomerId)s, %(claimStatusCheckDate)s)
+                        RETURNING "id"
+                    """, producer_to_insert)
+
+                    new_producer_id = cur.fetchone()['id']
+                    conn.commit()
+
+                    producer_name_id_dict[producer_name] = new_producer_id
+                    producer_id = new_producer_id
+
+                # Upload url to s3 bucket to store as own image
+                s3_url = s3Images.uploadURLtoS3(converted_row[11]) if converted_row[11] else None
+
+                # # Convert the image URL to base64
+                # base64_str = image_url_to_base64(converted_row[11]) if converted_row[11] else None
+
+                # # upload image to S3 object and retrieve the URL
+                # s3_url = s3Images.uploadBase64ImageToS3(base64_str) if base64_str else ''
+
+                # Build the listing data
+                listing_data = {
+                    'listingName': converted_row[0],
+                    'producerID': producer_id,
+                    'bottler': converted_row[2],
+                    'originCountry': converted_row[3],
+                    'drinkType': converted_row[4],
+                    'typeCategory': converted_row[5],
+                    'age': converted_row[6],
+                    'abv': converted_row[7],
+                    'reviewLink': converted_row[8],
+                    'officialDesc': converted_row[9],
+                    'sourceLink': converted_row[10],
+                    'photo': s3_url,
+                    'allowMod': True,
+                    'addedDate': datetime.now()
                 }
-
-                cur.execute("""
-                    INSERT INTO producers (
-                        "producerName", "producerDesc", "originCountry", "mainDrinks", "photo", "hashedPassword",
-                        "claimStatus", "statusOB", "username", "producerLink", "stripeCustomerId", "claimStatusCheckDate"
-                    )
-                    VALUES (%(producerName)s, %(producerDesc)s, %(originCountry)s, %(mainDrinks)s, %(photo)s, %(hashedPassword)s,
-                            %(claimStatus)s, %(statusOB)s, %(username)s, %(producerLink)s, %(stripeCustomerId)s, %(claimStatusCheckDate)s)
-                    RETURNING "id"
-                """, producer_to_insert)
-
-                new_producer_id = cur.fetchone()['id']
-                conn.commit()
-
-                producer_name_id_dict[producer_name] = new_producer_id
-                producer_id = new_producer_id
-
-            # Upload url to s3 bucket to store as own image
-            s3_url = s3Images.uploadURLtoS3(converted_row[11]) if converted_row[11] else None
-
-            # # Convert the image URL to base64
-            # base64_str = image_url_to_base64(converted_row[11]) if converted_row[11] else None
-
-            # # upload image to S3 object and retrieve the URL
-            # s3_url = s3Images.uploadBase64ImageToS3(base64_str) if base64_str else ''
-
-            # Build the listing data
-            listing_data = {
-                'listingName': converted_row[0],
-                'producerID': producer_id,
-                'bottler': converted_row[2],
-                'originCountry': converted_row[3],
-                'drinkType': converted_row[4],
-                'typeCategory': converted_row[5],
-                'age': converted_row[6],
-                'abv': converted_row[7],
-                'reviewLink': converted_row[8],
-                'officialDesc': converted_row[9],
-                'sourceLink': converted_row[10],
-                'photo': s3_url,
-                'allowMod': True,
-                'addedDate': datetime.now()
-            }
-
-            # Append to listings to insert
-            listings_to_insert.append(listing_data)
-
-        # Now, insert the listings into the 'strings' table
-        for listing in listings_to_insert:
-            columns = ', '.join(f'"{col}"' for col in listing.keys())
-            placeholders = ', '.join(['%s'] * len(listing))
-            sql = f"INSERT INTO listings ({columns}) VALUES ({placeholders})"
-            cur.execute(sql, list(listing.values()))
-        conn.commit()
+                
+                # Append to listings to insert
+                listings_to_insert.append(listing_data)
+            # Now, insert the listings into the 'strings' table
+            for listing in listings_to_insert:
+                columns = ', '.join(f'"{col}"' for col in listing.keys())
+                placeholders = ', '.join(['%s'] * len(listing))
+                sql = f"INSERT INTO listings ({columns}) VALUES ({placeholders})"
+                cur.execute(sql, list(listing.values()))
+            conn.commit()
+            
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            conn.rollback()
+            return jsonify(
+                {
+                    "code": 500,
+                    "message": "Bulk Import Listings Failed. An error occurred."
+                }
+            ), 500
         
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        conn.rollback()
+        finally:
+            cur.close()
+
         return jsonify(
             {
-                "code": 500,
-                "message": "Bulk Import Listings Failed. An error occurred."
+                "code": 201,
+                "message": "Bulk Import Listings Successful"
             }
-        ), 500
-    
-    finally:
-        cur.close()
-
-    return jsonify(
-        {
-            "code": 201,
-            "message": "Bulk Import Listings Successful"
-        }
-    ), 201
-
+        ), 201
+    print("nopes")
 
 
     # # for loop for each observation tag and update
@@ -748,7 +756,7 @@ def readCSV():
         }), 201
 # -----------------------------------------------------------------------------------------
 # This function is to convert non utf-8 encoded files to utf-8 files
-def convert_to_utf8(file):
+def detect_encoding(file):
     raw_data = file.read()
 
     # Detect encoding using chardet
@@ -763,18 +771,20 @@ def convert_to_utf8(file):
     #     return file
 
     # Decode the raw data using the detected encoding
-    text = raw_data.decode(detected_encoding)
-    print(f">Decode the raw data using the detected encoding")
+    # text = raw_data.decode(detected_encoding)
+    # print(f">Decode the raw data using the detected encoding")
     
     # Normalize text (optional step depending on use case)
-    normalized_text = normalize_unicode(text)
+    # normalized_text = normalize_unicode(text)
 
     # Create a new in-memory file with UTF-8 encoding
-    output_file = io.BytesIO()
-    output_file.write(normalized_text.encode('utf-8'))
-    output_file.seek(0)  # Reset the pointer to the start of the file
-    return output_file
+    # output_file = io.BytesIO()
+    # output_file.write(normalized_text.encode('utf-8'))
+    # output_file.seek(0)  # Reset the pointer to the start of the file
+    file.seek(0)  # Reset the pointer to the start of the file
+    print("done detecting")
+    return detected_encoding
     
 # This function is to normalise the data in the rows
-def normalize_unicode(text):
-    return unicodedata.normalize('NFKC', str(text)) if text else text
+# def normalize_unicode(text):
+#     return unicodedata.normalize('NFKC', str(text)) if text else text
