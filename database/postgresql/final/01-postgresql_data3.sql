@@ -488,7 +488,7 @@ CREATE TABLE "clubPosts" (
     "clubID" INTEGER REFERENCES "clubs"("id") ON DELETE SET NULL, -- [!] References clubs FK
     "postDate" TIMESTAMP,
     "postContent" TEXT,
-    "postPhoto" TEXT,
+    "postPhotos" TEXT[],
     "posterID" INTEGER REFERENCES "clubMembers"("id") ON DELETE SET NULL -- [!] References clubMembers FK
 );
 

@@ -1,6 +1,6 @@
 # Routes: /getClubs (GET), /getClubwSearch (GET), /getSpecificClubInfo (GET),
 #         /getClubPosts (GET), /getClubPostDetails (GET), /checkUserMembership (GET),
-#         /getUserLikesPost (GET), /getUserLikesComments (GET)
+#         /getUserLikesPost (GET), /getUserLikesComments (GET), /getUserClubs (GET),
 #         /createClubs (POST), /addClubMembers (POST), /joinClub (POST), 
 #         /addPost (POST), /addComment (POST), 
 #         /acceptClubInvite (PUT), /editPost (PUT), /editComment (PUT)
@@ -12,7 +12,7 @@
 
 import os
 from flask import Blueprint, g, jsonify, request
-import datetime
+from datetime import datetime
 
 # Use to upload image to S3
 import s3Images
@@ -488,6 +488,45 @@ def getUserLikesComments(memberID, postID):
 
 
 # -----------------------------------------------------------------------------------------
+# [GET] getUserClubs
+# Purpose: Get the clubs that a specific user is a member of
+# Used: BrowseClubs.vue [views folder inside User folder]
+# Output: Possible return codes [200 - Retreival success, 404 - No clubs found, 500 - An error occurred retrieving the request]
+@blueprint.route('/getUserClubs/<userID>/<userType>', methods=['GET'])
+def getUserClubs(userID, userType):
+    conn = g.db
+    cur = conn.cursor()
+
+    try:
+        cur.execute('SELECT "clubID" FROM "clubMembers" WHERE "userID" = %s AND "userType" = %s AND "joinStatus" = TRUE', (userID, userType,))
+        user_clubs = cur.fetchall()
+
+        if not user_clubs:
+            return jsonify({
+                'error': 'No clubs found'
+            }), 404
+        
+        # Format the user_clubs into a list of clubID
+        user_clubs = [club['clubID'] for club in user_clubs]
+
+        return jsonify({
+            'user_clubs': user_clubs
+        }), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred retrieving the request."
+            }
+        ), 500
+    
+    finally:
+        cur.close()
+
+
+# -----------------------------------------------------------------------------------------
 # [POST] createClubs
 # Purpose: Create a new club
 # Used: CreateClub.vue [views folder inside User folder]
@@ -632,7 +671,7 @@ def addClubMembers():
 #   1. Club ID
 #   2. User ID (i.e., the user's ID in the 'users', 'producers' or 'venues' table)
 #   3. User Type
-# Output: Possible return codes [201 - User joined the club successfully, 404 - No such club exist, 500 - An error occurred joining the club]
+# Output: Possible return codes [201 - User joined the club successfully, 404 - No such club exist, 409 - User is already a member, 500 - An error occurred joining the club]
 @blueprint.route('/joinClub', methods=['POST'])
 def joinClub():
     conn = g.db
@@ -654,14 +693,26 @@ def joinClub():
             return jsonify({
                 'error': 'No such club exist'
             }), 404
+        
+        # Step 2: Check if the user is already a member of the club
+        cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s AND "userID" = %s AND "userType" = %s', (club_id, user_id, user_type,))
+        member = cur.fetchone()
 
-        # Step 2: Insert the user into the clubMembers table
+        if member:
+            return jsonify({
+                'error': 'User is already a member of the club'
+            }), 409
+
+        # Step 3: Insert the user into the clubMembers table
         join_date = datetime.now()
         cur.execute('INSERT INTO "clubMembers" ("clubID", "userID", "userType", "joinDate", "isAdmin", "joinStatus") VALUES (%s, %s, %s, %s, FALSE, TRUE)', (club_id, user_id, user_type, join_date,))
         conn.commit()
 
+        # Get the member's ID in the clubMembers table
+        cur.execute('SELECT id FROM "clubMembers" WHERE "clubID" = %s AND "userID" = %s AND "userType" = %s', (club_id, user_id, user_type,))
         return jsonify({
-            'message': 'User joined the club successfully'
+            'message': 'User joined the club successfully',
+            'memberID': cur.fetchone()['id']
         }), 201
 
     except Exception as e:
@@ -703,14 +754,17 @@ def addPost():
         # Step 1: Get today's date
         post_date = datetime.now()
 
-        # Step 2: Check if the post has an image
-        if 'image64' in data:
-            image64 = s3Images.uploadBase64ImageToS3(data['image64'])
+        # Step 2: Check if the post has images
+        if 'images' in data:
+
+            # Loop through the images and upload them to S3
+            for image in data['images']:
+                image64 = s3Images.uploadBase64ImageToS3(image)
         else:
             image64 = None
 
         # Step 3: Insert the new post into the database
-        cur.execute('INSERT INTO "clubPosts" ("clubID", "postDate", "postContent", "postPhoto", "posterID") VALUES (%s, %s, %s, %s, %s) RETURNING id', 
+        cur.execute('INSERT INTO "clubPosts" ("clubID", "postDate", "postContent", "postPhotos", "posterID") VALUES (%s, %s, %s, %s, %s) RETURNING id', 
                     (club_id, post_date, post_content, image64, poster_id,))
         post_id = cur.fetchone()['id']
         conn.commit()
@@ -915,12 +969,20 @@ def editPost():
             }), 404
         
         # Step 4: Check if the post photo is provided
-        if 'image64' in data:
-            image64 = s3Images.uploadBase64ImageToS3(data['image64'])
+        if 'new_images' in data:
 
-            # Update the post photo
-            cur.execute('UPDATE "clubPosts" SET "postPhoto" = %s WHERE id = %s', (image64, post_id,))
-            conn.commit()
+            # Get the current post photos text array
+            cur.execute('SELECT "postPhotos" FROM "clubPosts" WHERE id = %s', (post_id,))
+            post_photos = cur.fetchone()['postPhotos']
+
+            # Loop through the images and upload them to S3
+            for image in data['new_images']:
+                image64 = s3Images.uploadBase64ImageToS3(image)
+
+                # Add the new image to the post photos text array
+                post_photos.append(image64)
+            
+            cur.execute('UPDATE "clubPosts" SET "postPhotos" = %s WHERE id = %s', (post_photos, post_id,))
 
         # Step 5: Update the post content
         cur.execute('UPDATE "clubPosts" SET "postContent" = %s WHERE id = %s', (post_content, post_id,))
@@ -1050,7 +1112,7 @@ def likePost():
             }), 404
         
         # Step 3: Check if the member has already liked the post
-        cur.execute('SELECT * FROM "clubPostsLikes" WHERE "cludID" = %s AND "memberID" = %s AND "postID" = %s', (club_id, member_id, post_id,))
+        cur.execute('SELECT * FROM "clubPostsLikes" WHERE "clubID" = %s AND "memberID" = %s AND "postID" = %s', (club_id, member_id, post_id,))
         liked = cur.fetchone()
 
         if liked:
@@ -1558,11 +1620,11 @@ def leaveClub():
         
         # Step 3: Remove comments, likes and posts of the member
         cur.execute('DELETE FROM "clubPostCommentsLikes" WHERE "memberID" = %s', (member_id,))
-        cur.execute('DELETE FROM "clubPostComments" WHERE "memberID" = %s', (member_id,))
+        cur.execute('DELETE FROM "clubPostComments" WHERE "commenterID" = %s', (member_id,))
         cur.execute('DELETE FROM "clubPostsLikes" WHERE "memberID" = %s', (member_id,))
-        cur.execute('DELETE FROM "clubPosts" WHERE "memberID" = %s', (member_id,))
+        cur.execute('DELETE FROM "clubPosts" WHERE "posterID" = %s', (member_id,))
         
-        # Step 3: Leave the club
+        # Step 4: Leave the club
         cur.execute('DELETE FROM "clubMembers" WHERE "clubID" = %s AND id = %s', (club_id, member_id,))
         conn.commit()
 

@@ -59,7 +59,7 @@
             <div v-if="clubs.length > 0" class="mt-3">
 
                 <!-- Bootstrap Horizontal Card for each club -->
-                <div v-for="club in clubs" :key="club.club_id" class="mb-3">
+                <div v-for="club in clubs" :key="club.id" class="mb-3">
                     <div class="row g-0">
 
                         <!-- Club Banner Image -->
@@ -93,8 +93,8 @@
                                 <p class="card-text text-start">{{ club.clubDesc }}</p>
 
                                 <!-- Join Club Button -->
-                                <button type="button" class="btn btn-primary mt-auto align-self-start" @click="joinClub">+Join This Club</button>
-                                
+                                <button v-if="userClubs.includes(club.id)" type="button" class="btn btn-primary mt-auto align-self-start" disabled>Joined</button>
+                                <button v-else type="button" class="btn btn-primary mt-auto align-self-start" @click="joinClub(club.id)">+Join This Club</button>
                             </div>
                         </div>
                     </div>
@@ -147,6 +147,9 @@ export default {
 
             // Variable for search bar
             searchQuery: "",
+
+            // Variable to store the clubs the user is a member of
+            userClubs: [],
         }
     },
 
@@ -236,7 +239,7 @@ export default {
         },
 
         // Function to join a club
-        joinClub() {
+        async joinClub(clubId) {
 
             // Check if the user is logged in
             if (this.userType == "defaultUser") {
@@ -245,8 +248,37 @@ export default {
                 return;
             }
 
-            // Redirect to join club page
-            this.$router.push("/club/create");
+            // API call to join the club
+            try {
+                // Disable the button to prevent multiple clicks
+                this.disableButton = true;
+
+                // Join the club
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/club/joinClub`, {
+                    userID: this.userID,
+                    clubID: clubId,
+                    userType: this.userType
+                });
+
+                if (response.status == 201) {
+                    // Redirect to the club page
+                    this.$router.push({ name: 'clubview', params: { clubID: clubId } });
+                }
+
+            } catch (error) {
+                console.log(error);
+            }
+        },
+
+        // Function to retrieve a list of clubs the user is a member of (to show join or leave button)
+        async getMemberClubs() {
+            // API call to get the list of clubs the user is a member of
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getUserClubs/${this.userID}/${this.userType}`);
+                this.userClubs = response.data.user_clubs;
+            } catch (error) {
+                console.log(error);
+            }
         }
 
     },
@@ -257,6 +289,9 @@ export default {
         // Get the account id and type of the user
         this.userID = localStorage.getItem("88B_accID");
         this.userType = localStorage.getItem("88B_accType");
+
+        // Get the list of clubs the user is a member of
+        this.getMemberClubs();
     }
 }
 

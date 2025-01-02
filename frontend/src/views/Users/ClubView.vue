@@ -44,11 +44,78 @@
                                 <h1 class="fw-bold text-start">{{ clubInfo.clubName }}</h1>
                             </div>
                             <div class="col-md-6 text-end">
-                                <button v-if="isMember" class="btn primary-btn-green">Add Post</button>
-                                <button v-else class="btn primary-btn-green">Join Club</button>
+                                <button v-if="isMember" class="btn primary-btn-green" data-bs-toggle="modal" data-bs-target="#addPostModal">Add Post</button>
+                                <button v-else class="btn primary-btn-green" @click="joinClub" :disabled="disableButton">Join Club</button>
+                                <button v-if="isMember" class="btn primary-btn-red ms-3" data-bs-toggle="modal" data-bs-target="#leaveClubModal">Leave Club</button>
                             </div>
                         </div>
 
+                        <!-- Add post modal start -->
+                        <div class="modal fade" id="addPostModal" tabindex="-1" aria-labelledby="addPostModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+
+                                    <!-- Modal header -->
+                                    <div class="modal-header d-flex justify-content-between">
+                                        <h5 class="modal-title" id="addPostModalLabel">Add A New Post</h5>
+                                        <button type="button" class="custom-close-btn" data-bs-dismiss="modal" aria-label="Close">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                                                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+
+                                    <!-- Modal body -->
+                                    <div class="modal-body">
+                                        <div class="container">
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <textarea class="form-control" rows="5" placeholder="Write your post here..." v-model="newPostContent"></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="row mt-3">
+                                                <div class="col-md-12">
+                                                    <input type="file" class="form-control" accept="image/*" multiple @change="imageUpload"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Modal footer -->
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn" data-bs-dismiss="modal" :disabled="disableButton">Cancel</button>
+                                        <button type="button" class="btn primary-btn-green" :disabled="disableButton" @click="aAddPost">Post</button>
+                                    </div>
+                                </div>  
+                            </div>
+                        </div>
+
+                        <!-- Confirm leave club modal start -->
+                        <div class="modal fade" id="leaveClubModal" tabindex="-1" aria-labelledby="leaveClubModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header d-flex justify-content-between">
+                                        <h5 class="modal-title" id="leaveClubModalLabel">Leave Club</h5>
+                                        <button type="button" class="custom-close-btn" data-bs-dismiss="modal" aria-label="Close">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                                                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body
+                                    ">
+                                        <p>Are you sure you want to leave this club?</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn" data-bs-dismiss="modal" :disabled="disableButton">Cancel</button>
+                                        <button type="button" class="btn primary-btn-red" @click="leaveClub" :disabled="disableButton">Leave Club</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- end of confirm leave club modal -->
+
+                        <!-- Post header -->
                         <h4 class="fst-italic text-start mt-3">Latest Posts</h4>
 
                         <!-- Row 2: Post -->
@@ -89,11 +156,40 @@
                                             <p>{{ post.postDate }}</p>
                                         </div>
                                     </div>
-
+                        
                                     <!-- Row 2: Post photo (optional) -->
-                                    <div class="row">
+                                    <div class="row mb-3" v-if="post.postPhotos.length > 0">
                                         <div class="col-md-12">
-                                            <img v-if="post.postPhoto" :src="post.postPhoto" class="img-fluid" alt="Post Photo">
+                                            <div id="postPhotosCarousel" class="carousel slide">
+                                                <div class="carousel-indicators">
+                                                    <button
+                                                        v-for="(photo, index) in post.postPhotos"
+                                                        :key="index"
+                                                        type="button"
+                                                        style="background-color: black;"
+                                                        :data-bs-target="'#postPhotosCarousel'"
+                                                        :data-bs-slide-to="index"
+                                                        :class="{ active: index === 0 }"
+                                                        :aria-current="index === 0 ? 'true' : undefined"
+                                                        :aria-label="'Slide ' + (index + 1)"
+                                                    ></button>
+                                                </div>
+                                                <div class="carousel-inner">
+                                                    <div v-for="(photo, index) in post.postPhotos"
+                                                        :key="index"
+                                                        :class="['carousel-item', { active: index === 0 }]">
+                                                        <img :src="photo" class="d-block mx-auto w-auto" style="height:250px;" :alt="'Slide ' + (index + 1)">
+                                                    </div>
+                                                </div>
+                                                <button class="carousel-control-prev" type="button" data-bs-target="#postPhotosCarousel" data-bs-slide="prev">
+                                                    <span class="carousel-control-prev-icon" aria-hidden="true" style="background-color: black;"></span>
+                                                    <span class="visually-hidden">Previous</span>
+                                                </button>
+                                                <button class="carousel-control-next" type="button" data-bs-target="#postPhotosCarousel" data-bs-slide="next">
+                                                    <span class="carousel-control-next-icon" aria-hidden="true" style="background-color: black;"></span>
+                                                    <span class="visually-hidden">Next</span>
+                                                </button>
+                                                </div>
                                         </div>
                                     </div>
 
@@ -113,11 +209,11 @@
                                     </div>
 
                                     <!-- Row 5: Like button image -->
-                                    <div v-if="!isMember" class="row text-start">
+                                    <div v-if="isMember" class="row text-start">
                                         <div class="col-12 d-flex gap-4">
 
                                             <!-- Red thumbs up with red fill if user already liked the post -->
-                                            <p v-if="postLikes.includes(post.id)">
+                                            <p v-if="postLikes.includes(post.id)" data-bs-toggle="tooltip" data-bs-placement="top" title="Unlike" class="cursor-pointer">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="red" class="bi bi-hand-thumbs-up-fill" viewBox="0 0 16 16"
                                                     style="cursor: pointer;" @click="likePost(post.id)">
                                                     <path d="M6.956 1.745C7.021.81 7.908.087 8.864.325l.261.066c.463.116.874.456 1.012.965.22.816.533 2.511.062 4.51a10 10 0 0 1 .443-.051c.713-.065 1.669-.072 2.516.21.518.173.994.681 1.2 1.273.184.532.16 1.162-.234 1.733q.086.18.138.363c.077.27.113.567.113.856s-.036.586-.113.856c-.039.135-.09.273-.16.404.169.387.107.819-.003 1.148a3.2 3.2 0 0 1-.488.901c.054.152.076.312.076.465 0 .305-.089.625-.253.912C13.1 15.522 12.437 16 11.5 16H8c-.605 0-1.07-.081-1.466-.218a4.8 4.8 0 0 1-.97-.484l-.048-.03c-.504-.307-.999-.609-2.068-.722C2.682 14.464 2 13.846 2 13V9c0-.85.685-1.432 1.357-1.615.849-.232 1.574-.787 2.132-1.41.56-.627.914-1.28 1.039-1.639.199-.575.356-1.539.428-2.59z"/>
@@ -125,7 +221,7 @@
                                             </p>
 
                                             <!-- Black thumbs up with no fill if user has not liked the post -->
-                                            <p v-else>
+                                            <p v-else data-bs-toggle="tooltip" data-bs-placement="top" title="Like" class="cursor-pointer">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-hand-thumbs-up cursor-pointer" viewBox="0 0 16 16"
                                                     style="cursor: pointer;" @click="likePost(post.id)" 
                                                     >
@@ -134,13 +230,14 @@
                                             </p>
 
                                             <!-- Comment icon -->
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-chat-dots" viewBox="0 0 16 16"
-                                                style="cursor: pointer;"
-                                                data-bs-toggle="tooltip"
-                                                title="Tooltip text">
-                                                <path d="M5 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2"/>
-                                                <path d="m2.165 15.803.02-.004c1.83-.363 2.948-.842 3.468-1.105A9 9 0 0 0 8 15c4.418 0 8-3.134 8-7s-3.582-7-8-7-8 3.134-8 7c0 1.76.743 3.37 1.97 4.6a10.4 10.4 0 0 1-.524 2.318l-.003.011a11 11 0 0 1-.244.637c-.079.186.074.394.273.362a22 22 0 0 0 .693-.125m.8-3.108a1 1 0 0 0-.287-.801C1.618 10.83 1 9.468 1 8c0-3.192 3.004-6 7-6s7 2.808 7 6-3.004 6-7 6a8 8 0 0 1-2.088-.272 1 1 0 0 0-.711.074c-.387.196-1.24.57-2.634.893a11 11 0 0 0 .398-2"/>
-                                            </svg>
+                                            <span data-bs-toggle="tooltip" data-bs-placement="top" title="Comment" class="cursor-pointer">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-chat-dots" viewBox="0 0 16 16"
+                                                    style="cursor: pointer;">
+                                                    <path d="M5 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2"/>
+                                                    <path d="m2.165 15.803.02-.004c1.83-.363 2.948-.842 3.468-1.105A9 9 0 0 0 8 15c4.418 0 8-3.134 8-7s-3.582-7-8-7-8 3.134-8 7c0 1.76.743 3.37 1.97 4.6a10.4 10.4 0 0 1-.524 2.318l-.003.011a11 11 0 0 1-.244.637c-.079.186.074.394.273.362a22 22 0 0 0 .693-.125m.8-3.108a1 1 0 0 0-.287-.801C1.618 10.83 1 9.468 1 8c0-3.192 3.004-6 7-6s7 2.808 7 6-3.004 6-7 6a8 8 0 0 1-2.088-.272 1 1 0 0 0-.711.074c-.387.196-1.24.57-2.634.893a11 11 0 0 0 .398-2"/>
+                                                </svg>
+                                            </span>
+                                            
                                         </div>
                                     </div>
                                 </div>
@@ -180,7 +277,6 @@
                 </div>
             </div>
 
-
         </div>
     </div>
 </template>
@@ -188,8 +284,8 @@
 <script>
 // Import the necessary libraries
 import NavBar from '@/components/NavBar.vue';
-import Tooltip from 'bootstrap/js/dist/tooltip'; // Import Tooltip class from Bootstrap
-
+import Tooltip from 'bootstrap/js/dist/tooltip'; // Import Tooltip class from Bootstrap (need to install this for tooltips to work ['npm install @popperjs/core'])
+import { Modal } from 'bootstrap'; // Import Modal class from Bootstrap
 
 export default {
     name: "ClubView",
@@ -200,6 +296,9 @@ export default {
         return {
             // Variable for page loading 
             dataLoaded: false,
+
+            // Variable to disable buttons
+            disableButton: false,
 
             // Variable for thumbs up icon
             outlineColor: "black",
@@ -226,6 +325,10 @@ export default {
 
             // Variable for lazy loading for posts
             offsetNum: 0, // Number of posts to skip (initial loading is 0)
+
+            // Variables for adding a post
+            newPostContent: null,
+            newPostPhotos: []
         }
     },
     
@@ -252,7 +355,7 @@ export default {
             }
         },
 
-        // Function to get posts
+        // Function to get posts (used inside getPageData function if club data is successfully retrieved)
         async getPosts() {
             try {
                 // Get posts
@@ -293,7 +396,7 @@ export default {
         async checkMembership() {
             try {
                 // Get membership status
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/checkUserMembership/${this.userID}/${this.clubId}`);
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/checkUserMembership/${this.userID}/${this.userType}/${this.clubId}`);
                 this.isMember = response.data.isMember;
                 this.isAdmin = response.data.isAdmin;
                 this.memberID = response.data.memberID;
@@ -308,7 +411,7 @@ export default {
             }
         },
 
-        // Function to get the profile URL of the poster
+        // Function to get the profile URL of the poster 
         profileURL(posterID, userType) {
             if (userType == 'user') {
                 return `/profile/user/${posterID}`;
@@ -322,12 +425,12 @@ export default {
 
         },
 
-        // Function to get the user's likes for the posts
+        // Function to get the user's likes for the posts (used inside checkMembership function if user is a member)
         async getPostLikes() {
             try {
                 // Get likes
                 const postLikesData = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getUserLikesPost/${this.memberID}/${this.clubId}`);
-                return postLikesData.data.liked_posts;
+                this.postLikes = postLikesData.data.liked_posts;
             } catch (error) {
                 console.log(error);
             }
@@ -343,28 +446,196 @@ export default {
                     clubID: this.clubId
                 });
 
-                // Check if the post is liked or unliked
+                // Get the post object from the posts array
+                const post = this.posts.find(post => post.id == postID);
+
+                // Check if the post is liked
                 if (likeData.data.liked) {
                     this.postLikes.push(postID);
+
+                    // Increase the total likes of the post by 1
+                    post.totalLikes += 1;
                 }
                 else {
-                    // Get the current index of the postID in the postLikes array
+                    // If is liked before, Get the current index of the postID in the postLikes array
                     const index = this.postLikes.indexOf(postID);
 
                     // If the postID is found, remove it from the array [index is -1 if not found]
                     if (index > -1) {
                         this.postLikes.splice(index, 1);
                     }
-                }
 
-                // Refresh the page to update the like status
-                window.location.reload();
+                    // Decrease the total likes of the post by 1
+                    post.totalLikes -= 1;
+                }
 
             } catch (error) {
                 console.log(error);
             }
+        },
+
+        // Function to join the club
+        async joinClub() {
+            try {
+                // Disable the button to prevent multiple clicks
+                this.disableButton = true;
+
+                // Join the club
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/club/joinClub`, {
+                    userID: this.userID,
+                    clubID: this.clubId,
+                    userType: this.userType
+                });
+
+                if (response.status == 201) {
+                    this.isMember = true;
+                    this.checkMembership();
+
+                    // Increase the total members of the club by 1
+                    this.clubInfo.totalMembers += 1;
+                }
+
+            } catch (error) {
+                console.log(error);
+            }
+
+            this.disableButton = false;
+
+        },
+
+        // Function to leave the club
+        async leaveClub() {
+            try {
+                // Disable the button to prevent multiple clicks
+                this.disableButton = true;
+
+                // Leave the club
+                const response = await this.$axios.delete(`${process.env.VUE_APP_API_URL}/club/leaveClub`, {
+                    data: {
+                        memberID: this.memberID,
+                        clubID: this.clubId
+                    }
+                });
+
+                if (response.status == 200) {
+                    this.isMember = false;
+
+                    /// Close the modal
+                    const modalElement = document.getElementById('leaveClubModal');
+                    const modalInstance = Modal.getInstance(modalElement) || new Modal(modalElement);
+                    modalInstance.hide();
+
+                    // Manually remove the backdrop if it still exists
+                    const backdrop = document.querySelector('.modal-backdrop');
+                    if (backdrop) {
+                        backdrop.parentNode.removeChild(backdrop);
+                    }
+
+                    // Listen for the modal's hidden event to clean up styles and attributes
+                    modalElement.addEventListener('hidden.bs.modal', () => {
+                        // Manually remove the 'modal-open' class from the body
+                        document.body.classList.remove('modal-open');
+
+                        // Ensure overflow is not hidden on the body
+                        document.body.style.overflow = 'auto';
+                        document.body.removeAttribute('data-bs-overflow');
+                    });
+                }
+
+            } catch (error) {
+                console.log(error);
+            }
+            // Ensure overflow is not hidden on the body
+            document.body.style.overflow = 'auto';
+            this.disableButton = false;
+        },
+
+        // Function to upload images and convert them to base64String 
+        imageUpload(event) {
+
+            // Get the files 
+            const files = event.target.files;
+
+            // Create a file reader
+            const reader = new FileReader();
+
+            // Loop through the files
+            for (let i = 0; i < files.length; i++) {
+
+                // Check if the file is an image
+                if (files[i].type.match('image.*')) {
+
+                    // Read the file
+                    reader.readAsDataURL(files[i]);
+
+                    // When the file is read
+                    reader.onload = () => {
+                        // Push the base64 string to the postPhotos array
+                        this.newPostPhotos.push(reader.result);
+                    }
+                }
+            }
+        },
+
+        // Function to add a post
+        async addPost() {
+            try {
+                // Format data to be sent
+                let postData = {
+                    clubID: this.clubId,
+                    memberID: this.memberID,
+                    postContent: this.newPostContent
+                }
+
+                // Check if there are photos to be added
+                if (this.newPostPhotos.length > 0) {
+                    postData.images = this.newPostPhotos;
+                }
+
+                // Add the post
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/club/addPost`, postData);
+
+                if (response.status == 201) {
+                    // Reset the new post content and photos
+                    this.newPostContent = null;
+                    this.newPostPhotos = [];
+
+                    // Close the modal
+                    const modalElement = document.getElementById('addPostModal');
+                    const modalInstance = Modal.getInstance(modalElement) || new Modal(modalElement);
+                    modalInstance.hide();
+
+                    // Manually remove the backdrop if it still exists
+                    const backdrop = document.querySelector('.modal-backdrop');
+                    if (backdrop) {
+                        backdrop.parentNode.removeChild(backdrop);
+                    }
+
+                    // Listen for the modal's hidden event to clean up styles and attributes
+                    modalElement.addEventListener('hidden.bs.modal', () => {
+                        // Manually remove the 'modal-open' class from the body
+                        document.body.classList.remove('modal-open');
+
+                        // Ensure overflow is not hidden on the body
+                        document.body.style.overflow = 'auto';
+                        document.body.removeAttribute('data-bs-overflow');
+                    });
+
+                    // Reload the posts
+                    this.getPosts();
+                }
+            }
+            catch (error) {
+                console.log(error);
+                alert("An error occurred while adding the post, please try again!");
+
+                // Reload the page
+                window.location.reload();
+            }
         }
+
     },
+
     mounted() {
         // Get club id from the URL
         this.clubId = this.$route.params.clubID;
@@ -375,24 +646,22 @@ export default {
         this.getPageData();
         this.checkMembership();
 
-        // Ensure DOM is fully rendered before initializing tooltips
-        this.$nextTick(() => {
-            const tooltipTriggerEl = this.$el.querySelector('[data-bs-toggle="tooltip"]');
-
-            // Initialize tooltip if element exists
-            if (tooltipTriggerEl) {
-                this.tooltipInstance = new Tooltip(tooltipTriggerEl);
-            } else {
-                console.error('Tooltip trigger element not found');
-            }
+        // Initialize all tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new Tooltip(tooltipTriggerEl);
         });
 
     },
-    beforeUnmount() {
-        // Dispose of the tooltip to prevent memory leaks
-        if (this.tooltipInstance) {
-            this.tooltipInstance.dispose();
-        }
-    },
 }
 </script>
+
+<style scoped>
+.custom-close-btn {
+    background-color: transparent; 
+    border: none; 
+    opacity: 1; 
+    padding: 0;
+    cursor: pointer;
+}
+</style>
