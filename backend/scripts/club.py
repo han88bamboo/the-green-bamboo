@@ -54,7 +54,7 @@ def getUserInfo(cur, member_id):
 # -----------------------------------------------------------------------------------------
 # [GET] getClubs
 # Purpose: Get 20 clubs information each time this is called. 
-# Used: BrowseClubs.vue [views folder inside User folder]
+# Used: BrowseClubs.vue [views folder inside Users folder]
 # Output: Possible return codes [200 - Retreival success, 404 - No clubs found in database, 500 - An error occurred retrieving the request]
 @blueprint.route('/getClubs/<id>', methods=['GET']) # id is the starting ID to retrieve from (inclusive)
 def getClubs(id):
@@ -104,7 +104,7 @@ def getClubs(id):
 # -----------------------------------------------------------------------------------------
 # [GET] getClubwSearch
 # Purpose: Get 20 clubs information each time this is called. This is used when the user is searching for a specific club using the search bar.
-# Used: BrowseClubs.vue [views folder inside User folder]
+# Used: BrowseClubs.vue [views folder inside Users folder]
 # Output: Possible return codes [200 - Retreival success, 404 - No clubs found in database, 500 - An error occurred retrieving the request]
 @blueprint.route('/getClubwSearch/<id>/<search>', methods=['GET']) # id is the starting ID to retrieve from (inclusive)
 def getClubwSearch(id, search):
@@ -154,7 +154,7 @@ def getClubwSearch(id, search):
 # -----------------------------------------------------------------------------------------
 # [GET] getSpecificClubInfo
 # Purpose: Get the information of a specific club
-# Used: ClubView.vue [views folder inside User folder]
+# Used: ClubView.vue [views folder inside Users folder]
 # Output: Possible return codes [200 - Retreival success, 404 - No such club found in database, 500 - An error occurred retrieving the request]
 @blueprint.route('/getSpecificClubInfo/<clubID>', methods=['GET'])
 def getSpecificClubInfo(clubID):
@@ -196,7 +196,7 @@ def getSpecificClubInfo(clubID):
 # -----------------------------------------------------------------------------------------
 # [GET] getClubPosts
 # Purpose: Get the latest 10 posts in the club. 
-# Used: ClubView.vue [views folder inside User folder]
+# Used: ClubView.vue [views folder inside Users folder]
 # Input: 
 #   1. Club ID, 
 #   2. Offset (number of records to skip before fetching the next set of records) [initially set to 0, then increment by 10 on the frontend]
@@ -377,7 +377,7 @@ def getClubPostDetails(postID, offset):
 # -----------------------------------------------------------------------------------------
 # [GET] checkUserMembership
 # Purpose: Check if a user is a member of a specific club
-# Used: ClubView.vue [views folder inside User folder]
+# Used: ClubView.vue [views folder inside Users folder]
 # Output: Possible return codes [200 - User is a member, 404 - User is not a member, 500 - An error occurred retrieving the request]
 @blueprint.route('/checkUserMembership/<userID>/<userType>/<clubID>', methods=['GET'])
 def checkUserMembership(userID, userType, clubID):
@@ -415,7 +415,7 @@ def checkUserMembership(userID, userType, clubID):
 # -----------------------------------------------------------------------------------------
 # [GET] getUserLikesPost
 # Purpose: Get the posts that a specific user has liked in a specific club
-# Used: ClubView.vue [components folder]
+# Used: ClubView.vue [views folder inside Users folder]
 # Output: Possible return codes [200 - Retreival success, 404 - No liked posts found, 500 - An error occurred retrieving the request]
 @blueprint.route('/getUserLikesPost/<memberID>/<clubID>', methods=['GET'])
 def getUserLikesPost(memberID, clubID):
@@ -490,7 +490,7 @@ def getUserLikesComments(memberID, postID):
 # -----------------------------------------------------------------------------------------
 # [GET] getUserClubs
 # Purpose: Get the clubs that a specific user is a member of
-# Used: BrowseClubs.vue [views folder inside User folder]
+# Used: BrowseClubs.vue [views folder inside Users folder]
 # Output: Possible return codes [200 - Retreival success, 404 - No clubs found, 500 - An error occurred retrieving the request]
 @blueprint.route('/getUserClubs/<userID>/<userType>', methods=['GET'])
 def getUserClubs(userID, userType):
@@ -529,7 +529,7 @@ def getUserClubs(userID, userType):
 # -----------------------------------------------------------------------------------------
 # [POST] createClubs
 # Purpose: Create a new club
-# Used: CreateClub.vue [views folder inside User folder]
+# Used: CreateClub.vue [views folder inside Users folder]
 # Input:
 #   1. Creator ID (i.e., the user's ID in the 'users', 'producers' or 'venues' table)
 #   2. Creator Type
@@ -578,6 +578,8 @@ def createClub():
 
     except Exception as e:
         print(str(e))
+        # Rollback the transaction if an error occurred
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,
@@ -652,6 +654,8 @@ def addClubMembers():
 
     except Exception as e:
         print(str(e))
+        # Rollback the transaction if an error occurred
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,
@@ -666,7 +670,9 @@ def addClubMembers():
 # -----------------------------------------------------------------------------------------
 # [POST] joinClub
 # Purpose: Join a club (not through invite and only for public clubs)
-# Used: ClubView.vue [views folder inside User folder]
+# Used: 
+#   1. ClubView.vue [views folder inside Users folder]
+#   2. BrowseClubs.vue [views folder inside Users folder]
 # Input:
 #   1. Club ID
 #   2. User ID (i.e., the user's ID in the 'users', 'producers' or 'venues' table)
@@ -717,6 +723,8 @@ def joinClub():
 
     except Exception as e:
         print(str(e))
+        # Rollback the transaction if an error occurred
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,
@@ -731,7 +739,7 @@ def joinClub():
 # -----------------------------------------------------------------------------------------
 # [POST] addPost
 # Purpose: Add a new post to the club
-# Used: SpecificClubPost.vue [components folder]
+# Used: ClubView.vue [views folder inside Users folder]
 # Input:
 #   1. Poster ID (i.e., the member's ID in the clubMembers table)
 #   2. Club ID
@@ -754,18 +762,25 @@ def addPost():
         # Step 1: Get today's date
         post_date = datetime.now()
 
+        # List to store the image urls
+        image_urls = []
+
         # Step 2: Check if the post has images
         if 'images' in data:
 
             # Loop through the images and upload them to S3
             for image in data['images']:
                 image64 = s3Images.uploadBase64ImageToS3(image)
+                image_urls.append(image64)
+
+            # Make the postPhotos as a text string starting with { and ending with }
+            post_photos = '{' + ','.join(f'"{url}"' for url in image_urls) + '}'
         else:
-            image64 = None
+            post_photos = '{}'
 
         # Step 3: Insert the new post into the database
         cur.execute('INSERT INTO "clubPosts" ("clubID", "postDate", "postContent", "postPhotos", "posterID") VALUES (%s, %s, %s, %s, %s) RETURNING id', 
-                    (club_id, post_date, post_content, image64, poster_id,))
+                    (club_id, post_date, post_content, post_photos, poster_id,))
         post_id = cur.fetchone()['id']
         conn.commit()
 
@@ -776,6 +791,8 @@ def addPost():
 
     except Exception as e:
         print(str(e))
+        # Rollback the transaction if an error occurred
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,
@@ -834,6 +851,8 @@ def addComment():
 
     except Exception as e:
         print(str(e))
+        # Rollback the transaction if an error occurred
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,
@@ -911,6 +930,8 @@ def acceptClubInvite():
 
     except Exception as e:
         print(str(e))
+        # Rollback the transaction if an error occurred
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,
@@ -925,12 +946,12 @@ def acceptClubInvite():
 #   -----------------------------------------------------------------------------------------
 # [PUT] editPost
 # Purpose: Edit a post 
-# Used: SpecificClubPost.vue [components folder]
+# Used: ClubView.vue [views folder inside Users folder]
 # Input:
 #   1. Post ID
 #   2. Post Content
 #   3. Editor ID (i.e., the member ID who edited the post)
-#   4. Post Photo (optional)
+#   4. Post Photos (optional)
 # Output: Possible return codes [200 - Post edited successfully, 403 - No permission to edit post, 404 - No such post exist, 500 - An error occurred editing the post]
 @blueprint.route('/editPost', methods=['PUT'])
 def editPost():
@@ -943,7 +964,10 @@ def editPost():
         # Get all the required data
         post_id = data['postID']
         post_content = data['postContent']
-        editor_id = data['editorID'] # The user who edited the post
+        editor_id = data['editorID'] 
+
+        # List to store the image urls
+        image_urls = []
 
         # Step 1: Check if the editor is the creator of the post
         cur.execute('SELECT * FROM "clubPosts" WHERE id = %s AND "posterID" = %s', (post_id, editor_id,))
@@ -951,7 +975,7 @@ def editPost():
 
         if not isCreator:
             # Step 2: Check if the editor is an admin of the club
-            cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = (SELECT "clubID" FROM "clubPosts" WHERE id = %s) AND "memberID" = %s AND "isAdmin" = TRUE', (post_id, editor_id,))
+            cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = (SELECT "clubID" FROM "clubPosts" WHERE id = %s) AND id = %s AND "isAdmin" = TRUE', (post_id, editor_id,))
             isAdmin = cur.fetchone()
 
             if not isAdmin:
@@ -969,23 +993,20 @@ def editPost():
             }), 404
         
         # Step 4: Check if the post photo is provided
-        if 'new_images' in data:
-
-            # Get the current post photos text array
-            cur.execute('SELECT "postPhotos" FROM "clubPosts" WHERE id = %s', (post_id,))
-            post_photos = cur.fetchone()['postPhotos']
+        if len(data['images']) > 0:
 
             # Loop through the images and upload them to S3
-            for image in data['new_images']:
+            for image in data['images']:
                 image64 = s3Images.uploadBase64ImageToS3(image)
+                image_urls.append(image64)
 
-                # Add the new image to the post photos text array
-                post_photos.append(image64)
+            # Make the postPhotos as a text string starting with { and ending with }
+            post_photos = '{' + ','.join(f'"{url}"' for url in image_urls) + '}'
+        else:
+            post_photos = '{}'
             
-            cur.execute('UPDATE "clubPosts" SET "postPhotos" = %s WHERE id = %s', (post_photos, post_id,))
-
-        # Step 5: Update the post content
-        cur.execute('UPDATE "clubPosts" SET "postContent" = %s WHERE id = %s', (post_content, post_id,))
+        # Step 5: Update the post content and post photos
+        cur.execute('UPDATE "clubPosts" SET "postContent" = %s, "postPhotos" = %s WHERE id = %s', (post_content, post_photos, post_id,))
         conn.commit()
 
         return jsonify({
@@ -994,6 +1015,8 @@ def editPost():
     
     except Exception as e:
         print(str(e))
+        # Rollback the transaction if an error occurred
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,
@@ -1008,7 +1031,7 @@ def editPost():
 # -----------------------------------------------------------------------------------------
 # [PUT] editComment
 # Purpose: Edit a comment
-# Used: SpecificClubPost.vue [components folder]
+# Used: 
 # Input:
 #   1. Comment ID
 #   2. Comment Content
@@ -1060,6 +1083,8 @@ def editComment():
     
     except Exception as e:
         print(str(e))
+        # Rollback the transaction if an error occurred
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,
@@ -1074,7 +1099,8 @@ def editComment():
 # -----------------------------------------------------------------------------------------
 # [PUT] likeUnlikePost
 # Purpose: Like or Unlike a post
-# Used: SpecificClubPost.vue [components folder]
+# Used: 
+#   1. ClubView.vue [views folder inside Users folder]
 # Input:
 #   1. Member ID
 #   2. Post ID
@@ -1136,6 +1162,8 @@ def likePost():
     
     except Exception as e:
         print(str(e))
+        # Rollback the transaction if an error occurred
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,
@@ -1150,7 +1178,7 @@ def likePost():
 # -----------------------------------------------------------------------------------------
 # [PUT] likeUnlikeComment
 # Purpose: Like or Unlike a comment
-# Used: SpecificClubPost.vue [components folder]
+# Used: 
 # Input:
 #   1. Post ID
 #   2. Comment ID
@@ -1209,6 +1237,8 @@ def likeUnlikeComment():
 
     except Exception as e:
         print(str(e))
+        # Rollback the transaction if an error occurred
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,
@@ -1279,6 +1309,8 @@ def makeAdmin():
 
     except Exception as e:
         print(str(e))
+        # Rollback the transaction if an error occurred
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,
@@ -1353,6 +1385,8 @@ def updateClubInfo():
     
     except Exception as e:
         print(str(e))
+        # Rollback the transaction if an error occurred
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,
@@ -1429,6 +1463,8 @@ def removeMembers():
 
     except Exception as e:
         print(str(e))
+        # Rollback the transaction if an error occurred
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,
@@ -1443,7 +1479,7 @@ def removeMembers():
 # -----------------------------------------------------------------------------------------
 # [DELETE] removePost
 # Purpose: Remove a post
-# Used: SpecificClubPost.vue [components folder]
+# Used: ClubView.vue [views folder inside Users folder]
 # Input:
 #   1. Post ID
 #   2. Remover ID (i.e., the member ID who is removing the post)
@@ -1502,6 +1538,8 @@ def removePost():
     
     except Exception as e:
         print(str(e))
+        # Rollback the transaction if an error occurred
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,
@@ -1516,7 +1554,7 @@ def removePost():
 # -----------------------------------------------------------------------------------------
 # [DELETE] removeComment
 # Purpose: Remove a comment
-# Used: SpecificClubPost.vue [components folder]
+# Used: 
 # Input:
 #   1. Comment ID
 #   2. Remover ID (i.e., the member ID who is removing the comment)
@@ -1569,6 +1607,8 @@ def removeComment():
     
     except Exception as e:
         print(str(e))
+        # Rollback the transaction if an error occurred
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,
@@ -1583,7 +1623,7 @@ def removeComment():
 # -----------------------------------------------------------------------------------------
 # [DELETE] leaveClub
 # Purpose: Leave the club
-# Used: ClubView.vue [views folder inside User folder]
+# Used: ClubView.vue [views folder inside Users folder]
 # Input:
 #   1. Member ID
 #   2. Club ID
@@ -1634,6 +1674,8 @@ def leaveClub():
 
     except Exception as e:
         print(str(e))
+        # Rollback the transaction if an error occurred
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,
@@ -1693,6 +1735,8 @@ def deleteClub():
 
     except Exception as e:
         print(str(e))
+        # Rollback the transaction if an error occurred
+        conn.rollback()
         return jsonify(
             {
                 "code": 500,

@@ -84,11 +84,12 @@
                                     <!-- Modal footer -->
                                     <div class="modal-footer">
                                         <button type="button" class="btn" data-bs-dismiss="modal" :disabled="disableButton">Cancel</button>
-                                        <button type="button" class="btn primary-btn-green" :disabled="disableButton" @click="aAddPost">Post</button>
+                                        <button type="button" class="btn primary-btn-green" :disabled="disableButton" @click="addPost" data-bs-dismiss="modal">Post</button>
                                     </div>
                                 </div>  
                             </div>
                         </div>
+                        <!-- end of add post modal -->
 
                         <!-- Confirm leave club modal start -->
                         <div class="modal fade" id="leaveClubModal" tabindex="-1" aria-labelledby="leaveClubModalLabel" aria-hidden="true">
@@ -108,7 +109,7 @@
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn" data-bs-dismiss="modal" :disabled="disableButton">Cancel</button>
-                                        <button type="button" class="btn primary-btn-red" @click="leaveClub" :disabled="disableButton">Leave Club</button>
+                                        <button type="button" class="btn primary-btn-red" @click="leaveClub" :disabled="disableButton" data-bs-dismiss="modal">Leave Club</button>
                                     </div>
                                 </div>
                             </div>
@@ -118,13 +119,13 @@
                         <!-- Post header -->
                         <h4 class="fst-italic text-start mt-3">Latest Posts</h4>
 
-                        <!-- Row 2: Post -->
+                        <!-- Row 2: Posts section -->
                         <div v-if="posts.length == 0" class="text-center mt-5">
                             <h3 class="fw-bold">No posts available yet!</h3>
                         </div>
 
                         <div v-else>
-                            <!-- Post -->
+                            <!-- Each Post -->
                             <div v-for="post in posts" :key="post.id" class="row mb-4">
 
                                 <!-- Column 1: Poster Photo -->
@@ -143,8 +144,8 @@
                                 <!-- Column 2: Post Details -->
                                 <div class="col-md-11">
 
-                                    <!-- Row 1: User name and post date -->
-                                    <div class="row text-start">
+                                    <!-- Row 1: User name, post date, edit and delete post buttons -->
+                                    <div class="row text-start d-flex align-items-center">
                                         <div class="col-md-3">
                                             <router-link :to="profileURL(post.posterInfo.id, post.posterInfo.userType)" class="text-black">
                                                 <p v-if="post.posterInfo.userType == 'user'" class="fw-bold">{{ post.posterInfo.displayName }}</p>
@@ -152,12 +153,105 @@
                                                 <p v-else class="fw-bold">{{ post.posterInfo.venueName }}</p>
                                             </router-link>
                                         </div>
-                                        <div class="col-md-6">
+                                        <div class="col-md-5">
                                             <p>{{ post.postDate }}</p>
                                         </div>
+                                        <div class="col-md-4 text-end">
+                                            <button v-if="isAdmin || post.posterInfo.id == userID" class="btn primary-btn-green btn-sm me-3" data-bs-toggle="modal" data-bs-target="#editPostModal" @click="selectedPostEdit = post">Edit</button>
+                                            <button v-if="isAdmin || post.posterInfo.id == userID" class="btn primary-btn-red btn-sm" data-bs-toggle="modal" data-bs-target="#deletePostModal" @click="selectedPostDelete = post">Delete</button>
+                                        </div>
                                     </div>
-                        
-                                    <!-- Row 2: Post photo (optional) -->
+
+                                    <!-- Edit post modal start -->
+                                    <div class="modal fade" id="editPostModal" tabindex="-1" aria-labelledby="editPostModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+
+                                                <!-- Modal header -->
+                                                <div class="modal-header d-flex justify-content-between">
+                                                    <h5 class="modal-title" id="editPostModalLabel">Edit Post</h5>
+                                                    <button type="button" class="custom-close-btn" data-bs-dismiss="modal" aria-label="Close">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                                                            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                                                        </svg>
+                                                    </button>
+                                                </div>
+
+                                                <!-- Modal body -->
+                                                <div class="modal-body">
+                                                    <div v-if="selectedPostEdit" class="container">
+
+                                                        <!-- Post content -->
+                                                        <div class="row text-start">
+                                                            <div class="col-md-12">
+                                                                <label for="editPostContent" class="form-label fw-bold">Post content: </label>
+                                                                <textarea class="form-control" rows="5" placeholder="Write your post here..." v-model="selectedPostEdit.postContent"></textarea>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Current post photos -->
+                                                        <div v-if="selectedPostEdit.postPhotos.length > 0" class="row mt-3 text-start">
+                                                            <div class="col-md-12">
+                                                                <label for="editPostPhotos" class="form-label fw-bold">Current photos:</label>
+                                                                <div v-for="(photo, index) in selectedPostEdit.postPhotos" :key="index" class="position-relative d-inline-block m-2">
+                                                                    <img :src="photo" class="img-fluid" style="height: 300px;" alt="Post Photo">
+                                                                    <button class="btn primary-btn-red btn-sm position-absolute top-0 end-0" @click="removePhoto(index)">Remove</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Add new images -->
+                                                        <div class="row mt-3 text-start">
+                                                            <div class="col-md-12">
+                                                                <label for="newPostPhotos" class="form-label fw-bold">Add more photos:</label>
+                                                                <input type="file" class="form-control" accept="image/*" id="newPostPhotos" multiple @change="imageUploadEdit"/>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Modal footer -->
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn" data-bs-dismiss="modal" :disabled="disableButton">Cancel</button>
+                                                    <button type="button" class="btn primary-btn-green" :disabled="disableButton" @click="editPost" data-bs-dismiss="modal">Edit</button>
+                                                </div>
+                                            </div>  
+                                        </div>
+                                    </div>
+                                    <!-- Edit post modal end-->
+
+                                    <!-- Delete post modal start -->
+                                    <div class="modal fade" id="deletePostModal" tabindex="-1" aria-labelledby="deletePostModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+
+                                                <!-- Modal header -->
+                                                <div class="modal-header d-flex justify-content-between">
+                                                    <h5 class="modal-title" id="deletePostModalLabel">Delete Post</h5>
+                                                    <button type="button" class="custom-close-btn" data-bs-dismiss="modal" aria-label="Close">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                                                            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                                                        </svg>
+                                                    </button>
+                                                </div>
+
+                                                <!-- Modal body -->
+                                                <div class="modal-body">
+                                                    <p class="fw-bold">Are you sure you want to delete this post?</p>
+                                                    <p>Deleting this post will delete all the comments and likes in this post. </p>
+                                                </div>
+
+                                                <!-- Modal footer -->
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn" data-bs-dismiss="modal" :disabled="disableButton">Cancel</button>
+                                                    <button type="button" class="btn primary-btn-red" @click="deletePost" :disabled="disableButton" data-bs-dismiss="modal">Delete</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Delete post modal end -->
+
+                                    <!-- Row 2: Post photo -->
                                     <div class="row mb-3" v-if="post.postPhotos.length > 0">
                                         <div class="col-md-12">
                                             <div id="postPhotosCarousel" class="carousel slide">
@@ -278,19 +372,19 @@
             </div>
 
         </div>
+
     </div>
 </template>
 
 <script>
 // Import the necessary libraries
 import NavBar from '@/components/NavBar.vue';
-import Tooltip from 'bootstrap/js/dist/tooltip'; // Import Tooltip class from Bootstrap (need to install this for tooltips to work ['npm install @popperjs/core'])
-import { Modal } from 'bootstrap'; // Import Modal class from Bootstrap
+import { useToast } from 'vue-toastification';
 
 export default {
     name: "ClubView",
     components: {
-        NavBar
+        NavBar,
     },
     data() {
         return {
@@ -328,11 +422,19 @@ export default {
 
             // Variables for adding a post
             newPostContent: null,
-            newPostPhotos: []
+            newPostPhotos: [],
+
+            // Variable for editing a post
+            selectedPostEdit: null,
+
+            // Variable for deleting a post
+            selectedPostDelete: null,
+
         }
     },
     
     methods: {
+        // Function to get data for page start ========================================
         // Function to get club information
         async getPageData() {
             try {
@@ -435,7 +537,72 @@ export default {
                 console.log(error);
             }
         },
+        // Funtion to get data for page end ========================================
 
+
+        // Helper functions start ==================================================
+        // Function to upload images and convert them to base64String for new post
+        imageUpload(event) {
+
+            // Get the files 
+            const files = event.target.files;
+
+            // Loop through the files
+            for (let i = 0; i < files.length; i++) {
+
+                // Check if the file is an image
+                if (files[i].type.match('image.*')) {
+
+                    // Create a file reader
+                    const reader = new FileReader();
+
+                    // Read the file
+                    reader.readAsDataURL(files[i]);
+
+                    // When the file is read
+                    reader.onload = () => {
+                        // Push the base64 string to the postPhotos array
+                        this.newPostPhotos.push(reader.result);
+                    }
+                }
+            }
+        },
+
+        // Function to remove a photo from the selected post
+        removePhoto(index) {
+            this.selectedPostEdit.postPhotos.splice(index, 1);
+        },
+
+        // Function to upload images and convert them to base64String for editing a post
+        imageUploadEdit(event) {
+
+            // Get the files 
+            const files = event.target.files;
+
+            // Loop through the files
+            for (let i = 0; i < files.length; i++) {
+
+                // Check if the file is an image
+                if (files[i].type.match('image.*')) {
+
+                    // Create a file reader
+                    const reader = new FileReader();
+
+                    // Read the file
+                    reader.readAsDataURL(files[i]);
+
+                    // When the file is read
+                    reader.onload = () => {
+                        // Push the base64 string to the postPhotos array
+                        this.selectedPostEdit.postPhotos.push(reader.result);
+                    }
+                }
+            }
+        },
+        // Helper functions end ====================================================
+
+
+        // Functions that are triggered by user actions start ======================
         // Function to like a post
         async likePost(postID) {
             try {
@@ -493,6 +660,10 @@ export default {
 
                     // Increase the total members of the club by 1
                     this.clubInfo.totalMembers += 1;
+
+                    // Show a success message in a toast
+                    const toast = useToast();
+                    toast.success("You have successfully joined the club! Welcome!");
                 }
 
             } catch (error) {
@@ -520,26 +691,12 @@ export default {
                 if (response.status == 200) {
                     this.isMember = false;
 
-                    /// Close the modal
-                    const modalElement = document.getElementById('leaveClubModal');
-                    const modalInstance = Modal.getInstance(modalElement) || new Modal(modalElement);
-                    modalInstance.hide();
+                    // Decrease the total members of the club by 1
+                    this.clubInfo.totalMembers -= 1;
 
-                    // Manually remove the backdrop if it still exists
-                    const backdrop = document.querySelector('.modal-backdrop');
-                    if (backdrop) {
-                        backdrop.parentNode.removeChild(backdrop);
-                    }
-
-                    // Listen for the modal's hidden event to clean up styles and attributes
-                    modalElement.addEventListener('hidden.bs.modal', () => {
-                        // Manually remove the 'modal-open' class from the body
-                        document.body.classList.remove('modal-open');
-
-                        // Ensure overflow is not hidden on the body
-                        document.body.style.overflow = 'auto';
-                        document.body.removeAttribute('data-bs-overflow');
-                    });
+                    // Show a success message in a toast
+                    const toast = useToast();
+                    toast.success("You have successfully left the club! It's sad to see you go!");
                 }
 
             } catch (error) {
@@ -550,40 +707,13 @@ export default {
             this.disableButton = false;
         },
 
-        // Function to upload images and convert them to base64String 
-        imageUpload(event) {
-
-            // Get the files 
-            const files = event.target.files;
-
-            // Create a file reader
-            const reader = new FileReader();
-
-            // Loop through the files
-            for (let i = 0; i < files.length; i++) {
-
-                // Check if the file is an image
-                if (files[i].type.match('image.*')) {
-
-                    // Read the file
-                    reader.readAsDataURL(files[i]);
-
-                    // When the file is read
-                    reader.onload = () => {
-                        // Push the base64 string to the postPhotos array
-                        this.newPostPhotos.push(reader.result);
-                    }
-                }
-            }
-        },
-
         // Function to add a post
         async addPost() {
             try {
                 // Format data to be sent
                 let postData = {
                     clubID: this.clubId,
-                    memberID: this.memberID,
+                    posterID: this.memberID,
                     postContent: this.newPostContent
                 }
 
@@ -594,35 +724,17 @@ export default {
 
                 // Add the post
                 const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/club/addPost`, postData);
-
                 if (response.status == 201) {
                     // Reset the new post content and photos
                     this.newPostContent = null;
                     this.newPostPhotos = [];
 
-                    // Close the modal
-                    const modalElement = document.getElementById('addPostModal');
-                    const modalInstance = Modal.getInstance(modalElement) || new Modal(modalElement);
-                    modalInstance.hide();
-
-                    // Manually remove the backdrop if it still exists
-                    const backdrop = document.querySelector('.modal-backdrop');
-                    if (backdrop) {
-                        backdrop.parentNode.removeChild(backdrop);
-                    }
-
-                    // Listen for the modal's hidden event to clean up styles and attributes
-                    modalElement.addEventListener('hidden.bs.modal', () => {
-                        // Manually remove the 'modal-open' class from the body
-                        document.body.classList.remove('modal-open');
-
-                        // Ensure overflow is not hidden on the body
-                        document.body.style.overflow = 'auto';
-                        document.body.removeAttribute('data-bs-overflow');
-                    });
-
                     // Reload the posts
                     this.getPosts();
+
+                    // Show a success message in a toast
+                    const toast = useToast();
+                    toast.success("Post added successfully!");
                 }
             }
             catch (error) {
@@ -631,6 +743,64 @@ export default {
 
                 // Reload the page
                 window.location.reload();
+            }
+        },
+
+        // Function to edit a post 
+        async editPost() {
+            try {
+                // Format data to be sent
+                let postData = {
+                    postID: this.selectedPostEdit.id,
+                    postContent: this.selectedPostEdit.postContent, 
+                    editorID: this.memberID,
+                    images: this.selectedPostEdit.postPhotos
+                }
+
+                // Edit the post
+                const response = await this.$axios.put(`${process.env.VUE_APP_API_URL}/club/editPost`, postData);
+                if (response.status == 200) {
+                    // Reload the posts
+                    this.getPosts();
+
+                    // Show a success message in a toast
+                    const toast = useToast();
+                    toast.success("Post edited successfully!");
+                }
+
+                
+            }
+            catch (error) {
+                console.log(error);
+                alert("An error occurred while editing the post, please try again!");
+            }
+        },
+
+        // Function to delete a post
+        async deletePost() {
+            try {
+                // Format the data to be sent
+                let deleteData = {
+                    postID: this.selectedPostDelete.id,
+                    removerID: this.memberID
+                }
+
+                // Delete the post
+                const response = await this.$axios.delete(`${process.env.VUE_APP_API_URL}/club/removePost`, {
+                    data: deleteData
+                });
+                if (response.status == 200) {
+                    // Reload the posts
+                    this.getPosts();
+
+                    // Show a success message in a toast
+                    const toast = useToast();
+                    toast.success("Post deleted successfully!");
+                }
+            }
+            catch (error) {
+                console.log(error);
+                alert("An error occurred while deleting the post, please try again!");
             }
         }
 
@@ -645,13 +815,6 @@ export default {
 
         this.getPageData();
         this.checkMembership();
-
-        // Initialize all tooltips
-        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new Tooltip(tooltipTriggerEl);
-        });
-
     },
 }
 </script>
