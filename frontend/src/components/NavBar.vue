@@ -129,18 +129,19 @@
                     </button>
                 </router-link>
 
-                <router-link :to="'/clubs/view'">
-                    <button class="btn primary-btn border-0 fw-bold" type="button">
-                        JOIN A CLUB!
-                    </button>
-                </router-link>
-
                 <button @click="forceLoad('/listing/create')" v-if="onCreate && (accType == 'producer' || isAdmin || isModerator)" class="btn primary-btn border-0 fw-bold " type="button" > <!-- class="text-warning" style="color:#D58D2D !important;" -->
                     Add A New Drink
                 </button>
+
                 <router-link v-if="!onCreate && (accType == 'producer' || isAdmin || isModerator)" :to="'/listing/create'" >
                     <button class="btn primary-btn border-0 fw-bold " type="button" > <!-- class="text-warning" style="color:#D58D2D !important;" -->
                         Add A New Drink
+                    </button>
+                </router-link>
+
+                <router-link :to="'/clubs/view'">
+                    <button class="btn primary-btn border-0 fw-bold" type="button">
+                        JOIN A CLUB!
                     </button>
                 </router-link>
             </div>

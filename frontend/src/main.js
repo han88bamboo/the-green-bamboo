@@ -4,13 +4,15 @@
 import axios from 'axios';
 
 import 'bootstrap/dist/css/bootstrap.css';
-import 'bootstrap/dist/js/bootstrap.bundle.min';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 import './assets/global.css';
 import VueQRCodeComponent from 'vue-qrcode-component'
 import VueGoogleMaps from '@fawmi/vue-google-maps'
+import Toast from "vue-toastification";
+import "vue-toastification/dist/index.css";
 
 // Set up Axios as a global property in Vue prototype
 const app = createApp(App);
@@ -25,6 +27,13 @@ app.use(VueGoogleMaps, {
         libraries: 'places', // This is required if you use the Auto complete plug-in
     },
 })
+
+// Use Toastification with options
+app.use(Toast, {
+    transition: "Vue-Toastification__bounce",
+    maxToasts: 20,
+    newestOnTop: true,
+  });
 
 // Mount the app to the DOM
 app.use(router).mount('#app');
