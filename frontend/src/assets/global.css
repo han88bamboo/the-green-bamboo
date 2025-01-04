@@ -311,8 +311,8 @@ body {
 }
 
 .secondary-btn-border-thick {
-    color: whitesmoke;
-    background-color: #D58D2D;
+    color: black; /* TZH changed whitesmoke to black */
+    background-color: #F0B358; /* TZH changed D58D2D to F0B358 */
     border-radius: 100px;
     border: 2.5px solid whitesmoke;
     font-weight: bold;
@@ -455,7 +455,7 @@ body {
 }
 
 .img-border {
-    border: 2.5px solid #83A9E8;  /* tzh changed 868fa7 to #83A9E8*/
+    border: 4px solid #83A9E8;  /* tzh changed 868fa7 to #83A9E8 and 2.5px to 4px */
     border-radius: 30px;
 }
 
@@ -1810,4 +1810,13 @@ button.primary-square:hover {
     border-right: inherit;
     border-top: inherit;
 }
+}
+
+
+.mb-0_5 {
+    margin-bottom: 0.175rem !important;
+}
+
+.mt-0_5 {
+    margin-top: 0.175rem !important;
 }

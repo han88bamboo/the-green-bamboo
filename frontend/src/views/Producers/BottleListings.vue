@@ -287,6 +287,7 @@
                                 <div class="col-lg-12 padding-right-for-suggesteditslink-large-screen">
                                     <!--<div class="py-2"></div>-->
                                     <!-- below truncated-->
+                                    <h6 class="text-body-secondary fst-italic">About</h6> <!--tzh added about-->
                                     <div v-if="specified_listing.officialDesc?.length > 250">
                                         <p v-if="!showFullDescription" class="mobile-rating-smaller-text-2" style="margin-bottom:0.2rem;"><!-- tzh added truncated description --->
                                             <em>{{ specified_listing["officialDesc"].slice(0, 250) + (specified_listing["officialDesc"].length > 250 ? '...' : '') }}</em>
@@ -309,6 +310,7 @@
                 <div class="row scrollable mobile-view-show text-start">
                                 <div class="col-lg-12 padding-right-for-suggesteditslink-large-screen">
                                     <!--<div class="py-2"></div>-->
+                                    <h6 class="text-body-secondary fst-italic">About</h6> <!--tzh added about-->
                                     <div v-if="specified_listing.officialDesc?.length > 250">
                                         <p v-if="!showFullDescription" class="mobile-rating-smaller-text-2 " style="margin-bottom:0.2rem; padding-left:0.8rem !important;"><!-- tzh added truncated description --->
                                             <em>{{ specified_listing["officialDesc"].slice(0, 250) + (specified_listing["officialDesc"].length > 250 ? '...' : '') }}</em>
@@ -458,7 +460,7 @@
                                                 <div class="d-grid gap-2">
                                                     <router-link :to="{ path: '/login' }" class="reverse-clickable-text">
                                                         <button class="btn primary-btn-less-round-blue btn-lg mobile-rating-smaller-text-2">   <!--tzh added -blue -->
-                                                            Login to leave Review
+                                                            + Add Your Review
                                                         </button>
 
                                                     </router-link>
@@ -539,8 +541,8 @@
                     <div v-if="userID == 'defaultUser'" class="col-5 mobile-view-hide">
                         <div class="d-grid gap-2">
                             <router-link :to="{ path: '/login' }" class="reverse-clickable-text">
-                                <button class="btn primary-btn-less-round btn-lg"> 
-                                    Login to leave a Review
+                                <button class="btn primary-btn-less-round-blue btn-lg"> 
+                                    + Add Your Review
                                 </button>
 
                             </router-link>
@@ -2150,7 +2152,7 @@
                 const averageRating = ratings.reduce((total, rating) => {
                     return total + rating["rating"];
                 }, 0) / ratings.length;
-                return averageRating.toFixed(2);
+                return averageRating.toFixed(1);  //tzh changed .toFixed(2) to .toFixed(1)
             },
 
             // get will drink again for a listing

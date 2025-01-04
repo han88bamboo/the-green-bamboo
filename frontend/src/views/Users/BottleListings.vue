@@ -30,12 +30,12 @@
             <div class="row">
                 <!-- tagline -->
                 <div class="col-8">
-                    <h1 class="text-start" v-if="userID == ''"> What can we get you today? </h1>
-                    <h1 class="text-start" v-else-if="userType == 'user'"> Hello, {{ displayName }}! </h1>
-                    <h1 class="text-start" v-else> Hello, {{ username }}! </h1>
+                    <h1 class="text-start" v-if="userID == ''"> What's Pouring? </h1>
+                    <h1 class="text-start" v-else-if="userType == 'user'"> Hello, {{ displayName }}! What's Pouring? </h1>
+                    <h1 class="text-start" v-else> Hello, {{ username }}! What's Pouring? </h1>
                 </div>
                 <!-- button -->
-                <div v-if="!userID" class="col-4">
+                <div v-if="!userID" class="col-4 text-end"  style="padding-right:40px;" >
                     <div class="d-grid gap-2">
                         <router-link :to="{ path: '/signUp' }">
                             <button class="btn secondary-btn-border-thick btn-lg" style="font-weight: bold;"> 
@@ -164,7 +164,7 @@
                                         </div>
                                         <div v-else style="display: flex; align-items: center; justify-content: center; height: 100%;">
                                             <router-link :to="{ path: '/login' }">
-                                                <button class="btn secondary-btn-border-thick btn-sm py-2 px-3" style="font-weight: bold;"> Log in to follow your favourite brand</button>
+                                                <button class="btn secondary-btn-border-thick btn-sm py-2 px-3" style="font-weight: bold;"> Log in to follow your favourite brands</button>
                                             </router-link>
                                         </div>
                                     </div>
@@ -298,8 +298,8 @@
                                 <div class="d-grid gap-2">
                                     <button class="btn btn-sm mobile-ps-0" 
                                         :class="{ 'primary-btn-green mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0': discovery, 'primary-btn-green-outline mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0': !discovery }"
-                                        v-on:click="changeDiscoveryStatus()"> <!--tzh added -green and green-outline -->
-                                        <p class="mb-1 discover-and-following mobile-mb-0"> Discover </p>
+                                        v-on:click="changeDiscoveryStatus()"> <!--tzh added -green and green-outline, changed mt-1 to mb-0_5 mt-0_5 -->
+                                        <p class="mb-0_5 mt-0_5 discover-and-following mobile-mb-0"> Discover </p>
                                     </button>
                                 </div>
                             </div>
@@ -309,7 +309,7 @@
                                     <button class="btn btn-sm mobile-ps-0"
                                         :class="{ 'primary-btn-green mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0': following, 'primary-btn-green-outline mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0': !following }"
                                         v-on:click="changeFollowingStatus()">
-                                        <p class="mb-1 discover-and-following mobile-mb-0"> Following </p>
+                                        <p class="mb-0_5 mt-0_5 discover-and-following mobile-mb-0"> Following </p>
                                     </button>
                                 </div>
                             </div>
@@ -495,7 +495,7 @@
                                                     <div class="col-6">
                                                         <div class="d-grid gap-5">
                                                             <router-link :to="{ path: '/listing/view/' +listing.id }" class="primary-clickable-text">
-                                                                <a class="btn secondary-btn btn-md" style="font-weight: bold;"> Read what the crowd thinks </a>
+                                                                <a class="btn secondary-btn btn-md" style="font-weight: bold;"> Read More </a>
                                                             </router-link>
                                                         </div>
                                                     </div>
