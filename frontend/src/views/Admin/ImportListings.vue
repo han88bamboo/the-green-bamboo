@@ -12,6 +12,15 @@
         </div>
     </div>
 
+    <!-- Display when import data is loading -->
+    <div class="text-info-emphasis fst-italic fw-bold fs-5 pt-5" v-if="importComplete == false">
+        <span>Importing listings, please wait</span>
+        <br><br>
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
     <!-- Display when data fails to load -->
     <div class="text-danger fst-italic fw-bold fs-3 pt-5" v-if="dataLoaded == null"> 
         <span>An error occurred while loading this page, please try again!</span>
@@ -26,7 +35,7 @@
         </router-link>
     </div>
 
-    <div v-if="!importSuccess && dataLoaded" class="container mt-5 mb-5">
+    <div v-if="!importSuccess && dataLoaded && importComplete" class="container mt-5 mb-5">
 
             
             
@@ -101,7 +110,7 @@
                     // csv data
                     fileFormat: [],
                     csvData: [],
-
+                    importComplete: true,
                     // TO DELETE IF NOT NEEDED
 
                     // // data from database
@@ -289,10 +298,10 @@
                 // Calling of backend to import csv file
                 async importCSV() {
                     console.log(this.csvFile)
-                    
+                    this.importComplete=false
                     if (this.csvFile != []) {
                         const formData = new FormData();
-                    formData.append('file', this.csvFile);
+                        formData.append('file', this.csvFile);
                     
                         try {
                             const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/adminFunctions/importListings`, 
@@ -310,14 +319,19 @@
                             }
                             })
                             .catch((error)=>{
+                                if (error.code === 'ECONNABORTED'){
+                                    console.error('>Request timed out!!!)')
+                                } else{    
                                 console.error(error);
                                 this.responseCode = error.response.data.code
-                                
+                                }
                             });
                             
-                            
+                        this.importComplete=true
+                        
                         return response
                         } catch (error) {
+                            this.importComplete=true
                             console.error('Error:', error);
                         }
                     }
@@ -328,7 +342,6 @@
                     this.importSuccess = false
                     this.csvFile = []
                 },
-
                 convertToCSV() {
                     let keepColumns = this.fileFormat.filter(item => Object.values(item).some(value => value !== ''));
 
