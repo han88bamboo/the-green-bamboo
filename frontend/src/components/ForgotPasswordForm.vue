@@ -43,7 +43,7 @@
 
         <div class="d-flex justify-content-center align-items-center gap-3 py-3">
             <!-- Cancel Button to return to login page -->
-            <button @click="returnToLogin" class="btn btn-link text-decoration-none text-black hover-text">Cancel</button>
+            <button v-if="resetSuccessMsg=''" @click="returnToLogin" class="btn btn-link text-decoration-none text-black hover-text">Cancel</button>
 
             <!-- Button to send OTP and reset password-->
             <button v-if="resetStage == 'email'" @click="checkUser" :disabled="isButtonDisabled" class="btn secondary-btn-border-thick btn-md px-3">Send OTP</button>
@@ -52,7 +52,7 @@
             <button v-if="resetStage == 'otp'" @click="verifyOTP" class="btn secondary-btn-border-thick btn-md px-3">Verify OTP</button>
 
             <!-- Button to reset password -->
-            <button v-if="resetStage == 'password' && newPassword == confirmPassword" @click="resetPassword" :disabled="isButtonDisabled" class="btn secondary-btn-border-thick btn-md px-3">Reset Password</button>
+            <button v-if="resetStage == 'password' && newPassword == confirmPassword && resetSuccessMsg == ''" @click="resetPassword" :disabled="isButtonDisabled" class="btn secondary-btn-border-thick btn-md px-3">Reset Password</button>
         </div>
     </div>  
 
@@ -210,7 +210,7 @@ export default {
                     // Wait for 3 seconds before returning to login page
                     setTimeout(() => {
                         this.returnToLogin()
-                    }, 5000);
+                    }, 3000);
                 })
                 .catch((error)=>{
                     console.error(error);
