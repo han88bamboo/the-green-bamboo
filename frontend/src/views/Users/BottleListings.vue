@@ -596,7 +596,9 @@
                                 <!-- v-loop for each listing -->
                                 <div class="container text-start">
                                     <h5 v-if="recentlyAdded==''" style="display: inline-block;"> There is no listing available for the selected filter </h5>
-                                    <div v-for="listing in recentlyAdded" v-bind:key="listing.id" class="p-3 mobile-pt-0">
+                                    <h5 v-if="recentlyAdded == '' || (selectedDrinkType!='' && filteredRecentlyAdded=='')" style="display: inline-block;"> There is no listing available for the selected filter </h5>
+                                    <!-- <div v-for="listing in recentlyAdded" v-bind:key="listing.id" class="p-3 mobile-pt-0"> -->
+                                    <div v-for="listing in (selectedDrinkType == '' ? recentlyAdded : filteredRecentlyAdded)" v-bind:key="listing.id" class="p-3 mobile-pt-0">
                                         <!-- For latest reviews -->
                                         
                                         <!-- For listings -->
@@ -792,7 +794,9 @@
                 allProducerDrinks: [],
                 allVenueDrinks: [],
                 recentlyAdded: [],
+                filteredRecentlyAdded:[],
                 questionsUpdates: [],
+                followCount:0,
 
                 // for bookmark
                 user: null,
@@ -1214,7 +1218,6 @@
 
                 // reset most reviews and recently added arrays so that can repeatedly filter
                 this.getMostReviews()
-                this.getRecentlyAdded()
                 this.moreListings=true
                 // Determine selected drink type, and corresponding drink categories
                 this.selectedCategory = null;
@@ -1273,10 +1276,10 @@
 
                     // if nothing found
                     if(searchResults == null){
-                        this.recentlyAdded = []
+                        this.filteredRecentlyAdded = []
                     }
                     else{
-                        this.recentlyAdded=searchResults
+                        this.filteredRecentlyAdded=searchResults
                     }
                 }
             },
@@ -1365,19 +1368,23 @@
                     }
                 }
                 else if(this.following){
-                    const searchResults = this.recentlyAdded.filter((listing) => {
+                    const searchResults = this.filteredRecentlyAdded.filter((listing) => {
                         const drinkCategory = listing["typeCategory"].toLowerCase();
                         return drinkCategory.includes(drinkCategorySearch);
                     });
                     if (searchResults.length==0 || searchResults==null) {
                         this.errorFound = true;
                         this.errorMessage = 'No results found, please try again.';
-                        this.recentlyAdded = [];
+                        this.filteredRecentlyAdded = [];
+                        this.retrieveListings();
                     } 
                     else {
                         this.errorFound = false;
                         this.errorMessage = '';
-                        this.recentlyAdded = searchResults;
+                        this.filteredRecentlyAdded = searchResults;
+                        if(this.filteredRecentlyAdded.length<30){
+                            this.retrieveListings();
+                        }
                     }
                 }
             },
@@ -1391,9 +1398,6 @@
                 if(this.discovery){
                     this.mostReviews=[]
                     this.getMostReviews()
-                }
-                if(this.following){
-                    this.getRecentlyAdded()
                 }
             },
 
@@ -1720,7 +1724,33 @@
                         }
                     }
                 }
-                //TODO: Add in lazy loading for following
+                //Lazy loading for following tab
+                else{
+                    // TODO: Add in lazy loading filter options, right now just pulling normally
+                    // if selectedDrinkType not empty, meaning listings are filtered, retrieve based off the drink type and/or drink category based off following list
+                    // if(this.selectedDrinkType!=''){
+                    // if not, meaning listings are not filtered, retrieve next 30 listings in DB based off following list
+                    // }else{
+                        let lastFollowingId = this.recentlyAdded[this.recentlyAdded.length-1].id
+                        
+                        let params = {
+                            "followedProducers" : this.followedProducers,
+                            "followedVenues": this.followedVenues.length>this.followCount?this.followedVenues[this.followCount]:'null'
+                        }
+                        let queryString = new URLSearchParams({
+                            followedProducers: JSON.stringify(params.followedProducers),
+                            followedVenues: JSON.stringify(params.followedVenues)
+                        }).toString();
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getNextFollowing30` + '/' + lastFollowingId+ `?${queryString}` );
+                        const newItems = response.data.filter(item => !this.recentlyAdded.some(existingItem => existingItem.id === item.id));
+                        this.recentlyAdded.push(...newItems);
+                        if(response.data.length == 0){
+                            this.moreListings = false
+                        }
+                    // }
+
+                    this.followCount++;
+                }
             }
 
         }
