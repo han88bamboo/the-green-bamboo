@@ -24,7 +24,7 @@
         </router-link>
     </div>
 
-    <div v-if="displayUser && dataLoaded" class="userprofile mt-5 mobile-mt-3">
+    <div v-if="displayUser && displayUser.modType && dataLoaded" class="userprofile mt-5 mobile-mt-3">
 
         <div class="container text-start">
             <div class="row">
@@ -1223,6 +1223,7 @@ export default {
                 this.users = response.data;
                 this.user = this.getUser(this.userID);
                 this.displayUser = this.getUser(this.displayUserID);
+                console.log(this.displayUser)
                 
                 if (this.userID === this.displayUserID) {
                     this.ownProfile = true;

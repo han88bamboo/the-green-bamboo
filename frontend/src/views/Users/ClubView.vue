@@ -75,7 +75,21 @@
                                             </div>
                                             <div class="row mt-3">
                                                 <div class="col-md-12">
-                                                    <input type="file" class="form-control" accept="image/*" multiple @change="imageUpload"/>
+
+                                                    <!-- Upload image(s) input field -->
+                                                    <input type="file" class="form-control" id="newPostPhotoInputField" accept="image/*" multiple @change="imageUpload"/>
+
+                                                    <!-- Display the uploaded images -->
+                                                    <div v-if="newPostPhotos.length > 0" class="mt-3">
+                                                        <div v-for="(photo, index) in newPostPhotos" :key="index" class="position-relative d-inline-block m-2">
+                                                            <img :src="photo" class="img-fluid" style="height: 300px;" alt="Post Photo">
+                                                            <button class="btn primary-btn-red btn-sm position-absolute top-0 end-0 mt-3 me-3" @click="removePhotoNew(index)">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                                                                    <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -195,7 +209,11 @@
                                                                 <label for="editPostPhotos" class="form-label fw-bold">Current photos:</label>
                                                                 <div v-for="(photo, index) in selectedPostEdit.postPhotos" :key="index" class="position-relative d-inline-block m-2">
                                                                     <img :src="photo" class="img-fluid" style="height: 300px;" alt="Post Photo">
-                                                                    <button class="btn primary-btn-red btn-sm position-absolute top-0 end-0" @click="removePhoto(index)">Remove</button>
+                                                                    <button class="btn primary-btn-red btn-sm position-absolute top-0 end-0 mt-3 me-3" @click="removePhoto(index)">
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                                                                            <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
+                                                                        </svg>
+                                                                    </button>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -204,7 +222,7 @@
                                                         <div class="row mt-3 text-start">
                                                             <div class="col-md-12">
                                                                 <label for="newPostPhotos" class="form-label fw-bold">Add more photos:</label>
-                                                                <input type="file" class="form-control" accept="image/*" id="newPostPhotos" multiple @change="imageUploadEdit"/>
+                                                                <input type="file" class="form-control" id="editPostPhotoInputField" accept="image/*" multiple @change="imageUploadEdit"/>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -566,6 +584,11 @@ export default {
                     }
                 }
             }
+        },
+
+        // Function to remove a photo from the new post
+        removePhotoNew(index) {
+            this.newPostPhotos.splice(index, 1);
         },
 
         // Function to remove a photo from the selected post
