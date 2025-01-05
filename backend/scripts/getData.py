@@ -1787,7 +1787,7 @@ def getAccountRequest(id):
 
         else:
             cur.execute("""
-                SELECT * FROM "accountRequests" WHERE "businessId" = %s
+                SELECT * FROM "accountRequests" WHERE "id" = %s
             """, (id,))
 
         request_data = cur.fetchone()

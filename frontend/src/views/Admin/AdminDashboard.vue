@@ -1722,7 +1722,7 @@
                                 'Content-Type': 'application/json'
                             }
                         });
-                        const link = `http://localhost:8080/billingSecurity?token=${response.data.data.token}`;
+                        const link = `https://drink-x.com/billingSecurity?token=${response.data.data.token}`;
                         return link;
                     } catch (error) {
                         console.error(error);
