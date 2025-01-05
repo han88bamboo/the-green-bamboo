@@ -110,7 +110,7 @@
 
                             <div v-if="drinkChoice.length == 0" class="modal-body px-4">
                                 <div class="d-flex justify-content-between ">
-                                    <button v-if="displayUser.modType.length != 0" data-bs-toggle="modal" data-bs-target="#moderatormodal" class="btn btn-warning hover-button p-1 mb-3" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button> 
+                                    <button v-if="displayUser.modType && displayUser.modType.length != 0" data-bs-toggle="modal" data-bs-target="#moderatormodal" class="btn btn-warning hover-button p-1 mb-3" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button> 
                                     <!-- REMOVED ADMIN MODERATOR BADGE -->
                                     <!-- <button v-if="user && user.isAdmin" data-bs-toggle="modal" data-bs-target="#moderatormodal" class="btn btn-warning hover-button p-1 mb-3" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button> -->
                                     <button type="button" class="btn-close uninvert" data-bs-dismiss="modal" aria-label="Close" ></button>
@@ -121,7 +121,7 @@
                             </div>
                             <div v-else class="modal-body px-4">
                                 <div class="d-flex justify-content-between ">
-                                    <button v-if="displayUser.modType.length != 0" data-bs-toggle="modal" data-bs-target="#moderatormodal" class="btn btn-warning hover-button p-1 mb-3" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button> 
+                                    <button v-if="displayUser.modType && displayUser.modType.length != 0" data-bs-toggle="modal" data-bs-target="#moderatormodal" class="btn btn-warning hover-button p-1 mb-3" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button> 
                                     <!-- REMOVED ADMIN MODERATOR BADGE -->
                                     <button type="button" class="btn-close uninvert" data-bs-dismiss="modal" aria-label="Close" ></button>
                                 </div>
