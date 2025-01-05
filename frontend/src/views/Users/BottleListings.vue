@@ -475,10 +475,10 @@
                                                     </div>
                                                     <div class="mobile-col-3 mobile-view-show mobile-ps-0">
                                                         <h2 class="rating-text text-end d-flex align-items-center">
-                                                            {{ getRatings(listing) }}
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
+                                                            {{ getRatings(listing) }}★
+                                                            <!--<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
                                                                 <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                                            </svg>
+                                                            </svg>-->
                                                         </h2>   
                                                     </div>    
                                                 </div>
@@ -486,13 +486,13 @@
                                                 <div class="row pt-4 mobile-view-hide"> 
                                                     <div class="col-6 d-flex align-items-center">
                                                         <h1 class="rating-text text-end d-flex align-items-center">
-                                                            {{ getRatings(listing) }}
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
+                                                            {{ getRatings(listing) }}★
+                                                            <!--<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
                                                                 <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                                            </svg>
+                                                            </svg>-->
                                                         </h1>
                                                     </div>
-                                                    <div class="col-6">
+                                                    <div class="col-6 text-end">
                                                         <div class="d-grid gap-5">
                                                             <router-link :to="{ path: '/listing/view/' +listing.id }" class="primary-clickable-text">
                                                                 <a class="btn secondary-btn btn-md" style="font-weight: bold;"> Read More </a>
@@ -652,10 +652,10 @@
                                                 <div class="row pt-4"> 
                                                     <div class="col-6 d-flex align-items-center">
                                                         <h1 class="rating-text text-end d-flex align-items-center">
-                                                            {{ getRatings(listing) }}
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
+                                                            {{ getRatings(listing) }}★
+                                                            <!--<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
                                                                 <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                                            </svg>
+                                                            </svg>-->
                                                         </h1>
                                                     </div>
                                                     <div class="col-6">
@@ -1192,7 +1192,7 @@
                 const averageRating = ratings.reduce((total, rating) => {
                     return total + rating["rating"];
                 }, 0) / ratings.length;
-                return averageRating.toFixed(2);
+                return averageRating.toFixed(1); //tzh changed .toFixed(2) to .toFixed(1)
             },
 
             // get ratings for a listing --> return 0 if no ratings

@@ -27,7 +27,7 @@
 
     <!-- main content -->
 
-    <div class="container pt-5" v-if="dataLoaded">
+    <div class="container pt-5" v-if="dataLoaded" style="color:black;">
 
         <!-- title -->
         

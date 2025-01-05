@@ -37,7 +37,7 @@
                 <!-- row 1: producer info -->
                 <div class="row">
                     <!-- producer name -->
-                    <div class="col-8 text-start">
+                    <div class="col-8 text-start" style="color:black;">
                         <h2> {{ specified_producer.producerName }} </h2>
                     </div>
                     <!-- producer profile photo -->
@@ -76,22 +76,22 @@
                        @click="checkToShowQnA()">Q&As for {{ specified_producer["producerName"] }} ↓</button>
                     <!-- Q&A-->
                     <div class="collapse pt-3 pe-0 ps-0" id="collapseQnA">
-                            <div class="square primary-square rounded p-3 mb-3 text-start">
+                            <div class="square primary-square-green rounded p-3 mb-3 text-start">
                                 <!-- header text -->
-                                <div class="square-inline pb-2">
+                                <div class="square-inline pb-2" style="color:black;">
                                     <h4 class="square-inline text-start mr-auto"> Recent Fan Posted Questions </h4>
                                 </div>
                                 <!-- buttons-->
                                 <div class="row text-center px-2">
                                     <div class="col-6 d-grid gap-0 no-padding">
-                                        <button type="button" class="btn tertiary-btn-qa rounded-0 reverse-clickable-text">
+                                        <button type="button" class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text"> <!--tzh amended to tertiary-btn-blue-not-round-->
                                             <a class="reverse-clickable-text" v-on:click="showAnswered()">
                                                 Answered
                                             </a>
                                         </button>
                                     </div>
                                     <div class="col-6 d-grid gap-0 no-padding">
-                                        <button type="button" class="btn tertiary-btn-qa rounded-0 reverse-clickable-text">
+                                        <button type="button" class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text"> <!--tzh amended to tertiary-btn-blue-not-round-->
                                             <a class="reverse-clickable-text" v-on:click="showUnanswered()">
                                                 Unanswered
                                             </a>
@@ -191,22 +191,22 @@
                 <!-- row 3: recent fan posted questions desktop -->
                 <div class="row pt-3 mobile-view-hide">
                     <!-- Q&A -->
-                    <div class="square primary-square rounded p-3 mb-3 text-start">
+                    <div class="square primary-square-green rounded p-3 mb-3 text-start">
                         <!-- header text -->
-                        <div class="square-inline pb-2">
+                        <div class="square-inline pb-2" style="color:black;">
                             <h4 class="square-inline text-start mr-auto"> Recent Fan Posted Questions </h4>
                         </div>
                         <!-- buttons-->
                         <div class="row text-center px-2">
                             <div class="col-6 d-grid gap-0 no-padding">
-                                <button type="button" class="btn tertiary-btn-qa rounded-0 reverse-clickable-text">
+                                <button type="button" class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text"> <!--tzh amended to tertiary-btn-blue-not-round-->
                                     <a class="reverse-clickable-text" v-on:click="showAnswered()">
                                         Answered
                                     </a>
                                 </button>
                             </div>
                             <div class="col-6 d-grid gap-0 no-padding">
-                                <button type="button" class="btn tertiary-btn-qa rounded-0 reverse-clickable-text">
+                                <button type="button" class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text"> <!--tzh amended to tertiary-btn-blue-not-round-->
                                     <a class="reverse-clickable-text" v-on:click="showUnanswered()">
                                         Unanswered
                                     </a>
@@ -323,9 +323,9 @@
                        style="font-weight:bold;"
                        @click="checkToShowLatestReview()">Latest Reviews ↓</button>
                     
-                    <div class="mt-3 collapse square primary-square rounded p-3 mb-3 text-start" style="height: 325px;" id="collapselatestreviews">
+                    <div class="mt-3 collapse square primary-square-green rounded p-3 mb-3 text-start" style="height: 325px;" id="collapselatestreviews">
                         <!-- header text -->
-                        <div class="square-inline pb-2">
+                        <div class="square-inline pb-2" style="color:black;">
                             <h4 class="square-inline text-start mr-auto"> Latest Reviews </h4>
                         </div>
                         <!-- body -->
@@ -354,9 +354,9 @@
                 </div>
                 <!-- row 4: latest review desktop -->
                 <div class="row pt-3 mobile-view-hide">
-                    <div class="square primary-square rounded p-3 mb-3 text-start" style="height: 325px;">
+                    <div class="square primary-square-green rounded p-3 mb-3 text-start" style="height: 325px;">
                         <!-- header text -->
-                        <div class="square-inline pb-2">
+                        <div class="square-inline pb-2" style="color:black;">
                             <h4 class="square-inline text-start mr-auto"> Latest Reviews </h4>
                         </div>
                         <!-- body -->
@@ -479,8 +479,8 @@
                         <div id="MostReviewedCategories" class="tab-pane fade col text-start pt-3 mx-lg-3 ps-lg-0 pe-lg-0">
                             
                             <div class="text-start pb-2" v-for="(category, index) in mostDiscussedCategories" v-bind:key="category">
-                                <div class="row ms-0 default-clickable-text"> 
-                                    <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
+                                <div class="row ms-0 default-clickable-text" style="color:black;"> 
+                                    <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3" >
                                         <h5 class="my-auto"> {{ index + 1 }} </h5>
                                     </div>
                                     <div class="col-10 shrink-width-on-dashboard">
@@ -500,13 +500,13 @@
                 <div class="row mobile-view-hide">
                     
                     <!-- col 1: review of your expressions -->
-                    <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-lg-3 ps-lg-0 pe-lg-0">
+                    <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-lg-3 ps-lg-0 pe-lg-0" style="color:black;">
                         <h3> Reviews of Your Expressions </h3>
                         <Line :data="reviewsData" :options="chartOptions"></Line>
                     </div>
 
                     <!-- col 2: profile visits -->
-                    <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-lg-3 ps-lg-0 pe-lg-0">
+                    <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-lg-3 ps-lg-0 pe-lg-0" style="color:black;">
                         <h3> Profile Visits </h3>
                         <Line :data="profileData" :options="chartOptions"></Line>
                     </div>
@@ -517,7 +517,7 @@
                 <div class="row mobile-view-hide">
 
                     <!-- col 1: your best rated expressions -->
-                    <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-lg-3 ps-lg-0 pe-lg-0">
+                    <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-lg-3 ps-lg-0 pe-lg-0" style="color:black;">
                         <h3> Your Best Rated Expressions </h3>
                         <div class="text-start pb-2" v-for="listing in mostPopular" v-bind:key="listing.id">
                             <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
@@ -537,7 +537,7 @@
                     </div>
 
                     <!-- col 2: your most reviewed expressions -->
-                    <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-lg-3 ps-lg-0 pe-lg-0">
+                    <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-lg-3 ps-lg-0 pe-lg-0" style="color:black;">
                         <h3> Your Most Reviewed Expressions </h3>
                         <div class="text-start pb-2" v-for="listing in mostDiscussed" v-bind:key="listing.id">
                             <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
@@ -559,17 +559,17 @@
                 <div class="row mobile-view-hide">
 
                     <!-- col 1: spread of ratings -->
-                    <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-lg-3 ps-lg-0 pe-lg-0">
+                    <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-lg-3 ps-lg-0 pe-lg-0" style="color:black;">
                         <h3> Spread of Ratings </h3>
                         <Bar :data="ratingsData" :options="chartOptions" />
                     </div>
 
                     <!-- col 2: your most reviewed categories -->
-                    <div class="col text-start pt-5 mx-lg-3 ps-lg-0 pe-lg-0">
+                    <div class="col text-start pt-5 mx-lg-3 ps-lg-0 pe-lg-0" style="color:black;">
                         <h3> Your Most Reviewed Categories </h3>
                         <div class="text-start pb-2" v-for="(category, index) in mostDiscussedCategories" v-bind:key="category">
-                            <div class="row ms-0 default-clickable-text"> 
-                                <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
+                            <div class="row ms-0 default-clickable-text"  style="color:black;"> 
+                                <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3" >
                                     <h5 class="my-auto"> {{ index + 1 }} </h5>
                                 </div>
                                 <div class="col-10 shrink-width-on-dashboard">

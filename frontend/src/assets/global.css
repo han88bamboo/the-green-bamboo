@@ -178,6 +178,7 @@ body {
     background-color: #02594b;
     border-radius: 10px;
 }
+
 .primary-btn-less-round:hover,
 .primary-btn-outline-less-round {
     color: #535C72;
@@ -187,10 +188,17 @@ body {
 }
 
 .active-toggle-producer-QnA {
-    color: #535C72;
-    background-color: whitesmoke;
+    color: #027562;
+    background-color: white;
     border-radius: 10px;
-    border: 4px solid #535C72;
+    border: 4px solid #027562;
+}
+
+.active-toggle-producer-QnA:hover {
+    color: white;
+    background-color: #02594b;
+    border-radius: 10px;
+    border: 4px solid #02594b;
 }
 
 .primary-square {
@@ -319,8 +327,8 @@ body {
 }
 
 .secondary-btn-border-thick:hover  {
-    color: whitesmoke;
-    background-color: #c27e30;
+    color: black;   /* TZH changed whitesmoke to black */
+    background-color: #C9964A; /* TZH changed c27e30 to C9964A */
     border-radius: 100px;
     border: 2.5px solid whitesmoke;
     font-weight: bold;
@@ -337,9 +345,23 @@ body {
 .secondary-btn-less-round:hover,
 .secondary-btn-outline-less-round {
     color: black;
-    background-color: whitesmoke;
+    background-color: #C9964A; /* TZH changed whitesmoke to C9964A */
     border-radius: 10px;
     border: 4px solid #F0B358; /* TZH changed DD9E54 to F0B358*/
+}
+
+.secondary-btn-less-round-inverse {
+    color: black;
+    background-color: white; 
+    border-radius: 10px;
+    border: 4px solid #F0B358; 
+}
+
+.secondary-btn-less-round-inverse:hover {
+    color: black;
+    background-color: #C9964A; 
+    border-radius: 10px;
+    border: 4px solid #F0B358; 
 }
 
 .secondary-btn-not-rounded {
@@ -384,6 +406,27 @@ body {
 .tertiary-btn-blue-outline:hover{
     color: whitesmoke;
     background-color: #83A9E8;
+}
+
+.tertiary-btn-blue-not-round {
+    color: white;
+    background-color: #83A9E8;
+    border-radius: 0px !important;
+}
+
+.tertiary-btn-blue-not-round:hover {
+    color: white;
+    background-color: #6183ba;
+    border-radius: 0px !important;
+}
+
+.tertiary-btn-blue {
+    color: white;
+    background-color: #83A9E8;
+}
+.tertiary-btn-blue:hover {
+    color: white;
+    background-color: #6183ba;
 }
 
 .tertiary-btn:hover {
@@ -710,16 +753,16 @@ body {
 
 .nav-tabs .nav-link.active {
     color: whitesmoke;
-    background-color: #535C72;
+    background-color: #027562; 
 }
 
 .nav-tabs .nav-link {
-    color: #535C72;
+    color: black;
 }
 
 .nav-tabs .nav-link:hover {
     color: whitesmoke;
-    background-color: #747D92;
+    background-color: #035f50;
 }
 
 .card {
@@ -850,6 +893,11 @@ body {
 .btn-close.uninvert {
     color: white !important; 
     filter: none !important;
+}
+
+.btn-close.review-modal {
+    color: white !important; 
+    filter: invert(0) !important;
 }
 
 button.primary-square:hover {
@@ -985,7 +1033,7 @@ button.primary-square:hover {
 }
 
 .rounded-pill{
-    font-size: 17px;
+    font-size: 16px;
 }
 
 .rounded-pill-user-profile{
@@ -1599,7 +1647,7 @@ button.primary-square:hover {
 
 @media (max-width: 991px){
     .rounded-pill{
-        font-size: 12px;
+        font-size: 16px;
     }
 }
 
@@ -1819,4 +1867,60 @@ button.primary-square:hover {
 
 .mt-0_5 {
     margin-top: 0.175rem !important;
+}
+
+.about-box{
+    background-color:gainsboro; 
+    min-height:3em;
+}
+
+.edit-listings-svg-dimensions{
+    width:20px;
+    height:20px;
+    vertical-align: top; /* Align the SVG to the top */
+    align-self: flex-start;
+}
+.about-box .btn{
+    vertical-align: top; /* Align the text to the top */
+    display: inline-block; /* Ensure text is inline for proper alignment */
+}
+
+.col-9_5{
+    flex: 0 0 auto;
+    width:80%;
+}
+
+.col-2_5{
+    flex: 0 0 auto;
+    width:20%;
+}
+
+.no-underline {
+    text-decoration: none;
+    color: black;
+  }
+  
+.no-underline:hover {
+    text-decoration: none;
+    color: #0D40BE;
+  }
+
+.slider-container {
+position: relative;
+width: 100%;
+}
+
+.tickmarks {
+position: absolute;
+top: 20px;
+width: 100%;
+display: flex;
+justify-content: space-between;
+}
+
+.tick {
+position: absolute;
+top: 0;
+transform: translateY(-76%);
+font-size: 17px;
 }

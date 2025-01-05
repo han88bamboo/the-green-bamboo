@@ -43,7 +43,7 @@
                 <!-- row 1: venue info -->
                 <div class="row">
                     <!-- venue name -->
-                    <div class="col-8 text-start">
+                    <div class="col-8 text-start" style="color:black;">
                         <h2> {{ targetVenue['venueName'] }} </h2>
                     </div>
                     <!-- venue profile photo -->
@@ -92,7 +92,7 @@
                        @click="checkToShowQnA()">Q&As for {{ targetVenue["venueName"] }} ↓</button>
 
                     <div class="collapse col-12 pt-3 pe-0 ps-0" id="collapseQnA" >
-                        <div class="square primary-square rounded p-3 mb-3">
+                        <div class="square primary-square-green rounded p-3 mb-3">
 
                             <!-- Header -->
                             <div class="square-inline text-start">
@@ -113,12 +113,12 @@
                             <!-- Buttons for Answered/Unanswered Questions -->
                             <div v-if="selfView" class="row text-center px-2">
                                 <div class="col-6 d-grid gap-0 no-padding">
-                                    <button type="button" class="btn tertiary-btn rounded-0 reverse-clickable-text" @click="qaMode = 'answered'">
+                                    <button type="button" class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text" @click="qaMode = 'answered'"> <!--tzh amended to tertiary-btn-blue-not-round-->
                                         Answered
                                     </button>
                                 </div>
                                 <div class="col-6 d-grid gap-0 no-padding">
-                                    <button type="button" class="btn tertiary-btn rounded-0 reverse-clickable-text" @click="qaMode = 'unanswered'">
+                                    <button type="button" class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text" @click="qaMode = 'unanswered'"> <!--tzh amended to tertiary-btn-blue-not-round-->
                                         Unanswered
                                     </button>
                                 </div>
@@ -192,7 +192,7 @@
                 <!-- row 3: Q & A desktop-->
                 <div class="row pt-3 mobile-view-hide">
                     <div class="col-12">
-                        <div class="square primary-square rounded p-3 mb-3">
+                        <div class="square primary-square-green rounded p-3 mb-3">
 
                             <!-- Header -->
                             <div class="square-inline text-start">
@@ -213,12 +213,12 @@
                             <!-- Buttons for Answered/Unanswered Questions -->
                             <div v-if="selfView" class="row text-center px-2">
                                 <div class="col-6 d-grid gap-0 no-padding">
-                                    <button type="button" class="btn tertiary-btn rounded-0 reverse-clickable-text" @click="qaMode = 'answered'">
+                                    <button type="button" class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text" @click="qaMode = 'answered'"> <!--tzh amended to tertiary-btn-blue-not-round-->
                                         Answered
                                     </button>
                                 </div>
                                 <div class="col-6 d-grid gap-0 no-padding">
-                                    <button type="button" class="btn tertiary-btn rounded-0 reverse-clickable-text" @click="qaMode = 'unanswered'">
+                                    <button type="button" class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text" @click="qaMode = 'unanswered'"> <!--tzh amended to tertiary-btn-blue-not-round-->
                                         Unanswered
                                     </button>
                                 </div>
@@ -313,7 +313,7 @@
 
                     <!--user reports -->
                     <div class="collapse pt-3 pe-0 ps-0" id="collapseUserReports">
-                        <div class="square primary-square rounded p-3 mb-3">
+                        <div class="square primary-square-green rounded p-3 mb-3">
 
                             <!-- Header -->
                             <div class="square-inline text-start">
@@ -379,7 +379,7 @@
                 <!-- row 4: menu inaccuracy reports desktop-->
                 <div class="row pt-3 mobile-view-hide">
                     <div class="col-12">
-                        <div class="square primary-square rounded p-3 mb-3">
+                        <div class="square primary-square-green rounded p-3 mb-3">
 
                             <!-- Header -->
                             <div class="square-inline text-start">
@@ -462,13 +462,13 @@
                 </ul>
 
                 <div class="row mobile-view-show tab-content">
-                    <div id="countofreviews" class="tab-pane fade show active col-lg-5 col-md-12 col-sm-12 text-start pt-5 mobile-pt-3 mx-lg-3 ps-lg-0 pe-lg-0">
+                    <div id="countofreviews" class="tab-pane fade show active col-lg-5 col-md-12 col-sm-12 text-start pt-5 mobile-pt-3 mx-lg-3 ps-lg-0 pe-lg-0" style="color:black;">
                         <Line :data="reviewsData" :options="chartOptions"></Line>
                     </div>
-                    <div id="profilevisits" class="tab-pane fade col-lg-5 col-md-12 col-sm-12 text-start pt-5 mobile-pt-3 mx-lg-3 ps-lg-0 pe-lg-0">
+                    <div id="profilevisits" class="tab-pane fade col-lg-5 col-md-12 col-sm-12 text-start pt-5 mobile-pt-3 mx-lg-3 ps-lg-0 pe-lg-0" style="color:black;">
                         <Line :data="profileData" :options="chartOptions"></Line>
                     </div>   
-                    <div id="spread" class="tab-pane fade col-lg-5 col-md-12 col-sm-12 text-start pt-5 mobile-pt-3 mx-lg-3 ps-lg-0 pe-lg-0">
+                    <div id="spread" class="tab-pane fade col-lg-5 col-md-12 col-sm-12 text-start pt-5 mobile-pt-3 mx-lg-3 ps-lg-0 pe-lg-0" style="color:black;">
                         <Bar :data="ratingsData" :options="chartOptions" />
                     </div>
                 </div>                    
@@ -476,12 +476,12 @@
                 <!-- row 1: review count + spread of ratings of menu's drinks desktop -->
                 <div class="row mobile-view-hide">
                     <!-- col 1: review count -->
-                    <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0">
+                    <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0" style="color:black;">
                         <h3> Review Count of Drinks </h3>
                         <Line :data="reviewsData" :options="chartOptions"></Line>
                     </div>
                     <!-- col 2: spread of ratings -->
-                    <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0">
+                    <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0" style="color:black;"> 
                         <h3> Spread of Ratings for Drinks </h3>
                         <Bar :data="ratingsData" :options="chartOptions" />
                     </div>
@@ -490,7 +490,7 @@
                 <!-- row 2: most reviewed + best rated menu's drinks desktop-->
                 <div class="row mt-5 mobile-view-hide">
                     <!-- col 1: most reviewed drinks on the menu -->
-                    <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0">
+                    <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0" style="color:black;">
                         <h3> Most Reviewed Drinks </h3>
                         <div class="text-start pb-2" v-for="listing in listingsMostReviewed" v-bind:key="listing.id">
                             <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
@@ -507,7 +507,7 @@
                         </div>
                     </div>
                     <!-- col 2: best rated drinks on the menu -->
-                    <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0">
+                    <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0" style="color:black;">
                         <h3> Best Rated Drinks </h3>
                         <div class="text-start pb-2" v-for="listing in listingsBestRated" v-bind:key="listing.id">
                             <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
@@ -531,7 +531,7 @@
                 <!-- row 3: most reviewed + best rated menu sections desktop -->
                 <div class="row mt-5 mobile-view-hide">
                     <!-- col 1: most reviewed sections -->
-                    <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0">
+                    <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0" style="color:black;">
                         <h3> Most Reviewed Sections </h3>
                         <div class="text-start pb-2" v-for="(section, index) in sectionsMostReviewed" v-bind:key="section.id">
                             <div class="row ms-0 default-clickable-text"> 
@@ -547,7 +547,7 @@
                         </div>
                     </div>
                     <!-- col 2: best rated sections -->
-                    <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0">
+                    <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0" style="color:black;">
                         <h3> Best Rated Sections </h3>
                         <div class="text-start pb-2" v-for="(section, index) in sectionsBestRated" v-bind:key="section.id">
                             <div class="row ms-0 default-clickable-text"> 
@@ -570,7 +570,7 @@
                 <!-- row 4: venue menu summary + profile visits -->
                 <div class="row mobile-view-hide">
                     <!-- col 1: venue menu summary -->
-                    <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-3 ps-lg-0 pe-lg-0">
+                    <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-3 ps-lg-0 pe-lg-0" style="color:black;">
                         <h3> Venue Menu Summary </h3>
 
                         <!-- Number of Menu Items + Unique Drinks -->
@@ -579,7 +579,7 @@
                                 <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
                                     <h5 class="my-auto"> - </h5>
                                 </div>
-                                <div class="col-10 shrink-width-on-dashboard">
+                                <div class="col-10 shrink-width-on-dashboard" style="color:black;">
                                     <b> Number of Menu Items </b> 
                                     <br>
                                     {{ menuItemsCount }} (Unique: {{ loadedListings.length }})
@@ -593,7 +593,7 @@
                                 <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
                                     <h5 class="my-auto"> - </h5>
                                 </div>
-                                <div class="col-10 shrink-width-on-dashboard">
+                                <div class="col-10 shrink-width-on-dashboard" style="color:black;">
                                     <b> Number of Sections </b> 
                                     <br>
                                     {{ detailedMenu.length }} sections
@@ -603,11 +603,11 @@
 
                         <!-- Overall Average Rating -->
                         <div class="text-start pb-2">
-                            <div class="row ms-0 default-clickable-text"> 
+                            <div class="row ms-0 default-clickable-text" style="color:black;">  
                                 <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
                                     <h5 class="my-auto"> - </h5>
                                 </div>
-                                <div class="col-10 shrink-width-on-dashboard">
+                                <div class="col-10 shrink-width-on-dashboard" >
                                     <b> Overall Average Rating </b> 
                                     <br>
                                     {{ overallRating }} 
@@ -620,7 +620,7 @@
 
                     </div>
                     <!-- col 2: profile visits -->
-                    <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 pt-5 ps-lg-0 pe-lg-0">
+                    <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 pt-5 ps-lg-0 pe-lg-0" style="color:black;">
                         <h3> Profile Visits </h3>
                         <Line :data="profileData" :options="chartOptions"></Line>
                     </div>
@@ -694,7 +694,7 @@
                                 <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
                                     <h5 class="my-auto"> {{ index + 1 }} </h5>
                                 </div>
-                                <div class="col-10 shrink-width-on-dashboard">
+                                <div class="col-10 shrink-width-on-dashboard" style="color:black;">
                                     <b> {{ section.sectionName }} </b>
                                     <br>
                                     {{ section.sectionDetails.sectionReviews.length }} reviews
@@ -711,7 +711,7 @@
                                 <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
                                     <h5 class="my-auto"> {{ index + 1 }} </h5>
                                 </div>
-                                <div class="col-10 shrink-width-on-dashboard">
+                                <div class="col-10 shrink-width-on-dashboard" style="color:black;">
                                     <b> {{ section.sectionName }} </b>
                                     <br>
                                     {{ section.sectionDetails.sectionRating }} 
@@ -733,7 +733,7 @@
                                 <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
                                     <h5 class="my-auto"> - </h5>
                                 </div>
-                                <div class="col-10 shrink-width-on-dashboard">
+                                <div class="col-10 shrink-width-on-dashboard" style="color:black;">
                                     <b> Number of Menu Items </b> 
                                     <br>
                                     {{ menuItemsCount }} (Unique: {{ loadedListings.length }})
@@ -747,7 +747,7 @@
                                 <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
                                     <h5 class="my-auto"> - </h5>
                                 </div>
-                                <div class="col-10 shrink-width-on-dashboard">
+                                <div class="col-10 shrink-width-on-dashboard" style="color:black;">
                                     <b> Number of Sections </b> 
                                     <br>
                                     {{ detailedMenu.length }} sections
@@ -761,7 +761,7 @@
                                 <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
                                     <h5 class="my-auto"> - </h5>
                                 </div>
-                                <div class="col-10 shrink-width-on-dashboard">
+                                <div class="col-10 shrink-width-on-dashboard" style="color:black;">
                                     <b> Overall Average Rating </b> 
                                     <br>
                                     {{ overallRating }} 

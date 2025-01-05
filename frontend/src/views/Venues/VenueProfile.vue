@@ -657,12 +657,12 @@
                                         <!-- Buttons for Answered/Unanswered Questions -->
                                         <div v-if="selfView" class="row text-center px-2">
                                             <div class="col-6 d-grid gap-0 no-padding">
-                                                <button type="button" class="btn tertiary-btn rounded-0 reverse-clickable-text" @click="qaMode = 'answered'">
+                                                <button type="button" class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text" @click="qaMode = 'answered'">
                                                     Answered
                                                 </button>
                                             </div>
                                             <div class="col-6 d-grid gap-0 no-padding">
-                                                <button type="button" class="btn tertiary-btn rounded-0 reverse-clickable-text" @click="qaMode = 'unanswered'">
+                                                <button type="button" class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text" @click="qaMode = 'unanswered'">
                                                     Unanswered
                                                 </button>
                                             </div>
@@ -858,14 +858,14 @@
 
                                 <!-- Edit Menu -->
                                 <div class="col-6 d-grid px- mobile-view-hide">
-                                    <button type="button" class="mobile-view-hide btn primary-btn-outline-thick rounded-0 reverse-clickable-text" @click="enableEditMenuMode"> 
+                                    <button type="button" class="mobile-view-hide btn tertiary-btn-blue-outline Xprimary-btn-outline-thick rounded-0 reverse-clickable-text" @click="enableEditMenuMode"> 
                                         Edit Menu 
                                     </button>
                                 </div>
 
                                 <!-- Share Menu -->
                                 <div class="col-6 d-grid px-1 mobile-view-hide">
-                                    <button type="button" class="mobile-view-hide btn primary-btn-outline-thick rounded-0 reverse-clickable-text" data-bs-toggle="modal" data-bs-target="#shareMenuModal"> 
+                                    <button type="button" class="mobile-view-hide btn tertiary-btn-blue-outline Xprimary-btn-outline-thick rounded-0 reverse-clickable-text" data-bs-toggle="modal" data-bs-target="#shareMenuModal"> 
                                         Share Menu 
                                     </button>
                                     <!-- Share Menu Modal (QR Code) -->
@@ -986,7 +986,7 @@
 
                             <!-- Reset Search -->
                             <div v-if="!editMenuMode" class="col-1 p-0">
-                                <button type="button" class="btn tertiary-btn" @click="searchMenuTerm = ''; searchMenu()">
+                                <button type="button" class="btn tertiary-btn-blue" @click="searchMenuTerm = ''; searchMenu()">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
                                         <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/>
                                         <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/>
@@ -1022,7 +1022,7 @@
                             <!-- Sort Menu -->
                             <div class="col-2 me-0">
                                 <div class="d-grid gap-2 dropdown">
-                                    <button class="btn primary-light-dropdown dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
+                                    <button class="btn primary-light-dropdown-homepage dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
                                         Sort{{ sortMenuTerm ? ': ' + sortMenuTerm : ' By...' }}
                                     </button>
                                     <ul class="dropdown-menu">
@@ -1965,12 +1965,12 @@
                             <!-- Buttons for Answered/Unanswered Questions -->
                             <div v-if="selfView" class="row text-center px-2">
                                 <div class="col-6 d-grid gap-0 no-padding">
-                                    <button type="button" class="btn tertiary-btn rounded-0 reverse-clickable-text" @click="qaMode = 'answered'">
+                                    <button type="button" class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text" @click="qaMode = 'answered'">
                                         Answered
                                     </button>
                                 </div>
                                 <div class="col-6 d-grid gap-0 no-padding">
-                                    <button type="button" class="btn tertiary-btn rounded-0 reverse-clickable-text" @click="qaMode = 'unanswered'">
+                                    <button type="button" class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text" @click="qaMode = 'unanswered'">
                                         Unanswered
                                     </button>
                                 </div>

@@ -46,7 +46,7 @@
                                 alt="" style="width: 100px; height: auto; z-index: 1;" class="rounded-circle-no-bg border border-dark profile-img">
                         </div>
                         <!-- producer name -->
-                        <div class="col-8 text-start">
+                        <div class="col-8 text-start" style="color:black;">
                             <h3 class="mb-1"> {{ user.displayName }} </h3>
                             <!--<b>@{{ user.username }}</b>-->
                             {{ drinkCount }} Drinks Tasted 
@@ -335,12 +335,12 @@
                     <div class="row mobile-view-show tab-content" >
                     
                         <!-- col 1: review of your expressions -->
-                        <div id="countofreviews" class="tab-pane fade show active col-lg-5 col-md-12 col-sm-12 text-start pt-5 mobile-pt-3 mx-lg-3 ps-lg-0 pe-lg-0">
+                        <div id="countofreviews" class="tab-pane fade show active col-lg-5 col-md-12 col-sm-12 text-start pt-5 mobile-pt-3 mx-lg-3 ps-lg-0 pe-lg-0" style="color:black;">
                             <Line :data="reviewsData" :options="chartOptions"></Line>
                         </div>
 
                         <!-- col 2: profile visits -->
-                        <div id="spreadofratings" class="tab-pane fade col-lg-5 col-md-12 col-sm-12 text-start pt-5 mobile-pt-3 mx-lg-3 ps-lg-0 pe-lg-0">
+                        <div id="spreadofratings" class="tab-pane fade col-lg-5 col-md-12 col-sm-12 text-start pt-5 mobile-pt-3 mx-lg-3 ps-lg-0 pe-lg-0" style="color:black;">
                             
                             <Bar :data="ratingsData" :options="chartOptions" />
                         </div>
@@ -388,7 +388,7 @@
                                     <div class="col-10 shrink-width-on-dashboard" > <!-- style added by tzh-->
                                         <b> {{ category.category }} </b> 
                                         <br>
-                                        {{ category.averageRating.toFixed(2) || "-" }} 
+                                        {{ category.averageRating.toFixed(1) || "-" }} 
                                         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
                                             <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
                                         </svg>
@@ -403,13 +403,13 @@
                 <div class="row mobile-view-hide">
 
                     <!-- col 1: review count -->
-                    <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0">
+                    <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0" style="color:black;">
                         <h3> Review Count </h3>
                         <Line :data="reviewsData" :options="chartOptions"></Line>
                     </div>
 
                     <!-- col 2: spread of ratings -->
-                    <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 mx-3 ps-lg-0 pe-lg-0">
+                    <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 mx-3 ps-lg-0 pe-lg-0" style="color:black;">
                         <h3> Spread of Ratings </h3>
                         <Bar :data="ratingsData" :options="chartOptions" />
                     </div>
@@ -420,7 +420,7 @@
                 <div class="row mobile-view-hide">
 
                     <!-- col 1: your best rated drinks -->
-                    <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5  mx-3 ps-lg-0 pe-lg-0">
+                    <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5  mx-3 ps-lg-0 pe-lg-0" style="color:black;">
                         <h3> Your Best Rated Drinks </h3>
                         <div class="text-start pb-2" v-for="listing in bestRatedListings" v-bind:key="listing._id">
                             <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
@@ -441,7 +441,7 @@
                     </div>
 
                     <!-- col 2: your best rated categories -->
-                    <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-3 ps-lg-0 pe-lg-0"> <!-- padding classes added by tzh-->
+                    <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-3 ps-lg-0 pe-lg-0" style="color:black;"> <!-- padding classes added by tzh-->
                         <h3> Your Best Rated Categories </h3>
                         <div class="text-start pb-2" v-for="(category, index) in bestRatedCategories" v-bind:key="category">
                             <div class="row ms-0 default-clickable-text "> 
@@ -451,7 +451,7 @@
                                 <div class="col-10 shrink-width-on-dashboard" > <!-- style added by tzh-->
                                     <b> {{ category.category }} </b> 
                                     <br>
-                                    {{ category.averageRating.toFixed(2) || "-" }} 
+                                    {{ category.averageRating.toFixed(1) || "-" }} 
                                     <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
                                         <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
                                     </svg>
@@ -516,7 +516,44 @@
                             backgroundColor: '#747D92',
                             data: counts
                         }
-                    ]
+                    ],
+                    //tzh aded this to make text color black.
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: '#000000' // Legend text color
+                                }
+                            },
+                            tooltip: {
+                                bodyColor: '#000000', // Tooltip text color
+                                titleColor: '#000000' // Tooltip title color
+                            }
+                        },
+                        scales: {
+                            x: {
+                                ticks: {
+                                    color: '#000000' // X-axis label color
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Month/Year',
+                                    color: '#000000' // X-axis title color
+                                }
+                            },
+                            y: {
+                                ticks: {
+                                    color: '#000000' // Y-axis label color
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Review Count',
+                                    color: '#000000' // Y-axis title color
+                                }
+                            }
+                        }
+                    }
                 }
             }, 
             ratingsData() { 
