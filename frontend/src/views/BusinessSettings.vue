@@ -610,6 +610,9 @@ export default {
                         'Content-Type': 'application/json'
                     }
                 });
+                // for local development
+                // const link = `http://localhost:8080/billingSecurity?token=${response.data.data.token}`;
+                // for deployed
                 const link = `https://drink-x.com/billingSecurity?token=${response.data.data.token}`;
                 console.log(link);
                 return link;

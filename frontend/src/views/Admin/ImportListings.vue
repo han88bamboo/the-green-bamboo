@@ -111,56 +111,6 @@
                     fileFormat: [],
                     csvData: [],
                     importComplete: true,
-                    // TO DELETE IF NOT NEEDED
-
-                    // // data from database
-                    // observationTags: [],
-                    // modRequests: [],
-                    // accountRequests: [],
-                    // producers: [],
-                    // venues: [],
-                    // countries: [],
-
-                    // editedObservationTags: [],
-                    // pendingModRequests: [],
-                    // pendingAccountRequests: [],
-                    
-                    // //User 
-                    // user: null,
-                    // users: [],
-
-                    // // creation of new observation tag
-                    // newObservation:'',
-
-                    // // Error messages
-                    // errorMessages:'',
-
-                    // // flags
-                    // dataLoaded: false,
-                    // loadError: false,
-                    // editingObservation:false,
-                    // addingObservation:false,
-                    // selectingObservation:true,
-                    // nothingChanged:false,
-                    // successUpdateObservation:false,
-                    // invalidTag:false,
-                    // errorMessage:false,
-                    // errorUpdateObservation:false,
-                    // updatingObservation:false,
-                    // duplicateTag:false,
-                    // successCreateObservation:false,
-                    // submittingObservation:false,
-                    // errorCreateObservation:false,
-
-                    // // create business
-                    // businessType: "",
-                    // businessName: "",
-                    // businessDesc: "",
-                    // businessCountry: "",
-                    // businessClaimStatus: "",
-                    // addBizError: "",
-                    // tempPassword: "",
-
 
                     // Logged in user details
                     userID: null,
@@ -202,81 +152,14 @@
                     // Check if admin, if not reroute to home page
                     // users
                     try {
-                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUsers`);
-                        this.users = response.data;
-                        if (this.userType == "user") {
-                            this.user = this.users.find(user => user["id"] == this.userID);
-                            if(!this.user.isAdmin){
+                        if(this.userType =="user"){
+                            const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUser/${this.userID}`);
+                            if(!response.data['isAdmin']){
                                 this.$router.push('/');
                             }
                         }else{
                             this.$router.push('/');
                         }
-                    } 
-                    catch (error) {
-                        console.error(error);
-                        this.dataLoaded = null;
-                    }
-                    // observation tags
-                    try {
-                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getObservationTags`);
-                        this.observationTags = response.data;
-                        this.editedObservationTags = JSON.parse(JSON.stringify(response.data));
-                    } 
-                    catch (error) {
-                        console.error(error);
-                        this.dataLoaded = null;
-                    }
-                    // mod requests
-                    try {
-                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getModRequests`);
-                        this.modRequests = response.data;
-                        this.pendingModRequests = this.modRequests.filter(request => request.reviewStatus);
-                    } 
-                    catch (error) {
-                        console.error(error);
-                        this.dataLoaded = null;
-                    }
-                    // account requests
-                    try {
-                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getAccountRequests`);
-                        this.accountRequests = response.data;
-                        this.pendingAccountRequests = this.accountRequests.filter(request => request.reviewStatus);
-                    } 
-                    catch (error) {
-                        console.error(error);
-                        this.dataLoaded = null;
-                    }
-                    // producer
-                    try {
-                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducers`);
-                        this.producers = response.data;
-                        // check for producer with no producer name and retrieve id
-                        // [TO BE REMOVED?]
-                        for (let i = 0; i < this.producers.length; i++) {
-                            if (!this.producers[i].producerName) {
-                                console.log("no name");
-                                console.log(this.producers[i].id);
-                            }
-                        }
-                    } 
-                    catch (error) {
-                        console.error(error);
-                        this.dataLoaded = null;
-                    }
-                    // venues
-                    try {
-                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenues`);
-                        this.venues = response.data;
-                    } 
-                    catch (error) {
-                        console.error(error);
-                        this.dataLoaded = null;
-                    }
-                    // countries
-                    try {
-                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getCountries`);
-                        this.countries = response.data;
                     } 
                     catch (error) {
                         console.error(error);
