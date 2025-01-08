@@ -283,47 +283,87 @@
 
 
                             <!-- description -->
-                            <div class="row scrollable mobile-view-hide">
-                                <div class="col-lg-12 padding-right-for-suggesteditslink-large-screen">
+                            <div class="row container scrollable pe-0 mobile-view-hide">
+                                <div class="col-lg-12 pe-0 ps-0 xpadding-right-for-suggesteditslink-large-screen">
                                     <!--<div class="py-2"></div>-->
                                     <!-- below truncated-->
-                                    <h6 class="text-body-secondary fst-italic">About</h6> <!--tzh added about-->
-                                    <div v-if="specified_listing.officialDesc?.length > 250">
-                                        <p v-if="!showFullDescription" class="mobile-rating-smaller-text-2" style="margin-bottom:0.2rem;"><!-- tzh added truncated description --->
-                                            <em>{{ specified_listing["officialDesc"].slice(0, 250) + (specified_listing["officialDesc"].length > 250 ? '...' : '') }}</em>
-                                            <a @click="showFullDescription = true" style="font-weight: bold;">(Read More)</a>
-                                        </p>
-                                        <p v-else style="margin-bottom:0.2rem;" class="mobile-rating-smaller-text-2"> <!-- tzh added full description --->
-                                            <em>{{ specified_listing["officialDesc"] }}</em>
-                                            <a @click="showFullDescription = false" style="font-weight: bold;">(Read Less)</a>
-                                        </p>
+                                    <h6 class="text-body-secondary fst-italic mt-2">About</h6> <!--tzh added about-->
+                                    <div v-if="specified_listing.officialDesc?.length > 250" class="about-box  d-flex justify-content-between align-items-center">
+                                        <div class="col-9_5">
+                                            <p v-if="!showFullDescription" class="mobile-rating-smaller-text-2" style="margin-bottom:0.2rem;"><!-- tzh added truncated description --->
+                                                <em>{{ specified_listing["officialDesc"].slice(0, 250) + (specified_listing["officialDesc"].length > 250 ? '...' : '') }}</em>
+                                                <a @click="showFullDescription = true" style="font-weight: bold;">(Read More)</a>
+                                            </p>
+                                            <p v-else style="margin-bottom:0.2rem;" class="mobile-rating-smaller-text-2"> <!-- tzh added full description --->
+                                                <em>{{ specified_listing["officialDesc"] }}</em>
+                                                <a @click="showFullDescription = false" style="font-weight: bold;">(Read Less)</a>
+                                            </p>
+                                        </div>
+                                        <div class="col-2_5 align-self-start">
+                                            <router-link :to="{ path: '/request/modify/edit/' + this.listing_id }" class="no-underline">
+                                                <button type="button" class="btn p-0 ps-1 pe-1 rounded-0 d-flex justify-content-between align-items-center " ><svg viewBox="0 0 24 24" fill="currentColor" class="bi bi-sort-down edit-listings-svg-dimensions" xmlns="http://www.w3.org/2000/svg"><path d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z"></path></svg>
+                                                    <p style="font-size:0.9em; font-weight:bold;">Suggest Edits</p>
+                                                </button>
+                                            </router-link>
+                                        </div>
                                     </div>
-                                    <p v-else style="margin-bottom:0.2rem;" class="mobile-rating-smaller-text-2">
-                                        <em>{{ specified_listing["officialDesc"] }}</em>
-                                    </p>  
+                                    <div v-else class="about-box  d-flex justify-content-between align-items-center">
+                                        <div class="col-9_5">
+                                            <p style="margin-bottom:0.2rem;" class="mobile-rating-smaller-text-2">
+                                                <em>{{ specified_listing["officialDesc"] }}</em>
+                                            </p>  
+                                        </div>
+                                        <div class="col-2_5 align-self-start">
+                                            <router-link :to="{ path: '/request/modify/edit/' + this.listing_id }" class="no-underline">
+                                                <button type="button" class="btn p-0 ps-1 pe-1 rounded-0 d-flex justify-content-between align-items-center " ><svg viewBox="0 0 24 24" fill="currentColor" class="bi bi-sort-down edit-listings-svg-dimensions" xmlns="http://www.w3.org/2000/svg"><path d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z"></path></svg>
+                                                    <p style="font-size:0.9em; font-weight:bold;">Suggest Edits</p>
+                                                </button>
+                                            </router-link>
+                                        </div>
+                                    </div>
                                     <!-- above truncated-->  
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="row scrollable mobile-view-show text-start">
-                                <div class="col-lg-12 padding-right-for-suggesteditslink-large-screen">
+                <div class="row container scrollable mobile-view-show text-start">
+                                <div class="col-lg-12 pe-0 padding-right-for-suggesteditslink-large-screen">
                                     <!--<div class="py-2"></div>-->
-                                    <h6 class="text-body-secondary fst-italic">About</h6> <!--tzh added about-->
-                                    <div v-if="specified_listing.officialDesc?.length > 250">
-                                        <p v-if="!showFullDescription" class="mobile-rating-smaller-text-2 " style="margin-bottom:0.2rem; padding-left:0.8rem !important;"><!-- tzh added truncated description --->
-                                            <em>{{ specified_listing["officialDesc"].slice(0, 250) + (specified_listing["officialDesc"].length > 250 ? '...' : '') }}</em>
-                                            <a @click="showFullDescription = true" style="font-weight: bold;">(Read More)</a>
-                                        </p>
-                                        <p v-else style="margin-bottom:0.2rem; padding-left:0.8rem !important;" class="mobile-rating-smaller-text-2"> <!-- tzh added full description --->
-                                            <em>{{ specified_listing["officialDesc"] }}</em>
-                                            <a @click="showFullDescription = false" style="font-weight: bold;">(Read Less)</a>
-                                        </p>
+                                    <h6 class="text-body-secondary fst-italic mt-2">About</h6> <!--tzh added about-->
+                                    <div v-if="specified_listing.officialDesc?.length > 250" class="about-box  d-flex justify-content-between align-items-center">
+                                        <div class="col-9_5">
+                                            <p v-if="!showFullDescription" class="mobile-rating-smaller-text-2 " style="margin-bottom:0.2rem; "><!-- tzh added truncated description --->
+                                                <em>{{ specified_listing["officialDesc"].slice(0, 250) + (specified_listing["officialDesc"].length > 250 ? '...' : '') }}</em>
+                                                <a @click="showFullDescription = true" style="font-weight: bold;">(Read More)</a>
+                                            </p>
+                                            <p v-else style="margin-bottom:0.2rem; " class="mobile-rating-smaller-text-2"> <!-- tzh added full description --->
+                                                <em>{{ specified_listing["officialDesc"] }}</em>
+                                                <a @click="showFullDescription = false" style="font-weight: bold;">(Read Less)</a>
+                                            </p>
+                                        </div>
+                                        <div class="col-2_5 align-self-start">
+                                            <router-link :to="{ path: '/request/modify/edit/' + this.listing_id }" class="no-underline">
+                                                <button type="button" class="btn p-0 ps-1 pe-1 rounded-0 d-flex justify-content-between align-items-center" ><svg viewBox="0 0 24 24" fill="currentColor" class="bi bi-sort-down edit-listings-svg-dimensions" xmlns="http://www.w3.org/2000/svg"><path d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z"></path></svg>
+                                                    <p style="font-size:0.65em; font-weight:bold;">Suggest Edits</p>
+                                                </button>
+                                            </router-link>
+                                        </div>
                                     </div>
-                                    <p v-else style="margin-bottom:0.2rem; padding-left:0.8rem !important;" class="mobile-rating-smaller-text-2">
-                                        <em>{{ specified_listing["officialDesc"] }}</em>
-                                    </p>    
+                                    <div v-else class="about-box  d-flex justify-content-between align-items-center">
+                                        <div class="col-9_5">
+                                            <p style="margin-bottom:0.2rem; " class="mobile-rating-smaller-text-2">
+                                                <em>{{ specified_listing["officialDesc"] }}</em>
+                                            </p>
+                                        </div>   
+                                        <div class="col-2_5 align-self-start">
+                                            <router-link :to="{ path: '/request/modify/edit/' + this.listing_id }" class="no-underline">
+                                                <button type="button" class="btn p-0 ps-1 pe-1 rounded-0 d-flex justify-content-between align-items-center" ><svg viewBox="0 0 24 24" fill="currentColor" class="bi bi-sort-down edit-listings-svg-dimensions" xmlns="http://www.w3.org/2000/svg"><path d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z"></path></svg>
+                                                    <p style="font-size:0.65em; font-weight:bold;">Suggest Edits</p>
+                                                </button>
+                                            </router-link>
+                                        </div>
+                                    </div>    
                                 </div>
                 </div>
                 <div class="row pt-2 container mobile-view-show text-black">
@@ -333,7 +373,7 @@
                                                         </span>
                                                         <span v-else>{{ specified_listing["drinkType"] }} | </span>
                                                         <span style="color: #2c3e50;" class="text-decoration-none">{{ specified_listing["typeCategory"] }} | </span>
-                                                        <span style="color: #2c3e50;" class="text-decoration-none">{{ specified_listing["abv"] }} | </span>
+                                                        <span style="color: #2c3e50;" class="text-decoration-none">{{ specified_listing["abv"] }}% | </span>
                                                         <span style="color: #2c3e50;" class="text-decoration-none">{{ specified_listing["originCountry"] }}</span>
                 </p>
                 <div class="col-2 d-flex justify-content-end make-bookmark-bigger" >
@@ -361,13 +401,13 @@
                                 <!-- for wine listings -->
                                 <div v-if="specified_listing['drinkType'] == 'Wine'">
                                     <h5 class="text-body-secondary" style="margin-bottom:0;"> <b>  {{ specified_listing["age"] }} </b> </h5>
-                                    <p class="mb-2"> <u> Vintage </u> </p> <!-- to change this to calculate the age -->
+                                    <p class="mb-2"> <u> Vintage (Year)</u> </p> <!-- to change this to calculate the age -->
                                     
                                 </div>
                                 <!-- for all other listings  -->
                                 <div v-else>
                                     <h5 class="text-body-secondary" style="margin-bottom:0;"> <b>  {{ specified_listing["age"] }} </b> </h5>
-                                    <p class="mb-2"> <u> Age </u> </p> 
+                                    <p class="mb-2"> <u> Age (Years)</u> </p> 
                                     
                                 </div>
                             </div>
@@ -379,7 +419,7 @@
                             </div>
                             <!-- abv -->
                             <div class="col-6 col-lg-2 text-start mobile-view-hide text-color-black">
-                                <h5 class="text-body-secondary" style="margin-bottom:0;"> <b> {{ specified_listing["abv"] }} </b> </h5>
+                                <h5 class="text-body-secondary" style="margin-bottom:0;"> <b> {{ specified_listing["abv"] }}% </b> </h5>
                                 <p class="mb-1"> <u> ABV </u> </p>
                                 
                             </div>
@@ -421,10 +461,10 @@
                             <div class="col-4 text-start mobile-col-3 mobile-pe-0 text-color-black">
                                 
                                 <h3 class="mobile-rating-smaller-text text-body-secondary rating-text" style="margin-bottom:0;"> 
-                                    <b>{{ specificReviewRating }}</b>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="1em" fill="currentColor" class="bi bi-star-fill-black" viewBox="0 0 16 16">
+                                    <b>{{ specificReviewRating }}★</b>
+                                    <!--<svg xmlns="http://www.w3.org/2000/svg" width="30" height="1em" fill="currentColor" class="bi bi-star-fill-black" viewBox="0 0 16 16">
                                         <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                    </svg>
+                                    </svg>-->
                                 </h3>
                                 <p class="mb-2 mobile-view-hide mobile-rating-smaller-text-2"> <u> Average Rating </u> </p>
                                 <p class="mb-2 mobile-view-show mobile-rating-smaller-text-2"> <u> Rating </u> </p>
@@ -456,10 +496,10 @@
                                                     </button>
                                                 </div>
                                             </div>
-                                            <div v-else-if="userType == 'user'" class="col-5 mobile-view-hide">
+                                            <div v-else-if="userType == 'user'" class="col-5 padding-for-addyourreviewbutton-large-screen mobile-view-hide">
                                                 <div class="d-grid gap-2">
                                                     <router-link :to="{ path: '/login' }" class="reverse-clickable-text">
-                                                        <button class="btn primary-btn-less-round-blue btn-lg mobile-rating-smaller-text-2">   <!--tzh added -blue -->
+                                                        <button class="btn primary-btn-less-round-blue btn-lg mobile-rating-smaller-text-2" style="font-weight:bold;">   <!--tzh added -blue -->
                                                             + Add Your Review
                                                         </button>
 
@@ -532,20 +572,18 @@
                             </button>
                         </div>
                         <div v-else class="d-grid gap-2">
-                            <button class="btn primary-btn-less-round btn-lg"> 
+                            <button class="btn primary-btn-less-round-blue btn-lg"> 
                                 Review already added
                             </button>
                         </div>
 
                     </div>
-                    <div v-if="userID == 'defaultUser'" class="col-5 mobile-view-hide">
+                    <div v-if="userID == 'defaultUser'" class="col-5 padding-for-addyourreviewbutton-large-screen mobile-view-hide">
                         <div class="d-grid gap-2">
-                            <router-link :to="{ path: '/login' }" class="reverse-clickable-text">
-                                <button class="btn primary-btn-less-round-blue btn-lg"> 
+                                <button class="btn primary-btn-less-round-blue btn-lg" @click="$router.push('/login')" style="font-weight:bold;"> 
                                     + Add Your Review
                                 </button>
-
-                            </router-link>
+                                
                         </div>
                     </div>
                 </div>
@@ -556,7 +594,7 @@
                         
                         <!-- flavor tag -->
                         <span v-for="(count, tag) in sorted_flavorTagCounts" :key="tag" class="badge rounded-pill me-2" :style="{ backgroundColor: '#' + tag.split('#')[1] }">{{ tag.split('#')[0] }}</span>
-                        <p class="mb-2 mobile-rating-smaller-text-2"> <u> Most Popular Flavour Tags </u> </p>
+                        <p class="mb-2 mt-2 mobile-rating-smaller-text-2"> <u> Most Popular Flavour Tags </u> </p>
                     </div>
                 </div>
 
@@ -565,8 +603,8 @@
                     <div class="text-start mb-2 mobile-mb-0 text-color-black">
                         
                         <!-- flavor tag -->
-                        <span v-for="(count, tag) in sorted_observationTagCounts" :key="tag" class="badge rounded-pill me-2" style="background-color: grey" >{{ tag }}</span>
-                        <p class="mb-2 mobile-rating-smaller-text-2"> <u> Most Popular Action Tags </u> </p>
+                        <span v-for="(count, tag) in sorted_observationTagCounts" :key="tag" class="badge rounded-pill me-2" style="background-color: #F0B358; color:black;" >{{ tag }}</span>  <!--tzh changed grey to #F0B358-->
+                        <p class="mb-2 mt-2 mobile-rating-smaller-text-2"> <u> Most Popular Action Tags </u> </p>
                     </div>
                 </div>
                     
@@ -602,11 +640,11 @@
                         <!-- tzh xyz -->
                         <div v-if='addingReview' class="modal-content">
                             <!-- change modal header colour -->
-                            <div class="modal-header" style="background-color: #535C72">
+                            <div class="modal-header" style="background-color:#F0B358 "> <!--tzh changed #535C72 to #F0B358-->
                                 <!-- V-if to edit or add review -->
-                                <h5 v-if="!inEdit" class="modal-title" id="reviewModalLabel" style="color: white;">Add Your Review</h5>
-                                <h5 v-else class="modal-title" id="reviewModalLabel" style="color: white;">Edit Your Review</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                <h5 v-if="!inEdit" class="modal-title" id="reviewModalLabel" style="color: black; font-weight:bold;">Add Your Review</h5> <!--tzh changed white to black and to bold-->
+                                <h5 v-else class="modal-title" id="reviewModalLabel" style="color: black;font-weight:bold;">Edit Your Review</h5>
+                                <button type="button"  class="btn-close review-modal"  data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
 
                             <!-- This is where modal starts for review-->
@@ -748,16 +786,16 @@
                                     <!-- Buttons to expand -->
                                     <div v-if="!extendReview" class = 'col justify-content-start mb-3 text-start'>
                                         <div class = "col-md-12 text-center">
-                                            <button class="btn primary-btn-less-round btn-sm" @click="controlModal"> 
-                                                Extend Review <span style="color: white;">&#9660;</span>
+                                            <button class="btn secondary-btn-less-round btn-sm" @click="controlModal" style="color:black;"> 
+                                                Extend Review &#9660;
                                             </button>                                                                  
                                         </div>                                         
                                     </div>
                                     <!-- Button to collapse -->
                                     <div v-if="extendReview" class = 'col justify-content-start mb-3 text-start'>
                                         <div class = "col-md-12 text-center">
-                                            <button class="btn primary-btn-less-round btn-sm" @click="controlModal"> 
-                                                Condense Review <span style="color: white;">&#9650;</span>
+                                            <button class="btn secondary-btn-less-round btn-sm" @click="controlModal" style="color:black;"> 
+                                                Condense Review &#9650;
                                             </button>                                                                  
                                         </div>                                         
                                     </div>
@@ -853,16 +891,30 @@
 
                                 <!-- row 9: rating -->
                                 <div class="row">
-                                    <div class="col-md-5 mb-3"> 
+                                    <div class="col-12 mb-3"> 
                                         <div class="row align-items-center text-start">
-                                            <p class='text-star mb-1 fw-bold'>Rating<span class="text-danger">*</span></p>
-                                            <label for="customRange2" class="form-label"> Selected: {{ rating }} 
+                                            <p class='text-star mb-1 fw-bold'>My Rating<span class="text-danger">*</span></p>
+                                            <label for="customRange2" class="form-label"> <span style="color:#F0B358;">★</span><span style="font-weight:bold;">{{ rating }}</span> Stars
                                             </label>
                                             <div class="col-auto">
                                                 <label for="customRange" class="form-label fw-bold">1</label>
                                             </div>
                                             <div class="col">
-                                                <input v-model="rating" type="range" class="form-range" min="1" max="10" step="0.1" id="customRange">
+                                                <div class="slider-container" style="position: relative;">
+                                                    <input v-model="rating" type="range" class="form-range" min="1" max="10" step="0.1" id="customRange">
+                                                    <div class="tickmarks">
+                                                        <span class="tick" style="left: 5%;">|</span>
+                                                        <span class="tick" style="left: 15%;">|</span>
+                                                        <span class="tick" style="left: 25%;">|</span>
+                                                        <span class="tick" style="left: 35%;">|</span>
+                                                        <span class="tick" style="left: 45%;">|</span>
+                                                        <span class="tick" style="left: 55%;">|</span>
+                                                        <span class="tick" style="left: 65%;">|</span>
+                                                        <span class="tick" style="left: 75%;">|</span>
+                                                        <span class="tick" style="left: 85%;">|</span>
+                                                        <span class="tick" style="left: 95%;">|</span>
+                                                    </div>
+                                                </div>
                                             </div>
                                             <div class="col-auto">
                                                 <label for="customRange" class="form-label fw-bold">10</label>
@@ -916,7 +968,7 @@
                                                 <div class="col">
                                                     <div class="d-flex flex-wrap gap-2">
                                                         <div v-for="observationTag in selectedObservations" v-bind:key="observationTag" class="mb-0 pb-0">
-                                                            <button style="background-color: lightgrey;" class="btn"> {{ observationTag.split("#")[0] }} </button> 
+                                                            <button style="background-color: #F0B358;" class="btn"> {{ observationTag.split("#")[0] }} </button>  <!--tzh changed grey to #F0B358-->
                                                         </div>
                                                     </div>
                                                 </div>
@@ -926,9 +978,9 @@
                                         <br>
                                         <!-- Buttons for the first 8 observations -->
                                         <button v-for="observation in observationTags.slice(0, 8)" @click="toggleObservationSelection(observation)" v-bind:key="observation" class="btn mb-2 me-2" data-bs-toggle="button" :style="{ color: selectedObservations.includes(observation) ? 'white' : 'black',
-                                                                                                                                                                                                                                    backgroundColor: selectedObservations.includes(observation) ? '#747D92' : 'lightgrey', 
+                                                                                                                                                                                                                                    backgroundColor: selectedObservations.includes(observation) ? '#747D92' : '#F0B358', 
                                                                                                                                                                                                                                     borderColor:'grey', 
-                                                                                                                                                                                                                                    borderWidth:'1px' }">
+                                                                                                                                                                                                                                    borderWidth:'1px' }"> <!--tzh changed lightgrey to #F0B358-->
                                             {{ observation }}
                                         </button>
                                         <!-- Buttons for additional observations (shown only when extendObservation is true) -->
@@ -953,10 +1005,11 @@
                             </div>
                             
                             <!-- End of modal body -->
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                <button v-if="!inEdit" type="button" @click="addReview" class="btn primary-square">Submit Review</button>
-                                <button v-else type="button" @click="editReview" class="btn primary-btn">Update Review</button>
+                            <div class="modal-footer d-flex">
+                                <button class="btn btn-danger py-1  mobile-fs-7 me-auto" @click="setDeleteID(review)" data-bs-toggle="modal" data-bs-target="#deleteReview">Delete Review</button> 
+                                <button type="button" class="btn secondary-btn-less-round-inverse " data-bs-dismiss="modal">Close</button> <!--tzh removed btn-secondary added secondary-btn-less-round-inverse-->
+                                <button v-if="!inEdit" type="button" @click="addReview" class="btn secondary-btn-less-round">Submit Review</button>
+                                <button v-else type="button" @click="editReview" class="btn secondary-btn-less-round">Update Review</button>
                             </div>
                         </div>
                     </div>
@@ -970,15 +1023,30 @@
                     <hr> 
                     
                     <!-- photos posted by other users -->
+                    <h5 class="text-start" style="font-weight:bold; color:black;">In Photos</h5>
                     <div class="row text-start" style="padding-left:1.5em;">
                         <div class="col">
                             <div class="justify-content-start row">
-                                <!-- [if] user has not added a review yet, add new photo -->
+                                <!-- [if] user has not added a review yet, or hasn't logged in yet add new photo -->
                                 <div v-if="userType == 'user' && userID !== 'defaultUser' && !inEdit" class="row">
                                     <!-- (1) add button -->
                                     <div class="mobile-col-3 col-sm-6 col-md-4 col-lg-2 mobile-px-1">
                                         <div data-bs-toggle="modal" data-bs-target="#reviewModal">
-                                            <svg xmlns="http://www.w3.org/2000/svg"  fill="#83A9E8" class="bi bi-plus-lg review-image" viewBox="0 0 16 16"> <!--tzh changed currentColor to 83A9E8-->
+                                            <svg xmlns="http://www.w3.org/2000/svg"  fill="#83A9E8" class="bi bi-plus-lg review-image" viewBox="0 0 16 16" style="cursor: pointer;"  > <!--tzh changed currentColor to 83A9E8-->
+                                                <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <!-- (2) to (6) other photos -->
+                                    <div v-for="review in filteredReviewsWithImages.slice(0,5)" v-bind:key="review" class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 mobile-px-1">
+                                        <img :src=" (review['photo'] || defaultPhoto)" alt="" class="review-image" >
+                                    </div>
+                                </div>
+                                <div v-else-if="userID == 'defaultUser'" class="row">
+                                    <!-- (1) add button -->
+                                    <div class="mobile-col-3 col-sm-6 col-md-4 col-lg-2 mobile-px-1">
+                                        <div >
+                                            <svg xmlns="http://www.w3.org/2000/svg"  fill="#83A9E8" class="bi bi-plus-lg review-image" viewBox="0 0 16 16" @click="$router.push('/login')" style="cursor: pointer; "  > <!--tzh changed currentColor to 83A9E8-->
                                                 <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
                                             </svg>
                                         </div>
@@ -991,6 +1059,15 @@
                                 <!-- [else] user has added a review -->
                                 <!-- (1) to (6) display all photos -->
                                 <div v-else class="row">
+                                    <!-- (1) add button 
+                                    <div class="mobile-col-3 col-sm-6 col-md-4 col-lg-2 mobile-px-1">
+                                        <div >
+                                            <svg xmlns="http://www.w3.org/2000/svg"  fill="#83A9E8" class="bi bi-plus-lg review-image" viewBox="0 0 16 16"   @click="$router.push('/login')" style="cursor: pointer;"  > tzh changed currentColor to 83A9E8
+                                                <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
+                                            </svg>
+                                        </div>
+                                    </div>           -->                           
+                                    <!-- (2) to (6) other photos-->
                                     <div v-for="review in filteredReviewsWithImages" v-bind:key="review" class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 p-0 mobile-px-1">
                                         <img :src="(review['photo'] || defaultPhoto)" alt="" class="review-image" >
                                     </div>
@@ -1025,12 +1102,12 @@
                                             </router-link>
 
                                             <!-- rating -->
-                                            &nbsp;rated {{ review['rating'] }}
+                                            &nbsp;rated <span style="color:#F0B358;">★</span> <span style="font-weight:bold;">{{ review['rating'] }}</span> Stars
                                             
-                                            <!-- star icon -->
+                                            <!-- star icon 
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-star-fill me-1" viewBox="0 0 16 16">
                                                 <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                            </svg>
+                                            </svg>-->
                                             
                                             <!-- location -->
                                             
@@ -1054,12 +1131,12 @@
                                             <span v-if="review.taggedUsers != null && review.taggedUsers.length > 0"> drank with {{ review.taggedUsers.length }} others </span>
 
                                             <!-- user title -->
-                                            <span v-if="checkModFromUserID(review.userID)" class="badge rounded-pill ms-3 mobile-ms-0 mobile mt-1" style="color: black; background-color: white;">Moderator</span>
+                                            <span v-if="checkModFromUserID(review.userID)" class="badge rounded-pill ms-3 mobile-ms-0 mobile mt-1" style="color: black; background-color: #F0B358;">Moderator</span>
                                             
                                             <!-- Insert Edit modal here -->
                                             <div class="mt-2 mobile-mt-1">
                                                 <button v-if="review.userID === parseInt(userID)"  class="btn btn-warning me-1 py-1  mobile-fs-7" @click="setUpdateID(review)" data-bs-toggle="modal" data-bs-target="#reviewModal">Edit</button>
-                                                <button v-if="review.userID === parseInt(userID) || correctModerator" class="btn btn-danger py-1  mobile-fs-7" @click="setDeleteID(review)" data-bs-toggle="modal" data-bs-target="#deleteReview">Delete</button>
+                                                <button v-if="review.userID === correctModerator" class="btn btn-danger py-1  mobile-fs-7" @click="setDeleteID(review)" data-bs-toggle="modal" data-bs-target="#deleteReview">Delete</button> <!--tzh removed option to delete for ordinary users "parseInt(userID) || ")-->
                                             </div>
                                         </div>    
                                     </div>
@@ -1068,11 +1145,11 @@
                                         {{ review['reviewDesc'] }}
                                     </div>
                                     
-                                    <!-- flavour tag -->
-                                    <div class="text-start mb-2">
+                                    <!-- flavour tag tzh changed mb-2 to mb-3-->
+                                    <div class="text-start mb-3">
                                         <!-- flavor tag -->
                                             <span v-for="(tag, index) in review.flavourTag" :key="index" class="badge rounded-pill me-2" :style="{ backgroundColor: getTagColor(parseInt(tag)) }">{{ getTagName(parseInt(tag)) }}</span>
-                                            <span v-for="(tag, index) in review.observationTag" :key="index" class="badge rounded-pill me-2" style="background-color: grey;">{{ tag }}</span>
+                                            <span v-for="(tag, index) in review.observationTag" :key="index" class="badge rounded-pill me-2" style="background-color: #F0B358; color:black;">{{ tag }}</span> <!--tzh changed grey to #F0B358-->
                                     </div>
                                     <div style="display: inline;" class="text-start">
                                         <!-- voting -->
@@ -1306,7 +1383,7 @@
                                                     <b>Action Tags</b>
                                                 </div>
                                                 <div class="col-9">
-                                                    <span v-for="(tag, index) in detailedReview.observationTag" :key="index" class="badge rounded-pill me-2" style="background-color: grey;">{{ tag }}</span>
+                                                    <span v-for="(tag, index) in detailedReview.observationTag" :key="index" class="badge rounded-pill me-2" style="background-color: #F0B358;color:black; ">{{ tag }}</span> <!--tzh changed grey to #F0B358-->
                                                 </div>
                                             </div>
 
@@ -2172,7 +2249,7 @@
                     return total + (rating["willRecommend"] ? 1 : 0);
                 }, 0);
                 const averageRecommend = (numberRecommend / ratings.length) * 100;
-                return averageRecommend.toFixed(2);
+                return averageRecommend.toFixed(0);  //tzh changed .toFixed(2) to .toFixed(0)
             },
 
             // get will drink again for a listing
@@ -2192,7 +2269,7 @@
                     return total + (rating["wouldBuyAgain"] ? 1 : 0);
                 }, 0);
                 const averageDrinkAgain = (numberDrinkAgain / ratings.length) * 100;
-                return averageDrinkAgain.toFixed(2);
+                return averageDrinkAgain.toFixed(0);  //tzh changed .toFixed(2) to .toFixed(0)
             },
 
             // add user's uploaded photo to database (TO BE IMPLEMENTED)

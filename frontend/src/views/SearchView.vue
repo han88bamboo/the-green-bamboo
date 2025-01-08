@@ -44,14 +44,14 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                         </div>
 
                         <!-- Form Title -->
-                        <div class="d-grid col-10">
+                        <div class="d-grid col-10" style="color:black;">
                             <p class="fw-bold fs-3 m-0 text-start">Search Results for:</p>
                         </div>
 
                     </div>
 
                     <!-- Search Term -->
-                    <div class="row">
+                    <div class="row" style="color:black;">
                         <!-- Aligner Column (Back Button) -->
                         <div class="col-2"></div>
 
@@ -200,7 +200,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
             <div class="tab-content" id="nav-tabContent">
 
                 <!-- NAVTAB 1: LISTINGS -->
-                <div class="tab-pane fade show active" id="nav-listings" role="tabpanel" aria-labelledby="nav-listings-tab">
+                <div class="tab-pane fade show active" id="nav-listings" role="tabpanel" aria-labelledby="nav-listings-tab" style="color:black;">
                     <p class="fw-bold fst-italic fs-5 m-0 py-2 mobile-view-hide" v-if="resultListings.length > 0">Viewing: {{ resultListings.length }} Listing Search Results</p>
                     <p class="fw-bold fst-italic fs-5 m-0 py-2" v-else>No Listing Results Found!</p>
                     
@@ -325,7 +325,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                 <!-- ------------------------------------------------------------------------------------------------------- -->
 
                 <!-- NAVTAB 2: PRODUCERS -->
-                <div class="tab-pane fade show" id="nav-producers" role="tabpanel" aria-labelledby="nav-producers-tab">
+                <div class="tab-pane fade show" id="nav-producers" role="tabpanel" aria-labelledby="nav-producers-tab" style="color:black;">
                     <p class="fw-bold fst-italic fs-5 m-0 py-2 mobile-view-hide" v-if="producerListings.length > 0">Viewing: {{ producerListings.length }} Producer Search Results</p>
                     <p class="fw-bold fst-italic fs-5 m-0 py-2" v-else>No Producer Results Found!</p>
                     
@@ -403,7 +403,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                 <!-- ------------------------------------------------------------------------------------------------------- -->
 
                 <!-- NAVTAB 3: VENUES -->
-                <div class="tab-pane fade show" id="nav-venues" role="tabpanel" aria-labelledby="nav-venues-tab">
+                <div class="tab-pane fade show" id="nav-venues" role="tabpanel" aria-labelledby="nav-venues-tab" style="color:black;">
                     <p class="fw-bold fst-italic fs-5 m-0 py-2 mobile-view-hide" v-if="venueListings.length > 0">Viewing: {{ venueListings.length }} Venue Search Results</p>
                     <p class="fw-bold fst-italic fs-5 m-0 py-2" v-else>No Venue Results Found!</p>
                     

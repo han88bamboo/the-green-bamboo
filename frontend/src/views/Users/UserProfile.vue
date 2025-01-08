@@ -109,26 +109,32 @@
                             <div class="modal-content">
 
                             <div v-if="drinkChoice.length == 0" class="modal-body px-4">
-                            
-                                <button v-if="!ownProfile && displayUser.modType.length != 0" data-bs-toggle="modal" data-bs-target="#moderatormodal" class="btn btn-warning hover-button p-1 mb-3" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button> 
-                                <!-- REMOVED ADMIN MODERATOR BADGE -->
-                                <!-- <button v-if="user && user.isAdmin" data-bs-toggle="modal" data-bs-target="#moderatormodal" class="btn btn-warning hover-button p-1 mb-3" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button> -->
-                                <button type="button" class="btn-close uninvert" data-bs-dismiss="modal" aria-label="Close" style="margin-left:63%;"></button>
-                                <p><b>{{ displayUser.displayName }} is a Drink X moderator.</b></p> 
+                                <div class="d-flex justify-content-between ">
+                                    <button v-if="displayUser.modType && displayUser.modType.length != 0" data-bs-toggle="modal" data-bs-target="#moderatormodal" class="btn btn-warning hover-button p-1 mb-3" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button> 
+                                    <!-- REMOVED ADMIN MODERATOR BADGE -->
+                                    <!-- <button v-if="user && user.isAdmin" data-bs-toggle="modal" data-bs-target="#moderatormodal" class="btn btn-warning hover-button p-1 mb-3" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button> -->
+                                    <button type="button" class="btn-close uninvert" data-bs-dismiss="modal" aria-label="Close" ></button>
+                                </div>
+                                <p><b>{{ displayUser.displayName }} is a Drink-X moderator.</b></p> 
                                 <p><b><em>Moderators help shape the drinks community and ensure drink reviews remain fun, useful and respectful!</em></b></p>
                                 <b><a v-if="user && !user.isAdmin" href="#" class="mt-3" data-bs-toggle="modal" data-bs-target="#applyModerator" style="color: black">Want to be a moderator? Apply here!</a></b>   
                             </div>
                             <div v-else class="modal-body px-4">
-                                <div style="display: flex; justify-content: space-between; ">
+                                <div class="d-flex justify-content-between ">
+                                    <button v-if="displayUser.modType && displayUser.modType.length != 0" data-bs-toggle="modal" data-bs-target="#moderatormodal" class="btn btn-warning hover-button p-1 mb-3" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button> 
+                                    <!-- REMOVED ADMIN MODERATOR BADGE -->
+                                    <button type="button" class="btn-close uninvert" data-bs-dismiss="modal" aria-label="Close" ></button>
+                                </div>
+                                <!--<div style="display: flex; justify-content: space-between; ">
                                     <div style="display: inline-block;">
                                         <button v-if="!ownProfile && displayUser.modType.length !=0" data-bs-toggle="modal" data-bs-target="#moderatormodal" class="btn btn-warning hover-button p-1 mb-3" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button> 
-                                        <!-- REMOVED ADMIN MODERATOR BADGE -->
-                                        <!-- <button v-if="user && user.isAdmin" data-bs-toggle="modal" data-bs-target="#moderatormodal" class="btn btn-warning hover-button p-1 mb-3" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button> -->
+                                         REMOVED ADMIN MODERATOR BADGE 
+                                         <button v-if="user && user.isAdmin" data-bs-toggle="modal" data-bs-target="#moderatormodal" class="btn btn-warning hover-button p-1 mb-3" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button> 
                                     </div>
                                     <div style="display: flex; justify-content: flex-end;">
                                         <button type="button" class="btn-close uninvert" data-bs-dismiss="modal" aria-label="Close" ></button>
                                     </div>
-                                </div>   
+                                </div>   -->
                                 <p><b>{{ displayUser.displayName }} is a moderator of the following communities:</b></p> 
                                 <p>{{ displayUser.modType.join(', ') }}</p>
                                 <p><b><em>Moderators help shape the drinks community and ensure drink reviews remain fun, useful and respectful!</em></b></p>        
@@ -522,12 +528,7 @@
                                         <div class="col-3 mobile-col-3 mobile-pe-0">
                                             <!-- <img :src="'data:image/png;base64,' + (review.photo || defaultDrinkImage)" alt="" class="rounded bottle-img "> me-3 -->
                                             <img :src="(review.photo || defaultDrinkImage)" alt="" class="rounded bottle-img ">
-                                            <p class="fs-4 mobile-fs-5 fw-bold rating-text text-center mobile-mb-1" >
-                                                {{ review.rating }}
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-star-fill " viewBox="0 0 16 16">
-                                                    <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                                </svg>
-                                            </p>
+
                                         </div>
                                         <div class="col-9 mobile-col-9 mobile-ps-2">
                                             <a :href="'/listing/view/' + review.reviewTarget" style="text-decoration: none; color: #223957;">
@@ -544,7 +545,12 @@
                                                 <b>{{ review.reviewTitle }}</b> <br v-if="review.reviewTitle">
                                                 {{ review.reviewDesc }}
                                             </p>
-                                            
+                                            <p class="fs-4 mobile-fs-5 fw-bold rating-text mobile-mb-1" >
+                                                {{ review.rating.toFixed(1) }}★
+                                                <!--<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-star-fill " viewBox="0 0 16 16">
+                                                    <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                                                </svg>-->
+                                            </p>
                                         </div>
                                     </div>
                                 </div>

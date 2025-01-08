@@ -475,10 +475,10 @@
                                                     </div>
                                                     <div class="mobile-col-3 mobile-view-show mobile-ps-0">
                                                         <h2 class="rating-text text-end d-flex align-items-center">
-                                                            {{ getRatings(listing) }}
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
+                                                            {{ getRatings(listing) }}★
+                                                            <!--<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
                                                                 <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                                            </svg>
+                                                            </svg>-->
                                                         </h2>   
                                                     </div>    
                                                 </div>
@@ -486,13 +486,13 @@
                                                 <div class="row pt-4 mobile-view-hide"> 
                                                     <div class="col-6 d-flex align-items-center">
                                                         <h1 class="rating-text text-end d-flex align-items-center">
-                                                            {{ getRatings(listing) }}
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
+                                                            {{ getRatings(listing) }}★
+                                                            <!--<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
                                                                 <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                                            </svg>
+                                                            </svg>-->
                                                         </h1>
                                                     </div>
-                                                    <div class="col-6">
+                                                    <div class="col-6 text-end">
                                                         <div class="d-grid gap-5">
                                                             <router-link :to="{ path: '/listing/view/' +listing.id }" class="primary-clickable-text">
                                                                 <a class="btn secondary-btn btn-md" style="font-weight: bold;"> Read More </a>
@@ -596,7 +596,9 @@
                                 <!-- v-loop for each listing -->
                                 <div class="container text-start">
                                     <h5 v-if="recentlyAdded==''" style="display: inline-block;"> There is no listing available for the selected filter </h5>
-                                    <div v-for="listing in recentlyAdded" v-bind:key="listing.id" class="p-3 mobile-pt-0">
+                                    <h5 v-if="recentlyAdded == '' || (selectedDrinkType!='' && filteredRecentlyAdded=='')" style="display: inline-block;"> There is no listing available for the selected filter </h5>
+                                    <!-- <div v-for="listing in recentlyAdded" v-bind:key="listing.id" class="p-3 mobile-pt-0"> -->
+                                    <div v-for="listing in (selectedDrinkType == '' ? recentlyAdded : filteredRecentlyAdded)" v-bind:key="listing.id" class="p-3 mobile-pt-0">
                                         <!-- For latest reviews -->
                                         
                                         <!-- For listings -->
@@ -650,10 +652,10 @@
                                                 <div class="row pt-4"> 
                                                     <div class="col-6 d-flex align-items-center">
                                                         <h1 class="rating-text text-end d-flex align-items-center">
-                                                            {{ getRatings(listing) }}
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
+                                                            {{ getRatings(listing) }}★
+                                                            <!--<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
                                                                 <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                                            </svg>
+                                                            </svg>-->
                                                         </h1>
                                                     </div>
                                                     <div class="col-6">
@@ -792,7 +794,9 @@
                 allProducerDrinks: [],
                 allVenueDrinks: [],
                 recentlyAdded: [],
+                filteredRecentlyAdded:[],
                 questionsUpdates: [],
+                followCount:0,
 
                 // for bookmark
                 user: null,
@@ -1188,7 +1192,7 @@
                 const averageRating = ratings.reduce((total, rating) => {
                     return total + rating["rating"];
                 }, 0) / ratings.length;
-                return averageRating.toFixed(2);
+                return averageRating.toFixed(1); //tzh changed .toFixed(2) to .toFixed(1)
             },
 
             // get ratings for a listing --> return 0 if no ratings
@@ -1214,7 +1218,6 @@
 
                 // reset most reviews and recently added arrays so that can repeatedly filter
                 this.getMostReviews()
-                this.getRecentlyAdded()
                 this.moreListings=true
                 // Determine selected drink type, and corresponding drink categories
                 this.selectedCategory = null;
@@ -1273,10 +1276,10 @@
 
                     // if nothing found
                     if(searchResults == null){
-                        this.recentlyAdded = []
+                        this.filteredRecentlyAdded = []
                     }
                     else{
-                        this.recentlyAdded=searchResults
+                        this.filteredRecentlyAdded=searchResults
                     }
                 }
             },
@@ -1365,19 +1368,23 @@
                     }
                 }
                 else if(this.following){
-                    const searchResults = this.recentlyAdded.filter((listing) => {
+                    const searchResults = this.filteredRecentlyAdded.filter((listing) => {
                         const drinkCategory = listing["typeCategory"].toLowerCase();
                         return drinkCategory.includes(drinkCategorySearch);
                     });
                     if (searchResults.length==0 || searchResults==null) {
                         this.errorFound = true;
                         this.errorMessage = 'No results found, please try again.';
-                        this.recentlyAdded = [];
+                        this.filteredRecentlyAdded = [];
+                        this.retrieveListings();
                     } 
                     else {
                         this.errorFound = false;
                         this.errorMessage = '';
-                        this.recentlyAdded = searchResults;
+                        this.filteredRecentlyAdded = searchResults;
+                        if(this.filteredRecentlyAdded.length<30){
+                            this.retrieveListings();
+                        }
                     }
                 }
             },
@@ -1391,9 +1398,6 @@
                 if(this.discovery){
                     this.mostReviews=[]
                     this.getMostReviews()
-                }
-                if(this.following){
-                    this.getRecentlyAdded()
                 }
             },
 
@@ -1720,7 +1724,33 @@
                         }
                     }
                 }
-                //TODO: Add in lazy loading for following
+                //Lazy loading for following tab
+                else{
+                    // TODO: Add in lazy loading filter options, right now just pulling normally
+                    // if selectedDrinkType not empty, meaning listings are filtered, retrieve based off the drink type and/or drink category based off following list
+                    // if(this.selectedDrinkType!=''){
+                    // if not, meaning listings are not filtered, retrieve next 30 listings in DB based off following list
+                    // }else{
+                        let lastFollowingId = this.recentlyAdded[this.recentlyAdded.length-1].id
+                        
+                        let params = {
+                            "followedProducers" : this.followedProducers,
+                            "followedVenues": this.followedVenues.length>this.followCount?this.followedVenues[this.followCount]:'null'
+                        }
+                        let queryString = new URLSearchParams({
+                            followedProducers: JSON.stringify(params.followedProducers),
+                            followedVenues: JSON.stringify(params.followedVenues)
+                        }).toString();
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getNextFollowing30` + '/' + lastFollowingId+ `?${queryString}` );
+                        const newItems = response.data.filter(item => !this.recentlyAdded.some(existingItem => existingItem.id === item.id));
+                        this.recentlyAdded.push(...newItems);
+                        if(response.data.length == 0){
+                            this.moreListings = false
+                        }
+                    // }
+
+                    this.followCount++;
+                }
             }
 
         }

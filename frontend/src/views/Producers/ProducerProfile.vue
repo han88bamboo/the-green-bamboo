@@ -36,17 +36,29 @@
                     <!-- image -->
                     <div class="col-lg-3 col-12 mb-lg-0 mb-3 image-container text-start mobile-col-5">
                         <!-- [if] editing -->
-                        <div v-if="editing" style="position: relative; text-align: center;">
-                            <!-- image -->
+                        <!--<div v-if="editing" style="position: relative; text-align: center;">
+                             image 
                             <img :src="selectedImage || (specified_producer_original_photo || defaultProfilePhoto)" 
                                 alt="" style="width: 150px; height: 150px; z-index: 1; opacity: 50%">
-                            <!-- change option -->
+                            change option
                             <label for="file1" class="btn primary-light-dropdown" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2;">Choose File</label>
                             <input id="file1" type="file" v-on:change="loadFile" ref="fileInput" style="width: 0px; height: 0px;">
-                            <!-- reset image option -->
+                             reset image option 
                             <button class="btn primary-light-dropdown m-1" @click="selectedImage = '';  specified_producer_original_photo= specified_producer['photo']; image64 = null">Revert</button>
-                            <!-- remove image option -->
+                             remove image option 
                             <button class="btn primary-light-dropdown m-1" @click="selectedImage = ''; specified_producer_original_photo=''; image64 = ''">Remove</button>
+                        </div>-->
+                        <div v-if="editing" style="text-align: center;">
+                            <!-- image -->
+                            <img :src="selectedImage || (specified_producer_original_photo || defaultProfilePhoto)" 
+                            alt="" style="width: 150px; height: 150px; z-index: 1; opacity: 50%">
+                            <div style="background-color:rgba(255, 255, 255, 0.8);">
+                                <!-- change option -->
+                                <label for="file1" class="btn primary-light-dropdown">Choose File</label>
+                                <input id="file1" type="file" v-on:change="loadFile" ref="fileInput" style="width: 0px; height: 0px;">
+                                <!-- reset image option -->
+                                <button class="btn primary-light-dropdown m-1" @click="selectedImage = '';  specified_producer_original_photo= specified_producer['photo']; image64 = null">Revert</button>
+                            </div> 
                         </div>
                         <!-- [else] not editing  TZH removed style="width: 200px; height: 200px; z-index: 1;" from img tag-->
                         <div v-else>
@@ -60,7 +72,7 @@
                         <div class="container text-start pe-lg-0">
                             <!-- country  -->
                             <div class="row ">
-                                <div class="col-8 pe-0 ps-0">
+                                <div class="col-8 pe-4 ps-0">
                                     <!-- [if] editing -->
                                     <div v-if="editing">
                                         <label for="originCountryInput "> Country of Origin </label>
@@ -79,7 +91,7 @@
                                         <!-- add listing-->
                                         <div v-if="correctProducer && editing == false" class="col d-grid no-padding">
                                             <!-- if not editing -->
-                                            <button type="button" class="btn tertiary-btn rounded-0 reverse-clickable-text">
+                                            <button type="button" class="btn tertiary-btn-blue-outline rounded-0 reverse-clickable-text">
                                                 <router-link :to="`/listing/create`" class="reverse-clickable-text">
                                                     Add Listing
                                                 </router-link>
@@ -106,7 +118,7 @@
                             <!-- producer -->
                             <div class="row">
                                 <!-- [if] editing -->
-                                <div v-if="editing">
+                                <div v-if="editing" class="pe-0 ps-0">
                                     <label for="producerNameInput"> Producer Name </label>
                                     <input type="text" class="form-control mb-3" id="producerNameInput" aria-describedby="producerDesc" v-model="edit_producerName">
                                 </div>
@@ -207,13 +219,13 @@
                 <div v-if="showListings == false" class="padding-for-latestupdatesNmostpopularcontainer-large-screen">
 
                     <!-- [if] account is claimed -->
-                    <div v-if="claimStatus">
+                    <div v-if="claimStatus" style="color:black;" >
 
                         <!-- latest updates -->
                         <div class="row">
                             <!-- header -->
                             <div class="col-12">
-                                <p class="text-body-secondary text-start fs-4 fw-bold m-0 mobile-fs-6">Latest Updates from {{ specified_producer["producerName"] }}</p>
+                                <p class="text-body-secondary text-start fs-4 fw-bold m-0 mobile-fs-6">Latest Updates & Announcements from {{ specified_producer["producerName"] }}</p>
                             </div>
                         </div>
 
@@ -463,7 +475,14 @@
                     </div>
 
                     <!-- [else] account is not claimed -->
-                    <div v-else>
+                    <div v-else style="color:black;">
+                        <!-- latest updates -->
+                        <div class="row">
+                            <!-- header -->
+                            <div class="col-12">
+                                <p class="text-body-secondary text-start fs-4 fw-bold m-0 mobile-fs-6">Latest Updates & Announcements</p>
+                            </div>
+                        </div>
                         <div class="row text-center py-2" style="background-color:#DDC8A9;">
                             <p class="fw-bold fs-3 pt-3" style="font-style: italic; ">
                                 Do you own this business?
@@ -527,14 +546,14 @@
                                         <!-- show buttons for answered & unanswered questions -->
                                         <div v-if="correctProducer" class="row text-center px-2">
                                             <div class="col-6 d-grid gap-0 no-padding">
-                                                <button type="button" class="btn tertiary-btn-qa rounded-0 reverse-clickable-text">
+                                                <button type="button" class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text">
                                                     <a class="reverse-clickable-text" v-on:click="showAnswered()">
                                                         Answered
                                                     </a>
                                                 </button>
                                             </div>
                                             <div class="col-6 d-grid gap-0 no-padding">
-                                                <button type="button" class="btn tertiary-btn-qa rounded-0 reverse-clickable-text">
+                                                <button type="button" class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text">
                                                     <a class="reverse-clickable-text" v-on:click="showUnanswered()">
                                                         Unanswered
                                                     </a>
@@ -1118,14 +1137,14 @@
                                 <!-- show buttons for answered & unanswered questions -->
                                 <div v-if="correctProducer" class="row text-center px-2">
                                     <div class="col-6 d-grid gap-0 no-padding">
-                                        <button type="button" class="btn tertiary-btn-qa rounded-0 reverse-clickable-text">
+                                        <button type="button" class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text">
                                             <a class="reverse-clickable-text" v-on:click="showAnswered()">
                                                 Answered
                                             </a>
                                         </button>
                                     </div>
                                     <div class="col-6 d-grid gap-0 no-padding">
-                                        <button type="button" class="btn tertiary-btn-qa rounded-0 reverse-clickable-text">
+                                        <button type="button" class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text">
                                             <a class="reverse-clickable-text" v-on:click="showUnanswered()">
                                                 Unanswered
                                             </a>

@@ -65,6 +65,22 @@ def fetch_follow_lists(cursor, user_id):
         "venues": follow_lists_data["venues"] if follow_lists_data and follow_lists_data["venues"] else []
     }
 
+# Helper function to fetch venue menu items based on venueId
+def fetch_venue_listings(cursor, venue_id):
+    cursor.execute("""
+        SELECT * 
+        FROM "listings" 
+        WHERE "id" IN (
+            SELECT mi."itemID"
+            FROM "menuItems" mi
+            JOIN "venuesMenu" vm ON mi."sectionId" = vm."id"
+            WHERE vm."venueId" = %s
+        );
+    """, (venue_id,))
+    venue_items = cursor.fetchall()
+
+    return venue_items
+
 # def modifyPhotos():
 #     data = db.producers.find({})
 #     dataEncode = parse_json(data)
@@ -122,6 +138,7 @@ def getListings():
 
     return jsonify(listings_data)
 
+# -----------------------------------------------------------------------------------------
 # [GET] Get Listings from db where id> last item in list
 @blueprint.route("/getNext30/<id>")
 def getNext30(id):
@@ -136,23 +153,15 @@ def getNext30(id):
 
     return jsonify(listings_data)
 
-# [GET] Listings
+# -----------------------------------------------------------------------------------------
+# [GET] Listings from db when filter is applied for next 30 in discovery tab
 @blueprint.route("/getFiltered30/<id>")
 def getFiltered30(id):
     conn = g.db
     id = int(id)
     drinkType= request.args.get('drinkType')  # e.g. ?age=30
     drinkCategory = request.args.get('drinkCategory')
-    # if drinkType:
-    #     condition1 = 'AND "drinkType" = %s', drinkType
-    # else:
-    #     condition1 = ''
-    # if drinkCategory:
-    #     condition2 = 'AND "drinkCategory" = %s', drinkCategory
-    # else:
-    #     condition2 = ''
-    # print(condition1)
-    # print(condition2)
+    
     with conn.cursor() as cursor:
         if(drinkType and drinkCategory):
             cursor.execute('SELECT * FROM "listings" where "id" > %s AND "drinkType" = %s AND "typeCategory" = %s LIMIT 30', (id,drinkType,drinkCategory,))
@@ -167,6 +176,58 @@ def getFiltered30(id):
 
     return jsonify(listings_data)
 
+# -----------------------------------------------------------------------------------------
+# [GET] Get Listings from next in following list for both venue and producer
+@blueprint.route("/getNextFollowing30/<id>")
+def getNextFollowing30(id):
+    conn = g.db
+    id = int(id)
+
+    followedProducers = request.args.get('followedProducers').replace('[', '').replace(']', '').replace('"', '').split(',')
+    followedVenues = request.args.get('followedVenues')
+    print(followedVenues)
+    # Make sure followedProducers is a tuple so SQL can process
+    placeholders = ', '.join(['%s'] * len(followedProducers))
+
+    with conn.cursor() as cursor:
+        query = f'SELECT * FROM "listings" WHERE "id" > %s AND "producerID" IN ({placeholders}) LIMIT 30'
+        params = (id, *followedProducers)
+        cursor.execute(query, params)
+        listings_data = cursor.fetchall()
+        if followedVenues != '"null"':
+            print('in')
+            venue_listings = fetch_venue_listings(cursor, followedVenues.replace('"',''))
+            listings_data += venue_listings
+    
+    if not listings_data:
+        return jsonify([])
+
+    return jsonify(listings_data)
+
+# -----------------------------------------------------------------------------------------
+# [GET] Listings from db when filter is applied for next 30 in following tab
+@blueprint.route("/getFilteredFollowing30/<id>")
+def getFilteredFollowing30(id):
+    conn = g.db
+    id = int(id)
+    drinkType= request.args.get('drinkType')  # e.g. ?age=30
+    drinkCategory = request.args.get('drinkCategory')
+    
+    with conn.cursor() as cursor:
+        if(drinkType and drinkCategory):
+            cursor.execute('SELECT * FROM "listings" where "id" > %s AND "drinkType" = %s AND "typeCategory" = %s LIMIT 30', (id,drinkType,drinkCategory,))
+        elif(drinkType):
+            cursor.execute('SELECT * FROM "listings" where "id" > %s AND "drinkType" = %s LIMIT 30', (id,drinkType,))      
+        else:
+            cursor.execute('SELECT * FROM "listings" where "id" > %s LIMIT 30', (id,))
+        listings_data = cursor.fetchall()
+    
+    if not listings_data:
+        return jsonify([])
+
+    return jsonify(listings_data)
+
+# -----------------------------------------------------------------------------------------
 # [GET] Specific Listing
 @blueprint.route("/getListing/<id>")
 def getListing(id):
