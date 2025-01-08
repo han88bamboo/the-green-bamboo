@@ -222,7 +222,6 @@ const routes = [
     name: 'clubview',
     component: () => import('../views/Users/ClubView.vue')
   },
-
   // -------------------------------------------------------------------------------------
   
   {

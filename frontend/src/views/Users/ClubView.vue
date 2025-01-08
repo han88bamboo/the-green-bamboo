@@ -28,11 +28,12 @@
 
             <!-- Club Banner -->
             <div class="container-fluid p-0 border-bottom">
-                <img :src="defaultBanner" class="img-fluid" alt="Club Banner">
+                <img v-if="clubInfo.clubBanner != ''" :src="clubInfo.clubBanner" class="img-fluid" alt="Club Banner">
+                <img v-else :src="defaultBanner" class="img-fluid" alt="Club Banner">
             </div>
 
             <!-- Main content -->
-            <div class=" container mt-5">
+            <div v-if="!editClub" class="container mt-5">
                 <div class="row">
 
                     <!-- Column 1: Club name, join button / add post button, posts-->
@@ -363,7 +364,7 @@
                         </div>
                     </div>
 
-                    <!-- Column 2: Club type, number of members, club description and invite button -->
+                    <!-- Column 2: Club type, number of members, club description, invite button and settings button -->
                     <div class="col-md-3 order-md-2 order-1 ps-md-3">
 
                         <!-- Club type and number of members -->
@@ -371,7 +372,7 @@
                             <span v-if="clubInfo.isInviteOnly" class="fw-bold"> Private Group </span>
                             <span v-else class="fw-bold"> Public Group </span>
                             <span> | </span>
-                            <span class="fw-bold">Number of Members:</span> {{ clubInfo.totalMembers }}
+                            <span class="fw-bold">Number of Members:</span> {{ clubInfo.totalMembers }} <!--Number of members with joinStatus = True (members who have been invited but not yet accepted will not be included)-->
                         </p>
 
                         <!-- Club description -->
@@ -379,15 +380,31 @@
 
                         <!-- Invite button -->
                         <button class="ps-0 btn d-flex align-items-center hover-underline">
+                            <!-- Invite icon -->
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-share" viewBox="0 0 16 16">
                                 <path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.5 2.5 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5m-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3"/>
                             </svg>
+                            <!-- Invite text -->
                             <span class="ms-2">Invite your friends!</span>
+                        </button>
+
+                        <!-- Settings button -->
+                        <button v-if="isAdmin" class="ps-0 btn d-flex align-items-center hover-underline" @click="editClub = true">
+                            <!-- Settings icon -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear" viewBox="0 0 16 16">
+                                <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/>
+                                <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z"/>
+                            </svg>
+                            <!-- Settings text -->
+                            <span class="ms-2">Club Settings</span> 
                         </button>
                     </div>
 
                 </div>
             </div>
+
+            <!-- Club Setting Component -->
+            <ClubSettings v-if="isAdmin && editClub" :clubInfo="clubInfo" :clubId="clubId" :memberID="memberID" @close-club-settings="closeSettings"/>
 
         </div>
 
@@ -397,12 +414,14 @@
 <script>
 // Import the necessary libraries
 import NavBar from '@/components/NavBar.vue';
+import ClubSettings from '@/components/ClubSettings.vue';
 import { useToast } from 'vue-toastification';
 
 export default {
     name: "ClubView",
     components: {
         NavBar,
+        ClubSettings
     },
     data() {
         return {
@@ -447,6 +466,9 @@ export default {
 
             // Variable for deleting a post
             selectedPostDelete: null,
+
+            // Variable for showing the club settings component
+            editClub: false
 
         }
     },
@@ -621,6 +643,11 @@ export default {
                     }
                 }
             }
+        },
+
+        // Functio to close the club settings component
+        closeSettings() {
+            this.editClub = false;
         },
         // Helper functions end ====================================================
 

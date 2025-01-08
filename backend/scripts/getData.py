@@ -1993,9 +1993,7 @@ def getUserFollowList(id):
 
 
         return_data = {
-            'users': [], # A dictionary of objects containing the id, displayName, and photo of the users in the follow list
-            'venues': [], # A dictionary of objects containing the id, venueName, and photo of the users in the follow list
-            'producers': [] # A dictionary of objects containing the id, producerName, and photo of the users in the follow list
+            'users': {}, # A dictionary of objects containing the id, displayName, and photo of the users in the follow list
         }
 
         # Step 3: Get the id, displayName and photo of the users in the follow list
@@ -2003,18 +2001,7 @@ def getUserFollowList(id):
             cur.execute('SELECT "id", "displayName", "photo" FROM "users" WHERE "id" = %s', (user,))
             user = cur.fetchone()
 
-            return_data['users'].append({'id': user['id'], 'displayName': user['displayName'], 'photo': user['photo']})
-
-        for venue in follow_list['venues']:
-            cur.execute('SELECT "id", "venueName", "photo" FROM "venues" WHERE "id" = %s', (venue,))
-            venue = cur.fetchone()
-            return_data['venues'].append({'id': venue['id'], 'venueName': venue['venueName'], 'photo': venue['photo']})
-
-        for producer in follow_list['producers']:
-            cur.execute('SELECT "id", "producerName", "photo" FROM "producers" WHERE "id" = %s', (producer,))
-            producer = cur.fetchone()
-            return_data['producers'].append({'id': producer['id'], 'producerName': producer['producerName'], 'photo': producer['photo']})
-
+            return_data['users'][user['id']] = { 'displayName': user['displayName'], 'photo': user['photo'] }
 
         return jsonify({
             'followList': return_data

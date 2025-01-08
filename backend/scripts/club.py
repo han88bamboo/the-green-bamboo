@@ -532,10 +532,11 @@ def getUserClubs(userID, userType):
 # Used: CreateClub.vue [views folder inside Users folder]
 # Input:
 #   1. Creator ID (i.e., the user's ID in the 'users', 'producers' or 'venues' table)
-#   2. Creator Type
+#   2. Creator Type (i.e., 'user', 'producer' or 'venue')
 #   3. Club Name
 #   4. Club Description
 #   5. Is Invite Only (boolean: True = Private, False = Public)
+#   6. Club Banner (optional)
 # Output: Possible return codes [201 - Club created successfully, 500 - An error occurred creating the club]
 @blueprint.route('/createClubs', methods=['POST'])
 def createClub():
@@ -645,7 +646,7 @@ def addClubMembers():
             if not user:
                 continue
 
-            cur.execute('INSERT INTO "clubMembers" ("clubID", "userID", "userType", "joinDate", "isAdmin", "joinStatus") VALUES (%s, %s, %s, %s, FALSE)', (club_id, user_id, user_type, join_date, is_admin,))
+            cur.execute('INSERT INTO "clubMembers" ("clubID", "userID", "userType", "joinDate", "isAdmin", "joinStatus") VALUES (%s, %s, %s, %s, %s, FALSE)', (club_id, user_id, user_type, join_date, is_admin,))
             conn.commit()
 
         return jsonify({
@@ -1056,7 +1057,7 @@ def editComment():
 
         if not isCreator:
             # Step 2: Check if the editor is an admin of the club
-            cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = (SELECT "clubID" FROM "clubPostComments" WHERE id = %s) AND "memberID" = %s AND "isAdmin" = TRUE', (comment_id, editor_id,))
+            cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = (SELECT "clubID" FROM "clubPostComments" WHERE id = %s) AND "id" = %s AND "isAdmin" = TRUE', (comment_id, editor_id,))
             isAdmin = cur.fetchone()
 
             if not isAdmin:
@@ -1282,7 +1283,7 @@ def makeAdmin():
             }), 404
 
         # Step 2: Check if the user who is making someone an admin is an admin of the club
-        cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s AND "memberID" = %s AND "isAdmin" = TRUE', (club_id, admin_id,))
+        cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s AND "id" = %s AND "isAdmin" = TRUE', (club_id, admin_id,))
         isAdmin = cur.fetchone()
 
         if not isAdmin:
@@ -1359,7 +1360,7 @@ def updateClubInfo():
             }), 404
 
         # Step 2: Check if the user who is updating the club information is an admin of the club
-        cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s AND "memberID" = %s AND "isAdmin" = TRUE', (club_id, editor_id,))
+        cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s AND "id" = %s AND "isAdmin" = TRUE', (club_id, editor_id,))
         isAdmin = cur.fetchone()
 
         if not isAdmin:
@@ -1430,7 +1431,7 @@ def removeMembers():
             }), 404
         
         # Step 2: Check if the remover is an admin of the club
-        cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s AND "memberID" = %s AND "isAdmin" = TRUE', (club_id, remover_id,))
+        cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s AND "id" = %s AND "isAdmin" = TRUE', (club_id, remover_id,))
         isAdmin = cur.fetchone()
 
         if not isAdmin:
@@ -1502,7 +1503,7 @@ def removePost():
 
         if not isCreator:
             # Step 2: Check if the remover is an admin of the club
-            cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = (SELECT "clubID" FROM "clubPosts" WHERE id = %s) AND "memberID" = %s AND "isAdmin" = TRUE', (post_id, remover_id,))
+            cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = (SELECT "clubID" FROM "clubPosts" WHERE id = %s) AND "id" = %s AND "isAdmin" = TRUE', (post_id, remover_id,))
             isAdmin = cur.fetchone()
 
             if not isAdmin:
@@ -1577,7 +1578,7 @@ def removeComment():
 
         if not isCreator:
             # Step 2: Check if the remover is an admin of the club
-            cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = (SELECT "clubID" FROM "clubPostComments" WHERE id = %s) AND "memberID" = %s AND "isAdmin" = TRUE', (comment_id, remover_id,))
+            cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = (SELECT "clubID" FROM "clubPostComments" WHERE id = %s) AND "id" = %s AND "isAdmin" = TRUE', (comment_id, remover_id,))
             isAdmin = cur.fetchone()
 
             if not isAdmin:
@@ -1693,7 +1694,8 @@ def leaveClub():
 # Used: ClubSettings.vue [views folder inside User folder]
 # Input:
 #   1. Club ID
-# Output: Possible return codes [200 - Club deleted successfully, 404 - No such club exist, 500 - An error occurred deleting the club]
+#   2. Remover ID (i.e., the user who is deleting the club)
+# Output: Possible return codes [200 - Club deleted successfully, 403 - No permission to delete club, 404 - No such club exist, 500 - An error occurred deleting the club]
 @blueprint.route('/deleteClub', methods=['DELETE'])
 def deleteClub():
     conn = g.db
@@ -1704,6 +1706,7 @@ def deleteClub():
 
         # Get all the required data
         club_id = data['clubID']
+        remover_id = data['removerID']
 
         # Step 1: Check if the club exist
         cur.execute('SELECT * FROM "clubs" WHERE id = %s', (club_id,))
@@ -1714,18 +1717,27 @@ def deleteClub():
                 'error': 'No such club exist'
             }), 404
         
-        # Step 2: Remove all the club members
+        # Step 2: Check if the remover is an admin of the club
+        cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s AND "id" = %s AND "isAdmin" = TRUE', (club_id, remover_id,))
+        isAdmin = cur.fetchone()
+        
+        if not isAdmin:
+            return jsonify({
+                'error': 'You do not have the permission to delete this club'
+            }), 403
+        
+        # Step 3: Remove all the club members
         cur.execute('DELETE FROM "clubMembers" WHERE "clubID" = %s', (club_id,))
 
-        # Step 3: Remove all the post in the club
+        # Step 4: Remove all the post in the club
         cur.execute('DELETE FROM "clubPosts" WHERE "clubID" = %s', (club_id,))
 
-        # Step 4: Remove all the likes for the post, comments for deleted posts and likes for the comments where the post ID is null
+        # Step 5: Remove all the likes for the post, comments for deleted posts and likes for the comments where the post ID is null
         cur.execute('DELETE FROM "clubPostsLikes" WHERE "clubID" = %s', (club_id,))
         cur.execute('DELETE FROM "clubPostComments" WHERE "postID" IS NULL')
         cur.execute('DELETE FROM "clubPostCommentsLikes" WHERE "postID" IS NULL')
 
-        # Step 5: Remove the club
+        # Step 6: Remove the club
         cur.execute('DELETE FROM "clubs" WHERE id = %s', (club_id,))
         conn.commit()
 
