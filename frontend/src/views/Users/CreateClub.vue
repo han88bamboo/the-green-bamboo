@@ -106,6 +106,18 @@ export default {
         }
     },
     methods: {
+
+        // Function to get the list of users the current user is following
+        async getFriends() {
+            try {
+                const response = await this.$axios.get("/users/following");
+                this.friends = response.data;
+            } catch (error) {
+                console.log(error);
+            }
+        },
+
+
         createClub() {
             console.log(this.club);
         },
@@ -126,6 +138,6 @@ export default {
             document.getElementById("banner").value = "";
         },
 
-    }
+    },
 }
 </script>

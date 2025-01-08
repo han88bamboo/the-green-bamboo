@@ -9,7 +9,7 @@ import random
 import string
 
 from scripts.mail import send_email, send_email_aws
-from bson import json_util
+# from bson import json_util
 # from bson.objectid import ObjectId
 from datetime import datetime
 from flask import request, jsonify, g, Blueprint
@@ -34,8 +34,8 @@ blueprint = Blueprint(file_name[:-3], __name__)
 #     except Exception as e:
 #         return jsonify({"error": str(e)})
 
-def parse_json(data):
-    return json.loads(json_util.dumps(data))
+# def parse_json(data):
+#     return json.loads(json_util.dumps(data))
 
 # -----------------------------------------------------------------------------------------
 # [POST] Authenticates an account
@@ -317,7 +317,6 @@ def sendResetPin(id):
     conn = g.db
     cur = conn.cursor()
     data = request.get_json()
-    print(data)
     
     # email_address and password (the 2 lines below) is for local launch (comment out for deployment) 
     email_address = os.getenv('MAIL_USERNAME')
