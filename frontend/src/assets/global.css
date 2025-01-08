@@ -45,7 +45,7 @@ body {
 }
 
 .default-body-text-no-background {
-    color: #2C3E50;
+    color: black;  /* TZH changed 2C3E50 to black*/
 }
 
 .reverse-text {
@@ -151,7 +151,7 @@ body {
 .primary-btn-less-round,
 .primary-btn-outline-less-round:hover {
     color: whitesmoke;
-    background-color: #535C72;
+    background-color: #535C72;  
     border-radius: 10px;
     border: 4px solid #535C72;
 }
@@ -255,9 +255,9 @@ body {
 }
 
 .primary-btn-outline-thick {
-    color: #535C72;
+    color: black;   /*tzh changed 535C72 to black*/
     background-color: whitesmoke;
-    border: 2px solid #535C72;
+    border: 2px solid black;   /*tzh changed 535C72 to black*/
 }
 
 .primary-btn-outline-thick:hover {
@@ -339,7 +339,7 @@ body {
     color: black;
     background-color: #F0B358; /* TZH changed DD9E54 to F0B358*/
     border-radius: 10px;
-    border: 4px solid #F0B358; /* TZH changed DD9E54 to F0B358*/
+    border: 1px solid #F0B358; /* TZH changed DD9E54 to F0B358, 4px to 1px*/
 }
 
 .secondary-btn-less-round:hover,
@@ -347,21 +347,21 @@ body {
     color: black;
     background-color: #C9964A; /* TZH changed whitesmoke to C9964A */
     border-radius: 10px;
-    border: 4px solid #F0B358; /* TZH changed DD9E54 to F0B358*/
+    border: 1px solid #F0B358; /* TZH changed DD9E54 to F0B358  4px to 1px* */
 }
 
 .secondary-btn-less-round-inverse {
     color: black;
     background-color: white; 
     border-radius: 10px;
-    border: 4px solid #F0B358; 
+    border: 1px solid #F0B358; /* TZH changed  4px to 1px*/
 }
 
 .secondary-btn-less-round-inverse:hover {
     color: black;
     background-color: #C9964A; 
     border-radius: 10px;
-    border: 4px solid #F0B358; 
+    border: 1px solid #F0B358; /* TZH changed  4px to 1px*/
 }
 
 .secondary-btn-not-rounded {
@@ -407,6 +407,11 @@ body {
     color: whitesmoke;
     background-color: #83A9E8;
 }
+
+.tertiary-btn-blue-outline a {
+    color: inherit; /* Inherits text color from the button */
+    text-decoration: none; /* Removes underline */
+  }
 
 .tertiary-btn-blue-not-round {
     color: white;
@@ -489,7 +494,7 @@ body {
 }
 
 .search-bar {
-    border: 2px solid #535C72;
+    border: 2px solid black;  /*tzh changed 535C72 to black*/
 }
 
 .square-inline {
@@ -734,7 +739,7 @@ body {
 }
 
 .form-box-outline {
-    border: 3px solid #535C72;
+    border: 3px solid black;  /*tzh changed 535C72 to black*/
 }
 
 .review-preview-photo {
@@ -840,7 +845,7 @@ body {
 
 .qa-card-body {
     background-color:whitesmoke;
-    border: 1px solid #535C72;
+    border: 1px solid black; /*tzh changed 535C72 to black*/
     border-radius: 10px;
 }
 
@@ -972,17 +977,17 @@ button.primary-square:hover {
 }
 
 .active-toggle-button {
-    color: #495264  !important; /* Active state text color */
+    color: black  !important; /* Active state text color - tzh changed 495264 to black */
     background-color: white !important; /* Active state background color */
-    border-bottom: 3px solid #495264 !important; /* Underline for active tab */
+    border-bottom: 3px solid black !important; /* Underline for active tab - tzh changed 495264 to black */
     border-radius: 0px !important;
     font-weight: bold !important;
   
 }
 .active-toggle-button:hover {
-    color: #495264  !important; /* Active state text color */
+    color: black  !important; /* Active state text color - tzh changed 495264 to black  */
     background-color: white !important; /* Active state background color */
-    border-bottom: 4px solid #495264 !important; /* Underline for active tab */
+    border-bottom: 4px solid black !important; /* Underline for active tab - tzh changed 495264 to black */
     border-radius: 0px !important;
     font-weight: bold !important;
 }
@@ -1647,7 +1652,7 @@ button.primary-square:hover {
 
 @media (max-width: 991px){
     .rounded-pill{
-        font-size: 16px;
+        font-size: 12px;
     }
 }
 
@@ -1870,7 +1875,7 @@ button.primary-square:hover {
 }
 
 .about-box{
-    background-color:gainsboro; 
+    background-color: none; /*gainsboro*/
     min-height:3em;
 }
 
@@ -1923,4 +1928,22 @@ position: absolute;
 top: 0;
 transform: translateY(-76%);
 font-size: 17px;
+}
+
+.modal-header {
+    background-color: #F0B358;
+}
+
+.modal-title {
+    font-weight:bold;
+}
+
+.greyed-out {
+    opacity: 0.5; /* Makes the column look faded */
+    pointer-events: none; /* Disables interactions */
+}
+
+.text-decoration-underline{
+    text-decoration-thickness: 2.5px !important; /* Adjust thickness here */
+    text-underline-offset: 4px;    /* Optional: Adjust the space between text and underline */
 }
