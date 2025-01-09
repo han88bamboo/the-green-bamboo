@@ -76,14 +76,13 @@
                             <li v-if="!onRequest && accType == 'user'"><router-link  :to="'/request/new'"><span class="dropdown-item" style="color:#D58D2D !important;">Submit A Drink</span></router-link></li>
                             <li v-if="onCreate && (accType == 'producer' || isAdmin || isModerator)" ><span style="color:#D58D2D !important;" class="dropdown-item" @click="forceLoad('/listing/create')">Add A New Drink</span></li>
                             <li v-if="!onCreate && (accType == 'producer' || isAdmin || isModerator)" :to="'/listing/create'" ><span style="color:#D58D2D !important;" class="dropdown-item">Add A New Drink</span></li>
+                            <li><router-link :to="'/clubs/view'" class="dropdown-item">Find Club</router-link></li>
                         </div>
 
                         <li><hr class="dropdown-divider"></li>
                         <li v-if="profileURL == '/login'"><router-link :to="'/login'" class="dropdown-item">Login</router-link></li>
                         <li v-if="profileURL == '/login'"><router-link :to="'/signup'" class="dropdown-item">Sign Up</router-link></li>
                         <li v-if="profileURL != '/login'"><span class="dropdown-item" @click="logout">Log Out</span></li>
-
-
                     </ul>
 
                 </div>

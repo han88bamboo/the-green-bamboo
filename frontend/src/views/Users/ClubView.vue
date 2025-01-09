@@ -46,7 +46,9 @@
                             </div>
                             <div class="col-md-6 text-end">
                                 <button v-if="isMember" class="btn primary-btn-green" data-bs-toggle="modal" data-bs-target="#addPostModal">Add Post</button>
-                                <button v-else class="btn primary-btn-green" @click="joinClub" :disabled="disableButton">Join Club</button>
+                                <button v-if="isMember == null && !hasRequested && !isInvited" class="btn primary-btn-green" @click="joinClub" :disabled="disableButton">Join Club</button>
+                                <button v-if="isInvited" class="btn primary-btn-red ms-3" @click="acceptInvite" :disabled="disableButton">Accept Invite</button>
+                                <button v-if="hasRequested" class="btn primary-btn-red ms-3" disabled>Request Sent</button>
                                 <button v-if="isMember" class="btn primary-btn-red ms-3" data-bs-toggle="modal" data-bs-target="#leaveClubModal">Leave Club</button>
                             </div>
                         </div>
@@ -136,7 +138,10 @@
 
                         <!-- Row 2: Posts section -->
                         <div v-if="posts.length == 0" class="text-center mt-5">
-                            <h3 class="fw-bold">No posts available yet!</h3>
+                            <!-- If user is not a member, it will show the message below -->
+                            <h3 v-if="!isMember && clubInfo.isInviteOnly" class="fw-bold">Request to join the club to see posts!</h3>
+                            <!-- If user is a member and club has no post yet, it will show the message below -->
+                            <h3 v-else class="fw-bold">No posts available yet!</h3>
                         </div>
 
                         <div v-else>
@@ -441,9 +446,13 @@ export default {
             // Variables for user data
             userID: null,
             userType: null,
-            isMember: false,
+            isMember: null, // If user has not been invited, this will be null. If user has been invited, this will be false. If user has accepted the invitation, this will be true.
             isAdmin: false,
             memberID: null,
+
+            // Variable for membership status
+            hasRequested: null,
+            isInvited: null,
 
             // Variable for default banner
             defaultBanner: require('@/assets/defaultGroupBanner.png'),
@@ -485,7 +494,12 @@ export default {
                 this.dataLoaded = true;
 
                 // Get posts
-                this.getPosts();
+                if (this.clubInfo.isInviteOnly && this.memberID == null) {
+                    this.dataLoaded = true;
+                }
+                else {
+                    this.getPosts();
+                }
 
             } catch (error) {
                 // Check if status code is 404
@@ -539,16 +553,27 @@ export default {
             try {
                 // Get membership status
                 const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/checkUserMembership/${this.userID}/${this.userType}/${this.clubId}`);
-                this.isMember = response.data.isMember;
-                this.isAdmin = response.data.isAdmin;
-                this.memberID = response.data.memberID;
 
-                // If current user is a member, get the user's likes for the posts
-                if (this.isMember) {
-                    this.getPostLikes();
+
+                if (response.data.isRequested) {
+                    this.hasRequested = true;
                 }
+                else if (response.data.isInvited) {
+                    this.isInvited = true;
+                }
+                else {
+                    this.isMember = response.data.isMember;
+                    this.isAdmin = response.data.isAdmin;
+                    this.memberID = response.data.memberID;
 
-            } catch (error) {
+                    // If current user is a member, get the user's likes for the posts
+                    if (this.isMember) {
+                        this.getPostLikes();
+                    }
+                }
+               
+
+            } catch (error) { // User is not a member
                 console.log(error);
             }
         },
@@ -693,6 +718,14 @@ export default {
 
         // Function to join the club
         async joinClub() {
+
+            // Check if the user is logged in
+            if (this.userType == "defaultUser") {
+                // Redirect to login page
+                this.$router.push('/login');
+                return;
+            }
+
             try {
                 // Disable the button to prevent multiple clicks
                 this.disableButton = true;
@@ -722,6 +755,37 @@ export default {
 
             this.disableButton = false;
 
+        },
+
+        // Function to accept the invitation to join the club
+        async acceptInvite() {
+            try {
+                // Disable the button to prevent multiple clicks
+                this.disableButton = true;
+
+                // Accept the invitation
+                const response = await this.$axios.put(`${process.env.VUE_APP_API_URL}/club/acceptClubInvite`, {
+                    userID: this.userID,
+                    userType: this.userType,
+                    clubID: this.clubId
+                });
+
+                if (response.status == 200) {
+                    this.isMember = true;
+                    this.checkMembership();
+
+                    // Increase the total members of the club by 1
+                    this.clubInfo.totalMembers += 1;
+
+                    // Show a success message in a toast
+                    const toast = useToast();
+                    toast.success("You have successfully accepted the invitation to join the club! Welcome!");
+                }
+
+            } catch (error) {
+                console.log(error);
+            }
+            this.disableButton = false;
         },
 
         // Function to leave the club
@@ -861,10 +925,20 @@ export default {
         this.clubId = this.$route.params.clubID;
         // Get the account id and type of the user
         this.userID = localStorage.getItem("88B_accID");
-        this.userType = localStorage.getItem("88B_accType");
+        let userType = localStorage.getItem("88B_accType");
+
+        if (userType) {
+            this.userType = userType;
+        }
+        else {
+            this.userType = 'defaultUser';
+        }
 
         this.getPageData();
-        this.checkMembership();
+
+        if (this.userID && this.userType != 'defaultUser') {
+            this.checkMembership();
+        }
     },
 }
 </script>

@@ -647,7 +647,8 @@ INSERT INTO "users" ("username","displayName","choiceDrinks","modType","photo","
 	 ('admin','admin','{}','{}','','-1522920846','2024-10-28 18:45:31.403','admin','admin','admin@drink-x.com',false,'2000-01-01 00:00:00','175029,2024-10-28 18:46:29'),
 	 ('Lotusroot518','Lotusroot518','{}','{}','','-289780632','2024-10-29 01:31:56.379','Lotusroot518','Lotusroot518','Kailinchoo@gmail.com',true,'1995-08-11 00:00:00',NULL),
 	 ('charsiucharlie','charsiucharlie','{}','{}','','-65180891','2024-10-30 13:48:46.277','charsiucharlie','charsiucharlie','tzhehan@gmail.com',true,'1993-06-29 00:00:00',NULL),
-	 ('DumplingBoy','DumplingBoy','{}','{}','','2108394495','2024-11-03 09:49:51.179','DumplingBoy','DumplingBoy','jwleong.199@gmail.com',false,'1999-10-21 00:00:00',NULL);
+	 ('DumplingBoy','DumplingBoy','{}','{}','','2108394495','2024-11-03 09:49:51.179','DumplingBoy','DumplingBoy','jwleong.199@gmail.com',false,'1999-10-21 00:00:00',NULL),
+     ('cp', 'cp', '{}', '{}', '', '-301000982', '2024-11-03 09:49:51.179', 'cheng', 'pong', 'cpdeveloper101@gmail.com', false, '1999-10-21 00:00:00', NULL);
 
 INSERT INTO "drinkTypes" ("drinkType", "badgePhoto", "typeCategory")
 VALUES (
@@ -1289,7 +1290,15 @@ VALUES
     (1, 3, 'user', '2024-10-30 18:45:31.403', false, false),
     (1, 1, 'venue', '2024-10-30 18:53:31.403', false, false),
     (1, 1, 'producer', '2024-10-30 18:53:31.403', false, false),
-    (2, 1, 'producer', '2024-10-28 18:55:31.403', true, true);
+    (2, 1, 'producer', '2024-10-28 18:55:31.403', true, true),
+    (2, 5, 'user', '2024-10-28 18:55:31.403', true, true);
+
+
+INSERT INTO "clubRequests"(
+    "clubID", "userID", "userType", "requestDate")
+VALUES
+    (2, 3, 'user', '2024-10-31 18:45:31.403'),
+    (2, 4, 'user', '2024-10-31 18:45:31.403');
 
 INSERT INTO "clubPosts"(
     "clubID", "postDate", "postContent", "postPhotos", "posterID")
