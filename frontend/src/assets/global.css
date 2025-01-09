@@ -318,14 +318,14 @@ body {
 }
 
 .secondary-btn-border {
-    color: whitesmoke;
+    color: black;
     background-color: #F0B358; /* TZH changed DD9E54 to F0B358*/
     border-radius: 30px;
     border: 1px solid whitesmoke;
 }
 
 .secondary-btn-border:hover {
-    color: whitesmoke;
+    color: black;
     background-color: #C9964A; /* TZH changed c27e30 to C9964A */
     border-radius: 30px;
     border: 1px solid whitesmoke;
@@ -1164,7 +1164,7 @@ button.primary-square:hover {
 
 .discover-and-following {
     font-size:20px;
-    font-weight: bolder;
+    font-weight: bold;
 }
 
 .funnel-svg-dimensions{
@@ -2023,3 +2023,7 @@ font-size: 17px;
   #app {
     color:black;
   }
+
+  .text-decoration-underline {
+  text-underline-offset: 1px; 
+}

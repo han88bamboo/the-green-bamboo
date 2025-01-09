@@ -59,13 +59,13 @@
                 <!-- Venue Version -->
                 <div v-if="selfView" class="row pt-3 mobile-view-hide">
                     <router-link :to="{ path: '/profile/venue' }" class="d-grid default-clickable-text">
-                        <button type="button" class="btn primary-btn-outline-thick rounded-0"> Return To Profile </button>
+                        <button type="button" class="btn tertiary-btn-blue-outline rounded-0"> Return To Profile </button>
                     </router-link>
                 </div>
                 <!-- Admin Version -->
                 <div v-if="powerView" class="row pt-3 mobile-view-hide">
                     <router-link :to="{ path: '/profile/venue/' + targetVenue.id }" class="d-grid default-clickable-text">
-                        <button type="button" class="btn primary-btn-outline-thick rounded-0"> Return To Profile </button>
+                        <button type="button" class="btn tertiary-btn-blue-outline rounded-0"> Return To Profile </button>
                     </router-link>
                 </div>
                 <!-- row 3: Q & A mobile xyz -->
@@ -74,7 +74,7 @@
 
                     <button v-if="showQnA"
                        type="button" 
-                       class="active-toggle-producer-QnA tertiary-text pt-2 pb-2 border" 
+                       class="active-toggle-producer-QnA tertiary-text pt-2 pb-2 " 
                        data-bs-toggle="collapse" 
                        data-bs-target="#collapseQnA" 
                        aria-expanded="false" 
@@ -83,7 +83,7 @@
                        @click="checkToShowQnA()">Q&As for {{ targetVenue["venueName"] }} ↑</button>
                     <button v-else
                        type="button" 
-                       class="primary-btn-less-round tertiary-text pt-2 pb-2 border" 
+                       class="primary-btn-less-round-green tertiary-text pt-2 pb-2 border" 
                        data-bs-toggle="collapse" 
                        data-bs-target="#collapseQnA" 
                        aria-expanded="false" 
@@ -293,7 +293,7 @@
                  <div class="row pt-3 mobile-view-show">
                     <button v-if="showUserReports"
                        type="button" 
-                       class="active-toggle-producer-QnA tertiary-text pt-2 pb-2 border" 
+                       class="active-toggle-producer-QnA tertiary-text pt-2 pb-2 " 
                        data-bs-toggle="collapse" 
                        data-bs-target="#collapseUserReports" 
                        aria-expanded="false" 
@@ -302,7 +302,7 @@
                        @click="checkToShowUserReports()">Review User Menu Reports ↑</button>
                     <button v-else
                        type="button" 
-                       class="primary-btn-less-round tertiary-text pt-2 pb-2 border" 
+                       class="primary-btn-less-round-green tertiary-text pt-2 pb-2 border" 
                        data-bs-toggle="collapse" 
                        data-bs-target="#collapseUserReports" 
                        aria-expanded="false" 

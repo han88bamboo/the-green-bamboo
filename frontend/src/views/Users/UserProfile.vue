@@ -633,12 +633,12 @@
                                         {{ bookmarkList.listDesc }}
                                     </div>
                                     <div style="display: flex; margin-top: auto;" class="mb-1">
-                                        <b><a class="me-4 mobile-view-hide" @click="viewList(name)" href="#" style="color: #535C72;">View List</a></b>
-                                        <b><a class="me-4 mobile-view-show" @click="viewList(name)" href="#" style="color: #535C72;">View</a></b>
-                                        <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')" class="mobile-view-hide me-2" href="#" style="color: #535C72;" data-bs-toggle="modal" :data-bs-target="`#editListModal${index}`" @click="resetEditList(name, bookmarkList.listDesc)">Edit List</a></b>
-                                        <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')"  class="mobile-view-hide " href="#" style="color: #535C72;" data-bs-toggle="modal" :data-bs-target="`#deleteListModal${index}`">Delete List</a></b>
-                                        <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')" class="mobile-view-show me-2" href="#" style="color: #535C72;" data-bs-toggle="modal" :data-bs-target="`#editListModal${index}`" @click="resetEditList(name, bookmarkList.listDesc)">Edit</a></b>
-                                        <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')" class="mobile-view-show" href="#" style="color: #535C72;" data-bs-toggle="modal" :data-bs-target="`#deleteListModal${index}`">Delete</a></b>
+                                        <b><a class="me-4 mobile-view-hide" @click="viewList(name)" href="#" >View List</a></b>
+                                        <b><a class="me-4 mobile-view-show" @click="viewList(name)" href="#" >View</a></b>
+                                        <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')" class="mobile-view-hide me-2" href="#"  data-bs-toggle="modal" :data-bs-target="`#editListModal${index}`" @click="resetEditList(name, bookmarkList.listDesc)">Edit List</a></b>
+                                        <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')"  class="mobile-view-hide " href="#"  data-bs-toggle="modal" :data-bs-target="`#deleteListModal${index}`">Delete List</a></b>
+                                        <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')" class="mobile-view-show me-2" href="#"  data-bs-toggle="modal" :data-bs-target="`#editListModal${index}`" @click="resetEditList(name, bookmarkList.listDesc)">Edit</a></b>
+                                        <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')" class="mobile-view-show" href="#"  data-bs-toggle="modal" :data-bs-target="`#deleteListModal${index}`">Delete</a></b>
                                         
                                     </div>
                                 </div>

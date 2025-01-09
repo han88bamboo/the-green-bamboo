@@ -150,10 +150,10 @@
 
                                     <!-- [else] not correct producer -->
                                     <div v-else >
-                                        <router-link :to="{ path: '/request/modify/edit/' + this.listing_id }">
+                                        <router-link :to="{ path: '/request/modify/edit/' + this.listing_id }"  style="color:black;" >
                                         <p class="text-body-secondary no-margin xtext-decoration-underline fst-italic text-end"> Suggest Edit </p>
                                         </router-link>
-                                        <router-link :to="{ path: '/request/modify/duplicate/' + this.listing_id }">
+                                        <router-link :to="{ path: '/request/modify/duplicate/' + this.listing_id }" style="color:black;" >
                                             <p class="text-body-secondary no-margin xtext-decoration-underline fst-italic text-end"> Report Duplicate </p>
                                         </router-link>
                                     </div>

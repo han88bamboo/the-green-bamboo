@@ -616,7 +616,7 @@
                         <!-- Toggle Button vendor QnA-->
                         <button v-if="showQnA"
                                 type="button" 
-                                class="active-toggle-producer-QnA tertiary-text pt-2 pb-2 border" 
+                                class="active-toggle-producer-QnA tertiary-text pt-2 pb-2 " 
                                 data-bs-toggle="collapse" 
                                 data-bs-target="#collapseQnA" 
                                 aria-expanded="false" 

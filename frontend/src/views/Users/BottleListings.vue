@@ -447,7 +447,8 @@
                                                 <!-- expression name -->
                                                 <div class="row pt-1">
                                                     <router-link :to="{ path: '/listing/view/' +listing.id }" class="primary-clickable-text mobile-col-12"> <!--tzh changed mobile-col-10 to mobile-col-12 -->
-                                                        <h4 class="mobile-mb-0"> <b> {{ listing["listingName"] }} </b> </h4> <!-- tzh added mobile-mb-0-->
+                                                        <h4 class="mobile-mb-0 mobile-view-hide"> <b> {{ listing["listingName"] }} </b> </h4> <!-- tzh added mobile-mb-0-->
+                                                        <h6 class="mobile-mb-0 mobile-view-show"> <b> {{ listing["listingName"] }} </b> </h6> <!-- tzh added mobile-mb-0-->
                                                     </router-link>
                                                     <!--<div class="mobile-col-2 mobile-view-show"> 
                                                         <BookmarkIcon 
@@ -500,12 +501,18 @@
                                                 <!-- rating -->
                                                 <div class="row pt-4 mobile-pt-0"> <!--tzh removed mobile-view-hide and added mobile-pt-0 -->
                                                     <div class="col-6 d-flex align-items-center">
-                                                        <h1 class="rating-text text-end d-flex align-items-center">
+                                                        <h1 class="rating-text text-end d-flex align-items-center mobile-view-hide">
                                                             {{ getRatings(listing) }} ★
                                                             <!--<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
                                                                 <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
                                                             </svg>-->
                                                         </h1>
+                                                        <h5 class="rating-text text-end d-flex align-items-center mobile-view-show">
+                                                            {{ getRatings(listing) }} ★
+                                                            <!--<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
+                                                                <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                                                            </svg>-->
+                                                        </h5>
                                                     </div>
                                                     <div class="col-6 text-end mobile-view-hide"> <!--tzh added mobile-view-hide -->
                                                         <div class="d-grid gap-5">
@@ -639,7 +646,8 @@
                                                 <!-- expression name -->
                                                 <div class="row pt-1">
                                                     <router-link :to="{ path: '/listing/view/' +listing.id }" class="primary-clickable-text mobile-col-12"> <!--tzh changed mobile-col-10 to mobile-col-12 -->
-                                                        <h4 class="mobile-mb-0"> <b> {{ listing["listingName"] }} </b> </h4> <!-- tzh added mobile-mb-0-->
+                                                        <h4 class="mobile-mb-0 mobile-view-hide"> <b> {{ listing["listingName"] }} </b> </h4> <!-- tzh added mobile-mb-0-->
+                                                        <h6 class="mobile-mb-0 mobile-view-show"> <b> {{ listing["listingName"] }} </b> </h6> <!-- tzh added mobile-mb-0-->
                                                     </router-link>
                                                     <!--<div class="mobile-col-2 mobile-view-show">
                                                     <BookmarkIcon 
@@ -687,12 +695,18 @@
                                                 <!-- rating -->
                                                 <div class="row pt-4 mobile-pt-0">  <!--tzh added mobile-pt-0 -->
                                                     <div class="col-6 d-flex align-items-center">
-                                                        <h1 class="rating-text text-end d-flex align-items-center">
+                                                        <h1 class="rating-text text-end d-flex align-items-center mobile-view-hide">
                                                             {{ getRatings(listing) }} ★
                                                             <!--<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
                                                                 <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
                                                             </svg>-->
                                                         </h1>
+                                                        <h5 class="rating-text text-end d-flex align-items-center mobile-view-show">
+                                                            {{ getRatings(listing) }} ★
+                                                            <!--<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
+                                                                <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                                                            </svg>-->
+                                                        </h5>
                                                     </div>
                                                     <div class="col-6 mobile-view-hide"> <!--tzh added mobile-view-hide -->
                                                         <div class="d-grid gap-5">
