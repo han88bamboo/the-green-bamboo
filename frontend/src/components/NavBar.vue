@@ -72,10 +72,10 @@
                             <li><router-link :to="'/'" class="dropdown-item">Best Of</router-link></li>
                             <li><router-link :to="dashboardURL" class="dropdown-item">{{ dashboardWord }} Dashboard</router-link></li>
                             <li><span  @click="externalURL('https://88bamboo.co/')" class="dropdown-item">Latest News</span></li>
-                            <li v-if="onRequest && accType == 'user'"><span style="color:#D58D2D !important;" @click="forceLoad('/request/new')" class="dropdown-item">Submit A Drink</span></li>
-                            <li v-if="!onRequest && accType == 'user'"><router-link  :to="'/request/new'"><span class="dropdown-item" style="color:#D58D2D !important;">Submit A Drink</span></router-link></li>
-                            <li v-if="onCreate && (accType == 'producer' || isAdmin || isModerator)" ><span style="color:#D58D2D !important;" class="dropdown-item" @click="forceLoad('/listing/create')">Add A New Drink</span></li>
-                            <li v-if="!onCreate && (accType == 'producer' || isAdmin || isModerator)" :to="'/listing/create'" ><span style="color:#D58D2D !important;" class="dropdown-item">Add A New Drink</span></li>
+                            <li v-if="onRequest && accType == 'user'"><span  @click="forceLoad('/request/new')" class="dropdown-item text-decoration-none">Submit A Drink</span></li>
+                            <li v-if="!onRequest && accType == 'user'"><router-link  :to="'/request/new'" class="text-decoration-none" ><span class="dropdown-item " >Submit A Drink</span></router-link></li>
+                            <li v-if="onCreate && (accType == 'producer' || isAdmin || isModerator)" ><span  class="dropdown-item" @click="forceLoad('/listing/create')">Add A New Drink</span></li>
+                            <li v-if="!onCreate && (accType == 'producer' || isAdmin || isModerator)" :to="'/listing/create'" ><span class="dropdown-item">Add A New Drink</span></li>
                         </div>
 
                         <li><hr class="dropdown-divider"></li>

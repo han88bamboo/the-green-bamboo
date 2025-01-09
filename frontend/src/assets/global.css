@@ -87,6 +87,7 @@ body {
     background-color: #F0B258; /*TZH changed 535C72 to F0B258 */ 
     border-radius: 30px;
     border: 4px solid #F0B258; /*TZH changed 535C72 to F0B258 */ 
+    font-weight:bold;
 }
 
 .primary-btn-outline, 
@@ -95,6 +96,7 @@ body {
     background-color: #c9964a; /*TZH changed whitesmoke to c9964a */ 
     border-radius: 30px;
     border: 4px solid #F0B258; /*TZH changed 535C72 to c9964a */ 
+    font-weight:bold;
 }
 
 .primary-btn-green, 
@@ -103,6 +105,7 @@ body {
     background-color: #027562; /*TZH added for Discovery and Following buttons on homepage */ 
     border-radius: 30px;
     border: 4px solid #027562; /*TZH changed 535C72 to F0B258 */ 
+    font-weight:bold;
 }
 
 .primary-btn-green:hover{
@@ -110,6 +113,7 @@ body {
     background-color: #026453; 
     border-radius: 30px;
     border: 4px solid #026453; 
+    font-weight:bold;
 }
 
 .primary-btn-green-outline{
@@ -117,6 +121,7 @@ body {
     background-color: white;  
     border-radius: 30px;
     border: 4px solid #027562;  
+    font-weight:bold;
 }
 
 .primary-btn-green-thin-outline{
@@ -139,6 +144,7 @@ body {
     background-color: #AE3E3E;
     border-radius: 30px;
     border: 4px solid #AE3E3E;
+    font-weight:bold;
 }
 
 .primary-btn-red:hover {
@@ -146,14 +152,17 @@ body {
     background-color: #833131;
     border-radius: 30px;
     border: 4px solid #833131;
+    font-weight:bold;
 }
 
 .primary-btn-less-round,
 .primary-btn-outline-less-round:hover {
     color: whitesmoke;
-    background-color: #535C72;  
+    background-color: #83A9E8;  
     border-radius: 10px;
-    border: 4px solid #535C72;
+    border: 4px solid #83A9E8;
+    font-weight:bold;
+    
 }
 
 .primary-btn-less-round-blue {
@@ -181,10 +190,11 @@ body {
 
 .primary-btn-less-round:hover,
 .primary-btn-outline-less-round {
-    color: #535C72;
+    color: #83A9E8;
     background-color: whitesmoke;
     border-radius: 10px;
-    border: 4px solid #535C72;
+    border: 4px solid #83A9E8;
+    font-weight:bold;
 }
 
 .active-toggle-producer-QnA {
@@ -192,6 +202,7 @@ body {
     background-color: white;
     border-radius: 10px;
     border: 4px solid #027562;
+    font-weight:bold;
 }
 
 .active-toggle-producer-QnA:hover {
@@ -199,6 +210,7 @@ body {
     background-color: #02594b;
     border-radius: 10px;
     border: 4px solid #02594b;
+    font-weight:bold;
 }
 
 .primary-square {
@@ -226,6 +238,7 @@ body {
     background-color: white;  /* added by tzh for left side bar on homepage*/
     border-radius: 30px;
     border: 4px solid #027562;  
+    font-weight:bold;
 }
 
 
@@ -491,6 +504,7 @@ body {
     outline: none;
     border: none;
     box-shadow: none;
+    
 }
 
 .search-bar {
@@ -882,8 +896,8 @@ body {
 }
 
 .dropdown-item.active, .dropdown-item:hover, .dropdown-item:focus {
-    background-color: #747D92;
-    color: whitesmoke;
+    background-color: #83A9E8; /*tzh replaced 747D92 with 83A9E8*/
+    color: white;
 }
 
 .xs-text {
@@ -962,6 +976,7 @@ button.primary-square:hover {
     background-color: #535C72;
     border-radius: 0px;
     border: 4px solid #535C72;
+    font-weight:bold;
 }
 
 .primary-btn-not-round:hover,
@@ -970,6 +985,7 @@ button.primary-square:hover {
     background-color: whitesmoke;
     border-radius: 0px;
     border: 4px solid #535C72;
+    font-weight:bold;
 }
 
 .text-warning {
@@ -1940,10 +1956,70 @@ font-size: 17px;
 
 .greyed-out {
     opacity: 0.5; /* Makes the column look faded */
-    pointer-events: none; /* Disables interactions */
+    /*pointer-events: none;  Disables interactions */
 }
 
 .text-decoration-underline{
     text-decoration-thickness: 2.5px !important; /* Adjust thickness here */
     text-underline-offset: 4px;    /* Optional: Adjust the space between text and underline */
 }
+
+.dropdown-menu{
+    max-height: 450px; /* Set the maximum height */
+    overflow-y: auto; /* Enable vertical scrolling if content exceeds the height */
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+}
+
+.drink-category-column {
+    transform: translate3d(-140px,0px, 0px); 
+    background-color:white; border-left:1px solid;
+    max-width: 500px; /* Restrict column width */
+    white-space: normal; /* Allow text wrapping */
+    word-wrap: break-word; /* Ensure long words break */
+    overflow-wrap: break-word; /* Fallback for modern browsers */
+
+}
+
+.dropdown-item span {
+    
+    word-wrap: break-word; /* Ensure long words break */
+    overflow-wrap: break-word; /* Fallback for modern browsers */
+    max-width: 300px; /* Ensure dropdown items also respect this width */
+    white-space: normal; /* Allow text to wrap */
+    margin-left: -15px; /* First line aligned to the left */
+    padding-left: 0px; /* Indents all subsequent lines */
+
+}
+
+.dropdown-column div {
+    max-width:400px;
+    padding-left: 10px;
+}
+
+.filter-div{
+    max-width:525px;
+}
+
+@media (max-width: 991px){
+    .drink-category-column {
+    transform: translate3d(-180px,0px, 0px); 
+}
+    .filter-div{
+    max-width:425px;
+}
+    .dropdown-column div {
+    max-width:300px;
+}
+    .dropdown-item span {
+        max-width: 200px;
+}
+}
+
+
+  nav a.router-link-exact-active.dropdown-item {
+    color: inherit; /* Makes the color fallback to the parent or default */
+  }
+
+  #app {
+    color:black;
+  }

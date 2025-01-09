@@ -59,7 +59,7 @@
 
                     <!-- row 2: return to profile -->
                     <div class="row pt-3 mobile-view-hide">
-                        <button type="button" class="btn primary-btn-outline-thick rounded-0 default-clickable-text" v-on:click="goBack()"> 
+                        <button type="button" class="btn tertiary-btn-blue-outline rounded-0 default-clickable-text" v-on:click="goBack()"> 
                             Return to profile 
                         </button>
                     </div>
