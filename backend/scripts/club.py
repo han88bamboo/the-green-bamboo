@@ -342,7 +342,7 @@ def getClubPosts(clubID, offset):
 # [GET] getClubPostDetails
 # Purpose: Get the latest 20 comments for a specific post
 # Used: SpecificClubPost.vue [components folder]
-# Output: Possible return codes [200 - Retrieval success, 404 - No comments for this post yet, 500 - An error occurred retrieving the request]
+# Output: Possible return codes [200 - Retrieval success (with or without comments), 404 - No such post exist, 500 - An error occurred retrieving the request]
 @blueprint.route('/getClubPostDetails/<postID>/<offset>', methods=['GET']) # offset is the number of records to skip before fetching the next set of records
 def getClubPostDetails(postID, offset):
     conn = g.db
@@ -356,24 +356,50 @@ def getClubPostDetails(postID, offset):
 
     try:
         # check if post exist
-        cur.execute('SELECT * FROM "clubPostComments" WHERE "postID" = %s', (postID,))
+        cur.execute('SELECT * FROM "clubPosts" WHERE "id" = %s', (postID,))
         post = cur.fetchone()
 
         if not post:
             return jsonify({
                 'error': f"No such post for this post id {postID}"
             }), 404
+        
+        # Step 1: Get the poster information
+        posterID = post['posterID']
 
-        # Step 1: Get the latest 20 comments for the specific post
+        # Check if posterID is null
+        if not posterID:
+            return jsonify({
+                'error': 'No poster ID found for this post'
+            }), 404
+        
+        poster_info = getUserInfo(cur, posterID)
+
+        if not poster_info:
+            return jsonify({
+                'error': 'No such user for the given poster ID'
+            }), 404
+
+        # Step 2: Get a list of members who liked the post
+        cur.execute('SELECT "memberID" FROM "clubPostsLikes" WHERE "postID" = %s', (postID,))
+        liked_members = cur.fetchall()
+
+        # Format the liked_members into a list of memberID
+        liked_members_list = [member['memberID'] for member in liked_members]
+        post['likedMembers'] = liked_members_list
+
+        # Step 4: Get the latest 20 comments for the specific post
         cur.execute('SELECT * FROM "clubPostComments" WHERE "postID" = %s ORDER BY "commentDate" DESC LIMIT 20 OFFSET %s', (postID, offset,))
         comments_info = cur.fetchall()
 
         if not comments_info:
             return jsonify({
-                'error': 'No comments for this post yet'
-            }), 404
+                'post_info': post,
+                'poster_info': poster_info,
+                'comments': []
+            }), 200
         
-        # Step 2: Get the total likes, commenter's id, displayName and photo
+        # Step 4: Get the total likes, commenter's id, displayName and photo
         for comment in comments_info:
             commenterID = comment['commenterID']
 
@@ -396,17 +422,23 @@ def getClubPostDetails(postID, offset):
             else:
                 comment['commenterInfo'] = users_retrieved_list[commenterID]
 
-            cur.execute('SELECT COUNT(*) AS "totalLikes" FROM "clubPostCommentsLikes" WHERE "commentID" = %s', (comment['id'],))
-            total_likes = cur.fetchone()
+            # Get a list of members who liked the comment
+            cur.execute('SELECT "memberID" FROM "clubPostCommentsLikes" WHERE "commentID" = %s', (comment['id'],))
+            comments_liked_members = cur.fetchall()
 
-            # Add total likes into comment
-            comment['totalLikes'] = total_likes['totalLikes']
+            # Format the comments_liked_members into a list of memberID
+            comments_liked_members_list = [member['memberID'] for member in comments_liked_members]
+
+            # Add comments_liked_members into comment
+            comment['likedMembers'] = comments_liked_members_list
 
             # Add comment into filtered_comment_list
             filtered_comment_list.append(comment)
 
         return jsonify({
-            'data': comments_info
+            'post_info': post,
+            'poster_info': poster_info,
+            'comments': comments_info
         }), 200
 
 
@@ -1155,9 +1187,20 @@ def addComment():
         comment_id = cur.fetchone()['id']
         conn.commit()
 
+        # Step 4: Get the commenter's information
+        commenter_info = getUserInfo(cur, commenter_id)
+
         return jsonify({
             'message': 'Comment added successfully',
-            'commentID': comment_id
+            'comment_obj': {
+                "commentContent": comment_content,
+                "commentDate": comment_date,
+                "commenterID": commenter_id,
+                "commenterInfo": commenter_info,
+                "id": comment_id,
+                "likedMembers": [],
+                "postID": post_id
+            }
         }), 201
 
     except Exception as e:

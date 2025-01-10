@@ -222,6 +222,12 @@ const routes = [
     name: 'clubview',
     component: () => import('../views/Users/ClubView.vue')
   },
+
+  {
+    path: '/club/:clubID/post/:postID',
+    name: 'clubpost',
+    component: () => import('../views/Users/ClubPostView.vue')
+  },
   // -------------------------------------------------------------------------------------
   
   {

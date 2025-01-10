@@ -308,7 +308,7 @@
                                                     <span class="carousel-control-next-icon" aria-hidden="true" style="background-color: black;"></span>
                                                     <span class="visually-hidden">Next</span>
                                                 </button>
-                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -349,7 +349,7 @@
                                             </p>
 
                                             <!-- Comment icon -->
-                                            <span data-bs-toggle="tooltip" data-bs-placement="top" title="Comment" class="cursor-pointer">
+                                            <span data-bs-toggle="tooltip" data-bs-placement="top" title="Comment" class="cursor-pointer" @click="openPost(post.id)">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-chat-dots" viewBox="0 0 16 16"
                                                     style="cursor: pointer;">
                                                     <path d="M5 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2"/>
@@ -565,6 +565,11 @@ export default {
                     this.isMember = response.data.isMember;
                     this.isAdmin = response.data.isAdmin;
                     this.memberID = response.data.memberID;
+
+                    // Store the user's membership status in the local storage
+                    localStorage.setItem('isMember', this.isMember);
+                    localStorage.setItem('isAdmin', this.isAdmin);
+                    localStorage.setItem('memberID', this.memberID);
 
                     // If current user is a member, get the user's likes for the posts
                     if (this.isMember) {
@@ -942,7 +947,12 @@ export default {
                 console.log(error);
                 alert("An error occurred while deleting the post, please try again!");
             }
-        }
+        },
+
+        // Function to open the post
+        openPost(postID) {
+            this.$router.push(`/club/${this.clubId}/post/${postID}`);
+        },
 
     },
 
