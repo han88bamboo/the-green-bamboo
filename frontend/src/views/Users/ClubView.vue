@@ -46,7 +46,8 @@
                             </div>
                             <div class="col-md-6 text-end">
                                 <button v-if="isMember" class="btn primary-btn-green" data-bs-toggle="modal" data-bs-target="#addPostModal">Add Post</button>
-                                <button v-if="isMember == null && !hasRequested && !isInvited" class="btn primary-btn-green" @click="joinClub" :disabled="disableButton">Join Club</button>
+                                <button v-if="isMember == null && !clubInfo.isInviteOnly && !hasRequested && !isInvited" class="btn primary-btn-green" @click="joinClub" :disabled="disableButton">Join Club</button>
+                                <button v-if="isMember == null && clubInfo.isInviteOnly && !hasRequested && !isInvited" class="btn primary-btn-green" @click="requestToJoin" :disabled="disableButton">Request to Join</button>
                                 <button v-if="isInvited" class="btn primary-btn-red ms-3" @click="acceptInvite" :disabled="disableButton">Accept Invite</button>
                                 <button v-if="hasRequested" class="btn primary-btn-red ms-3" disabled>Request Sent</button>
                                 <button v-if="isMember" class="btn primary-btn-red ms-3" data-bs-toggle="modal" data-bs-target="#leaveClubModal">Leave Club</button>
@@ -409,7 +410,7 @@
             </div>
 
             <!-- Club Setting Component -->
-            <ClubSettings v-if="isAdmin && editClub" :clubInfo="clubInfo" :clubId="clubId" :memberID="memberID" @close-club-settings="closeSettings"/>
+            <ClubSettings v-if="isAdmin && editClub" :clubInfo="clubInfo" :clubId="clubId" :memberID="memberID" :numMembers="clubInfo.totalMembers" @close-club-settings="closeSettings"/>
 
         </div>
 
@@ -421,7 +422,6 @@
 import NavBar from '@/components/NavBar.vue';
 import ClubSettings from '@/components/ClubSettings.vue';
 import { useToast } from 'vue-toastification';
-
 export default {
     name: "ClubView",
     components: {
@@ -714,6 +714,32 @@ export default {
             } catch (error) {
                 console.log(error);
             }
+        },
+
+        async requestToJoin() {
+            try {
+                // Disable the button to prevent multiple clicks
+                this.disableButton = true;
+
+                // Request to join the club
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/club/requestToJoinClub`, {
+                    userID: this.userID,
+                    clubID: this.clubId,
+                    userType: this.userType
+                });
+
+                if (response.status == 201) {
+                    this.hasRequested = true;
+
+                    // Show a success message in a toast
+                    const toast = useToast();
+                    toast.success("Your request to join the club has been sent! Please wait for the club admin to approve your request.");
+                }
+
+            } catch (error) {
+                console.log(error);
+            }
+            this.disableButton = false;
         },
 
         // Function to join the club

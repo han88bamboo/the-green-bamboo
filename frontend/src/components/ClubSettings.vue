@@ -13,7 +13,7 @@
         <div class="row mt-3">
 
             <!-- Row 1: Club setting title and edit buttons -->
-            <div class="row d-flex justify-content-between align-items-center px-0">
+            <div class="row d-flex justify-content-between align-items-center">
 
                 <!-- Column 1: Club setting title -->
                 <div class="col-auto">
@@ -21,7 +21,7 @@
                 </div>
 
                 <!-- Column 2: Edit / Save button -->
-                <div class="col-auto">
+                <div class="col-auto pe-0">
                     <button v-if="editMode && !loading" class="btn" @click="cancelUpdate" :disabled="loading">
                         Cancel
                     </button>
@@ -41,30 +41,30 @@
 
             <!-- Row 2: Club Name -->
             <div class="row mt-3">
-                <label for="clubName" class="form-label ps-0">Club Name</label>
-                <input type="text" class="form-control" id="clubName" v-model="localClubInfo.clubName" :disabled="!editMode">
+                <label for="clubName" class="form-label">Club Name</label>
+                <input type="text" class="form-control ms-2 md-ms-0" id="clubName" v-model="localClubInfo.clubName" :disabled="!editMode">
             </div>
 
             <!-- Row 3: Club Description -->
             <div class="row mt-3">
-                <label for="clubDescription" class="form-label ps-0">Club Description</label>
-                <textarea class="form-control" id="clubDescription" rows="3" v-model="localClubInfo.clubDescription" :disabled="!editMode"></textarea>
+                <label for="clubDescription" class="form-label">Club Description</label>
+                <textarea class="form-control ms-2 md-ms-0" id="clubDescription" rows="3" v-model="localClubInfo.clubDescription" :disabled="!editMode"></textarea>
             </div>
 
             <!-- Row 4: Club Banner -->
             <div class="row mt-3">
-                <label for="clubBanner" class="form-label ps-0">Club Banner</label>
+                <label for="clubBanner" class="form-label">Club Banner</label>
                 <!-- Show current Banner -->
-                <img v-if="clubInfo.clubBanner !=''" :src="clubInfo.clubBanner" alt="Club Banner" class="img-thumbnail" style="max-width: 200px;">
-                <img v-else :src="defaultBanner" alt="Default Banner" class="img-thumbnail" style="max-width: 200px;">
-                <input v-if="editMode" type="file" class="form-control mt-3" id="clubBanner" accept="image/*" @change="uploadImage" :disabled="!editMode"> 
+                <img v-if="clubInfo.clubBanner !=''" :src="clubInfo.clubBanner" alt="Club Banner" class="img-thumbnail ms-2 md-ms-0" style="max-width: 200px;">
+                <img v-else :src="defaultBanner" alt="Default Banner" class="img-thumbnail ms-2 md-ms-0" style="max-width: 200px;">
+                <input v-if="editMode" type="file" class="form-control mt-3 ms-2 md-ms-0" id="clubBanner" accept="image/*" @change="uploadImage" :disabled="!editMode"> 
             </div>
 
             <!-- Row 5: Is Invite Only -->
             <div class="row mt-3">
-                <label for="isInviteOnly" class="form-label ps-0">Group Type</label>
+                <label for="isInviteOnly" class="form-label">Group Type</label>
                 <div class="form-check d-flex align-items-center">
-                    <input type="checkbox" class="form-check-input me-2" id="isInviteOnly" v-model="localClubInfo.isInviteOnly" :disabled="!editMode" style="cursor: pointer;">
+                    <input type="checkbox" class="form-check-input ms-2 md-ms-0 me-2" id="isInviteOnly" v-model="localClubInfo.isInviteOnly" :disabled="!editMode" style="cursor: pointer;">
                     <label for="isInviteOnly" class="form-check-label">Is Invite Only</label>
                 </div>
             </div>
@@ -74,15 +74,15 @@
         <!-- Horizontal line divider to seperate sections -->
         <hr>
 
-        <!-- Club Member Management Section -->
+        <!-- Manage Members Section -->
         <div class="row mt-3">
 
             <!-- Row 6: -->
-            <div class="row d-flex justify-content-between align-items-center px-0">
+            <div class="row d-flex justify-content-between align-items-center">
 
-                <!-- Column 1: Club Member Management Title -->
+                <!-- Column 1: Manage Members Title -->
                 <div class="col-auto d-flex">
-                    <h4 class="fw-bold"> Club Member Management </h4>
+                    <h4 class="fw-bold"> Manage Members ({{ numMembers }})</h4>
                 </div>
 
                 <!-- Column 2: Edit / Save button -->
@@ -98,7 +98,7 @@
             </div>
 
             <!-- Row 7: Table of club members -->
-            <table class="table table-striped mt-3">
+            <table class="table table-striped ms-2 md-ms-0 mt-3" >
                 <thead>
                     <tr>
                         <th scope="col">Member Photo</th>
@@ -110,7 +110,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="member in members" :key="member.id">
+                    <tr v-for="member in paginatedMembers" :key="member.id">
                         <!-- Column 1: Photo -->
                         <td>
                             <img v-if="member.photo" :src="friends[id].photo" class="rounded-circle" style="width: 50px; height: 50px;" alt="profile-photo">
@@ -139,10 +139,13 @@
                         </td>
                         <!-- Column 6: Action Buttons -->
                         <td v-if="manageMode">
-                            <button v-if="!member.isAdmin && member.joinStatus" class="btn btn-primary me-3" style="cursor: pointer;">
+                            <button v-if="!member.isAdmin && member.joinStatus" class="btn btn-primary me-3" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#makeAdminModal" @click="selectedMemberMakeAdmin = member">
                                 Make Admin
                             </button>
-                            <button v-if="member.memberID != memberID" class="btn btn-danger" style="cursor: pointer;">
+                            <button v-if="member.memberID != memberID && member.isAdmin" class="btn btn-primary me-3" style="cursor: pointer;" @click="revokeAdmin(member.memberID)">
+                                Revoke Admin
+                            </button>
+                            <button v-if="member.memberID != memberID" class="btn btn-danger" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#removeMemberModal" @click="selectedMemberRemove = member">
                                 Remove
                             </button>
                         </td>
@@ -150,6 +153,52 @@
                     </tr>
                 </tbody>
             </table>
+
+            <!-- Pagination Controls for members table -->
+            <nav>
+                <ul class="pagination justify-content-center mt-3">
+                    <!-- << -->
+                    <li class="page-item" :class="{ disabled: currentMemberTablePage === 1 }">
+                        <button class="page-link" @click="goToMemberPage(currentMemberTablePage - 1)" aria-label="Previous">
+                            &laquo;
+                        </button>
+                    </li>
+                    <!-- Page numbers -->
+                    <li v-for="page in totalMemberPages" :key="page" class="page-item" :class="{ active: page === currentMemberTablePage }">
+                        <button class="page-link" @click="goToMemberPage(page)">{{ page }}</button>
+                    </li>
+                    <!-- >> -->
+                    <li class="page-item" :class="{ disabled: currentMemberTablePage === totalMemberPages }">
+                        <button class="page-link" @click="goToMemberPage(currentMemberTablePage + 1)" aria-label="Next">
+                            &raquo;
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Make admin modal -->
+            <div class="modal fade" id="makeAdminModal" tabindex="-1" aria-labelledby="makeAdminModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="makeAdminModalLabel">Make Admin</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Are you sure you want to make this member an admin of the club? This will grant this member admin privileges to manage the club.
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn" data-bs-dismiss="modal" :disabled="loading">Close</button>
+                            <button v-if="!loading" type="button" class="btn btn-primary" @click="makeAdmin(selectedMemberMakeAdmin.memberID)" :disabled="loading" data-bs-dismiss="modal">Make Admin</button>
+                            <button v-if="loading" class="btn btn-primary" disabled>
+                                <div class="spinner-border  spinner-border-sm" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <!-- Remove member modal -->
             <div class="modal fade" id="removeMemberModal" tabindex="-1" aria-labelledby="removeMemberModalLabel" aria-hidden="true">
@@ -175,9 +224,8 @@
                 </div>
             </div>
 
-
             <!-- Error message if fail to retrieve member list -->
-            <p v-if="errorMessage" class="text-danger">
+            <p v-if="errorMessage" class="text-danger ms-2 md-ms-0">
                 {{ errorMessage }}
             </p>
         </div>
@@ -186,14 +234,13 @@
         <hr>
 
         <!-- Club Member Request Section--> <!-- If club is private, this section will show, which displays a list of users who have requested to join this club -->
-        <div v-if="clubInfo.isInviteOnly" class="row mt-3">
+        <div class="row mt-3">
             <!-- Row 8: Club Member Request Title -->
-            <div class="row px-0">
-                <h4 class="fw-bold"> Club Member Requests </h4>
-            </div>
+            <h4 class="fw-bold"> Club Member Requests ({{ totalRequest }}) </h4>
+            <p>Will only receive request if the club is Invite Only or there are pending request.</p>
 
             <!-- Row 9: Table of club member requests -->
-            <table v-if="requests.length > 0" class="table table-striped mt-3">
+            <table v-if="requests.length > 0" class="table table-striped mt-3 ms-2 md-ms-0">
                 <thead>
                     <tr>
                         <th scope="col">Member Photo</th>
@@ -203,7 +250,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="request in requests" :key="request.id">
+                    <tr v-for="request in paginatedRequsts" :key="request.userID">
                         <!-- Column 1: Photo -->
                         <td>
                             <img v-if="request.photo" :src="request.photo" class="rounded-circle" style="width: 50px; height: 50px;" alt="profile-photo">
@@ -218,10 +265,10 @@
                         <td>{{ request.requestDate }}</td>
                         <!-- Column 4: Action Buttons -->
                         <td>
-                            <button class="btn btn-primary me-3" style="cursor: pointer;" @click="acceptRequest(request.id, request.userType)">
+                            <button class="btn btn-primary me-3" style="cursor: pointer;" @click="acceptRequest(request.userID, request.userType)">
                                 Accept
                             </button>
-                            <button class="btn btn-danger" style="cursor: pointer;">
+                            <button class="btn btn-danger" style="cursor: pointer;" @click="rejectRequest(request.userID, request.userType)">
                                 Reject
                             </button>
                         </td>
@@ -229,12 +276,34 @@
                 </tbody>
             </table>
 
-            <p v-else class="ps-0">
+            <!-- Pagination Controls for member request table -->
+            <nav v-if="requests.length > 0">
+                <ul class="pagination justify-content-center mt-3">
+                    <!-- << -->
+                    <li class="page-item" :class="{ disabled: currentRequestTablePage === 1 }">
+                        <button class="page-link" @click="goToRequestPage(currentRequestTablePage - 1)" aria-label="Previous">
+                            &laquo;
+                        </button>
+                    </li>
+                    <!-- Page numbers -->
+                    <li v-for="page in totalRequestPages" :key="page" class="page-item" :class="{ active: page === currentRequestTablePage }">
+                        <button class="page-link" @click="goToRequestPage(page)">{{ page }}</button>
+                    </li>
+                    <!-- >> -->
+                    <li class="page-item" :class="{ disabled: currentRequestTablePage === totalRequestPages }">
+                        <button class="page-link" @click="goToRequestPage(currentRequestTablePage + 1)" aria-label="Next">
+                            &raquo;
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+
+            <p v-else class="ms-2 md-ms-0 ps-0">
                 No member requests to join this club
             </p>
 
             <!-- Error message if fail to retrieve member request list -->
-            <p v-if="requestListError" class="text-danger">
+            <p v-if="requestListError" class="text-danger ms-2 md-ms-0">
                 {{ requestListError }}
             </p>
         </div>
@@ -244,9 +313,9 @@
 
         <!-- Delete club Section -->
         <div class="row mt-3">
-            <h4 class="fw-bold ps-0"> Delete Club </h4>
-            <p class="ps-0"><span class="text-danger fw-bold">Warning:</span> This action is irreversible. Deleting the club will remove all posts and comments from the database.</p>
-            <button class=" col-3 btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteClubModal" style="cursor: pointer;">
+            <h4 class="fw-bold"> Delete Club </h4>
+            <p class="ps-1 ms-2 md-ms-0"><span class="text-danger fw-bold">Warning:</span> This action is irreversible. Deleting the club will remove all posts and comments from the database.</p>
+            <button class=" col-3 btn btn-danger ms-2 md-ms-0" data-bs-toggle="modal" data-bs-target="#deleteClubModal" style="cursor: pointer;">
                 Delete Club
             </button>
         </div>
@@ -297,6 +366,10 @@ export default {
         memberID: {
             type: Number,
             required: true
+        },
+        numMembers: {
+            type: Number,
+            required: true
         }
     },
     data() {
@@ -319,23 +392,52 @@ export default {
 
             // Variables to store club members (current member and invited members)
             members: [],
+            currentMemberTablePage: 1, // Tracks the current member table page the user is on
+            pageSizeMembers: 1, // Determine number of members to show per member table page (!!!OFFSET should be the same as LIMIT VALUE IN THE BACKEND)
+            memberOffset: 0, // Offset to get next page of members (use to get next page of members)
 
             // Variable to store request to join club
             requests: [],
+            totalRequest: null,
+            currentRequestTablePage: 1, // Tracks the current request table page the user is on
+            pageSizeRequests: 1, // Determine number of requests to show per request table page (!!!OFFSET should be the same as LIMIT VALUE IN THE BACKEND)
+            requestOffet: 0, // Offset to get next page of requests (use to get next page of requests)
 
             // Variable for error message if fail to retrieve member list
             errorMessage: '',
 
             // Variable for error message if fail to retrieve member request list
             requestListError: '',
+
+            // Variable to store member information for granting admin status
+            selectedMemberMakeAdmin: {},
+
+            // Variable to store member information for removing member
+            selectedMemberRemove: {}
         };
+    },
+    computed: {
+        paginatedMembers() {
+            const start = (this.currentMemberTablePage - 1) * this.pageSizeMembers;
+            return this.members.slice(start, start + this.pageSizeMembers);
+        },
+        paginatedRequsts() {
+            const start = (this.currentRequestTablePage - 1) * this.pageSizeRequests;
+            return this.requests.slice(start, start + this.pageSizeRequests);
+        },
+        totalMemberPages() {
+            return Math.ceil(this.numMembers / this.pageSizeMembers);
+        },
+        totalRequestPages() {
+            return Math.ceil(this.totalRequest / this.pageSizeRequests);
+        }
     },
     methods: {
         // Functions to load page data start ========================================
         // Function to get club members
         async getClubMembers() {
             try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getClubMembers/${this.clubId}`);
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getClubMembers/${this.clubId}/0`);
                 this.members = response.data.members;
             } catch (error) {
                 console.error(error);
@@ -345,11 +447,40 @@ export default {
             }
         },
 
-        // Function to get club member requests
+        // Function to get the next page of club members
+        async getNextMemberTablePage() {
+            try {
+                this.memberOffset += this.pageSizeMembers; 
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getClubMembers/${this.clubId}/${this.memberOffset}`);
+                this.members = this.members.concat(response.data.members);
+            } catch (error) {
+                console.error(error);
+                if (error.response.status != 404) {
+                    this.errorMessage = 'Failed to retrieve club members';
+                }
+            }
+        },
+
+        // Function to get club member requests (when the page first loads)
         async getClubRequests() {
             try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getClubRequests/${this.clubId}`);
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getClubRequests/${this.clubId}/0`);
                 this.requests = response.data.requests;
+                this.totalRequest = response.data.totalRequests;
+            } catch (error) {
+                console.error(error);
+                if (error.response.status != 404) {
+                    this.requestListError = 'Failed to retrieve club member requests';
+                }
+            }
+        },
+
+        // Function to get the next page of club member requests
+        async getNextRequestTablePage() {
+            try {
+                this.requestOffet += this.pageSizeRequests; 
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getClubRequests/${this.clubId}/${this.requestOffet}`);
+                this.requests = this.requests.concat(response.data.requests);
             } catch (error) {
                 console.error(error);
                 if (error.response.status != 404) {
@@ -404,6 +535,92 @@ export default {
                 });
         },
 
+        // Function to go to a specific member table page
+        goToMemberPage(page) {
+            this.getNextMemberTablePage();
+            this.currentMemberTablePage = page;
+        },
+
+        // Function to go to a specific request table page
+        goToRequestPage(page) {
+            this.getNextRequestTablePage();
+            this.currentRequestTablePage = page;
+            
+        },
+
+        // Function to make member an admin
+        makeAdmin(memberID) {
+
+            this.loading = true;
+
+            this.$axios.put(`${process.env.VUE_APP_API_URL}/club/makeAdmin`, { 
+                    clubID: this.clubId, 
+                    memberID: memberID,
+                    adminID: this.memberID
+                })
+                .then((response) => {
+                    console.log(response.data);
+                    const toast = useToast();
+                    toast.success('Member promoted to admin');
+                    this.getClubMembers();
+                })
+                .catch((error) => {
+                    console.error(error);
+                    const toast = useToast();
+                    toast.error('Failed to promote member to admin');
+                });
+
+            this.loading = false;
+        },
+
+        // Function to revoke admin status 
+        revokeAdmin(memberID) {
+            this.$axios.put(`${process.env.VUE_APP_API_URL}/club/revokeAdmin`, { 
+                    clubID: this.clubId, 
+                    memberID: memberID,
+                    adminID: this.memberID
+                })
+                .then((response) => {
+                    console.log(response.data);
+                    const toast = useToast();
+                    toast.success('Admin status revoked');
+                    this.getClubMembers();
+                })
+                .catch((error) => {
+                    console.error(error);
+                    const toast = useToast();
+                    toast.error('Failed to revoke admin status');
+                });
+        },
+
+        // Function to remove member 
+        removeMember() {
+            this.loading = true;
+
+            // Create a club object to send to backend
+            const clubObj = {
+                clubID: this.clubId,
+                members: [this.selectedMemberRemove.memberID],
+                removerID: this.memberID
+            };
+
+            // Send a post request to remove member
+            this.$axios.delete(`${process.env.VUE_APP_API_URL}/club/removeMembers`, { data: clubObj })
+                .then((response) => {
+                    console.log(response.data);
+                    const toast = useToast();
+                    toast.success('Member removed successfully');
+                    this.getClubMembers();
+                    this.loading = false;
+                })
+                .catch((error) => {
+                    console.error(error);
+                    const toast = useToast();
+                    toast.error('Failed to remove member');
+                    this.loading = false;
+                });
+        },
+
         // Function to accept member request
         acceptRequest(requesterID, userType) {
             this.$axios.post(`${process.env.VUE_APP_API_URL}/club/acceptClubRequest`, { 
@@ -416,12 +633,36 @@ export default {
                     console.log(response.data);
                     const toast = useToast();
                     toast.success('Member request accepted');
+                    this.getClubMembers();
                     this.getClubRequests();
                 })
                 .catch((error) => {
                     console.error(error);
                     const toast = useToast();
                     toast.error('Failed to accept member request');
+                });
+        },
+
+        // Function to reject member request
+        rejectRequest(requesterID, userType) {
+            this.$axios.delete(`${process.env.VUE_APP_API_URL}/club/rejectClubRequests`, { 
+                data: {
+                    clubID: this.clubId, 
+                    requesterID: requesterID,
+                    userType: userType,
+                    adminID: this.memberID
+                     }
+                })
+                .then((response) => {
+                    console.log(response.data);
+                    const toast = useToast();
+                    toast.success('Member request rejected');
+                    this.getClubRequests();
+                })
+                .catch((error) => {
+                    console.error(error);
+                    const toast = useToast();
+                    toast.error('Failed to reject member request');
                 });
         },
 
