@@ -1754,7 +1754,8 @@ def likeUnlikeComment():
             conn.commit()
 
             return jsonify({
-                'message': 'Comment unliked successfully'
+                'message': 'Comment unliked successfully',
+                'liked': False
             }), 200
 
         # Step 4: Insert the like into the clubPostCommentsLikes table
@@ -1762,7 +1763,8 @@ def likeUnlikeComment():
         conn.commit()
 
         return jsonify({
-            'message': 'Comment liked successfully'
+            'message': 'Comment liked successfully',
+            'liked': True
         }), 200
 
     except Exception as e:

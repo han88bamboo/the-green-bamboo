@@ -101,7 +101,7 @@
 
                                     <!-- Modal footer -->
                                     <div class="modal-footer">
-                                        <button type="button" class="btn" data-bs-dismiss="modal" :disabled="disableButton">Cancel</button>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" :disabled="disableButton">Close</button>
                                         <button type="button" class="btn primary-btn-green" :disabled="disableButton" @click="addPost" data-bs-dismiss="modal">Post</button>
                                     </div>
                                 </div>  
@@ -126,7 +126,7 @@
                                         <p>Are you sure you want to leave this club?</p>
                                     </div>
                                     <div class="modal-footer">
-                                        <button type="button" class="btn" data-bs-dismiss="modal" :disabled="disableButton">Cancel</button>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" :disabled="disableButton">Close</button>
                                         <button type="button" class="btn primary-btn-red" @click="leaveClub" :disabled="disableButton" data-bs-dismiss="modal">Leave Club</button>
                                     </div>
                                 </div>
@@ -237,7 +237,7 @@
 
                                                 <!-- Modal footer -->
                                                 <div class="modal-footer">
-                                                    <button type="button" class="btn" data-bs-dismiss="modal" :disabled="disableButton">Cancel</button>
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" :disabled="disableButton">Close</button>
                                                     <button type="button" class="btn primary-btn-green" :disabled="disableButton" @click="editPost" data-bs-dismiss="modal">Edit</button>
                                                 </div>
                                             </div>  
@@ -268,7 +268,7 @@
 
                                                 <!-- Modal footer -->
                                                 <div class="modal-footer">
-                                                    <button type="button" class="btn" data-bs-dismiss="modal" :disabled="disableButton">Cancel</button>
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" :disabled="disableButton">Close</button>
                                                     <button type="button" class="btn primary-btn-red" @click="deletePost" :disabled="disableButton" data-bs-dismiss="modal">Delete</button>
                                                 </div>
                                             </div>
