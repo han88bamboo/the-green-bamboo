@@ -541,15 +541,14 @@
 
             async checkUsername(username){
                 try {
-                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUsers`);
-                    let duplicateUser = response.data.filter((user)=>{
-                        return user.username == username
-                    })
-
-                    if(duplicateUser.length==0){
-                        this.duplicateUser = false
-                    }else{
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getAllUsernames`);
+                    
+                    // Check if username is already taken and is present in the list 
+                    if (response.data.usernames.includes(username)){
                         this.duplicateUser = true
+                    }
+                    else{
+                        this.duplicateUser = false
                     }
                 } 
                 catch (error) {

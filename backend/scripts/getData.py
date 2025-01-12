@@ -4,7 +4,7 @@
 #           /getVenue/<id> (GET), /getVenuesAPI (GET), /getDrinkTypes (GET), /getRequestListings (GET), /getRequestListing/<id> (GET), /getRequestEdits (GET), 
 #           /getRequestEdit/<id> (GET), /getModRequests (GET), /getFlavourTags (GET), /getSubTags (GET), /getObservationTags (GET), /getColours (GET), 
 #           /getSpecialColours (GET), /getLanguages (GET), /getServingTypes (GET), /getProducersProfileViews (GET), /getVenuesProfileViewsByVenue/<id> (GET), /getRequestInaccuracyByVenue/<id> (GET)
-#           /getUserFollowList/<id> (GET), 
+#           /getUserFollowList/<id> (GET), /getUserNames (GET)
 # -----------------------------------------------------------------------------------------
 
 # pip install python-bsonjs
@@ -2018,3 +2018,37 @@ def getUserFollowList(id):
     
     finally:
         cur.close()
+
+# -----------------------------------------------------------------------------------------
+# [GET] All the usernames in the database [users only]
+@blueprint.route("/getAllUsernames")
+def getAllUsernames():
+    conn = g.db
+    cur = conn.cursor()
+
+    try:
+        # Step 1: Get all the usernames from the users table
+        cur.execute('SELECT "username" FROM "users"')
+        user_usernames = cur.fetchall()
+
+        if not user_usernames:
+            return jsonify({
+                "message": "No usernames found."
+            }), 404
+        
+        return jsonify({
+            "usernames": [username['username'] for username in user_usernames]
+        }), 200
+    
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred retrieving usernames."
+            }
+        ), 500
+    
+    finally:
+        cur.close()
+
