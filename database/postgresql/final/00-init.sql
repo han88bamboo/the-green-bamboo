@@ -1,8 +1,32 @@
-CREATE
-    DATABASE drinkx;
+-- Create the database only if it doesn't exist
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT FROM pg_database
+        WHERE datname = 'drinkx'
+    ) THEN
+        PERFORM dblink_exec('dbname=postgres', 'CREATE DATABASE drinkx');
+    END IF;
+END
+$$;
 
-CREATE
-    USER drinkx WITH PASSWORD 'P@ssw0rd';
+-- Create the user only if it doesn't exist
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT FROM pg_roles
+        WHERE rolname = 'drinkx'
+    ) THEN
+        CREATE USER drinkx WITH PASSWORD 'P@ssw0rd';
+    END IF;
+END
+$$;
+
+-- Connect to the newly created drinkx database
+\c drinkx;
+
+-- Grant privileges on existing tables
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO drinkx;
 
 -- Connect to the newly created drinkx database
 \c drinkx;

@@ -482,6 +482,15 @@ CREATE TABLE "clubMembers" (
     "joinStatus" BOOLEAN
 );
 
+-- ========= "clubRequests" =========
+CREATE TABLE "clubRequests" (
+    "id" SERIAL PRIMARY KEY,
+    "clubID" INTEGER REFERENCES "clubs"("id") ON DELETE SET NULL, -- [!] References clubs FK
+    "userID" INTEGER,
+    "userType" VARCHAR(255),
+    "requestDate" TIMESTAMP
+);
+
 -- ========= "clubPosts" =========
 CREATE TABLE "clubPosts" (
     "id" SERIAL PRIMARY KEY,

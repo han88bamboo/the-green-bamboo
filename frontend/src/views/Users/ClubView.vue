@@ -28,11 +28,12 @@
 
             <!-- Club Banner -->
             <div class="container-fluid p-0 border-bottom">
-                <img :src="defaultBanner" class="img-fluid" alt="Club Banner">
+                <img v-if="clubInfo.clubBanner != ''" :src="clubInfo.clubBanner" class="img-fluid" alt="Club Banner">
+                <img v-else :src="defaultBanner" class="img-fluid" alt="Club Banner">
             </div>
 
             <!-- Main content -->
-            <div class=" container mt-5">
+            <div v-if="!editClub" class="container mt-5">
                 <div class="row">
 
                     <!-- Column 1: Club name, join button / add post button, posts-->
@@ -45,7 +46,10 @@
                             </div>
                             <div class="col-md-6 text-end">
                                 <button v-if="isMember" class="btn primary-btn-green" data-bs-toggle="modal" data-bs-target="#addPostModal">Add Post</button>
-                                <button v-else class="btn primary-btn-green" @click="joinClub" :disabled="disableButton">Join Club</button>
+                                <button v-if="isMember == null && !clubInfo.isInviteOnly && !hasRequested && !isInvited" class="btn primary-btn-green" @click="joinClub" :disabled="disableButton">Join Club</button>
+                                <button v-if="isMember == null && clubInfo.isInviteOnly && !hasRequested && !isInvited" class="btn primary-btn-green" @click="requestToJoin" :disabled="disableButton">Request to Join</button>
+                                <button v-if="isInvited" class="btn primary-btn-red ms-3" @click="acceptInvite" :disabled="disableButton">Accept Invite</button>
+                                <button v-if="hasRequested" class="btn primary-btn-red ms-3" disabled>Request Sent</button>
                                 <button v-if="isMember" class="btn primary-btn-red ms-3" data-bs-toggle="modal" data-bs-target="#leaveClubModal">Leave Club</button>
                             </div>
                         </div>
@@ -75,7 +79,21 @@
                                             </div>
                                             <div class="row mt-3">
                                                 <div class="col-md-12">
-                                                    <input type="file" class="form-control" accept="image/*" multiple @change="imageUpload"/>
+
+                                                    <!-- Upload image(s) input field -->
+                                                    <input type="file" class="form-control" id="newPostPhotoInputField" accept="image/*" multiple @change="imageUpload"/>
+
+                                                    <!-- Display the uploaded images -->
+                                                    <div v-if="newPostPhotos.length > 0" class="mt-3">
+                                                        <div v-for="(photo, index) in newPostPhotos" :key="index" class="position-relative d-inline-block m-2">
+                                                            <img :src="photo" class="img-fluid" style="height: 300px;" alt="Post Photo">
+                                                            <button class="btn primary-btn-red btn-sm position-absolute top-0 end-0 mt-3 me-3" @click="removePhotoNew(index)">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                                                                    <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -83,7 +101,7 @@
 
                                     <!-- Modal footer -->
                                     <div class="modal-footer">
-                                        <button type="button" class="btn" data-bs-dismiss="modal" :disabled="disableButton">Cancel</button>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" :disabled="disableButton">Close</button>
                                         <button type="button" class="btn primary-btn-green" :disabled="disableButton" @click="addPost" data-bs-dismiss="modal">Post</button>
                                     </div>
                                 </div>  
@@ -108,7 +126,7 @@
                                         <p>Are you sure you want to leave this club?</p>
                                     </div>
                                     <div class="modal-footer">
-                                        <button type="button" class="btn" data-bs-dismiss="modal" :disabled="disableButton">Cancel</button>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" :disabled="disableButton">Close</button>
                                         <button type="button" class="btn primary-btn-red" @click="leaveClub" :disabled="disableButton" data-bs-dismiss="modal">Leave Club</button>
                                     </div>
                                 </div>
@@ -121,7 +139,10 @@
 
                         <!-- Row 2: Posts section -->
                         <div v-if="posts.length == 0" class="text-center mt-5">
-                            <h3 class="fw-bold">No posts available yet!</h3>
+                            <!-- If user is not a member, it will show the message below -->
+                            <h3 v-if="!isMember && clubInfo.isInviteOnly" class="fw-bold">Request to join the club to see posts!</h3>
+                            <!-- If user is a member and club has no post yet, it will show the message below -->
+                            <h3 v-else class="fw-bold">No posts available yet!</h3>
                         </div>
 
                         <div v-else>
@@ -195,7 +216,11 @@
                                                                 <label for="editPostPhotos" class="form-label fw-bold">Current photos:</label>
                                                                 <div v-for="(photo, index) in selectedPostEdit.postPhotos" :key="index" class="position-relative d-inline-block m-2">
                                                                     <img :src="photo" class="img-fluid" style="height: 300px;" alt="Post Photo">
-                                                                    <button class="btn primary-btn-red btn-sm position-absolute top-0 end-0" @click="removePhoto(index)">Remove</button>
+                                                                    <button class="btn primary-btn-red btn-sm position-absolute top-0 end-0 mt-3 me-3" @click="removePhoto(index)">
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                                                                            <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
+                                                                        </svg>
+                                                                    </button>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -204,7 +229,7 @@
                                                         <div class="row mt-3 text-start">
                                                             <div class="col-md-12">
                                                                 <label for="newPostPhotos" class="form-label fw-bold">Add more photos:</label>
-                                                                <input type="file" class="form-control" accept="image/*" id="newPostPhotos" multiple @change="imageUploadEdit"/>
+                                                                <input type="file" class="form-control" id="editPostPhotoInputField" accept="image/*" multiple @change="imageUploadEdit"/>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -212,7 +237,7 @@
 
                                                 <!-- Modal footer -->
                                                 <div class="modal-footer">
-                                                    <button type="button" class="btn" data-bs-dismiss="modal" :disabled="disableButton">Cancel</button>
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" :disabled="disableButton">Close</button>
                                                     <button type="button" class="btn primary-btn-green" :disabled="disableButton" @click="editPost" data-bs-dismiss="modal">Edit</button>
                                                 </div>
                                             </div>  
@@ -243,7 +268,7 @@
 
                                                 <!-- Modal footer -->
                                                 <div class="modal-footer">
-                                                    <button type="button" class="btn" data-bs-dismiss="modal" :disabled="disableButton">Cancel</button>
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" :disabled="disableButton">Close</button>
                                                     <button type="button" class="btn primary-btn-red" @click="deletePost" :disabled="disableButton" data-bs-dismiss="modal">Delete</button>
                                                 </div>
                                             </div>
@@ -283,7 +308,7 @@
                                                     <span class="carousel-control-next-icon" aria-hidden="true" style="background-color: black;"></span>
                                                     <span class="visually-hidden">Next</span>
                                                 </button>
-                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -324,7 +349,7 @@
                                             </p>
 
                                             <!-- Comment icon -->
-                                            <span data-bs-toggle="tooltip" data-bs-placement="top" title="Comment" class="cursor-pointer">
+                                            <span data-bs-toggle="tooltip" data-bs-placement="top" title="Comment" class="cursor-pointer" @click="openPost(post.id)">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-chat-dots" viewBox="0 0 16 16"
                                                     style="cursor: pointer;">
                                                     <path d="M5 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2"/>
@@ -345,7 +370,7 @@
                         </div>
                     </div>
 
-                    <!-- Column 2: Club type, number of members, club description and invite button -->
+                    <!-- Column 2: Club type, number of members, club description, invite button and settings button -->
                     <div class="col-md-3 order-md-2 order-1 ps-md-3">
 
                         <!-- Club type and number of members -->
@@ -353,7 +378,7 @@
                             <span v-if="clubInfo.isInviteOnly" class="fw-bold"> Private Group </span>
                             <span v-else class="fw-bold"> Public Group </span>
                             <span> | </span>
-                            <span class="fw-bold">Number of Members:</span> {{ clubInfo.totalMembers }}
+                            <span class="fw-bold">Number of Members:</span> {{ clubInfo.totalMembers }} <!--Number of members with joinStatus = True (members who have been invited but not yet accepted will not be included)-->
                         </p>
 
                         <!-- Club description -->
@@ -361,15 +386,31 @@
 
                         <!-- Invite button -->
                         <button class="ps-0 btn d-flex align-items-center hover-underline">
+                            <!-- Invite icon -->
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-share" viewBox="0 0 16 16">
                                 <path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.5 2.5 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5m-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3"/>
                             </svg>
+                            <!-- Invite text -->
                             <span class="ms-2">Invite your friends!</span>
+                        </button>
+
+                        <!-- Settings button -->
+                        <button v-if="isAdmin" class="ps-0 btn d-flex align-items-center hover-underline" @click="editClub = true">
+                            <!-- Settings icon -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear" viewBox="0 0 16 16">
+                                <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/>
+                                <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z"/>
+                            </svg>
+                            <!-- Settings text -->
+                            <span class="ms-2">Club Settings</span> 
                         </button>
                     </div>
 
                 </div>
             </div>
+
+            <!-- Club Setting Component -->
+            <ClubSettings v-if="isAdmin && editClub" :clubInfo="clubInfo" :clubId="clubId" :memberID="memberID" :numMembers="clubInfo.totalMembers" @close-club-settings="closeSettings"/>
 
         </div>
 
@@ -379,12 +420,13 @@
 <script>
 // Import the necessary libraries
 import NavBar from '@/components/NavBar.vue';
+import ClubSettings from '@/components/ClubSettings.vue';
 import { useToast } from 'vue-toastification';
-
 export default {
     name: "ClubView",
     components: {
         NavBar,
+        ClubSettings
     },
     data() {
         return {
@@ -404,9 +446,13 @@ export default {
             // Variables for user data
             userID: null,
             userType: null,
-            isMember: false,
+            isMember: null, // If user has not been invited, this will be null. If user has been invited, this will be false. If user has accepted the invitation, this will be true.
             isAdmin: false,
             memberID: null,
+
+            // Variable for membership status
+            hasRequested: null,
+            isInvited: null,
 
             // Variable for default banner
             defaultBanner: require('@/assets/defaultGroupBanner.png'),
@@ -417,9 +463,6 @@ export default {
             posts: [], // Array to store posts
             postLikes: [], // Array to store user's likes for the posts
 
-            // Variable for lazy loading for posts
-            offsetNum: 0, // Number of posts to skip (initial loading is 0)
-
             // Variables for adding a post
             newPostContent: null,
             newPostPhotos: [],
@@ -429,6 +472,9 @@ export default {
 
             // Variable for deleting a post
             selectedPostDelete: null,
+
+            // Variable for showing the club settings component
+            editClub: false
 
         }
     },
@@ -445,7 +491,12 @@ export default {
                 this.dataLoaded = true;
 
                 // Get posts
-                this.getPosts();
+                if (this.clubInfo.isInviteOnly && this.memberID == null) {
+                    this.dataLoaded = true;
+                }
+                else {
+                    this.getPosts();
+                }
 
             } catch (error) {
                 // Check if status code is 404
@@ -461,7 +512,7 @@ export default {
         async getPosts() {
             try {
                 // Get posts
-                const postsData = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getClubPosts/${this.clubId}/${this.offsetNum}`);
+                const postsData = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getClubPosts/${this.clubId}/0`);
                 this.posts = postsData.data.data;
             } catch (error) {
                 console.log(error);
@@ -477,11 +528,9 @@ export default {
         // Function to load more posts
         async loadMorePosts() {
             try {
-                // Increase the offset number
-                this.offsetNum += 10;
 
                 // Get more posts
-                const postsData = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getClubPosts/${this.clubId}/${this.offsetNum}`);
+                const postsData = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getClubPosts/${this.clubId}/${this.posts[this.posts.length - 1].id}`);
                 this.posts = this.posts.concat(postsData.data.data);
 
                 // Check if there are more posts to load
@@ -499,16 +548,32 @@ export default {
             try {
                 // Get membership status
                 const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/checkUserMembership/${this.userID}/${this.userType}/${this.clubId}`);
-                this.isMember = response.data.isMember;
-                this.isAdmin = response.data.isAdmin;
-                this.memberID = response.data.memberID;
 
-                // If current user is a member, get the user's likes for the posts
-                if (this.isMember) {
-                    this.getPostLikes();
+
+                if (response.data.isRequested) {
+                    this.hasRequested = true;
                 }
+                else if (response.data.isInvited) {
+                    this.isInvited = true;
+                }
+                else {
+                    this.isMember = response.data.isMember;
+                    this.isAdmin = response.data.isAdmin;
+                    this.memberID = response.data.memberID;
 
-            } catch (error) {
+                    // Store the user's membership status in the local storage
+                    localStorage.setItem('isMember', this.isMember);
+                    localStorage.setItem('isAdmin', this.isAdmin);
+                    localStorage.setItem('memberID', this.memberID);
+
+                    // If current user is a member, get the user's likes for the posts
+                    if (this.isMember) {
+                        this.getPostLikes();
+                    }
+                }
+               
+
+            } catch (error) { // User is not a member
                 console.log(error);
             }
         },
@@ -568,6 +633,11 @@ export default {
             }
         },
 
+        // Function to remove a photo from the new post
+        removePhotoNew(index) {
+            this.newPostPhotos.splice(index, 1);
+        },
+
         // Function to remove a photo from the selected post
         removePhoto(index) {
             this.selectedPostEdit.postPhotos.splice(index, 1);
@@ -598,6 +668,11 @@ export default {
                     }
                 }
             }
+        },
+
+        // Functio to close the club settings component
+        closeSettings() {
+            this.editClub = false;
         },
         // Helper functions end ====================================================
 
@@ -641,8 +716,42 @@ export default {
             }
         },
 
+        async requestToJoin() {
+            try {
+                // Disable the button to prevent multiple clicks
+                this.disableButton = true;
+
+                // Request to join the club
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/club/requestToJoinClub`, {
+                    userID: this.userID,
+                    clubID: this.clubId,
+                    userType: this.userType
+                });
+
+                if (response.status == 201) {
+                    this.hasRequested = true;
+
+                    // Show a success message in a toast
+                    const toast = useToast();
+                    toast.success("Your request to join the club has been sent! Please wait for the club admin to approve your request.");
+                }
+
+            } catch (error) {
+                console.log(error);
+            }
+            this.disableButton = false;
+        },
+
         // Function to join the club
         async joinClub() {
+
+            // Check if the user is logged in
+            if (this.userType == "defaultUser") {
+                // Redirect to login page
+                this.$router.push('/login');
+                return;
+            }
+
             try {
                 // Disable the button to prevent multiple clicks
                 this.disableButton = true;
@@ -672,6 +781,37 @@ export default {
 
             this.disableButton = false;
 
+        },
+
+        // Function to accept the invitation to join the club
+        async acceptInvite() {
+            try {
+                // Disable the button to prevent multiple clicks
+                this.disableButton = true;
+
+                // Accept the invitation
+                const response = await this.$axios.put(`${process.env.VUE_APP_API_URL}/club/acceptClubInvite`, {
+                    userID: this.userID,
+                    userType: this.userType,
+                    clubID: this.clubId
+                });
+
+                if (response.status == 200) {
+                    this.isMember = true;
+                    this.checkMembership();
+
+                    // Increase the total members of the club by 1
+                    this.clubInfo.totalMembers += 1;
+
+                    // Show a success message in a toast
+                    const toast = useToast();
+                    toast.success("You have successfully accepted the invitation to join the club! Welcome!");
+                }
+
+            } catch (error) {
+                console.log(error);
+            }
+            this.disableButton = false;
         },
 
         // Function to leave the club
@@ -802,7 +942,12 @@ export default {
                 console.log(error);
                 alert("An error occurred while deleting the post, please try again!");
             }
-        }
+        },
+
+        // Function to open the post
+        openPost(postID) {
+            this.$router.push(`/club/${this.clubId}/post/${postID}`);
+        },
 
     },
 
@@ -811,10 +956,20 @@ export default {
         this.clubId = this.$route.params.clubID;
         // Get the account id and type of the user
         this.userID = localStorage.getItem("88B_accID");
-        this.userType = localStorage.getItem("88B_accType");
+        let userType = localStorage.getItem("88B_accType");
+
+        if (userType) {
+            this.userType = userType;
+        }
+        else {
+            this.userType = 'defaultUser';
+        }
 
         this.getPageData();
-        this.checkMembership();
+
+        if (this.userID && this.userType != 'defaultUser') {
+            this.checkMembership();
+        }
     },
 }
 </script>

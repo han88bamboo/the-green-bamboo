@@ -38,7 +38,7 @@
             <div class="row mt-3 justify-content-between">
 
                 <!-- Search Input -->
-                <div class="col-4">
+                <div class="col-auto">
                     <div class="input-group mb-3 position-relative">
                         <input type="text" class="form-control rounded-pill" placeholder="Search for clubs" aria-label="Search for clubs" aria-describedby="search-club" v-model="searchQuery">
                         <!-- Search Icon -->
@@ -76,13 +76,13 @@
                             <div class="card-body d-flex flex-column h-100">
 
                                 <!-- Club Name, Group Type and Number of Members -->
-                                <div class="d-flex justify-content-between">
-                                    <h2 class="card-title fw-bold">
+                                <div class="d-flex flex-column flex-md-row justify-content-between">
+                                    <h2 class="card-title fw-bold text-start">
                                         <router-link :to="{ name: 'clubview', params: { clubID: club.id }}" class="text-dark hover-underline">
                                             {{ club.clubName }}
                                         </router-link>
                                     </h2>
-                                    <p>
+                                    <p class="text-start">
                                         <span v-if="club.isInviteOnly == false">Public Group | </span> 
                                         <span v-else>Private Group | </span>
                                         <span >{{ club.totalMembers }} Members</span>
@@ -94,7 +94,9 @@
 
                                 <!-- Join Club Button -->
                                 <button v-if="userClubs.includes(club.id)" type="button" class="btn btn-primary mt-auto align-self-start" disabled>Joined</button>
-                                <button v-else type="button" class="btn btn-primary mt-auto align-self-start" @click="joinClub(club.id)">+Join This Club</button>
+                                <button v-if="requestedClubs.includes(club.id)" type="button" class="btn btn-primary mt-auto align-self-start" disabled>Request Sent</button>
+                                <button v-if="!userClubs.includes(club.id) && club.isInviteOnly == false" type="button" class="btn btn-primary mt-auto align-self-start" @click="joinClub(club.id)">+Join This Club</button>
+                                <button v-if="!userClubs.includes(club.id) && club.isInviteOnly == true && !requestedClubs.includes(club.id)" type="button" class="btn btn-primary mt-auto align-self-start" @click="requestJoin(club.id)">Request to Join This Club</button>
                             </div>
                         </div>
                     </div>
@@ -120,6 +122,7 @@
 <script>
 // Import the necessary libraries
 import NavBar from '@/components/NavBar.vue';
+import { useToast } from 'vue-toastification';
 
 export default {
     name: "BrowseClubs",
@@ -148,15 +151,20 @@ export default {
             // Variable for search bar
             searchQuery: "",
 
-            // Variable to store the clubs the user is a member of
+            // Variable to store the list of clubs the user is a member of
             userClubs: [],
+
+            // Variable to store the list of clubs the user has requested to join (not yet joined)
+            requestedClubs: [],
+
+            // Variable to store the list of clubs the user has been invited to join but not yet accepted
+            invitedClubs: [],
         }
     },
 
     methods: {
-        // Function to get all clubs 
+        // Function to get all clubs information 
         async getClubs() {
-            // API call to get all clubs
             try {
                 const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getClubs/` + this.clubIndex);
                 this.clubs = response.data.clubs_info;
@@ -179,7 +187,6 @@ export default {
             // Reset the club index
             this.clubIndex = 1;
 
-            // API call to search clubs
             try {
                 if (this.searchQuery == "") {
                     this.getClubs();
@@ -202,7 +209,6 @@ export default {
 
             let response;
 
-            // API call to get more clubs
             try {
                 if (this.searchQuery != "") {
                     response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getClubwSearch/` + this.clubIndex + "/" + this.searchQuery);
@@ -224,7 +230,7 @@ export default {
             }
         },
 
-        // Function to create a new club
+        // Function to direct user to create club page
         createClub() {
 
             // Check if the user is logged in
@@ -248,7 +254,6 @@ export default {
                 return;
             }
 
-            // API call to join the club
             try {
                 // Disable the button to prevent multiple clicks
                 this.disableButton = true;
@@ -261,25 +266,84 @@ export default {
                 });
 
                 if (response.status == 201) {
+                    const toast = useToast();
+                    toast.success("You have successfully joined the club!");
                     // Redirect to the club page
                     this.$router.push({ name: 'clubview', params: { clubID: clubId } });
                 }
 
             } catch (error) {
                 console.log(error);
+                const toast = useToast();
+                toast.error("An error occurred while joining the club. Please try again later!");
+            }
+        },
+
+        // Function to request to join a club
+        async requestJoin(clubId) {
+
+            // Check if the user is logged in
+            if (this.userType == "defaultUser") {
+                // Redirect to login page
+                this.$router.push('/login');
+                return;
+            }
+
+            try {
+                // Disable the button to prevent multiple clicks
+                this.disableButton = true;
+
+                // Request to join the club
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/club/requestToJoinClub`, {
+                    userID: this.userID,
+                    clubID: clubId,
+                    userType: this.userType
+                });
+
+                if (response.status == 201) {
+                    const toast = useToast();
+                    toast.success("Your request to join the club has been sent successfully!");
+                    // Redirect to the club page
+                    this.$router.push({ name: 'clubview', params: { clubID: clubId } });
+                }
+
+            } catch (error) {
+                console.log(error);
+                const toast = useToast();
+                toast.error("An error occurred while requesting to join the club. Please try again later!");
+                
             }
         },
 
         // Function to retrieve a list of clubs the user is a member of (to show join or leave button)
         async getMemberClubs() {
-            // API call to get the list of clubs the user is a member of
             try {
                 const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getUserClubs/${this.userID}/${this.userType}`);
                 this.userClubs = response.data.user_clubs;
             } catch (error) {
                 console.log(error);
             }
-        }
+        },
+
+        // Function to retrieve a list of clubs the user has requested to join (not yet joined)
+        async getRequestedClubs() {
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getUserClubRequests/${this.userID}/${this.userType}`);
+                this.requestedClubs = response.data.club_request_list;
+            } catch (error) {
+                console.log(error);
+            }
+        },
+
+        // Function to retrieve the list of clubs the user has been invited to join but not yet accepted
+        async getInvitedClubs() {
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getUserInvitedClubs/${this.userID}/${this.userType}`);
+                this.invitedClubs = response.data.club_invite_list;
+            } catch (error) {
+                console.log(error);
+            }
+        }        
 
     },
 
@@ -288,10 +352,18 @@ export default {
         this.getClubs();
         // Get the account id and type of the user
         this.userID = localStorage.getItem("88B_accID");
-        this.userType = localStorage.getItem("88B_accType");
+        let userType = localStorage.getItem("88B_accType");
 
-        // Get the list of clubs the user is a member of
-        this.getMemberClubs();
+        if (userType) {
+            this.userType = userType;
+        }
+
+        if (this.userID && this.userType !== "defaultUser") {
+            // Get the list of clubs the user is a member of
+            this.getMemberClubs();
+            // Get the list of clubs the user has requested to join
+            this.getRequestedClubs();
+        }
     }
 }
 

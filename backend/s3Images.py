@@ -20,7 +20,7 @@ region='us-east-1'
 
 def uploadBase64ImageToS3(base64_string):
 
-    # For local development   (comment out before deployment)
+    # For local development (comment out before deployment)
     credentials = { 
         'aws_access_key_id': os.getenv('AWS_ACCESS_KEY_ID'),
         'aws_secret_access_key': os.getenv('AWS_SECRET_ACCESS_KEY')
@@ -99,7 +99,7 @@ def deleteImageFromS3(url):
     # For local development (comment out before deployment)
     s3 = boto3.client('s3', region_name=region, **credentials)
 
-    # For deployment (comment out before local launch)
+    # For deployment (uncomment before deployment)
     # s3 = boto3.client('s3')
 
     try:

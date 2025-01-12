@@ -4,6 +4,7 @@
 #           /getVenue/<id> (GET), /getVenuesAPI (GET), /getDrinkTypes (GET), /getRequestListings (GET), /getRequestListing/<id> (GET), /getRequestEdits (GET), 
 #           /getRequestEdit/<id> (GET), /getModRequests (GET), /getFlavourTags (GET), /getSubTags (GET), /getObservationTags (GET), /getColours (GET), 
 #           /getSpecialColours (GET), /getLanguages (GET), /getServingTypes (GET), /getProducersProfileViews (GET), /getVenuesProfileViewsByVenue/<id> (GET), /getRequestInaccuracyByVenue/<id> (GET)
+#           /getUserFollowList/<id> (GET), 
 # -----------------------------------------------------------------------------------------
 
 # pip install python-bsonjs
@@ -1957,6 +1958,61 @@ def getUserByEmail(email):
             {
                 "code": 500,
                 "message": str(e)
+            }
+        ), 500
+    
+    finally:
+        cur.close()
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] A list of users a specific user is following
+# @param id: The id of the user
+# @return: A list of users the user is following and their photos
+# Used: CreateClub.vue (frontend/src/views/Users/CreateClub.vue)
+@blueprint.route("/getUserFollowList/<id>")
+def getUserFollowList(id):
+    conn = g.db
+    cur = conn.cursor()
+
+    try:
+        # Step 1: Check if id is a valid user in the table based on userType
+        cur.execute('SELECT * FROM "users" WHERE "id" = %s', (id,))
+        user_data = cur.fetchone()
+
+        if user_data is None:
+            return jsonify(
+                {
+                    "code": 404,
+                    "message": "User not found."
+                }
+            ), 404
+        
+        # Step 2: Retrieve the follow list using the fetch_user_follow_list function
+        follow_list = fetch_follow_lists(cur, id)
+
+
+        return_data = {
+            'users': {}, # A dictionary of objects containing the id, displayName, and photo of the users in the follow list
+        }
+
+        # Step 3: Get the id, displayName and photo of the users in the follow list
+        for user in follow_list['users']:
+            cur.execute('SELECT "id", "displayName", "photo" FROM "users" WHERE "id" = %s', (user,))
+            user = cur.fetchone()
+
+            return_data['users'][user['id']] = { 'displayName': user['displayName'], 'photo': user['photo'] }
+
+        return jsonify({
+            'followList': return_data
+        }), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred retrieving the follow list."
             }
         ), 500
     
