@@ -32,7 +32,7 @@
                 <!-- Row 1: Poster Photo, Poster Name, Post Date -->
                 <div class="row">
                     <!-- Column 1: Poster Photo -->
-                    <div class="col-1 d-flex justify-content-center align-items-center">
+                    <div class="col-12 col-md-1 d-flex align-items-center">
                         <img v-if="poster.profile_photo" :src="poster.profile_photo" class="rounded-circle" alt="Profile Photo" width="50" height="50">
                         <svg v-else xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
                             <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
@@ -132,7 +132,7 @@
                         <div v-for="comment in comments" :key="comment.id" class="row mt-3">
 
                             <!-- Column 1: Commenter Photo -->
-                            <div class="col-1 d-flex flex-column align-items-start">
+                            <div class="col-12 col-md-1 d-flex flex-column align-items-start">
                                 <img v-if="comment.commenterInfo.photo" :src="comment.commenterInfo.photo" class="rounded-circle" alt="Profile Photo" width="40" height="40">
                                 <svg v-else xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
                                     <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
@@ -245,7 +245,7 @@
                 <!-- Row 7: Load more comments button -->
                 <div class="row mt-3">
                     <div v-if="showButton" class="col-12 d-flex justify-content-center">
-                        <button class="btn primary-btn" @click="offset += 20; getMoreComments()">Load more comments</button>
+                        <button class="btn primary-btn" @click="getMoreComments()">Load more comments</button>
                     </div>
                 </div>
             </div>
@@ -264,9 +264,6 @@ export default {
         return {
             // Variables for page loading 
             dataLoaded: false,
-
-            // Variable to store offset value to lazy load comments
-            offset: 0,
 
             // Variables to store user data
             userID: null,
@@ -316,7 +313,7 @@ export default {
         // Function to retrieve the post data from the backend including the latest 20 comments
         async getPostData() {
             try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getClubPostDetails/${this.postID}/${this.offset}`);
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getClubPostDetails/${this.postID}/0`);
                 this.post = response.data.post_info;
                 this.poster = response.data.poster_info;
                 this.comments = response.data.comments;
@@ -432,7 +429,9 @@ export default {
         // Function to get more comments
         async getMoreComments() {
             try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getClubPostDetails/${this.postID}/${this.offset}`);
+                let latestCommentID = this.comments[this.comments.length - 1].id;
+                console.log('latestCommentID:', latestCommentID);
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getClubPostDetails/${this.postID}/${latestCommentID}`);
                 this.comments = this.comments.concat(response.data.comments);
 
                 // Check if there are more comments to load
@@ -537,9 +536,6 @@ export default {
             // Convert isMember and isAdmin to boolean
             this.isMember = isMember === "true";
             this.isAdmin = isAdmin === "true";
-
-            console.log('isMember (converted):', this.isMember);
-            console.log('isAdmin (converted):', this.isAdmin);
 
             // Call the getPostData function to retrieve the post data
             this.getPostData();

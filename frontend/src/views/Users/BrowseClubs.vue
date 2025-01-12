@@ -38,7 +38,7 @@
             <div class="row mt-3 justify-content-between">
 
                 <!-- Search Input -->
-                <div class="col-4">
+                <div class="col-auto">
                     <div class="input-group mb-3 position-relative">
                         <input type="text" class="form-control rounded-pill" placeholder="Search for clubs" aria-label="Search for clubs" aria-describedby="search-club" v-model="searchQuery">
                         <!-- Search Icon -->
@@ -76,13 +76,13 @@
                             <div class="card-body d-flex flex-column h-100">
 
                                 <!-- Club Name, Group Type and Number of Members -->
-                                <div class="d-flex justify-content-between">
-                                    <h2 class="card-title fw-bold">
+                                <div class="d-flex flex-column flex-md-row justify-content-between">
+                                    <h2 class="card-title fw-bold text-start">
                                         <router-link :to="{ name: 'clubview', params: { clubID: club.id }}" class="text-dark hover-underline">
                                             {{ club.clubName }}
                                         </router-link>
                                     </h2>
-                                    <p>
+                                    <p class="text-start">
                                         <span v-if="club.isInviteOnly == false">Public Group | </span> 
                                         <span v-else>Private Group | </span>
                                         <span >{{ club.totalMembers }} Members</span>

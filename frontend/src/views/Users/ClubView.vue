@@ -463,9 +463,6 @@ export default {
             posts: [], // Array to store posts
             postLikes: [], // Array to store user's likes for the posts
 
-            // Variable for lazy loading for posts
-            offsetNum: 0, // Number of posts to skip (initial loading is 0)
-
             // Variables for adding a post
             newPostContent: null,
             newPostPhotos: [],
@@ -515,7 +512,7 @@ export default {
         async getPosts() {
             try {
                 // Get posts
-                const postsData = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getClubPosts/${this.clubId}/${this.offsetNum}`);
+                const postsData = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getClubPosts/${this.clubId}/0`);
                 this.posts = postsData.data.data;
             } catch (error) {
                 console.log(error);
@@ -531,11 +528,9 @@ export default {
         // Function to load more posts
         async loadMorePosts() {
             try {
-                // Increase the offset number
-                this.offsetNum += 10;
 
                 // Get more posts
-                const postsData = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getClubPosts/${this.clubId}/${this.offsetNum}`);
+                const postsData = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getClubPosts/${this.clubId}/${this.posts[this.posts.length - 1].id}`);
                 this.posts = this.posts.concat(postsData.data.data);
 
                 // Check if there are more posts to load

@@ -148,7 +148,7 @@ def getClubwSearch(id, search):
 
         # Step 1: Get the 20 clubs
         # ID: Used to define the starting ID to retrieve from
-        cur.execute('SELECT * FROM "clubs" WHERE "clubName" ILIKE %s ORDER BY id ASC LIMIT 20 OFFSET %s', (f'%{search}%', id,))
+        cur.execute('''SELECT * FROM "clubs" WHERE "clubName" ILIKE %s AND id >= %s ORDER BY "clubName" ILIKE %s DESC, "id" ASC LIMIT 20''', (f'%{search}%', id, f'%{search}%'))
         clubs_info = cur.fetchall()
 
         if not clubs_info:
@@ -247,10 +247,10 @@ def getSpecificClubInfo(clubID):
 # Used: ClubView.vue [views folder inside Users folder]
 # Input: 
 #   1. Club ID, 
-#   2. Offset (number of records to skip before fetching the next set of records) [initially set to 0, then increment by 10 on the frontend]
+#   2. Last seen ID (i.e., the last post ID that the user has seen)
 # Output: Possible return codes [200 - Retrieval success, 404 - No post/club found in database, 500 - An error occurred retrieving the request]
-@blueprint.route('/getClubPosts/<clubID>/<offset>', methods=['GET']) # offset is the number of records to skip before fetching the next set of records
-def getClubPosts(clubID, offset):
+@blueprint.route('/getClubPosts/<clubID>/<last_seen_id>', methods=['GET'])
+def getClubPosts(clubID, last_seen_id):
     conn = g.db
     cur = conn.cursor()
 
@@ -270,9 +270,17 @@ def getClubPosts(clubID, offset):
             return jsonify({
                 'error': f'No such club exist for club id: {clubID}'
             }), 404
+        
+        # Set the limit here
+        limit = 10
 
         # Step 1: Get the top 10 latest post in that club
-        cur.execute('SELECT * FROM "clubPosts" WHERE "clubID" = %s ORDER BY "postDate" DESC LIMIT 10 OFFSET %s', (clubID, offset,))
+        if last_seen_id == '0':
+            cur.execute('SELECT * FROM "clubPosts" WHERE "clubID" = %s ORDER BY "postDate" DESC LIMIT %s', (clubID, limit,))
+        elif last_seen_id == '1':
+            cur.execute('SELECT * FROM "clubPosts" WHERE "clubID" = %s AND id = 1', (clubID,))
+        else:
+            cur.execute('SELECT * FROM "clubPosts" WHERE "clubID" = %s AND "id" < %s ORDER BY "postDate" DESC LIMIT %s', (clubID, last_seen_id, limit,))    
         post_info = cur.fetchall() # returns empty list if no result found
 
         if not post_info:
@@ -343,8 +351,8 @@ def getClubPosts(clubID, offset):
 # Purpose: Get the latest 20 comments for a specific post
 # Used: SpecificClubPost.vue [components folder]
 # Output: Possible return codes [200 - Retrieval success (with or without comments), 404 - No such post exist, 500 - An error occurred retrieving the request]
-@blueprint.route('/getClubPostDetails/<postID>/<offset>', methods=['GET']) # offset is the number of records to skip before fetching the next set of records
-def getClubPostDetails(postID, offset):
+@blueprint.route('/getClubPostDetails/<postID>/<last_seen_id>', methods=['GET']) 
+def getClubPostDetails(postID, last_seen_id):
     conn = g.db
     cur = conn.cursor()
 
@@ -389,7 +397,14 @@ def getClubPostDetails(postID, offset):
         post['likedMembers'] = liked_members_list
 
         # Step 4: Get the latest 20 comments for the specific post
-        cur.execute('SELECT * FROM "clubPostComments" WHERE "postID" = %s ORDER BY "commentDate" DESC LIMIT 20 OFFSET %s', (postID, offset,))
+        # Step the limit here 
+        limit = 20
+        if last_seen_id == '0':
+            cur.execute('SELECT * FROM "clubPostComments" WHERE "postID" = %s ORDER BY "commentDate" DESC LIMIT %s', (postID, limit,))
+        elif last_seen_id == '1':
+            cur.execute('SELECT * FROM "clubPostComments" WHERE "postID" = %s AND id = 1', (postID,))
+        else:
+            cur.execute('SELECT * FROM "clubPostComments" WHERE "postID" = %s AND "id" < %s ORDER BY "commentDate" DESC LIMIT %s', (postID, last_seen_id, limit,))
         comments_info = cur.fetchall()
 
         if not comments_info:
@@ -633,17 +648,25 @@ def getUserClubs(userID, userType):
 
 # -----------------------------------------------------------------------------------------
 # [GET] getClubMembers
-# Purpose: Get the members of a specific club (includes lazy loading through the use of offset)
+# Purpose: Get the members of a specific club (10 members each time this is called)
 # Used: ClubSettings.vue [components folder inside frontend folder]
 # Output: Possible return codes [200 - Retrieval success, 404 - No members found, 500 - An error occurred retrieving the request]
-@blueprint.route('/getClubMembers/<clubID>/<offset>', methods=['GET'])
-def getClubMembers(clubID, offset):
+@blueprint.route('/getClubMembers/<clubID>/<last_seen_id>', methods=['GET'])
+def getClubMembers(clubID, last_seen_id):
     conn = g.db
     cur = conn.cursor()
 
+    # Set the limit here 
+    limit = 1
+
     try:
         # Step 1: Get the members of the club
-        cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s ORDER BY "joinDate" DESC LIMIT 1 OFFSET %s', (clubID, offset,))
+        if last_seen_id == '0':
+            cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s ORDER BY "id" DESC LIMIT %s', (clubID, limit,))
+        elif last_seen_id == '1':
+            cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s LIMIT %s', (clubID, limit,))
+        else:
+            cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s AND "id" < %s ORDER BY "id" DESC LIMIT %s', (clubID, last_seen_id, limit,))
         members = cur.fetchall()
 
         if not members:
@@ -693,14 +716,22 @@ def getClubMembers(clubID, offset):
 # Purpose: Get the requests of users who want to join a specific club
 # Used: ClubSettings.vue [components folder inside frontend folder]
 # Output: Possible return codes [200 - Retrieval success, 404 - No requests found, 500 - An error occurred retrieving the request]
-@blueprint.route('/getClubRequests/<clubID>/<offset>', methods=['GET'])
-def getClubRequests(clubID, offset):
+@blueprint.route('/getClubRequests/<clubID>/<last_seen_id>', methods=['GET'])
+def getClubRequests(clubID, last_seen_id):
     conn = g.db
     cur = conn.cursor()
 
+    # Set the limit here
+    limit = 1
+
     try:
         # Step 1: Get the requests of the club
-        cur.execute('SELECT * FROM "clubRequests" WHERE "clubID" = %s ORDER BY "requestDate" DESC LIMIT 1 OFFSET %s', (clubID, offset,))
+        if last_seen_id == '0':
+            cur.execute('SELECT * FROM "clubRequests" WHERE "clubID" = %s ORDER BY "id" DESC LIMIT %s', (clubID, limit,))
+        elif last_seen_id == '1':
+            cur.execute('SELECT * FROM "clubRequests" WHERE "clubID" = %s LIMIT %s', (clubID, limit,))
+        else:
+            cur.execute('SELECT * FROM "clubRequests" WHERE "clubID" = %s AND "id" < %s ORDER BY "id" DESC LIMIT %s', (clubID, last_seen_id, limit,))
         requests = cur.fetchall()
 
         if not requests:

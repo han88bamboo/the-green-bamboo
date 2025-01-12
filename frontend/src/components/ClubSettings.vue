@@ -393,15 +393,13 @@ export default {
             // Variables to store club members (current member and invited members)
             members: [],
             currentMemberTablePage: 1, // Tracks the current member table page the user is on
-            pageSizeMembers: 1, // Determine number of members to show per member table page (!!!OFFSET should be the same as LIMIT VALUE IN THE BACKEND)
-            memberOffset: 0, // Offset to get next page of members (use to get next page of members)
+            pageSizeMembers: 1, // Determine number of members to show per member table page (value here should be the same as LIMIT VALUE IN THE BACKEND)
 
             // Variable to store request to join club
             requests: [],
             totalRequest: null,
             currentRequestTablePage: 1, // Tracks the current request table page the user is on
-            pageSizeRequests: 1, // Determine number of requests to show per request table page (!!!OFFSET should be the same as LIMIT VALUE IN THE BACKEND)
-            requestOffet: 0, // Offset to get next page of requests (use to get next page of requests)
+            pageSizeRequests: 1, // Determine number of requests to show per request table page (value here should be the same as LIMIT VALUE IN THE BACKEND)
 
             // Variable for error message if fail to retrieve member list
             errorMessage: '',
@@ -450,8 +448,8 @@ export default {
         // Function to get the next page of club members
         async getNextMemberTablePage() {
             try {
-                this.memberOffset += this.pageSizeMembers; 
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getClubMembers/${this.clubId}/${this.memberOffset}`);
+                let latestMemberID = this.members[this.members.length - 1].memberID;
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getClubMembers/${this.clubId}/${latestMemberID}`);
                 this.members = this.members.concat(response.data.members);
             } catch (error) {
                 console.error(error);
@@ -478,8 +476,9 @@ export default {
         // Function to get the next page of club member requests
         async getNextRequestTablePage() {
             try {
-                this.requestOffet += this.pageSizeRequests; 
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getClubRequests/${this.clubId}/${this.requestOffet}`);
+                console.log(this.requests);
+                let latestRequestID = this.requests[this.requests.length - 1].requestID;
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getClubRequests/${this.clubId}/${latestRequestID}`);
                 this.requests = this.requests.concat(response.data.requests);
             } catch (error) {
                 console.error(error);
