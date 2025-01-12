@@ -59,7 +59,7 @@
 
                     <!-- row 2: return to profile -->
                     <div class="row pt-3 mobile-view-hide">
-                        <button type="button" class="btn primary-btn-outline-thick rounded-0 default-clickable-text" v-on:click="goBack()"> 
+                        <button type="button" class="btn tertiary-btn-blue-outline rounded-0 default-clickable-text" v-on:click="goBack()"> 
                             Return to profile 
                         </button>
                     </div>
@@ -129,7 +129,7 @@
                     <div class="row mobile-view-show ps-2 pe-2 mt-3">
                         <button v-if="showFollowerActivity"
                         type="button" 
-                        class="active-toggle-producer-QnA tertiary-text pt-2 pb-2 border" 
+                        class="active-toggle-producer-QnA tertiary-text pt-2 pb-2 " 
                         data-bs-toggle="collapse" 
                         data-bs-target="#collapseFollowerActivity" 
                         aria-expanded="false" 
@@ -138,7 +138,7 @@
                         @click="checkToShowFollowerActivity()">Follower Activity ↑</button>
                         <button v-else
                         type="button" 
-                        class="primary-btn-less-round-green tertiary-text pt-2 pb-2 border" 
+                        class="primary-btn-less-round-green tertiary-text pt-2 pb-2 border " 
                         data-bs-toggle="collapse" 
                         data-bs-target="#collapseFollowerActivity" 
                         aria-expanded="false" 
@@ -146,7 +146,7 @@
                         style="font-weight:bold;"
                         @click="checkToShowFollowerActivity()">Follower Activity ↓</button>
                         <div class="collapse pt-3 pe-0 ps-0" id="collapseFollowerActivity">
-                            <div class="square primary-square rounded p-3 mb-3 text-start">
+                            <div class="square primary-square-green rounded p-3 mb-3 text-start">
                             <!-- header text -->
                             <div class="square-inline pb-2">
                                 <h4 class="square-inline text-start mr-auto"> Recent Activity from Your Followers </h4>
@@ -226,7 +226,7 @@
                     <div class="row pt-3 mobile-view-show ps-2 pe-2">
                         <button v-if="showReviewActivity"
                         type="button" 
-                        class="active-toggle-producer-QnA tertiary-text pt-2 pb-2 border" 
+                        class="active-toggle-producer-QnA tertiary-text pt-2 pb-2 " 
                         data-bs-toggle="collapse" 
                         data-bs-target="#collapseReviewActivity" 
                         aria-expanded="false" 
@@ -243,7 +243,7 @@
                         style="font-weight:bold;"
                         @click="checkToShowReviewActivity()">Activity On Your Reviews ↓</button>
                         
-                        <div class="mt-3 collapse square primary-square rounded p-3 mb-3 text-start" style="height: 325px;" id="collapseReviewActivity">
+                        <div class="mt-3 collapse square primary-square-green rounded p-3 mb-3 text-start" style="height: 325px;" id="collapseReviewActivity">
                             <div class="square-inline pb-2">
                                 <h4 class="square-inline text-start mr-auto"> Recent Activity on Your Reviews </h4>
                             </div>

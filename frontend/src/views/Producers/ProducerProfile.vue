@@ -91,10 +91,10 @@
                                         <!-- add listing-->
                                         <div v-if="correctProducer && editing == false" class="col d-grid no-padding">
                                             <!-- if not editing -->
-                                            <button type="button" class="btn tertiary-btn-blue-outline rounded-0 reverse-clickable-text">
-                                                <router-link :to="`/listing/create`" class="reverse-clickable-text">
+                                            <button type="button" class="btn tertiary-btn-blue-outline rounded-0 reverse-clickable-text" v-on:click="window.location.href='/listing/create'">
+                                                <!--<router-link :to="`/listing/create`" class="reverse-clickable-text">-->
                                                     Add Listing
-                                                </router-link>
+                                                <!--</router-link>-->
                                             </button>
                                         </div>
                                         <!-- edit profile -->
@@ -504,7 +504,7 @@
                         <!-- Toggle Button active-toggle-producer-QnA-->
                         <button v-if="showQnA"
                             type="button" 
-                            class="active-toggle-producer-QnA tertiary-text pt-2 pb-2 border" 
+                            class="active-toggle-producer-QnA tertiary-text pt-2 pb-2 " 
                             data-bs-toggle="collapse" 
                             data-bs-target="#collapseQnA" 
                             aria-expanded="false" 
@@ -707,31 +707,31 @@
                         <!-- back button -->
                         <div class="col-1 centered mobile-view-hide">
                             <!-- back button -->
-                            <span style="display: inline-block;">
-                                <span class="pe-2">
+                            <button style="display: inline-block;" type="button" class="btn tertiary-btn-blue">
+                                <span >
                                     <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16" v-on:click="resetListings()">
                                         <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/>
                                         <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/>
                                     </svg>
                                 </span>
-                            </span>
+                            </button>
                         </div>
                         <!-- search -->
                         <div class="col-8 ps-0 pe-3 mobile-col-10 mobile-ps-3 mobile-pe-0">
                             <!-- [if] user type is producer -->
                             <div v-if="correctProducer || isAdmin" class="row">
                                 <div class="col-3 d-grid no padding mobile-pe-0">
-                                    <button type="button" class="btn primary-btn-outline-thick rounded-0 mobile-pe-2 mobile-ps-2" v-on:click="editCatalogue()">
-                                        <a class="default-clickable-text mobile-fs-7 mobile-view-hide"> Edit catalogue </a> 
-                                        <a class="default-clickable-text mobile-fs-7 mobile-view-show"> Edit </a> 
+                                    <button type="button" class="btn tertiary-btn-blue-outline reverse-clickable-text Xprimary-btn-outline-thick rounded-0 mobile-pe-2 mobile-ps-2" v-on:click="editCatalogue()">
+                                        <a class="Xdefault-clickable-text mobile-fs-7 mobile-view-hide"> Edit catalogue </a> 
+                                        <a class="Xdefault-clickable-text mobile-fs-7 mobile-view-show"> Edit </a> 
                                     </button>
                                 </div>
                                 <div class="col-3 d-grid no padding mobile-pe-0">
-                                    <button type="button" class="btn primary-btn-outline-thick rounded-0 mobile-pe-2 mobile-ps-2">
-                                        <router-link :to="`/listing/create`" class="default-clickable-text mobile-fs-7 mobile-view-hide">
+                                    <button type="button" class="btn tertiary-btn-blue-outline reverse-clickable-text Xprimary-btn-outline-thick rounded-0 mobile-pe-2 mobile-ps-2">
+                                        <router-link :to="`/listing/create`" class="Xdefault-clickable-text mobile-fs-7 mobile-view-hide">
                                             Add Listing
                                         </router-link>
-                                        <router-link :to="`/listing/create`" class="default-clickable-text mobile-fs-7 mobile-view-show">
+                                        <router-link :to="`/listing/create`" class="Xdefault-clickable-text mobile-fs-7 mobile-view-show">
                                             Add
                                         </router-link>
                                     </button>

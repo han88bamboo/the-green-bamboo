@@ -88,13 +88,13 @@
                         <div class="row mt-3">
                             <button v-if="ownProfile && user" type="button" class="btn tertiary-btn-blue-outline xprimary-btn-outline-not-round" data-bs-toggle="modal" data-bs-target="#editProfileModal" style="font-weight:bold;">Edit Profile</button>
                             <button v-else-if="following && user" type="button" class="btn primary-btn-outline-less-round" @click="editFollow('unfollow')">Following</button>
-                            <button v-else-if="user" type="button" class="btn primary-btn-less-round" @click="editFollow('follow')"  style="font-weight:bold;">+ Follow User</button>
+                            <button v-else-if="user" type="button" class="btn primary-btn-less-round-blue" @click="editFollow('follow')"  style="font-weight:bold;">+ Follow User</button>
                             <router-link v-if="ownProfile && user" :to="{ path: '/dashboard/user' }" class="btn primary-btn-less-round-blue xsecondary-btn-not-rounded rounded-0 mt-3" style=" font-weight: bold;">
                                 View My Analytics
                             </router-link>
                             <span style="position: relative; display: inline-block" class="m-0 p-0">
                                 <div v-if="!ownProfile && displayUser.modType != []" class="speech-bubble">{{ displayUser.modType ? displayUser.modType.join(', ') : 'None' }}</div>
-                                <button v-if="user && user.isAdmin" class="btn tertiary-btn reverse-clickable-text mt-3" style="width: 100%" type="button" data-bs-toggle="modal" data-bs-target="#addModeratorModal">Add/Remove Moderator Rights</button>
+                                <button v-if="user && user.isAdmin" class="btn tertiary-btn-blue reverse-clickable-text mt-3" style="width: 100%" type="button" data-bs-toggle="modal" data-bs-target="#addModeratorModal">Add/Remove Moderator Rights</button>
                             </span>
                             
                         
@@ -159,8 +159,8 @@
                         <div class="modal fade" id="addModeratorModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="addModeratorLabel" aria-hidden="true">
                             <div class="modal-dialog">
                                 <div class="modal-content">
-                                    <div class="modal-header" style="background-color: #535C72">
-                                        <h1 class="modal-title fs-5" id="addModeratorLabel" style="color: white;">Add Moderator</h1>
+                                    <div class="modal-header" >
+                                        <h1 class="modal-title fs-5" id="addModeratorLabel" >Add Moderator</h1>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
 
@@ -524,7 +524,7 @@
                             </h3>
                             <div v-if="Object.keys(recentReviews).length > 0">
                                 <div v-for="(review, index) in recentReviews.slice(0, 5)" :key="index">  
-                                    <div style="display: flex" class="row">
+                                    <div style="display: flex" class="row mb-2">
                                         <div class="col-3 mobile-col-3 mobile-pe-0">
                                             <!-- <img :src="'data:image/png;base64,' + (review.photo || defaultDrinkImage)" alt="" class="rounded bottle-img "> me-3 -->
                                             <img :src="(review.photo || defaultDrinkImage)" alt="" class="rounded bottle-img ">
@@ -537,10 +537,10 @@
                                             <!-- flavor tag -->
                                                 
                                                 <span v-for="(tag, index) in review.flavorTag" :key="index" class="mobile-view-hide badge rounded-pill-user-profile me-2 mb-1 mobile-me-0_5 mobile-mb-0_5 " :style="{ backgroundColor: getTagColor(tag) }"> {{ getTagName(tag) }}</span>
-                                                <span v-for="(tag, index) in review.observationTag" :key="index" class="mobile-view-hide badge rounded-pill-user-profile me-2 mb-1 mobile-me-0_5 mobile-mb-0_5" style="background-color: grey;">{{ tag }}</span>
+                                                <span v-for="(tag, index) in review.observationTag" :key="index" class="mobile-view-hide badge rounded-pill-user-profile me-2 mb-1 mobile-me-0_5 mobile-mb-0_5" style="background-color: #F0B358; color:black;">{{ tag }}</span>
 
                                                 <span v-for="(tag, index) in review.flavorTag?.slice(0, 2)" :key="index" class="mobile-view-show badge rounded-pill-user-profile me-2 mb-1 mobile-me-0_5 mobile-mb-0_5 " :style="{ backgroundColor: getTagColor(tag) }"> {{ getTagName(tag) }}</span>
-                                                <span v-for="(tag, index) in review.observationTag.slice(0, 1)" :key="index" class="mobile-view-show badge rounded-pill-user-profile me-2 mb-1 mobile-me-0_5 mobile-mb-0_5" style="background-color: grey;">{{ tag }}</span>                                        
+                                                <span v-for="(tag, index) in review.observationTag.slice(0, 1)" :key="index" class="mobile-view-show badge rounded-pill-user-profile me-2 mb-1 mobile-me-0_5 mobile-mb-0_5" style="background-color: #F0B358; color:black;">{{ tag }}</span>                                        
                                             <p class="mobile-fs-7">
                                                 <b>{{ review.reviewTitle }}</b> <br v-if="review.reviewTitle">
                                                 {{ review.reviewDesc }}
@@ -633,12 +633,12 @@
                                         {{ bookmarkList.listDesc }}
                                     </div>
                                     <div style="display: flex; margin-top: auto;" class="mb-1">
-                                        <b><a class="me-4 mobile-view-hide" @click="viewList(name)" href="#" style="color: #535C72;">View List</a></b>
-                                        <b><a class="me-4 mobile-view-show" @click="viewList(name)" href="#" style="color: #535C72;">View</a></b>
-                                        <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')" class="mobile-view-hide me-2" href="#" style="color: #535C72;" data-bs-toggle="modal" :data-bs-target="`#editListModal${index}`" @click="resetEditList(name, bookmarkList.listDesc)">Edit List</a></b>
-                                        <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')"  class="mobile-view-hide " href="#" style="color: #535C72;" data-bs-toggle="modal" :data-bs-target="`#deleteListModal${index}`">Delete List</a></b>
-                                        <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')" class="mobile-view-show me-2" href="#" style="color: #535C72;" data-bs-toggle="modal" :data-bs-target="`#editListModal${index}`" @click="resetEditList(name, bookmarkList.listDesc)">Edit</a></b>
-                                        <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')" class="mobile-view-show" href="#" style="color: #535C72;" data-bs-toggle="modal" :data-bs-target="`#deleteListModal${index}`">Delete</a></b>
+                                        <b><a class="me-4 mobile-view-hide" @click="viewList(name)" href="#" >View List</a></b>
+                                        <b><a class="me-4 mobile-view-show" @click="viewList(name)" href="#" >View</a></b>
+                                        <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')" class="mobile-view-hide me-2" href="#"  data-bs-toggle="modal" :data-bs-target="`#editListModal${index}`" @click="resetEditList(name, bookmarkList.listDesc)">Edit List</a></b>
+                                        <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')"  class="mobile-view-hide " href="#"  data-bs-toggle="modal" :data-bs-target="`#deleteListModal${index}`">Delete List</a></b>
+                                        <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')" class="mobile-view-show me-2" href="#"  data-bs-toggle="modal" :data-bs-target="`#editListModal${index}`" @click="resetEditList(name, bookmarkList.listDesc)">Edit</a></b>
+                                        <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')" class="mobile-view-show" href="#"  data-bs-toggle="modal" :data-bs-target="`#deleteListModal${index}`">Delete</a></b>
                                         
                                     </div>
                                 </div>

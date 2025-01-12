@@ -73,8 +73,8 @@
                             <div class="modal fade" id="lockModal" tabindex="-1" data-bs-keyboard="false" aria-labelledby="lockModalLabel" aria-hidden="true" data-bs-backdrop="static">
                                 <div class="modal-dialog modal-xl">
                                     <div class="modal-content">
-                                        <div class="modal-header" style="background-color: #535C72">
-                                            <h1 class="modal-title fs-5" id="exampleModalLabel" style="color: white;">Toggle Moderator</h1>
+                                        <div class="modal-header" >
+                                            <h1 class="modal-title fs-5" id="exampleModalLabel" >Toggle Moderator</h1>
                                             <button type="button" @click="resetToggle" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                         </div>
 
@@ -150,11 +150,11 @@
 
                                     <!-- [else] not correct producer -->
                                     <div v-else >
-                                        <router-link :to="{ path: '/request/modify/edit/' + this.listing_id }">
-                                        <p class="text-body-secondary no-margin text-decoration-underline fst-italic text-end"> Suggest Edit </p>
+                                        <router-link :to="{ path: '/request/modify/edit/' + this.listing_id }"  style="color:black;" >
+                                        <p class="text-body-secondary no-margin xtext-decoration-underline fst-italic text-end"> Suggest Edit </p>
                                         </router-link>
-                                        <router-link :to="{ path: '/request/modify/duplicate/' + this.listing_id }">
-                                            <p class="text-body-secondary no-margin text-decoration-underline fst-italic text-end"> Report Duplicate </p>
+                                        <router-link :to="{ path: '/request/modify/duplicate/' + this.listing_id }" style="color:black;" >
+                                            <p class="text-body-secondary no-margin xtext-decoration-underline fst-italic text-end"> Report Duplicate </p>
                                         </router-link>
                                     </div>
                                 </div>
@@ -165,8 +165,8 @@
                             <div class="modal fade" id="whereToBuyModal" tabindex="-1" aria-labelledby="whereToBuyModalLabel" aria-hidden="true">
                                 <div class="modal-dialog modal-lg">
                                     <div class="modal-content">
-                                        <div class="modal-header" style="background-color: #535C72">
-                                            <h5  class="modal-title" style="color: white;">More Details</h5>
+                                        <div class="modal-header" >
+                                            <h5  class="modal-title" >More Details</h5>
                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                         </div>    
                                         <div class="modal-body">
@@ -284,12 +284,21 @@
 
                             <!-- description -->
                             <div class="row container scrollable pe-0 mobile-view-hide">
-                                <div class="col-lg-12 pe-0 ps-0 xpadding-right-for-suggesteditslink-large-screen">
+                                <div class="g-0 row Xcol-lg-12 pe-0 ps-0 xpadding-right-for-suggesteditslink-large-screen">
                                     <!--<div class="py-2"></div>-->
                                     <!-- below truncated-->
-                                    <h6 class="text-body-secondary fst-italic mt-2">About</h6> <!--tzh added about-->
-                                    <div v-if="specified_listing.officialDesc?.length > 250" class="about-box  d-flex justify-content-between align-items-center">
-                                        <div class="col-9_5">
+                                    <div class="col-1"> 
+                                        <h6 class="text-body-secondary fst-italic mt-2">About</h6> <!--tzh added about-->
+                                    </div>
+                                    <div class="col-11 mb-0" style="margin-top: 0.35rem !important;"> 
+                                        <router-link :to="{ path: '/request/modify/edit/' + this.listing_id }" class="no-underline">
+                                            <button type="button" class="btn p-0 ps-1 pe-1 rounded-0 d-flex justify-content-between align-items-center " ><svg viewBox="0 0 24 24" fill="currentColor" class="bi bi-sort-down edit-listings-svg-dimensions" xmlns="http://www.w3.org/2000/svg"><path d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z"></path></svg>
+                                                <p class="mb-0" style="font-size:0.9em; font-weight:bold;">Suggest Edits</p>
+                                            </button>
+                                        </router-link>
+                                    </div>    
+                                    <div v-if="specified_listing.officialDesc?.length > 250" class="about-box  "> <!-- tzh removed d-flex justify-content-between align-items-center-->
+                                        <div class="col-12">
                                             <p v-if="!showFullDescription" class="mobile-rating-smaller-text-2" style="margin-bottom:0.2rem;"><!-- tzh added truncated description --->
                                                 <em>{{ specified_listing["officialDesc"].slice(0, 250) + (specified_listing["officialDesc"].length > 250 ? '...' : '') }}</em>
                                                 <a @click="showFullDescription = true" style="font-weight: bold;">(Read More)</a>
@@ -299,27 +308,15 @@
                                                 <a @click="showFullDescription = false" style="font-weight: bold;">(Read Less)</a>
                                             </p>
                                         </div>
-                                        <div class="col-2_5 align-self-start">
-                                            <router-link :to="{ path: '/request/modify/edit/' + this.listing_id }" class="no-underline">
-                                                <button type="button" class="btn p-0 ps-1 pe-1 rounded-0 d-flex justify-content-between align-items-center " ><svg viewBox="0 0 24 24" fill="currentColor" class="bi bi-sort-down edit-listings-svg-dimensions" xmlns="http://www.w3.org/2000/svg"><path d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z"></path></svg>
-                                                    <p style="font-size:0.9em; font-weight:bold;">Suggest Edits</p>
-                                                </button>
-                                            </router-link>
-                                        </div>
+
                                     </div>
-                                    <div v-else class="about-box  d-flex justify-content-between align-items-center">
-                                        <div class="col-9_5">
+                                    <div v-else class="about-box "> <!-- tzh removed d-flex justify-content-between align-items-center-->
+                                        <div class="col-12">
                                             <p style="margin-bottom:0.2rem;" class="mobile-rating-smaller-text-2">
                                                 <em>{{ specified_listing["officialDesc"] }}</em>
                                             </p>  
                                         </div>
-                                        <div class="col-2_5 align-self-start">
-                                            <router-link :to="{ path: '/request/modify/edit/' + this.listing_id }" class="no-underline">
-                                                <button type="button" class="btn p-0 ps-1 pe-1 rounded-0 d-flex justify-content-between align-items-center " ><svg viewBox="0 0 24 24" fill="currentColor" class="bi bi-sort-down edit-listings-svg-dimensions" xmlns="http://www.w3.org/2000/svg"><path d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z"></path></svg>
-                                                    <p style="font-size:0.9em; font-weight:bold;">Suggest Edits</p>
-                                                </button>
-                                            </router-link>
-                                        </div>
+                                        
                                     </div>
                                     <!-- above truncated-->  
                                 </div>
@@ -327,12 +324,21 @@
                         </div>
                     </div>
                 </div>
-                <div class="row container scrollable mobile-view-show text-start">
-                                <div class="col-lg-12 pe-0 padding-right-for-suggesteditslink-large-screen">
+                <div class="mt-2 g-0 row container scrollable mobile-view-show text-start">
+                                <div class=" row Xcol-lg-12 pe-0 Xpadding-right-for-suggesteditslink-large-screen">
                                     <!--<div class="py-2"></div>-->
-                                    <h6 class="text-body-secondary fst-italic mt-2">About</h6> <!--tzh added about-->
-                                    <div v-if="specified_listing.officialDesc?.length > 250" class="about-box  d-flex justify-content-between align-items-center">
-                                        <div class="col-9_5">
+                                    <div class="col-2" > 
+                                        <h6 class="text-body-secondary fst-italic mt-2">About</h6> <!--tzh added about-->
+                                    </div>
+                                    <div class="col-10 mt-1  mb-0"> 
+                                        <router-link :to="{ path: '/request/modify/edit/' + this.listing_id }" class="no-underline">
+                                            <button type="button" class="btn p-0 ps-1 pe-1 rounded-0 d-flex justify-content-between align-items-center" ><svg viewBox="0 0 24 24" fill="currentColor" class="bi bi-sort-down edit-listings-svg-dimensions" xmlns="http://www.w3.org/2000/svg"><path d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z"></path></svg>
+                                                <p class="mb-0" style="font-size:0.8em; font-weight:bold;">Suggest Edits</p>
+                                            </button>
+                                        </router-link>
+                                    </div>
+                                    <div v-if="specified_listing.officialDesc?.length > 250" class="about-box  "> <!-- tzh removed d-flex justify-content-between align-items-center-->
+                                        <div class="col-12">
                                             <p v-if="!showFullDescription" class="mobile-rating-smaller-text-2 " style="margin-bottom:0.2rem; "><!-- tzh added truncated description --->
                                                 <em>{{ specified_listing["officialDesc"].slice(0, 250) + (specified_listing["officialDesc"].length > 250 ? '...' : '') }}</em>
                                                 <a @click="showFullDescription = true" style="font-weight: bold;">(Read More)</a>
@@ -342,39 +348,27 @@
                                                 <a @click="showFullDescription = false" style="font-weight: bold;">(Read Less)</a>
                                             </p>
                                         </div>
-                                        <div class="col-2_5 align-self-start">
-                                            <router-link :to="{ path: '/request/modify/edit/' + this.listing_id }" class="no-underline">
-                                                <button type="button" class="btn p-0 ps-1 pe-1 rounded-0 d-flex justify-content-between align-items-center" ><svg viewBox="0 0 24 24" fill="currentColor" class="bi bi-sort-down edit-listings-svg-dimensions" xmlns="http://www.w3.org/2000/svg"><path d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z"></path></svg>
-                                                    <p style="font-size:0.65em; font-weight:bold;">Suggest Edits</p>
-                                                </button>
-                                            </router-link>
-                                        </div>
+                                        
                                     </div>
-                                    <div v-else class="about-box  d-flex justify-content-between align-items-center">
-                                        <div class="col-9_5">
+
+                                    <div v-else class="about-box  "> <!-- tzh removed d-flex justify-content-between align-items-center-->
+                                        <div class="col-12">
                                             <p style="margin-bottom:0.2rem; " class="mobile-rating-smaller-text-2">
                                                 <em>{{ specified_listing["officialDesc"] }}</em>
                                             </p>
-                                        </div>   
-                                        <div class="col-2_5 align-self-start">
-                                            <router-link :to="{ path: '/request/modify/edit/' + this.listing_id }" class="no-underline">
-                                                <button type="button" class="btn p-0 ps-1 pe-1 rounded-0 d-flex justify-content-between align-items-center" ><svg viewBox="0 0 24 24" fill="currentColor" class="bi bi-sort-down edit-listings-svg-dimensions" xmlns="http://www.w3.org/2000/svg"><path d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z"></path></svg>
-                                                    <p style="font-size:0.65em; font-weight:bold;">Suggest Edits</p>
-                                                </button>
-                                            </router-link>
-                                        </div>
+                                        </div>  
                                     </div>    
                                 </div>
                 </div>
                 <div class="row pt-2 container mobile-view-show text-black">
                 <p class="text-start mb-1 col-10" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis; font-size:15px; font-weight:bold;">
                                                         <span v-if="specified_listing.drinkType === 'Whiskey / Whisky'">
-                                                            <span style="color: #2c3e50;" class="text-decoration-none">Whisky | </span>
+                                                            <span  class="text-decoration-none">Whisky | </span>
                                                         </span>
                                                         <span v-else>{{ specified_listing["drinkType"] }} | </span>
-                                                        <span style="color: #2c3e50;" class="text-decoration-none">{{ specified_listing["typeCategory"] }} | </span>
-                                                        <span style="color: #2c3e50;" class="text-decoration-none">{{ specified_listing["abv"] }}% | </span>
-                                                        <span style="color: #2c3e50;" class="text-decoration-none">{{ specified_listing["originCountry"] }}</span>
+                                                        <span  class="text-decoration-none">{{ specified_listing["typeCategory"] }} | </span>
+                                                        <span  class="text-decoration-none">{{ specified_listing["abv"] }}% | </span>
+                                                        <span class="text-decoration-none">{{ specified_listing["originCountry"] }}</span>
                 </p>
                 <div class="col-2 d-flex justify-content-end make-bookmark-bigger" >
                         <BookmarkIcon 
@@ -461,7 +455,7 @@
                             <div class="col-4 text-start mobile-col-3 mobile-pe-0 text-color-black">
                                 
                                 <h3 class="mobile-rating-smaller-text text-body-secondary rating-text" style="margin-bottom:0;"> 
-                                    <b>{{ specificReviewRating }}★</b>
+                                    <b>{{ specificReviewRating }} ★</b>
                                     <!--<svg xmlns="http://www.w3.org/2000/svg" width="30" height="1em" fill="currentColor" class="bi bi-star-fill-black" viewBox="0 0 16 16">
                                         <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
                                     </svg>-->
@@ -543,8 +537,8 @@
 
                             <!-- DELETE IN PROGRESS MODAL -->
                             <div v-if="deletingListing" class="modal-content">
-                                <div class="modal-header" style="background-color: #535C72">
-                                    <h5 class="modal-title" id="deleteListing" style="color: white;">Delete Listing</h5>
+                                <div class="modal-header" >
+                                    <h5 class="modal-title" id="deleteListing" >Delete Listing</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body">
@@ -901,7 +895,7 @@
                                             </div>
                                             <div class="col">
                                                 <div class="slider-container" style="position: relative;">
-                                                    <input v-model="rating" type="range" class="form-range" min="1" max="10" step="0.1" id="customRange">
+                                                    <input v-model="rating" type="range" class="form-range" min="1" max="10" step="0.5" id="customRange">
                                                     <div class="tickmarks">
                                                         <span class="tick" style="left: 5%;">|</span>
                                                         <span class="tick" style="left: 15%;">|</span>
@@ -977,18 +971,18 @@
                                         Select action tags: 
                                         <br>
                                         <!-- Buttons for the first 8 observations -->
-                                        <button v-for="observation in observationTags.slice(0, 8)" @click="toggleObservationSelection(observation)" v-bind:key="observation" class="btn mb-2 me-2" data-bs-toggle="button" :style="{ color: selectedObservations.includes(observation) ? 'white' : 'black',
-                                                                                                                                                                                                                                    backgroundColor: selectedObservations.includes(observation) ? '#747D92' : '#F0B358', 
-                                                                                                                                                                                                                                    borderColor:'grey', 
-                                                                                                                                                                                                                                    borderWidth:'1px' }"> <!--tzh changed lightgrey to #F0B358-->
+                                        <button v-for="observation in observationTags.slice(0, 8)" @click="toggleObservationSelection(observation)" v-bind:key="observation" class="btn mb-2 me-2 action-tags" data-bs-toggle="button" :style="{ color: selectedObservations.includes(observation) ? 'black' : 'black',  
+                                                                                                                                                                                                                                    backgroundColor: selectedObservations.includes(observation) ? '#FEE5BF' : '#F0B358', 
+                                                                                                                                                                                                                                    borderColor: selectedObservations.includes(observation) ? '#F0B358' : 'none', 
+                                                                                                                                                                                                                                    borderWidth:  selectedObservations.includes(observation) ? '1px' : '0px' }"> <!--tzh changed lightgrey to #F0B358-->
                                             {{ observation }}
                                         </button>
                                         <!-- Buttons for additional observations (shown only when extendObservation is true) -->
                                         <div v-if="extendObservation">
-                                            <button v-for="observation in observationTags.slice(8)" @click="toggleObservationSelection(observation)" v-bind:key="observation" class="btn mb-2 me-2" :style="{ color: selectedObservations.includes(observation) ? 'white' : 'black',
-                                                                                                                                                                                                                                    backgroundColor: selectedObservations.includes(observation) ? '#747D92' : 'lightgrey', 
-                                                                                                                                                                                                                                    borderColor:'grey', 
-                                                                                                                                                                                                                                    borderWidth:'1px' }">
+                                            <button v-for="observation in observationTags.slice(8)" @click="toggleObservationSelection(observation)" v-bind:key="observation" class="btn mb-2 me-2 action-tags" :style="{ color: selectedObservations.includes(observation) ? 'black' : 'black',
+                                                                                                                                                                                                                                    backgroundColor: selectedObservations.includes(observation) ? '#FEE5BF' : '#F0B358', 
+                                                                                                                                                                                                                                    borderColor: selectedObservations.includes(observation) ? '#F0B358' : 'none', 
+                                                                                                                                                                                                                                    borderWidth:  selectedObservations.includes(observation) ? '1px' : '0px' }">
                                                 {{ observation }}
                                             </button>
                                         </div>
@@ -1006,7 +1000,9 @@
                             
                             <!-- End of modal body -->
                             <div class="modal-footer d-flex">
-                                <button class="btn btn-danger py-1  mobile-fs-7 me-auto" @click="setDeleteID(review)" data-bs-toggle="modal" data-bs-target="#deleteReview">Delete Review</button> 
+                                <span v-for="review in filteredReviews" v-bind:key="review.id" class="me-auto">
+                                    <button class="btn btn-danger py-1  mobile-fs-7" @click="setDeleteID(review)" data-bs-toggle="modal" data-bs-target="#deleteReview">Delete Review</button> 
+                                </span>
                                 <button type="button" class="btn secondary-btn-less-round-inverse " data-bs-dismiss="modal">Close</button> <!--tzh removed btn-secondary added secondary-btn-less-round-inverse-->
                                 <button v-if="!inEdit" type="button" @click="addReview" class="btn secondary-btn-less-round">Submit Review</button>
                                 <button v-else type="button" @click="editReview" class="btn secondary-btn-less-round">Update Review</button>
@@ -1201,8 +1197,8 @@
 
                                             <!-- DELETE IN PROGRESS MODAL -->
                                             <div v-if="deletingReview" class="modal-content">
-                                                <div class="modal-header" style="background-color: #535C72">
-                                                    <h5 class="modal-title" id="deleteReview" style="color: white;">Delete Review</h5>
+                                                <div class="modal-header" >
+                                                    <h5 class="modal-title" id="deleteReview" >Delete Review</h5>
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                 </div>
                                                 <div class="modal-body">
@@ -1402,13 +1398,13 @@
                             <div class="col-2 xcol-lg-3 text-end mobile-view-hide">
                                 <!-- review photo -->
                                 <div data-bs-toggle="modal" :data-bs-target="`#reviewImageModal${getUsernameFromReview(review)}`" style=" cursor: pointer;"> 
-                                    <img :src="(review['photo'] || defaultPhoto)" alt="" class="review-image" style="width: 125px; height: 125px">
+                                    <img :src="(review['photo'] || defaultPhoto)" alt="" class="review-image" style="width: 125px; height: 125px"> 
                                 </div>
                             </div>
                             <div class="col-3 xcol-lg-3 text-start mobile-view-show px-0">
                                 <!-- review photo -->
                                 <div data-bs-toggle="modal" :data-bs-target="`#reviewImageModal${getUsernameFromReview(review)}`" style=" cursor: pointer;"> 
-                                    <img :src="(review['photo'] || defaultPhoto)" alt="" class="review-image" style="width: 125px; height: 125px">
+                                    <img :src="(review['photo'] || defaultPhoto)" alt="" class="review-image" style="width: 100%; height: 100%"> <!--for mobile tzh replaced 125px with 100% -->
                                 </div>
                             </div>
 
@@ -2423,6 +2419,10 @@
                 if (this.finish !== "") {
                     this.finish = this.finish.trim();
                 }
+
+                // Add console log here to debug the rating value before submission
+                console.log("Rating before submission:", this.rating);
+
                 let submitAPI = `${process.env.VUE_APP_API_URL}/createReview/createReview`
                 let submitData = {
                     "userID" : this.userID,
@@ -2480,6 +2480,10 @@
                 if (this.finish !== "") {
                     this.finish = this.finish.trim();
                 }
+
+                // Add console log here to debug the rating value before submission
+                console.log("Rating before submission:", this.rating);
+
                 let submitAPI = `${process.env.VUE_APP_API_URL}/editReview/updateReview/` + this.specificReview[0].id
                 let submitData = {
                     "userID" : this.userID,

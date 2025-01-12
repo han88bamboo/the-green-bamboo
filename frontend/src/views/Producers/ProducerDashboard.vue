@@ -49,7 +49,7 @@
 
                 <!-- row 2: return to profile -->
                 <div class="row pt-3 mobile-view-hide">
-                    <button type="button" class="btn primary-btn-outline-thick rounded-0 default-clickable-text" v-on:click="goBack()"> 
+                    <button type="button" class="btn tertiary-btn-blue-outline rounded-0 default-clickable-text" v-on:click="goBack()"> 
                         Return to profile 
                     </button>
                 </div>
@@ -58,7 +58,7 @@
                 <!-- row 3: recent fan posted questions mobile xyz -->
                     <button v-if="showQnA"
                        type="button" 
-                       class="active-toggle-producer-QnA tertiary-text pt-2 pb-2 border" 
+                       class="active-toggle-producer-QnA tertiary-text pt-2 pb-2 " 
                        data-bs-toggle="collapse" 
                        data-bs-target="#collapseQnA" 
                        aria-expanded="false" 
@@ -67,7 +67,7 @@
                        @click="checkToShowQnA()">Q&As for {{ specified_producer["producerName"] }} ↑</button>
                     <button v-else
                        type="button" 
-                       class="primary-btn-less-round tertiary-text pt-2 pb-2 border" 
+                       class="primary-btn-less-round-green border tertiary-text pt-2 pb-2 " 
                        data-bs-toggle="collapse" 
                        data-bs-target="#collapseQnA" 
                        aria-expanded="false" 
@@ -78,7 +78,7 @@
                     <div class="collapse pt-3 pe-0 ps-0" id="collapseQnA">
                             <div class="square primary-square-green rounded p-3 mb-3 text-start">
                                 <!-- header text -->
-                                <div class="square-inline pb-2" style="color:black;">
+                                <div class="square-inline pb-2" >
                                     <h4 class="square-inline text-start mr-auto"> Recent Fan Posted Questions </h4>
                                 </div>
                                 <!-- buttons-->
@@ -193,7 +193,7 @@
                     <!-- Q&A -->
                     <div class="square primary-square-green rounded p-3 mb-3 text-start">
                         <!-- header text -->
-                        <div class="square-inline pb-2" style="color:black;">
+                        <div class="square-inline pb-2" >
                             <h4 class="square-inline text-start mr-auto"> Recent Fan Posted Questions </h4>
                         </div>
                         <!-- buttons-->
@@ -306,7 +306,7 @@
                 <div class="row pt-3 mobile-view-show ps-2 pe-2">
                     <button v-if="showLatestReview"
                        type="button" 
-                       class="active-toggle-producer-QnA tertiary-text pt-2 pb-2 border" 
+                       class="active-toggle-producer-QnA tertiary-text pt-2 pb-2 " 
                        data-bs-toggle="collapse" 
                        data-bs-target="#collapselatestreviews" 
                        aria-expanded="false" 
@@ -315,7 +315,7 @@
                        @click="checkToShowLatestReview()">Latest Reviews ↑</button>
                     <button v-else
                        type="button" 
-                       class="primary-btn-less-round tertiary-text pt-2 pb-2 border" 
+                       class="primary-btn-less-round-green tertiary-text pt-2 pb-2 border" 
                        data-bs-toggle="collapse" 
                        data-bs-target="#collapselatestreviews" 
                        aria-expanded="false" 
@@ -325,7 +325,7 @@
                     
                     <div class="mt-3 collapse square primary-square-green rounded p-3 mb-3 text-start" style="height: 325px;" id="collapselatestreviews">
                         <!-- header text -->
-                        <div class="square-inline pb-2" style="color:black;">
+                        <div class="square-inline pb-2" >
                             <h4 class="square-inline text-start mr-auto"> Latest Reviews </h4>
                         </div>
                         <!-- body -->
@@ -356,7 +356,7 @@
                 <div class="row pt-3 mobile-view-hide">
                     <div class="square primary-square-green rounded p-3 mb-3 text-start" style="height: 325px;">
                         <!-- header text -->
-                        <div class="square-inline pb-2" style="color:black;">
+                        <div class="square-inline pb-2" >
                             <h4 class="square-inline text-start mr-auto"> Latest Reviews </h4>
                         </div>
                         <!-- body -->

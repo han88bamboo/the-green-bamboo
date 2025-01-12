@@ -292,12 +292,12 @@
                 <!-- discover, following & filter by drink type -->
                 <div class="col-lg-9 col-md-8 col-12">
                     <div class="container">
-                        <div class="row ps-lg-4 pe-lg-4 mobile-ps-4 mobile-pe-4">
+                        <div class="row ps-lg-4 pe-lg-4 mobile-ps-3 mobile-pe-3">
                             <!-- discover  tzh changed col-12 to col-4-->
-                            <div class="col-xl-3 col-lg-4 col-4 mb-3 mobile-view-no-right-padding">
-                                <div class="d-grid gap-2">
-                                    <button class="btn btn-sm mobile-ps-0" 
-                                        :class="{ 'primary-btn-green mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0': discovery, 'primary-btn-green-outline mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0': !discovery }"
+                            <div class="col-xl-3 col-lg-4 col-4 mb-3 mobile-pe-0 mobile-ps-0">
+                                <div class="d-grid gap-2  mx-1">
+                                    <button class="btn btn-sm mobile-ps-0 text-center" 
+                                        :class="{ 'primary-btn-green mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0 mobile-pe-0': discovery, 'primary-btn-green-outline mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0': !discovery }"
                                         v-on:click="changeDiscoveryStatus()"> <!--tzh added -green and green-outline, changed mt-1 to mb-0_5 mt-0_5 -->
                                         <p class="mb-0_5 mt-0_5 discover-and-following mobile-mb-0"> Discover </p>
                                     </button>
@@ -305,8 +305,8 @@
                             </div>
                             <!-- following tzh changed col-12 to col-4-->
                             <div class="col-xl-3 col-lg-4 col-4 mb-3 mobile-view-no-padding">
-                                <div class="d-grid gap-2">
-                                    <button class="btn btn-sm mobile-ps-0"
+                                <div class="d-grid gap-2 mx-1">
+                                    <button class="btn btn-sm mobile-ps-0 text-center"
                                         :class="{ 'primary-btn-green mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0': following, 'primary-btn-green-outline mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0': !following }"
                                         v-on:click="changeFollowingStatus()">
                                         <p class="mb-0_5 mt-0_5 discover-and-following mobile-mb-0"> Following </p>
@@ -316,20 +316,22 @@
                             <!-- filter by drink type / category tzh changed col-12 to col-4 -->
                             <div class="dropdown col-xl-3 col-lg-4 col-4 mb-3 mobile-col-2 mobile-pe-0">
                                 <div class="d-grid gap-2">
-                                    <!-- tzh - added -homepage and some changes for mobile-->
+                                    <!-- tzh added -homepage and some changes for mobile-->
+                                    <div v-if="selectedDrinkType != ''" style="position:absolute; width:100%; font-size:0.8em; transform: translate3d(-20px, -20px, 0px);" class="cross-icon mobile-view-hide ps-4" @click="clearSelection">&#10005; Clear Selection</div>
                                     <button class="btn primary-light-dropdown-homepage btn-lg dropdown-toggle mobile-view-remove-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="white-space: nowrap; overflow:hidden; text-overflow: ellipsis;">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-funnel funnel-svg-dimensions" viewBox="0 0 16 16">
                                             <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2z"/>
                                         </svg>
                                         <span class="mobile-view-hide" style="margin-left: 5px;">{{ selectedDrinkType ? selectedDrinkType['drinkType'] : 'Filter: Drink Type' }}</span>
-                                        <span v-if="selectedDrinkType != ''" class="cross-icon" @click="clearSelection">&#10005;</span>
+                                        
                                     </button>
                                     <!-- tzh - above to be replaced for mobile-->
-                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" @click.stop>
-                                        <div class="d-flex  mobile-view-hide">
-                                            <div class="dropdown-column ms-2 mt-2">
-                                                <h6 class="ms-3"> Filter by Drink Type </h6>
-                                                <hr>
+                                    <div  class="dropdown-menu pt-0" aria-labelledby="dropdownMenuButton"   @click.stop>
+                                        
+                                        <div class="d-flex filter-div" >
+                                            <div class="dropdown-column ms-2 pt-3" :class="{ 'greyed-out': selectedDrinkType }">
+                                                <h6 class="ms-3"> Filter by <span class="" :class="{ 'text-decoration-underline': !selectedDrinkType }">Drink Type</span> </h6>
+                                                <hr >
                                                 <div v-for="drinkType in drinkTypes" v-bind:key="drinkType.id">
                                                     <!-- Filter button for drink type -->
                                                     <a class="dropdown-item" :class="{ 'active': selectedDrinkType === drinkType }" @click="selectDrinkType(drinkType)"> 
@@ -337,9 +339,9 @@
                                                     </a>   
                                                 </div>
                                             </div>
-                                            <div class="dropdown-column me-2 mt-2">
-                                                <h6> Filter by Drink Category </h6>
-                                                <hr>
+                                            <div v-show="selectedDrinkType" class="dropdown-column drink-category-column me-2 pt-3" :class="{ 'greyed-out': !selectedDrinkType }" >
+                                                <h6 class="ms-3"> Filter by <span class="" :class="{ 'text-decoration-underline': selectedDrinkType }">Drink Category</span> </h6>
+                                                <hr style="min-width:500px;">
                                                 <div v-if="selectedTypeCategory != ''">
                                                     <div v-for="category in selectedTypeCategory" v-bind:key="category">
                                                         <a class="dropdown-item" :class="{ 'active': selectedCategory === category }" @click="selectDrinkCategory(category)">
@@ -349,18 +351,19 @@
                                                 </div>
                                                 <div v-else>
                                                     <a class="dropdown-item-disabled default-clickable-text"> 
-                                                        <span> There is no category for this </span>
+                                                        <span> Select Drink Type first. </span>
                                                     </a>   
                                                 </div>
                                             </div>
                                         </div>
+                                        <!-- Filter button for drink type 
                                         <div class="d-flex  mobile-view-show">
-                                            <div class="dropdown-column ms-2 mt-2">
+                                            <div class="dropdown-column ms-2 mt-2" >
                                                 <h6 class="ms-3"> Filter by Drink Type </h6>
                                                 <p class="ms-3" style="font-size: 12px;">(Scroll down to filter by Sub-Category)</p>
                                                 <hr>
                                                 <div v-for="drinkType in drinkTypes" v-bind:key="drinkType.id">
-                                                    <!-- Filter button for drink type -->
+                                                    
                                                     <a class="dropdown-item" :class="{ 'active': selectedDrinkType === drinkType }" @click="selectDrinkType(drinkType)"> 
                                                         <span>{{ drinkType['drinkType'] }}</span>
                                                     </a>   
@@ -382,6 +385,7 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        -->
                                     </div>
                                 </div>
                             </div>
@@ -423,7 +427,7 @@
 
                                         <div class="row">
                                             <!-- image -->
-                                            <div class="col-xl-5 col-12 ">
+                                            <div class="col-5 "> <!-- tzh changed col-xl-5 col-12 to col-5 -->
                                                 <div class="image-container mb-3 homepage" >
                                                     <img v-if="listing['photo']" :src="listing['photo']" class="img-border homepage">
                                                     <img v-else src="../../../Images/Drinks/Placeholder.png"  class="img-border homepage">
@@ -439,13 +443,14 @@
                                                 </div>
                                             </div>
                                             <!-- details -->
-                                            <div class="col-xl-7 col-12  ps-lg-0">
+                                            <div class="col-7 mobile-p-0"> <!-- tzh changed col-xl-5 col-12 ps-lg-0 to col-7 mobile-p-0 -->
                                                 <!-- expression name -->
                                                 <div class="row pt-1">
-                                                    <router-link :to="{ path: '/listing/view/' +listing.id }" class="primary-clickable-text mobile-col-10"> 
-                                                        <h4> <b> {{ listing["listingName"] }} </b> </h4>
+                                                    <router-link :to="{ path: '/listing/view/' +listing.id }" class="primary-clickable-text mobile-col-12"> <!--tzh changed mobile-col-10 to mobile-col-12 -->
+                                                        <h4 class="mobile-mb-0 mobile-view-hide"> <b> {{ listing["listingName"] }} </b> </h4> <!-- tzh added mobile-mb-0-->
+                                                        <h6 class="mobile-mb-0 mobile-view-show"> <b> {{ listing["listingName"] }} </b> </h6> <!-- tzh added mobile-mb-0-->
                                                     </router-link>
-                                                    <div class="mobile-col-2 mobile-view-show"> 
+                                                    <!--<div class="mobile-col-2 mobile-view-show"> 
                                                         <BookmarkIcon 
                                                         v-if="user" 
                                                         :user="user" 
@@ -453,46 +458,63 @@
                                                         :overlay="true"
                                                         size="30"
                                                         @icon-clicked="handleIconClick" />
-                                                    </div>
+                                                    </div>-->
                                                 </div>
                                                 <!-- producer -->
-                                                <div class="row">
+                                                <div class="row mobile-view-hide"> <!-- tzh added mobile-view-hide -->
                                                     <router-link :to="{ path: '/profile/producer/' + listing.producerID }" class="primary-clickable-text">
                                                         <h5 class="mobile-rating-smaller-text"> <b> {{ getProducerName(listing) }} </b> </h5>
                                                     </router-link>
                                                 </div>
                                                 <!-- review tzh shortened description if above 270 characters  -->
-                                                <div class="row pt-3 mobile-pt-0">
-                                                    <div class="mobile-col-9 mobile-pe-0">
+                                                <div class="row pt-3">
+                                                    <div class="mobile-col-11 mobile-pe-0"> <!-- tzh changed mobile-col-9 to mobile-col-11 -->
                                                     <router-link :to="{ path: '/listing/view/' +listing.id }" class="default-clickable-text fst-italic scrollable-user-bottle-listings-description-box">
-                                                        <div v-if="listing.officialDesc?.length > 300">  
-                                                            <p class="homepage-bottle-listing-description"> {{ listing["officialDesc"].slice(0, 300) + (listing["officialDesc"].length > 300 ? '...' : '') }} </p>
-                                                        </div>
-                                                        <div v-else>  
-                                                            <p class="homepage-bottle-listing-description"> {{ listing["officialDesc"] }}. </p>
-                                                        </div>
+                                                        <span class="mobile-view-hide"> <!-- tzh added this section below -->
+                                                            <div v-if="listing.officialDesc?.length > 300">  
+                                                                <p class="homepage-bottle-listing-description"> {{ listing["officialDesc"].slice(0, 300) + (listing["officialDesc"].length > 300 ? '...' : '') }} </p>
+                                                            </div>
+                                                            <div v-else>  
+                                                                <p class="homepage-bottle-listing-description"> {{ listing["officialDesc"] }}. </p>
+                                                            </div>
+                                                        </span>
+                                                        <span class="mobile-view-show"> <!-- tzh added this section below -->
+                                                            <div v-if="listing.officialDesc?.length > 80">  
+                                                                <p class="homepage-bottle-listing-description"> {{ listing["officialDesc"].slice(0, 300) + (listing["officialDesc"].length > 300 ? '...' : '') }} </p>
+                                                            </div>
+                                                            <div v-else>  
+                                                                <p class="homepage-bottle-listing-description"> {{ listing["officialDesc"] }}. </p>
+                                                            </div>
+                                                        </span>
                                                     </router-link>
                                                     </div>
-                                                    <div class="mobile-col-3 mobile-view-show mobile-ps-0">
+                                                    <!-- tzh commented out rating -->
+                                                   <!--<div class="mobile-col-3 mobile-view-show mobile-ps-0">
                                                         <h2 class="rating-text text-end d-flex align-items-center">
-                                                            {{ getRatings(listing) }}★
-                                                            <!--<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
+                                                            {{ getRatings(listing) }} ★
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
                                                                 <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                                            </svg>-->
+                                                            </svg>
                                                         </h2>   
-                                                    </div>    
+                                                    </div>-->    
                                                 </div>
                                                 <!-- rating -->
-                                                <div class="row pt-4 mobile-view-hide"> 
+                                                <div class="row pt-4 mobile-pt-0"> <!--tzh removed mobile-view-hide and added mobile-pt-0 -->
                                                     <div class="col-6 d-flex align-items-center">
-                                                        <h1 class="rating-text text-end d-flex align-items-center">
-                                                            {{ getRatings(listing) }}★
+                                                        <h1 class="rating-text text-end d-flex align-items-center mobile-view-hide">
+                                                            {{ getRatings(listing) }} ★
                                                             <!--<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
                                                                 <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
                                                             </svg>-->
                                                         </h1>
+                                                        <h5 class="rating-text text-end d-flex align-items-center mobile-view-show">
+                                                            {{ getRatings(listing) }} ★
+                                                            <!--<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
+                                                                <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                                                            </svg>-->
+                                                        </h5>
                                                     </div>
-                                                    <div class="col-6 text-end">
+                                                    <div class="col-6 text-end mobile-view-hide"> <!--tzh added mobile-view-hide -->
                                                         <div class="d-grid gap-5">
                                                             <router-link :to="{ path: '/listing/view/' +listing.id }" class="primary-clickable-text">
                                                                 <a class="btn secondary-btn btn-md" style="font-weight: bold;"> Read More </a>
@@ -604,7 +626,7 @@
                                         <!-- For listings -->
                                         <div class="row">
                                             <!-- image -->
-                                            <div class="col-xl-5 col-12">
+                                            <div class="col-5"> <!-- tzh changed col-xl-5 col-12 to col-5 -->
                                                 <div class="image-container mb-3 homepage" >
                                                     <img v-if="listing['photo']" :src="listing['photo']"  class="img-border homepage">
                                                     <img v-else src="../../../Images/Drinks/Placeholder.png" class="img-border homepage">
@@ -620,13 +642,14 @@
                                                 </div>
                                             </div>
                                             <!-- details -->
-                                            <div class="col-xl-7 col-12">
+                                            <div class="col-7 mobile-p-0"> <!-- tzh changed col-xl-5 col-12 ps-lg-0 to col-7 mobile-p-0 -->
                                                 <!-- expression name -->
                                                 <div class="row pt-1">
-                                                    <router-link :to="{ path: '/listing/view/' +listing.id }" class="primary-clickable-text mobile-col-10">
-                                                        <h4> <b> {{ listing["listingName"] }} </b> </h4>
+                                                    <router-link :to="{ path: '/listing/view/' +listing.id }" class="primary-clickable-text mobile-col-12"> <!--tzh changed mobile-col-10 to mobile-col-12 -->
+                                                        <h4 class="mobile-mb-0 mobile-view-hide"> <b> {{ listing["listingName"] }} </b> </h4> <!-- tzh added mobile-mb-0-->
+                                                        <h6 class="mobile-mb-0 mobile-view-show"> <b> {{ listing["listingName"] }} </b> </h6> <!-- tzh added mobile-mb-0-->
                                                     </router-link>
-                                                    <div class="mobile-col-2 mobile-view-show">
+                                                    <!--<div class="mobile-col-2 mobile-view-show">
                                                     <BookmarkIcon 
                                                         v-if="user" 
                                                         :user="user" 
@@ -634,31 +657,58 @@
                                                         :overlay="true"
                                                         size="30"
                                                         @icon-clicked="handleIconClick" />
-                                                    </div>  
+                                                    </div>-->  
                                                 </div>
                                                 <!-- producer -->
-                                                <div class="row">
+                                                <div class="row mobile-view-hide">  <!-- tzh added mobile-view-hide -->
                                                     <router-link :to="{ path: '/profile/producer/' + listing.producerID }" class="primary-clickable-text">
                                                         <h5 class="mobile-rating-smaller-text"> <b> {{ getProducerName(listing) }} </b> </h5>
                                                     </router-link>
                                                 </div>
                                                 <!-- review -->
                                                 <div class="row pt-3">
-                                                    <router-link :to="{ path: '/listing/view/' +listing.id }" class="default-clickable-text fst-italic scrollable">
-                                                        <h5> {{ listing["officialDesc"] }}. </h5>
+                                                    <!-- tzh transplanted code below from another section-->
+                                                    <div class="mobile-col-11 mobile-pe-0"> <!-- tzh changed mobile-col-9 to mobile-col-11 -->
+                                                    <router-link :to="{ path: '/listing/view/' +listing.id }" class="default-clickable-text fst-italic scrollable-user-bottle-listings-description-box">
+                                                        <span class="mobile-view-hide"> <!-- tzh added this section below -->
+                                                            <div v-if="listing.officialDesc?.length > 300">  
+                                                                <p class="homepage-bottle-listing-description"> {{ listing["officialDesc"].slice(0, 300) + (listing["officialDesc"].length > 300 ? '...' : '') }} </p>
+                                                            </div>
+                                                            <div v-else>  
+                                                                <p class="homepage-bottle-listing-description"> {{ listing["officialDesc"] }}. </p>
+                                                            </div>
+                                                        </span>
+                                                        <span class="mobile-view-show"> <!-- tzh added this section below -->
+                                                            <div v-if="listing.officialDesc?.length > 80">  
+                                                                <p class="homepage-bottle-listing-description"> {{ listing["officialDesc"].slice(0, 300) + (listing["officialDesc"].length > 300 ? '...' : '') }} </p>
+                                                            </div>
+                                                            <div v-else>  
+                                                                <p class="homepage-bottle-listing-description"> {{ listing["officialDesc"] }}. </p>
+                                                            </div>
+                                                        </span>
                                                     </router-link>
+                                                    </div>
+                                                    <!-- tzh commented out to make way for code above <router-link :to="{ path: '/listing/view/' +listing.id }" class="default-clickable-text fst-italic scrollable">
+                                                        <h5> {{ listing["officialDesc"] }}. </h5>
+                                                    </router-link>-->
                                                 </div>
                                                 <!-- rating -->
-                                                <div class="row pt-4"> 
+                                                <div class="row pt-4 mobile-pt-0">  <!--tzh added mobile-pt-0 -->
                                                     <div class="col-6 d-flex align-items-center">
-                                                        <h1 class="rating-text text-end d-flex align-items-center">
-                                                            {{ getRatings(listing) }}★
+                                                        <h1 class="rating-text text-end d-flex align-items-center mobile-view-hide">
+                                                            {{ getRatings(listing) }} ★
                                                             <!--<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
                                                                 <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
                                                             </svg>-->
                                                         </h1>
+                                                        <h5 class="rating-text text-end d-flex align-items-center mobile-view-show">
+                                                            {{ getRatings(listing) }} ★
+                                                            <!--<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
+                                                                <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                                                            </svg>-->
+                                                        </h5>
                                                     </div>
-                                                    <div class="col-6">
+                                                    <div class="col-6 mobile-view-hide"> <!--tzh added mobile-view-hide -->
                                                         <div class="d-grid gap-5">
                                                             <router-link :to="{ path: '/listing/view/' +listing.id }" class="primary-clickable-text">
                                                                 <a class="btn secondary-btn btn-md"> Read what the crowd thinks </a>
