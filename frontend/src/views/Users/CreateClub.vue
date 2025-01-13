@@ -63,6 +63,7 @@
 
                     <!-- Header -->
                     <h5 class="fw-bold">Invite Friends (optional)</h5>
+                    <p>Note: You can only invite friends who you are already following.</p>
 
                     <!-- Search bar -->
                     <div class="input-group mb-3 position-relative">
@@ -240,8 +241,15 @@ export default {
                 .then((response) => {
 
                     if (response.status == 201) {
-                        // Add the friends to the club
-                        this.addFriendsToClub(response.data.clubID);
+
+                        // Check if any friends are to be invited
+                        if (this.friendsToInvite.length > 0) {
+                             // Add the friends to the club
+                            this.addFriendsToClub(response.data.clubID);
+                        } else {
+                            // Redirect to the club page
+                            this.$router.push(`/club/view/${response.data.clubID}`);
+                        } 
                     } 
                 })
                 .catch((error) => {
