@@ -339,7 +339,7 @@
                                                     </a>   
                                                 </div>
                                             </div>
-                                            <div v-show="selectedDrinkType" class="dropdown-column drink-category-column me-2 pt-3" :class="{ 'greyed-out': !selectedDrinkType }" >
+                                            <div v-show="selectedDrinkType" class="dropdown-column me-2 pt-3" :class="{ 'greyed-out': !selectedDrinkType }" > <!--tzh removed drink-category-column class-->
                                                 <h6 class="ms-3"> Filter by <span class="" :class="{ 'text-decoration-underline': selectedDrinkType }">Drink Category</span> </h6>
                                                 <hr style="min-width:500px;">
                                                 <div v-if="selectedTypeCategory != ''">
