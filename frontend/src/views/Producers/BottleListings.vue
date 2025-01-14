@@ -762,40 +762,29 @@
                                 <div class="row">
                                     <!-- Would Recommend Section -->
                                     <div class="col-md-6 mb-3 text-start">
-                                        <label class="fw-bold">Would Recommend</label>
-                                        <div class="d-flex justify-content-start">
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="radio" id="recommendYes" v-model="wouldRecommend" value="true">
-                                                <label class="form-check-label" for="recommendYes">Yes</label>
-                                            </div>
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="radio" id="recommendNo" v-model="wouldRecommend" value="false">
-                                                <label class="form-check-label" for="recommendNo">No</label>
-                                            </div>
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="radio" id="recommendSkip" v-model="wouldRecommend" :value="null">
-                                                <label class="form-check-label" for="recommendSkip">No Response</label>
-                                            </div>
-                                        </div>
+                                        <label class="fw-bold" for="recommendDropdown">Would Recommend</label>
+                                        <select
+                                            class="form-select"
+                                            id="recommendDropdown"
+                                            v-model="wouldRecommend"
+                                        >
+                                            <option :value="null" selected disabled>Select Yes / No</option>
+                                            <option :value="true">Yes</option>
+                                            <option :value="false">No</option>
+                                        </select>
                                     </div>
 
                                     <!-- Would Buy Again Section -->
                                     <div class="col-md-6 mb-3 text-start">
-                                        <label class="fw-bold">Would Buy Again</label>
-                                        <div class="d-flex justify-content-start">
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="radio" id="buyAgainYes" v-model="wouldBuyAgain" value="true">
-                                                <label class="form-check-label" for="buyAgainYes">Yes</label>
-                                            </div>
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="radio" id="buyAgainNo" v-model="wouldBuyAgain" value="false">
-                                                <label class="form-check-label" for="buyAgainNo">No</label>
-                                            </div>
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="radio" id="buyAgainSkip" v-model="wouldBuyAgain" :value="null">
-                                                <label class="form-check-label" for="buyAgainSkip">No Response</label>
-                                            </div>
-                                        </div>
+                                        <label class="fw-bold" for="buyAgainDropdown">Would Buy Again</label>
+                                        <select 
+                                            class="form-select" 
+                                            id="buyAgainDropdown" 
+                                            v-model="wouldBuyAgain">
+                                            <option :value="null" disabled selected>Select Yes / No</option>
+                                            <option :value="true">Yes</option>
+                                            <option :value="false">No</option>
+                                        </select>
                                     </div>
                                 </div>
 
