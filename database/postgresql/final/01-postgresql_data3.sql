@@ -294,14 +294,14 @@ CREATE TABLE "reviews" (
     "id" SERIAL PRIMARY KEY,
     "userID" INTEGER REFERENCES "users"("id") ON DELETE SET NULL, -- [!] reference "users"("id")
     "reviewTarget" INTEGER REFERENCES "listings"("id") ON DELETE SET NULL, -- [!] reference "listings"("id")
-    "rating" INT,
+    "rating" DECIMAL(3,1),
     "reviewDesc" TEXT,
     "reviewType" VARCHAR(255),
     "createdDate" TIMESTAMP,
     "language" VARCHAR(255),
     "finish" VARCHAR(255),
-    "willRecommend" BOOLEAN,
-    "wouldBuyAgain" BOOLEAN,
+    "willRecommend" BOOLEAN NULL,
+    "wouldBuyAgain" BOOLEAN NULL,
     -- "userVotes" SERIAL, -- [!] reference "reviewsUserVotes" FK
     "taggedUsers" TEXT[], -- Contains "users"("id")s
     "flavourTag" TEXT[], -- Contains "flavourTags"("id")s
