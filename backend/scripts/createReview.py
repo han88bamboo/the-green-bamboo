@@ -219,6 +219,19 @@ def createReviews():
     flavour_tags = raw_review.get('flavourTag', [])
     observation_tags = raw_review.get('observationTag', [])
 
+    will_recommend = raw_review.get('willRecommend')
+    would_buy_again = raw_review.get('wouldBuyAgain')
+
+    if will_recommend is None:
+        will_recommend = None
+    else:
+        will_recommend = bool(will_recommend == 'true')
+
+    if would_buy_again is None:
+        would_buy_again = None
+    else:
+        would_buy_again = bool(would_buy_again == 'true')
+
     # Insert new venue if necessary
     venue_id = None
     if raw_review.get('location') and raw_review.get('address'):
@@ -247,9 +260,9 @@ def createReviews():
                           language, finish, "willRecommend", "wouldBuyAgain", "taggedUsers", "flavourTag", photo, colour, 
                           aroma, taste, "observationTag", location, address)
                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
-    review_values = (user_id, review_target, int(raw_review['rating']), raw_review['reviewDesc'], raw_review['reviewType'],
-                     created_date, raw_review['language'], raw_review['finish'], raw_review['willRecommend'],
-                     raw_review['wouldBuyAgain'], tagged_users, flavour_tags, raw_review['photo'],
+    review_values = (user_id, review_target, float(raw_review['rating']), raw_review['reviewDesc'], raw_review['reviewType'],
+                     created_date, raw_review['language'], raw_review['finish'], will_recommend,
+                     would_buy_again, tagged_users, flavour_tags, raw_review['photo'],
                      raw_review['colour'], raw_review['aroma'], raw_review['taste'],
                      observation_tags, venue_id, raw_review['address'])
 

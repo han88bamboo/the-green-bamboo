@@ -142,7 +142,7 @@ def updateReview(id):
     """
     
     review_values = (
-        data.get('userID'), data.get('reviewTarget'), int(data.get('rating', 0)), data.get('reviewDesc'),
+        data.get('userID'), data.get('reviewTarget'), float(data.get('rating', 0.0)), data.get('reviewDesc'),
         data.get('reviewType'), created_date,
         data.get('language'), data.get('finish'), data.get('willRecommend', False), data.get('wouldBuyAgain', False),
         tagged_users, flavour_tags, data.get('photo'), data.get('colour'), data.get('aroma'), data.get('taste'),
