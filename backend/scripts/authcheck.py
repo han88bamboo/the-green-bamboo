@@ -21,6 +21,9 @@ file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
 
 
+# GET THE PURPOSE ENVIRONMENT VARIABLE
+PURPOSE = os.getenv('PURPOSE')
+
 # EXAMPLE ROUTE
 # @blueprint.route('/get_data', methods=['GET'])
 # def get_data():
@@ -319,8 +322,9 @@ def sendResetPin(id):
     data = request.get_json()
     
     # email_address and password (the 2 lines below) is for local launch (comment out for deployment) 
-    email_address = os.getenv('MAIL_USERNAME')
-    password = os.getenv('MAIL_PASSWORD')
+    if PURPOSE == 'development':
+        email_address = os.getenv('MAIL_USERNAME')
+        password = os.getenv('MAIL_PASSWORD')
 
     pin = random.randint(100000, 999999)
     time = datetime.now()
@@ -369,33 +373,36 @@ def sendResetPin(id):
         conn.commit()
         
         # The 13 lines below is for local launch (including empty lines till server.login) (comment out for deployment)
-        mail_server = os.getenv('MAIL_SERVER')
-        mail_port = int(os.getenv('MAIL_PORT', 587))
-        mail_use_tls = os.getenv('MAIL_USE_TLS', 'false').lower() == 'true'
+        if PURPOSE == 'development':
+            mail_server = os.getenv('MAIL_SERVER')
+            mail_port = int(os.getenv('MAIL_PORT', 587))
+            mail_use_tls = os.getenv('MAIL_USE_TLS', 'false').lower() == 'true'
 
 
-        if mail_use_tls:
-            server = smtplib.SMTP(mail_server, mail_port)
-            server.ehlo()
-            server.starttls()
-        else:
-            server = smtplib.SMTP_SSL(mail_server, mail_port)
+            if mail_use_tls:
+                server = smtplib.SMTP(mail_server, mail_port)
+                server.ehlo()
+                server.starttls()
+            else:
+                server = smtplib.SMTP_SSL(mail_server, mail_port)
 
-        server.login(email_address, password)
+            server.login(email_address, password)
 
         message = 'Subject: Drink-X Reset Password\n\n Your pin is {} and expires in 1 hour, please ignore this message if you did not try to reset your password, alternatively, you can email us'.format(pin)
         
         # The 2 lines below is for local development (comment out for deployment)
-        server.sendmail(email_address, userRaw["email"], message)
-        server.quit()
+        if PURPOSE == 'development':
+            server.sendmail(email_address, userRaw["email"], message)
+            server.quit()
 
         # The 5 lines below is used for the deployed version (comment out before local launch)
-        # send_email_aws(
-        #     subject="Drink-X Reset Password",
-        #     recipient=userRaw["email"],
-        #     body=message,
-        # )
-        # print(email_address)
+        if PURPOSE == 'production':
+            send_email_aws(
+                subject="Drink-X Reset Password",
+                recipient=userRaw["email"],
+                body=message,
+            )
+            print(email_address)
         print("Success: Email sent!")
         
         return jsonify(
@@ -517,8 +524,9 @@ def resetPassword(id):
     print(data)
 
     # email_address and password (the 2 lines below) is for local launch (comment out before deployment)
-    mail_email_address = os.getenv('MAIL_USERNAME')
-    mail_password = os.getenv('MAIL_PASSWORD')
+    if PURPOSE == 'development':
+        mail_email_address = os.getenv('MAIL_USERNAME')
+        mail_password = os.getenv('MAIL_PASSWORD')
     try:
         # check user type
         if data["userType"] == "user":
@@ -591,30 +599,33 @@ def resetPassword(id):
             conn.commit()
 
             # send email containing the password (The 13 lines below is for local launch) (comment out before deployment)
-            mail_server = os.getenv('MAIL_SERVER')
-            mail_port = int(os.getenv('MAIL_PORT', 587))
-            mail_use_tls = os.getenv('MAIL_USE_TLS', 'false').lower() == 'true'
-            if mail_use_tls:
-                server = smtplib.SMTP(mail_server, mail_port)
-                server.ehlo()
-                server.starttls()
-            else:
-                server = smtplib.SMTP_SSL(mail_server, mail_port)
+            if PURPOSE == 'development':
+                mail_server = os.getenv('MAIL_SERVER')
+                mail_port = int(os.getenv('MAIL_PORT', 587))
+                mail_use_tls = os.getenv('MAIL_USE_TLS', 'false').lower() == 'true'
+                if mail_use_tls:
+                    server = smtplib.SMTP(mail_server, mail_port)
+                    server.ehlo()
+                    server.starttls()
+                else:
+                    server = smtplib.SMTP_SSL(mail_server, mail_port)
 
-            server.login(mail_email_address, mail_password)
+                server.login(mail_email_address, mail_password)
 
             message = 'Subject: Drink-X Reset Password\n\n Your new password is {}, please email us if you did not authorise this'.format(password)
             
             # The 2 lines below is for local development  (comment out before deployment)
-            server.sendmail(mail_email_address, userRaw["email"], message)
-            server.quit()
+            if PURPOSE == 'development':
+                server.sendmail(mail_email_address, userRaw["email"], message)
+                server.quit()
             
             # The 5 lines below is used for the deployed version (commment out before local launch)
-            # send_email_aws(
-            #     subject="Drink-X Reset Password",
-            #     recipient=userRaw["email"],
-            #     body=message,
-            # )
+            if PURPOSE == 'production':
+                send_email_aws(
+                    subject="Drink-X Reset Password",
+                    recipient=userRaw["email"],
+                    body=message,
+                )
             print("Success: Email sent!")
 
             return jsonify(
