@@ -114,6 +114,10 @@
                 <h2>No clubs yet!</h2>
             </div>
 
+            <!-- Display no results found if search term does not exist in any of the clubs -->
+            <div v-if="searchResults" class="mt-3">
+                <h2>{{ searchResults }}</h2>
+            </div>
         </div>
         
     </div>
@@ -151,6 +155,9 @@ export default {
             // Variable for search bar
             searchQuery: "",
 
+            // Variable for search results message
+            searchResults: "",
+
             // Variable to store the list of clubs the user is a member of
             userClubs: [],
 
@@ -175,6 +182,7 @@ export default {
                 // Check if status code is 404
                 if (error.response.status == 404) {
                     this.dataLoaded = true;
+                    
                 }
                 else {
                     this.dataLoaded = null;
@@ -193,9 +201,15 @@ export default {
                 } else {
                     const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getClubwSearch/` + this.clubIndex + "/" + this.searchQuery);
                     this.clubs = response.data.clubs_info;
+
+                    if (response.status == 404) {
+                        this.searchResults = "No results found for the search term!";
+                    } else {
+                        this.searchResults = "";
+                    }
                 }
+
             }
-            // If status code is not 2xx, it will go to the catch block
             catch (error) {
                 console.log(error);
                 this.dataLoaded = null;

@@ -385,7 +385,7 @@
                         <p class="text-start">{{ clubInfo.clubDesc }}</p>
 
                         <!-- Invite button -->
-                        <button class="ps-0 btn d-flex align-items-center hover-underline">
+                        <button class="ps-0 btn d-flex flex-row align-items-center hover-underline ">
                             <!-- Invite icon -->
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-share" viewBox="0 0 16 16">
                                 <path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.5 2.5 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5m-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3"/>
@@ -395,7 +395,7 @@
                         </button>
 
                         <!-- Settings button -->
-                        <button v-if="isAdmin" class="ps-0 btn d-flex align-items-center hover-underline" @click="editClub = true">
+                        <button v-if="isAdmin" class="ps-0 btn d-flex flex-row align-items-center hover-underline" @click="editClub = true">
                             <!-- Settings icon -->
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear" viewBox="0 0 16 16">
                                 <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/>
@@ -404,6 +404,29 @@
                             <!-- Settings text -->
                             <span class="ms-2">Club Settings</span> 
                         </button>
+
+                        <!-- Admin Details -->
+                        <div class="mt-5 text-start">
+                            <p class="fw-bold">Admin Details</p>
+
+                            <div v-for="admin in admins" :key="admin.id" class="d-flex align-items-center gap-3 mt-3">
+                                <!-- Admin photo -->
+                                <img v-if="admin.photo" :src="admin.photo" class="img-fluid rounded-circle" alt="Admin Photo">
+                                <svg v-else xmlns="http://www.w3.org/2000/svg" width="45" height="45" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                                    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+                                    <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+                                </svg>
+
+                                <!-- Admin name -->
+                                <router-link :to="profileURL(admin.id, admin.userType)">
+                                    <p v-if="admin.userType = 'user'">{{ admin.displayName }}</p>
+                                    <p v-else-if="admin.userType = 'producer'">{{ admin.producerName }}</p>
+                                    <p v-else>{{ admin.venueName }}</p>
+                                </router-link>
+
+
+                            </div>
+                        </div>
                     </div>
 
                 </div>
@@ -460,6 +483,7 @@ export default {
             // Variable for club data
             clubId: null,
             clubInfo: null,
+            admins: null,
             posts: [], // Array to store posts
             postLikes: [], // Array to store user's likes for the posts
 
@@ -487,6 +511,7 @@ export default {
                 // Get club data
                 const clubData = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getSpecificClubInfo/${this.clubId}`);
                 this.clubInfo = clubData.data.club_info;
+                this.admins = clubData.data.admins;
 
                 this.dataLoaded = true;
 
