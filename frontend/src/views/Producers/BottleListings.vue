@@ -705,7 +705,7 @@
                                                 <!-- <input type="text" class="form-control" id="friendTag"> -->
                                                 <input list="followList" v-model="friendTag" class="form-control input-with-icon" id="friendTag" placeholder="Tag friends" v-on:keyup="updateFriendTag">
                                                 <datalist id="followList">
-                                                    <option v-for="user in followList" :key="user.id" :value="user.username">
+                                                    <option v-for="user in users" :key="user.id" :value="user.username">
                                                         {{user.username}}
                                                     </option>
                                                 </datalist>  
@@ -760,19 +760,35 @@
                               
                                 <!-- row 4: buttons (would recommend, would buy again) -->
                                 <div class="row">
-                                    <div class = 'col justify-content-start mb-3 text-start'>
-                                        <div class = "col-md-12">
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="checkbox" id="inlineCheckbox1" v-model="wouldRecommend" value="option1">
-                                                <label class="form-check-label text-start fw-bold" for="inlineCheckbox1">Would Recommend</label>
-                                            </div>
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="checkbox" id="inlineCheckbox2" v-model="wouldBuyAgain" value="option2">
-                                                <label class="form-check-label text-start fw-bold" for="inlineCheckbox2">Would Buy Again</label>
-                                            </div>                                                                                                   
-                                        </div>                                         
+                                    <!-- Would Recommend Section -->
+                                    <div class="col-md-6 mb-3 text-start">
+                                        <label class="fw-bold" for="recommendDropdown">Would Recommend</label>
+                                        <select
+                                            class="form-select"
+                                            id="recommendDropdown"
+                                            v-model="wouldRecommend"
+                                        >
+                                            <option :value="null" selected disabled>Select Yes / No</option>
+                                            <option :value="true">Yes</option>
+                                            <option :value="false">No</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Would Buy Again Section -->
+                                    <div class="col-md-6 mb-3 text-start">
+                                        <label class="fw-bold" for="buyAgainDropdown">Would Buy Again</label>
+                                        <select 
+                                            class="form-select" 
+                                            id="buyAgainDropdown" 
+                                            v-model="wouldBuyAgain">
+                                            <option :value="null" disabled selected>Select Yes / No</option>
+                                            <option :value="true">Yes</option>
+                                            <option :value="false">No</option>
+                                        </select>
                                     </div>
                                 </div>
+
+
                                 
 
                                 <!-- row 5: extend review -->
@@ -895,7 +911,7 @@
                                             </div>
                                             <div class="col">
                                                 <div class="slider-container" style="position: relative;">
-                                                    <input v-model="rating" type="range" class="form-range" min="1" max="10" step="0.5" id="customRange">
+                                                    <input v-model="rating" type="range" class="form-range" min="1" max="10" step="0.1" id="customRange">
                                                     <div class="tickmarks">
                                                         <span class="tick" style="left: 5%;">|</span>
                                                         <span class="tick" style="left: 15%;">|</span>
@@ -1000,8 +1016,8 @@
                             
                             <!-- End of modal body -->
                             <div class="modal-footer d-flex">
-                                <span v-for="review in filteredReviews" v-bind:key="review.id" class="me-auto">
-                                    <button class="btn btn-danger py-1  mobile-fs-7" @click="setDeleteID(review)" data-bs-toggle="modal" data-bs-target="#deleteReview">Delete Review</button> 
+                                <span v-for="review in filteredReviews.filter(review => review.userID === parseInt(userID))" v-bind:key="review.id" class="me-auto">
+                                    <button v-if="inEdit && review['userID'] == parseInt(userID)" class="btn btn-danger py-1  mobile-fs-7" @click="setDeleteID(review)" data-bs-toggle="modal" data-bs-target="#deleteReview">Delete Review</button>
                                 </span>
                                 <button type="button" class="btn secondary-btn-less-round-inverse " data-bs-dismiss="modal">Close</button> <!--tzh removed btn-secondary added secondary-btn-less-round-inverse-->
                                 <button v-if="!inEdit" type="button" @click="addReview" class="btn secondary-btn-less-round">Submit Review</button>
@@ -1660,8 +1676,8 @@
                 aroma:"",
                 taste:"",
                 finish:"",
-                wouldRecommend:false,
-                wouldBuyAgain:false,
+                wouldRecommend:null,
+                wouldBuyAgain:null,
                 extendReview:false,
                 locationOptions: [], // Your list of options
                 locationSearchTerm: "",
@@ -2211,61 +2227,43 @@
 
             // get ratings for a listing
             getRatings(listing) {
-                const ratings = this.reviews.filter((rating) => {
-                try {
-                    return rating["reviewTarget"] == listing['id'];
-                }
-                catch(error){console.error(error)}
-                });
+                const ratings = this.reviews.filter((rating) => rating["reviewTarget"] == listing['id']);
                 // if there are no ratings
-                if (ratings.length == 0) {
-                    return "-";
-                }
+                if (ratings.length == 0) return "-";
                 // else there are ratings
                 const averageRating = ratings.reduce((total, rating) => {
-                    return total + rating["rating"];
+                    return total + parseFloat(rating["rating"]);
                 }, 0) / ratings.length;
                 return averageRating.toFixed(1);  //tzh changed .toFixed(2) to .toFixed(1)
             },
 
             // get will drink again for a listing
             getWillRecommend(listing) {
-                const ratings = this.reviews.filter((rating) => {
-                try {
-                    return rating["reviewTarget"] == listing['id'];
-                }
-                catch(error){console.error(error)}
-                });
-                // if there are no ratings
-                if (ratings.length == 0) {
-                    return "-";
-                }
-                // else there are ratings
-                const numberRecommend = ratings.reduce((total, rating) => {
-                    return total + (rating["willRecommend"] ? 1 : 0);
-                }, 0);
-                const averageRecommend = (numberRecommend / ratings.length) * 100;
-                return averageRecommend.toFixed(0);  //tzh changed .toFixed(2) to .toFixed(0)
+                const ratings = this.reviews.filter((rating) => rating["reviewTarget"] == listing['id']);
+                if (ratings.length === 0) return "-";
+
+                // Filter out null values
+                const validRatings = ratings.filter(rating => rating["willRecommend"] !== null);
+
+                if (validRatings.length === 0) return "-";
+
+                const numberRecommend = validRatings.reduce((total, rating) => total + (rating["willRecommend"] ? 1 : 0), 0);
+                const averageRecommend = (numberRecommend / validRatings.length) * 100;
+                return averageRecommend.toFixed(0);
             },
 
-            // get will drink again for a listing
             getWillDrinkAgain(listing) {
-                const ratings = this.reviews.filter((rating) => {
-                try {
-                    return rating["reviewTarget"] == listing['id'];
-                }
-                catch(error){console.error(error)}
-                });
-                // if there are no ratings
-                if (ratings.length == 0) {
-                    return "-";
-                }
-                // else there are ratings
-                const numberDrinkAgain = ratings.reduce((total, rating) => {
-                    return total + (rating["wouldBuyAgain"] ? 1 : 0);
-                }, 0);
-                const averageDrinkAgain = (numberDrinkAgain / ratings.length) * 100;
-                return averageDrinkAgain.toFixed(0);  //tzh changed .toFixed(2) to .toFixed(0)
+                const ratings = this.reviews.filter((rating) => rating["reviewTarget"] == listing['id']);
+                if (ratings.length === 0) return "-";
+
+                // Filter out null values
+                const validRatings = ratings.filter(rating => rating["wouldBuyAgain"] !== null);
+
+                if (validRatings.length === 0) return "-";
+
+                const numberDrinkAgain = validRatings.reduce((total, rating) => total + (rating["wouldBuyAgain"] ? 1 : 0), 0);
+                const averageDrinkAgain = (numberDrinkAgain / validRatings.length) * 100;
+                return averageDrinkAgain.toFixed(0);
             },
 
             // add user's uploaded photo to database (TO BE IMPLEMENTED)
@@ -2965,7 +2963,7 @@
             updateFriendTag(){
                 let friendTagError = document.getElementById("friendTagError")
                 // find listing based on bottle name
-                let user = this.followList.find(user => user.username === this.friendTag)
+                let user = this.users.find(user => user.username === this.friendTag)
                 if (user) {
                     this.selectedFriendTag = user
                     friendTagError.innerHTML = ""
