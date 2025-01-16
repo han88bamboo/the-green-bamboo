@@ -1379,3 +1379,17 @@ INSERT INTO "clubPostCommentsLikes"(
     "postID", "commentID", "memberID")
 VALUES
     (1, 1, 3);
+
+INSERT INTO "events"(
+    "eventName", "eventDesc", "eventStartDate", "eventEndDate", "eventStartTime", "eventEndTime", "eventBanners", "ticketed", "eventLocation", "eventLink", "eventOwnerID", "eventOwnerType") 
+VALUES 
+    ('Trivia Night', 'Test your knowledge in our weekly trivia night! Prizes for the top teams.', '2025-01-20', '2025-01-20', '19:00:00', '22:00:00', NULL, FALSE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', '', 1, 'venue'),
+    ('Whiskey Appreciation Night', 'Explore the world of whiskey with guided tastings of premium selections.', '2025-02-05', '2025-02-05', '19:00:00', '22:00:00', NULL, TRUE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 'www.google.com', 1, 'venue'),
+    ('Beer Pong Tournament', 'Compete with friends and other teams in our ultimate beer pong showdown.', '2025-02-03', '2025-02-03', '18:00:00', '22:00:00', NULL, FALSE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', '', 2, 'user'),
+    ('Wine Tasting Night', 'Savor an evening of fine wines paired with small bites and expert insights.', '2025-02-10', '2025-02-10', '18:30:00', '21:00:00', NULL, TRUE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 'www.google.com', 3, 'user'),
+    ('Rum Cocktail Masterclass', 'Learn to craft the perfect rum-based cocktails with our expert mixologists.', '2025-02-18', '2025-02-18', '17:00:00', '19:00:00', NULL, TRUE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 'www.google.com', 1, 'producer'),
+    ('Ladies Night - Margaritas Galore', 'Enjoy $5 margaritas and a free welcome drink for all ladies.', '2025-01-29', '2025-01-29', '18:00:00', '23:00:00', NULL, FALSE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', '', 1, 'venue'),
+    ('Bourbon & Blues Night', 'Pair smooth bourbons with soulful blues music in a cozy atmosphere.', '2025-02-15', '2025-02-15', '20:00:00', '23:00:00', NULL, TRUE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 'www.google.com', 1, 'producer'),
+    ('IPA Showcase', 'Discover unique IPAs from local breweries in this beer lover’s event.', '2025-02-20', '2025-02-20', '17:00:00', '20:00:00', NULL, FALSE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', '', 1, 'venue'),
+    ('Cocktail Night: Around the World', 'Travel the globe one sip at a time with cocktails inspired by international flavors.', '2025-01-25', '2025-01-25', '19:00:00', '23:00:00', NULL, TRUE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 'www.google.com', 1, 'user'),
+    ('Cider Festival', 'Celebrate the best ciders with unlimited tastings and live music all day long.', '2025-02-24', '2025-02-24', '14:00:00', '22:00:00', NULL, TRUE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 'www.google.com', 1, 'venue');

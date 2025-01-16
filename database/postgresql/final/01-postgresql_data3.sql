@@ -1,4 +1,6 @@
 -- DROP TABLES IF EXISTS -- 
+DROP TABLE IF EXISTS "eventAttendees" CASCADE;
+DROP TABLE IF EXISTS "events" CASCADE;
 DROP TABLE IF EXISTs "clubPostCommentsLikes" CASCADE;
 DROP TABLE IF EXISTS "clubPostComments" CASCADE;
 DROP TABLE IF EXISTS "clubPostsLikes" CASCADE;
@@ -524,4 +526,30 @@ CREATE TABLE "clubPostCommentsLikes" (
     "postID" INTEGER REFERENCES "clubPosts"("id") ON DELETE SET NULL, -- [!] References clubPosts FK
     "commentID" INTEGER REFERENCES "clubPostComments"("id") ON DELETE SET NULL, -- [!] References clubPostComments FK
     "memberID" INTEGER REFERENCES "clubMembers"("id") ON DELETE SET NULL -- [!] References clubMembers FK
-)
+);
+
+-- ========= "events" =========
+CREATE TABLE "events" (
+    "id" SERIAL PRIMARY KEY,
+    "eventName" VARCHAR(255),
+    "eventDesc" TEXT,
+    "eventStartDate" DATE,
+    "eventEndDate" DATE,
+    "eventStartTime" TIME,
+    "eventEndTime" TIME,
+    "eventBanners" TEXT[],
+    "ticketed" BOOLEAN,
+    "eventLocation" TEXT,
+    "eventLink" VARCHAR(255),
+    "eventOwnerID" INTEGER, -- [!] "producers" or "venues" or "users" id in their respective tables 
+    "eventOwnerType" VARCHAR(255) -- [!] "producers" or "venues" or "users"
+);
+
+-- ========= "eventAttendees" =========
+CREATE TABLE "eventAttendees" (
+    "id" SERIAL PRIMARY KEY,
+    "eventID" INTEGER REFERENCES "events"("id") ON DELETE SET NULL, -- [!] References events FK
+    "userID" INTEGER REFERENCES "users"("id") ON DELETE SET NULL, -- [!] References users FK
+    "attendeeType" VARCHAR(255),
+    "attendeeStatus" BOOLEAN
+);
