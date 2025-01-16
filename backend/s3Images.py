@@ -11,8 +11,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # For deployment (comment out for local launch)
-# bucket_name = 'tf-drinkx-prod-fe-images'
-# region='ap-southeast-1'
+bucket_name = 'tf-drinkx-prod-fe-images'
+region='ap-southeast-1'
 
 # For local development (comment out before deployment)
 bucket_name = 'drinkximages'

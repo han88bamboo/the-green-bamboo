@@ -43,6 +43,11 @@ const routes = [
     name: 'search',
     component: () => import('../views/SearchView.vue')
   },
+  {
+    path: '/imageSearch',
+    name: 'imagesearch',
+    component: () => import('../views/ImageSearchView.vue')
+  },
   // -------------------------------------------------------------------------------------
 
   // ----------------- PROFILE PAGES -----------------
