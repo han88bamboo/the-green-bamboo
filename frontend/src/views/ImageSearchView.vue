@@ -7,6 +7,11 @@
         
         <div class="greybox">
             <div class="upload-section">
+                <img
+                    src="@../../../Images/Others/camera.png"
+                    alt="Camera"
+                    class="camera-icon"
+                />
                 <label for="file-upload" class="custom-file-upload" @change="onFileChange">
                 Drag an image here or upload a file.
                 </label>
@@ -70,15 +75,14 @@
     }
     
     .greybox {
-    width: 70%;
+    width: 50%;
     margin: 50px auto;
     background-color: #f4f4f47d; 
     border-radius: 5px;
     display: block;
     text-align: center;
     border:5px solid #027562;
-    padding-top:10px;
-    padding-bottom: 10px;
+    padding:50px 10px;
     }
     
     .upload-section,
@@ -121,12 +125,19 @@
     justify-content: center;
     }
 
-    .search-icon {
+    .search-icon{
     width: 5%;  
     cursor: pointer;
     display: inline-block;
     vertical-align: middle;
     margin-left: 10px;
+    }
+
+    .camera-icon{
+    width: 5%;  
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 10px;
     }
 
   </style>
