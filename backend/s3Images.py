@@ -15,16 +15,16 @@ bucket_name = 'tf-drinkx-prod-fe-images'
 region='ap-southeast-1'
 
 # For local development (comment out before deployment)
-bucket_name = 'drinkximages'
-region='us-east-1'
+# bucket_name = 'drinkximages'
+# region='us-east-1'
 
 def uploadBase64ImageToS3(base64_string):
 
     # For local development   (comment out before deployment)
-    credentials = { 
-        'aws_access_key_id': os.getenv('AWS_ACCESS_KEY_ID'),
-        'aws_secret_access_key': os.getenv('AWS_SECRET_ACCESS_KEY')
-    }
+    # credentials = { 
+    #     'aws_access_key_id': os.getenv('AWS_ACCESS_KEY_ID'),
+    #     'aws_secret_access_key': os.getenv('AWS_SECRET_ACCESS_KEY')
+    # }
 
 
     # Decode the base64 string
@@ -37,10 +37,10 @@ def uploadBase64ImageToS3(base64_string):
     # Initialize a session using Amazon S3
     # Create an S3 client using boto3, which will automatically use the credentials provided by the IAM role associated with the ECS task.
     # For deployment (uncomment before deployment)
-    # s3 = boto3.client('s3')
+    s3 = boto3.client('s3')
 
     # For local development (comment out before deployment)
-    s3 = boto3.client('s3', region_name=region, **credentials)
+    # s3 = boto3.client('s3', region_name=region, **credentials)
 
     object_key = f'{uuid.uuid4()}.jpg'
     try:
@@ -76,10 +76,10 @@ def uploadURLtoS3(url):
 def deleteImageFromS3(url):
 
     # For local development (comment out before deployment)
-    credentials = { 
-        'aws_access_key_id': os.getenv('AWS_ACCESS_KEY_ID'),
-        'aws_secret_access_key': os.getenv('AWS_SECRET_ACCESS_KEY')
-    }
+    # credentials = { 
+    #     'aws_access_key_id': os.getenv('AWS_ACCESS_KEY_ID'),
+    #     'aws_secret_access_key': os.getenv('AWS_SECRET_ACCESS_KEY')
+    # }
 
     # Get the key from the url by stripping https://testbucketdrinkx.s3.amazonaws.com/xxxx
     # object_key = url[48:]
@@ -97,10 +97,10 @@ def deleteImageFromS3(url):
     # Initialize a session using Amazon S3
 
     # For local development (comment out before deployment)
-    s3 = boto3.client('s3', region_name=region, **credentials)
+    # s3 = boto3.client('s3', region_name=region, **credentials)
 
     # For deployment (comment out before local launch)
-    # s3 = boto3.client('s3')
+    s3 = boto3.client('s3')
 
     try:
         # Upload the image to S3
