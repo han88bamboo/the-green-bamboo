@@ -26,10 +26,10 @@
                     
                     <!-- camera button -->
                     <div class="col mobile-view-hide">
-                        <button class="btn primary-btn-less-round-green d-flex align-items-center" style="height: 50px; margin-left: 10px; padding: 0px 15px;">
-                            <span>Scan bottle</span>
-                            <img src="../../Images/Others/camera-white.png" style="width: 30px; height: 30px; margin-left: 10px;">
-                        </button>
+                            <button class="btn primary-btn-less-round-green d-flex align-items-center" style="height: 50px; margin-left: 10px; padding: 0px 15px;" v-on:click="imageSearch">
+                                <span>Scan bottle</span>
+                                <img src="../../Images/Others/camera-white.png" style="width: 30px; height: 30px; margin-left: 10px;">
+                            </button>
                     </div>
                 </div>
 
@@ -56,7 +56,8 @@
                     </router-link>
 
                     <!-- camera button -->
-                    <img src="../../Images/Others/camera.png" style="width: 50px; height: 50px; margin-right: 10px;" class="mobile-view-show">
+                    <img src="../../Images/Others/camera.png" style="width: 50px; height: 50px; margin-right: 10px;" class="mobile-view-show" v-on:click="imageSearch">
+
 
                     <!-- dropdown button -->
                     <button class="navbar-toggler p-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -272,6 +273,17 @@
                         // re-route to search page
                         this.$router.push({path: '/search/' + this.searchInput});
                     }
+                }
+            },
+            // route to image search page
+            imageSearch() {
+                // if already on image search page, refresh the page
+                if (this.$route.path.split('/')[1] == 'imageSearch') {
+                    window.location.href = '/imageSearch';
+                }
+                else {
+                    // re-route to image search page
+                    this.$router.push({path: '/imageSearch'});
                 }
             },
 
