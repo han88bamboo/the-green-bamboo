@@ -137,7 +137,7 @@
                 </router-link>
 
                 <button class="btn primary-btn border-0 fw-bold" type="button" @click="externalURL('https://88bamboo.co/')">
-                    Latest News
+                    Latest Drink News
                 </button>
 
                 <button @click="forceLoad('/request/new')" v-if="onRequest && accType == 'user'" class="btn primary-btn border-0 fw-bold " type="button" >  <!-- class="text-warning" style="color:#D58D2D !important;" -->
@@ -161,7 +161,7 @@
 
                 <router-link :to="'/clubs/view'">
                     <button class="btn primary-btn border-0 fw-bold" type="button">
-                        Find Club
+                        Find A Club
                     </button>
                 </router-link>
             </div>
