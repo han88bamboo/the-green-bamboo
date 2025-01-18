@@ -513,13 +513,12 @@
                         "
                     >
                         <img
-                        src="/still-life-wine-carafe-table.jpg"
+                        src="/Rectangle126.png"
                         style="
                             width: 100%;
                             height: 100%;
                             object-fit: cover;
                         "
-                        alt="Hero image"
                         />
                         <div
                         style="
