@@ -500,7 +500,14 @@
 
                 <!-- Welcome section and Reviews/Lists -->
                 <div class="col-12 col-md-8">
-
+                    <div
+                        style="
+                        border: 1px solid #e0e0e0;
+                        border-radius: 8px;
+                        padding: 16px;
+                        background-color: #ffffff;
+                        "
+                    >
                     <!-- Welcome section -->
                     <div style="margin-bottom: 24px;">
                     <div
@@ -509,7 +516,8 @@
                         width: 100%;
                         height: 200px;
                         overflow: hidden;
-                        border-radius: 12px;
+                        border-radius: 0;
+                        margin-bottom: 16px;
                         "
                     >
                         <img
@@ -655,6 +663,7 @@
                         </div>
                     </div>
                     </div>
+                </div>
 
                     <!-- reviews and lists -->
                     <div class="mt-4">
