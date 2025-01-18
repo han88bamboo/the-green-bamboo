@@ -502,68 +502,154 @@
                 <div class="col-12 col-md-8">
 
                     <!-- Welcome section -->
-                    <div className="space-y-6">
-                    <div className="relative w-full h-[200px] overflow-hidden rounded-lg">
-                        <img 
-                        src=""
-                        className="w-full h-full object-cover"
+                    <div style="margin-bottom: 24px;">
+                    <div
+                        style="
+                        position: relative;
+                        width: 100%;
+                        height: 200px;
+                        overflow: hidden;
+                        border-radius: 12px;
+                        "
+                    >
+                        <img
+                        src="/still-life-wine-carafe-table.jpg"
+                        style="
+                            width: 100%;
+                            height: 100%;
+                            object-fit: cover;
+                        "
+                        alt="Hero image"
                         />
-                        <div className="absolute inset-0 bg-black/20" /> 
+                        <div
+                        style="
+                            position: absolute;
+                            inset: 0;
+                            background-color: rgba(0, 0, 0, 0.2);
+                        "
+                        ></div>
                     </div>
-                    
-                    <h2 className="text-2xl font-normal border-b pb-4">
+
+                    <h2 style="font-size: 24px; font-weight: normal; border-bottom: 1px solid #e0e0e0; padding-bottom: 16px;">
                         Welcome to Drink-X. Let's get started!
                     </h2>
 
-                    <div className="space-y-6">
-                        
-                        <div className="flex items-start gap-4">
-                        <img 
-                            src="/Images/LandingPage/Layer3.png"
-                            className="w-16 h-16"
+                    <div>
+                        <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px;">
+                        <img
+                            src="/Layer3.png"
+                            style="
+                            width: 64px;
+                            height: 64px;
+                            object-fit: contain;
+                            border-radius: 4px;
+                            "
+                            alt="Review your first drink"
                         />
-                        <div className="space-y-2">
-                            <p className="text-lg">Review your first drink.</p>
-                            <button className="px-4 py-2 bg-[#F0B358] hover:bg-[#E5A443] text-black rounded">
+                        <div>
+                            <p style="font-size: 18px; margin-bottom: 8px;">Review your first drink.</p>
+                            <button
+                            style="
+                                padding: 8px 16px;
+                                background-color: #F0B358;
+                                border: none;
+                                color: black;
+                                border-radius: 4px;
+                                cursor: pointer;
+                            "
+                            @mouseover="hoverButton($event)"
+                            @mouseleave="leaveButton($event)"
+                            >
                             Find A Drink
                             </button>
                         </div>
                         </div>
 
-                        <div className="flex items-start gap-4">
-                        <img 
-                            src="/Images/Landing Page/address-book.png"
-                            className="w-16 h-16"
+                        <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px;">
+                        <img
+                            src="/address-book.png"
+                            style="
+                            width: 64px;
+                            height: 64px;
+                            object-fit: contain;
+                            border-radius: 4px;
+                            "
+                            alt="Invite two friends"
                         />
-                        <div className="space-y-2">
-                            <p className="text-lg">Invite two friends.</p>
-                            <button className="px-4 py-2 bg-[#F0B358] hover:bg-[#E5A443] text-black rounded">
+                        <div>
+                            <p style="font-size: 18px; margin-bottom: 8px;">Invite two friends.</p>
+                            <button
+                            style="
+                                padding: 8px 16px;
+                                background-color: #F0B358;
+                                border: none;
+                                color: black;
+                                border-radius: 4px;
+                                cursor: pointer;
+                            "
+                            @mouseover="hoverButton($event)"
+                            @mouseleave="leaveButton($event)"
+                            >
                             Add A Friend
                             </button>
                         </div>
                         </div>
 
-                        <div className="flex items-start gap-4">
-                        <img 
-                            src="/Images/Landing Page/Layer1.png"
-                            className="w-16 h-16"
+                        <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px;">
+                        <img
+                            src="/Layer1.png"
+                            style="
+                            width: 64px;
+                            height: 64px;
+                            object-fit: contain;
+                            border-radius: 4px;
+                            "
+                            alt="Curate a list to share"
                         />
-                        <div className="space-y-2">
-                            <p className="text-lg">Curate a list to share.</p>
-                            <button className="px-4 py-2 bg-[#F0B358] hover:bg-[#E5A443] text-black rounded">
+                        <div>
+                            <p style="font-size: 18px; margin-bottom: 8px;">Curate a list to share.</p>
+                            <button
+                            style="
+                                padding: 8px 16px;
+                                background-color: #F0B358;
+                                border: none;
+                                color: black;
+                                border-radius: 4px;
+                                cursor: pointer;
+                            "
+                            @mouseover="hoverButton($event)"
+                            @mouseleave="leaveButton($event)"
+                            >
                             Create A List
                             </button>
                         </div>
                         </div>
 
-                        <div className="flex items-start gap-4">
-                        <img 
-                            src="/Images/Landing Page/Layer2.png"
-                            className="w-16 h-16"
+                        <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px;">
+                        <img
+                            src="/Layer2.png"
+                            style="
+                            width: 64px;
+                            height: 64px;
+                            object-fit: contain;
+                            border-radius: 4px;
+                            "
+                            alt="Explore and join a club!"
                         />
-                        <div className="space-y-2">
-                            <p className="text-lg">Explore and join a club!</p>
-                            <button className="px-4 py-2 bg-[#F0B358] hover:bg-[#E5A443] text-black rounded">
+                        <div>
+                            <p style="font-size: 18px; margin-bottom: 8px;">Explore and join a club!</p>
+                            <button
+                            style="
+                                padding: 8px 16px;
+                                background-color: #F0B358;
+                                border: none;
+                                color: black;
+                                border-radius: 4px;
+                                cursor: pointer;
+                            "
+                            @mouseover="hoverButton($event)"
+                            @mouseleave="leaveButton($event)"
+                            >
                             Find A Club
                             </button>
                         </div>
@@ -1225,6 +1311,12 @@ export default {
 
     },
     methods: {
+        hoverButton(event) {
+            event.target.style.backgroundColor = "#E5A443";
+        },
+        leaveButton(event) {
+            event.target.style.backgroundColor = "#F0B358";
+        },
         // load data from database
         async loadData(url) {
             //profile picture
