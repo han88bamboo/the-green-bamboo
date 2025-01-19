@@ -175,7 +175,7 @@ CREATE TABLE "venues" (
     "claimStatusCheckDate" TIMESTAMP,
     "yearOpened": INTEGER,
     "openForReservations": BOOLEAN,
-    "website": VARCHAR(255),
+    "website": TEXT,
     -- "openingHours" SERIAL, -- [!] reference "venuesOpeningHours"
     -- "questionAnswers" SERIAL, -- [!] reference "venuesQuestionAnswers"
     -- "updates" SERIAL, -- [!] reference "venuesUpdates"
