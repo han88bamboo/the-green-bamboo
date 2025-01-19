@@ -94,7 +94,14 @@
                                     </router-link>
                                 </p>
                             </div>
-                            <button v-if="!selfView" class="btn primary-btn-green">Follow</button>
+                            
+                            <div v-if="!followStatus && !selfView" class="d-grid gap-2">
+                                <button  class="btn primary-btn-green mx-1 mobile-view-show fs-6" @click="editFollow('follow')" style="font-weight: bold;" >+ Follow</button>  <!--tzh added -blue-->
+                                <button  class="btn primary-btn-green mx-1 mobile-view-hide" @click="editFollow('follow')" style="font-weight: bold;" >+ Follow {{ event.eventOwnerType}}</button> <!--tzh added -blue-->
+                            </div>
+                            <div v-else class="d-grid gap-2">
+                                <button class="btn primary-btn-green mx-1" @click="editFollow('unfollow')" style="font-weight: bold;" >Following</button> <!--tzh changed primary-btn-outline-less-round to primary-btn-less-round-blue -->
+                            </div>  
 
                         </div>
 
@@ -103,7 +110,7 @@
                         <p>{{ event.eventDesc }}</p>
 
                         <!-- Event attendees -->
-                        <div class="d-flex justify-content-between align-items-center mt-5">
+                        <div class="d-flex flex-row justify-content-between align-items-center mt-5">
                             <h4 class="fw-bold">Who's Going?</h4>
                             <!-- Invite button -->
                             <button class="ps-0 btn d-flex flex-row align-items-center hover-underline ">
@@ -123,17 +130,28 @@
                         <div v-if="attendees.length > 0" class="row mt-3 d-flex justify-content-start align-items-center">
 
                             <div v-for="attendee in attendees.slice(0, 5)" :key="attendee.id" class="col-4 col-lg-2">
-                                <div class="d-flex flex-column justify-content-start align-items-center">
+                                <div class="d-flex flex-column justify-content-start align-items-center position-relative">
+
+                                    <!-- Profile Picture -->
                                     <img v-if="attendee.profilePic" :src="attendee.profilePic" class="img-fluid rounded-circle" alt="Profile Picture">
                                     <svg v-else xmlns="http://www.w3.org/2000/svg" width="45" height="45" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
                                         <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
                                         <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
                                     </svg>
+
+                                    <!-- Profile link -->
                                     <router-link :to="profileURL(attendee.id, attendee.userType)">
                                         <p v-if="attendee.userType == 'user'" class="ms-2">{{ attendee.displayName }}</p>
                                         <p v-if="attendee.userType == 'venue'" class="ms-2">{{ attendee.venueName }}</p>
                                         <p v-if="attendee.userType == 'producer'" class="ms-2">{{ attendee.producerName }}</p>
                                     </router-link>
+
+                                    <!-- Button to remove the attendee -->
+                                    <svg v-if="selfView" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="red" 
+                                        class="bi bi-x-circle-fill position-absolute top-0 end-0" viewBox="0 0 16 16"
+                                        style="cursor: pointer;">
+                                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/>
+                                    </svg>
                                 </div>
                             </div>
 
@@ -171,7 +189,7 @@
                                                         </router-link>
 
                                                         <!-- Button to remove the attendee -->
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="red" 
+                                                        <svg v-if="selfView" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="red" 
                                                             class="bi bi-x-circle-fill position-absolute top-0 end-0" viewBox="0 0 16 16"
                                                             style="cursor: pointer;">
                                                             <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/>
@@ -191,41 +209,6 @@
 
                         <!-- No attendees yet message -->
                         <p v-else class="mt-3">No attendees yet.</p>
-
-                        <!-- More events by organiser -->
-                        <div class="mt-5">
-                            <h4 v-if="event.eventOwnerType == 'venue'" class="fw-bold">More Events by {{ event.ownerInfo.venueName }}</h4>
-                            <h4 v-if="event.eventOwnerType == 'producer'" class="fw-bold">More Events by {{ event.ownerInfo.producerName }}</h4>
-                            <h4 v-if="event.eventOwnerType == 'user'" class="fw-bold">More Events by {{ event.ownerInfo.displayName }}</h4>
-                        </div>
-
-                        <!-- Other events list -->
-                        <div v-if="!otherEventsError" class="row mt-3">
-                            <div v-if="otherEvents.length > 0" class="row">
-                                <div v-for="otherEvent in otherEvents" :key="otherEvent.id" class="col-6">
-                                    <div class="d-flex flex-column justify-content-start align-items-center">
-
-                                        <!-- Banner -->
-                                        <div class="row" style="height: 150px; width: auto; cursor: pointer;">
-                                            <img v-if="otherEvent.eventBanners" :src="otherEvent.eventBanners[0]" class="img-fluid event-banner" alt="Event Banner">
-                                            <img v-else :src="defaultEventBanner" class="img-fluid event-banner" alt="Event Banner">
-                                        </div>
-                                        
-                                        <!-- Event Name -->
-                                        <router-link :to="{ name: 'eventview', params: { eventID: otherEvent.id } }">
-                                            <p class="m-0">{{ otherEvent.eventName }}</p>
-                                        </router-link>
-
-                                        <!-- Event date and time -->
-                                        <p class="fw-normal small-text">{{ formatDate(otherEvent.eventStartDate) }}, {{ formatTime(otherEvent.eventStartTime) }} - {{ formatTime(otherEvent.eventEndTime) }}</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <p v-else>No other events yet.</p>
-                        </div>
-
-                        <!-- Error message if fail to retrieve other events information -->
-                        <p class="text-danger" v-if="otherEventsError">{{ otherEventsError }}</p>
                         
                     </div>
 
@@ -247,21 +230,58 @@
                             <div v-if="event.paidEvent == false">
                                 <p class="fw-bold">This event is ticketed. Entry is free but click below to RSVP and save your spot!</p>
                                 <!-- button to RSVP -->
-                                <button v-if="attendees.length <= (event.eventLimit - 5)" class="btn primary-btn-green">RSVP</button>
-                                <p v-else class="text-danger">Event is full. No more RSVPs allowed.</p>
+                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus" class="btn primary-btn-green" @click="rsvpEvent" :disabled="rsvpButtonStatus">RSVP</button>
+                                <p v-if="attendees.length >= event.eventlimit && !rsvpStatus" class="text-danger">Event is full. No more RSVPs allowed.</p>
+                                <p v-if="rsvpStatus" class="text-danger">You have already RSVPed for this event.</p>
                             </div>
 
                             <!-- Ticketed and require payment -->
                             <div v-else>
                                 <p class="fw-bold">This event is ticketed. Click below to purchase your ticket!</p>
                                 <!-- button to purchase ticket -->
-                                <a :href="ticketLink" :target="event.paymentLink" class="btn primary-btn-green">Buy Ticket</a>
+                                <a :href="event.paymentLink" target="_blank" class="btn primary-btn-green">Buy Ticket</a>
                             </div>
                             
                         </div>
                     </div>
                 </div>
-                
+
+                <!-- Other events list -->
+                <!-- More events by organiser -->
+                <div class="mt-5 text-start">
+                    <h4 v-if="event.eventOwnerType == 'venue'" class="fw-bold">More Events by {{ event.ownerInfo.venueName }}</h4>
+                    <h4 v-if="event.eventOwnerType == 'producer'" class="fw-bold">More Events by {{ event.ownerInfo.producerName }}</h4>
+                    <h4 v-if="event.eventOwnerType == 'user'" class="fw-bold">More Events by {{ event.ownerInfo.displayName }}</h4>
+                </div>
+
+                <!-- Display other events by the organiser -->
+                <div v-if="!otherEventsError" class="row mt-3">
+                    <div v-if="otherEvents.length > 0" class="row">
+                        <div v-for="otherEvent in otherEvents" :key="otherEvent.id" class="col-6 col-md-3">
+                            <div class="d-flex flex-column justify-content-start align-items-center">
+
+                                <!-- Banner -->
+                                <div class="row" style="height: 150px; width: auto; cursor: pointer;">
+                                    <img v-if="otherEvent.eventBanners" :src="otherEvent.eventBanners[0]" class="img-fluid event-banner" alt="Event Banner">
+                                    <img v-else :src="defaultEventBanner" class="img-fluid event-banner" alt="Event Banner">
+                                </div>
+                                
+                                <!-- Event Name -->
+                                <router-link :to="{ name: 'eventview', params: { eventID: otherEvent.id } }">
+                                    <p class="m-0">{{ otherEvent.eventName }}</p>
+                                </router-link>
+
+                                <!-- Event date and time -->
+                                <p class="fw-normal small-text">{{ formatDate(otherEvent.eventStartDate) }}, {{ formatTime(otherEvent.eventStartTime) }} - {{ formatTime(otherEvent.eventEndTime) }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p v-else>No other events yet.</p>
+                </div>
+
+                <!-- Error message if fail to retrieve other events information -->
+                <p class="text-danger" v-if="otherEventsError">{{ otherEventsError }}</p>
+                                
             </div>
             
         </div>
@@ -270,6 +290,7 @@
 
 <script>
 import NavBar from '@/components/NavBar.vue';
+import { useToast } from 'vue-toastification';
 
 export default {
     name: 'SpecificEventPage',
@@ -285,8 +306,15 @@ export default {
             userID: null,
             userType: null,
 
+            // Variable to store follow status of the organizer
+            followStatus: null,
+
             // Variable to store self view status
             selfView: false,
+
+            // Variable to check if user has already RSVPed
+            rsvpStatus: null,
+            rsvpButtonStatus: false,
 
             // Event ID
             eventID: this.$route.params.eventID,
@@ -317,9 +345,15 @@ export default {
 
                 this.getOtherEvents();
 
+                if (this.userType != 'defaultUser') {
+                    this.checkRSVP();
+                    this.checkFollow();
+                }
+
                 // Check if the user is viewing their own events
                 if (this.userID == this.event.ownerInfo.id && this.userType == this.event.eventOwnerType) {
                     this.selfView = true;
+                    this.rsvpButtonStatus = true;
                 }
             }
             catch (error) {
@@ -352,6 +386,95 @@ export default {
             }
             catch (error) {
                 this.otherEventsError = "An error occurred while loading other events, please try again!";
+                console.log(error);
+            }
+        },
+
+        // Function to check if current user has RSVPed for the event
+        async checkRSVP() {
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/events/checkAttendance/` + this.$route.params.eventID + "/" + this.userID + "/" + this.userType);
+                this.rsvpStatus = response.data.attendance;
+            }
+            catch (error) {
+                this.rsvpStatus = false;
+                console.log(error);
+            }
+        },
+
+        // Function to check if user is following the organizer
+        async checkFollow() {
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/checkUserInFollowList/` + this.userID + "/" + this.userType + "/" + this.event.ownerInfo.id + "/" + this.event.eventOwnerType);
+                this.followStatus = response.data.following;
+            }
+            catch (error) {
+                this.followStatus = false;
+                console.log(error);
+            }
+        },
+
+        // Function to follow / unfollow the organizer
+        async editFollow(action) {
+
+            // Toggle Follow
+            if (action == 'follow') {
+                this.followStatus = true;
+            }
+            else if (action == 'unfollow') {
+                this.followStatus = false;
+            }
+            try {
+                await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/updateFollowLists`, 
+                    {
+                        userID: this.userID,
+                        action: action,
+                        target: this.event.eventOwnerType + 's',
+                        followerID: this.event.ownerInfo.id,
+                    }, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+            }
+            catch (error) {
+                console.log(error);
+            }
+            },
+
+        // Function to RSVP for the event
+        rsvpEvent() {
+
+            // Check if the user has already logged in
+            if (this.userType == 'defaultUser') {
+                // Redirect to login page
+                this.$router.push('/login');
+                return;
+            }
+            try {
+                this.$axios.post(`${process.env.VUE_APP_API_URL}/events/addAttendee`, {
+                    eventID: this.event.id,
+                    userID: this.userID,
+                    userType: this.userType
+                })
+                .then((response) => {
+                    if (response.status == 201) {
+                        const toast = useToast();
+                        toast.success('RSVP successful!');
+                        this.getAttendees();
+                        this.rsvpStatus = true;
+                    }
+                    else {
+                        console.log(response.data.message);
+                        const toast = useToast();
+                        toast.error('RSVP failed. Please try again!');
+                    }
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+            }
+            catch (error) {
                 console.log(error);
             }
         },

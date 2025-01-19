@@ -1,7 +1,7 @@
 # Port: 5701
 # Routes: 
 #   [events] /getEvents (GET), /getSpecificEvent (GET), /getUserEvents (GET), /createEvent (POST), /updateEvent (PUT), /deleteEvent (DELETE)
-#   [attendees] /getAttendees (GET), /addAttendee (POST), /removeAttendee (DELETE)
+#   [attendees] /getAttendees (GET), /checkAttendance (GET), /addAttendee (POST), /removeAttendee (DELETE)
 # -----------------------------------------------------------------------------------------
 
 import os
@@ -113,7 +113,7 @@ def getEvents(offset):
 # -----------------------------------------------------------------------------------------
 # [GET] Get an event by event id
 # Purpose: Get an event by event id
-# Used: 
+# Used: SpecificEventPage.vue (inside views folder)
 # Output: Possible return codes [200 - Retrieval success, 400 - Bad request, 404 - No such event/Event owner not found, 500 - Internal server error]
 @blueprint.route('/getSpecificEvent/<event_id>', methods=['GET'])
 def getSpecificEvent(event_id):
@@ -162,7 +162,11 @@ def getSpecificEvent(event_id):
 # -----------------------------------------------------------------------------------------
 # [GET] Get all events by a user/producer/venue
 # Purpose: Get all events by a user/producer/venue
-# Used:
+# Used: 
+#     1. VenueProfile.vue (inside views folder inside venues folder)
+#     2. ProducerProfile.vue (inside views folder inside producers folder)
+#     3. UserProfile.vue (inside views folder inside users folder)
+#     4. SpecificEventPage.vue (inside views folder)
 # Output: Possible return codes [200 - Retrieval success, 404 - User not found/No events, 500 - Internal server error]
 @blueprint.route('/getUserEvents/<user_id>/<user_type>/<offset>', methods=['GET'])
 def getUserEvents(user_id, user_type, offset):
@@ -461,7 +465,7 @@ def deleteEvent():
 # -----------------------------------------------------------------------------------------
 # [GET] Get all attendees of an event
 # Purpose: Get all attendees of an event
-# Used:
+# Used: SpecifiEventPage.vue (inside views folder)
 # Output: Possible return codes [200 - Retrieval success, 400 - Missing required fields or required fields are empty / No such event, 500 - Internal server error]
 @blueprint.route('/getAttendees/<event_id>', methods=['GET'])
 def getAttendees(event_id):
@@ -508,9 +512,44 @@ def getAttendees(event_id):
 
 
 # -----------------------------------------------------------------------------------------
+# [GET] Check if a user is attending an event
+# Purpose: Check if a user is attending an event
+# Used: SpecifiEventPage.vue (inside views folder)
+# Output: Possible return codes [200 - Retrieval success, 400 - Missing required fields or required fields are empty / No such event, 500 - Internal server error]
+@blueprint.route('/checkAttendance/<event_id>/<user_id>/<user_type>', methods=['GET'])
+def checkAttendance(event_id, user_id, user_type):
+
+    conn = g.db
+    cursor = conn.cursor()
+
+    try:
+        # Step 1: Get the event information
+        cursor.execute('SELECT * FROM events WHERE id = %s', (event_id,))
+        event = cursor.fetchone()
+
+        if not event:
+            return jsonify({'error': 'No such event'}), 400
+
+        # Step 2: Check if the user is attending the event
+        cursor.execute('SELECT * FROM "eventAttendees" WHERE "eventID" = %s AND "userID" = %s AND "attendeeType" = %s', (event_id, user_id, user_type,))
+        attendee = cursor.fetchone()
+
+        if not attendee:
+            return jsonify({'attendance': False}), 200
+
+        return jsonify({'attendance': True}), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+
+
+# -----------------------------------------------------------------------------------------
 # [POST] Add an attendee to an event
 # Purpose: Add an attendee to an event
-# Used:
+# Used: SpecifiEventPage.vue (inside views folder)
 # Input:
 #    1. eventID
 #    2. userID
@@ -545,8 +584,15 @@ def addAttendee():
 
         if not user_info:
             return jsonify({'error': 'User not found'}), 400
+        
+        # Step 4: Check if the user is already an attendee
+        cursor.execute('SELECT * FROM "eventAttendees" WHERE "eventID" = %s AND "userID" = %s AND "attendeeType" = %s', (data['eventID'], data['userID'], data['userType'],))
+        attendee = cursor.fetchone()
 
-        # Step 4: Add the attendee to the event
+        if attendee:
+            return jsonify({'error': 'User is already an attendee'}), 400
+
+        # Step 5: Add the attendee to the event
         cursor.execute('INSERT INTO "eventAttendees" ("eventID", "userID", "attendeeType", "attendeeStatus") VALUES (%s, %s, %s, TRUE)', (data['eventID'], data['userID'], data['userType'],))
         conn.commit()
 

@@ -2352,7 +2352,7 @@
                 <!-- ------- END Opening Hours + Reservation Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
                     <!-- Events Details -->
                     <div class="col-xl-12 col-lg-4 col-md-6 col-12">
-                        <EventBox :selfView="selfView" :userID="viewerID" :targetVenueID="targetVenue" userType="venue"/>
+                        <EventBox :selfView="selfView" :userID="viewerID" :targetVenueID="targetVenue.id" userType="venue"/>
                     </div>
                 </div>
 

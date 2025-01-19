@@ -2,7 +2,7 @@
     <div class="square primary-square-green-outline rounded p-3 mb-3">
 
         <!-- Title if current user is profile owner -->
-        <div class="d-flex justify-content-between align-items-center">
+        <div v-if="selfView" class="d-flex justify-content-between align-items-center">
             <h3>Your Events</h3>
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">
                 <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
@@ -10,9 +10,9 @@
         </div>
 
         <!-- Title if not current user -->
-        <!-- <div>
+        <div v-else>
             <h3>Upcoming Events</h3>
-        </div> -->
+        </div>
 
         <!-- List of events -->
         <div class="row">

@@ -4,7 +4,7 @@
 #           /getVenue/<id> (GET), /getVenuesAPI (GET), /getDrinkTypes (GET), /getRequestListings (GET), /getRequestListing/<id> (GET), /getRequestEdits (GET), 
 #           /getRequestEdit/<id> (GET), /getModRequests (GET), /getFlavourTags (GET), /getSubTags (GET), /getObservationTags (GET), /getColours (GET), 
 #           /getSpecialColours (GET), /getLanguages (GET), /getServingTypes (GET), /getProducersProfileViews (GET), /getVenuesProfileViewsByVenue/<id> (GET), /getRequestInaccuracyByVenue/<id> (GET)
-#           /getUserFollowList/<id> (GET), /getUserNames (GET)
+#           /getUserFollowList/<id> (GET), /getUserNames (GET), /checkFollowing/<userId>/<userType>/<followId>/<followType> (GET)
 # -----------------------------------------------------------------------------------------
 
 # pip install python-bsonjs
@@ -2051,4 +2051,93 @@ def getAllUsernames():
     
     finally:
         cur.close()
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Check if a user is in the follow list of another user
+@blueprint.route("/checkUserInFollowList/<userId>/<userType>/<followId>/<followType>")
+def checkUserInFollowList(userId, userType, followId, followType):
+    conn = g.db
+    cur = conn.cursor()
+
+    try:
+        # Step 1: Check if userId and followId are valid users in the table based on userType and followType
+        if userType == 'user':
+            cur.execute('SELECT * FROM "users" WHERE "id" = %s', (userId,))
+        elif userType == 'producer':
+            cur.execute('SELECT * FROM "producers" WHERE "id" = %s', (userId,))
+        else:
+            cur.execute('SELECT * FROM "venues" WHERE "id" = %s', (userId,))
+        user_data = cur.fetchone()
+
+        if user_data is None:
+            return jsonify(
+                {
+                    "code": 404,
+                    "message": "User not found."
+                }
+            ), 404
+
+        if followType == 'user':
+            cur.execute('SELECT * FROM "users" WHERE "id" = %s', (followId,))
+        elif followType == 'producer':
+            cur.execute('SELECT * FROM "producers" WHERE "id" = %s', (followId,))
+        else:
+            cur.execute('SELECT * FROM "venues" WHERE "id" = %s', (followId,))
+        follow_data = cur.fetchone()
+        
+        if follow_data is None:
+            return jsonify(
+                {
+                    "code": 404,
+                    "message": "Follow user not found."
+                }
+            ), 404
+        
+        # Step 2: Retrieve the follow list of the user
+        if followType == 'venue':
+            cur.execute('SELECT venues FROM "usersFollowLists" WHERE "userId" = %s', (userId,))
+        elif followType == 'producer':
+            cur.execute('SELECT producers FROM "usersFollowLists" WHERE "userId" = %s', (userId,))
+        else:
+            cur.execute('SELECT users FROM "usersFollowLists" WHERE "userId" = %s', (userId,))
+        follow_list = cur.fetchone()
+
+        if follow_list is None:
+            return jsonify(
+                {
+                    "code": 404,
+                    "message": "Follow list not found."
+                }
+            ), 404
+        
+        # Step 3: Check if the followId is in the follow list of the userId
+        if followId in follow_list['venues']:
+            return jsonify(
+                {
+                    "code": 200,
+                    "following": True
+                }
+            ), 200
+        
+        return jsonify(
+            {
+                "code": 404,
+                "following": False
+            }
+        ), 404
+
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred checking the follow list."
+            }
+        ), 500
+    
+    finally:
+        cur.close()
+
+
 
