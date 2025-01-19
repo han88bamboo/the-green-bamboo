@@ -594,7 +594,10 @@ def importListings():
                 for data_type, value in zip(column_data_types, row):
                     if data_type is float:
                         value = value.replace('%', '').strip()
-                        converted_value = data_type(value) if value else None
+                        try:
+                            converted_value = data_type(value) if value and value.lower() != 'n/a' else None
+                        except ValueError:
+                            converted_value = None
                     else:
                         converted_value = data_type(value) if value else None
                     converted_row.append(converted_value)
@@ -666,6 +669,9 @@ def importListings():
                 listings_to_insert.append(listing_data)
             # Now, insert the listings into the 'strings' table
             for listing in listings_to_insert:
+                for key, value in listing.items():
+                    if isinstance(value, str) and len(value) > 255:
+                        listing[key] = value[:255]
                 columns = ', '.join(f'"{col}"' for col in listing.keys())
                 placeholders = ', '.join(['%s'] * len(listing))
                 sql = f"INSERT INTO listings ({columns}) VALUES ({placeholders})"

@@ -70,18 +70,18 @@
                     <!-- details -->
                     <div class="col-lg-9 col-12 text-start padding-for-followthisbusinessbutton-large-screen mobile-col-7 mobile-ps-0 mobile-pe-0">
                         <div class="container text-start pe-lg-0">
-                            <!-- country  -->
-                            <div class="row ">
+                            <!-- country -->
+                            <div class="row">
                                 <div class="col-8 pe-4 ps-0">
                                     <!-- [if] editing -->
                                     <div v-if="editing">
-                                        <label for="originCountryInput "> Country of Origin </label>
+                                        <label for="originCountryInput"> Country of Origin </label>
                                         <input type="text" class="form-control mb-3" id="originCountryInput" aria-describedby="originCountry" v-model="edit_originCountry">
                                     </div>
                                     <!-- [else] not editing -->
                                     <div v-else>
-                                        <h5  class="text-body-secondary mobile-view-hide"> {{ specified_producer["originCountry"] }} </h5>
-                                        <h6  class="text-body-secondary mobile-view-show mb-0"> {{ specified_producer["originCountry"] }} </h6>
+                                        <h5 class="text-body-secondary mobile-view-hide">{{ specified_producer["originCountry"] }}</h5>
+                                        <h6 class="text-body-secondary mobile-view-show mb-0">{{ specified_producer["originCountry"] }}</h6>
                                     </div>
                                 </div>
                                 <!-- claim this business / add listing & edit profile -->
@@ -90,11 +90,8 @@
                                     <span v-if="correctProducer || isAdmin" class="row"> 
                                         <!-- add listing-->
                                         <div v-if="correctProducer && editing == false" class="col d-grid no-padding">
-                                            <!-- if not editing -->
                                             <button type="button" class="btn tertiary-btn-blue-outline rounded-0 reverse-clickable-text" v-on:click="window.location.href='/listing/create'">
-                                                <!--<router-link :to="`/listing/create`" class="reverse-clickable-text">-->
-                                                    Add Listing
-                                                <!--</router-link>-->
+                                                Add Listing
                                             </button>
                                         </div>
                                         <!-- edit profile -->
@@ -117,41 +114,101 @@
                             </div>
                             <!-- producer -->
                             <div class="row">
-                                <!-- [if] editing -->
                                 <div v-if="editing" class="pe-0 ps-0">
                                     <label for="producerNameInput"> Producer Name </label>
                                     <input type="text" class="form-control mb-3" id="producerNameInput" aria-describedby="producerDesc" v-model="edit_producerName">
                                 </div>
-                                <!-- [else] not editing -->
                                 <div v-else class="ps-0 pe-0">
-                                    <h3  class="text-body-secondary mobile-view-hide"> <b> {{ specified_producer["producerName"] }} </b> </h3>
-                                    <h4  class="text-body-secondary mobile-view-show pe-0 ps-0 mb-0"> <b> {{ specified_producer["producerName"] }} </b> </h4>
+                                    <h3 class="text-body-secondary mobile-view-hide"><b>{{ specified_producer["producerName"] }}</b></h3>
+                                    <h4 class="text-body-secondary mobile-view-show pe-0 ps-0 mb-0"><b>{{ specified_producer["producerName"] }}</b></h4>
                                 </div>
                             </div>
                             <!-- description -->
                             <div class="row scrollable">
                                 <div class="col-12 pe-lg-0 ps-0">
-                                    <!-- [if] editing -->
                                     <div v-if="editing">
                                         <label for="producerDescInput"> Producer Description </label>
-                                        <textarea type="text" class="form-control mb-3" id="producerDescInput" aria-describedby="producerDesc" v-model="edit_producerDesc"> </textarea>
+                                        <textarea type="text" class="form-control mb-3" id="producerDescInput" aria-describedby="producerDesc" v-model="edit_producerDesc"></textarea>
                                     </div>
-                                    <!-- [else] not editing -->
                                     <div v-else class="ps-0 pe-0">
                                         <div v-if="specified_producer.producerDesc.length > 150">
-                                            <p v-if="!showFullProducerDescription" class="text-body-secondary fs m-0 mobile-rating-smaller-text-2"> 
+                                            <p v-if="!showFullProducerDescription" class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">
                                                 {{ specified_producer["producerDesc"].slice(0,150) + (specified_producer["producerDesc"].length > 150 ? '...' : '') }} 
                                                 <a @click="showFullProducerDescription = true" style="font-weight: bold;">(Read More)</a>
                                             </p>
-                                            <p v-else class="text-body-secondary fs m-0 mobile-rating-smaller-text-2"> 
+                                            <p v-else class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">
                                                 {{ specified_producer["producerDesc"] }} 
                                                 <a @click="showFullProducerDescription = false" style="font-weight: bold;">(Read Less)</a>
                                             </p>
                                         </div>
-                                        <p v-else class="text-body-secondary fs m-0 mobile-rating-smaller-text-2"> 
-                                            {{ specified_producer["producerDesc"] }} 
-                                        </p>
+                                        <p v-else class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">{{ specified_producer["producerDesc"] }}</p>
                                     </div>
+                                </div>
+                            </div>
+                            <!-- Additional Fields -->
+                            <div v-if="editing" class="row" style="margin-left: -1.4rem;">
+                                <!-- Year Founded and Owner -->
+                                <div class="col-6">
+                                    <label for="yearFoundedInput">Year Founded</label>
+                                    <input type="number" class="form-control mb-3" id="yearFoundedInput" v-model="edit_yearFounded">
+                                </div>
+                                <div class="col-6">
+                                    <label for="ownerInput">Owner</label>
+                                    <input type="text" class="form-control mb-3" id="ownerInput" v-model="edit_owner">
+                                </div>
+
+                                <!-- Location and Website -->
+                                <div class="col-6">
+                                    <label for="locationInput">Location</label>
+                                    <input type="text" class="form-control mb-3" id="locationInput" v-model="edit_location">
+                                </div>
+                                <div class="col-6">
+                                    <label for="websiteInput">Website</label>
+                                    <input type="url" class="form-control mb-3" id="websiteInput" v-model="edit_website">
+                                </div>
+
+                                <!-- Status -->
+                                <div class="col-12 d-flex align-items-center mb-3">
+                                    <label class="me-3 mb-0">Status:</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="statusSwitch" v-model="edit_status" :true-value="'active'" :false-value="'inactive'">
+                                        <label class="form-check-label" for="statusSwitch">{{ edit_status === 'active' ? 'Active' : 'Inactive' }}</label>
+                                    </div>
+                                </div>
+
+                                <!-- Open for Tours -->
+                                <div class="col-12 d-flex align-items-center">
+                                    <label class="me-3 mb-0">Open for Tours:</label>
+                                    <input type="checkbox" id="openForToursCheckbox" v-model="edit_openForTours" :true-value="true" :false-value="false">
+                                    <label for="openForToursCheckbox" class="ms-2">{{ edit_openForTours === true ? 'Yes' : 'No' }}</label>
+                                </div>
+                            </div>
+                            <div v-else class="row" style="margin-top: 4.5rem; margin-left: -1.4rem;">
+                                <div class="col-12">
+                                    <p class="text-body-secondary fs-6 mb-0">
+                                        <span v-if="specified_producer.yearFounded">
+                                            <strong>Year Founded:</strong> {{ specified_producer.yearFounded }}
+                                        </span>
+                                        <span v-if="specified_producer.yearFounded && (specified_producer.activeStatus || specified_producer.owner || specified_producer.openForTours || specified_producer.website)"> | </span>
+                                        <span v-if="specified_producer.activeStatus !== null && specified_producer.activeStatus !== undefined">
+                                            <strong>Status:</strong> {{ specified_producer.activeStatus === 'active' ? 'Active' : 'Inactive' }}
+                                        </span>
+                                        <span v-if="(specified_producer.activeStatus !== null && specified_producer.activeStatus !== undefined) && (specified_producer.owner || specified_producer.openForTours || !specified_producer.openForTours || specified_producer.website)"> | </span>
+
+                                        <span v-if="specified_producer.owner">
+                                            <strong>Owner:</strong> {{ specified_producer.owner }}
+                                        </span>
+                                        <span v-if="specified_producer.owner && (specified_producer.openForTours || specified_producer.website)"> | </span>
+
+                                        <span v-if="specified_producer.openForTours !== null && specified_producer.openForTours !== undefined">
+                                            <strong>{{ specified_producer.openForTours === true ? 'Open' : 'Closed' }} for Tours</strong>
+                                        </span>
+                                        <span v-if="(specified_producer.openForTours !== null && specified_producer.openForTours !== undefined) && specified_producer.website"> | </span>
+
+                                        <span v-if="specified_producer.website">
+                                            <strong>Website:&nbsp;</strong>{{ specified_producer.website }}
+                                        </span>
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -1453,6 +1510,12 @@
                 edit_producerName: '',
                 edit_producerDesc: '',
                 edit_originCountry: '',
+                edit_yearFounded: null,
+                edit_status: '',
+                edit_owner: '',
+                edit_location: '',
+                edit_openForTours: '',
+                edit_website: '',              
 
                 // search
                 searchInput: '',
@@ -2059,6 +2122,12 @@
                 this.edit_producerName = this.specified_producer["producerName"];
                 this.edit_producerDesc = this.specified_producer["producerDesc"];
                 this.edit_originCountry = this.specified_producer["originCountry"];
+                this.edit_yearFounded = this.specified_producer["yearFounded"];
+                this.edit_status = this.specified_producer["activeStatus"];
+                this.edit_owner = this.specified_producer["owner"];
+                this.edit_location = this.specified_producer["location"];
+                this.edit_openForTours = this.specified_producer["openForTours"];
+                this.edit_website = this.specified_producer["website"];
             },
 
             // edit profile photo
@@ -2103,7 +2172,13 @@
                             image64: this.image64,
                             producerName: this.edit_producerName,
                             producerDesc: this.edit_producerDesc,
-                            originCountry: this.edit_originCountry
+                            originCountry: this.edit_originCountry,
+                            yearFounded: this.edit_yearFounded === '' ? null : this.edit_yearFounded,
+                            activeStatus: this.edit_status,
+                            owner: this.edit_owner,
+                            location: this.edit_location,
+                            openForTours: this.edit_openForTours,
+                            website: this.edit_website
                         },
                         {
                         headers: {
@@ -2447,6 +2522,12 @@
                     businessDesc: this.specified_producer.producerDesc,
                     businessLink: this.$route.fullPath,
                     originCountry: this.specified_producer.originCountry,
+                    yearFounded: this.specified_producer.yearFounded,
+                    activeStatus: this.specified_producer.activeStatus,
+                    owner: this.specified_producer.owner,
+                    location: this.specified_producer.location,
+                    openForTours: this.specified_producer.openForTours,
+                    website: this.specified_producer.website
                 }
                 this.$router.push({
                     path: '/BusinessSignup', 
