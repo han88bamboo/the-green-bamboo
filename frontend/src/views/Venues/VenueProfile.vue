@@ -2348,9 +2348,13 @@
 
                         </div>
                     </div>
-                </div>
 
                 <!-- ------- END Opening Hours + Reservation Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+                    <!-- Events Details -->
+                    <div class="col-xl-12 col-lg-4 col-md-6 col-12">
+                        <EventBox :selfView="selfView" :userID="viewerID" :targetVenueID="targetVenue" userType="venue"/>
+                    </div>
+                </div>
 
             </div>
             
@@ -2376,6 +2380,7 @@
     import ListingRowDisplayProducerProfile from '@/components/ListingRowDisplayProducerProfile.vue';
     import BookmarkIcon from '@/components/BookmarkIcon.vue';
     import BookmarkModal from '@/components/BookmarkModal.vue';
+    import EventBox from '@/components/EventBox.vue';
 
     export default {
         name: 'profileVenue',
@@ -2384,7 +2389,8 @@
             draggable, 
             ListingRowDisplayProducerProfile,
             BookmarkIcon, 
-            BookmarkModal
+            BookmarkModal,
+            EventBox
         },
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         data() {

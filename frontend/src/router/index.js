@@ -229,6 +229,13 @@ const routes = [
     component: () => import('../views/Users/ClubPostView.vue')
   },
   // -------------------------------------------------------------------------------------
+
+  // ----------------- Events -----------------
+  {
+    path: '/event/:eventID',
+    name: 'eventview',
+    component: () => import('../views/SpecificEventPage.vue')
+  },
   
   {
     // TO BE DELETED

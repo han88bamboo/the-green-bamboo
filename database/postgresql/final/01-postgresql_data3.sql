@@ -537,10 +537,12 @@ CREATE TABLE "events" (
     "eventEndDate" DATE,
     "eventStartTime" TIME,
     "eventEndTime" TIME,
+    "eventLimit" INTEGER,
     "eventBanners" TEXT[],
     "ticketed" BOOLEAN,
+    "paidEvent" BOOLEAN,
     "eventLocation" TEXT,
-    "eventLink" VARCHAR(255),
+    "paymentLink" VARCHAR(255),
     "eventOwnerID" INTEGER, -- [!] "producers" or "venues" or "users" id in their respective tables 
     "eventOwnerType" VARCHAR(255) -- [!] "producers" or "venues" or "users"
 );
@@ -549,7 +551,7 @@ CREATE TABLE "events" (
 CREATE TABLE "eventAttendees" (
     "id" SERIAL PRIMARY KEY,
     "eventID" INTEGER REFERENCES "events"("id") ON DELETE SET NULL, -- [!] References events FK
-    "userID" INTEGER REFERENCES "users"("id") ON DELETE SET NULL, -- [!] References users FK
+    "userID" INTEGER,
     "attendeeType" VARCHAR(255),
     "attendeeStatus" BOOLEAN
 );

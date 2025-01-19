@@ -478,14 +478,14 @@ def getAttendees(event_id):
             return jsonify({'error': 'No such event'}), 400
 
         # Step 2: Get the attendees information
-        cursor.execute('SELECT * FROM eventAttendees WHERE eventID = %s', (event_id,))
+        cursor.execute('SELECT * FROM "eventAttendees" WHERE "eventID" = %s', (event_id,))
         attendees = cursor.fetchall()
 
         return_data = []
 
         for attendee in attendees:
             user_id = attendee['userID']
-            user_type = attendee['userType']
+            user_type = attendee['attendeeType']
 
             user_info = getUserInfoByID(cursor, user_id, user_type)
 
@@ -547,7 +547,7 @@ def addAttendee():
             return jsonify({'error': 'User not found'}), 400
 
         # Step 4: Add the attendee to the event
-        cursor.execute('INSERT INTO eventAttendees (eventID, userID, userType, attendeeStatus) VALUES (%s, %s, %s, TRUE)', (data['eventID'], data['userID'], data['userType'],))
+        cursor.execute('INSERT INTO "eventAttendees" ("eventID", "userID", "attendeeType", "attendeeStatus") VALUES (%s, %s, %s, TRUE)', (data['eventID'], data['userID'], data['userType'],))
         conn.commit()
 
         return jsonify({'message': 'Attendee added successfully'}), 201
@@ -600,7 +600,7 @@ def removeAttendee():
             return jsonify({'error': 'User not found'}), 400
 
         # Step 4: Remove the attendee from the event
-        cursor.execute('DELETE FROM eventAttendees WHERE eventID = %s AND userID = %s AND userType = %s', (data['eventID'], data['userID'], data['userType'],))
+        cursor.execute('DELETE FROM "eventAttendees" WHERE "eventID" = %s AND "userID" = %s AND "attendeeType" = %s', (data['eventID'], data['userID'], data['userType'],))
         conn.commit()
 
         return jsonify({'message': 'Attendee removed successfully'}), 200
