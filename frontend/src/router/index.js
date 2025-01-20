@@ -48,6 +48,11 @@ const routes = [
     name: 'imagesearch',
     component: () => import('../views/ImageSearchView.vue')
   },
+  {
+    path: '/successfulOnboarding',
+    name: 'successfulonboarding',
+    component: () => import('../views/SuccessfulOnboarding.vue')
+  },
   // -------------------------------------------------------------------------------------
 
   // ----------------- PROFILE PAGES -----------------
