@@ -1563,7 +1563,7 @@
     
         </div> <!-- end of your drinks shelf & brands you follow -->
 
-    
+        <FooterBar />
     
 
 </template>
@@ -1576,7 +1576,8 @@
     // import ReviewModal from '@/components/EditReview.vue'
     import BookmarkIcon from '@/components/BookmarkIcon.vue';
     import BookmarkModal from '@/components/BookmarkModal.vue';
-    
+    import FooterBar from "@/components/FooterBar.vue";
+
     export default {
         // setup(){
 
@@ -1585,7 +1586,8 @@
         components: {
             NavBar,
             BookmarkIcon, 
-            BookmarkModal
+            BookmarkModal,
+            FooterBar
         },
         data() {
             return {

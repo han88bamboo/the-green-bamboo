@@ -2368,6 +2368,7 @@
 
         </div>
     </div>
+    <FooterBar />
 </template>
 
 <script>
@@ -2376,6 +2377,7 @@
     import ListingRowDisplayProducerProfile from '@/components/ListingRowDisplayProducerProfile.vue';
     import BookmarkIcon from '@/components/BookmarkIcon.vue';
     import BookmarkModal from '@/components/BookmarkModal.vue';
+    import FooterBar from "@/components/FooterBar.vue";
 
     export default {
         name: 'profileVenue',
@@ -2384,7 +2386,8 @@
             draggable, 
             ListingRowDisplayProducerProfile,
             BookmarkIcon, 
-            BookmarkModal
+            BookmarkModal,
+            FooterBar
         },
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         data() {

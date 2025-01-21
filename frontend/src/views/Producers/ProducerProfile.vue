@@ -1382,6 +1382,7 @@
             :listingID="bookmarkListingID" />
 
     </div> <!-- end of main content -->
+    <FooterBar />
 
 </template>
 
@@ -1394,7 +1395,7 @@
     import ListingRowDisplayProducerProfile from '@/components/ListingRowDisplayProducerProfile.vue';
     import BookmarkIcon from '@/components/BookmarkIcon.vue';
     import BookmarkModal from '@/components/BookmarkModal.vue';
-
+    import FooterBar from "@/components/FooterBar.vue";
 
 
     export default {
@@ -1402,7 +1403,8 @@
             NavBar,
             ListingRowDisplayProducerProfile,
             BookmarkIcon, 
-            BookmarkModal
+            BookmarkModal,
+            FooterBar
         },
         data() {
             return {
