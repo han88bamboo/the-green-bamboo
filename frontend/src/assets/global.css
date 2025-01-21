@@ -1,5 +1,7 @@
 /* global.css Stylesheet */
 
+@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css");
+
 body {
     color: black;
     background-color: white !important;   /* tzh changed F2F2F2 to white */
@@ -2039,5 +2041,14 @@ font-size: 17px;
 
     .d-flex {
         flex-direction: column;
+    }
+}
+
+.footer-col {
+    max-width:320px;
+}
+@media (max-width: 576px) {
+    .footer-col {
+        max-width:none;
     }
 }
