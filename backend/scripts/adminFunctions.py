@@ -640,6 +640,7 @@ def importListings():
 
                 # Upload url to s3 bucket to store as own image
                 s3_url = s3Images.uploadURLtoS3(converted_row[11]) if converted_row[11] else None
+                print("Image uploaded to S3", s3_url)
 
                 # # Convert the image URL to base64
                 # base64_str = image_url_to_base64(converted_row[11]) if converted_row[11] else None
@@ -677,6 +678,8 @@ def importListings():
                 sql = f"INSERT INTO listings ({columns}) VALUES ({placeholders})"
                 cur.execute(sql, list(listing.values()))
             conn.commit()
+
+            print("Bulk Import Listings Successful")
             
         except Exception as e:
             import traceback
@@ -692,12 +695,15 @@ def importListings():
         finally:
             cur.close()
 
+        print("Done")
+
         return jsonify(
             {
                 "code": 201,
-                "message": "Bulk Import Listings Successful"
+                "message": f"{file.filename} has been fully uploaded!"
             }
         ), 201
+
     print("nopes")
 
 
