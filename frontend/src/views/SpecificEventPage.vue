@@ -35,25 +35,31 @@
                 <!-- Event banner -->
                 <div class="row d-flex justify-content-center align-items-center">
                     
-                    <!-- Banner carousel if there are more than 1 event banner provided -->
-                    <div v-if="event.eventBanners" id="eventBannerCarousel" chan class="carousel slide" data-bs-ride="carousel" style="height: 500px; width: 600px">
-                        <div class="carousel-inner h-100">
-                            <div v-for="(banner, index) in event.eventBanners" :key="index" class="carousel-item" :class="{ active: index == 0 }">
-                                <div class="d-flex justify-content-center align-items-center h-100">
-                                    <img :src="banner" class="d-block event-banner" alt="Event Banner">
+                    <div v-if="event.eventBanners" class="d-flex justify-content-center align-items-center">
+                        <!-- Display single event banner if only 1 event banner provided -->
+                        <img v-if="event.eventBanners.length == 1" :src="event.eventBanners[0]" style="height: 500px; width: 600px" class="img-fluid event-banner" alt="Event Banner">
+                        
+                        <!-- Banner carousel if there are more than 1 event banner provided -->
+                        <div v-else id="eventBannerCarousel" chan class="carousel slide" data-bs-ride="carousel" style="height: 500px; width: 600px">
+                            <div class="carousel-inner h-100">
+                                <div v-for="(banner, index) in event.eventBanners" :key="index" class="carousel-item" :class="{ active: index == 0 }">
+                                    <div class="d-flex justify-content-center align-items-center h-100">
+                                        <img :src="banner" class="d-block event-banner" alt="Event Banner">
+                                    </div>
                                 </div>
                             </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#eventBannerCarousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon custom-carousel-color" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#eventBannerCarousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon custom-carousel-color" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
                         </div>
-                        <button class="carousel-control-prev" type="button" data-bs-target="#eventBannerCarousel" data-bs-slide="prev">
-                            <span class="carousel-control-prev-icon custom-carousel-color" aria-hidden="true"></span>
-                            <span class="visually-hidden">Previous</span>
-                        </button>
-                        <button class="carousel-control-next" type="button" data-bs-target="#eventBannerCarousel" data-bs-slide="next">
-                            <span class="carousel-control-next-icon custom-carousel-color" aria-hidden="true"></span>
-                            <span class="visually-hidden">Next</span>
-                        </button>
                     </div>
 
+                    <!-- Display default event banner if no event banner provided -->
                     <img v-else :src="defaultEventBanner" style="height: 500px; width: 600px" class="img-fluid event-banner" alt="Event Banner">
                 </div>
             </div>
@@ -107,7 +113,7 @@
 
                         <!-- Event Description -->
                         <h4 class="fw-bold mt-5">About This Event:</h4>
-                        <p>{{ event.eventDesc }}</p>
+                        <p id="eventDescriptionContainer" v-html="event.eventDesc"></p>
 
                         <!-- Event attendees -->
                         <div class="d-flex flex-row justify-content-between align-items-center mt-5">
@@ -149,7 +155,7 @@
                                     <!-- Button to remove the attendee -->
                                     <svg v-if="selfView" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="red" 
                                         class="bi bi-x-circle-fill position-absolute top-0 end-0" viewBox="0 0 16 16"
-                                        style="cursor: pointer;">
+                                        style="cursor: pointer;" data-bs-target="#removeAttendeeModal" data-bs-toggle="modal" @click="selectedAttendee = attendee">
                                         <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/>
                                     </svg>
                                 </div>
@@ -191,7 +197,7 @@
                                                         <!-- Button to remove the attendee -->
                                                         <svg v-if="selfView" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="red" 
                                                             class="bi bi-x-circle-fill position-absolute top-0 end-0" viewBox="0 0 16 16"
-                                                            style="cursor: pointer;">
+                                                            style="cursor: pointer;" data-bs-target="#removeAttendeeModal" data-bs-toggle="modal" @click="selectedAttendee = attendee">
                                                             <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/>
                                                         </svg>
                                                     </div>
@@ -205,6 +211,26 @@
                                 </div>
                             </div>
                             <!-- End of List of attendees Modal -->
+
+                            <!-- Start of Remove Attendee Modal -->
+                            <div class="modal fade" id="removeAttendeeModal" tabindex="-1" aria-labelledby="removeAttendeeModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="removeAttendeeModalLabel">Remove Attendee</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>Are you sure you want to remove this attendee?</p>
+                                        </div>  
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="button" class="btn btn-danger" data-bs-dismiss="modal" @click="removeAttendee(selectedAttendee)">Remove</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- End of Remove Attendee Modal -->
                         </div>
 
                         <!-- No attendees yet message -->
@@ -315,6 +341,9 @@ export default {
             // Variable to check if user has already RSVPed
             rsvpStatus: null,
             rsvpButtonStatus: false,
+
+            // Variable to store selected attendee ID for removal
+            selectedAttendee: null,
 
             // Event ID
             eventID: this.$route.params.eventID,
@@ -468,6 +497,37 @@ export default {
                         console.log(response.data.message);
                         const toast = useToast();
                         toast.error('RSVP failed. Please try again!');
+                    }
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+            }
+            catch (error) {
+                console.log(error);
+            }
+        },
+
+        // Function to remove an attendee from the event
+        removeAttendee(attendee) {
+            try {
+                this.$axios.delete(`${process.env.VUE_APP_API_URL}/events/removeAttendee`, {
+                    data: {
+                        eventID: this.event.id,
+                        userID: attendee.id,
+                        userType: attendee.userType
+                    }
+                })
+                .then((response) => {
+                    if (response.status == 200) {
+                        const toast = useToast();
+                        toast.success('Attendee removed successfully!');
+                        this.getAttendees();
+                    }
+                    else {
+                        console.log(response.data.message);
+                        const toast = useToast();
+                        toast.error('Failed to remove attendee. Please try again!');
                     }
                 })
                 .catch((error) => {

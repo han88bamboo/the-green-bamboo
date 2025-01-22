@@ -236,7 +236,7 @@ def getUserEvents(user_id, user_type, offset):
 # -----------------------------------------------------------------------------------------
 # [POST] Create an event
 # Purpose: Create an event
-# Used:
+# Used: EventBox.vue (inside components folder)
 # Input:
 #    1. eventName
 #    2. eventDesc
@@ -244,12 +244,14 @@ def getUserEvents(user_id, user_type, offset):
 #    4. eventEndDate
 #    5. eventStartTime
 #    6. eventEndTime
-#    7. eventBanners [Optional]
-#    8. ticketed
-#    9. eventLocation
-#    10. eventLink [Optional]
-#    11. eventOwnerID
-#    12. eventOwnerType
+#    7. eventLimit
+#    8. eventBanners [Optional]
+#    9. ticketed
+#    10. paidEvent 
+#    11. eventLocation
+#    12. paymentLink [Optional]
+#    13. eventOwnerID
+#    14. eventOwnerType
 # Output: Possible return codes [201 - Creation success, 400 - Missing required fields or required fields are empty / Event owner not found, 500 - Internal server error]
 @blueprint.route('/createEvent', methods=['POST'])
 def createEvent():
@@ -261,7 +263,7 @@ def createEvent():
         # Step 1: Get the input data
         data = request.json
 
-        required_fields = ['eventName', 'eventDesc', 'eventStartDate', 'eventEndDate', 'eventStartTime', 'eventEndTime', 'ticketed', 'eventLocation', 'eventOwnerID', 'eventOwnerType']
+        required_fields = ['eventName', 'eventDesc', 'eventStartDate', 'eventEndDate', 'eventStartTime', 'eventEndTime', 'eventLimit', 'ticketed', 'eventLocation', 'eventOwnerID', 'eventOwnerType']
 
         # Check if the required fields are present and not empty
         for field in required_fields:
@@ -289,21 +291,23 @@ def createEvent():
             event_banner_pg = "{" + ",".join([f'"{url}"' for url in event_banner]) + "}"  # Example: {"url1", "url2"}
         else:
             event_banner_pg = None  # NULL for no banners
-
+        
         # Step 4: Convert datetime values to datetime objects
         data['eventStartDate'] = datetime.strptime(data['eventStartDate'], '%Y-%m-%d')
         data['eventEndDate'] = datetime.strptime(data['eventEndDate'], '%Y-%m-%d')
 
-        # Check if eventLink is provided
-        if 'eventLink' in data and not data['eventLink']:
-            event_link = None
+        # Check if paymentLink is provided
+        if 'paymentLink' in data and not data['paymentLink']:
+            payment_link = None
         else:
-            event_link = data['eventLink']
+            payment_link = data['paymentLink']
 
+        # Convert eventLimit to integer
+        data['eventLimit'] = int(data['eventLimit'])
 
         # Step 5: Insert the event into the database
-        cursor.execute('INSERT INTO events (eventName, eventDesc, eventStartDate, eventEndDate, eventStartTime, eventEndTime, eventBanners, ticketed, eventLocation, eventLink, eventOwnerID, eventOwnerType) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)', 
-                       (data['eventName'], data['eventDesc'], data['eventStartDate'], data['eventEndDate'], data['eventStartTime'], data['eventEndTime'], event_banner_pg, data['ticketed'], data['eventLocation'], event_link, data['eventOwnerID'], data['eventOwnerType'],))
+        cursor.execute('INSERT INTO events ("eventName", "eventDesc", "eventStartDate", "eventEndDate", "eventStartTime", "eventEndTime", "eventLimit", "eventBanners", ticketed, "paidEvent", "eventLocation", "paymentLink", "eventOwnerID", "eventOwnerType") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)', 
+                       (data['eventName'], data['eventDesc'], data['eventStartDate'], data['eventEndDate'], data['eventStartTime'], data['eventEndTime'], data['eventLimit'], event_banner_pg, data['ticketed'], data['paidEvent'], data['eventLocation'], payment_link, data['eventOwnerID'], data['eventOwnerType'],))
         conn.commit()
 
         return jsonify({'message': 'Event created successfully'}), 201
@@ -327,12 +331,14 @@ def createEvent():
 #    4. eventEndDate
 #    5. eventStartTime
 #    6. eventEndTime
-#    7. eventBanners [Optional if no change and no image provided during creation]
-#    8. ticketed
-#    9. eventLocation
-#    10. eventLink [Optional]
-#    11. eventOwnerID
-#    12. eventOwnerType
+#    7. eventLimit
+#    8. eventBanners [Optional if no change and no image provided during creation]
+#    9. ticketed
+#    10. paidEvent
+#    11. eventLocation
+#    12. eventLink [Optional]
+#    13. eventOwnerID
+#    14. eventOwnerType
 # Output: Possible return codes [200 - Update success, 400 - Missing required fields or required fields are empty / No such event , 403 - Unauthorized to update the event, 500 - Internal server error]
 @blueprint.route('/updateEvent', methods=['PUT'])
 def updateEvent():
@@ -359,10 +365,46 @@ def updateEvent():
             return jsonify({'error': 'No such event'}), 400
 
         # Step 3: Check if the user who is updating the event is the owner of the event
-        if event['eventOwnerID'] != data['eventOwnerID'] or event['eventOwnerType'] != data['eventOwnerType']:
+        if event['eventOwnerID'] != data['eventOwnerID'] and event['eventOwnerType'] != data['eventOwnerType']:
             return jsonify({'error': 'Unauthorized to update this event'}), 403
 
-        
+        # Step 4: Build update query (only update the fields that has been changed / provided)
+        update_fields = []
+        update_values = []
+
+        if 'eventName' in data and data['eventName']:
+            update_fields.append('"eventName" = %s')
+            update_values.append(data['eventName'])
+        if 'eventDesc' in data and data['eventDesc']:
+            update_fields.append('"eventDesc" = %s')
+            update_values.append(data['eventDesc'])
+        if 'eventStartDate' in data and data['eventStartDate']:
+            update_fields.append('"eventStartDate" = %s')
+            update_values.append(datetime.strptime(data['eventStartDate'], '%Y-%m-%d'))
+        if 'eventEndDate' in data and data['eventEndDate']:
+            update_fields.append('"eventEndDate" = %s')
+            update_values.append(datetime.strptime(data['eventEndDate'], '%Y-%m-%d'))
+        if 'eventStartTime' in data and data['eventStartTime']:
+            update_fields.append('"eventStartTime" = %s')
+            update_values.append(datetime.strptime(data['eventStartTime'], '%H:%M'))
+        if 'eventEndTime' in data and data['eventEndTime']:
+            update_fields.append('"eventEndTime" = %s')
+            update_values.append(datetime.strptime(data['eventEndTime'], '%H:%M'))
+        if 'eventLimit' in data and data['eventLimit']:
+            update_fields.append('"eventLimit" = %s')
+            update_values.append(int(data['eventLimit']))
+        if 'ticketed' in data and data['ticketed']:
+            update_fields.append('ticketed = %s')
+            update_values.append(data['ticketed'])
+        if 'paidEvent' in data and data['paidEvent']:
+            update_fields.append('"paidEvent" = %s')
+            update_values.append(data['paidEvent'])
+        if 'eventLocation' in data and data['eventLocation']:
+            update_fields.append('"eventLocation" = %s')
+            update_values.append(data['eventLocation'])
+        if 'paymentLink' in data and data['paymentLink']:
+            update_fields.append('"paymentLink" = %s')
+            update_values.append(data['paymentLink'])
         if 'eventBanners' in data and len(data['eventBanners']) > 0:
             
             # Upload each image (base64Image) to S3
@@ -386,16 +428,12 @@ def updateEvent():
                 event_banner_pg = "{" + ",".join([f'"{url}"' for url in event_banner]) + "}"
 
 
-        # Convert datetime values to datetime objects
-        data['eventStartDate'] = datetime.strptime(data['eventStartDate'], '%Y-%m-%d')
-        data['eventEndDate'] = datetime.strptime(data['eventEndDate'], '%Y-%m-%d')
-        data['eventStartTime'] = datetime.strptime(data['eventStartTime'], '%H:%M')
-        data['eventEndTime'] = datetime.strptime(data['eventEndTime'], '%H:%M')
-
         # Step 4: Update the event
-        cursor.execute('UPDATE events SET eventName = %s, eventDesc = %s, eventStartDate = %s, eventEndDate = %s, eventStartTime = %s, eventEndTime = %s, eventBanners = %s, ticketed = %s, eventLocation = %s, eventLink = %s WHERE id = %s', 
-                       (data['eventName'], data['eventDesc'], data['eventStartDate'], data['eventEndDate'], data['eventStartTime'], data['eventEndTime'], event_banner_pg, data['ticketed'], data['eventLocation'], data['eventLink'], data['eventID'],))
-        conn.commit()
+        if update_fields:
+            update_query = ', '.join(update_fields)
+            update_values.append(data['eventID'])
+            cursor.execute(f'UPDATE events SET {update_query} WHERE id = %s', tuple(update_values))
+            conn.commit()
 
         return jsonify({'message': 'Event updated successfully'}), 200
 
@@ -609,7 +647,7 @@ def addAttendee():
 # -----------------------------------------------------------------------------------------
 # [DELETE] Remove an attendee from an event
 # Purpose: Remove an attendee from an event
-# Used:
+# Used: SpecifiEventPage.vue (inside views folder)
 # Input:
 #    1. eventID
 #    2. userID
