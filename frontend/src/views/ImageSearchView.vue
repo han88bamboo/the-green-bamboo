@@ -7,14 +7,19 @@
         
         <div class="greybox">
             <div class="upload-section">
-                <img
+              <!-- The file input is hidden -->
+              <input id="file-upload" type="file" @change="onFileChange" hidden />
+            
+              <!-- The label is styled like a button or clickable text -->
+              <img
                     src="@../../../Images/Others/camera.png"
                     alt="Camera"
                     class="camera-icon"
+                    @click="onImageLinkSubmit"
                 />
-                <label for="file-upload" class="custom-file-upload" @change="onFileChange">
+              <label for="file-upload" class="custom-file-upload">
                 Drag an image here or upload a file.
-                </label>
+              </label>
             </div>
             
             <div>OR</div>
