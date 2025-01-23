@@ -498,383 +498,553 @@
 
                 </div>
 
-                <!-- reviews and lists -->
+                <!-- Welcome section and Reviews/Lists -->
                 <div class="col-12 col-md-8">
+                    <div
+                        style="
+                        border: 1px solid #e0e0e0;
+                        border-radius: 8px;
+                        padding: 16px;
+                        background-color: #ffffff;
+                        "
+                    >
+                    <!-- Welcome section -->
+                    <div style="margin-bottom: 24px;">
+                    <div
+                        style="
+                        position: relative;
+                        width: 100%;
+                        height: 200px;
+                        overflow: hidden;
+                        border-radius: 0;
+                        margin-bottom: 16px;
+                        "
+                    >
+                        <img
+                        src="/Rectangle126.png"
+                        style="
+                            width: 100%;
+                            height: 100%;
+                            object-fit: cover;
+                        "
+                        />
+                        <div
+                        style="
+                            position: absolute;
+                            inset: 0;
+                            background-color: rgba(0, 0, 0, 0.2);
+                        "
+                        ></div>
+                    </div>
 
-                    <!-- reviews button -->
-                    <button 
-                        class="btn mx-1 fw-bold no-hover"
-                        :class="{ 'primary-btn-green active-toggle-button-user-profile': activeTab === 'reviews', 'primary-btn-green-thin-outline inactive-toggle-button-user-profile': activeTab !== 'reviews' }"
-                        @click="switchTab('reviews')"> 
-                        Reviews 
-                    </button>
-                    <button 
-                        class="btn mx-1 fw-bold no-hover"
-                        :class="{ 'primary-btn-green active-toggle-button-user-profile': activeTab !== 'reviews', 'primary-btn-green-thin-outline inactive-toggle-button-user-profile': activeTab === 'reviews' }"
-                        @click="switchTab('lists')"> 
-                        <span v-if="ownProfile">My Drink List</span>
-                        <span v-if="!ownProfile">Drink List</span> 
-                    </button>
+                    <h2 style="font-size: 24px; font-weight: normal; border-bottom: 1px solid #e0e0e0; padding-bottom: 16px;">
+                        Welcome to Drink-X. Let's get started!
+                    </h2>
 
-                    <div class="tab-content container mt-2 mobile-px-0" >
-                        <!-- reviews tab -->
-                        <div v-if="activeTab == 'reviews'" id="reviews">
-                            <h3 class="text-body-secondary text-start pt-4"> 
-                                <b> Recent Reviews </b> 
-                            </h3>
-                            <div v-if="Object.keys(recentReviews).length > 0">
-                                <div v-for="(review, index) in recentReviews.slice(0, 5)" :key="index">  
-                                    <div style="display: flex" class="row mb-2">
-                                        <div class="col-3 mobile-col-3 mobile-pe-0">
-                                            <!-- <img :src="'data:image/png;base64,' + (review.photo || defaultDrinkImage)" alt="" class="rounded bottle-img "> me-3 -->
-                                            <img :src="(review.photo || defaultDrinkImage)" alt="" class="rounded bottle-img ">
-
-                                        </div>
-                                        <div class="col-9 mobile-col-9 mobile-ps-2">
-                                            <a :href="'/listing/view/' + review.reviewTarget" style="text-decoration: none; color: #223957;">
-                                                <p class="fs-5 mobile-fs-7 mb-1 mobile-mb-0_5" ><b>{{ getListingName(review.reviewTarget) }}</b></p>
-                                            </a>
-                                            <!-- flavor tag -->
-                                                
-                                                <span v-for="(tag, index) in review.flavorTag" :key="index" class="mobile-view-hide badge rounded-pill-user-profile me-2 mb-1 mobile-me-0_5 mobile-mb-0_5 " :style="{ backgroundColor: getTagColor(tag) }"> {{ getTagName(tag) }}</span>
-                                                <span v-for="(tag, index) in review.observationTag" :key="index" class="mobile-view-hide badge rounded-pill-user-profile me-2 mb-1 mobile-me-0_5 mobile-mb-0_5" style="background-color: #F0B358; color:black;">{{ tag }}</span>
-
-                                                <span v-for="(tag, index) in review.flavorTag?.slice(0, 2)" :key="index" class="mobile-view-show badge rounded-pill-user-profile me-2 mb-1 mobile-me-0_5 mobile-mb-0_5 " :style="{ backgroundColor: getTagColor(tag) }"> {{ getTagName(tag) }}</span>
-                                                <span v-for="(tag, index) in review.observationTag.slice(0, 1)" :key="index" class="mobile-view-show badge rounded-pill-user-profile me-2 mb-1 mobile-me-0_5 mobile-mb-0_5" style="background-color: #F0B358; color:black;">{{ tag }}</span>                                        
-                                            <p class="mobile-fs-7">
-                                                <b>{{ review.reviewTitle }}</b> <br v-if="review.reviewTitle">
-                                                {{ review.reviewDesc }}
-                                            </p>
-                                            <p class="fs-4 mobile-fs-5 fw-bold rating-text mobile-mb-1" >
-                                                {{ review.rating.toFixed(1) }}★
-                                                <!--<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-star-fill " viewBox="0 0 16 16">
-                                                    <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                                </svg>-->
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div v-else class="container m-2">
-                                No reviews yet. To explore more drinks in the home page, 
-                                <router-link to="/" style="color: inherit;">click here</router-link>. 
-                            </div>
-
-                            <ListingRowDisplayUserProfile 
-                                :listingArr="favouriteListings" 
-                                displayName="Favourite Listings" 
-                                :user="user" 
-                                :listing="listing" 
-                                columnWidth="165px"
-                                @icon-clicked="handleIconClick"/>
-
-                            <ListingRowDisplayUserProfile 
-                                :listingArr="recentActivity" 
-                                displayName="Recent Activity" 
-                                :user="user" 
-                                :listing="listing" 
-                                columnWidth="165px"
-                                @icon-clicked="handleIconClick"/>
-
-
-
+                    <div>
+                        <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px;">
+                        <img
+                            src="/Layer3.png"
+                            style="
+                            width: 64px;
+                            height: 64px;
+                            object-fit: contain;
+                            border-radius: 4px;
+                            "
+                            alt="Review your first drink"
+                        />
+                        <div>
+                            <p style="font-size: 18px; margin-bottom: 8px;">Review your first drink.</p>
+                            <button
+                            style="
+                                padding: 8px 16px;
+                                background-color: #F0B358;
+                                border: none;
+                                color: black;
+                                border-radius: 4px;
+                                cursor: pointer;
+                            "
+                            @mouseover="hoverButton($event)"
+                            @mouseleave="leaveButton($event)"
+                            >
+                            Find A Drink
+                            </button>
+                        </div>
                         </div>
 
-                        <!-- lists tab -->
-                        <div v-if="activeTab == 'lists'" id="lists">
-                            <button v-if="ownProfile" type="button" class="btn fw-bold primary-btn-less-round-blue xprimary-btn-outline-less-round mb-3" data-bs-toggle="modal" data-bs-target="#createNewListModal" >Create New List</button>
+                        <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px;">
+                        <img
+                            src="/address-book.png"
+                            style="
+                            width: 64px;
+                            height: 64px;
+                            object-fit: contain;
+                            border-radius: 4px;
+                            "
+                            alt="Invite two friends"
+                        />
+                        <div>
+                            <p style="font-size: 18px; margin-bottom: 8px;">Invite two friends.</p>
+                            <button
+                            style="
+                                padding: 8px 16px;
+                                background-color: #F0B358;
+                                border: none;
+                                color: black;
+                                border-radius: 4px;
+                                cursor: pointer;
+                            "
+                            @mouseover="hoverButton($event)"
+                            @mouseleave="leaveButton($event)"
+                            >
+                            Add A Friend
+                            </button>
+                        </div>
+                        </div>
 
-                            <!-- create new list modal -->
-                            <div class="modal fade" id="createNewListModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                <div class="modal-dialog modal-dialog-centered">
-                                    <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h1 class="modal-title fs-5" id="exampleModalLabel">Create New List</h1>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <div class="mb-3">
-                                            <label for="basic-url" class="form-label">List Name</label>
-                                            <div class="input-group mb-3">
-                                                <input v-model="newListName" type="text" class="form-control" placeholder="List Name" aria-label="Username" aria-describedby="basic-addon1">
+                        <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px;">
+                        <img
+                            src="/Layer1.png"
+                            style="
+                            width: 64px;
+                            height: 64px;
+                            object-fit: contain;
+                            border-radius: 4px;
+                            "
+                            alt="Curate a list to share"
+                        />
+                        <div>
+                            <p style="font-size: 18px; margin-bottom: 8px;">Curate a list to share.</p>
+                            <button
+                            style="
+                                padding: 8px 16px;
+                                background-color: #F0B358;
+                                border: none;
+                                color: black;
+                                border-radius: 4px;
+                                cursor: pointer;
+                            "
+                            @mouseover="hoverButton($event)"
+                            @mouseleave="leaveButton($event)"
+                            >
+                            Create A List
+                            </button>
+                        </div>
+                        </div>
+
+                        <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px;">
+                        <img
+                            src="/Layer2.png"
+                            style="
+                            width: 64px;
+                            height: 64px;
+                            object-fit: contain;
+                            border-radius: 4px;
+                            "
+                            alt="Explore and join a club!"
+                        />
+                        <div>
+                            <p style="font-size: 18px; margin-bottom: 8px;">Explore and join a club!</p>
+                            <button
+                            style="
+                                padding: 8px 16px;
+                                background-color: #F0B358;
+                                border: none;
+                                color: black;
+                                border-radius: 4px;
+                                cursor: pointer;
+                            "
+                            @mouseover="hoverButton($event)"
+                            @mouseleave="leaveButton($event)"
+                            >
+                            Find A Club
+                            </button>
+                        </div>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+
+                    <!-- reviews and lists -->
+                    <div class="mt-4">
+
+                        <!-- reviews button -->
+                        <button 
+                            class="btn mx-1 fw-bold no-hover"
+                            :class="{ 'primary-btn-green active-toggle-button-user-profile': activeTab === 'reviews', 'primary-btn-green-thin-outline inactive-toggle-button-user-profile': activeTab !== 'reviews' }"
+                            @click="switchTab('reviews')"> 
+                            Reviews 
+                        </button>
+                        <button 
+                            class="btn mx-1 fw-bold no-hover"
+                            :class="{ 'primary-btn-green active-toggle-button-user-profile': activeTab !== 'reviews', 'primary-btn-green-thin-outline inactive-toggle-button-user-profile': activeTab === 'reviews' }"
+                            @click="switchTab('lists')"> 
+                            <span v-if="ownProfile">My Drink List</span>
+                            <span v-if="!ownProfile">Drink List</span> 
+                        </button>
+
+                        <div class="tab-content container mt-2 mobile-px-0" >
+                            <!-- reviews tab -->
+                            <div v-if="activeTab == 'reviews'" id="reviews">
+                                <h3 class="text-body-secondary text-start pt-4"> 
+                                    <b> Recent Reviews </b> 
+                                </h3>
+                                <div v-if="Object.keys(recentReviews).length > 0">
+                                    <div v-for="(review, index) in recentReviews.slice(0, 5)" :key="index">  
+                                        <div style="display: flex" class="row mb-2">
+                                            <div class="col-3 mobile-col-3 mobile-pe-0">
+                                                <!-- <img :src="'data:image/png;base64,' + (review.photo || defaultDrinkImage)" alt="" class="rounded bottle-img "> me-3 -->
+                                                <img :src="(review.photo || defaultDrinkImage)" alt="" class="rounded bottle-img ">
+
                                             </div>
-                                            <div v-if="newListNameError" class="text-danger text-sm">
-                                                *{{ newListNameError }}
+                                            <div class="col-9 mobile-col-9 mobile-ps-2">
+                                                <a :href="'/listing/view/' + review.reviewTarget" style="text-decoration: none; color: #223957;">
+                                                    <p class="fs-5 mobile-fs-7 mb-1 mobile-mb-0_5" ><b>{{ getListingName(review.reviewTarget) }}</b></p>
+                                                </a>
+                                                <!-- flavor tag -->
+                                                    
+                                                    <span v-for="(tag, index) in review.flavorTag" :key="index" class="mobile-view-hide badge rounded-pill-user-profile me-2 mb-1 mobile-me-0_5 mobile-mb-0_5 " :style="{ backgroundColor: getTagColor(tag) }"> {{ getTagName(tag) }}</span>
+                                                    <span v-for="(tag, index) in review.observationTag" :key="index" class="mobile-view-hide badge rounded-pill-user-profile me-2 mb-1 mobile-me-0_5 mobile-mb-0_5" style="background-color: #F0B358; color:black;">{{ tag }}</span>
+
+                                                    <span v-for="(tag, index) in review.flavorTag?.slice(0, 2)" :key="index" class="mobile-view-show badge rounded-pill-user-profile me-2 mb-1 mobile-me-0_5 mobile-mb-0_5 " :style="{ backgroundColor: getTagColor(tag) }"> {{ getTagName(tag) }}</span>
+                                                    <span v-for="(tag, index) in review.observationTag.slice(0, 1)" :key="index" class="mobile-view-show badge rounded-pill-user-profile me-2 mb-1 mobile-me-0_5 mobile-mb-0_5" style="background-color: #F0B358; color:black;">{{ tag }}</span>                                        
+                                                <p class="mobile-fs-7">
+                                                    <b>{{ review.reviewTitle }}</b> <br v-if="review.reviewTitle">
+                                                    {{ review.reviewDesc }}
+                                                </p>
+                                                <p class="fs-4 mobile-fs-5 fw-bold rating-text mobile-mb-1" >
+                                                    {{ review.rating.toFixed(1) }}★
+                                                    <!--<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-star-fill " viewBox="0 0 16 16">
+                                                        <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                                                    </svg>-->
+                                                </p>
                                             </div>
                                         </div>
-
-                                        <div class="mb-3">
-                                            <label for="basic-url" class="form-label">List Description</label>
-                                            <div class="input-group mb-3">
-                                                <textarea v-model="newListDesc" type="text" class="form-control" placeholder="List Description (Optional)" aria-label="Username" aria-describedby="basic-addon1" rows="5"></textarea>
-                                            </div>
-                                        </div>
-
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                        <button type="button" class="btn btn-primary" @click="addNewList">Save changes</button>
-                                    </div>
                                     </div>
                                 </div>
+                                <div v-else class="container m-2">
+                                    No reviews yet. To explore more drinks in the home page, 
+                                    <router-link to="/" style="color: inherit;">click here</router-link>. 
+                                </div>
+
+                                <ListingRowDisplayUserProfile 
+                                    :listingArr="favouriteListings" 
+                                    displayName="Favourite Listings" 
+                                    :user="user" 
+                                    :listing="listing" 
+                                    columnWidth="165px"
+                                    @icon-clicked="handleIconClick"/>
+
+                                <ListingRowDisplayUserProfile 
+                                    :listingArr="recentActivity" 
+                                    displayName="Recent Activity" 
+                                    :user="user" 
+                                    :listing="listing" 
+                                    columnWidth="165px"
+                                    @icon-clicked="handleIconClick"/>
+
+
+
                             </div>
-                            
-                            <!-- display all lists -->
-                            <div v-for="(bookmarkList, name, index) in displayUserBookmarks" :key="name" style="display: flex" class="row mb-3">
-                                <div class="col-3 mobile-col-4 mobile-pe-0" >
-                                    <!-- <img :src=" 'data:image/png;base64,' + ( getListingFromID(bookmarkList.listItems[0]).photo || defaultDrinkImage )" alt="" class="bottle-img me-3"> xyz -->
-                                    <img :src="( getListingFromID(bookmarkList.listItems[0])?.photo || defaultDrinkImage )" alt="" class="bottle-img me-3">
-                                </div>
-                                <div  class="col-9 mobile-col-8 mobile-ps-1" > <!-- style="height: 150px; display: flex; flex-direction: column;" -->
-                                    <h5 class="mt-1" @click="viewList(name)" style="cursor: pointer"> {{ name }} </h5>
-                                    <span v-if="bookmarkList.listItems.length > 1"> {{ bookmarkList.listItems.length }} items in list </span>
-                                    <span v-else> {{ bookmarkList.listItems.length }} item in list </span>
-                                    <div style="max-height: 48px; overflow-y: auto; font-style: italic;">
-                                        {{ bookmarkList.listDesc }}
-                                    </div>
-                                    <div style="display: flex; margin-top: auto;" class="mb-1">
-                                        <b><a class="me-4 mobile-view-hide" @click="viewList(name)" href="#" >View List</a></b>
-                                        <b><a class="me-4 mobile-view-show" @click="viewList(name)" href="#" >View</a></b>
-                                        <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')" class="mobile-view-hide me-2" href="#"  data-bs-toggle="modal" :data-bs-target="`#editListModal${index}`" @click="resetEditList(name, bookmarkList.listDesc)">Edit List</a></b>
-                                        <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')"  class="mobile-view-hide " href="#"  data-bs-toggle="modal" :data-bs-target="`#deleteListModal${index}`">Delete List</a></b>
-                                        <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')" class="mobile-view-show me-2" href="#"  data-bs-toggle="modal" :data-bs-target="`#editListModal${index}`" @click="resetEditList(name, bookmarkList.listDesc)">Edit</a></b>
-                                        <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')" class="mobile-view-show" href="#"  data-bs-toggle="modal" :data-bs-target="`#deleteListModal${index}`">Delete</a></b>
-                                        
-                                    </div>
-                                </div>
 
-                                <!-- edit list modal start -->
-                                <div class="modal fade" :id="`editListModal${index}`" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                    <div class="modal-dialog modal-dialog-centered">
-                                    <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h1 class="modal-title fs-5" id="exampleModalLabel">Edit List</h1>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <div class="mb-3">
-                                            <label for="basic-url" class="form-label">List Name</label>
-                                            <div class="input-group mb-3">
-                                                <input v-model="editListName" type="text" class="form-control" :placeholder="name" aria-label="Username" aria-describedby="basic-addon1">
-                                            </div>
-                                            <div v-if="editListNameError" class="text-danger text-sm">
-                                                *{{ editListNameError }}
-                                            </div>
-                                        </div>
+                            <!-- lists tab -->
+                            <div v-if="activeTab == 'lists'" id="lists">
+                                <button v-if="ownProfile" type="button" class="btn fw-bold primary-btn-less-round-blue xprimary-btn-outline-less-round mb-3" data-bs-toggle="modal" data-bs-target="#createNewListModal" >Create New List</button>
 
-                                        <div class="mb-3">
-                                            <label for="basic-url" class="form-label">List Description</label>
-                                            <div class="input-group mb-3">
-                                                <textarea v-model="editListDesc" type="text" class="form-control" :placeholder="bookmarkList.listDesc" aria-label="Username" aria-describedby="basic-addon1" rows="5"></textarea>
-                                            </div>
-                                        </div>
-
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                        <button type="button" class="btn btn-primary" @click="editList(name)">Save changes</button>
-                                    </div>
-                                    </div>
-                                </div>
-                                </div>
-                                <!-- modal end -->
-
-                                <!-- delete list modal start -->
-                                <div class="modal fade" :id="`deleteListModal${index}`" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <!-- create new list modal -->
+                                <div class="modal fade" id="createNewListModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                                     <div class="modal-dialog modal-dialog-centered">
                                         <div class="modal-content">
-                                            <div class="text-end mt-2 me-2">
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        <div class="modal-header">
+                                            <h1 class="modal-title fs-5" id="exampleModalLabel">Create New List</h1>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label for="basic-url" class="form-label">List Name</label>
+                                                <div class="input-group mb-3">
+                                                    <input v-model="newListName" type="text" class="form-control" placeholder="List Name" aria-label="Username" aria-describedby="basic-addon1">
+                                                </div>
+                                                <div v-if="newListNameError" class="text-danger text-sm">
+                                                    *{{ newListNameError }}
+                                                </div>
                                             </div>
 
-                                            <div class="text-center">
-                                                <img src="../../../Images/Others/cancel.png" alt="" class="rounded-circle border border-dark text-center" style="width: 100px; height: 100px;">
-                                                <h3>Are you sure?</h3>
-                                                <br>
-                                                <p>Do you really want to delete <b><i>{{ name }}</i></b>? </p>
+                                            <div class="mb-3">
+                                                <label for="basic-url" class="form-label">List Description</label>
+                                                <div class="input-group mb-3">
+                                                    <textarea v-model="newListDesc" type="text" class="form-control" placeholder="List Description (Optional)" aria-label="Username" aria-describedby="basic-addon1" rows="5"></textarea>
+                                                </div>
                                             </div>
-                                            <div style="display: inline" class="text-center mb-4">
-                                                <button type="button" class="btn btn-secondary me-3" data-bs-dismiss="modal">Cancel</button>
-                                                <button type="button" class="btn btn-danger" data-bs-dismiss="modal" @click="deleteList(name)">Delete</button>
-                                            </div>
+
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <button type="button" class="btn btn-primary" @click="addNewList">Save changes</button>
+                                        </div>
                                         </div>
                                     </div>
                                 </div>
-                                <!-- modal end -->
-                            </div>
-                        </div>
+                                
+                                <!-- display all lists -->
+                                <div v-for="(bookmarkList, name, index) in displayUserBookmarks" :key="name" style="display: flex" class="row mb-3">
+                                    <div class="col-3 mobile-col-4 mobile-pe-0" >
+                                        <!-- <img :src=" 'data:image/png;base64,' + ( getListingFromID(bookmarkList.listItems[0]).photo || defaultDrinkImage )" alt="" class="bottle-img me-3"> xyz -->
+                                        <img :src="( getListingFromID(bookmarkList.listItems[0])?.photo || defaultDrinkImage )" alt="" class="bottle-img me-3">
+                                    </div>
+                                    <div  class="col-9 mobile-col-8 mobile-ps-1" > <!-- style="height: 150px; display: flex; flex-direction: column;" -->
+                                        <h5 class="mt-1" @click="viewList(name)" style="cursor: pointer"> {{ name }} </h5>
+                                        <span v-if="bookmarkList.listItems.length > 1"> {{ bookmarkList.listItems.length }} items in list </span>
+                                        <span v-else> {{ bookmarkList.listItems.length }} item in list </span>
+                                        <div style="max-height: 48px; overflow-y: auto; font-style: italic;">
+                                            {{ bookmarkList.listDesc }}
+                                        </div>
+                                        <div style="display: flex; margin-top: auto;" class="mb-1">
+                                            <b><a class="me-4 mobile-view-hide" @click="viewList(name)" href="#" >View List</a></b>
+                                            <b><a class="me-4 mobile-view-show" @click="viewList(name)" href="#" >View</a></b>
+                                            <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')" class="mobile-view-hide me-2" href="#"  data-bs-toggle="modal" :data-bs-target="`#editListModal${index}`" @click="resetEditList(name, bookmarkList.listDesc)">Edit List</a></b>
+                                            <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')"  class="mobile-view-hide " href="#"  data-bs-toggle="modal" :data-bs-target="`#deleteListModal${index}`">Delete List</a></b>
+                                            <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')" class="mobile-view-show me-2" href="#"  data-bs-toggle="modal" :data-bs-target="`#editListModal${index}`" @click="resetEditList(name, bookmarkList.listDesc)">Edit</a></b>
+                                            <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')" class="mobile-view-show" href="#"  data-bs-toggle="modal" :data-bs-target="`#deleteListModal${index}`">Delete</a></b>
+                                            
+                                        </div>
+                                    </div>
 
-                        <!-- individual list tab -->
-                        <div v-if="activeTab == 'list' && displayUser.drinkLists" id="list">
+                                    <!-- edit list modal start -->
+                                    <div class="modal fade" :id="`editListModal${index}`" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h1 class="modal-title fs-5" id="exampleModalLabel">Edit List</h1>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label for="basic-url" class="form-label">List Name</label>
+                                                <div class="input-group mb-3">
+                                                    <input v-model="editListName" type="text" class="form-control" :placeholder="name" aria-label="Username" aria-describedby="basic-addon1">
+                                                </div>
+                                                <div v-if="editListNameError" class="text-danger text-sm">
+                                                    *{{ editListNameError }}
+                                                </div>
+                                            </div>
 
-                            <!-- list name, back to lists & add drink to list & share button -->
-                            <div class="row mb-4 mobile-mt-4">
-                                <div class="col-5 mobile-col-7">
-                                    <h3>{{currentList}}</h3>
-                                </div>
-                                <div class="col-7 mobile-col-5 text-end d-flex justify-content-end">
-                                    <button v-if="ownProfile" type="button" class="btn primary-btn-outline-less-round drinklist" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                                        <svg xmlns="http://www.w3.org/2000/svg"  fill="currentColor" class="bi bi-plus-square mb-1 me-1 funnel-svg-dimensions" viewBox="0 0 16 16">
-                                        <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/>
-                                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
-                                        </svg>
-                                        <span class="mobile-view-hide" >Add Drink</span>
-                                    </button>
-                                    <button @click="updateCurrentURL" type="button" class="btn primary-btn-outline-less-round ms-3 drinklist" data-bs-toggle="modal" data-bs-target="#shareListModal">
-                                        <svg  xmlns="http://www.w3.org/2000/svg"  fill="currentColor" class="bi bi-share mb-1 me-1 funnel-svg-dimensions" viewBox="0 0 30 30">
-                                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                                            <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                                            <g id="SVGRepo_iconCarrier"> 
-                                            <path d="M0 25.472q0 2.368 1.664 4.032t4.032 1.664h18.944q2.336 0 4-1.664t1.664-4.032v-8.192l-3.776 3.168v5.024q0 0.8-0.544 1.344t-1.344 0.576h-18.944q-0.8 0-1.344-0.576t-0.544-1.344v-18.944q0-0.768 0.544-1.344t1.344-0.544h9.472v-3.776h-9.472q-2.368 0-4.032 1.664t-1.664 4v18.944zM5.696 19.808q0 2.752 1.088 5.28 0.512-2.944 2.24-5.344t4.288-3.872 5.632-1.664v5.6l11.36-9.472-11.36-9.472v5.664q-2.688 0-5.152 1.056t-4.224 2.848-2.848 4.224-1.024 5.152zM32 22.080v0 0 0z"></path> 
-                                            </g>
-                                        </svg>
-                                        <span class="mobile-view-hide">Share List</span>
-                                    </button>
-                                    <button @click="viewList('lists')" type="button" class="btn primary-btn-outline-less-round ms-3 drinklist">
-                                        <svg xmlns="http://www.w3.org/2000/svg"  fill="currentColor" class="bi bi-arrow-left-circle mb-1 me-1 funnel-svg-dimensions" viewBox="0 0 16 16">
-                                        <path fill-rule="evenodd" d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8m15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-4.5-.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5z"/>
-                                        </svg>
-                                        <span class="mobile-view-hide">Back to Lists</span>
-                                    </button>
+                                            <div class="mb-3">
+                                                <label for="basic-url" class="form-label">List Description</label>
+                                                <div class="input-group mb-3">
+                                                    <textarea v-model="editListDesc" type="text" class="form-control" :placeholder="bookmarkList.listDesc" aria-label="Username" aria-describedby="basic-addon1" rows="5"></textarea>
+                                                </div>
+                                            </div>
 
-                                    <!-- Share Menu Modal (QR Code) -->
-                                    <div class="modal fade" id="shareListModal" tabindex="-1" aria-labelledby="shareListModalLabel" aria-hidden="true">
-                                        <div class="modal-dialog">
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <button type="button" class="btn btn-primary" @click="editList(name)">Save changes</button>
+                                        </div>
+                                        </div>
+                                    </div>
+                                    </div>
+                                    <!-- modal end -->
+
+                                    <!-- delete list modal start -->
+                                    <div class="modal fade" :id="`deleteListModal${index}`" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
                                             <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h1 class="modal-title fs-5" id="shareMenuModalLabel"> Drink List QR Code </h1>
+                                                <div class="text-end mt-2 me-2">
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                 </div>
-                                                <div class="modal-body">
-                                                    <div class="centered">
-                                                        <qr-code v-bind:text="currentURL" ref="qrCode"></qr-code>
+
+                                                <div class="text-center">
+                                                    <img src="../../../Images/Others/cancel.png" alt="" class="rounded-circle border border-dark text-center" style="width: 100px; height: 100px;">
+                                                    <h3>Are you sure?</h3>
+                                                    <br>
+                                                    <p>Do you really want to delete <b><i>{{ name }}</i></b>? </p>
+                                                </div>
+                                                <div style="display: inline" class="text-center mb-4">
+                                                    <button type="button" class="btn btn-secondary me-3" data-bs-dismiss="modal">Cancel</button>
+                                                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" @click="deleteList(name)">Delete</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- modal end -->
+                                </div>
+                            </div>
+
+                            <!-- individual list tab -->
+                            <div v-if="activeTab == 'list' && displayUser.drinkLists" id="list">
+
+                                <!-- list name, back to lists & add drink to list & share button -->
+                                <div class="row mb-4 mobile-mt-4">
+                                    <div class="col-5 mobile-col-7">
+                                        <h3>{{currentList}}</h3>
+                                    </div>
+                                    <div class="col-7 mobile-col-5 text-end d-flex justify-content-end">
+                                        <button v-if="ownProfile" type="button" class="btn primary-btn-outline-less-round drinklist" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                                            <svg xmlns="http://www.w3.org/2000/svg"  fill="currentColor" class="bi bi-plus-square mb-1 me-1 funnel-svg-dimensions" viewBox="0 0 16 16">
+                                            <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/>
+                                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                                            </svg>
+                                            <span class="mobile-view-hide" >Add Drink</span>
+                                        </button>
+                                        <button @click="updateCurrentURL" type="button" class="btn primary-btn-outline-less-round ms-3 drinklist" data-bs-toggle="modal" data-bs-target="#shareListModal">
+                                            <svg  xmlns="http://www.w3.org/2000/svg"  fill="currentColor" class="bi bi-share mb-1 me-1 funnel-svg-dimensions" viewBox="0 0 30 30">
+                                                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                                                <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                                                <g id="SVGRepo_iconCarrier"> 
+                                                <path d="M0 25.472q0 2.368 1.664 4.032t4.032 1.664h18.944q2.336 0 4-1.664t1.664-4.032v-8.192l-3.776 3.168v5.024q0 0.8-0.544 1.344t-1.344 0.576h-18.944q-0.8 0-1.344-0.576t-0.544-1.344v-18.944q0-0.768 0.544-1.344t1.344-0.544h9.472v-3.776h-9.472q-2.368 0-4.032 1.664t-1.664 4v18.944zM5.696 19.808q0 2.752 1.088 5.28 0.512-2.944 2.24-5.344t4.288-3.872 5.632-1.664v5.6l11.36-9.472-11.36-9.472v5.664q-2.688 0-5.152 1.056t-4.224 2.848-2.848 4.224-1.024 5.152zM32 22.080v0 0 0z"></path> 
+                                                </g>
+                                            </svg>
+                                            <span class="mobile-view-hide">Share List</span>
+                                        </button>
+                                        <button @click="viewList('lists')" type="button" class="btn primary-btn-outline-less-round ms-3 drinklist">
+                                            <svg xmlns="http://www.w3.org/2000/svg"  fill="currentColor" class="bi bi-arrow-left-circle mb-1 me-1 funnel-svg-dimensions" viewBox="0 0 16 16">
+                                            <path fill-rule="evenodd" d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8m15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-4.5-.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5z"/>
+                                            </svg>
+                                            <span class="mobile-view-hide">Back to Lists</span>
+                                        </button>
+
+                                        <!-- Share Menu Modal (QR Code) -->
+                                        <div class="modal fade" id="shareListModal" tabindex="-1" aria-labelledby="shareListModalLabel" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h1 class="modal-title fs-5" id="shareMenuModalLabel"> Drink List QR Code </h1>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                     </div>
-                                                    <div class="input-group pt-3">
-                                                        <input type="text" class="form-control" aria-label="Link" aria-describedby="button-addon2" v-bind:value="currentURL" disabled>
-                                                        <button class="btn btn-outline-secondary" type="button" id="button-addon2" @click="copyToClipboard(currentURL)">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
-                                                                <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/>
-                                                                <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/>
+                                                    <div class="modal-body">
+                                                        <div class="centered">
+                                                            <qr-code v-bind:text="currentURL" ref="qrCode"></qr-code>
+                                                        </div>
+                                                        <div class="input-group pt-3">
+                                                            <input type="text" class="form-control" aria-label="Link" aria-describedby="button-addon2" v-bind:value="currentURL" disabled>
+                                                            <button class="btn btn-outline-secondary" type="button" id="button-addon2" @click="copyToClipboard(currentURL)">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
+                                                                    <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/>
+                                                                    <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/>
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+                                                        <p class="text-start pt-2" v-if="clipboardItem"> 
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16">
+                                                                <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
                                                             </svg>
-                                                        </button>
+                                                            Copied to clipboard!
+                                                        </p>
                                                     </div>
-                                                    <p class="text-start pt-2" v-if="clipboardItem"> 
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16">
-                                                            <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
-                                                        </svg>
-                                                        Copied to clipboard!
-                                                    </p>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-
-                                </div>
-                            </div>
-
-                            <!-- add drink modal -->
-                            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-                                    <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5>Add Drink to List: {{currentList}}</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body" style="height: 400px;">
-                                        <!-- search -->
-                                        <div>
-                                            <!-- search bar  -->
-                                            <div class="input-group mb-3">
-                                                <input type="text" class="form-control" placeholder="Search for drink" aria-label="Recipient's username" aria-describedby="button-addon2" v-model="drinkSearch" @keyup="searchResult">
-                                            </div>
-                                            <!-- search results -->
-                                            <div class="overflow-auto" :style="{ height: drinksToAdd.length > 0 ? '200px' : '300px' }">
-                                                <div class="form-check" v-for="(drinkName, index) in drinkSearchResults" :key="index">
-                                                    <input class="form-check-input" type="checkbox" :value="drinkName" :id="'drinkCheckbox' + index" v-model="drinksToAdd">
-                                                    <label class="form-check-label" :for="'drinkCheckbox' + index">
-                                                        {{ drinkName }}
-                                                    </label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <!-- selected results -->
-                                        <div v-if="drinksToAdd.length > 0" class="mt-2">
-                                            <hr>
-                                            <div class="overflow-auto" style="height: 75px">
-                                                <b>Selected Drinks: </b>
-                                                {{ drinksToAdd.join(', ') }}
-                                            </div>
-                                        </div>
-
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-primary" @click="addDrinkToList(currentList)">Add to List</button>
-                                    </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- list details -->
-                            <div class="row mb-3" v-for="(listingID, index) in displayUser.drinkLists[currentList].listItems" :key="index">
-                                <div class="col-10 pe-0" style="display: flex">
-                                    <!-- <img :src=" 'data:image/png;base64,' + ( getListingFromID(listingID[1]).photo || defaultDrinkImage )" alt="" style="width:130px; height:130px;" class="bottle-img me-3"> -->
-                                    <img :src=" ( getListingFromID(listingID)?.photo || defaultDrinkImage )" alt="" style="width:130px; height:130px;" class="bottle-img me-3">
-                                    <div style="min-height: 150px; display: flex; flex-direction: column;">
-                                        <a :href="'/listing/view/' + listingID" style="text-decoration: none; color: inherit;">
-                                            <h4>{{ getListingFromID(listingID)?.listingName }}</h4>
-                                        </a>
-                                        <p style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;"> {{ getListingFromID(listingID)?.officialDesc }} </p>
-                                        <div v-if="ownProfile" style="display: flex; margin-top: auto" class="mb-0">
-                                            <a href="#" style="text-decoration: none; color: #535C72;" data-bs-toggle="modal" :data-bs-target="`#deleteFromListModal${index}`">
-                                                <!-- cross icon -->
-                                                <svg class=mb-1 xmlns="http://www.w3.org/2000/svg" height="16" width="12" viewBox="0 0 384 512">
-                                                    <!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc. -->
-                                                    <path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/>
-                                                </svg>
-                                                Delete from list
-                                            </a>
-                                        </div>
 
                                     </div>
                                 </div>
-                                <div class="col-2 text-center ps-0">
-                                    <h2>
-                                        {{ getAverageReview(listingID) }}
-                                        <svg class="mb-2" xmlns="http://www.w3.org/2000/svg" height="18" width="20.25" viewBox="0 0 576 512">
-                                            <!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc. -->
-                                            <path d="M287.9 0c9.2 0 17.6 5.2 21.6 13.5l68.6 141.3 153.2 22.6c9 1.3 16.5 7.6 19.3 16.3s.5 18.1-5.9 24.5L433.6 328.4l26.2 155.6c1.5 9-2.2 18.1-9.7 23.5s-17.3 6-25.3 1.7l-137-73.2L151 509.1c-8.1 4.3-17.9 3.7-25.3-1.7s-11.2-14.5-9.7-23.5l26.2-155.6L31.1 218.2c-6.5-6.4-8.7-15.9-5.9-24.5s10.3-14.9 19.3-16.3l153.2-22.6L266.3 13.5C270.4 5.2 278.7 0 287.9 0zm0 79L235.4 187.2c-3.5 7.1-10.2 12.1-18.1 13.3L99 217.9 184.9 303c5.5 5.5 8.1 13.3 6.8 21L171.4 443.7l105.2-56.2c7.1-3.8 15.6-3.8 22.6 0l105.2 56.2L384.2 324.1c-1.3-7.7 1.2-15.5 6.8-21l85.9-85.1L358.6 200.5c-7.8-1.2-14.6-6.1-18.1-13.3L287.9 79z"/>
-                                        </svg>
-                                    </h2>
-                                </div>
 
-                                <!-- delete from list modal start -->
-                                <div class="modal fade" :id="`deleteFromListModal${index}`" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                    <div class="modal-dialog modal-dialog-centered">
+                                <!-- add drink modal -->
+                                <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
                                         <div class="modal-content">
-                                            <div class="text-end mt-2 me-2">
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        <div class="modal-header">
+                                            <h5>Add Drink to List: {{currentList}}</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body" style="height: 400px;">
+                                            <!-- search -->
+                                            <div>
+                                                <!-- search bar  -->
+                                                <div class="input-group mb-3">
+                                                    <input type="text" class="form-control" placeholder="Search for drink" aria-label="Recipient's username" aria-describedby="button-addon2" v-model="drinkSearch" @keyup="searchResult">
+                                                </div>
+                                                <!-- search results -->
+                                                <div class="overflow-auto" :style="{ height: drinksToAdd.length > 0 ? '200px' : '300px' }">
+                                                    <div class="form-check" v-for="(drinkName, index) in drinkSearchResults" :key="index">
+                                                        <input class="form-check-input" type="checkbox" :value="drinkName" :id="'drinkCheckbox' + index" v-model="drinksToAdd">
+                                                        <label class="form-check-label" :for="'drinkCheckbox' + index">
+                                                            {{ drinkName }}
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- selected results -->
+                                            <div v-if="drinksToAdd.length > 0" class="mt-2">
+                                                <hr>
+                                                <div class="overflow-auto" style="height: 75px">
+                                                    <b>Selected Drinks: </b>
+                                                    {{ drinksToAdd.join(', ') }}
+                                                </div>
                                             </div>
 
-                                            <div class="text-center mx-2">
-                                                <img src="../../../Images/Others/cancel.png" alt="" class="rounded-circle border border-dark text-center" style="width: 100px; height: 100px;">
-                                                <h3>Are you sure?</h3>
-                                                <br>
-                                                <p>Do you really want to delete <b><i>{{ getListingFromID(listingID)?.listingName }}</i></b> from <b><i>{{ currentList }}</i></b>? </p>
-                                            </div>
-                                            <div style="display: inline" class="text-center mb-4">
-                                                <button type="button" class="btn btn-secondary me-3" data-bs-dismiss="modal">Cancel</button>
-                                                <button type="button" class="btn btn-danger" data-bs-dismiss="modal" @click="deleteFromList(currentList, listingID)">Delete</button>
-                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-primary" @click="addDrinkToList(currentList)">Add to List</button>
+                                        </div>
                                         </div>
                                     </div>
                                 </div>
-                                <!-- modal end -->
+
+                                <!-- list details -->
+                                <div class="row mb-3" v-for="(listingID, index) in displayUser.drinkLists[currentList].listItems" :key="index">
+                                    <div class="col-10 pe-0" style="display: flex">
+                                        <!-- <img :src=" 'data:image/png;base64,' + ( getListingFromID(listingID[1]).photo || defaultDrinkImage )" alt="" style="width:130px; height:130px;" class="bottle-img me-3"> -->
+                                        <img :src=" ( getListingFromID(listingID)?.photo || defaultDrinkImage )" alt="" style="width:130px; height:130px;" class="bottle-img me-3">
+                                        <div style="min-height: 150px; display: flex; flex-direction: column;">
+                                            <a :href="'/listing/view/' + listingID" style="text-decoration: none; color: inherit;">
+                                                <h4>{{ getListingFromID(listingID)?.listingName }}</h4>
+                                            </a>
+                                            <p style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;"> {{ getListingFromID(listingID)?.officialDesc }} </p>
+                                            <div v-if="ownProfile" style="display: flex; margin-top: auto" class="mb-0">
+                                                <a href="#" style="text-decoration: none; color: #535C72;" data-bs-toggle="modal" :data-bs-target="`#deleteFromListModal${index}`">
+                                                    <!-- cross icon -->
+                                                    <svg class=mb-1 xmlns="http://www.w3.org/2000/svg" height="16" width="12" viewBox="0 0 384 512">
+                                                        <!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc. -->
+                                                        <path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/>
+                                                    </svg>
+                                                    Delete from list
+                                                </a>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    <div class="col-2 text-center ps-0">
+                                        <h2>
+                                            {{ getAverageReview(listingID) }}
+                                            <svg class="mb-2" xmlns="http://www.w3.org/2000/svg" height="18" width="20.25" viewBox="0 0 576 512">
+                                                <!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc. -->
+                                                <path d="M287.9 0c9.2 0 17.6 5.2 21.6 13.5l68.6 141.3 153.2 22.6c9 1.3 16.5 7.6 19.3 16.3s.5 18.1-5.9 24.5L433.6 328.4l26.2 155.6c1.5 9-2.2 18.1-9.7 23.5s-17.3 6-25.3 1.7l-137-73.2L151 509.1c-8.1 4.3-17.9 3.7-25.3-1.7s-11.2-14.5-9.7-23.5l26.2-155.6L31.1 218.2c-6.5-6.4-8.7-15.9-5.9-24.5s10.3-14.9 19.3-16.3l153.2-22.6L266.3 13.5C270.4 5.2 278.7 0 287.9 0zm0 79L235.4 187.2c-3.5 7.1-10.2 12.1-18.1 13.3L99 217.9 184.9 303c5.5 5.5 8.1 13.3 6.8 21L171.4 443.7l105.2-56.2c7.1-3.8 15.6-3.8 22.6 0l105.2 56.2L384.2 324.1c-1.3-7.7 1.2-15.5 6.8-21l85.9-85.1L358.6 200.5c-7.8-1.2-14.6-6.1-18.1-13.3L287.9 79z"/>
+                                            </svg>
+                                        </h2>
+                                    </div>
+
+                                    <!-- delete from list modal start -->
+                                    <div class="modal fade" :id="`deleteFromListModal${index}`" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="text-end mt-2 me-2">
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+
+                                                <div class="text-center mx-2">
+                                                    <img src="../../../Images/Others/cancel.png" alt="" class="rounded-circle border border-dark text-center" style="width: 100px; height: 100px;">
+                                                    <h3>Are you sure?</h3>
+                                                    <br>
+                                                    <p>Do you really want to delete <b><i>{{ getListingFromID(listingID)?.listingName }}</i></b> from <b><i>{{ currentList }}</i></b>? </p>
+                                                </div>
+                                                <div style="display: inline" class="text-center mb-4">
+                                                    <button type="button" class="btn btn-secondary me-3" data-bs-dismiss="modal">Cancel</button>
+                                                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" @click="deleteFromList(currentList, listingID)">Delete</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- modal end -->
+                                </div>
+                            
                             </div>
-                        
                         </div>
+
                     </div>
 
                 </div>
+
             </div>
             <BookmarkModal 
                 v-if="user" 
@@ -1149,6 +1319,12 @@ export default {
 
     },
     methods: {
+        hoverButton(event) {
+            event.target.style.backgroundColor = "#E5A443";
+        },
+        leaveButton(event) {
+            event.target.style.backgroundColor = "#F0B358";
+        },
         // load data from database
         async loadData(url) {
             //profile picture
