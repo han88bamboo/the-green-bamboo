@@ -267,7 +267,7 @@ def createEvent():
 
         # Check if the required fields are present and not empty
         for field in required_fields:
-            if field not in data or not data[field]:
+            if field not in data or data[field] is None or data[field] == '':
                 return jsonify({'error': f'Missing or empty required field: {field}'}), 400
             
         # Step 2: Check if the event owner exist
@@ -405,8 +405,11 @@ def updateEvent():
         if 'paymentLink' in data and data['paymentLink']:
             update_fields.append('"paymentLink" = %s')
             update_values.append(data['paymentLink'])
-        if 'eventBanners' in data and len(data['eventBanners']) > 0:
-            
+        if 'eventBanners' in data:
+            if len(data['eventBanners']) == 0:
+                update_fields.append('"eventBanners" = %s')
+                update_values.append(None)
+
             # Upload each image (base64Image) to S3
             event_banner = []
             for image in data['eventBanners']:
@@ -426,6 +429,8 @@ def updateEvent():
             # Convert the list to PostgreSQL array format before insertion
             if event_banner:
                 event_banner_pg = "{" + ",".join([f'"{url}"' for url in event_banner]) + "}"
+                update_fields.append('"eventBanners" = %s')
+                update_values.append(event_banner_pg)
 
 
         # Step 4: Update the event
@@ -478,12 +483,15 @@ def deleteEvent():
         if not event:
             return jsonify({'error': 'No such event'}), 400
 
+        # Convert eventOwnerID to integer
+        data['eventOwnerID'] = int(data['eventOwnerID'])
+
         # Step 3: Check if the user who is deleting the event is the owner of the event
         if event['eventOwnerID'] != data['eventOwnerID'] or event['eventOwnerType'] != data['eventOwnerType']:
             return jsonify({'error': 'Unauthorized to delete this event'}), 403
         
         # Step 4: Delete all the attendees of the event
-        cursor.execute('DELETE FROM eventAttendees WHERE eventID = %s', (data['eventID'],))
+        cursor.execute('DELETE FROM "eventAttendees" WHERE "eventID" = %s', (data['eventID'],))
         conn.commit()
 
         # Step 5: Delete the event

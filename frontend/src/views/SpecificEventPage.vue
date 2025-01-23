@@ -26,16 +26,15 @@
         <!-- Main Content -->
         <div v-if="dataLoaded">
             <div v-if="selfView" class="container mt-3 mb-3">
-                <button class="btn primary-btn me-3">Edit Event</button>
-                <button class="btn primary-btn-red">Delete Event</button>
+                <button class="btn primary-btn me-3" data-bs-toggle="modal" data-bs-target="#editEventModal">Edit Event</button>
+                <button class="btn primary-btn-red" data-bs-toggle="modal" data-bs-target="#deleteEventModal">Delete Event</button>
             </div>
 
+            <!-- Event banner -->
             <div class="container-fluid">
-                
-                <!-- Event banner -->
                 <div class="row d-flex justify-content-center align-items-center">
                     
-                    <div v-if="event.eventBanners" class="d-flex justify-content-center align-items-center">
+                    <div v-if="event.eventBanners.length > 0" class="d-flex justify-content-center align-items-center">
                         <!-- Display single event banner if only 1 event banner provided -->
                         <img v-if="event.eventBanners.length == 1" :src="event.eventBanners[0]" style="height: 500px; width: 600px" class="img-fluid event-banner" alt="Event Banner">
                         
@@ -64,8 +63,8 @@
                 </div>
             </div>
 
+            <!-- Event Details -->
             <div class="container mt-3">
-
                 <div class="row text-start">
                     <!-- Column 1 -->
                     <div class="col-12 col-md-8">
@@ -249,7 +248,7 @@
                         <h4 class="fw-bold mt-5">Get Tickets</h4>
 
                         <!-- No tickets require -->
-                        <p v-if="ticketed == false" class="fw-bold">This event is not ticketed. Walk ins welcome!</p>
+                        <p v-if="event.ticketed == false" class="fw-bold">This event is not ticketed. Walk ins welcome!</p>
                         <div v-else>
 
                             <!-- Ticketed but free of charge -->
@@ -311,12 +310,175 @@
             </div>
             
         </div>
+
+        <!-- Edit Event Modal Start -->
+        <div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="editEventModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editEventModalLabel">Edit Event</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-start">
+
+                        <!-- Event Name Edit Field -->
+                        <div class="mb-3">
+                            <label for="eventName" class="form-label fw-bold">Event Name</label>
+                            <input type="text" class="form-control" id="eventName" v-model="eventCopy.eventName">
+                        </div>
+
+                        <!-- Original event description -->
+                        <label for="originalEventDesc" class="form-label fw-bold">Original Event Description:</label>
+                        <p v-html="eventCopy.eventDesc"></p>
+
+                        <!-- Event description input editor -->
+                        <p class="fw-bold">New Event Description (Input the new description here, leave blank if there is no changes.):</p>
+                        <div id="editor-container" style="height: 300px;" class="mb-3"></div>
+
+                        <div class="mb-3 row">
+                            <!-- Event start date -->
+                            <div class="col">
+                                <label for="eventStartDate" class="form-label fw-bold">Event Start Date:</label>
+                                <input type="date" class="form-control" id="eventStartDate" required v-model="eventCopy.eventStartDate" :min="new Date().toISOString().split('T')[0]"> 
+                            </div>
+
+                            <!-- Event start time -->
+                            <div class="col">
+                                <label for="eventStartTime" class="form-label fw-bold">Event Start Time:</label>
+                                <input type="time" class="form-control" id="eventStartTime" required v-model="eventCopy.eventStartTime">
+                            </div>
+                        </div>
+
+                        <div class="mb-3 row">
+                            <!-- Event end date -->
+                            <div class="col">
+                                <label for="eventEndDate" class="form-label fw-bold">Event End Date:</label>
+                                <input type="date" class="form-control" id="eventEndDate" required v-model="eventCopy.eventEndDate" :min="eventCopy.eventStartDate">
+                            </div>
+
+                            <!-- Event end time -->
+                            <div class="col">
+                                <label for="eventEndTime" class="form-label fw-bold">Event End Time:</label>
+                                <input type="time" class="form-control" id="eventEndTime" required v-model="eventCopy.eventEndTime">
+                            </div>
+                        </div>
+
+                        <!-- Event wallpaper upload -->
+                        <div class="mb-3">
+                            <label for="eventBanner" class="form-label fw-bold">Add Event Wallpaper (upload up to 3 images):</label>
+                            <input type="file" class="form-control" id="eventBanner" multiple accept="image/*" @change="uploadImages" :disabled="eventCopy.eventBanners && eventCopy.eventBanners.length == 3">
+                        </div>
+
+                        <!-- Display uploaded banners --> 
+                        <div class="mb-3 row">
+                            <div v-for="(banner, index) in eventCopy.eventBanners" :key="index" class="col-4 position-relative">
+                                <img :src="banner" class="img-fluid" alt="Event Banner">
+                                <button class="btn primary-btn-red btn-sm position-absolute top-0 end-0 mt-3 me-3" @click="removePhotoNew(index)">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                                        <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Event limit -->
+                        <div class="mb-3">
+                            <label for="eventLimit" class="form-label fw-bold">Event Limit:</label>
+                            <input type="number" class="form-control" min="1" id="eventLimit" required v-model="eventCopy.eventLimit">
+                        </div>
+
+                        <!-- Ticketed event -->
+                        <div class="mb-3">
+                            <label for="ticketedEventYes" class="fw-bold">Is this a ticketed event? (Click yes if this event requires a pre-sign up for entry.)</label>
+                            <div>
+                                <div class="form-check form-check-inline">
+                                    <!-- Yes Option -->
+                                    <input type="radio" id="ticketedEventYes" name="ticketedEvent" value="true" v-model="eventCopy.ticketed" class="form-check-input" required>
+                                    <label for="ticketedEventYes" class="form-check-label">&nbsp;Yes</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <!-- No Option -->
+                                    <input type="radio" id="ticketedEventNo" name="ticketedEvent" value="false" v-model="eventCopy.ticketed" class="form-check-input">
+                                    <label for="ticketedEventNo" class="form-check-label">&nbsp;No</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Paid event -->
+                        <div v-if="eventCopy.ticketed == true" class="mb-3">
+                            <label for="paidEventYes" class="fw-bold">If it is a ticketed event, are tickets free or paid?</label>
+                            <div>
+                                <!-- Yes Option -->
+                                <input type="radio" id="paidEventYes" name="paidEvent" value="false" v-model="eventCopy.paidEvent" required>
+                                <label for="paidEventYes">&nbsp;Tickets are free, but participants must RSVP first to enter.</label>
+                            </div>
+                            <div>
+                                <!-- No Option -->
+                                <input type="radio" id="paidEventNo" name="paidEvent" value="true" v-model="eventCopy.paidEvent">
+                                <label for="paidEventNo">&nbsp;Tickets are paid, and participants will have to make payment at the below link:</label>
+
+                                <!-- Payment link -->
+                                <input v-if="eventCopy.paidEvent == 'true'" type="text" class="form-control" id="paymentLink" v-model="eventCopy.paymentLink" required>
+                            </div>
+                        </div>
+
+                        <!-- Event location -->
+                        <div class="mb-3">
+                            <label for="eventLocation" class="form-label fw-bold">Event Location:</label>
+                            <input type="text" class="form-control" id="eventLocation" required v-model="eventCopy.eventLocation">
+                        </div>
+                        
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="cancelEdit">Close</button>
+                        <button type="button" class="btn primary-btn-green" data-bs-dismiss="modal" @click="updateEvent">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Edit Event Modal End -->
+
+        <!-- Delete Event Modal Start -->
+        <div class="modal fade" id="deleteEventModal" tabindex="-1" aria-labelledby="deleteEventModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteEventModalLabel">Delete Event</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to delete this event? <span class="text-red">This action is not reversible.</span></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn primary-btn-red" data-bs-dismiss="modal" @click="deleteEvent">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Delete Event Modal End -->
     </div>
 </template>
+
+<style scoped>
+/* Resize Quill toolbar icons */
+.ql-toolbar .ql-formats svg {
+    width: 20px;
+    height: 20px;
+    }
+
+/* Resize SVGs inside the content */
+.ql-editor svg {
+    width: 20px;
+    height: 20px;
+    }
+</style>
 
 <script>
 import NavBar from '@/components/NavBar.vue';
 import { useToast } from 'vue-toastification';
+import Quill from 'quill';
+import DOMPurify from 'dompurify';
 
 export default {
     name: 'SpecificEventPage',
@@ -331,6 +493,9 @@ export default {
             // Variable to store current user ID and user type
             userID: null,
             userType: null,
+
+            // Variable to hold the Quill instance
+            quill: null,
 
             // Variable to store follow status of the organizer
             followStatus: null,
@@ -349,8 +514,10 @@ export default {
             eventID: this.$route.params.eventID,
 
             // Variable to store event details
-            event: {},
+            event: {}, // Original event details
             attendees: [],
+
+            eventCopy: {}, // Copy of event details for editing
 
             // Variable to store message to display when error occurs for attendees
             attendeesError: null,
@@ -370,6 +537,15 @@ export default {
             try {
                 const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/events/getSpecificEvent/` + this.$route.params.eventID);
                 this.event = response.data.event;
+
+                // Convert event banner to a list 
+                if (this.event.eventBanners == null) {
+                    this.event.eventBanners = [];
+                }
+                
+                // Create a deep copy of the event details for editing
+                this.eventCopy = JSON.parse(JSON.stringify(this.event));
+
                 this.dataLoaded = true;
 
                 this.getOtherEvents();
@@ -469,7 +645,7 @@ export default {
             catch (error) {
                 console.log(error);
             }
-            },
+        },
 
         // Function to RSVP for the event
         rsvpEvent() {
@@ -539,6 +715,136 @@ export default {
             }
         },
 
+        // Function to cancel editing event details
+        cancelEdit() {
+            this.eventCopy = JSON.parse(JSON.stringify(this.event));
+        },
+
+        // Function to update event details
+        async updateEvent() {
+            try {
+                // Check if there is a change in the event description
+                const content = this.quill.getText(); // Get the plain text
+                if (content.trim().length > 0) {
+                    // Update the event description
+                    this.eventCopy.eventDesc = this.quill.root.innerHTML;
+
+                    // Sanitize the event description
+                    this.eventCopy.eventDesc = DOMPurify.sanitize(this.eventCopy.eventDesc);
+                }
+
+                // Get current time
+                let currentTime = new Date().toTimeString().split(' ')[0];
+
+                // Check if the event time is valid
+                if (this.eventCopy.eventStartTime <= currentTime) {
+                    const toast = useToast();
+                    toast.error('Event start time cannot be earlier than current time.');
+                    return;
+                }
+
+                if (this.eventCopy.eventStartDate == this.eventCopy.eventEndDate && this.eventCopy.eventStartTime >= this.eventCopy.eventEndTime) {
+                    const toast = useToast();
+                    toast.error('Event end time cannot be earlier than event start time.');
+                    return;
+                }
+                
+
+                // Check which fields have been changed
+                let changedFields = {};
+                for (const [key, value] of Object.entries(this.eventCopy)) {
+                    if (this.event[key] != value) {
+
+                        // Skip ownerInfo
+                        if (key == 'ownerInfo') {
+                            continue;
+                        }
+
+                        if (key == 'eventBanners') {
+                            // Check if the event banners have been changed
+                            if (this.event[key].length != value.length) {
+                                changedFields[key] = value;
+                            }
+                        }
+                        else {
+                            changedFields[key] = value;
+                        }
+
+                    }
+                }
+
+                // Check if there are any changes
+                if (Object.keys(changedFields).length == 0) {
+                    const toast = useToast();
+                    toast.info('No changes detected.');
+                    return;
+                }
+
+                changedFields['eventID'] = this.event.id;
+                changedFields['eventOwnerID'] = this.userID;
+                changedFields['eventOwnerType'] = this.userType;
+
+                // Update the event details
+                await this.$axios.put(`${process.env.VUE_APP_API_URL}/events/updateEvent`, changedFields)
+                .then((response) => {
+                    if (response.status == 200) {
+                        const toast = useToast();
+                        toast.success('Event details updated successfully!');
+                        this.getEvent();
+                    }
+                    else {
+                        console.log(response.data.message);
+                        const toast = useToast();
+                        toast.error('Failed to update event details. Please try again!');
+                    }
+                })
+                
+            }
+            catch (error) {
+                console.log(error);
+                const toast = useToast();
+                toast.error('Failed to update event details. Please try again!');
+            }
+        },
+
+        // Function to delete event 
+        async deleteEvent() {
+            try {
+                await this.$axios.delete(`${process.env.VUE_APP_API_URL}/events/deleteEvent`, {
+                    data: {
+                        eventID: this.event.id,
+                        eventOwnerID: this.userID,
+                        eventOwnerType: this.userType
+                    }
+                })
+                .then((response) => {
+                    if (response.status == 200) {
+                        const toast = useToast();
+                        toast.success('Event deleted successfully!');
+                        if (this.userType == 'user') {
+                            this.$router.push('/profile/user/' + this.userID);
+                        }
+                        else if (this.userType == 'producer') {
+                            this.$router.push('/profile/producer/' + this.userID);
+                        }
+                        else {
+                            this.$router.push('/profile/venue/' + this.userID);
+                        }
+                    }
+                    else {
+                        console.log(response.data.error);
+                        const toast = useToast();
+                        toast.error(response.data.error);
+                    }
+                })
+            }
+            catch (error) {
+                console.log(error);
+                const toast = useToast();
+                toast.error('Failed to delete event. Please try again!');
+            }
+        },
+
         // Function to change date "YYYY-MM-DD" to "DD Month YYYY"
         formatDate(date) {
             const options = { day: 'numeric', month: 'long', year: 'numeric' };
@@ -567,7 +873,47 @@ export default {
             }
 
         },
+
+        // Function to upload images (convert images to base64)
+        uploadImages(event) {
+
+            // Get the files 
+            const files = event.target.files;
+
+            // Check if there are more than 3 files
+            if (files.length + this.eventCopy.eventBanners.length > 3) {
+                alert("You can only have up to 3 images for the event banner.");
+                return;
+            }
+
+            // Loop through the files
+            for (let i = 0; i < files.length; i++) {
+
+                // Check if the file is an image
+                if (files[i].type.match('image.*')) {
+
+                    // Create a file reader
+                    const reader = new FileReader();
+
+                    // Read the file
+                    reader.readAsDataURL(files[i]);
+
+                    // When the file is read
+                    reader.onload = () => {
+                        // Push the base64 string to the postPhotos array
+                        this.eventCopy.eventBanners.push(reader.result);
+                    }
+                }
+            }
+        },
+
+        // Function to remove a photo from the new event
+        removePhotoNew(index) {
+            this.eventCopy.eventBanners.splice(index, 1);
+        },
     },
+
+    // Watch for changes in the route ID
     watch: {
         '$route.params.eventID': {
             immediate: true, // Trigger immediately on component load
@@ -582,6 +928,7 @@ export default {
             },
         },
     },
+
     mounted() {
         // Get the current user's ID and user type
         this.userID = localStorage.getItem("88B_accID");
@@ -594,9 +941,22 @@ export default {
             this.userType = 'defaultUser';
         }
 
+        this.quill = new Quill('#editor-container', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                [{ 'header': '1' }, { 'header': '2' }, { 'font': [] }],
+                [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                ['bold', 'italic', 'underline'],
+                ['link'],
+                ]
+            }
+        });
+        
         this.getEvent();
         this.getAttendees();
-    }
+    },
+
 }
 </script>
 

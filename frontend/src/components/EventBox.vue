@@ -117,7 +117,7 @@
                             <!-- Event limit -->
                             <div class="mb-3">
                                 <label for="eventLimit" class="form-label">Event Limit:</label>
-                                <input type="number" class="form-control" id="eventLimit" required v-model="newEvent.eventLimit">
+                                <input type="number" class="form-control" min="1" id="eventLimit" required v-model="newEvent.eventLimit">
                             </div>
 
                             <!-- Ticketed event -->
@@ -160,8 +160,6 @@
                                 <label for="eventLocation" class="form-label">Event Location:</label>
                                 <input type="text" class="form-control" id="eventLocation" required v-model="newEvent.eventLocation">
                             </div>
-
-
                         </form>
                     </div>
 
@@ -172,7 +170,6 @@
                 </div>
             </div>  
         </div>
-
         <!-- Create event modal end -->
     </div>
 
