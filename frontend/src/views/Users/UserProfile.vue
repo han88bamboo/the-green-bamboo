@@ -555,6 +555,7 @@
                         />
                         <div>
                             <p style="font-size: 18px; margin-bottom: 8px;">Review your first drink.</p>
+                            <router-link :to="'/'">
                             <button
                             style="
                                 padding: 8px 16px;
@@ -569,6 +570,7 @@
                             >
                             Find A Drink
                             </button>
+                            </router-link>
                         </div>
                         </div>
 
@@ -586,6 +588,7 @@
                         <div>
                             <p style="font-size: 18px; margin-bottom: 8px;">Invite two friends.</p>
                             <button
+                            
                             style="
                                 padding: 8px 16px;
                                 background-color: #F0B358;
@@ -615,7 +618,9 @@
                         />
                         <div>
                             <p style="font-size: 18px; margin-bottom: 8px;">Curate a list to share.</p>
+                            <router-link :to="'/profile'">
                             <button
+                           
                             style="
                                 padding: 8px 16px;
                                 background-color: #F0B358;
@@ -629,6 +634,7 @@
                             >
                             Create A List
                             </button>
+                            </router-link>
                         </div>
                         </div>
 
@@ -645,6 +651,7 @@
                         />
                         <div>
                             <p style="font-size: 18px; margin-bottom: 8px;">Explore and join a club!</p>
+                            <router-link :to="'/clubs/view'">
                             <button
                             style="
                                 padding: 8px 16px;
@@ -659,6 +666,7 @@
                             >
                             Find A Club
                             </button>
+                            </router-link>
                         </div>
                         </div>
                     </div>
