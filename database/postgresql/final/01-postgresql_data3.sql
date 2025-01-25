@@ -147,12 +147,12 @@ CREATE TABLE "producers" (
     "claimStatus" BOOLEAN,
     "claimStatusCheckDate" TIMESTAMP,
     "statusOB" VARCHAR(255),
-    "yearFounded": INTEGER,
-    "activeStatus": VARCHAR(10),
-    "owner": VARCHAR(255),
-    "location": VARCHAR(255),
-    "openForTours": BOOLEAN,
-    "website": TEXT,
+    "yearFounded" INTEGER,
+    "activeStatus" VARCHAR(10),
+    "owner" VARCHAR(255),
+    "location" VARCHAR(255),
+    "openForTours" BOOLEAN,
+    "website" TEXT,
     -- "questionAnswers" INTEGER REFERENCES "producersQuestionAnswers"("id") ON DELETE SET NULL, -- Alternative ON DELETE CASCADE to delete all related child records[!] reference "producersQuestionAnswers" as FK
     -- "updates" INTEGER REFERENCES "producersUpdates"("id") ON DELETE SET NULL, -- Alternative ON DELETE CASCADE to delete all related child records[!] reference "producersUpdates" as FK
     "username" VARCHAR(255),
@@ -173,9 +173,9 @@ CREATE TABLE "venues" (
     "photo" TEXT,
     "claimStatus" BOOLEAN,
     "claimStatusCheckDate" TIMESTAMP,
-    "yearOpened": INTEGER,
-    "openForReservations": BOOLEAN,
-    "website": TEXT,
+    "yearOpened" INTEGER,
+    "openForReservations" BOOLEAN,
+    "website" TEXT,
     -- "openingHours" SERIAL, -- [!] reference "venuesOpeningHours"
     -- "questionAnswers" SERIAL, -- [!] reference "venuesQuestionAnswers"
     -- "updates" SERIAL, -- [!] reference "venuesUpdates"
