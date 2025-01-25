@@ -594,7 +594,10 @@ def importListings():
                 for data_type, value in zip(column_data_types, row):
                     if data_type is float:
                         value = value.replace('%', '').strip()
-                        converted_value = data_type(value) if value else None
+                        try:
+                            converted_value = data_type(value) if value and value.lower() != 'n/a' else None
+                        except ValueError:
+                            converted_value = None
                     else:
                         converted_value = data_type(value) if value else None
                     converted_row.append(converted_value)
@@ -637,6 +640,7 @@ def importListings():
 
                 # Upload url to s3 bucket to store as own image
                 s3_url = s3Images.uploadURLtoS3(converted_row[11]) if converted_row[11] else None
+                print("Image uploaded to S3", s3_url)
 
                 # # Convert the image URL to base64
                 # base64_str = image_url_to_base64(converted_row[11]) if converted_row[11] else None
@@ -666,11 +670,16 @@ def importListings():
                 listings_to_insert.append(listing_data)
             # Now, insert the listings into the 'strings' table
             for listing in listings_to_insert:
+                for key, value in listing.items():
+                    if isinstance(value, str) and len(value) > 255:
+                        listing[key] = value[:255]
                 columns = ', '.join(f'"{col}"' for col in listing.keys())
                 placeholders = ', '.join(['%s'] * len(listing))
                 sql = f"INSERT INTO listings ({columns}) VALUES ({placeholders})"
                 cur.execute(sql, list(listing.values()))
             conn.commit()
+
+            print("Bulk Import Listings Successful")
             
         except Exception as e:
             import traceback
@@ -686,12 +695,15 @@ def importListings():
         finally:
             cur.close()
 
+        print("Done")
+
         return jsonify(
             {
                 "code": 201,
-                "message": "Bulk Import Listings Successful"
+                "message": f"{file.filename} has been fully uploaded!"
             }
         ), 201
+
     print("nopes")
 
 

@@ -329,7 +329,7 @@
                                     <div  class="dropdown-menu pt-0" aria-labelledby="dropdownMenuButton"   @click.stop>
                                         
                                         <div class="d-flex filter-div" >
-                                            <div class="dropdown-column ms-2 pt-3" :class="{ 'greyed-out': selectedDrinkType }">
+                                            <div class="dropdown-column ms-2 pt-3" :class="{ 'greyed-out': selectedDrinkType }" v-if="!(selectedDrinkType && isMobile)">
                                                 <h6 class="ms-3"> Filter by <span class="" :class="{ 'text-decoration-underline': !selectedDrinkType }">Drink Type</span> </h6>
                                                 <hr >
                                                 <div v-for="drinkType in drinkTypes" v-bind:key="drinkType.id">
@@ -340,7 +340,13 @@
                                                 </div>
                                             </div>
                                             <div v-show="selectedDrinkType" class="dropdown-column me-2 pt-3" :class="{ 'greyed-out': !selectedDrinkType }" > <!--tzh removed drink-category-column class-->
-                                                <h6 class="ms-3"> Filter by <span class="" :class="{ 'text-decoration-underline': selectedDrinkType }">Drink Category</span> </h6>
+                                                <h6 class="d-flex align-items-center ms-2" @click="clearSelection" style="cursor: pointer; padding: 3px 4px 3px 1px; background-color: #e6e8e9; border-radius: 5px; width: max-content;">
+                                                    <svg width="20px" height="20px" id="Layer_1" style="enable-background:new 0 0 512 512;" version="1.1" viewBox="0 0 512 512" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                                                        <polygon points="352,128.4 319.7,96 160,256 160,256 160,256 319.7,416 352,383.6 224.7,256"/>
+                                                    </svg>
+                                                    <span> Back </span>
+                                                </h6>
+                                                <h6 class="ms-3 pt-3"> Filter by <span class="" :class="{ 'text-decoration-underline': selectedDrinkType }">Drink Category</span> </h6>
                                                 <hr style="min-width:500px;">
                                                 <div v-if="selectedTypeCategory != ''">
                                                     <div v-for="category in selectedTypeCategory" v-bind:key="category">
@@ -768,6 +774,7 @@
         data() {
             return {
                 dataLoaded: false,
+                isMobile: false,
                 // data from database
                 // countries: [],
                 listings: [],
@@ -876,6 +883,11 @@
                 this.userType = userType
             }
             this.loadData();
+            this.checkIfMobile();
+            window.addEventListener('resize', this.checkIfMobile);
+        },
+        beforeUnmount() {
+            window.removeEventListener('resize', this.checkIfMobile);
         },
         methods: {
             // load data from database
@@ -1302,6 +1314,7 @@
                 if(this.discovery){
 
                     const searchResults = this.mostReviews.filter((listing) => {
+                        if (!listing["drinkType"]) return false;
                         const drinkTypeListing = listing["drinkType"].toLowerCase();
                         return drinkTypeListing.includes(drinkTypeSearch);
                     });
@@ -1441,6 +1454,10 @@
                         }
                     }
                 }
+            },
+
+            checkIfMobile() {
+                this.isMobile = window.innerWidth <= 991;
             },
 
             clearSelection() {
