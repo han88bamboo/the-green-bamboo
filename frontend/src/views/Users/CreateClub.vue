@@ -13,7 +13,7 @@
                     <h3 class="fw-bold">Create your club</h3>
 
                     <!-- Form -->
-                    <form @submit.prevent="createClub">
+                    <form>
 
                         <!-- Club name -->
                         <div class="mb-3">
@@ -48,13 +48,6 @@
                         <div class="mb-3">
                             <input type="checkbox" class="me-3" v-model="club.isInviteOnly"> Make Your Club Invite-Only
                         </div>
-
-                        <button type="submit" class="btn btn-primary" :disabled="loading">
-                            <span v-if="!loading">Create Club</span>
-                            <div v-else class="spinner-border  spinner-border-sm" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                        </button>
                     </form>
                 </div>
 
@@ -114,6 +107,16 @@
 
                 </div>
             </div>
+
+            <!-- Create club button -->
+            <div class="d-flex justify-content-end mt-3">
+                <button type="submit" class="btn btn-primary" :disabled="loading" @click="createClub">
+                    <span v-if="!loading">Create Club</span>
+                    <div v-else class="spinner-border  spinner-border-sm" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </button>
+            </div>
         </div>
         
     </div>
@@ -139,7 +142,7 @@ export default {
                 clubName: "",
                 clubDesc: "",
                 isInviteOnly: false,
-                clubBanner: ""
+                clubBanner: null
             },
 
             // Dictionary to store the friends the user is following
@@ -231,31 +234,38 @@ export default {
                 clubName: this.club.clubName,
                 clubDesc: this.club.clubDesc,
                 isInviteOnly: this.club.isInviteOnly,
-                image64: this.club.clubBanner,
+            }
+
+            // Check if a banner image is uploaded
+            if (this.club.clubBanner) {
+                clubObj.image64 = this.club.clubBanner;
             }
 
             this.loading = true;
 
+            console.log(clubObj);
+            return;
+
             // Send the club object to the backend
-            this.$axios.post(`${process.env.VUE_APP_API_URL}/club/createClubs`, clubObj)
-                .then((response) => {
+            // this.$axios.post(`${process.env.VUE_APP_API_URL}/club/createClubs`, clubObj)
+            //     .then((response) => {
 
-                    if (response.status == 201) {
+            //         if (response.status == 201) {
 
-                        // Check if any friends are to be invited
-                        if (this.friendsToInvite.length > 0) {
-                             // Add the friends to the club
-                            this.addFriendsToClub(response.data.clubID);
-                        } else {
-                            // Redirect to the club page
-                            this.$router.push(`/club/view/${response.data.clubID}`);
-                        } 
-                    } 
-                })
-                .catch((error) => {
-                    console.log(error);
-                    alert("Failed to create the club. Please try again later.");
-                });
+            //             // Check if any friends are to be invited
+            //             if (this.friendsToInvite.length > 0) {
+            //                  // Add the friends to the club
+            //                 this.addFriendsToClub(response.data.clubID);
+            //             } else {
+            //                 // Redirect to the club page
+            //                 this.$router.push(`/club/view/${response.data.clubID}`);
+            //             } 
+            //         } 
+            //     })
+            //     .catch((error) => {
+            //         console.log(error);
+            //         alert("Failed to create the club. Please try again later.");
+            //     });
         },
 
         // Function to add invited friends to the club

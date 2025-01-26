@@ -1349,6 +1349,12 @@
                             <div class="py-2"></div>
                         </div>
                     </div>
+
+                    <!-- Event Box Component -->
+                    <!-- Events Details -->
+                    <div class="col-md-3 col-12">
+                        <EventBox :selfView="correctProducer" :targetUserID="displayUserID" targetUserType="producer"/>
+                    </div>
                 </div>
 
             </div>
@@ -1448,6 +1454,7 @@
 <!-- JavaScript -->
 <script>
 // import { all } from 'axios';
+    import EventBox from '@/components/EventBox.vue';
     import NavBar from '@/components/NavBar.vue';
     import ListingRowDisplayProducerProfile from '@/components/ListingRowDisplayProducerProfile.vue';
     import BookmarkIcon from '@/components/BookmarkIcon.vue';
@@ -1457,6 +1464,7 @@
 
     export default {
         components: {
+            EventBox,
             NavBar,
             ListingRowDisplayProducerProfile,
             BookmarkIcon, 

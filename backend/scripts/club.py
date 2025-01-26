@@ -907,7 +907,7 @@ def createClub():
         date_created = datetime.now()
 
         # Step 2: Check if the banner image is provided
-        if 'image64' in data:
+        if 'image64' in data and data['image64']:
             image64 = s3Images.uploadBase64ImageToS3(data['image64'])
         else:
             image64 = None
@@ -1138,6 +1138,8 @@ def addPost():
 
             # Loop through the images and upload them to S3
             for image in data['images']:
+                if not image:
+                    continue
                 image64 = s3Images.uploadBase64ImageToS3(image)
                 image_urls.append(image64)
 
@@ -1540,8 +1542,16 @@ def editPost():
 
             # Loop through the images and upload them to S3
             for image in data['images']:
-                image64 = s3Images.uploadBase64ImageToS3(image)
-                image_urls.append(image64)
+                if not image:
+                    continue
+
+                # Check if the image is already in S3
+                if 's3' in image:
+                    image_urls.append(image)
+                    continue
+                else:
+                    image64 = s3Images.uploadBase64ImageToS3(image)
+                    image_urls.append(image64)
 
             # Make the postPhotos as a text string starting with { and ending with }
             post_photos = '{' + ','.join(f'"{url}"' for url in image_urls) + '}'
@@ -2021,7 +2031,7 @@ def updateClubInfo():
             }), 403
 
         # Step 3: Check if the club banner is provided
-        if 'image64' in data:
+        if 'image64' in data and data['image64']:
             image64 = s3Images.uploadBase64ImageToS3(data['image64'])
 
             # Update the club banner
