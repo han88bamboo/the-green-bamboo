@@ -149,10 +149,16 @@ CREATE TABLE "producers" (
     "claimStatus" BOOLEAN,
     "claimStatusCheckDate" TIMESTAMP,
     "statusOB" VARCHAR(255),
+    "yearFounded" INTEGER,
+    "activeStatus" VARCHAR(10),
+    "owner" VARCHAR(255),
+    "location" VARCHAR(255),
+    "openForTours" BOOLEAN,
+    "website" TEXT,
     -- "questionAnswers" INTEGER REFERENCES "producersQuestionAnswers"("id") ON DELETE SET NULL, -- Alternative ON DELETE CASCADE to delete all related child records[!] reference "producersQuestionAnswers" as FK
     -- "updates" INTEGER REFERENCES "producersUpdates"("id") ON DELETE SET NULL, -- Alternative ON DELETE CASCADE to delete all related child records[!] reference "producersUpdates" as FK
     "username" VARCHAR(255),
-    "producerLink" VARCHAR(255),
+    "producerLink" TEXT,
     "stripeCustomerId" VARCHAR(255)
 );
 
@@ -169,6 +175,9 @@ CREATE TABLE "venues" (
     "photo" TEXT,
     "claimStatus" BOOLEAN,
     "claimStatusCheckDate" TIMESTAMP,
+    "yearOpened" INTEGER,
+    "openForReservations" BOOLEAN,
+    "website" TEXT,
     -- "openingHours" SERIAL, -- [!] reference "venuesOpeningHours"
     -- "questionAnswers" SERIAL, -- [!] reference "venuesQuestionAnswers"
     -- "updates" SERIAL, -- [!] reference "venuesUpdates"
@@ -248,7 +257,7 @@ CREATE TABLE "producersProfileViews" (
 -- ========= "listings" =========
 CREATE TABLE "listings" (
     "id" SERIAL PRIMARY KEY,
-    "listingName" VARCHAR(255),
+    "listingName" VARCHAR(500),
     "producerID" INTEGER REFERENCES "producers"("id") ON DELETE SET NULL, -- [!] reference "producers" FK
     "bottler" VARCHAR(255),
     "originCountry" VARCHAR(255),
@@ -258,7 +267,7 @@ CREATE TABLE "listings" (
     "allowMod" BOOLEAN,
     "addedDate" TIMESTAMP,
     "typeCategory" VARCHAR(255),
-    "age" VARCHAR(255),
+    "age" VARCHAR(500),
     "reviewLink" VARCHAR(255),
     "sourceLink" VARCHAR(255),
     "photo" TEXT 

@@ -260,6 +260,39 @@
                                     </div>
                                 </div>
                             </div>
+                            <!-- Additional Fields -->
+                            <div v-if="editProfile" class="row" style="margin-left: -1.4rem;">
+                                <div class="col-6">
+                                    <label for="yearOpenedInput">Year Opened</label>
+                                    <input type="number" class="form-control mb-3" id="yearOpenedInput" v-model="editYearOpened">
+                                </div>
+                                <div class="col-6">
+                                    <label for="websiteInput">Website</label>
+                                    <input type="url" class="form-control mb-3" id="websiteInput" v-model="editWebsite">
+                                </div>
+                                <div class="col-12 d-flex align-items-center">
+                                    <label class="me-3 mb-0">Open for Reservations:</label>
+                                    <input type="checkbox" id="openForReservationsCheckbox" v-model="editOpenForReservations" :true-value="true" :false-value="false">
+                                    <label for="openForReservationsCheckbox" class="ms-2">{{ editOpenForReservations === true ? 'Yes' : 'No' }}</label>
+                                </div>
+                            </div>
+                            <div v-else class="row" style="margin-top: 4.5rem; margin-left: -1.4rem;">
+                                <div class="col-12">
+                                    <p class="text-body-secondary fs-6 mb-0">
+                                        <span v-if="targetVenue.yearOpened">
+                                            <strong>Year Opened:</strong> {{ targetVenue.yearOpened }}
+                                        </span>
+                                        <span v-if="targetVenue.yearOpened && (targetVenue.openForReservations || targetVenue.website)"> | </span>
+                                        <span v-if="targetVenue.openForReservations">
+                                            <strong>Open for Reservations:</strong> {{ targetVenue.openForReservations === true ? 'Yes' : 'No' }}
+                                        </span>
+                                        <span v-if="targetVenue.openForReservations && targetVenue.website"> | </span>
+                                        <span v-if="targetVenue.website">
+                                            <strong>Website:&nbsp;</strong>{{ targetVenue.website }}
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                         <!-- ------- END Description ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
@@ -2372,6 +2405,7 @@
 
         </div>
     </div>
+    <FooterBar />
 </template>
 
 <script>
@@ -2381,6 +2415,7 @@
     import BookmarkIcon from '@/components/BookmarkIcon.vue';
     import BookmarkModal from '@/components/BookmarkModal.vue';
     import EventBox from '@/components/EventBox.vue';
+    import FooterBar from "@/components/FooterBar.vue";
 
     export default {
         name: 'profileVenue',
@@ -2390,7 +2425,8 @@
             ListingRowDisplayProducerProfile,
             BookmarkIcon, 
             BookmarkModal,
-            EventBox
+            EventBox,
+            FooterBar
         },
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         data() {
@@ -2433,6 +2469,9 @@
                 editVenueName: '',
                 editVenueDesc: '',
                 editCountry: '',
+                editYearOpened: null,
+                editOpenForReservations: '',
+                editWebsite: '',
                 qaQuestion: '',
                 qaAnswer: '',
 
@@ -2614,6 +2653,9 @@
                         this.editVenueName = this.targetVenue["venueName"];
                         this.editVenueDesc = this.targetVenue["venueDesc"];
                         this.editCountry = this.targetVenue["originLocation"];
+                        this.editYearOpened = this.targetVenue["yearOpened"];
+                        this.editOpenForReservations = this.targetVenue["openForReservations"];
+                        this.editWebsite = this.targetVenue["website"];
                         this.newAddress = this.targetVenue["address"];
                         this.newPublicHolidays = this.targetVenue["publicHolidays"];
                         this.newReservationDetails = this.targetVenue["reservationDetails"];
@@ -3252,6 +3294,9 @@
                             venueName: this.editVenueName,
                             venueDesc: this.editVenueDesc,
                             originLocation: this.editCountry,
+                            yearOpened: this.editYearOpened,
+                            openForReservations: this.editOpenForReservations,
+                            website: this.editWebsite,
                         },
                         {
                         headers: {

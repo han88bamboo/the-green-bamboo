@@ -953,9 +953,9 @@
                                         </div>
                                         Select flavour tags:
                                         <br>
-                                        <button class="btn mb-2 me-2" @click="toggleBox(family)" v-for="family in flavourTags" v-bind:key="family['_id']" :style="{ color:'white', backgroundColor: family['hexcode'], borderColor:family['hexcode'], borderWidth:'1px' }">{{ family['familyTag'] }}</button>
+                                        <button class="btn mb-2 me-2" @click="toggleBox(family)" v-for="family in flavorTags" v-bind:key="family['_id']" :style="{ color:'white', backgroundColor: family['hexcode'], borderColor:family['hexcode'], borderWidth:'1px' }">{{ family['familyTag'] }}</button>
                                         <!-- This is the container/dropdown box for the subtags -->
-                                        <div v-for="family in flavourTags" :key="family['_id']">
+                                        <div v-for="family in flavorTags" :key="family['_id']">
                                             <div v-if="family.showBox" class="rounded p-3" :style="{border: '3px solid ' + family['hexcode'] }">
                                                 <div class="row">
                                                     <div class="col-3 mobile-px-1" v-for="(element, index) in family.subTag2" :key="index">
@@ -1017,7 +1017,14 @@
                             <!-- End of modal body -->
                             <div class="modal-footer d-flex">
                                 <span v-for="review in filteredReviews.filter(review => review.userID === parseInt(userID))" v-bind:key="review.id" class="me-auto">
-                                    <button v-if="inEdit && review['userID'] == parseInt(userID)" class="btn btn-danger py-1  mobile-fs-7" @click="setDeleteID(review)" data-bs-toggle="modal" data-bs-target="#deleteReview">Delete Review</button>
+                                    <button 
+                                        v-if="inEdit" 
+                                        class="btn btn-danger py-1 mobile-fs-7" 
+                                        @click="setDeleteID(filteredReviews.find(review => review.userID === parseInt(userID)))" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#deleteReview">
+                                        Delete Review
+                                    </button>
                                 </span>
                                 <button type="button" class="btn secondary-btn-less-round-inverse " data-bs-dismiss="modal">Close</button> <!--tzh removed btn-secondary added secondary-btn-less-round-inverse-->
                                 <button v-if="!inEdit" type="button" @click="addReview" class="btn secondary-btn-less-round">Submit Review</button>
@@ -1160,8 +1167,8 @@
                                     <!-- flavour tag tzh changed mb-2 to mb-3-->
                                     <div class="text-start mb-3">
                                         <!-- flavor tag -->
-                                            <span v-for="(tag, index) in review.flavourTag" :key="index" class="badge rounded-pill me-2" :style="{ backgroundColor: getTagColor(parseInt(tag)) }">{{ getTagName(parseInt(tag)) }}</span>
-                                            <span v-for="(tag, index) in review.observationTag" :key="index" class="badge rounded-pill me-2" style="background-color: #F0B358; color:black;">{{ tag }}</span> <!--tzh changed grey to #F0B358-->
+                                            <span v-for="(tag, index) in review.flavourTag" :key="index" class="badge rounded-pill me-2 mb-1" :style="{ backgroundColor: getTagColor(parseInt(tag)) }">{{ getTagName(parseInt(tag)) }}</span>
+                                            <span v-for="(tag, index) in review.observationTag" :key="index" class="badge rounded-pill me-2 mb-1" style="background-color: #F0B358; color:black;">{{ tag }}</span> <!--tzh changed grey to #F0B358-->
                                     </div>
                                     <div style="display: inline;" class="text-start">
                                         <!-- voting -->
@@ -1283,14 +1290,14 @@
                                                     <span v-if="detailedReview.location !== '' && checkVenue(detailedReview.location)">
                                                         <a style="color: inherit" >
                                                             <router-link :to="'/profile/venue/' + checkVenue(detailedReview.location)" style="color: inherit">
-                                                                <b>{{ detailedReview.location }}</b>
+                                                                <b>{{ getVenueNameFromID(detailedReview.location) }}</b> <!--tzh testing code anchor-->
                                                             </router-link>
                                                         </a>
                                                     </span>
 
                                                     <span v-else-if="detailedReview.location !== ''">
                                                         <a :href="'https://www.google.com/maps/search/' + detailedReview.location" style="color: inherit" target="_blank"> 
-                                                            <b>{{ detailedReview.location }}</b>
+                                                            <b>{{ getVenueNameFromID(detailedReview.location) }}</b> <!--tzh testing code anchor-->
                                                         </a>
                                                     </span>
                                                     <span v-else>-</span>
@@ -1556,7 +1563,7 @@
     
         </div> <!-- end of your drinks shelf & brands you follow -->
 
-    
+        <FooterBar />
     
 
 </template>
@@ -1569,7 +1576,8 @@
     // import ReviewModal from '@/components/EditReview.vue'
     import BookmarkIcon from '@/components/BookmarkIcon.vue';
     import BookmarkModal from '@/components/BookmarkModal.vue';
-    
+    import FooterBar from "@/components/FooterBar.vue";
+
     export default {
         // setup(){
 
@@ -1578,7 +1586,8 @@
         components: {
             NavBar,
             BookmarkIcon, 
-            BookmarkModal
+            BookmarkModal,
+            FooterBar
         },
         data() {
             return {
@@ -1669,7 +1678,7 @@
                 photo: null,
                 observationTags: [],
                 selectedObservations:[],
-                flavourTags: [],
+                flavorTags: [],
                 subTags: [],
                 selectedFlavourTags:[],
                 finalSelectedFlavourTags:[],
@@ -1820,7 +1829,7 @@
                     // _id, hexcode, familyTag, subtag, showbox
                     try {
                                 const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getFlavourTags`);
-                                this.flavourTags = response.data.map(item => {
+                                this.flavorTags = response.data.map(item => {
                                     return { ...item, showBox: false };
                                 })                            } 
                         catch (error) {
@@ -1832,9 +1841,11 @@
                     try {
                                 const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getSubTags`);
                                 this.subTags = response.data
-                                this.flavourTags.forEach(flavourTag => {
+                                this.flavorTags.forEach(flavourTag => {
                                     // Filter subtags belonging to the current flavor tag
                                     const subTagsForFlavourTag = this.subTags.filter(subTag => subTag.familyTagId === flavourTag.id);
+                                    console.log(`Flavor Tag: ${flavourTag.familyTag}`, subTagsForFlavourTag);
+
                                     // Extract required information from subtags
                                     const subTagsInfo = subTagsForFlavourTag.map(subTag=> ({
                                         id: subTag.id,
@@ -1915,6 +1926,11 @@
                         this.filteredReviews = this.getReviewsForListing(this.specified_listing);
                         this.getFilteredReviewsWithImages() // to get only those filtered reviews with photos
                         this.getFlavorTagCounts(); // to get the flavor tag counts
+                        // this.sorted_flavorTagCounts = {
+                        //     "Fruity#FF5733": 10,
+                        //     "Floral#33FF57": 5,
+                        //     "Woody#3357FF": 2
+                        // };
                         this.getObservationTagCounts(); // to get the observation tag counts
                         this.specificReview = this.getLoggedUserReview();
                         this.formatDeepDiveLink();
@@ -2298,7 +2314,7 @@
                         specificReview[0].flavourTag.forEach(subtag=>{
                             const subTag = this.subTags.find(subTag => parseInt(subtag)===subTag.id)         
                             if(subTag){
-                                const familyTag = this.flavourTags.find(family=>subTag.familyTagId===family.id)
+                                const familyTag = this.flavorTags.find(family=>subTag.familyTagId===family.id)
                                 if(familyTag){
                                     const hexcode = familyTag.hexcode
                                     const subtagInfo = subTag.subTag
@@ -2573,7 +2589,7 @@
             
             toggleBox(family) {
                 let tempShowBox = family.showBox
-                this.flavourTags.forEach(item => {
+                this.flavorTags.forEach(item => {
                     item.showBox = false;
                 });
                 family.showBox = !tempShowBox; // Toggle the visibility of the box
@@ -2706,7 +2722,7 @@
             getTagName(tag) {
                 const subTag = this.subTags.find(subTag=>subTag.id === tag)
                 if(subTag){
-                    const familyTag = this.flavourTags.find(family=>subTag.familyTagId===family.id)
+                    const familyTag = this.flavorTags.find(family=>subTag.familyTagId===family.id)
                     if(familyTag){
                         const hexcode = familyTag.hexcode
                         const subtagInfo = subTag.subTag
@@ -2721,7 +2737,7 @@
             getTagColor(tag) {
                 const subTag = this.subTags.find(subTag=>subTag.id === tag)
                 if(subTag){
-                    const familyTag = this.flavourTags.find(family=>subTag.familyTagId===family.id)
+                    const familyTag = this.flavorTags.find(family=>subTag.familyTagId===family.id)
                     if(familyTag){
                         const hexcode = familyTag.hexcode
                         const subtagInfo = subTag.subTag
@@ -2861,6 +2877,11 @@
 
             // from filtered reviews, create a dictionary with the count of each observation tag
             getFlavorTagCounts() {
+                
+                console.log("Sub Tags:", this.subTags);
+                console.log("Flavor Tags:", this.flavorTags);
+                console.log("Filtered Reviews:", this.filteredReviews); // Check if filteredReviews has data
+                
                 let allReviews = this.filteredReviews
                 let flavorTags = []
                 for (let review of allReviews) {
@@ -2869,10 +2890,11 @@
                         // flavorTags.push(tag)
                         const subTag = this.subTags.find(subTag=>subTag.id === tag.id)
                         if(subTag){
-                            const familyTag = this.flavourTags.find(family=>subTag.familyTagId === family.id)
+                            const familyTag = this.flavorTags.find(family=>subTag.familyTagId === family.id)
                             if(familyTag){
                                 const hexcode = familyTag.hexcode
                                 const subtagInfo = subTag.subTag
+                                console.log(`SubTag Info: ${subtagInfo}, Hexcode: ${hexcode}`);
                                 flavorTags.push(subtagInfo + hexcode)
                             }
                         }
@@ -2900,10 +2922,20 @@
                 } else {
                     this.sorted_flavorTagCounts = sorted_flavorTagCounts
                 }
+                
+                // Debugging: Log the calculated values
+                console.log("Sorted Flavor Tag Counts:", this.sorted_flavorTagCounts);
+                for (const [tag, count] of Object.entries(this.sorted_flavorTagCounts)) {
+                    console.log(`Tag: ${tag}, Count: ${count}`);
+                }
+                console.log("Sorted Flavor Tag Counts:", this.sorted_flavorTagCounts);
             },
 
             // from filtered reviews, create a dictionary with the count of each flavour tag
             getObservationTagCounts() {
+                console.log("Observation Tag Counts:", this.sorted_observationTagCounts);
+                
+
                 let allReviews = this.filteredReviews
                 let observationTags = []
                 for (let review of allReviews) {

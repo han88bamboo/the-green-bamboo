@@ -276,6 +276,7 @@ def getProducers():
             SELECT 
                 p.id, p."producerName", p."producerDesc", p."originCountry", p."mainDrinks", p.photo, 
                 p."hashedPassword", p."claimStatus", p."statusOB", p.username, p."producerLink", 
+                p."yearFounded", p."activeStatus", p.owner, p.location, p."openForTours", p.website,
                 p."stripeCustomerId", p."claimStatusCheckDate",
                 COALESCE((
                     SELECT json_agg(json_build_object(
@@ -348,6 +349,7 @@ def getProducer(id):
             SELECT 
                 p.id, p."producerName", p."producerDesc", p."originCountry", p."mainDrinks", p.photo, 
                 p."hashedPassword", p."claimStatus", p."statusOB", p.username, p."producerLink", 
+                p."yearFounded", p."activeStatus", p.owner, p.location, p."openForTours", p.website,
                 p."stripeCustomerId", p."claimStatusCheckDate",
                 COALESCE((
                     SELECT json_agg(json_build_object(
@@ -416,6 +418,7 @@ def getProducerByRequestId(id):
             SELECT 
                 p.id, p."producerName", p."producerDesc", p."originCountry", p."mainDrinks", p.photo, 
                 p."hashedPassword", p."claimStatus", p."statusOB", p.username, p."producerLink", 
+                p."yearFounded", p."activeStatus", p.owner, p.location, p."openForTours", p.website,
                 p."stripeCustomerId", p."claimStatusCheckDate",
                 COALESCE((
                     SELECT json_agg(json_build_object(
@@ -892,6 +895,7 @@ def getVenues():
             SELECT 
                 v.id, v.address, v."claimStatus", v."hashedPassword", v."venueName", v."venueDesc", 
                 v."originLocation", v.photo, v."publicHolidays", v."reservationDetails", v."claimStatusCheckDate",
+                v."yearOpened", v."openForReservations", v.website,
                 v.username, v."venueType", v."stripeCustomerId", v.pin,
                 -- Build the menu JSON
                 COALESCE((
@@ -994,6 +998,7 @@ def getVenue(id):
             SELECT 
                 v.id, v.address, v."claimStatus", v."hashedPassword", v."venueName", v."venueDesc", 
                 v."originLocation", v.photo, v."publicHolidays", v."reservationDetails", v."claimStatusCheckDate",
+                v."yearOpened", v."openForReservations", v.website,
                 v.username, v."venueType", v."stripeCustomerId", v.pin,
                 -- Build the menu JSON
                 COALESCE((
@@ -1094,6 +1099,7 @@ def getVenueByRequestId(id):
             SELECT 
                 v.id, v.address, v."claimStatus", v."hashedPassword", v."venueName", v."venueDesc", 
                 v."originLocation", v.photo, v."publicHolidays", v."reservationDetails", v."claimStatusCheckDate",
+                v."yearOpened", v."openForReservations", v.website,
                 v.username, v."venueType", v."stripeCustomerId", v.pin,
                 -- Build the menu JSON
                 COALESCE((
