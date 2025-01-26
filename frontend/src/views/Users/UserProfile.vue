@@ -499,7 +499,7 @@
                 </div>
 
                 <!-- reviews and lists -->
-                <div class="col-12 col-md-8">
+                <div class="col-12 col-md-5">
 
                     <!-- reviews button -->
                     <button 
@@ -875,6 +875,11 @@
                     </div>
 
                 </div>
+
+                <!-- Events Details -->
+                <div class="col-md-3 col-12">
+                    <EventBox :selfView="ownProfile" :targetUserID="displayUserID" targetUserType="user"/>
+                </div>
             </div>
             <BookmarkModal 
                 v-if="user" 
@@ -883,14 +888,11 @@
                 :listingID="bookmarkListingID" />
             
         </div>
-        
-
-
-    
     </div>
 </template>
 
 <script>
+import EventBox from '@/components/EventBox.vue';
 import NavBar from '@/components/NavBar.vue';
 import ListingRowDisplayUserProfile from '@/components/ListingRowDisplayUserProfile.vue';
 import BookmarkModal from '@/components/BookmarkModal.vue';
@@ -902,7 +904,8 @@ export default {
     components: {
         NavBar, 
         ListingRowDisplayUserProfile, 
-        BookmarkModal
+        BookmarkModal,
+        EventBox
     },
     data() {
         return {

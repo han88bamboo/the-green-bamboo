@@ -1943,7 +1943,7 @@
                 <!-- Q&A -->
                 <div class="row ">
                     <!--  Q&A-->
-                    <div class="col-xl-12 col-lg-4 col-md-6 col-12 mobile-view-hide">
+                    <div class="col-xl-12 col-lg-3 col-md-6 col-12 mobile-view-hide">
                         <div class="square primary-square-green rounded p-3 mb-3"> <!--tzh added -green -->
 
                             <!-- Header -->
@@ -2097,7 +2097,7 @@
 
                 <!-- Map View -->
                 <!-- <div class="row"> -->
-                    <div class="col-xl-12 col-lg-4 col-md-6 col-12">
+                    <div class="col-xl-12 col-lg-3 col-md-6 col-12">
                         <div class="square primary-square-green-outline rounded p-3 mb-3"> <!--tzh changed secondary-square to primary-square-green-outline-->
 
                             <!-- Header -->
@@ -2173,7 +2173,7 @@
 
                 <!-- Opening Hours + Reservation Details -->
                 <!-- <div class="row"> -->
-                    <div class="col-xl-12 col-lg-4 col-md-6 col-12">
+                    <div class="col-xl-12 col-lg-3 col-md-6 col-12">
                         <div class="square primary-square-green-outline rounded p-3 mb-3"> <!--tzh changed secondary-square to primary-square-green-outline -->
 
                             <!-- Header -->
@@ -2351,8 +2351,8 @@
 
                 <!-- ------- END Opening Hours + Reservation Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
                     <!-- Events Details -->
-                    <div class="col-xl-12 col-lg-4 col-md-6 col-12">
-                        <EventBox :selfView="selfView" :userID="viewerID" :targetVenueID="targetVenue.id" userType="venue"/>
+                    <div class="col-xl-12 col-lg-3 col-md-6 col-12">
+                        <EventBox :selfView="selfView" :targetUserID="targetVenue.id" targetUserType="venue"/>
                     </div>
                 </div>
 

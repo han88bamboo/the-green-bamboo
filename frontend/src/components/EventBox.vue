@@ -213,15 +213,11 @@ export default {
             type: Boolean,
             required: true
         },
-        userID: {
+        targetUserID: {
             type: Number,
             required: true
         },
-        targetVenueID: {
-            type: Number,
-            required: true
-        },
-        userType: {
+        targetUserType: {
             type: String,
             required: true
         }
@@ -233,6 +229,10 @@ export default {
 
             // Variable to store 
             events: [],
+
+            // Variable to store current viewer user ID and type
+            userID: null,
+            userType: null,
 
             // Variable to disable button
             disableButton: false,
@@ -262,14 +262,8 @@ export default {
         async getEvents() {
             try {
                 let response;
-                if (this.selfView) {
-                    response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/events/getUserEvents/` + this.userID + "/venue/0");
-                    this.events = response.data;
-                }
-                else {
-                    response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/events/getUserEvents/` + this.targetVenueID + "/venue/0");
-                    this.events = response.data;
-                }
+                response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/events/getUserEvents/` + this.targetUserID + "/" + this.targetUserType + "/0");
+                this.events = response.data;
                 this.events = response.data.events;
                 console.log(this.events);
             }
@@ -335,6 +329,14 @@ export default {
 
         // Function to create a new event
         async createEvent() {
+
+            // Check if user is logged in
+            if (this.userType == "defaultUser") {
+                // Redirect to login page
+                this.$router.push({ name: 'login' });
+            }
+
+            this.disableButton = true;
             try {
                 // Check if the event description is empty
                 const description = this.quill.root.innerHTML;
@@ -405,17 +407,34 @@ export default {
     mounted() {
         this.getEvents();
 
-        this.quill = new Quill('#editor-container', {
-            theme: 'snow',
-            modules: {
+        this.$nextTick(() => {
+            const editorContainer = document.getElementById('editor-container');
+            if (editorContainer) {
+            this.quill = new Quill(editorContainer, {
+                theme: 'snow',
+                modules: {
                 toolbar: [
-                [{ 'header': '1' }, { 'header': '2' }, { 'font': [] }],
-                [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-                ['bold', 'italic', 'underline'],
-                ['link'],
+                    [{ 'header': '1' }, { 'header': '2' }, { 'font': [] }],
+                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                    ['bold', 'italic', 'underline'],
+                    ['link'],
                 ]
+                }
+            });
             }
         });
+
+        // Get current user ID and type
+        this.userID = localStorage.getItem('88B_accID');
+        let userType = localStorage.getItem('88B_accType');
+
+        if (userType) {
+            this.userType = userType;
+        }
+        else {
+            this.userType = "defaultUser";
+        }
+
     }
 }
 </script>
