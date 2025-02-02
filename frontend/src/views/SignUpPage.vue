@@ -253,8 +253,12 @@
         :isVisible="true"
         title="Create your profile and build your taste palate!"
         question="What’s your drink of choice?"
+        note="(Please pick at least 1 drink)"
         :options="['Whisky', 'Beer', 'Wine', 'Cocktails', 'Gin', 'Tequila', 'Mezcal', 'Sake', 'Rum', 'Brandy', 'Baijiu', 'Soju', 'Umeshu', 'Makgeolli', 'Brandy', 'Vodka', 'Liqueurs', 'Shochu', 'Sotol', 'Arrack']"
+        :preselectedOptions="selectedDrinks"
+        :minSelections="1"
         nextButtonText="Next"
+        @updateSelection="selectedDrinks = $event"
         @next="goToPopup2"
     />
 
@@ -264,9 +268,13 @@
         :isVisible="true"
         title="Create your profile and build your taste palate!"
         question="What types of flavours do you usually prefer?"
+        note="(Please pick at least 3 flavours)"
         :options="['Sweet', 'Sour', 'Umami', 'Floral', 'Fruity', 'Green', 'Confectionary', 'Cereal', 'Earthy', 'Spices', 'Mineral', 'Lactic', 'Umami', 'Smoky']"
+        :preselectedOptions="selectedFlavors"
+        :minSelections="3"
         showBackButton
-        @back="goToPopup1"
+        @updateSelection="selectedFlavors = $event"
+        @back="showPopup1 = true; showPopup2 = false"
         @next="goToPopup3"
     />
 
@@ -319,6 +327,8 @@
                 showPopup2: false,
                 showPopup3: false,
                 showOnboardPopup: false,
+                selectedDrinks: [],  // Stores selections from Popup 1
+                selectedFlavors: [], // Stores selections from Popup 2
 
                 // Initial user variable
                 response:[],
@@ -564,34 +574,76 @@
                 }
                 
             },
-            goToPopup2() {
-            this.showPopup1 = false;
-            this.showPopup2 = true;
-            this.showPopup3 = false;
-            },
-            goToPopup3() {
-            this.showPopup2 = false;
-            this.showPopup3 = true;
-            },
-            goToOnboardPopup() {
-            this.showPopup3 = false;
-            this.showOnboardPopup = true;
-            },
-            goToPopup1() {
-            this.showPopup2 = false;
-            this.showPopup1 = true;
-            },
-            completeSetup() {
-            this.showPopup3 = false;
-            this.showOnboardPopup = true;
-            console.log("Signup process completed!");
-            },
-            closePopup() {
-            this.showPopup1 = false;
-            this.showPopup2 = false;
-            this.showPopup3 = false;
-            this.showOnboardPopup = false;
-            },
+            goToPopup2(selectedOptions) {
+    if (selectedOptions.length >= 1) {
+      this.selectedDrinks = selectedOptions;
+      this.showPopup1 = false;
+      this.showPopup2 = true;
+    } else {
+      alert("Please select at least 1 drink option.");
+    }
+  },
+  goToPopup3(selectedOptions) {
+    if (selectedOptions.length >= 3) {
+      this.selectedFlavors = selectedOptions;
+      this.showPopup2 = false;
+      this.showPopup3 = true;
+    } else {
+      alert("Please select at least 3 flavors.");
+    }
+  },
+  completeSetup(selectedOptions) {
+    this.selectedPreferences = selectedOptions;
+    console.log("Final selections:", {
+      drinks: this.selectedDrinks,
+      flavors: this.selectedFlavors,
+      preferences: this.selectedPreferences,
+    });
+    this.showOnboardPopup = true;
+    this.showPopup3 = false;
+  },
+  goToPopup1() {
+    this.showPopup2 = false;
+    this.showPopup1 = true;
+  },
+  goToPopup2From3() {
+    this.showPopup3 = false;
+    this.showPopup2 = true;
+  },
+  closePopup() {
+    this.showPopup1 = false;
+    this.showPopup2 = false;
+    this.showPopup3 = false;
+    this.showOnboardPopup = false;
+  },
+            // goToPopup2() {
+            // this.showPopup1 = false;
+            // this.showPopup2 = true;
+            // this.showPopup3 = false;
+            // },
+            // goToPopup3() {
+            // this.showPopup2 = false;
+            // this.showPopup3 = true;
+            // },
+            // goToOnboardPopup() {
+            // this.showPopup3 = false;
+            // this.showOnboardPopup = true;
+            // },
+            // goToPopup1() {
+            // this.showPopup2 = false;
+            // this.showPopup1 = true;
+            // },
+            // completeSetup() {
+            // this.showPopup3 = false;
+            // this.showOnboardPopup = true;
+            // console.log("Signup process completed!");
+            // },
+            // closePopup() {
+            // this.showPopup1 = false;
+            // this.showPopup2 = false;
+            // this.showPopup3 = false;
+            // this.showOnboardPopup = false;
+            // },
 
             // create unique hash based on username and password
             hashPassword(username, password) {

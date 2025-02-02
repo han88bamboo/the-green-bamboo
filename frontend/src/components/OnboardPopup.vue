@@ -48,8 +48,9 @@
         this.$emit("search", this.searchText); // Emit search event to parent
         console.log("Search Text:", this.searchText);
       },
-      onClose() {
+      async onClose() {
         this.$emit("close"); // Emit close event to parent
+        // this.$router.push({ name: "profileuser" }); // Navigate to UserProfile.vue
       },
     },
   };
