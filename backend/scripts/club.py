@@ -1,7 +1,8 @@
 # Routes: /getClubs (GET), /getClubwSearch (GET), /getSpecificClubInfo (GET),
 #         /getClubPosts (GET), /getClubPostDetails (GET), /checkUserMembership (GET),
 #         /getUserLikesPost (GET), /getUserLikesComments (GET), /getUserClubs (GET),
-#         /getClubMembers (GET), /getClubRequests (GET), /getUserClubRequests (GET),
+#         /getClubMembers (GET), /getFirstFewClubMembers (GET), /getAllClubMembers (GET),
+#         /getClubRequests (GET), /getUserClubRequests (GET),
 #         /getUserInvitedClubs (GET)
 #         /createClubs (POST), /addClubMembers (POST), /joinClub (POST), 
 #         /addPost (POST), /addComment (POST), /requestToJoinClub (POST),
@@ -712,6 +713,120 @@ def getClubMembers(clubID, last_seen_id):
 
 
 # -----------------------------------------------------------------------------------------
+# [GET] getFirstFewClubMembers
+# Purpose: Get the first few members of a specific club (4 members to show on ClubView.vue)
+# Used: ClubView.vue [views folder inside Users folder]
+# Output: Possible return codes [200 - Retrieval success, 404 - No members found, 500 - An error occurred retrieving the request]
+@blueprint.route('/getFirstFewClubMembers/<clubID>', methods=['GET'])
+def getFirstFewClubMembers(clubID):
+    conn = g.db
+    cur = conn.cursor()
+
+    try:
+        # Step 1: Get the first few members of the club
+        cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s AND "joinStatus" = TRUE ORDER BY "id" ASC LIMIT 4', (clubID,))
+        members = cur.fetchall()
+
+        if not members:
+            return jsonify({
+                'error': 'No members found'
+            }), 404
+        
+        # Step 2: Get the user information for each member
+        for member in members:
+            member_id = member['id']
+            member_info = getUserInfo(cur, member_id)
+
+            if not member_info:
+                # Skip to the next member if the member info is not found
+                continue
+
+            member_info['isAdmin'] = member['isAdmin']
+            member_info['memberID'] = member_id
+            member_info['joinDate'] = member['joinDate']
+            member_info['joinStatus'] = member['joinStatus']
+
+            # Add member info into members
+            member.update(member_info)
+
+            # Remove the id from the member
+            member.pop('clubID')
+
+        return jsonify({
+            'members': members
+        }), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred retrieving the request."
+            }
+        ), 500
+    
+    finally:
+        cur.close()
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] getAllClubMembers
+# Purpose: Get all the members of a specific club (show all members in a modal in ClubView.vue)
+# Used: ClubView.vue [views folder inside Users folder]
+# Output: Possible return codes [200 - Retrieval success, 404 - No members found, 500 - An error occurred retrieving the request]
+@blueprint.route('/getAllClubMembers/<clubID>', methods=['GET'])
+def getAllClubMembers(clubID): 
+    conn = g.db
+    cur = conn.cursor()
+
+    try:
+        # Step 1: Get all the members of the club
+        cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s AND "joinStatus" = TRUE', (clubID,))
+        members = cur.fetchall()
+
+        if not members:
+            return jsonify({
+                'error': 'No members found'
+            }), 404
+        
+        # Step 2: Get the user information for each member
+        for member in members:
+            member_id = member['id']
+            member_info = getUserInfo(cur, member_id)
+
+            if not member_info:
+                # Skip to the next member if the member info is not found
+                continue
+
+            member_info['isAdmin'] = member['isAdmin']
+            member_info['memberID'] = member_id
+            member_info['joinDate'] = member['joinDate']
+            member_info['joinStatus'] = member['joinStatus']
+
+            # Add member info into members
+            member.update(member_info)
+
+            # Remove the id from the member
+            member.pop('clubID')
+
+        return jsonify({
+            'members': members
+        }), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred retrieving the request."
+            }
+        ), 500
+    
+    finally:
+        cur.close()
+
+
+# -----------------------------------------------------------------------------------------
 # [GET] getClubRequests
 # Purpose: Get the requests of users who want to join a specific club
 # Used: ClubSettings.vue [components folder inside frontend folder]
@@ -944,7 +1059,7 @@ def createClub():
 
 # -----------------------------------------------------------------------------------------
 # [POST] addClubMembers
-# Purpose: Add new members to the club
+# Purpose: Add new members to the club [users will have to accept the invite to join the club - added by another user regardless if the club is public or private]
 # Used: 
 # Input: 
 #   1. A list of new member objects containing the user's ID, user type and isAdmin status (e.g., [{'userID': 1, 'userType': 'user', 'isAdmin': true}, {'userID': 2, 'userType': 'producer', isAdmin: false}])
