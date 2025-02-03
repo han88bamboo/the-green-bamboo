@@ -479,7 +479,8 @@ CREATE TABLE "clubs" (
     "isInviteOnly" BOOLEAN,
     "clubLink" VARCHAR(255),
     "clubBanner" TEXT,
-    "dateCreated" TIMESTAMP
+    "dateCreated" TIMESTAMP,
+    "totalMembers" INTEGER
 );
 
 -- ========= "clubMembers" =========

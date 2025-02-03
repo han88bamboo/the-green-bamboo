@@ -1,5 +1,5 @@
 <template>
-    <div class="mb-3" style="background-color: #D3D3D3;">
+    <div class="mb-3" style="background-color: #EAE9EE;">
         <NavBar />
 
         <!-- Display when data is still loading -->
@@ -425,7 +425,7 @@
                                 </router-link>
 
                                 <!-- Show all admins button -->
-                                <button v-if="admins.length > 3" type="button" class="btn secondary-btn btn-sm mt-3" data-bs-toggle="modal" data-bs-target="#showAllAdminsModal">Show All</button>
+                                <button v-if="admins.length > 3" type="button" class="btn secondary-btn btn-sm mt-3" data-bs-toggle="modal" data-bs-target="#showAllAdminsModal">View All Admins</button>
                             </div>
                         </div>
 
@@ -474,7 +474,7 @@
                         <div class="mt-5 text-start row">
                             <p class="fw-bold">Members ({{ clubInfo.totalMembers }})</p>
                             
-                            <div v-for="member in members.slice(0, 3)" :key="member.id" class="d-flex flex-column align-items-center col-sm-3 col-md-6 col-lg-3 mt-3">
+                            <div v-for="member in members.slice(0, 3)" :key="member.id" class="d-flex flex-column align-items-center col-sm-3 col-md-6 col-lg-4 mt-3">
                                 <!-- Member photo -->
                                 <img v-if="member.photo" :src="member.photo" class="img-fluid rounded-circle" alt="Member Photo">
                                 <svg v-else xmlns="http://www.w3.org/2000/svg" width="45" height="45" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
@@ -491,7 +491,7 @@
                             </div>
 
                             <!-- Show more members button -->
-                            <button v-if="members.length > 3" type="button" class="btn secondary-btn btn-sm mt-3" data-bs-toggle="modal" data-bs-target="#showAllMembersModal" @click="loadAllMembers">View All Members</button>
+                            <button v-if="members.length > 3" type="button" class="btn secondary-btn btn-sm mt-3 ms-3" data-bs-toggle="modal" data-bs-target="#showAllMembersModal" @click="loadAllMembers">View All Members</button>
 
                             <!-- Show error message -->
                             <div v-if="getFewMemberError" class="alert alert-danger mt-3" role="alert">

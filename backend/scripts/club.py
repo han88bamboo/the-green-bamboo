@@ -3,7 +3,7 @@
 #         /getUserLikesPost (GET), /getUserLikesComments (GET), /getUserClubs (GET),
 #         /getClubMembers (GET), /getFirstFewClubMembers (GET), /getAllClubMembers (GET),
 #         /getClubRequests (GET), /getUserClubRequests (GET),
-#         /getUserInvitedClubs (GET)
+#         /getUserInvitedClubs (GET), /getRecentActivity (GET),
 #         /createClubs (POST), /addClubMembers (POST), /joinClub (POST), 
 #         /addPost (POST), /addComment (POST), /requestToJoinClub (POST),
 #         /acceptClubRequest (POST),
@@ -89,8 +89,8 @@ def getUserInfoByID(cur, user_id, user_type):
 # Purpose: Get 20 clubs information each time this is called. 
 # Used: BrowseClubs.vue [views folder inside Users folder]
 # Output: Possible return codes [200 - Retrieval success, 404 - No clubs found in database, 500 - An error occurred retrieving the request]
-@blueprint.route('/getClubs/<id>', methods=['GET']) # id is the starting ID to retrieve from (inclusive)
-def getClubs(id):
+@blueprint.route('/getClubs/<offset>', methods=['GET']) # id is the starting ID to retrieve from (inclusive)
+def getClubs(offset):
     conn = g.db
     cur = conn.cursor()
     return_data = {}
@@ -99,23 +99,13 @@ def getClubs(id):
 
         # Step 1: Get the 20 clubs
         # ID: Used to define the starting ID to retrieve from
-        cur.execute('SELECT * FROM "clubs" WHERE id >= %s ORDER BY id ASC LIMIT 20', (id,))
+        cur.execute('SELECT * FROM "clubs" ORDER BY "totalMembers" DESC LIMIT 20 OFFSET %s', (offset,))
         clubs_info = cur.fetchall()
 
         if not clubs_info:
             return jsonify({
                 'error': 'No clubs found in database'
             }), 404
-        
-        # Step 2: Get the total number of members in each of the 20 clubs 
-        for club in clubs_info:
-            club_id = club['id']
-            # Get the total number of members in each club
-            cur.execute('SELECT COUNT(*) AS "totalMembers" FROM "clubMembers" WHERE "clubID" = %s AND "joinStatus" = TRUE', (club_id,))
-            num_members = cur.fetchone()
-            # Add club summary into return data
-            club['totalMembers'] = num_members['totalMembers']
-            return_data[club_id] = club
 
         return jsonify({
             'clubs_info': clubs_info
@@ -156,16 +146,6 @@ def getClubwSearch(id, search):
             return jsonify({
                 'error': 'No clubs found in database'
             }), 404
-        
-        # Step 2: Get the total number of members in each of the 20 clubs 
-        for club in clubs_info:
-            club_id = club['id']
-            # Get the total number of members in each club
-            cur.execute('SELECT COUNT(*) AS "totalMembers" FROM "clubMembers" WHERE "clubID" = %s AND "joinStatus" = TRUE', (club_id,))
-            num_members = cur.fetchone()
-            # Add club summary into return data
-            club['totalMembers'] = num_members['totalMembers']
-            return_data[club_id] = club
 
         return jsonify({
             'clubs_info': clubs_info
@@ -203,11 +183,6 @@ def getSpecificClubInfo(clubID):
             return jsonify({
                 'error': f'No such club found for club id: {clubID}'
             }), 404
-        
-        # Step 2: Get the total number of members in the club
-        cur.execute('SELECT COUNT(*) AS "totalMembers" FROM "clubMembers" WHERE "clubID" = %s AND "joinStatus" = TRUE', (clubID,))
-        num_members = cur.fetchone()
-        club_info['totalMembers'] = num_members['totalMembers']
 
         # Step 3: Get the admin details of the club
         cur.execute('SELECT "userID", "userType" FROM "clubMembers" WHERE "clubID" = %s AND "isAdmin" = TRUE', (clubID,))
@@ -619,7 +594,7 @@ def getUserClubs(userID, userType):
     cur = conn.cursor()
 
     try:
-        cur.execute('SELECT "clubID" FROM "clubMembers" WHERE "userID" = %s AND "userType" = %s AND "joinStatus" = TRUE', (userID, userType,))
+        cur.execute('SELECT "clubID", "isAdmin" FROM "clubMembers" WHERE "userID" = %s AND "userType" = %s AND "joinStatus" = TRUE', (userID, userType,))
         user_clubs = cur.fetchall()
 
         if not user_clubs:
@@ -627,11 +602,35 @@ def getUserClubs(userID, userType):
                 'error': 'No clubs found'
             }), 404
         
-        # Format the user_clubs into a list of clubID
-        user_clubs = [club['clubID'] for club in user_clubs]
+        # Loop through all the user clubs and add them into 3 list (user_clubs_ids, user_club_member, user_club_admin)
+        user_clubs_ids = []
+        user_club_member = []
+        user_club_admin = []
+
+        for club in user_clubs:
+            user_clubs_ids.append(club['clubID'])
+
+            # Get the club id, clubName, clubBanner
+            cur.execute('SELECT "id", "clubName", "clubBanner" FROM "clubs" WHERE id = %s', (club['clubID'],))
+            club_info = cur.fetchone()
+
+            if not club_info:
+                # Skip to the next club if the club info is not found
+                continue
+
+            # Add club info into club
+            club['clubInfo'] = club_info
+            print(club)
+
+            if club['isAdmin']:
+                user_club_admin.append(club)
+            else:
+                user_club_member.append(club)
 
         return jsonify({
-            'user_clubs': user_clubs
+            'user_clubs': user_clubs_ids,
+            'user_club_member': user_club_member,
+            'user_club_admin': user_club_admin
         }), 200
 
     except Exception as e:
@@ -986,6 +985,74 @@ def getUserInvitedClubs(userID, userType):
 
 
 # -----------------------------------------------------------------------------------------
+# [GET] getRecentActivity
+# Purpose: Get the 5 most recent activities in any club that a user is a member of
+# Used: BrowseClubs.vue [views folder inside Users folder]
+# Output: Possible return codes [200 - Retrieval success, 404 - No recent activities found, 500 - An error occurred retrieving the request]
+@blueprint.route('/getRecentActivity/<userID>/<userType>', methods=['GET'])
+def getRecentActivity(userID, userType):
+    conn = g.db
+    cur = conn.cursor()
+
+    try:
+        # Step 1: Get all the clubs that the user is a member of
+        cur.execute('SELECT "clubID" FROM "clubMembers" WHERE "userID" = %s AND "userType" = %s AND "joinStatus" = TRUE', (userID, userType,))
+        user_clubs = cur.fetchall()
+
+        if not user_clubs:
+            return jsonify({
+                'error': 'No clubs found'
+            }), 404
+        
+        # Convert the user_clubs into a tuple
+        user_clubs_tuple = tuple([club['clubID'] for club in user_clubs])
+        
+        # Step 2: Get the 5 most recent activities in any club that the user is a member of
+        cur.execute('SELECT * FROM "clubPosts" WHERE "clubID" IN %s ORDER BY "postDate" DESC LIMIT 5', (user_clubs_tuple,))
+        recent_activities = cur.fetchall()
+
+        if not recent_activities:
+            return jsonify({
+                'error': 'No recent activities found'
+            }), 404
+
+        
+        # Step 3: Get the poster information for each activity and club name
+        for activity in recent_activities:
+            poster_id = activity['posterID']
+
+            # Get the user information for each poster
+            poster_info = getUserInfo(cur, poster_id)
+
+            # Add poster info into activity
+            activity['posterInfo'] = poster_info
+
+            # Get the club name for each activity
+            clubID = activity['clubID']
+            cur.execute('SELECT "clubName" FROM "clubs" WHERE "id" = %s', (clubID,))
+            club_name = cur.fetchone()
+
+            # Add club name into activity
+            activity['clubName'] = club_name['clubName']
+
+        return jsonify({
+            'recent_activities': recent_activities
+        }), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred retrieving the request."
+            }
+        ), 500
+    
+    finally:
+        cur.close()
+
+
+# -----------------------------------------------------------------------------------------
 # [POST] createClubs
 # Purpose: Create a new club
 # Used: CreateClub.vue [views folder inside Users folder]
@@ -1028,7 +1095,7 @@ def createClub():
             image64 = None
 
         # Step 3: Insert the new club into the database
-        cur.execute('INSERT INTO "clubs" ("clubName", "clubDesc", "isInviteOnly", "clubLink", "clubBanner", "dateCreated") VALUES (%s, %s, %s, %s, %s, %s) RETURNING id', 
+        cur.execute('INSERT INTO "clubs" ("clubName", "clubDesc", "isInviteOnly", "clubLink", "clubBanner", "dateCreated", "totalMembers") VALUES (%s, %s, %s, %s, %s, %s, 1) RETURNING id', 
                     (club_name, club_desc, is_invite_only, '', image64, date_created,))
         club_id = cur.fetchone()['id']
 
@@ -1189,6 +1256,10 @@ def joinClub():
         # Step 3: Insert the user into the clubMembers table
         join_date = datetime.now()
         cur.execute('INSERT INTO "clubMembers" ("clubID", "userID", "userType", "joinDate", "isAdmin", "joinStatus") VALUES (%s, %s, %s, %s, FALSE, TRUE)', (club_id, user_id, user_type, join_date,))
+        conn.commit()
+
+        # Step 4: Append 1 to the totalMembers in the clubs table
+        cur.execute('UPDATE "clubs" SET "totalMembers" = "totalMembers" + 1 WHERE id = %s', (club_id,))
         conn.commit()
 
         # Get the member's ID in the clubMembers table
@@ -1503,6 +1574,10 @@ def acceptClubRequest():
         cur.execute('INSERT INTO "clubMembers" ("clubID", "userID", "userType", "joinDate", "isAdmin", "joinStatus") VALUES (%s, %s, %s, %s, FALSE, TRUE)', (club_id, requester_id, user_type, join_date,))
         conn.commit()
 
+        # Step 6: Append 1 to the totalMembers in the clubs table
+        cur.execute('UPDATE "clubs" SET "totalMembers" = "totalMembers" + 1 WHERE id = %s', (club_id,))
+        conn.commit()
+
         return jsonify({
             'message': 'User accepted successfully'
         }), 200
@@ -1576,6 +1651,10 @@ def acceptClubInvite():
 
         # Step 4: Update the joinStatus to TRUE and joinDate to today's date
         cur.execute('UPDATE "clubMembers" SET "joinStatus" = TRUE, "joinDate" = %s WHERE "clubID" = %s AND "userID" = %s AND "userType" = %s', (datetime.now(), club_id, user_id, user_type,))
+        conn.commit()
+
+        # Step 5: Append 1 to the totalMembers in the clubs table
+        cur.execute('UPDATE "clubs" SET "totalMembers" = "totalMembers" + 1 WHERE id = %s', (club_id,))
         conn.commit()
 
         return jsonify({
@@ -2221,6 +2300,9 @@ def removeMembers():
             return jsonify({
                 'error': 'You do not have the permission to remove members from this club'
             }), 403
+        
+        # Counter to track the number of members removed
+        count = 0
 
         # Step 3: Remove the members from the club
         for member_id in members_list:
@@ -2234,6 +2316,11 @@ def removeMembers():
 
             cur.execute('DELETE FROM "clubMembers" WHERE "clubID" = %s AND id = %s', (club_id, member_id,))
             conn.commit()
+            count += 1
+
+        # Step 4: Update the totalMembers in the clubs table
+        cur.execute('UPDATE "clubs" SET "totalMembers" = "totalMembers" - %s WHERE id = %s', (count, club_id,))
+        conn.commit()
 
         return jsonify({
             'message': 'Members removed successfully'
@@ -2462,6 +2549,10 @@ def leaveClub():
         
         # Step 4: Leave the club
         cur.execute('DELETE FROM "clubMembers" WHERE "clubID" = %s AND id = %s', (club_id, member_id,))
+        conn.commit()
+
+        # Step 5: Update the totalMembers in the clubs table
+        cur.execute('UPDATE "clubs" SET "totalMembers" = "totalMembers" - 1 WHERE id = %s', (club_id,))
         conn.commit()
 
         return jsonify({
