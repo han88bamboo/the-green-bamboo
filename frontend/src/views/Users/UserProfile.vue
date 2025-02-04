@@ -618,9 +618,7 @@
                         />
                         <div>
                             <p style="font-size: 18px; margin-bottom: 8px;">Curate a list to share.</p>
-                            <router-link :to="'/profile'">
                             <button
-                           
                             style="
                                 padding: 8px 16px;
                                 background-color: #F0B358;
@@ -631,10 +629,11 @@
                             "
                             @mouseover="hoverButton($event)"
                             @mouseleave="leaveButton($event)"
+                            data-bs-toggle="modal"
+                            data-bs-target="#createNewListModal"
                             >
                             Create A List
                             </button>
-                            </router-link>
                         </div>
                         </div>
 
@@ -758,41 +757,6 @@
                             <!-- lists tab -->
                             <div v-if="activeTab == 'lists'" id="lists">
                                 <button v-if="ownProfile" type="button" class="btn fw-bold primary-btn-less-round-blue xprimary-btn-outline-less-round mb-3" data-bs-toggle="modal" data-bs-target="#createNewListModal" >Create New List</button>
-
-                                <!-- create new list modal -->
-                                <div class="modal fade" id="createNewListModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                    <div class="modal-dialog modal-dialog-centered">
-                                        <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h1 class="modal-title fs-5" id="exampleModalLabel">Create New List</h1>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <div class="mb-3">
-                                                <label for="basic-url" class="form-label">List Name</label>
-                                                <div class="input-group mb-3">
-                                                    <input v-model="newListName" type="text" class="form-control" placeholder="List Name" aria-label="Username" aria-describedby="basic-addon1">
-                                                </div>
-                                                <div v-if="newListNameError" class="text-danger text-sm">
-                                                    *{{ newListNameError }}
-                                                </div>
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <label for="basic-url" class="form-label">List Description</label>
-                                                <div class="input-group mb-3">
-                                                    <textarea v-model="newListDesc" type="text" class="form-control" placeholder="List Description (Optional)" aria-label="Username" aria-describedby="basic-addon1" rows="5"></textarea>
-                                                </div>
-                                            </div>
-
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                            <button type="button" class="btn btn-primary" @click="addNewList">Save changes</button>
-                                        </div>
-                                        </div>
-                                    </div>
-                                </div>
                                 
                                 <!-- display all lists -->
                                 <div v-for="(bookmarkList, name, index) in displayUserBookmarks" :key="name" style="display: flex" class="row mb-3">
@@ -878,6 +842,41 @@
                                     <!-- modal end -->
                                 </div>
                             </div>
+
+                            <!-- create new list modal -->
+                            <div class="modal fade" id="createNewListModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h1 class="modal-title fs-5" id="exampleModalLabel">Create New List</h1>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label for="basic-url" class="form-label">List Name</label>
+                                                <div class="input-group mb-3">
+                                                    <input v-model="newListName" type="text" class="form-control" placeholder="List Name" aria-label="Username" aria-describedby="basic-addon1">
+                                                </div>
+                                                <div v-if="newListNameError" class="text-danger text-sm">
+                                                    *{{ newListNameError }}
+                                                </div>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label for="basic-url" class="form-label">List Description</label>
+                                                <div class="input-group mb-3">
+                                                    <textarea v-model="newListDesc" type="text" class="form-control" placeholder="List Description (Optional)" aria-label="Username" aria-describedby="basic-addon1" rows="5"></textarea>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <button type="button" class="btn btn-primary" @click="addNewList">Save changes</button>
+                                        </div>
+                                        </div>
+                                    </div>
+                                </div>
 
                             <!-- individual list tab -->
                             <div v-if="activeTab == 'list' && displayUser.drinkLists" id="list">
@@ -2006,6 +2005,7 @@ export default {
             this.activeTab = tab;
             this.$router.push('/profile/user/' + this.displayUserID);
         },
+        
 
         // drink list sharing
         updateCurrentURL() {
