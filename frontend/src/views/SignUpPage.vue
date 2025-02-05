@@ -297,7 +297,7 @@
       :isVisible="true"
       title="Now it’s time to log your first review!"
       message="Search for a drink and share your review with the community!"
-      @close="showOnboardPopup = false"
+      @close="loginUser"
       @search="handleSearch"
     />
 
@@ -706,7 +706,7 @@
                     if(response.data.username== this.username){
                         localStorage.setItem("88B_accID", response.data['id']);
                         localStorage.setItem("88B_accType", "user");
-                        this.$router.push({path: '/'});
+                        this.$router.push({ name: 'profileuser', params: { userID: response.data['id'] } });
                     }
                 } 
                 catch (error) {
