@@ -125,7 +125,6 @@
     </div>
 
     <!-- Trending Section -->
-    <FetchData />
     <div class="container pb-4">
         <div class="d-flex align-items-start gap-3 mb-3">
             <h2 class="h5 fw-bold mb-0">Trending</h2>
@@ -135,17 +134,9 @@
         </div>
         <div class="d-none d-md-flex flex-wrap justify-content-start">
             <button v-for="tag in tags" :key="tag" class="btn btn-warning rounded-pill m-2"
-                :class="{ 'selected': tag === selectedTag }" @click="goSearchTag(tag)">
+                :class="{ selected: tag === selectedTag }" @click="goSearchTag(tag)">
                 {{ tag }}
             </button>
-        </div>
-        <div>
-            <h3 v-if="selectedTag">Showing results for "{{ selectedTag }}"</h3>
-            <ul v-if="hasFilteredListings">
-                <li v-for="listing in filteredListings" :key="listing.id">
-                    {{ listing.listingName }} - {{ listing.officialDesc }}
-                </li>
-            </ul>
         </div>
 
         <div id="badgeCarousel" class="carousel slide d-md-none" data-bs-ride="carousel" data-bs-interval="3000">
@@ -155,7 +146,7 @@
                         <!-- Display 2 tags per carousel item (col-6 ensures 2 per row) -->
                         <div v-for="(tag, index) in tags.slice(0, 2)" :key="index" class="col-6">
                             <button class="btn btn-warning rounded-pill w-100 m-2"
-                                :class="{ 'selected': tag === selectedTag }" @click="goSearchTag(tag)">
+                                :class="{ selected: tag === selectedTag }" @click="goSearchTag(tag)">
                                 {{ tag }}
                             </button>
                         </div>
@@ -166,7 +157,7 @@
                         <!-- Display the next set of 2 tags -->
                         <div v-for="(tag, index) in tags.slice(2, 4)" :key="index" class="col-6">
                             <button class="btn btn-warning rounded-pill w-100 m-2"
-                                :class="{ 'selected': tag === selectedTag }" @click="goSearchTag(tag)">
+                                :class="{ selected: tag === selectedTag }" @click="goSearchTag(tag)">
                                 {{ tag }}
                             </button>
                         </div>
@@ -177,7 +168,7 @@
                         <!-- Continue to display more tags, 2 per item -->
                         <div v-for="(tag, index) in tags.slice(4, 6)" :key="index" class="col-6">
                             <button class="btn btn-warning rounded-pill w-100 m-2"
-                                :class="{ 'selected': tag === selectedTag }" @click="goSearchTag(tag)">
+                                :class="{ selected: tag === selectedTag }" @click="goSearchTag(tag)">
                                 {{ tag }}
                             </button>
                         </div>
@@ -376,13 +367,10 @@
 
 <script>
 import NavBar from "@/components/NavBar.vue";
-import FetchData from "@/components/FetchData.vue";
-// import SearchView from "./SearchView.vue";
 
 export default {
     components: {
         NavBar,
-        FetchData,
     },
     data() {
         return {
@@ -394,12 +382,16 @@ export default {
             tags: ["For My Worst Enemy!", "Good for Gifts", "Beginner Friendly", "Is This Water?", "Overhyped!",
                 "Broke the Bank", "Holy Grails"
             ],
-            selectedTag: null,
+            selectedTag: "",
             hasFilteredListings: false,
             listings: [],
             filteredListings: [],
+            tag: "",
         };
     },
+  mounted() {
+    this.tag = this.$route.params.tag;
+  },
     methods: {
         // Load data from the database (e.g., profile picture)
         async loadData(url) {
@@ -439,22 +431,26 @@ export default {
             }
         },
 
+
         goSearchTag(tag = '') {
-            let searchTerm = tag;
-            searchTerm = String(searchTerm).trim(); 
+            if (!tag) return;
 
-            if (!searchTerm) return;
+            this.loading = true; // Show loading state
 
-            let sanitizedInput = searchTerm.replace(/\//g, '');
-            let searchPath = `/search/${encodeURIComponent(sanitizedInput)}`;
+            try {
+                let sanitizedTag = String(tag).trim().replace(/\//g, '');
 
-            if (this.$route.fullPath === searchPath) {
-                this.$router.replace({ path: searchPath, force: true });
-            } else {
-                this.$router.push({ path: searchPath });
+                // Navigate using Vue Router, passing tag in the path
+                this.$router.push({ name: 'getlistingsbyobservationtag', params: { tag: sanitizedTag } });
+
+                // console.log("tag:", sanitizedTag);
+                console.log("tag:", sanitizedTag);
+            } catch (error) {
+                console.error("Error in goSearchTag:", error);
+            } finally {
+                this.loading = false; // Hide loading state
             }
         },
-
 
         // Route to image search page
         imageSearch() {
@@ -467,29 +463,6 @@ export default {
             }
         },
 
-        // filterByTag(tag) {
-        //     try {
-        //         this.selectedTag = tag;
-
-        //         if (!Array.isArray(this.listings)) {
-        //             throw new Error("Listings is not available or not an array.");
-        //         }
-
-        //         if (tag) {
-        //             this.filteredListings = this.listings.filter((listing) =>
-        //                 listing.tags && listing.tags.includes(tag)
-        //             );
-        //         } else {
-        //             this.filteredListings = this.listings;
-        //         }
-        //     } catch (error) {
-        //         console.error(error.message);
-        //         this.filteredListings = [];
-        //     }
-        //         this.selectedTag = tag;
-        //   // Navigate to another page with the tag as a parameter
-        //   this.$router.push({ name: "TagResults", tag: encodeURIComponent(tag) });
-        // },
     },
 
 };

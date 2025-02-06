@@ -74,34 +74,11 @@ export default {
             // }
             // Observation Tags
             try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getObservationTags`);
-                this.drinkCategories = response.data;
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingsByObservationTag`);
+                this.tags = response.data;
             } catch (error) {
                 console.error(error);
             }
-        },
-
-        filterByTag(tag) {
-            this.selectedTag = tag;
-
-            // Ensure listings is defined and is an array before filtering
-            if (Array.isArray(this.listings)) {
-                if (tag) {
-                    this.filteredListings = this.listings.filter((listing) =>
-                        listing.tags && listing.tags.includes(tag)
-                    );
-                } else {
-                    this.filteredListings = this.listings; // Show all listings if no tag is selected
-                }
-            } else {
-                console.error('Listings is not available or not an array');
-                this.filteredListings = []; // Ensure filteredListings is an empty array in this case
-            }
-        },
-    },
-    computed: {
-        hasFilteredListings() {
-            return this.filteredListings.length > 0;
         },
     },
     created() {
