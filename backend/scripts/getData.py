@@ -1420,6 +1420,42 @@ def getObservationTags():
 
     return jsonify(observation_tags_data)
 
+from urllib.parse import unquote
+@blueprint.route("/getData/getListingsByObservationTag/<tag>")
+def get_listings_by_observation_tag(tag):
+    conn = g.db
+
+    try:
+        with conn.cursor() as cursor:
+            # The view creation should be done ONCE, not on every request!
+            # Move this to application startup or a migration script.
+            # Example (do this outside of the route function):
+            # cursor.execute("""
+            # CREATE VIEW IF NOT EXISTS review_observations AS ... """)
+
+            query = """
+            SELECT 
+                l.*,
+                ro.all_observation_tags
+            FROM listings l
+            LEFT JOIN review_observations ro ON l.id = ro.reviewTarget
+            WHERE ro.all_observation_tags LIKE %s  -- Correct parameterization
+            """
+            cursor.execute(query, ('%' + tag + '%',)) 
+
+            listings = cursor.fetchall()
+
+        columns = [col[0] for col in cursor.description]
+        listing_dicts = [dict(zip(columns, row)) for row in listings]  
+
+        return jsonify(listing_dicts)
+
+    except Exception as e:
+        # traceback.print_exc() # Print detailed traceback for debugging
+        print(f"Error fetching listings: {e}") 
+        return jsonify({"error": "A server error occurred."}), 500  
+        
+
 # -----------------------------------------------------------------------------------------
 # [GET] colours
 @blueprint.route("/getColours")

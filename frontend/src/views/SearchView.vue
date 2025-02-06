@@ -1,5 +1,4 @@
-x<!-- Search page from navigation bar. Globally available, and should still use NavBar for new search queries. -->
-
+<!-- Search page from navigation bar. Globally available, and should still use NavBar for new search queries. -->
 <template>
     <NavBar />
 
@@ -20,6 +19,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
             <span class="fs-5 fst-italic"> Refresh Page </span>
         </button>
     </div>
+
 
     <!-- Header -->
     <div class="container pt-3">
@@ -60,7 +60,8 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
 
                         <div class="col-10">
                             <p class="fs-3 m-0 text-start"
-                                style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">"{{ effectiveSearchTerm }}"</p>
+                                style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">"{{
+                                    effectiveSearchTerm }}"</p>
                         </div>
                     </div>
 
@@ -291,12 +292,12 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                                 <router-link class="xtext-dark xtext-decoration-none"
                                     :to="{ path: '/listing/view/' + resultListing.id }">
                                     <p class="default-text fs-5 mobile-fs-6" style="margin-bottom: 0.3rem;"><b><u>{{
-                                                resultListing['listingName'] }}</u></b></p>
+                                        resultListing['listingName'] }}</u></b></p>
                                 </router-link>
                                 <p class="text-start mb-1 mobile-fs-7">
                                     {{ resultListing["bottler"] }} | {{ resultListing["drinkType"] }} | {{
-                                    resultListing["typeCategory"] }} | {{ resultListing["abv"] }} ABV | {{
-                                    resultListing["originCountry"] }}
+                                        resultListing["typeCategory"] }} | {{ resultListing["abv"] }} ABV | {{
+                                        resultListing["originCountry"] }}
                                 </p>
                             </div>
 
@@ -426,11 +427,11 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                                 <router-link class="xtext-dark xtext-decoration-none"
                                     :to="{ path: '/profile/producer/' + producer.id }">
                                     <p class="default-text fs-5 mobile-fs-6" style="margin-bottom: 0.3rem;"><b><u>{{
-                                                producer['producerName'] }}</u></b></p>
+                                        producer['producerName'] }}</u></b></p>
                                 </router-link>
                                 <p v-if="producer.producerDesc.length > 144" class="mobile-fs-7">
                                     {{ producer["producerDesc"].slice(0, 144) + (producer["producerDesc"].length > 144 ?
-                                    '...' : '') }}
+                                        '...' : '') }}
                                 </p>
                                 <p v-else class="mobile-fs-7">
                                     {{ producer["producerDesc"] }}
@@ -613,7 +614,7 @@ export default {
     components: {
         NavBar,
         BookmarkIcon,
-        BookmarkModal
+        BookmarkModal,
     },
     data() {
         return {
@@ -624,10 +625,6 @@ export default {
             searchFilter: {
                 drinkType: ''
             },
-            tags: ["For My Worst Enemy!", "Good for Gifts", "Beginner Friendly", "Is This Water?", "Overhyped!",
-                "Broke the Bank", "Holy Grails"
-            ],
-            selectedTag: null,
             drinkTypeList: [],
             producerList: [],
             venueList: [],
@@ -636,6 +633,8 @@ export default {
             producerListings: [],
             venueListings: [],
             listings: [],
+            tags: [],
+            observationTags: [],
 
             // reviews
             reviews: [],
@@ -688,6 +687,7 @@ export default {
             tabActive: 'listings',
         }
     },
+    // props: ['tag'],
     mounted() {
         // Load local storage variables
         const accID = localStorage.getItem("88B_accID");
@@ -709,10 +709,9 @@ export default {
         }
     },
     computed: {
-    effectiveSearchTerm() {
-      // Use selectedTag if it exists, otherwise fallback to searchTerm
-      return this.selectedTag || this.searchTerm;
-    },
+        effectiveSearchTerm() {
+            return this.searchTerm;
+        }
     },
     methods: {
         async runSearch() {
@@ -837,6 +836,25 @@ export default {
                 console.error(error);
                 this.loadError = true;
             }
+
+            // Observation Tags
+            const routeTag = this.$route.params.tag;
+            console.log("Tag passed to runSearch:", routeTag);
+            const observationTagPromise = this.$axios.get(`http://127.0.0.1:5000/getData/getListingsByObservationTag/${encodeURIComponent(this.$route.params.tag)}`)
+                .then(response => {
+                    this.tags = response.data;
+                    this.observationTags = this.tags.filter(tag =>
+                        tag["observationTag"]?.toLowerCase().includes(this.searchTerm.toLowerCase())
+                    );
+                })
+                .catch(error => console.error("Error fetching observation tags:", error));
+
+            Promise.all([observationTagPromise]).then(() => { 
+                this.dataLoaded = true;
+            }).catch((error) => {
+                console.error("An error occurred with one of the promises", error);
+                this.dataLoaded = true;
+            });
 
             this.dataLoaded = true;
         },
@@ -1226,6 +1244,18 @@ export default {
                 return null;
             }
         },
+
+
+        async fetchListingsByTag(tag) {
+            try {
+                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getListingsByObservationTag/${encodeURIComponent(tag)}`);
+                this.tags = response.data;
+            } catch (error) {
+                console.error(error);
+                this.loadError = true;
+            }
+        },
+
     }
 }
 </script>
