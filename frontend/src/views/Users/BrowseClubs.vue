@@ -51,11 +51,48 @@
                     <button class="btn btn-primary" @click="createClub">+ Create a Club</button>
                 </div>
 
+                <!-- Club Invite-->
+                <div v-if="invitedClubs.length > 0" class="mt-3">
+                    <h3 class="text-start fw-bold">Clubs You Are Invited To</h3>
+
+                    <div v-for="club in invitedClubs.slice(0, 5)" class="d-flex gap-3" :key="club.id">
+
+                        <div class="row w-100 align-items-center">
+                            <div class="col-7 text-start">
+                                <!-- CLub title -->
+                                <router-link :to="{ name: 'clubview', params: { clubID: club.clubID }}" class="text-dark hover-underline fw-bold">
+                                    {{ club.clubName }}
+                                </router-link>
+
+                                <!-- Invited by -->
+                                <p class="text-start">Invited by: {{ club.inviterInfo.displayName }}</p>
+                            </div>
+
+                            <div class="col-5">
+                                <!-- Decline Button -->
+                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="red" class="bi bi-x-circle me-3" viewBox="0 0 16 16" style="cursor: pointer;" @click="declineInvite(club.clubID)">
+                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                                </svg>
+                                <!-- Accept Button -->
+                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="green" class="bi bi-check-circle" viewBox="0 0 16 16" style="cursor: pointer;" @click="acceptInvite(club.clubID)">
+                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                                    <path d="m10.97 4.97-.02.022-3.473 4.425-2.093-2.094a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05"/>
+                                </svg>
+                            </div>
+
+                            <hr>
+                        </div>
+
+                        
+                    </div>
+                </div>
+
                 <!-- Clubs you manage -->
                 <div v-if="userClubs.length > 0 && adminClubs.length > 0" class="mt-3">
-                    <h3 class="text-start fw-bold">Clubs You Manage</h3>
+                    <h3 class="text-start fw-bold">Clubs You Manage <button v-if="adminClubs.length > 5" type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#showAllManagedClubs">View All</button></h3>
 
-                    <div v-for="club in adminClubs" class="d-flex gap-3 mb-3" :key="club.id">
+                    <div v-for="club in adminClubs.slice(0, 5)" class="d-flex gap-3" :key="club.id">
 
                         <!-- Club Banner Image -->
                         <div style="width: 100px; height: 150px;">
@@ -69,11 +106,42 @@
                     </div>
                 </div>
 
+                <!-- Clubs you managed modal -->
+                <div class="modal fade" id="showAllManagedClubs" tabindex="-1" aria-labelledby="showAllManagedClubsLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-scrollable modal-xl">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="showAllManagedClubsLabel">Clubs You Manage</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div v-for="club in adminClubs" class="col-12 col-md-4 d-flex gap-3 mb-3" :key="club.id">
+                                        <!-- Club Banner Image -->
+                                        <div style="width: 100px; height: 150px;">
+                                            <img v-if="club.clubInfo.clubBanner" :src="club.clubInfo.clubBanner" class="img-fluid w-100 border" alt="..." style="object-fit: cover;">
+                                            <img v-else :src="defaultBanner" class="img-fluid w-100 border" alt="..." style="object-fit: cover;">
+                                        </div>
+                                        <!-- CLub title -->
+                                        <router-link :to="{ name: 'clubview', params: { clubID: club.clubID }}" class="text-dark hover-underline">
+                                            {{ club.clubInfo.clubName }}
+                                        </router-link>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Clubs you are in -->
                 <div v-if="userClubs.length > 0 && memberClubs.length > 0" class="mt-3">
-                    <h3 class="text-start fw-bold">Clubs You Are In</h3>
+                    <h3 class="text-start fw-bold">Clubs You Are In <button v-if="memberClubs.length > 5" type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#showAllJoinedClubs">View all</button></h3>
 
-                    <div v-for="club in memberClubs" class="d-flex gap-3 mb-3" :key="club.id">
+                    <div v-for="club in memberClubs.slice(0, 5)" class="d-flex gap-3 mb-3" :key="club.id">
 
                         <!-- Club Banner Image -->
                         <div style="width: 100px; height: 150px;">
@@ -85,19 +153,41 @@
                             {{ club.clubInfo.clubName }}
                         </router-link>
                     </div>
+                </div>
+
+                <!-- Clubs you are in modal -->
+                <div class="modal fade" id="showAllJoinedClubs" tabindex="-1" aria-labelledby="showAllJoinedClubsLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-scrollable modal-xl">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="showAllJoinedClubsLabel">Clubs You Are In</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div v-for="club in memberClubs" class="col-12 col-md-4 d-flex gap-3 mb-3" :key="club.id">
+                                        <!-- Club Banner Image -->
+                                        <div style="width: 100px; height: 150px;">
+                                            <img v-if="club.clubInfo.clubBanner" :src="club.clubInfo.clubBanner" class="img-fluid w-100 border" alt="..." style="object-fit: cover;">
+                                            <img v-else :src="defaultBanner" class="img-fluid w-100 border" alt="..." style="object-fit: cover;">
+                                        </div>
+                                        <!-- CLub title -->
+                                        <router-link :to="{ name: 'clubview', params: { clubID: club.clubID }}" class="text-dark hover-underline">
+                                            {{ club.clubInfo.clubName }}
+                                        </router-link>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>  
+                    </div>  
                 </div>
             </div>
 
             <!-- Recent activity [has joined club(s)] or browse club [not yet joined club]-->
             <div class="col-12 col-md-9">
 
-                <!-- Display no results found if search term does not exist in any of the clubs -->
-                <div v-if="searchResults" class="mt-3">
-                    <h2>{{ searchResults }}</h2>
-                </div>
-
                 <!-- Recent activity [there is recent activity]-->
-                <div v-if="latestPosts.length > 0" class="mt-3">
+                <div v-if="latestPosts.length > 0 && !searchQuery">
 
                     <!-- Recent Activity Header -->
                     <h3 class="text-start fw-bold">Recent Activity in Your Clubs</h3>
@@ -170,6 +260,11 @@
                     <h3 class="fw-bold text-start text-decoration-underline">Browse clubs here</h3>
                 </div>
 
+                <!-- Display no results found if search term does not exist in any of the clubs -->
+                <div v-if="searchResults && searchQuery" class="mt-3 text-start">
+                    <p class="fw-bold">{{ searchResults }}</p>
+                </div>
+
                 <!-- Club Lists --> 
                 <!-- Bootstrap Horizontal Card for each club -->
                 <div class="row mt-3">
@@ -214,7 +309,6 @@
                         </div>
                     </div>
                 </div>
-
 
                 <!-- Load More Button -->
                 <div v-if="showButton" class="d-flex justify-content-center mt-3">
@@ -341,7 +435,7 @@ export default {
                     if (response.status == 404) {
                         this.searchResults = "No results found for the search term!";
                     } else {
-                        this.searchResults = "";
+                        this.searchResults = "Results with the search term: \"" + this.searchQuery + "\"";
                     }
                 }
 
@@ -522,6 +616,54 @@ export default {
                 return `/profile/venue/${posterID}`;
             }
         },
+
+        // Function to decline an invite to join a club
+        async declineInvite(clubID) {
+            try {
+                const response = await this.$axios.delete(`${process.env.VUE_APP_API_URL}/club/declineClubInvites`, 
+                {
+                    data: {
+                        userID: this.userID,
+                        clubID: clubID,
+                        userType: this.userType
+                    }
+                }
+                );
+
+                if (response.status == 200) {
+                    const toast = useToast();
+                    toast.success("You have declined the club invite!");
+                    // Remove the club from the list of invited clubs
+                    this.invitedClubs = this.invitedClubs.filter(club => club.clubID != clubID);
+                }
+            } catch (error) {
+                console.log(error);
+                const toast = useToast();
+                toast.error("An error occurred while declining the club invite. Please try again later!");
+            }
+        },
+
+        // Function to accept an invite to join a club
+        async acceptInvite(clubID) {
+            try {
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/club/acceptClubInvite`, {
+                    userID: this.userID,
+                    clubID: clubID,
+                    userType: this.userType
+                });
+
+                if (response.status == 201) {
+                    const toast = useToast();
+                    toast.success("You have successfully joined the club!");
+                    // Redirect to the club page
+                    this.$router.push({ name: 'clubview', params: { clubID: clubID } });
+                }
+            } catch (error) {
+                console.log(error);
+                const toast = useToast();
+                toast.error("An error occurred while joining the club. Please try again later!");
+            }
+        },
     },
 
     computed: {
@@ -547,6 +689,8 @@ export default {
             this.getMemberClubs();
             // Get the list of clubs the user has requested to join
             this.getRequestedClubs();
+            // Get the list of clubs the user has been invited to join
+            this.getInvitedClubs();
         }
     }
 }

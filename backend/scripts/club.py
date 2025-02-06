@@ -6,12 +6,13 @@
 #         /getUserInvitedClubs (GET), /getRecentActivity (GET),
 #         /createClubs (POST), /addClubMembers (POST), /joinClub (POST), 
 #         /addPost (POST), /addComment (POST), /requestToJoinClub (POST),
-#         /acceptClubRequest (POST),
-#         /acceptClubInvite (PUT), /editPost (PUT), /editComment (PUT)
+#         /acceptClubRequest (POST), /acceptClubInvite (POST),
+#         /editPost (PUT), /editComment (PUT)
 #         /likeUnlikePost (PUT), /likeUnlikeComment (PUT), /makeAdmin (PUT), 
 #         /revokeAdmin (PUT), /updateClubInfo (PUT),
 #         /removeMembers (DELETE), /removePost (DELETE), /removeComment (DELETE),
 #         /leaveClub (DELETE), /deleteClub (DELETE), /rejectClubRequests (DELETE),
+#         /declineClubInvites (DELETE)
 # -----------------------------------------------------------------------------------------
 
 import os
@@ -469,7 +470,7 @@ def checkUserMembership(userID, userType, clubID):
             }), 200
         
         # Step 2: Check if the user has been invited to join the club
-        cur.execute('SELECT * FROM "clubMembers" WHERE "userID" = %s AND "userType" = %s AND "clubID" = %s AND "joinStatus" = FALSE' , (userID, userType, clubID,))
+        cur.execute('SELECT * FROM "clubInvites" WHERE "inviteeID" = %s AND "inviteeUserType" = %s AND "clubID" = %s' , (userID, userType, clubID,))
         invite = cur.fetchone()
 
         if invite:
@@ -478,7 +479,7 @@ def checkUserMembership(userID, userType, clubID):
             }), 200
 
         # Step 3: Check if the user is already a member of the club
-        cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s AND "userID" = %s AND "userType" = %s AND "joinStatus" = TRUE', (clubID, userID, userType,))
+        cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s AND "userID" = %s AND "userType" = %s', (clubID, userID, userType,))
         member = cur.fetchone()
 
         if not member:
@@ -487,7 +488,7 @@ def checkUserMembership(userID, userType, clubID):
             }), 404
         
         return jsonify({
-            'isMember': member.get('joinStatus'),
+            'isMember': True,
             'isAdmin': member.get('isAdmin'),
             'memberID': member.get('id')
         }), 200
@@ -585,7 +586,7 @@ def getUserLikesComments(memberID, postID):
 
 # -----------------------------------------------------------------------------------------
 # [GET] getUserClubs
-# Purpose: Get the clubs that a specific user is a member of
+# Purpose: Get the first 5 clubs that a specific user is a member of / is an admin of (5 clubs each for member and admin)
 # Used: BrowseClubs.vue [views folder inside Users folder]
 # Output: Possible return codes [200 - Retrieval success, 404 - No clubs found, 500 - An error occurred retrieving the request]
 @blueprint.route('/getUserClubs/<userID>/<userType>', methods=['GET'])
@@ -594,7 +595,7 @@ def getUserClubs(userID, userType):
     cur = conn.cursor()
 
     try:
-        cur.execute('SELECT "clubID", "isAdmin" FROM "clubMembers" WHERE "userID" = %s AND "userType" = %s AND "joinStatus" = TRUE', (userID, userType,))
+        cur.execute('SELECT "clubID", "isAdmin" FROM "clubMembers" WHERE "userID" = %s AND "userType" = %s', (userID, userType,))
         user_clubs = cur.fetchall()
 
         if not user_clubs:
@@ -686,7 +687,6 @@ def getClubMembers(clubID, last_seen_id):
             member_info['isAdmin'] = member['isAdmin']
             member_info['memberID'] = member_id
             member_info['joinDate'] = member['joinDate']
-            member_info['joinStatus'] = member['joinStatus']
 
             # Add member info into members
             member.update(member_info)
@@ -723,7 +723,7 @@ def getFirstFewClubMembers(clubID):
 
     try:
         # Step 1: Get the first few members of the club
-        cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s AND "joinStatus" = TRUE ORDER BY "id" ASC LIMIT 4', (clubID,))
+        cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s ORDER BY "id" ASC LIMIT 4', (clubID,))
         members = cur.fetchall()
 
         if not members:
@@ -743,7 +743,6 @@ def getFirstFewClubMembers(clubID):
             member_info['isAdmin'] = member['isAdmin']
             member_info['memberID'] = member_id
             member_info['joinDate'] = member['joinDate']
-            member_info['joinStatus'] = member['joinStatus']
 
             # Add member info into members
             member.update(member_info)
@@ -780,7 +779,7 @@ def getAllClubMembers(clubID):
 
     try:
         # Step 1: Get all the members of the club
-        cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s AND "joinStatus" = TRUE', (clubID,))
+        cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s', (clubID,))
         members = cur.fetchall()
 
         if not members:
@@ -800,7 +799,6 @@ def getAllClubMembers(clubID):
             member_info['isAdmin'] = member['isAdmin']
             member_info['memberID'] = member_id
             member_info['joinDate'] = member['joinDate']
-            member_info['joinStatus'] = member['joinStatus']
 
             # Add member info into members
             member.update(member_info)
@@ -955,21 +953,31 @@ def getUserInvitedClubs(userID, userType):
 
     try:
         # Check if user has any invites
-        cur.execute('SELECT * FROM "clubMembers" WHERE "userID" = %s AND "userType" = %s AND "joinStatus" = FALSE', (userID, userType,))
+        cur.execute('SELECT * FROM "clubInvites" WHERE "inviteeID" = %s AND "inviteeUserType" = %s', (userID, userType,))
         invites = cur.fetchall()
 
         if not invites:
             return jsonify({
                 'error': 'No invites found'
             }), 404
-
-        club_invite_list = []
-        # Convert the invites into a list of clubID
+        
+        # Get the club name for each invite
         for invite in invites:
-            club_invite_list.append(invite['clubID'])
+            clubID = invite['clubID']
+            cur.execute('SELECT "clubName" FROM "clubs" WHERE "id" = %s', (clubID,))
+            club_name = cur.fetchone()
+
+            # Get the user information for each invite
+            user_info = getUserInfoByID(cur, invite['inviterID'], invite['inviterUserType'])
+
+            # Add club name into invite
+            invite['clubName'] = club_name['clubName']
+
+            # Add user info into invite
+            invite['inviterInfo'] = user_info
 
         return jsonify({
-            'club_invite_list': club_invite_list
+            'club_invite_list': invites
         }), 200
 
     except Exception as e:
@@ -996,7 +1004,7 @@ def getRecentActivity(userID, userType):
 
     try:
         # Step 1: Get all the clubs that the user is a member of
-        cur.execute('SELECT "clubID" FROM "clubMembers" WHERE "userID" = %s AND "userType" = %s AND "joinStatus" = TRUE', (userID, userType,))
+        cur.execute('SELECT "clubID" FROM "clubMembers" WHERE "userID" = %s AND "userType" = %s', (userID, userType,))
         user_clubs = cur.fetchall()
 
         if not user_clubs:
@@ -1100,7 +1108,7 @@ def createClub():
         club_id = cur.fetchone()['id']
 
         # Step 4: Insert the club admin into the clubMembers table
-        cur.execute('INSERT INTO "clubMembers" ("clubID", "userID", "userType", "joinDate", "isAdmin", "joinStatus") VALUES (%s, %s, %s, %s, TRUE, TRUE)', 
+        cur.execute('INSERT INTO "clubMembers" ("clubID", "userID", "userType", "joinDate", "isAdmin") VALUES (%s, %s, %s, %s, TRUE)', 
                     (club_id, creator_id, creator_type, date_created,))
         conn.commit()
 
@@ -1147,6 +1155,9 @@ def addClubMembers():
             return jsonify({
                 'error': 'Missing required data'
             }), 400
+        
+        inviter_id = data['inviterID']
+        inviter_user_type = data['inviterUserType']
 
         # List of members to be added to the club
         new_members_list = data['new_members']
@@ -1170,7 +1181,6 @@ def addClubMembers():
         # Step 2: Insert the new member into the clubMembers table
         for user in new_members_list:
             user_id = user['userID']
-            is_admin = user['isAdmin']
             user_type = user['userType']
 
             # Skip to the next member if the user id is null
@@ -1183,7 +1193,7 @@ def addClubMembers():
             if not user:
                 continue
 
-            cur.execute('INSERT INTO "clubMembers" ("clubID", "userID", "userType", "joinDate", "isAdmin", "joinStatus") VALUES (%s, %s, %s, %s, %s, FALSE)', (club_id, user_id, user_type, join_date, is_admin,))
+            cur.execute('INSERT INTO "clubInvites" ("clubID", "inviteeID", "inviteeUserType", "inviterID", "invtiterUserType", "inviteDate") VALUES (%s, %s, %s, %s, %s, %s)', (club_id, user_id, user_type, inviter_id, inviter_user_type, join_date,))
             conn.commit()
 
         return jsonify({
@@ -1255,7 +1265,7 @@ def joinClub():
 
         # Step 3: Insert the user into the clubMembers table
         join_date = datetime.now()
-        cur.execute('INSERT INTO "clubMembers" ("clubID", "userID", "userType", "joinDate", "isAdmin", "joinStatus") VALUES (%s, %s, %s, %s, FALSE, TRUE)', (club_id, user_id, user_type, join_date,))
+        cur.execute('INSERT INTO "clubMembers" ("clubID", "userID", "userType", "joinDate", "isAdmin") VALUES (%s, %s, %s, %s, FALSE)', (club_id, user_id, user_type, join_date,))
         conn.commit()
 
         # Step 4: Append 1 to the totalMembers in the clubs table
@@ -1571,7 +1581,7 @@ def acceptClubRequest():
 
         # Step 5: Insert the user into the clubMembers table
         join_date = datetime.now()
-        cur.execute('INSERT INTO "clubMembers" ("clubID", "userID", "userType", "joinDate", "isAdmin", "joinStatus") VALUES (%s, %s, %s, %s, FALSE, TRUE)', (club_id, requester_id, user_type, join_date,))
+        cur.execute('INSERT INTO "clubMembers" ("clubID", "userID", "userType", "joinDate", "isAdmin") VALUES (%s, %s, %s, %s, FALSE)', (club_id, requester_id, user_type, join_date,))
         conn.commit()
 
         # Step 6: Append 1 to the totalMembers in the clubs table
@@ -1595,16 +1605,16 @@ def acceptClubRequest():
 
 
 # -----------------------------------------------------------------------------------------
-# [PUT] acceptClubInvite
-# Purpose: Join a club after accepting friend's invite to the club (i.e., change joinStatus to TRUE)
+# [POST] acceptClubInvite
+# Purpose: Join a club after accepting friend's invite to the club 
 # Used: 
 #   1. ClubView.vue [views folder inside Users folder]
 # Input: 
 #   1. User ID
 #   2. UserType
 #   2. Club ID
-# Output: Possible return codes [200 - User joined the club successfully, 400 - Missing required data, 404 - No such club/user exist or user not yet invited to the club, 500 - An error occurred joining the club]
-@blueprint.route('/acceptClubInvite', methods=['PUT'])
+# Output: Possible return codes [201 - User joined the club successfully, 400 - Missing required data, 404 - No such club/user exist or user not yet invited to the club, 500 - An error occurred joining the club]
+@blueprint.route('/acceptClubInvite', methods=['POST'])
 def acceptClubInvite():
     conn = g.db
     cur = conn.cursor()
@@ -1616,6 +1626,7 @@ def acceptClubInvite():
         user_id = data['userID']
         user_type = data['userType']
         club_id = data['clubID']
+
 
         # Check if all the required data is provided
         if not user_id or not user_type or not club_id:
@@ -1641,25 +1652,32 @@ def acceptClubInvite():
             }), 404
         
         # Step 3: Check if the user has been invited to the club
-        cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s AND "userID" = %s AND "userType" = %s', (club_id, user_id, user_type,))
+        cur.execute('SELECT * FROM "clubInvites" WHERE "clubID" = %s AND "inviteeID" = %s AND "inviteeUserType" = %s', (club_id, user_id, user_type,))
         member = cur.fetchone()
 
         if not member:
             return jsonify({
                 'error': 'User has not been invited to the club'
             }), 404
+        
+        # Get today's date
+        join_date = datetime.now()
 
-        # Step 4: Update the joinStatus to TRUE and joinDate to today's date
-        cur.execute('UPDATE "clubMembers" SET "joinStatus" = TRUE, "joinDate" = %s WHERE "clubID" = %s AND "userID" = %s AND "userType" = %s', (datetime.now(), club_id, user_id, user_type,))
+        # Step 4: Remove club invite from the clubInvites table
+        cur.execute('DELETE FROM "clubInvites" WHERE "clubID" = %s AND "inviteeID" = %s AND "inviteeUserType" = %s', (club_id, user_id, user_type,))
         conn.commit()
 
-        # Step 5: Append 1 to the totalMembers in the clubs table
+        # Step 5: Insert the user into the clubMembers table
+        cur.execute('INSERT INTO "clubMembers" ("clubID", "userID", "userType", "joinDate", "isAdmin") VALUES (%s, %s, %s, %s, FALSE)', (club_id, user_id, user_type, join_date,))
+        conn.commit()
+
+        # Step 6: Append 1 to the totalMembers in the clubs table
         cur.execute('UPDATE "clubs" SET "totalMembers" = "totalMembers" + 1 WHERE id = %s', (club_id,))
         conn.commit()
 
         return jsonify({
             'message': 'User joined the club successfully'
-        }), 200
+        }), 201
 
     except Exception as e:
         print(str(e))
@@ -2064,7 +2082,7 @@ def makeAdmin():
             }), 403
 
         # Step 3: Check if the member exist and is a member of the club
-        cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s AND id = %s AND "joinStatus" = TRUE', (club_id, member_id,))
+        cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s AND id = %s', (club_id, member_id,))
         member = cur.fetchone()
 
         if not member:
@@ -2719,3 +2737,59 @@ def rejectClubRequests():
             }
         ), 500
 
+
+# -----------------------------------------------------------------------------------------
+# [DELETE] declineClubInvites
+# Purpose: Reject a club invite (will remove the invite from the clubInvites table)
+# Used: BrowseClubs.vue [components folder inside frontend folder]
+# Input:
+#   1. Club ID
+#   2. Invitee ID (i.e., the user id who was invited to join the club)
+#   3. User Type
+# Output: Possible return codes [200 - Invite rejected successfully, 400 - Missing required data, 404 - No such invitee exist, 500 - An error occurred rejecting the invite]
+@blueprint.route('/declineClubInvites', methods=['DELETE'])
+def declineClubInvites():
+    conn = g.db
+    cur = conn.cursor()
+
+    try:
+        data = request.get_json()
+
+        # Get all the required data
+        club_id = data['clubID']
+        invitee_id = data['userID']
+        user_type = data['userType']
+
+        # Check if all the required data is provided
+        if not club_id or not invitee_id or not user_type:
+            return jsonify({
+                'error': 'Missing required data'
+            }), 400
+
+        # Step 1: Check if the invitee exist
+        cur.execute('SELECT * FROM "clubInvites" WHERE "clubID" = %s AND "inviteeID" = %s AND "inviteeUserType" = %s', (club_id, invitee_id, user_type,))
+        invitee = cur.fetchone()
+
+        if not invitee:
+            return jsonify({
+                'error': 'No such invitee exist'
+            }), 404
+
+        # Step 2: Remove the invite from the clubInvites table
+        cur.execute('DELETE FROM "clubInvites" WHERE "clubID" = %s AND "inviteeID" = %s AND "inviteeUserType" = %s', (club_id, invitee_id, user_type,))
+        conn.commit()
+
+        return jsonify({
+            'message': 'Invite rejected successfully'
+        }), 200
+
+    except Exception as e:
+        print(str(e))
+        # Rollback the transaction if an error occurred
+        conn.rollback()
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred rejecting the invite."
+            }
+        ), 500

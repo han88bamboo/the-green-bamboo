@@ -5,6 +5,8 @@ DROP TABLE IF EXISTs "clubPostCommentsLikes" CASCADE;
 DROP TABLE IF EXISTS "clubPostComments" CASCADE;
 DROP TABLE IF EXISTS "clubPostsLikes" CASCADE;
 DROP TABLE IF EXISTS "clubPosts" CASCADE;
+DROP TABLE IF EXISTS "clubRequests" CASCADE;
+DROP TABLE IF EXISTS "clubInvites" CASCADE;
 DROP TABLE IF EXISTS "clubMembers" CASCADE;
 DROP TABLE IF EXISTS "clubs" CASCADE;
 DROP TABLE IF EXISTS "accountRequests" CASCADE;
@@ -490,8 +492,18 @@ CREATE TABLE "clubMembers" (
     "userID" INTEGER,
     "userType" VARCHAR(255),
     "joinDate" TIMESTAMP,
-    "isAdmin" BOOLEAN,
-    "joinStatus" BOOLEAN
+    "isAdmin" BOOLEAN
+);
+
+-- ========= "clubInvites" =========
+CREATE TABLE "clubInvites" (
+    "id" SERIAL PRIMARY KEY,
+    "clubID" INTEGER REFERENCES "clubs"("id") ON DELETE SET NULL, -- [!] References clubs FK
+    "inviteeID" INTEGER,
+    "inviteeUserType" VARCHAR(255),
+    "inviterID" INTEGER,
+    "inviterUserType" VARCHAR(255),
+    "inviteDate" TIMESTAMP
 );
 
 -- ========= "clubRequests" =========
