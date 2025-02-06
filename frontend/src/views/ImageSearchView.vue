@@ -31,12 +31,6 @@
           v-model="imageLink"
           @keypress.enter="onImageLinkSubmit"
         />
-        <img
-          src="@../../../Images/Others/search.png"
-          alt="Search"
-          class="search-icon"
-          @click="onImageLinkSubmit"
-        />
       </div>
 
       <!-- Display the uploaded image -->
@@ -48,6 +42,11 @@
           class="image-preview"
         />
       </div>
+      <button @click="onImageLinkSubmit" class="search-button">
+        Search Now!
+        <img src="@../../../Images/Others/search.png" alt="Search" class="search-icon" />
+      </button>
+
     </div>
   </div>
 </template>
@@ -172,10 +171,10 @@ button {
 }
 
 .search-icon {
-  width: 5%;
+  width: 24px;
+  height: 24px;
   cursor: pointer;
   display: inline-block;
-  vertical-align: middle;
   margin-left: 10px;
 }
 
@@ -206,4 +205,46 @@ button {
   background-color: #d9f7e1; /* Light green to indicate drop area is active */
   border-color: #027562;
 }
+
+.search-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: #027562;
+  color: white;
+  border: none;
+  padding: 12px 16px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 5px;
+  width: 100%;  /* Full width inside parent */
+  max-width: 300px;  /* Prevents it from being too wide */
+  margin: 20px auto; /* Centers it */
+}
+
+.search-button:hover {
+  background-color: #066251;
+}
+
+.search-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.link-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  width: 100%;
+}
+
+@media (max-width: 600px) {
+  .search-button {
+    width: 90%;  /* Makes it more responsive on smaller screens */
+    font-size: 14px;
+  }
+}
+
 </style>
