@@ -1277,7 +1277,13 @@ INSERT INTO "listings" (
 
 INSERT INTO "usersFollowLists" (
     "userId", "users", "producers", "venues")
-    VALUES (1, '{}', '{}', '{}'), (2, '{}', '{}', '{}'), (3, '{}', '{}', '{}'), (4, '{}', '{}', '{}');
+    VALUES 
+    (1, '{}', '{}', '{}'), 
+    (2, '{}', '{}', '{}'), 
+    (3, '{}', '{}', '{}'), 
+    (4, '{}', '{}', '{}'),
+    (5, '{1}', '{}', '{1}');
+
 
 INSERT INTO "usersDrinkLists" (
     "userId", "listName", "drinks")
@@ -1470,30 +1476,42 @@ VALUES
     (1, 1, 3);
 
 INSERT INTO "events"(
-    "eventName", "eventDesc", "eventStartDate", "eventEndDate", "eventStartTime", "eventEndTime", "eventLimit", "eventBanners", "ticketed", "paidEvent", "eventLocation", "paymentLink", "eventOwnerID", "eventOwnerType") 
+    "eventName", "eventDesc", "eventStartDate", "eventEndDate", "eventStartTime", "eventEndTime", "eventLimit", "eventBanners", "ticketed", "paidEvent", "eventLocation", "paymentLink", "eventOwnerID", "eventOwnerType", "numAttendees", "createdDate") 
 VALUES 
-    ('Trivia Night', 'Test your knowledge in our weekly trivia night! Prizes for the top teams.', '2025-01-20', '2025-01-20', '19:00:00', '22:00:00', 100, NULL, FALSE, FALSE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', '', 1, 'venue'),
-    ('Whiskey Appreciation Night', 'Explore the world of whiskey with guided tastings of premium selections.', '2025-02-05', '2025-02-05', '19:00:00', '22:00:00', 100, '{"https://img.pikbest.com/templates/20210426/bg/602bf6957a0b2.png!w700wp", "https://png.pngtree.com/png-clipart/20210502/original/pngtree-classic-bar-whiskey-leading-poster-png-image_6264354.png", "https://www.chivas.com/wp-content/uploads/2022/06/citrus-old-fashioned-whisky-cocktail-promo-1.jpg"}', TRUE, TRUE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 'https://www.google.com', 1, 'venue'),
-    ('Beer Pong Tournament', 'Compete with friends and other teams in our ultimate beer pong showdown.', '2025-02-03', '2025-02-03', '18:00:00', '22:00:00', 100, NULL, FALSE, FALSE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', '', 2, 'user'),
-    ('Wine Tasting Night', 'Savor an evening of fine wines paired with small bites and expert insights.', '2025-02-10', '2025-02-10', '18:30:00', '21:00:00', 100, NULL, TRUE, FALSE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 'https://www.google.com', 3, 'user'),
-    ('Rum Cocktail Masterclass', 'Learn to craft the perfect rum-based cocktails with our expert mixologists.', '2025-02-18', '2025-02-18', '17:00:00', '19:00:00', 100, NULL, TRUE, FALSE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 'https://www.google.com', 1, 'producer'),
-    ('Ladies Night - Margaritas Galore', 'Enjoy $5 margaritas and a free welcome drink for all ladies.', '2025-01-29', '2025-01-29', '18:00:00', '23:00:00', 100, NULL, FALSE, FALSE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', '', 1, 'venue'),
-    ('Bourbon & Blues Night', 'Pair smooth bourbons with soulful blues music in a cozy atmosphere.', '2025-02-15', '2025-02-15', '20:00:00', '23:00:00', 100, NULL, TRUE, TRUE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 'https://www.google.com', 1, 'producer'),
-    ('IPA Showcase', 'Discover unique IPAs from local breweries in this beer lover’s event.', '2025-02-20', '2025-02-20', '17:00:00', '20:00:00', 100, NULL, FALSE, FALSE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', '', 1, 'venue'),
-    ('Cocktail Night: Around the World', 'Travel the globe one sip at a time with cocktails inspired by international flavors.', '2025-01-25', '2025-01-25', '19:00:00', '23:00:00', 100, NULL, TRUE, FALSE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 'https://www.google.com', 1, 'user'),
-    ('Cider Festival', 'Celebrate the best ciders with unlimited tastings and live music all day long.', '2025-02-24', '2025-02-24', '14:00:00', '22:00:00', 100, NULL, TRUE, TRUE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 'https://www.google.com', 1, 'venue');
+    ('Trivia Night', 'Test your knowledge in our weekly trivia night! Prizes for the top teams.', '2025-01-20', '2025-01-20', '19:00:00', '22:00:00', 100, NULL, FALSE, FALSE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', '', 1, 'venue', 0, '2024-11-01 18:45:31.403'),
+    ('Whiskey Appreciation Night', 'Explore the world of whiskey with guided tastings of premium selections.', '2025-03-05', '2025-03-05', '19:00:00', '22:00:00', 100, '{"https://img.pikbest.com/templates/20210426/bg/602bf6957a0b2.png!w700wp", "https://png.pngtree.com/png-clipart/20210502/original/pngtree-classic-bar-whiskey-leading-poster-png-image_6264354.png", "https://www.chivas.com/wp-content/uploads/2022/06/citrus-old-fashioned-whisky-cocktail-promo-1.jpg"}', TRUE, TRUE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 'https://www.google.com', 1, 'venue', 10, '2025-02-01 18:45:31.403'),
+    ('Beer Pong Tournament', 'Compete with friends and other teams in our ultimate beer pong showdown.', '2025-03-03', '2025-03-03', '18:00:00', '22:00:00', 100, NULL, FALSE, FALSE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', '', 2, 'user', 7, '2025-02-05 18:45:31.403'),
+    ('Wine Tasting Night', 'Savor an evening of fine wines paired with small bites and expert insights.', '2025-03-10', '2025-03-10', '18:30:00', '21:00:00', 100, NULL, TRUE, FALSE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 'https://www.google.com', 3, 'user', 4, '2025-02-12 18:45:31.403'),
+    ('Rum Cocktail Masterclass', 'Learn to craft the perfect rum-based cocktails with our expert mixologists.', '2025-03-18', '2025-03-18', '17:00:00', '19:00:00', 100, NULL, TRUE, FALSE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 'https://www.google.com', 1, 'producer', 0, '2025-02-13 18:45:31.403'),
+    ('Ladies Night - Margaritas Galore', 'Enjoy $5 margaritas and a free welcome drink for all ladies.', '2025-03-29', '2025-03-29', '18:00:00', '23:00:00', 100, NULL, FALSE, FALSE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', '', 1, 'venue', 0, '2025-02-14 18:45:31.403'),
+    ('Bourbon & Blues Night', 'Pair smooth bourbons with soulful blues music in a cozy atmosphere.', '2025-03-15', '2025-03-15', '20:00:00', '23:00:00', 100, NULL, TRUE, TRUE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 'https://www.google.com', 1, 'producer', 0, '2025-02-15 18:45:31.403'),
+    ('IPA Showcase', 'Discover unique IPAs from local breweries in this beer lover’s event.', '2025-03-20', '2025-03-20', '17:00:00', '20:00:00', 100, NULL, FALSE, FALSE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', '', 1, 'venue', 0, '2025-02-16 18:45:31.403'),
+    ('Cocktail Night: Around the World', 'Travel the globe one sip at a time with cocktails inspired by international flavors.', '2025-03-25', '2025-03-25', '19:00:00', '23:00:00', 100, NULL, TRUE, FALSE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 'https://www.google.com', 1, 'user', 0, '2025-02-17 18:45:31.403'),
+    ('Cider Festival', 'Celebrate the best ciders with unlimited tastings and live music all day long.', '2025-03-24', '2025-03-24', '14:00:00', '22:00:00', 100, NULL, TRUE, TRUE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 'https://www.google.com', 1, 'venue', 0, '2025-02-18 18:45:31.403');
 
 
 INSERT INTO "eventAttendees"(
-    "eventID", "userID", "attendeeType", "attendeeStatus")
+    "eventID", "eventDate", "eventStartTime", "userID", "attendeeType", "attendeeStatus")
 VALUES
-    (2, 1, 'user', true),
-    (2, 1, 'producer', true),
-    (2, 2, 'user', true),
-    (2, 3, 'user', true),
-    (2, 6, 'user', true),
-    (2, 7, 'user', true),
-    (2, 8, 'user', true),
-    (2, 9, 'user', true),
-    (2, 10, 'user', true),
-    (2, 11, 'user', true);
+    (1, '2025-01-20', '19:00:00', 5, 'user', true),
+    (2, '2025-03-05', '19:00:00', 1, 'user', true),
+    (2, '2025-03-05', '19:00:00', 1, 'producer', true),
+    (2, '2025-03-05', '19:00:00', 2, 'user', true),
+    (2, '2025-03-05', '19:00:00', 3, 'user', true),
+    (2, '2025-03-05', '19:00:00', 6, 'user', true),
+    (2, '2025-03-05', '19:00:00', 7, 'user', true),
+    (2, '2025-03-05', '19:00:00', 8, 'user', true),
+    (2, '2025-03-05', '19:00:00', 9, 'user', true),
+    (2, '2025-03-05', '19:00:00', 10, 'user', true),
+    (2, '2025-03-05', '19:00:00', 11, 'user', true),
+    (3, '2025-03-03', '18:00:00', 1, 'user', true),
+    (3, '2025-03-03', '18:00:00', 2, 'user', true),
+    (3, '2025-03-03', '18:00:00', 3, 'user', true),
+    (3, '2025-03-03', '18:00:00', 4, 'user', true),
+    (3, '2025-03-03', '18:00:00', 5, 'user', true),
+    (3, '2025-03-03', '18:00:00', 6, 'user', true),
+    (3, '2025-03-03', '18:00:00', 7, 'user', true),
+    (4, '2025-03-10', '18:30:00', 1, 'user', true),
+    (4, '2025-03-10', '18:30:00', 2, 'user', true),
+    (4, '2025-03-10', '18:30:00', 3, 'user', true),
+    (4, '2025-03-10', '18:30:00', 4, 'user', true);

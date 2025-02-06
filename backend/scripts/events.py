@@ -1,7 +1,14 @@
 # Port: 5701
 # Routes: 
-#   [events] /getEvents (GET), /getSpecificEvent (GET), /getUserEvents (GET), /createEvent (POST), /updateEvent (PUT), /deleteEvent (DELETE)
-#   [attendees] /getAttendees (GET), /checkAttendance (GET), /addAttendee (POST), /removeAttendee (DELETE)
+#   [events]    /getEvents (GET), /getSpecificEvent (GET), /getUserEvents (GET), 
+#               /getTop6Events (GET), /getUpcomingFollowingEvents (GET), /getUserPastEvents (GET),
+#               /getUserUpcomingEvents (GET), /getRecentlyAddedEvents (GET),
+#               /createEvent (POST), 
+#               /updateEvent (PUT), 
+#               /deleteEvent (DELETE)
+#   [attendees] /getAttendees (GET), /checkAttendance (GET), 
+#               /addAttendee (POST), 
+#               /removeAttendee (DELETE)
 # -----------------------------------------------------------------------------------------
 
 import os
@@ -234,6 +241,288 @@ def getUserEvents(user_id, user_type, offset):
 
 
 # -----------------------------------------------------------------------------------------
+# [GET] Get top 6 events
+# Purpose: Get top 6 events
+# Used: Events.vue (inside views/Users folder)
+# Output: Possible return codes [200 - Retrieval success, 404 - No events, 500 - Internal server error]
+@blueprint.route('/getTop6Events', methods=['GET'])
+def getTop6Events():
+    conn = g.db
+    cursor = conn.cursor()
+
+    return_data = []
+
+    try:
+
+        # Step 1: Get the top 6 events
+        cursor.execute('SELECT * FROM events ORDER BY "numAttendees" DESC LIMIT 6')
+        events = cursor.fetchall()
+
+        if not events:
+            return jsonify({'error': 'No events'}), 404
+
+        # Step 2: Extract relevant information
+        for event in events:
+            top_event = {}
+            top_event['eventID'] = event['id']
+            top_event['eventName'] = event['eventName']
+            top_event['eventDesc'] = event['eventDesc']
+            top_event['eventType'] = event['eventType']
+            top_event['eventStartDate'] = event['eventStartDate'].strftime('%Y-%m-%d')
+            top_event['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
+            top_event['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
+            top_event['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+            top_event['numAttendees'] = event['numAttendees']
+        
+            return_data.append(top_event)
+        
+        return jsonify({
+            'events': return_data
+        }), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Get upcoming events by brands/venues/users that the user is following
+# Purpose: Get upcoming events by brands/venues/users that the user is following
+# Used: Events.vue (inside views/Users folder)
+# Output: Possible return codes [200 - Retrieval success, 404 - No events, 500 - Internal server error]
+@blueprint.route('/getUpcomingFollowingEvents/<user_id>/<user_type>', methods=['GET'])
+def getUpcomingFollowingEvents(user_id, user_type):
+    conn = g.db
+    cursor = conn.cursor()
+
+    return_data = []    
+
+    try:
+        # Step 1: Get user follow list
+        cursor.execute('SELECT * FROM "usersFollowLists" WHERE "userId" = %s', (user_id,))
+        follow_list = cursor.fetchone()
+
+        if not follow_list:
+            return jsonify({'error': 'No events'}), 404
+
+        # Step 2: Get the top 5 upcoming events by brands/venues/users that the user is following
+        today_date = datetime.now().date()
+
+        follow_users = follow_list['users']
+        follow_producers = follow_list['producers']
+        follow_venues = follow_list['venues'] 
+
+        cursor.execute('''
+            SELECT * FROM events 
+            WHERE 
+                ("eventOwnerType" = 'user' AND "eventOwnerID" = ANY(%s::int[])) 
+                OR ("eventOwnerType" = 'producer' AND "eventOwnerID" = ANY(%s::int[])) 
+                OR ("eventOwnerType" = 'venue' AND "eventOwnerID" = ANY(%s::int[])) 
+            AND "eventStartDate" >= CURRENT_DATE 
+            ORDER BY "eventStartDate" ASC, "eventStartTime" ASC 
+            LIMIT 5
+        ''', (follow_users, follow_producers, follow_venues))
+
+
+        events = cursor.fetchall()
+
+        if not events:
+            return jsonify({'error': 'No events'}), 404
+        
+        # Step 3: Format the return data
+        for event in events:
+            event_details = {}
+            event_details['eventID'] = event['id']
+            event_details['eventName'] = event['eventName']
+            event_details['eventDesc'] = event['eventDesc']
+            event_details['eventType'] = event['eventType']
+            event_details['eventStartDate'] = event['eventStartDate'].strftime('%Y-%m-%d')
+            event_details['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
+            event_details['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
+            event_details['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+        
+            return_data.append(event_details)
+        
+        return jsonify({
+            'events': return_data
+        }), 200
+    
+    except Exception as e:
+        print(str(e))
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Get past events by the user 
+# Purpose: Get past events by the user
+# Used: Events.vue (inside views/Users folder)
+# Output: Possible return codes [200 - Retrieval success, 404 - No events, 500 - Internal server error]
+@blueprint.route('/getUserPastEvents/<user_id>/<offset>', methods=['GET'])
+def getUserPastEvents(user_id, offset):
+    conn = g.db
+    cursor = conn.cursor()
+
+    return_data = []
+
+    # Set the limit here
+    limit = 5
+
+    try:
+        today_date = datetime.now().date()
+
+        # Step 2: Get the past events by the user attended
+        cursor.execute('SELECT * FROM "eventAttendees" WHERE "userID" = %s AND "eventDate" < %s ORDER BY "eventDate" DESC, "eventStartTime" DESC LIMIT %s OFFSET %s', (user_id, today_date, limit, offset,))
+        events = cursor.fetchall()
+
+        if not events:
+            return jsonify({'error': 'No events'}), 404
+
+        # Step 3: Get the event information
+        for event in events:
+
+            cursor.execute('SELECT * FROM events WHERE id = %s', (event['eventID'],))
+            event_info = cursor.fetchone()
+
+            if not event_info:
+                continue
+
+            # Format the event information
+            ev = {}
+            ev['eventID'] = event_info['id']
+            ev['eventName'] = event_info['eventName']
+            ev['eventDesc'] = event_info['eventDesc']
+            ev['eventType'] = event_info['eventType']
+            ev['eventStartDate'] = event_info['eventStartDate'].strftime('%Y-%m-%d')
+            ev['eventEndDate'] = event_info['eventEndDate'].strftime('%Y-%m-%d')
+            ev['eventStartTime'] = event_info['eventStartTime'].strftime('%H:%M')
+            ev['eventEndTime'] = event_info['eventEndTime'].strftime('%H:%M')
+
+            # Append the event into the return_data
+            return_data.append(ev)
+
+
+        return jsonify({
+            'events': return_data
+        }), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Get upcoming events by the user
+# Purpose: Get upcoming events by the user
+# Used: Events.vue (inside views/Users folder)
+# Output: Possible return codes [200 - Retrieval success, 404 - No events, 500 - Internal server error]
+@blueprint.route('/getUserUpcomingEvents/<user_id>/<offset>', methods=['GET'])
+def getUserUpcomingEvents(user_id, offset):
+    conn = g.db
+    cursor = conn.cursor()
+
+    return_data = []
+
+    # Set the limit here
+    limit = 5
+
+    try:
+        # Get today's date
+        today_date = datetime.now().date()
+
+        # Step 1: Get the upcoming events by the user
+        cursor.execute('SELECT * FROM "eventAttendees" WHERE "userID" = %s AND "eventDate" >= %s ORDER BY "eventDate" ASC, "eventStartTime" ASC LIMIT %s OFFSET %s', (user_id, today_date, limit, offset,))
+        events = cursor.fetchall()
+
+        if not events:
+            return jsonify({'error': 'No events'}), 404
+        
+        # Step 2: Get the event information
+        for event in events:
+
+            cursor.execute('SELECT * FROM events WHERE id = %s', (event['eventID'],))
+            event_info = cursor.fetchone()
+
+            if not event_info:
+                continue
+
+            # Format the event information
+            ev = {}
+            ev['eventID'] = event_info['id']
+            ev['eventName'] = event_info['eventName']
+            ev['eventDesc'] = event_info['eventDesc']
+            ev['eventType'] = event_info['eventType']
+            ev['eventStartDate'] = event_info['eventStartDate'].strftime('%Y-%m-%d')
+            ev['eventEndDate'] = event_info['eventEndDate'].strftime('%Y-%m-%d')
+            ev['eventStartTime'] = event_info['eventStartTime'].strftime('%H:%M')
+            ev['eventEndTime'] = event_info['eventEndTime'].strftime('%H:%M')
+
+            # Append the event into the return_data
+            return_data.append(ev)
+
+
+        return jsonify({
+            'events': return_data
+        }), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Get recently added events
+# Purpose: Get recently added events
+# Used: Events.vue (inside views/Users folder)
+# Output: Possible return codes [200 - Retrieval success, 404 - No events, 500 - Internal server error]
+@blueprint.route('/getRecentlyAddedEvents', methods=['GET'])
+def getRecentlyAddedEvents():
+    conn = g.db
+    cursor = conn.cursor()
+
+    return_data = []
+
+    try:
+        # Step 1: Get the recently added events
+        cursor.execute('SELECT * FROM events ORDER BY "createdDate" DESC LIMIT 5')
+        events = cursor.fetchall()
+
+        if not events:
+            return jsonify({'error': 'No events'}), 404
+
+        # Step 2: Extract relevant information
+        for event in events:
+            event_details = {}
+            event_details['eventID'] = event['id']
+            event_details['eventName'] = event['eventName']
+            event_details['eventDesc'] = event['eventDesc']
+            event_details['eventType'] = event['eventType']
+            event_details['eventStartDate'] = event['eventStartDate'].strftime('%Y-%m-%d')
+            event_details['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
+            event_details['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
+            event_details['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+            event_details['createdDate'] = event['createdDate'].strftime('%Y-%m-%d')
+            
+            return_data.append(event_details)
+        
+        return jsonify({
+            'events': return_data
+        }), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+
+# -----------------------------------------------------------------------------------------
 # [POST] Create an event
 # Purpose: Create an event
 # Used: EventBox.vue (inside components folder)
@@ -306,7 +595,7 @@ def createEvent():
         data['eventLimit'] = int(data['eventLimit'])
 
         # Step 5: Insert the event into the database
-        cursor.execute('INSERT INTO events ("eventName", "eventDesc", "eventStartDate", "eventEndDate", "eventStartTime", "eventEndTime", "eventLimit", "eventBanners", ticketed, "paidEvent", "eventLocation", "paymentLink", "eventOwnerID", "eventOwnerType") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)', 
+        cursor.execute('INSERT INTO events ("eventName", "eventDesc", "eventStartDate", "eventEndDate", "eventStartTime", "eventEndTime", "eventLimit", "eventBanners", ticketed, "paidEvent", "eventLocation", "paymentLink", "eventOwnerID", "eventOwnerType", "numAttendees") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 0)', 
                        (data['eventName'], data['eventDesc'], data['eventStartDate'], data['eventEndDate'], data['eventStartTime'], data['eventEndTime'], data['eventLimit'], event_banner_pg, data['ticketed'], data['paidEvent'], data['eventLocation'], payment_link, data['eventOwnerID'], data['eventOwnerType'],))
         conn.commit()
 
@@ -639,7 +928,11 @@ def addAttendee():
             return jsonify({'error': 'User is already an attendee'}), 400
 
         # Step 5: Add the attendee to the event
-        cursor.execute('INSERT INTO "eventAttendees" ("eventID", "userID", "attendeeType", "attendeeStatus") VALUES (%s, %s, %s, TRUE)', (data['eventID'], data['userID'], data['userType'],))
+        cursor.execute('INSERT INTO "eventAttendees" ("eventID", "eventDate", "eventStartTime", "userID", "attendeeType", "attendeeStatus") VALUES (%s, %s, %s, %s, %s, TRUE)', (data['eventID'], event['eventStartDate'], event['eventStartTime'], data['userID'], data['userType'],))
+        conn.commit()
+
+        # Step 6: Update the number of attendees in the event
+        cursor.execute('UPDATE events SET "numAttendees" = "numAttendees" + 1 WHERE id = %s', (data['eventID'],))
         conn.commit()
 
         return jsonify({'message': 'Attendee added successfully'}), 201
@@ -693,6 +986,10 @@ def removeAttendee():
 
         # Step 4: Remove the attendee from the event
         cursor.execute('DELETE FROM "eventAttendees" WHERE "eventID" = %s AND "userID" = %s AND "attendeeType" = %s', (data['eventID'], data['userID'], data['userType'],))
+        conn.commit()
+
+        # Step 5: Update the number of attendees in the event
+        cursor.execute('UPDATE events SET "numAttendees" = "numAttendees" - 1 WHERE id = %s', (data['eventID'],))
         conn.commit()
 
         return jsonify({'message': 'Attendee removed successfully'}), 200
