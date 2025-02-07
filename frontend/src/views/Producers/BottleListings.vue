@@ -690,30 +690,38 @@
                                         <div class="col-12 justify-content-start">
                                             
                                             <div class="form-group mb-2 mobile-mt-0 mt-3">
-                                                <div v-if="showFriendTagList.length > 0" class="form-label pb-2 text-start"> 
-                                                Tagged Friends: 
-                                                    <div class="row">
-                                                        <div class="col">
-                                                            <div class="d-flex flex-wrap gap-2">
-                                                                <div v-for="friend in showFriendTagList" v-bind:key="friend.id" class="mb-0 pb-0">
-                                                                    <button @click='removeFriendTag(friend)' class="btn secondary-square-btn"> {{ friend.username }} </button> 
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <!-- <input type="text" class="form-control" id="friendTag"> -->
-                                                <input list="followList" v-model="friendTag" class="form-control input-with-icon" id="friendTag" placeholder="Tag friends" v-on:keyup="updateFriendTag">
-                                                <datalist id="followList">
-                                                    <option v-for="user in users" :key="user.id" :value="user.username">
-                                                        {{user.username}}
-                                                    </option>
-                                                </datalist>  
-                                                <div class="text-start mt-1">                                            
-                                                    <button v-if="selectedFriendTag!==null" class="btn tertiary-square-btn mt-1" @click="tagSpecificFriend">Tag This Friend</button>
-                                                </div>  
-                                                <p v-show="friendTag.length > 0" class="text-start mb-1 text-danger" id="friendTagError"></p>
-                                            </div>
+    <div v-if="showFriendTagList.length > 0" class="form-label pb-2 text-start">
+        Tagged Friends:
+        <div class="row">
+            <div class="col">
+                <div class="d-flex flex-wrap gap-2">
+                    <div v-for="friend in showFriendTagList" :key="friend.id" class="mb-0 pb-0">
+                        <button @click="removeFriendTag(friend)" class="btn secondary-square-btn">
+                            {{ friend.username }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <input list="filteredFollowList" v-model="friendTag" class="form-control input-with-icon" id="friendTag"
+        placeholder="Tag friends" v-on:input="updateFriendTag">
+    
+    <datalist id="filteredFollowList">
+        <option v-for="user in filteredUsers" :key="user.id" :value="user.username">
+            {{ user.username }}
+        </option>
+    </datalist>
+
+    <div class="text-start mt-1">
+        <button v-if="selectedFriendTag !== null" class="btn tertiary-square-btn mt-1" @click="tagSpecificFriend">
+            Tag This Friend
+        </button>
+    </div>
+    
+    <p v-show="friendTag.length > 0" class="text-start mb-1 text-danger" id="friendTagError"></p>
+</div>
 
                                             <div class="form-group mb-2">
                                                 
@@ -1705,6 +1713,7 @@
                 duplicateEntry: false,
                 errorSubmission:false,
                 followList:[],
+                filteredUsers: [],
                 friendTag:'',
                 selectedFriendTag:null,
                 friendTagList:[],
@@ -2992,33 +3001,45 @@
             );
             },
             
-            updateFriendTag(){
-                let friendTagError = document.getElementById("friendTagError")
-                // find listing based on bottle name
-                let user = this.users.find(user => user.username === this.friendTag)
-                if (user) {
-                    this.selectedFriendTag = user
-                    friendTagError.innerHTML = ""
-                }
-                else {
-                    this.selectedfriendTag = null
-                    friendTagError.innerHTML = "Please enter a valid username"
-                }
-            },
+            updateFriendTag() {
+        let friendTagError = document.getElementById("friendTagError");
 
-            tagSpecificFriend(){
-                if (this.selectedFriendTag !== null && !this.friendTagList.includes(this.selectedFriendTag.id)) {
-                    this.friendTagList.push(this.selectedFriendTag.id);
-                    this.showFriendTagList.push({username:this.selectedFriendTag.username,id:this.selectedFriendTag.id})
-                    this.friendTag=''
-                    this.selectedFriendTag=null
-                }
-            },
+        // Show suggestions only if at least 2 characters are typed
+        if (this.friendTag.length >= 2) {
+            this.filteredUsers = this.users.filter(user =>
+                user.username.toLowerCase().includes(this.friendTag.toLowerCase())
+            );
+        } else {
+            this.filteredUsers = []; // Hide suggestions if less than 2 characters
+        }
 
-            removeFriendTag(friend){
-                this.showFriendTagList = this.showFriendTagList.filter(item => item.username !== friend.username);
-                this.friendTagList = this.friendTagList.filter(item => item !== friend.id);
-            },
+        let user = this.users.find(user => user.username === this.friendTag);
+        if (user) {
+            this.selectedFriendTag = user;
+            friendTagError.innerHTML = "";
+        } else {
+            this.selectedFriendTag = null;
+            friendTagError.innerHTML = "Please enter a valid username";
+        }
+    },
+
+            tagSpecificFriend() {
+        if (this.selectedFriendTag !== null && !this.friendTagList.includes(this.selectedFriendTag.id)) {
+            this.friendTagList.push(this.selectedFriendTag.id);
+            this.showFriendTagList.push({
+                username: this.selectedFriendTag.username,
+                id: this.selectedFriendTag.id
+            });
+            this.friendTag = '';
+            this.selectedFriendTag = null;
+            this.filteredUsers = []; // Clear suggestions after tagging
+        }
+    },
+
+    removeFriendTag(friend) {
+        this.showFriendTagList = this.showFriendTagList.filter(item => item.username !== friend.username);
+        this.friendTagList = this.friendTagList.filter(item => item !== friend.id);
+    },
 
             sortDistanceValues(distanceObject) {
                 let sortedDistanceValues = Object.fromEntries(

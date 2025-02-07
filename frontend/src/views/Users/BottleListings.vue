@@ -1247,32 +1247,24 @@
 
             // get ratings for a listing
             getRatings(listing) {
-                const ratings = this.reviews.filter((rating) => {
-                    return rating["reviewTarget"] == listing["id"];
-                });
+                const ratings = this.reviews.filter((rating) => rating["reviewTarget"] == listing['id']);
                 // if there are no ratings
-                if (ratings.length == 0) {
-                    return "-";
-                }
+                if (ratings.length == 0) return "-";
                 // else there are ratings
                 const averageRating = ratings.reduce((total, rating) => {
-                    return total + rating["rating"];
+                    return total + parseFloat(rating["rating"]);
                 }, 0) / ratings.length;
-                return averageRating.toFixed(1); //tzh changed .toFixed(2) to .toFixed(1)
+                return averageRating.toFixed(1);  //tzh changed .toFixed(2) to .toFixed(1)
             },
 
             // get ratings for a listing --> return 0 if no ratings
             getAllRatings(listing) {
-                const ratings = this.reviews.filter((rating) => {
-                    return rating["reviewTarget"] == listing["id"];
-                });
+                const ratings = this.reviews.filter((rating) => rating["reviewTarget"] == listing['id']);
                 // if there are no ratings
-                if (ratings.length == 0) {
-                    return 0;
-                }
+                if (ratings.length == 0) return 0;
                 // else there are ratings
                 const averageRating = ratings.reduce((total, rating) => {
-                    return total + rating["rating"];
+                    return total + parseFloat(rating["rating"]);
                 }, 0) / ratings.length;
                 // round to 1 decimal place
                 const roundedRating = Math.round(averageRating * 10) / 10;

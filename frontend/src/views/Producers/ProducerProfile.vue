@@ -196,7 +196,7 @@
                                         <span v-if="(specified_producer.activeStatus !== null && specified_producer.activeStatus !== undefined) && (specified_producer.owner || specified_producer.openForTours || !specified_producer.openForTours || specified_producer.website)"> | </span>
 
                                         <span v-if="specified_producer.owner">
-                                            <strong>Owner:</strong> {{ specified_producer.owner }}
+                                            <strong>Owner:</strong> {{ specified_producer.owner }} | 
                                         </span>
                                         <span v-if="specified_producer.owner && (specified_producer.openForTours || specified_producer.website)"> | </span>
 
