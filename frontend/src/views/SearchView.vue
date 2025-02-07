@@ -710,7 +710,7 @@ export default {
     },
     computed: {
         effectiveSearchTerm() {
-            return this.searchTerm;
+            return this.searchTerm || this.$route.params.tag;
         }
     },
     methods: {
