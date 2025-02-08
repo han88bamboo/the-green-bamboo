@@ -28,7 +28,7 @@
         <!-- Main content -->
         <div v-if="dataLoaded" class="container-fluid mt-5 px-5 row">
 
-            <!-- Search, create, clubs you manage and in-->
+            <!-- Search, create, upcoming, past, recommended events -->
             <div class="col-12 col-md-3">
                 <!-- Header -->
                 <div>
@@ -38,96 +38,88 @@
                 <!-- Search Input -->
                 <div>
                     <div class="input-group mb-3 position-relative">
-                        <input type="text" class="form-control rounded-pill" placeholder="Search for events" aria-label="Search for clubs" aria-describedby="search-club" v-model="searchQuery">
+                        <input type="text" class="form-control rounded-pill" placeholder="Search for events" aria-label="Search for events" aria-describedby="search-event" v-model="searchQuery">
                         <!-- Search Icon -->
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-search position-absolute" viewBox="0 0 16 16" style="right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; z-index: 5;"
-                            @click="searchClubs">
+                            @click="searchEvents">
                             <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
                         </svg>
                     </div>
                 </div> 
 
-                <!-- Create Club Button -->
+                <!-- Create Event Button -->
                 <div class="text-start">
-                    <button class="btn btn-primary">+ Create an Event</button>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createEventModal">+ Create an Event</button>
                 </div>
 
-                <!-- Club Invite-->
-                <div v-if="invitedClubs.length > 0" class="mt-3">
-                    <h3 class="text-start fw-bold">Clubs You Are Invited To</h3>
+                <!-- Create Event modal -->
+                <div class="modal fade" id="createEventModal" tabindex="-1" aria-labelledby="createEventModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
 
-                    <div v-for="club in invitedClubs.slice(0, 5)" class="d-flex gap-3" :key="club.id">
-
-                        <div class="row w-100 align-items-center">
-                            <div class="col-7 text-start">
-                                <!-- CLub title -->
-                                <router-link :to="{ name: 'clubview', params: { clubID: club.clubID }}" class="text-dark hover-underline fw-bold">
-                                    {{ club.clubName }}
-                                </router-link>
-
-                                <!-- Invited by -->
-                                <p class="text-start">Invited by: {{ club.inviterInfo.displayName }}</p>
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="createEventModalLabel">Create New Event</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
 
-                            <div class="col-5">
-                                <!-- Decline Button -->
-                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="red" class="bi bi-x-circle me-3" viewBox="0 0 16 16" style="cursor: pointer;" @click="declineInvite(club.clubID)">
-                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
-                                </svg>
-                                <!-- Accept Button -->
-                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="green" class="bi bi-check-circle" viewBox="0 0 16 16" style="cursor: pointer;" @click="acceptInvite(club.clubID)">
-                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                                    <path d="m10.97 4.97-.02.022-3.473 4.425-2.093-2.094a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05"/>
-                                </svg>
+                            <div class="modal-body text-start">
+                                <CreateEventPage @new-event="updateNewEvent"/>
                             </div>
 
-                            <hr>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" :disabled="disableButton">Close</button>
+                                <button type="button" class="btn primary-btn-green" data-bs-dismiss="modal" @click="createEvent" :disabled="disableButton">Create</button>
+                            </div>
                         </div>
+                    </div>  
+                </div>
 
+                <!-- Your Upcoming events -->
+                <div v-if="upcomingEvents.length > 0" class="mt-3">
+                    <h3 class="text-start fw-bold">Your Upcoming Events <button v-if="pastEvents.length > 5" type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#upcomingEventsModal">View All</button></h3>
+
+                    <div v-for="event in upcomingEvents" class="mt-3 row" :key="event.eventID">
                         
-                    </div>
-                </div>
-
-                <!-- Clubs you manage -->
-                <div v-if="userClubs.length > 0 && adminClubs.length > 0" class="mt-3">
-                    <h3 class="text-start fw-bold">Clubs You Manage <button v-if="adminClubs.length > 5" type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#showAllManagedClubs">View All</button></h3>
-
-                    <div v-for="club in adminClubs.slice(0, 5)" class="d-flex gap-3" :key="club.id">
-
-                        <!-- Club Banner Image -->
-                        <div style="width: 100px; height: 150px;">
-                            <img v-if="club.clubInfo.clubBanner" :src="club.clubInfo.clubBanner" class="img-fluid w-100 border" alt="..." style="object-fit: cover;">
-                            <img v-else :src="defaultBanner" class="img-fluid w-100 border" alt="..." style="object-fit: cover;">
+                        <!-- Column 1: banner -->
+                        <div class="col-12 col-lg-6" style="max-height: 200px;">
+                            <img v-if="event.eventBanners" :src="event.eventBanners[0]" class="img-fluid event-banner" alt="Event Banner" style="object-fit: contain; max-height: 100%;">
+                            <img v-else :src="defaultEventBanner" class="img-fluid event-banner" alt="Event Banner" style="object-fit: contain; max-height: 100%;">
                         </div>
-                        <!-- CLub title -->
-                        <router-link :to="{ name: 'clubview', params: { clubID: club.clubID }}" class="text-dark hover-underline">
-                            {{ club.clubInfo.clubName }}
-                        </router-link>
+
+                        <!-- Column 2: -->
+                        <div class="col-12 col-lg-6 text-start">
+                            <!-- Event Name -->
+                            <p class="fw-bold">
+                                <router-link :to="{ name: 'eventview', params: { eventID: event.eventID } }" class="text-black fs-4">
+                                    {{ event.eventName }}
+                                </router-link>
+                            </p>
+
+                            <!-- Event Details -->
+                            <p class="text-success">
+                               Happening {{ formatDate(event.eventStartDate) }} | {{ formatTime(event.eventStartTime) }} - {{ formatTime(event.eventEndTime) }} | {{ event.eventType }}
+                            </p>
+
+                        </div>
                     </div>
                 </div>
 
-                <!-- Clubs you managed modal -->
-                <div class="modal fade" id="showAllManagedClubs" tabindex="-1" aria-labelledby="showAllManagedClubsLabel" aria-hidden="true">
+                <!-- Error message for error retrieving upcoming events -->
+                <div v-if="upcomingEventsError" class="mt-3">
+                    <h2>{{ upcomingEventsError }}</h2>
+                </div>
+
+
+                <!-- Upcoming events modal -->
+                <div class="modal fade" id="upcomingEventsModal" tabindex="-1" aria-labelledby="upcomingEventsModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-scrollable modal-xl">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="showAllManagedClubsLabel">Clubs You Manage</h5>
+                                <h5 class="modal-title" id="upcomingEventsModalLabel">Your Upcoming Events</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
                                 <div class="row">
-                                    <div v-for="club in adminClubs" class="col-12 col-md-4 d-flex gap-3 mb-3" :key="club.id">
-                                        <!-- Club Banner Image -->
-                                        <div style="width: 100px; height: 150px;">
-                                            <img v-if="club.clubInfo.clubBanner" :src="club.clubInfo.clubBanner" class="img-fluid w-100 border" alt="..." style="object-fit: cover;">
-                                            <img v-else :src="defaultBanner" class="img-fluid w-100 border" alt="..." style="object-fit: cover;">
-                                        </div>
-                                        <!-- CLub title -->
-                                        <router-link :to="{ name: 'clubview', params: { clubID: club.clubID }}" class="text-dark hover-underline">
-                                            {{ club.clubInfo.clubName }}
-                                        </router-link>
-                                    </div>
                                 </div>
                                 
                             </div>
@@ -138,127 +130,65 @@
                     </div>
                 </div>
 
-                <!-- Clubs you are in -->
-                <div v-if="userClubs.length > 0 && memberClubs.length > 0" class="mt-3">
-                    <h3 class="text-start fw-bold">Clubs You Are In <button v-if="memberClubs.length > 5" type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#showAllJoinedClubs">View all</button></h3>
-
-                    <div v-for="club in memberClubs.slice(0, 5)" class="d-flex gap-3 mb-3" :key="club.id">
-
-                        <!-- Club Banner Image -->
-                        <div style="width: 100px; height: 150px;">
-                            <img v-if="club.clubInfo.clubBanner" :src="club.clubInfo.clubBanner" class="img-fluid w-100 border" alt="..." style="object-fit: cover;">
-                            <img v-else :src="defaultBanner" class="img-fluid w-100 border" alt="..." style="object-fit: cover;">
-                        </div>
-                        <!-- CLub title -->
-                        <router-link :to="{ name: 'clubview', params: { clubID: club.clubID }}" class="text-dark hover-underline">
-                            {{ club.clubInfo.clubName }}
-                        </router-link>
-                    </div>
+                <!-- Past events -->
+                <div v-if="pastEvents.length > 0" class="mt-3">
+                    <h3 class="text-start fw-bold">Past Events <button v-if="pastEvents.length > 5" type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#pastEventsModal">View All</button></h3>
+                    
                 </div>
 
-                <!-- Clubs you are in modal -->
-                <div class="modal fade" id="showAllJoinedClubs" tabindex="-1" aria-labelledby="showAllJoinedClubsLabel" aria-hidden="true">
+                <!-- Error message for error retrieving past events -->
+                <div v-if="pastEventsError" class="mt-3">
+                    <h2>{{ pastEventsError }}</h2>
+                </div>
+
+                <!-- Past events modal -->
+                <div class="modal fade" id="pastEventsModal" tabindex="-1" aria-labelledby="pastEventsModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-scrollable modal-xl">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="showAllJoinedClubsLabel">Clubs You Are In</h5>
+                                <h5 class="modal-title" id="pastEventsModalLabel">Past Events</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
                                 <div class="row">
-                                    <div v-for="club in memberClubs" class="col-12 col-md-4 d-flex gap-3 mb-3" :key="club.id">
-                                        <!-- Club Banner Image -->
-                                        <div style="width: 100px; height: 150px;">
-                                            <img v-if="club.clubInfo.clubBanner" :src="club.clubInfo.clubBanner" class="img-fluid w-100 border" alt="..." style="object-fit: cover;">
-                                            <img v-else :src="defaultBanner" class="img-fluid w-100 border" alt="..." style="object-fit: cover;">
-                                        </div>
-                                        <!-- CLub title -->
-                                        <router-link :to="{ name: 'clubview', params: { clubID: club.clubID }}" class="text-dark hover-underline">
-                                            {{ club.clubInfo.clubName }}
-                                        </router-link>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>  
-                    </div>  
-                </div>
-            </div>
-
-            <!-- Recent activity [has joined club(s)] or browse club [not yet joined club]-->
-            <div class="col-12 col-md-9">
-
-                <!-- Recent activity [there is recent activity]-->
-                <div v-if="latestPosts.length > 0 && !searchQuery">
-
-                    <!-- Recent Activity Header -->
-                    <h3 class="text-start fw-bold">Recent Activity in Your Clubs</h3>
-
-                    <!-- Bootstrap Horizontal Card for each recent activity -->
-                    <div v-for="post in latestPosts" :key="post.id" class="card mb-3">
-                        <div class="row g-0">
-
-                            <!-- Recent Activity Information -->
-                            <div class="col-md-10 ps-md-2">
-                                <div class="card-body row h-100">
-
-                                    <!-- Column 1: Poster photo -->
-                                    <div class="col-1">
-                                        <div class="d-flex flex-row align-items-center">
-                                            <img :src="post.posterPhoto" class="rounded-circle" alt="..." style="height: 55px; width: 55px; object-fit: cover;">
-                                        </div>
-                                    </div>
-
-                                    <!-- Column 2: Post information -->
-                                    <div class="col-11">
-                                        <!-- Club Name -->
-                                        <h2 class="card-title fw-bold text-start">
-                                            <router-link :to="{ name: 'clubview', params: { clubID: post.clubID }}" class="text-dark hover-underline">
-                                                {{ post.clubName }}
-                                            </router-link>  
-                                        </h2>  
-
-                                        <div class="text-start d-flex gap-3">
-                                            <!-- Poster name -->
-                                            <p>
-                                                <router-link :to="profileURL(post.posterInfo.id, post.posterInfo.userType)">
-                                                    <p v-if="post.posterInfo.userType == 'user'" class="name-container">{{ post.posterInfo.displayName }}</p>
-                                                    <p v-else-if="post.posterInfo.userType == 'producer'" class="name-container">{{ post.posterInfo.producerName }}</p>
-                                                    <p v-else class="name-container">{{ post.posterInfo.venueName }}</p>
-                                                </router-link>
-                                            </p>
-
-                                            <!-- Post date -->
-                                            <p class="card-text text-start">{{ post.postDate }}</p>
-                                        </div>
-                                        
-
-                                        <!-- Post content -->
-                                        <p class="card-text text-start">{{ post.postContent }}</p>
-
-                                        <!-- View Post Button -->
-                                        <button type="button" class="btn btn-primary align-self-start" @click="viewPost(post.id)">View Post</button>
-                                    </div>
                                     
                                 </div>
                             </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>  
                         </div>  
-                    </div>
+                    </div>  
+                </div>
+
+                <!-- Recommended Events -->
+                <h3 class="text-start fw-bold mt-3">Recommended Events </h3>
+                <div v-if="recommendedEvents.length > 0">
+
+                </div>
+
+                <!-- Error message for error retrieving recommended events -->
+                <div v-if="recommendedEventsError" class="mt-3">
+                    <h2>{{ recommendedEventsError }}</h2>
+                </div>
+            </div>
+
+            <!-- Trending events and events from brands/venues you follow -->
+            <div class="col-12 col-md-9">
+
+                <!-- Search Term Text -->
+
+                <!-- Search Results -->
+
+                <!-- Trending events -->
+                <h3 class="text-start fw-bold text-decoration-underline">Trending Events</h3>
+                <div v-if="trendingEvents.length > 0 && !searchQuery">   
                 </div>
 
                 <!--- Error message for error retrieving recent activity or no recent activtiy found -->
-                <div v-if="latestPostsError" class="mt-3">
-                    <h2>{{ latestPostsError }}</h2>
+                <div v-if="trendingEventsError" class="mt-3">
+                    <h2>{{ trendingEventsError }}</h2>
                     <hr>
-                </div>
-                
-                <!-- browse club [not yet joined club]-->
-                <div v-if="userClubs.length == 0" class="mt-3">
-                    <p class="text-center fw-bold">You haven't joined a club yet!</p>
-                    <p class="text-center fw-bold">Get on it! Here are some we'd like to recommend!</p>
-                </div>
-
-                <div v-else>
-                    <h3 class="fw-bold text-start text-decoration-underline">Browse clubs here</h3>
                 </div>
 
                 <!-- Display no results found if search term does not exist in any of the clubs -->
@@ -266,60 +196,13 @@
                     <p class="fw-bold">{{ searchResults }}</p>
                 </div>
 
-                <!-- Club Lists --> 
-                <!-- Bootstrap Horizontal Card for each club -->
-                <div class="row mt-3">
-                    <div v-for="club in filteredClubs" :key="club.id" class="col-md-6 mb-3 justify-content-center border border-2 rounded-3 p-3">
-                        <div class="row g-0">
-
-                            <!-- Club Banner Image -->
-                            <div class="col-md-2 text-start w-100" style="width: 400px; height: 150px;">
-                                <img v-if="club.clubBanner" :src="club.clubBanner" 
-                                    class="img-fluid border" 
-                                    alt="..." 
-                                    style="height: 150px; object-fit: contain;">
-                                
-                                <img v-else :src="defaultBanner" 
-                                    class="img-fluid w-100 border" 
-                                    alt="..." 
-                                    style="height: 150px; object-fit: contain;">
-                            </div>
-
-                            <!-- Club Name-->
-                            <h2 class="card-title fw-bold text-start">
-                                <router-link :to="{ name: 'clubview', params: { clubID: club.id }}" class="text-dark hover-underline">
-                                    {{ club.clubName }}
-                                </router-link>
-                            </h2>
-
-                            <!-- Club type and number of members -->
-                            <p class="text-start text-success">
-                                <span v-if="club.isInviteOnly == false">Public Group | </span>
-                                <span v-else>Private Group | </span>
-                                <span>{{ club.totalMembers }} Members</span>
-                            </p>
-
-                            <!-- Club Description -->
-                            <p class="card-text text-start">{{ club.clubDesc }}</p>
-
-                            <!-- Join Club Button -->
-                            <!-- <button v-if="userClubs.includes(club.id)" type="button" class="btn btn-primary mt-auto align-self-start" disabled>Joined</button> -->
-                            <button v-if="requestedClubs.includes(club.id)" type="button" class="btn btn-primary mt-auto align-self-start w-md-25" disabled>Request Sent</button>
-                            <button v-if="!userClubs.includes(club.id) && club.isInviteOnly == false" type="button" class="btn btn-primary mt-auto align-self-start w-md-25" @click="joinClub(club.id)">+Join This Club</button>
-                            <button v-if="!userClubs.includes(club.id) && club.isInviteOnly == true && !requestedClubs.includes(club.id)" type="button" class="btn btn-primary mt-auto align-self-start w-md-25" @click="requestJoin(club.id)">Request to Join</button>
-                        </div>
-                    </div>
+                <!-- Events from Brands/Venues You Follow  --> 
+                <h3 class="text-start fw-bold text-decoration-underline">Events from Brands / Venues You Follow</h3>
+                <div v-if="followedEvents && !searchQuery" class="row mt-3">
+                    
                 </div>
 
-                <!-- Load More Button -->
-                <div v-if="showButton" class="d-flex justify-content-center mt-3">
-                    <button type="button" class="btn secondary-btn btn-md" @click="loadMoreClubs">Load More</button>
-                </div>    
                 
-                <!--Display no clubs yet message -->
-                <div v-if="clubs.length == 0" class="mt-3">
-                    <h2>No clubs yet!</h2>
-                </div>
             </div>
         </div>
 
@@ -328,20 +211,270 @@
 </template>
 
 <script>
+import { useToast } from 'vue-toastification';
 import NavBar from '@/components/NavBar.vue';
+import CreateEventPage from '@/components/CreateEventPage.vue';
 
 
 export default {
     name: 'EventsPage',
     components: {
-        NavBar
+        NavBar,
+        CreateEventPage
     },
     data() {
         return {
             // Data
             dataLoaded: false,
+
+            // Variable for user details
+            userID: null,
+            userType: null,
+
+            // Variables for search
+            searchQuery: '',
+
+            // Variable to store default event banner
+            defaultEventBanner: require("@/assets/defaultEventBanner.jpg"),
+
+            // Variables for creating a new event
+            newEvent: {
+                eventName: '',
+                eventDescription: '',
+                eventType: '',
+                eventStartDate: '',
+                eventEndDate: '',
+                eventStartTime: '',
+                eventEndTime: '',
+                eventLimit: '',
+                eventBanners: '',
+                ticketed: '',
+                paidEvent: '',
+                eventLocation: '',
+                paymentLink: ''
+            },
+            disableButton: false,
+
+            // Variable for events lists and respective offsets and respective error messages
+            upcomingOffset: 0,
+            upcomingEvents: [],
+            upcomingEventsError: null,
+
+            pastEventsOffset: 0,
+            pastEvents: [],
+            pastEventsError: null,
+
+            recommendedEvents: [],
+            recommendedEventsError: null,
+
+            trendingEvents: [],
+            trendingEventsError: null,
+
+            followedEvents: [],
+            followedEventsError: null,
         }
     },
+    methods: {
+        // Function to get upcoming events 
+        async getUpcomingEvents() {
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/events/getUserUpcomingEvents/${this.userID}/${this.upcomingOffset}`);
+                this.upcomingEvents = response.data.events;
+                this.dataLoaded = true;
+            }
+            catch (error) {
+                if (error.response.status == 404) {
+                    this.upcomingEventsError = "No upcoming events found.";
+                }
+                else {
+                    this.upcomingEventsError = "Failed to retrieve upcoming events.";
+                }
+                console.error(error);
+            }
+        },
+
+        // Function to get past events
+        async getPastEvents() {
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/events/getUserPastEvents/${this.userID}/${this.pastEventsOffset}`);
+                this.pastEvents = response.data.events;
+                this.dataLoaded = true;
+            }
+            catch (error) {
+                if (error.response.status == 404) {
+                    this.pastEventsError = "No past events found.";
+                }
+                else {
+                    this.pastEventsError = "Failed to retrieve past events.";
+                }
+                console.error(error);
+            }
+        },
+
+        // Function to get recommended events (as of now is getting recently created events)
+        async getRecommendEvents() {
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/events/getRecentlyAddedEvents`);
+                this.recommendedEvents = response.data.events;
+                this.dataLoaded = true;
+            }
+            catch (error) {
+                if (error.response.status == 404) {
+                    this.recommendedEventsError = "No recommended events found.";
+                }
+                else {
+                    this.recommendedEventsError = "Failed to retrieve recommended events.";
+                }
+                console.error(error);
+            }
+        },
+
+        // Function to get trending events
+        async getTrendingEvents() {
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/events/getTop6Events`);
+                this.trendingEvents = response.data.events;
+                this.dataLoaded = true;
+            }
+            catch (error) {
+                if (error.response.status == 404) {
+                    this.trendingEventsError = "No trending events found.";
+                }
+                else {
+                    this.trendingEventsError = "Failed to retrieve trending events.";
+                }
+                console.error(error);
+            }
+        },
+
+        // Function to get followed events
+        async getFollowedEvents() {
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/events/getUpcomingFollowingEvents/${this.userID}/${this.userType}`);
+                this.followedEvents = response.data.events;
+                this.dataLoaded = true;
+            }
+            catch (error) {
+                if (error.response.status == 404) {
+                    this.followedEventsError = "No followed events found.";
+                }
+                else {
+                    this.followedEventsError = "Failed to retrieve followed events.";
+                }
+                console.error(error);
+            }
+        },
+
+        // Function to search events
+        searchEvents() {
+        },
+
+        // Function to change date "YYYY-MM-DD" to "DD Month YYYY"
+        formatDate(date) {
+            // toLocaleDateString() function converts a date to a string based on the specified locale and formatting options. The first argument is the locale (region), and the second argument is an object specifying the desired format for the date components (e.g., day, month, year).
+            
+            const options = { day: 'numeric', month: 'long', year: 'numeric' };
+            const weekdayOptions = { weekday: 'long' };
+            
+            const dateString = new Date(date).toLocaleDateString("en-GB", options);
+            const weekdayString = new Date(date).toLocaleDateString("en-GB", weekdayOptions);
+            
+            return `${dateString}, ${weekdayString}`;
+        },
+
+        // Function to convert 24-hour time to 12-hour time with AM/PM
+        formatTime(time) {
+            const [hour, minute] = time.split(':');
+            const ampm = hour >= 12 ? 'PM' : 'AM';
+            const formattedHour = hour % 12 || 12; // Convert 0 to 12 for 12 AM
+            return `${formattedHour}:${minute} ${ampm}`;
+        },
+
+        // Update new event details
+        updateNewEvent(event) {
+            this.newEvent = event;
+        },
+
+        // Function to create a new event
+        async createEvent() {
+
+            // Check if user is logged in
+            if (this.userType == "defaultUser") {
+                // Redirect to login page
+                this.$router.push({ name: 'login' });
+            }
+
+            this.disableButton = true;
+            try {
+
+                // Check if the start time is after the current time if the start date is today
+                let todayDate = new Date().toISOString().split('T')[0];
+                let currentTime = new Date().toTimeString().split(' ')[0];
+                
+                if (this.newEvent.eventStartDate == todayDate && this.newEvent.eventStartTime <= currentTime) {
+                    alert("Start time must be after the current time.");
+                    return;
+                }
+
+                // Check if the end time is after the start time
+                if (this.newEvent.eventEndDate == this.newEvent.eventStartDate && this.newEvent.eventEndTime <= this.newEvent.eventStartTime) {
+                    alert("End time must be after start time.");
+                    return;
+                }
+
+                // Set boolean variables to true or false from string
+                this.newEvent.ticketed = this.newEvent.ticketed == 'true';
+                this.newEvent.paidEvent = this.newEvent.paidEvent == 'true';
+
+                // Create a new event
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/events/createEvent`, {
+                    eventName: this.newEvent.eventName,
+                    eventDesc: this.newEvent.eventDescription,
+                    eventType: this.newEvent.eventType,
+                    eventStartDate: this.newEvent.eventStartDate,
+                    eventEndDate: this.newEvent.eventEndDate,
+                    eventStartTime: this.newEvent.eventStartTime,
+                    eventEndTime: this.newEvent.eventEndTime,
+                    eventLimit: this.newEvent.eventLimit,
+                    eventBanners: this.newEvent.eventBanners,
+                    ticketed: this.newEvent.ticketed,
+                    paidEvent: this.newEvent.paidEvent,
+                    eventLocation: this.newEvent.eventLocation,
+                    paymentLink: this.newEvent.paymentLink,
+                    eventOwnerID: this.userID,
+                    eventOwnerType: this.userType
+                });
+
+                // Check if the event is created
+                if (response.status == 201) {
+                    const toast = useToast();
+                    toast.success("Event created successfully.");
+                    this.getEvents();
+                }
+            }
+            catch (error) {
+                console.error(error);
+                const toast = useToast();
+                toast.error("Failed to create event.");
+            }
+        }
+
+    },
+    mounted() {
+        this.getRecommendEvents();
+        this.getTrendingEvents();
+        // Get the account id and type of the user
+        this.userID = localStorage.getItem("88B_accID");
+        let userType = localStorage.getItem("88B_accType");
+
+        if (userType) {
+            this.userType = userType;
+        }
+
+        this.getUpcomingEvents();
+        this.getPastEvents();
+        this.getFollowedEvents();
+    }
 }
 </script>
 

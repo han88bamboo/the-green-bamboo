@@ -273,6 +273,7 @@ def getTop6Events():
             top_event['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
             top_event['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
             top_event['numAttendees'] = event['numAttendees']
+            top_event['eventBanners'] = event['eventBanners']
         
             return_data.append(top_event)
         
@@ -342,6 +343,7 @@ def getUpcomingFollowingEvents(user_id, user_type):
             event_details['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
             event_details['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
             event_details['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+            event_details['eventBanners'] = event['eventBanners']
         
             return_data.append(event_details)
         
@@ -400,6 +402,7 @@ def getUserPastEvents(user_id, offset):
             ev['eventEndDate'] = event_info['eventEndDate'].strftime('%Y-%m-%d')
             ev['eventStartTime'] = event_info['eventStartTime'].strftime('%H:%M')
             ev['eventEndTime'] = event_info['eventEndTime'].strftime('%H:%M')
+            ev['eventBanners'] = event_info['eventBanners']
 
             # Append the event into the return_data
             return_data.append(ev)
@@ -461,6 +464,7 @@ def getUserUpcomingEvents(user_id, offset):
             ev['eventEndDate'] = event_info['eventEndDate'].strftime('%Y-%m-%d')
             ev['eventStartTime'] = event_info['eventStartTime'].strftime('%H:%M')
             ev['eventEndTime'] = event_info['eventEndTime'].strftime('%H:%M')
+            ev['eventBanners'] = event_info['eventBanners']
 
             # Append the event into the return_data
             return_data.append(ev)
@@ -509,6 +513,7 @@ def getRecentlyAddedEvents():
             event_details['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
             event_details['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
             event_details['createdDate'] = event['createdDate'].strftime('%Y-%m-%d')
+            event_details['eventBanners'] = event['eventBanners']
             
             return_data.append(event_details)
         
@@ -521,6 +526,7 @@ def getRecentlyAddedEvents():
         return jsonify({'error': str(e)}), 500
     finally:
         cursor.close()
+
 
 # -----------------------------------------------------------------------------------------
 # [POST] Create an event

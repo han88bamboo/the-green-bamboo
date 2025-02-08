@@ -262,7 +262,11 @@
 
                 <!-- Display no results found if search term does not exist in any of the clubs -->
                 <div v-if="searchResults && searchQuery" class="mt-3 text-start">
-                    <p class="fw-bold">{{ searchResults }}</p>
+                    <p class="fw-bold">{{ searchResults }} 
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16" style="cursor: pointer;" @click="resetSearch">
+                        <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
+                    </svg>
+                    </p>
                 </div>
 
                 <!-- Club Lists --> 
@@ -444,6 +448,13 @@ export default {
                 console.log(error);
                 this.dataLoaded = null;
             }
+        },
+
+        // Function to reset the search query
+        resetSearch() {
+            this.searchQuery = "";
+            this.searchResults = "";
+            this.getClubs();
         },
 
         // Function to load more clubs
