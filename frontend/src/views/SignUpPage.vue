@@ -247,6 +247,52 @@
     </div>
     <!-- End of display -->
 
+    <!-- Popup 1 -->
+    <ReusablePopup
+        v-if="showPopup1"
+        :isVisible="true"
+        title="Create your profile and build your taste palate!"
+        question="What’s your drink of choice?"
+        :options="['Whisky', 'Beer', 'Wine', 'Cocktails', 'Gin', 'Tequila', 'Mezcal', 'Sake', 'Rum', 'Brandy', 'Baijiu', 'Soju', 'Umeshu', 'Makgeolli', 'Brandy', 'Vodka', 'Liqueurs', 'Shochu', 'Sotol', 'Arrack']"
+        nextButtonText="Next"
+        @next="goToPopup2"
+    />
+
+    <!-- Popup 2 -->
+    <ReusablePopup
+        v-if="showPopup2"
+        :isVisible="true"
+        title="Create your profile and build your taste palate!"
+        question="What types of flavours do you usually prefer?"
+        :options="['Sweet', 'Sour', 'Umami', 'Floral', 'Fruity', 'Green', 'Confectionary', 'Cereal', 'Earthy', 'Spices', 'Mineral', 'Lactic', 'Umami', 'Smoky']"
+        showBackButton
+        @back="goToPopup1"
+        @next="goToPopup3"
+    />
+
+    <!-- Popup 3 -->
+    <ReusablePopup
+        v-if="showPopup3"
+        :isVisible="true"
+        title="Create your profile and build your taste palate!"
+        question="Which of these drinks would you most like to try?"
+        :options="['Good for Gifts', 'Beginner Friendly', 'Overhyped!', 'Is This Water?', 'For My Worst Enemy!', 'Broke the Bank', 'Acquired Taste']"
+        showBackButton
+        nextButtonText="Done"
+        @back="goToPopup2"
+        @next="completeSetup"
+    />
+
+    <!-- Onboarding Popup -->
+    <OnboardPopup
+      v-if="showOnboardPopup"
+      :isVisible="true"
+      title="Now it’s time to log your first review!"
+      message="Search for a drink and share your review with the community!"
+      @close="showOnboardPopup = false"
+      @search="handleSearch"
+    />
+
     
 </template>
 
@@ -256,15 +302,23 @@
 <script>
     // import components used
     import NavBar from '@/components/NavBar.vue';
+    import ReusablePopup from "@/components/ReusablePopup.vue";
+    import OnboardPopup from "@/components/OnboardPopup.vue";
 
     export default{
         name: 'SignUpPage',
         components: {
-            NavBar
+            NavBar,
+            ReusablePopup,
+            OnboardPopup,
         },
         data(){
             return{
                 dataLoaded: false,
+                showPopup1: false,
+                showPopup2: false,
+                showPopup3: false,
+                showOnboardPopup: false,
 
                 // Initial user variable
                 response:[],
@@ -484,6 +538,12 @@
                     if(this.reviewResponseCode==201){
                         this.successSubmission=true; // Display success message
                         this.submitForm = false  // Hide submission in progress message
+
+                        // Show first popup
+                        this.showPopup1 = true;
+                        this.showPopup2 = false;
+                        this.showPopup3 = false;
+
                     }else{
                         this.errorSubmission=true; // Display error message
                         this.submitForm = false  // Hide submission in progress message
@@ -504,6 +564,35 @@
                 }
                 
             },
+            goToPopup2() {
+            this.showPopup1 = false;
+            this.showPopup2 = true;
+            this.showPopup3 = false;
+            },
+            goToPopup3() {
+            this.showPopup2 = false;
+            this.showPopup3 = true;
+            },
+            goToOnboardPopup() {
+            this.showPopup3 = false;
+            this.showOnboardPopup = true;
+            },
+            goToPopup1() {
+            this.showPopup2 = false;
+            this.showPopup1 = true;
+            },
+            completeSetup() {
+            this.showPopup3 = false;
+            this.showOnboardPopup = true;
+            console.log("Signup process completed!");
+            },
+            closePopup() {
+            this.showPopup1 = false;
+            this.showPopup2 = false;
+            this.showPopup3 = false;
+            this.showOnboardPopup = false;
+            },
+
             // create unique hash based on username and password
             hashPassword(username, password) {
                 const combinedString = username.toString() + password;

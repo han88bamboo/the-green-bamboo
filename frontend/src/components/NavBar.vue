@@ -11,22 +11,33 @@
             <div class="container-fluid align-items-center col-xxl-11 col-xl-11 col-lg-11 col-md-12 col-sm-12">
 
                 <!-- logo -->
-                <div class="align-items-center col-3">
+                <div class="align-items-center col-3 mobile-col-5">
                     <router-link :to="'/'">
                         <img src="../../Images/Logo/Drink-X Logo.png" style="width: auto; height: 35px;">
                     </router-link>
                 </div>
 
-                <!-- search bar tzh added mobile-view-hide -->
-                <div class="col-6 mobile-view-hide">
-                    <input class="search-bar form-control rounded fst-italic" type="text" placeholder="What are you drinking today?" style="height: 50px;" v-model="searchInput" v-on:keyup.enter="goSearch">
+                <div class="col mobile-view-hide d-flex align-items-center">
+                    <!-- search bar tzh added mobile-view-hide -->
+                    <div class="col-8 position-relative search-bar d-flex" style="height: 50px;">
+                        <input class="form-control fst-italic" type="text" placeholder="What are you drinking today?" style="width: 90%;" v-model="searchInput" v-on:keyup.enter="goSearch">
+                        <img src="../../Images/Others/search-green.png" style="width: 30px; height: 30px; margin: 0px 10px; align-self: center;" v-on:click="goSearch">
+                    </div>
+                    
+                    <!-- camera button -->
+                    <div class="col mobile-view-hide">
+                            <button class="btn primary-btn-less-round-green d-flex align-items-center" style="height: 50px; margin-left: 10px; padding: 0px 15px;" v-on:click="imageSearch">
+                                <span>Scan bottle</span>
+                                <img src="../../Images/Others/camera-white.png" style="width: 30px; height: 30px; margin-left: 10px;">
+                            </button>
+                    </div>
                 </div>
 
-                <div class="col-3 dropdown mobile-col-4">
+                <div class="col-1 dropdown mobile-col-3 d-flex">
 
                     <!-- profile icon -->
                     <button v-if="onProfile" type="button" class="btn p-0 me-1" @click="forceLoad(profileURL)">
-                        <svg v-if="photo == ''" xmlns="http://www.w3.org/2000/svg" width="45" height="45" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                        <svg v-if="photo == ''" xmlns="http://www.w3.org/2000/svg" width="45" height="45" fill="currentColor" class="bi bi-person-circle mobile-view-hide" viewBox="0 0 16 16">
                             <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
                             <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
                         </svg>
@@ -34,7 +45,7 @@
                         <img v-else :src="photo"  style="width: 45px; height: 45px;" class="img-border">
                     </button>
                     <router-link v-if="!onProfile" :to="profileURL" class="me-1">
-                        <button type="button" class="btn p-0">
+                        <button type="button" class="btn p-0 mobile-view-hide">
                             <svg v-if="photo == ''" xmlns="http://www.w3.org/2000/svg" width="45" height="45" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
                                 <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
                                 <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
@@ -43,6 +54,10 @@
                             <img v-else :src="photo"  style="width: 45px; height: 45px;" class="img-border">
                         </button>
                     </router-link>
+
+                    <!-- camera button -->
+                    <img src="../../Images/Others/camera.png" style="width: 50px; height: 50px; margin-right: 10px;" class="mobile-view-show" v-on:click="imageSearch">
+
 
                     <!-- dropdown button -->
                     <button class="navbar-toggler p-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -93,8 +108,12 @@
 
         <!-- secondary nav bar -tzh added mobile-view-hide -->
         <div class="col-12 primary-square mt-2 py-1 ">
-            <div class="mobile-view-show col-12 ps-4 pe-4">
-                <input class="search-bar form-control rounded fst-italic " type="text" placeholder="What are you drinking today?" style="height: 50px;" v-model="searchInput" v-on:keyup.enter="goSearch">
+            <div class="mobile-view-show col-11 ps-4 pe-4 d-flex">
+                <!-- <input class="search-bar form-control rounded fst-italic" type="text" placeholder="What are you drinking today?" style="height: 50px;" v-model="searchInput" v-on:keyup.enter="goSearch"> -->
+                <div class="search-bar d-flex align-items-center col-12" >
+                     <input class="form-control fst-italic" type="text" placeholder="What are you drinking today?" style="width: 90%;" v-model="searchInput" v-on:keyup.enter="goSearch">
+                     <img src="../../Images/Others/search-green.png" style="width: 30px; height: 30px; margin: 0px 10px; align-self: center;" v-on:click="goSearch">
+                </div>
             </div>
             <div class="mobile-view-hide container-fluid align-items-center col-xxl-8 col-xl-9 col-lg-10 col-md-11 col-sm-12">
 
@@ -103,6 +122,7 @@
                         Explore
                     </button>
                 </router-link>
+
 
                 <router-link :to="'/'">
                     <button class="btn primary-btn border-0 fw-bold" type="button">
@@ -117,7 +137,7 @@
                 </router-link>
 
                 <button class="btn primary-btn border-0 fw-bold" type="button" @click="externalURL('https://88bamboo.co/')">
-                    Latest News
+                    Latest Drink News
                 </button>
 
                 <button @click="forceLoad('/request/new')" v-if="onRequest && accType == 'user'" class="btn primary-btn border-0 fw-bold " type="button" >  <!-- class="text-warning" style="color:#D58D2D !important;" -->
@@ -141,7 +161,7 @@
 
                 <router-link :to="'/clubs/view'">
                     <button class="btn primary-btn border-0 fw-bold" type="button">
-                        Find Club
+                        Find A Club
                     </button>
                 </router-link>
 
@@ -259,6 +279,17 @@
                         // re-route to search page
                         this.$router.push({path: '/search/' + this.searchInput});
                     }
+                }
+            },
+            // route to image search page
+            imageSearch() {
+                // if already on image search page, refresh the page
+                if (this.$route.path.split('/')[1] == 'imageSearch') {
+                    window.location.href = '/imageSearch';
+                }
+                else {
+                    // re-route to image search page
+                    this.$router.push({path: '/imageSearch'});
                 }
             },
 

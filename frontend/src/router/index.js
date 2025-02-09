@@ -19,6 +19,11 @@ const routes = [
     component: () => import('../views/LoginPage.vue')
   },
   {
+    path: '/landing',
+    name: 'landing',
+    component: () => import('../views/LandingPage.vue')
+  },
+  {
     path: '/signup',
     name: 'signup',
     component: () => import('../views/SignUpPage.vue')
@@ -37,6 +42,16 @@ const routes = [
     path: '/search/:input?',
     name: 'search',
     component: () => import('../views/SearchView.vue')
+  },
+  {
+    path: '/imageSearch',
+    name: 'imagesearch',
+    component: () => import('../views/ImageSearchView.vue')
+  },
+  {
+    path: '/successfulOnboarding',
+    name: 'successfulonboarding',
+    component: () => import('../views/SuccessfulOnboarding.vue')
   },
   // -------------------------------------------------------------------------------------
 
