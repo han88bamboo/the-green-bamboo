@@ -383,7 +383,7 @@
 import { useToast } from 'vue-toastification';
 import NavBar from '@/components/NavBar.vue';
 import CreateEventPage from '@/components/CreateEventPage.vue';
-import * as bootstrap from 'bootstrap';
+6
 
 
 export default {
@@ -666,11 +666,10 @@ export default {
                     const toast = useToast();
                     toast.success("Event created successfully.");
 
-                    // Close the modal programmatically
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('createEventModal'));
-                    modal.hide();
-                    // Hide the modal backdrop
-                    document.querySelector('.modal-backdrop')?.remove();
+                    // Close modal
+                    document.getElementById('createEventModal').classList.remove('show');
+                    document.body.classList.remove('modal-open');
+                    document.querySelectorAll('.modal-backdrop').forEach(backdrop => backdrop.remove());
 
                     // Restore scrolling on the body
                     document.body.style.overflow = 'auto'; 

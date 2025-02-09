@@ -8,7 +8,7 @@
 
         <!-- Main NavBar -->
         <nav class="navbar pb-0">
-            <div class="container-fluid align-items-center col-xxl-11 col-xl-11 col-lg-11 col-md-12 col-sm-12">
+            <div class="container-fluid align-items-center col-xxl-10 col-xl-10 col-lg-10 col-md-12 col-sm-12">
 
                 <!-- logo -->
                 <div class="align-items-center col-3 mobile-col-5">
@@ -25,15 +25,15 @@
                     </div>
                     
                     <!-- camera button -->
-                    <div class="col mobile-view-hide">
+                    <!-- <div class="col mobile-view-hide">
                             <button class="btn primary-btn-less-round-green d-flex align-items-center" style="height: 50px; margin-left: 10px; padding: 0px 15px;" v-on:click="imageSearch">
                                 <span>Scan bottle</span>
                                 <img src="../../Images/Others/camera-white.png" style="width: 30px; height: 30px; margin-left: 10px;">
                             </button>
-                    </div>
+                    </div> -->
                 </div>
 
-                <div class="col-1 dropdown mobile-col-3 d-flex">
+                <div class="col-2 dropdown mobile-col-4">
 
                     <!-- profile icon -->
                     <button v-if="onProfile" type="button" class="btn p-0 me-1" @click="forceLoad(profileURL)">
@@ -56,11 +56,11 @@
                     </router-link>
 
                     <!-- camera button -->
-                    <img src="../../Images/Others/camera.png" style="width: 50px; height: 50px; margin-right: 10px;" class="mobile-view-show" v-on:click="imageSearch">
+                    <!-- <img src="../../Images/Others/camera.png" style="width: 50px; height: 50px; margin-right: 10px; cursor: pointer;" v-on:click="imageSearch"> -->
 
 
                     <!-- dropdown button -->
-                    <button class="navbar-toggler p-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <button class="navbar-toggler p-0 show" type="button" data-bs-toggle="dropdown" aria-expanded="true">
                         <span class="navbar-toggler-icon"></span>
                     </button>
 
@@ -83,8 +83,8 @@
                         <li v-if="isAdmin"><router-link :to="'/admin/importListings'" class="dropdown-item">Import Listings</router-link></li>
                         
                         <div class="mobile-view-show">
-                            <li><router-link :to="'/'" class="dropdown-item">Explore</router-link></li>
-                            <li><router-link :to="'/'" class="dropdown-item">Best Of</router-link></li>
+                            <li><router-link :to="'/explore'" class="dropdown-item">Explore</router-link></li>
+                            <li><router-link :to="'/explore'" class="dropdown-item">Best Of</router-link></li>
                             <li><router-link :to="dashboardURL" class="dropdown-item">{{ dashboardWord }} Dashboard</router-link></li>
                             <li><span  @click="externalURL('https://88bamboo.co/')" class="dropdown-item">Latest News</span></li>
                             <li v-if="onRequest && accType == 'user'"><span style="color:#D58D2D !important;" @click="forceLoad('/request/new')" class="dropdown-item">Submit A Drink</span></li>
@@ -117,14 +117,14 @@
             </div>
             <div class="mobile-view-hide container-fluid align-items-center col-xxl-8 col-xl-9 col-lg-10 col-md-11 col-sm-12">
 
-                <router-link :to="'/'">
+                <router-link :to="'/explore'">
                     <button class="btn primary-btn border-0 fw-bold" type="button">
                         Explore
                     </button>
                 </router-link>
 
 
-                <router-link :to="'/'">
+                <router-link :to="'/explore'">
                     <button class="btn primary-btn border-0 fw-bold" type="button">
                         Best Of
                     </button>
