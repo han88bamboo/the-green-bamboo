@@ -30,56 +30,73 @@
   </div>
 
   <!-- Main Page Header -->
-  <div class="text-info-emphasis fs-5 pt-5" v-if="dataLoaded === true">
-    <h3 class="mb-1 mt-1 mb-sm-0 text-start text-dark fw-bold">
-      Latest Drinks News
-    </h3>
-    <!--loop through latest news-->
-    <div v-if="latestNews.length > 0">
+  <div
+    class="text-info-emphasis fs-5 pt-5 d-flex flex-row"
+    v-if="dataLoaded === true"
+  >
+    <!--Left Column (Venue and Events)-->
+    <div class="col-4 d-flex flex-column align-items-end px-5">
       <div
-        v-for="(news, index) in latestNews"
-        :key="index"
-        class="card mb-4 border-0 shadow-sm bg-white text-start fw-bold"
+        class="rounded mb-3"
+        style="background-color: green; height: 200px; width: 200px"
       >
-        <div class="row g-0">
-          <!-- Image Placeholder (if available) -->
-          <div
-            class="col-md-4 d-flex align-items-center justify-content-center bg-light"
-          >
-            <img
-              v-if="news.image"
-              :src="news.image"
-              class="img-fluid rounded-start"
-              alt="News Image"
-            />
-          </div>
-        </div>
-
-        <div class="col-md-8">
-          <div class="card-body">
-            <h5 class="card-title fw-bold">{{ news.title }}</h5>
-            <p class="card-subtitle text-muted small">
-              By <span class="fw-semibold">{{ news.author }}</span> |
-              {{ formatDate(news.published) }}
-            </p>
-            <p class="card-text text-muted mt-2">
-              {{ truncate(news.summary, 200) }}
-            </p>
-            <a
-              :href="news.link"
-              target="_blank"
-              class="btn secondary-btn btn-md"
-              style="font-weight: bold"
-            >
-              Read More
-            </a>
-          </div>
-        </div>
+        <h3>For Venue</h3>
+      </div>
+      <div
+        class="rounded mb-3"
+        style="background-color: green; height: 600px; width: 200px"
+      >
+        <h3>For Events</h3>
       </div>
     </div>
 
-    <div v-else>
-      <p class="fst-italic text-muted">No news available at the moment.</p>
+    <!--Right Column (Articles)-->
+    <div class="col-6">
+      <h3 class="mb-1 mt-1 mb-1 text-start text-dark fw-bold">
+        Latest Drinks News
+      </h3>
+      <!--Loop through latest news-->
+      <div v-if="latestNews.length > 0">
+        <!--Each article's container-->
+        <div
+          v-for="(news, index) in latestNews"
+          :key="index"
+          class="d-flex flex-row card mb-4 border-0 bg-white text-start fw-bold"
+          style="max-height: 300px"
+        >
+          <img
+            v-if="news.image"
+            :src="news.image"
+            class="img-fluid"
+            style="max-height: 300px"
+            alt="News Image"
+          />
+
+          <div class="col-md-7">
+            <div class="card-body ms-3">
+              <h5 class="card-title fw-bold mb-3">{{ news.title }}</h5>
+              <p class="card-subtitle text-muted small mb-3 fst-italic">
+                {{ formatDate(news.published) }}
+              </p>
+              <p class="card-text text-muted mt-2 fst-italic">
+                {{ truncate(news.summary, 200) }}
+              </p>
+              <a
+                :href="news.link"
+                target="_blank"
+                class="btn secondary-btn btn-md px-4"
+                style="font-weight: bold"
+              >
+                Read More
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div v-else>
+        <p class="fst-italic text-muted">No news available at the moment.</p>
+      </div>
     </div>
   </div>
   <div>
