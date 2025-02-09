@@ -510,7 +510,9 @@ body {
 }
 
 .search-bar {
-    border: 2px solid black;  /*tzh changed 535C72 to black*/
+    border: 4px solid #027562; 
+    border-radius: 10px;
+    background-color: white;
 }
 
 .square-inline {

@@ -11,12 +11,22 @@ const routes = [
     // name: 'usersbottlelistings',
 
     // route level code-splitting: this generates a separate chunk (about.[hash].js) for this route which is lazy-loaded when the route is visited.
+    component: () => import(/* webpackChunkName: "about" */ '../views/LandingPage.vue')
+  },
+  {
+    path: '/explore',
+    name: 'explore',
     component: () => import(/* webpackChunkName: "about" */ '../views/Users/BottleListings.vue')
   },
   {
     path: '/login',
     name: 'login',
     component: () => import('../views/LoginPage.vue')
+  },
+  {
+    path: '/landing',
+    name: 'landing',
+    component: () => import('../views/LandingPage.vue')
   },
   {
     path: '/signup',
@@ -37,6 +47,16 @@ const routes = [
     path: '/search/:input?',
     name: 'search',
     component: () => import('../views/SearchView.vue')
+  },
+  {
+    path: '/imageSearch',
+    name: 'imagesearch',
+    component: () => import('../views/ImageSearchView.vue')
+  },
+  {
+    path: '/successfulOnboarding',
+    name: 'successfulonboarding',
+    component: () => import('../views/SuccessfulOnboarding.vue')
   },
   // -------------------------------------------------------------------------------------
 
