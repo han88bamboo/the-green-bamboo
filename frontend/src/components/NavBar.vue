@@ -77,12 +77,13 @@
                             <li v-if="onCreate && (accType == 'producer' || isAdmin || isModerator)" ><span style="color:#D58D2D !important;" class="dropdown-item" @click="forceLoad('/listing/create')">Add A New Drink</span></li>
                             <li v-if="!onCreate && (accType == 'producer' || isAdmin || isModerator)" :to="'/listing/create'" ><span style="color:#D58D2D !important;" class="dropdown-item">Add A New Drink</span></li>
                             <li><router-link :to="'/clubs/view'" class="dropdown-item">Find Club</router-link></li>
+                            <li><router-link :to="'/events/view'" class="dropdown-item">Find Events</router-link></li>
                         </div>
 
                         <li><hr class="dropdown-divider"></li>
                         <li v-if="profileURL == '/login'"><router-link :to="'/login'" class="dropdown-item">Login</router-link></li>
                         <li v-if="profileURL == '/login'"><router-link :to="'/signup'" class="dropdown-item">Sign Up</router-link></li>
-                        <li v-if="profileURL != '/login'"><span class="dropdown-item" @click="logout">Log Out</span></li>
+                        <li v-if="profileURL != '/login'"><span class="dropdown-item" style="cursor:pointer" @click="logout">Log Out</span></li>
                     </ul>
 
                 </div>
@@ -141,6 +142,12 @@
                 <router-link :to="'/clubs/view'">
                     <button class="btn primary-btn border-0 fw-bold" type="button">
                         Find Club
+                    </button>
+                </router-link>
+
+                <router-link :to="'/events/view'">
+                    <button class="btn primary-btn border-0 fw-bold" type="button">
+                        Find Events
                     </button>
                 </router-link>
             </div>

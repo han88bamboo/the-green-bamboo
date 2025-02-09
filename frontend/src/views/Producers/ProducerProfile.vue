@@ -1352,7 +1352,7 @@
 
                     <!-- Event Box Component -->
                     <!-- Events Details -->
-                    <div class="col-md-3 col-12">
+                    <div class="col-xl-12 col-lg-4 col-md-6 col-12">
                         <EventBox :selfView="correctProducer" :targetUserID="displayUserID" targetUserType="producer"/>
                     </div>
                 </div>

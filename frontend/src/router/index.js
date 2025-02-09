@@ -236,6 +236,12 @@ const routes = [
     name: 'eventview',
     component: () => import('../views/SpecificEventPage.vue')
   },
+
+  {
+    path: '/events/view',
+    name: 'eventspage',
+    component: () => import('../views/Users/Events.vue')
+  },
   
   {
     // TO BE DELETED

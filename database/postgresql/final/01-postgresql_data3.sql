@@ -5,6 +5,8 @@ DROP TABLE IF EXISTs "clubPostCommentsLikes" CASCADE;
 DROP TABLE IF EXISTS "clubPostComments" CASCADE;
 DROP TABLE IF EXISTS "clubPostsLikes" CASCADE;
 DROP TABLE IF EXISTS "clubPosts" CASCADE;
+DROP TABLE IF EXISTS "clubRequests" CASCADE;
+DROP TABLE IF EXISTS "clubInvites" CASCADE;
 DROP TABLE IF EXISTS "clubMembers" CASCADE;
 DROP TABLE IF EXISTS "clubs" CASCADE;
 DROP TABLE IF EXISTS "accountRequests" CASCADE;
@@ -479,7 +481,8 @@ CREATE TABLE "clubs" (
     "isInviteOnly" BOOLEAN,
     "clubLink" VARCHAR(255),
     "clubBanner" TEXT,
-    "dateCreated" TIMESTAMP
+    "dateCreated" TIMESTAMP,
+    "totalMembers" INTEGER
 );
 
 -- ========= "clubMembers" =========
@@ -489,8 +492,18 @@ CREATE TABLE "clubMembers" (
     "userID" INTEGER,
     "userType" VARCHAR(255),
     "joinDate" TIMESTAMP,
-    "isAdmin" BOOLEAN,
-    "joinStatus" BOOLEAN
+    "isAdmin" BOOLEAN
+);
+
+-- ========= "clubInvites" =========
+CREATE TABLE "clubInvites" (
+    "id" SERIAL PRIMARY KEY,
+    "clubID" INTEGER REFERENCES "clubs"("id") ON DELETE SET NULL, -- [!] References clubs FK
+    "inviteeID" INTEGER,
+    "inviteeUserType" VARCHAR(255),
+    "inviterID" INTEGER,
+    "inviterUserType" VARCHAR(255),
+    "inviteDate" TIMESTAMP
 );
 
 -- ========= "clubRequests" =========
@@ -542,6 +555,7 @@ CREATE TABLE "events" (
     "id" SERIAL PRIMARY KEY,
     "eventName" VARCHAR(255),
     "eventDesc" TEXT,
+    "eventType" VARCHAR(255),
     "eventStartDate" DATE,
     "eventEndDate" DATE,
     "eventStartTime" TIME,
@@ -553,13 +567,17 @@ CREATE TABLE "events" (
     "eventLocation" TEXT,
     "paymentLink" VARCHAR(255),
     "eventOwnerID" INTEGER, -- [!] "producers" or "venues" or "users" id in their respective tables 
-    "eventOwnerType" VARCHAR(255) -- [!] "producers" or "venues" or "users"
+    "eventOwnerType" VARCHAR(255), -- [!] "producers" or "venues" or "users"
+    "numAttendees" INTEGER,
+    "createdDate" TIMESTAMP
 );
 
 -- ========= "eventAttendees" =========
 CREATE TABLE "eventAttendees" (
     "id" SERIAL PRIMARY KEY,
     "eventID" INTEGER REFERENCES "events"("id") ON DELETE SET NULL, -- [!] References events FK
+    "eventDate" DATE,
+    "eventStartTime" TIME,
     "userID" INTEGER,
     "attendeeType" VARCHAR(255),
     "attendeeStatus" BOOLEAN

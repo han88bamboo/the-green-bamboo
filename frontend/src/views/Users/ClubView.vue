@@ -1,5 +1,5 @@
 <template>
-    <div class="mb-3">
+    <div class="mb-3" style="background-color: #EAE9EE;">
         <NavBar />
 
         <!-- Display when data is still loading -->
@@ -27,7 +27,7 @@
         <div v-if="dataLoaded == true">
 
             <!-- Club Banner -->
-            <div class="container-fluid p-0 border-bottom">
+            <div class="container-fluid p-0 border-bottom" style="background-color: white;">
                 <img v-if="clubInfo.clubBanner != ''" :src="clubInfo.clubBanner" class="img-fluid" alt="Club Banner">
                 <img v-else :src="defaultBanner" class="img-fluid" alt="Club Banner">
             </div>
@@ -48,8 +48,8 @@
                                 <button v-if="isMember" class="btn primary-btn-green" data-bs-toggle="modal" data-bs-target="#addPostModal">Add Post</button>
                                 <button v-if="isMember == null && !clubInfo.isInviteOnly && !hasRequested && !isInvited" class="btn primary-btn-green" @click="joinClub" :disabled="disableButton">Join Club</button>
                                 <button v-if="isMember == null && clubInfo.isInviteOnly && !hasRequested && !isInvited" class="btn primary-btn-green" @click="requestToJoin" :disabled="disableButton">Request to Join</button>
-                                <button v-if="isInvited" class="btn primary-btn-red ms-3" @click="acceptInvite" :disabled="disableButton">Accept Invite</button>
-                                <button v-if="hasRequested" class="btn primary-btn-red ms-3" disabled>Request Sent</button>
+                                <button v-if="isInvited" class="btn primary-btn-green ms-3" @click="acceptInvite" :disabled="disableButton">Accept Invite</button>
+                                <button v-if="hasRequested" class="btn primary-btn-green ms-3" disabled>Request Sent</button>
                                 <button v-if="isMember" class="btn primary-btn-red ms-3" data-bs-toggle="modal" data-bs-target="#leaveClubModal">Leave Club</button>
                             </div>
                         </div>
@@ -147,7 +147,7 @@
 
                         <div v-else>
                             <!-- Each Post -->
-                            <div v-for="post in posts" :key="post.id" class="row mb-4">
+                            <div v-for="post in posts" :key="post.id" class="row mb-4" style="background-color: white; border-radius: 10px; padding: 20px; border: 1px solid black;">
 
                                 <!-- Column 1: Poster Photo -->
                                 <div class="col-md-1 d-flex flex-column align-items-start">
@@ -364,7 +364,7 @@
                             </div>
 
                             <!-- Load more post -->
-                            <div v-if="showButton" class="d-flex justify-content-center mt-3">
+                            <div v-if="showButton" class="d-flex justify-content-center my-3">
                                 <button type="button" class="btn secondary-btn btn-md" @click="loadMorePosts">Load More</button>
                             </div>
                         </div>
@@ -385,7 +385,7 @@
                         <p class="text-start">{{ clubInfo.clubDesc }}</p>
 
                         <!-- Invite button -->
-                        <button class="ps-0 btn d-flex flex-row align-items-center hover-underline ">
+                        <button class="ps-0 btn btn-warning ps-2 d-flex flex-row align-items-center ">
                             <!-- Invite icon -->
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-share" viewBox="0 0 16 16">
                                 <path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.5 2.5 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5m-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3"/>
@@ -406,10 +406,10 @@
                         </button>
 
                         <!-- Admin Details -->
-                        <div class="mt-5 text-start">
-                            <p class="fw-bold">Admin Details</p>
+                        <div class="mt-5 text-start row">
+                            <p class="fw-bold">Admins</p>
 
-                            <div v-for="admin in admins" :key="admin.id" class="d-flex align-items-center gap-3 mt-3">
+                            <div v-for="admin in admins.slice(0, 3)" :key="admin.id" class="d-flex flex-column align-items-center col-sm-3 col-md-4 col-lg-3 mt-3">
                                 <!-- Admin photo -->
                                 <img v-if="admin.photo" :src="admin.photo" class="img-fluid rounded-circle" alt="Admin Photo">
                                 <svg v-else xmlns="http://www.w3.org/2000/svg" width="45" height="45" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
@@ -419,14 +419,132 @@
 
                                 <!-- Admin name -->
                                 <router-link :to="profileURL(admin.id, admin.userType)">
-                                    <p v-if="admin.userType = 'user'">{{ admin.displayName }}</p>
-                                    <p v-else-if="admin.userType = 'producer'">{{ admin.producerName }}</p>
+                                    <p v-if="admin.userType == 'user'">{{ admin.displayName }}</p>
+                                    <p v-else-if="admin.userType == 'producer'">{{ admin.producerName }}</p>
                                     <p v-else>{{ admin.venueName }}</p>
                                 </router-link>
 
-
+                                <!-- Show all admins button -->
+                                <button v-if="admins.length > 3" type="button" class="btn secondary-btn btn-sm mt-3" data-bs-toggle="modal" data-bs-target="#showAllAdminsModal">View All Admins</button>
                             </div>
                         </div>
+
+                        <!-- Modal to show all admins -->
+                        <div class="modal fade" id="showAllAdminsModal" tabindex="-1" aria-labelledby="showAllAdminsModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+
+                                    <!-- Modal header -->
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="showAllAdminsModalLabel">Admins</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+
+                                    <!-- Modal body -->
+                                    <div class="modal-body">
+                                        <div class="row">
+                                            <div v-for="admin in admins" :key="admin.id" class="d-flex flex-column align-items-center col-sm-3 col-md-4 col-lg-3 mt-3">
+                                                <!-- Admin photo -->
+                                                <img v-if="admin.photo" :src="admin.photo" class="img-fluid rounded-circle" alt="Admin Photo">
+                                                <svg v-else xmlns="http://www.w3.org/2000/svg" width="45" height="45" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                                                    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+                                                    <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+                                                </svg>
+
+                                                <!-- Admin name -->
+                                                <router-link :to="profileURL(admin.id, admin.userType)">
+                                                    <p v-if="admin.userType == 'user'">{{ admin.displayName }}</p>
+                                                    <p v-else-if="admin.userType =='producer'">{{ admin.producerName }}</p>
+                                                    <p v-else>{{ admin.venueName }}</p>
+                                                </router-link>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Modal footer -->
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- View all admins modal end -->
+
+                        <!-- Club Members -->
+                        <div class="mt-5 text-start row">
+                            <p class="fw-bold">Members ({{ clubInfo.totalMembers }})</p>
+                            
+                            <div v-for="member in members.slice(0, 3)" :key="member.id" class="d-flex flex-column align-items-center col-sm-3 col-md-6 col-lg-4 mt-3">
+                                <!-- Member photo -->
+                                <img v-if="member.photo" :src="member.photo" class="img-fluid rounded-circle" alt="Member Photo">
+                                <svg v-else xmlns="http://www.w3.org/2000/svg" width="45" height="45" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                                    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+                                    <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+                                </svg>
+
+                                <!-- Member name -->
+                                <router-link :to="profileURL(member.id, member.userType)">
+                                    <p v-if="member.userType == 'user'" class="name-container">{{ member.displayName }}</p>
+                                    <p v-else-if="member.userType == 'producer'" class="name-container">{{ member.producerName }}</p>
+                                    <p v-else class="name-container">{{ member.venueName }}</p>
+                                </router-link>
+                            </div>
+
+                            <!-- Show more members button -->
+                            <button v-if="members.length > 3" type="button" class="btn secondary-btn btn-sm mt-3 ms-3" data-bs-toggle="modal" data-bs-target="#showAllMembersModal" @click="loadAllMembers">View All Members</button>
+
+                            <!-- Show error message -->
+                            <div v-if="getFewMemberError" class="alert alert-danger mt-3" role="alert">
+                                {{ getFewMemberError }}
+                            </div>
+                        </div>
+
+                        <!-- View all members modal -->
+                        <div class="modal fade" id="showAllMembersModal" tabindex="-1" aria-labelledby="showAllMembersModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+
+                                    <!-- Modal header -->
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="showAllMembersModalLabel">Members</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+
+                                    <!-- Modal body -->
+                                    <div class="modal-body">
+                                        <div class="row">
+                                            <div v-for="member in members" :key="member.id" class="d-flex flex-column align-items-center col-sm-4 col-md-6 col-lg-4 mt-3">
+                                                <!-- Member photo -->
+                                                <img v-if="member.photo" :src="member.photo" class="img-fluid rounded-circle" alt="Member Photo">
+                                                <svg v-else xmlns="http://www.w3.org/2000/svg" width="45" height="45" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                                                    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+                                                    <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+                                                </svg>
+
+                                                <!-- Member name -->
+                                                <router-link :to="profileURL(member.id, member.userType)">
+                                                    <p v-if="member.userType == 'user'" class="name-container">{{ member.displayName }}</p>
+                                                    <p v-else-if="member.userType =='producer'" class="name-container">{{ member.producerName }}</p>
+                                                    <p v-else class="name-container">{{ member.venueName }}</p>
+                                                </router-link>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Load all member error message -->
+                                    <div v-if="getAllMemberError" class="alert alert-danger mt-3" role="alert">
+                                        {{ getAllMemberError }}
+                                    </div>
+
+                                    <!-- Modal footer -->
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- View all members modal end -->
+
                     </div>
 
                 </div>
@@ -486,6 +604,11 @@ export default {
             admins: null,
             posts: [], // Array to store posts
             postLikes: [], // Array to store user's likes for the posts
+            members: [], // Array to store club members
+
+            // Variables for error messages
+            getFewMemberError: null,
+            getAllMemberError: null,
 
             // Variables for adding a post
             newPostContent: null,
@@ -522,6 +645,9 @@ export default {
                 else {
                     this.getPosts();
                 }
+
+                // Get the first few members
+                this.getFirstFewMembers();
 
             } catch (error) {
                 // Check if status code is 404
@@ -627,6 +753,32 @@ export default {
                 console.log(error);
             }
         },
+
+        // Function to get first few members
+        async getFirstFewMembers() {
+            try {
+                // Get the first few members
+                const membersData = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getFirstFewClubMembers/${this.clubId}`);
+                this.members = membersData.data.members;
+            } catch (error) {
+                this.getMemberError = error.response.data.message;
+                console.log(error);
+            }
+        },
+
+        // Function to load all members
+        async loadAllMembers() {
+            try {
+                // Get all members
+                const membersData = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getAllClubMembers/${this.clubId}`);
+                this.members = membersData.data.members;
+            } catch (error) {
+                this.getMemberError = error.response.data.message;
+                console.log(error);
+            }
+        },
+
+
         // Funtion to get data for page end ========================================
 
 
@@ -859,6 +1011,8 @@ export default {
                     // Decrease the total members of the club by 1
                     this.clubInfo.totalMembers -= 1;
 
+                    this.isMember = false;
+
                     // Show a success message in a toast
                     const toast = useToast();
                     toast.success("You have successfully left the club! It's sad to see you go!");
@@ -1006,5 +1160,13 @@ export default {
     opacity: 1; 
     padding: 0;
     cursor: pointer;
+}
+
+.name-container {
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
 }
 </style>
