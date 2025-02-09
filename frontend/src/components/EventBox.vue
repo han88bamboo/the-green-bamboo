@@ -61,7 +61,7 @@
 
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" :disabled="disableButton">Close</button>
-                        <button type="button" class="btn primary-btn-green" data-bs-dismiss="modal" @click="createEvent" :disabled="disableButton">Create</button>
+                        <button type="button" class="btn primary-btn-green" @click="createEvent" :disabled="disableButton">Create</button>
                     </div>
                 </div>
             </div>  
@@ -88,6 +88,7 @@
 <script>
 import CreateEventPage from './CreateEventPage.vue';
 import { useToast } from 'vue-toastification';
+import * as bootstrap from 'bootstrap';
 
 export default {
     name: 'EventBox',
@@ -181,12 +182,14 @@ export default {
                 
                 if (this.newEvent.eventStartDate == todayDate && this.newEvent.eventStartTime <= currentTime) {
                     alert("Start time must be after the current time.");
+                    this.disableButton = false;
                     return;
                 }
 
                 // Check if the end time is after the start time
                 if (this.newEvent.eventEndDate == this.newEvent.eventStartDate && this.newEvent.eventEndTime <= this.newEvent.eventStartTime) {
                     alert("End time must be after start time.");
+                    this.disableButton = false;
                     return;
                 }
 
@@ -218,6 +221,16 @@ export default {
                     const toast = useToast();
                     toast.success("Event created successfully.");
                     this.getEvents();
+
+                    // Close the modal programmatically
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('createEventModal'));
+                    modal.hide();
+                    // Hide the modal backdrop
+                    document.querySelector('.modal-backdrop')?.remove();
+
+                    // Restore scrolling on the body
+                    document.body.style.overflow = 'auto'; 
+                    document.documentElement.style.overflow = 'auto';
                 }
             }
             catch (error) {

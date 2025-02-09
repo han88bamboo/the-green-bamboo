@@ -255,16 +255,16 @@
                             <div v-if="event.paidEvent == false">
                                 <p class="fw-bold">This event is ticketed. Entry is free but click below to RSVP and save your spot!</p>
                                 <!-- button to RSVP -->
-                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus" class="btn primary-btn-green" @click="rsvpEvent" :disabled="rsvpButtonStatus">RSVP</button>
+                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus" class="btn primary-btn-green" @click="rsvpEvent" :disabled="rsvpButtonStatus">I'm interested</button>
                                 <p v-if="attendees.length >= event.eventlimit && !rsvpStatus" class="text-danger">Event is full. No more RSVPs allowed.</p>
                                 <p v-if="rsvpStatus" class="text-danger">You have already RSVPed for this event.</p>
                             </div>
 
                             <!-- Ticketed and require payment -->
-                            <div v-else>
+                            <div v-else> 
                                 <p class="fw-bold">This event is ticketed. Click below to purchase your ticket!</p>
                                 <!-- button to purchase ticket -->
-                                <a :href="event.paymentLink" target="_blank" class="btn primary-btn-green">Buy Ticket</a>
+                                <a :href="event.paymentLink" target="_blank" class="btn primary-btn-green">I'm Interested</a>
                             </div>
                             
                         </div>

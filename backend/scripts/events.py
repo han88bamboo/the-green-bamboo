@@ -2,7 +2,7 @@
 # Routes: 
 #   [events]    /getEvents (GET), /getSpecificEvent (GET), /getUserEvents (GET), 
 #               /getTop6Events (GET), /getUpcomingFollowingEvents (GET), /getUserPastEvents (GET),
-#               /getUserUpcomingEvents (GET), /getRecentlyAddedEvents (GET),
+#               /getUserUpcomingEvents (GET), /getRecentlyAddedEvents (GET), /searchEvents (GET),
 #               /createEvent (POST), 
 #               /updateEvent (PUT), 
 #               /deleteEvent (DELETE)
@@ -529,6 +529,54 @@ def getRecentlyAddedEvents():
 
 
 # -----------------------------------------------------------------------------------------
+# [GET] Search events by event name
+# Purpose: Search events by event name
+# Used: Events.vue (inside views/Users folder)
+# Output: Possible return codes [200 - Retrieval success, 404 - No events, 500 - Internal server error]
+@blueprint.route('/searchEvents/<search_query>/<offset>', methods=['GET'])
+def searchEvents(search_query, offset):
+    conn = g.db
+    cursor = conn.cursor()
+
+    return_data = []
+
+    try:
+        # Step 1: Search the events by event name
+        cursor.execute('SELECT * FROM events WHERE "eventName" ILIKE %s LIMIT 10 OFFSET %s', (f'%{search_query}%', offset,))
+        events = cursor.fetchall()
+
+        if not events:
+            return jsonify({'error': 'No events'}), 404
+
+        # Step 2: Extract relevant information
+        for event in events:
+            event_details = {}
+            event_details['eventID'] = event['id']
+            event_details['eventName'] = event['eventName']
+            event_details['eventDesc'] = event['eventDesc']
+            event_details['eventType'] = event['eventType']
+            event_details['eventStartDate'] = event['eventStartDate'].strftime('%Y-%m-%d')
+            event_details['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
+            event_details['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
+            event_details['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+            event_details['eventBanners'] = event['eventBanners']
+            event_details['numAttendees'] = event['numAttendees']
+            
+            return_data.append(event_details)
+        
+        return jsonify({
+            'events': return_data
+        }), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+
+
+
+# -----------------------------------------------------------------------------------------
 # [POST] Create an event
 # Purpose: Create an event
 # Used: EventBox.vue (inside components folder)
@@ -558,7 +606,7 @@ def createEvent():
         # Step 1: Get the input data
         data = request.json
 
-        required_fields = ['eventName', 'eventDesc', 'eventStartDate', 'eventEndDate', 'eventStartTime', 'eventEndTime', 'eventLimit', 'ticketed', 'eventLocation', 'eventOwnerID', 'eventOwnerType']
+        required_fields = ['eventName', 'eventDesc', 'eventType', 'eventStartDate', 'eventEndDate', 'eventStartTime', 'eventEndTime', 'eventLimit', 'ticketed', 'eventLocation', 'eventOwnerID', 'eventOwnerType']
 
         # Check if the required fields are present and not empty
         for field in required_fields:
@@ -600,9 +648,12 @@ def createEvent():
         # Convert eventLimit to integer
         data['eventLimit'] = int(data['eventLimit'])
 
+        # Get today's date as the createdDate
+        created_date = datetime.now().date()
+
         # Step 5: Insert the event into the database
-        cursor.execute('INSERT INTO events ("eventName", "eventDesc", "eventStartDate", "eventEndDate", "eventStartTime", "eventEndTime", "eventLimit", "eventBanners", ticketed, "paidEvent", "eventLocation", "paymentLink", "eventOwnerID", "eventOwnerType", "numAttendees") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 0)', 
-                       (data['eventName'], data['eventDesc'], data['eventStartDate'], data['eventEndDate'], data['eventStartTime'], data['eventEndTime'], data['eventLimit'], event_banner_pg, data['ticketed'], data['paidEvent'], data['eventLocation'], payment_link, data['eventOwnerID'], data['eventOwnerType'],))
+        cursor.execute('INSERT INTO events ("eventName", "eventDesc", "eventType", "eventStartDate", "eventEndDate", "eventStartTime", "eventEndTime", "eventLimit", "eventBanners", ticketed, "paidEvent", "eventLocation", "paymentLink", "eventOwnerID", "eventOwnerType", "numAttendees", "createdDate") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 0, %s)', 
+                       (data['eventName'], data['eventDesc'], data['eventType'], data['eventStartDate'], data['eventEndDate'], data['eventStartTime'], data['eventEndTime'], data['eventLimit'], event_banner_pg, data['ticketed'], data['paidEvent'], data['eventLocation'], payment_link, data['eventOwnerID'], data['eventOwnerType'], created_date,))
         conn.commit()
 
         return jsonify({'message': 'Event created successfully'}), 201

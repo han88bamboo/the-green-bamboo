@@ -38,7 +38,7 @@
                 <!-- Search Input -->
                 <div>
                     <div class="input-group mb-3 position-relative">
-                        <input type="text" class="form-control rounded-pill" placeholder="Search for events" aria-label="Search for events" aria-describedby="search-event" v-model="searchQuery">
+                        <input type="text" class="form-control rounded-pill" placeholder="Search for events" aria-label="Search for events" aria-describedby="search-event" v-model="searchQuery" @keyup.enter="searchEvents">
                         <!-- Search Icon -->
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-search position-absolute" viewBox="0 0 16 16" style="right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; z-index: 5;"
                             @click="searchEvents">
@@ -68,29 +68,33 @@
 
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" :disabled="disableButton">Close</button>
-                                <button type="button" class="btn primary-btn-green" data-bs-dismiss="modal" @click="createEvent" :disabled="disableButton">Create</button>
+                                <button type="button" class="btn primary-btn-green" @click="createEvent" :disabled="disableButton">Create</button>
                             </div>
                         </div>
                     </div>  
                 </div>
 
+                <button class="btn btn-link d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarContent" aria-expanded="false" aria-controls="sidebarContent">
+                    <i class="bi bi-chevron-down"></i> <!-- Bootstrap icon for expand/collapse -->
+                </button>
+
                 <!-- Your Upcoming events -->
-                <div v-if="upcomingEvents.length > 0" class="mt-3">
+                <div v-if="upcomingEvents.length > 0" class="collapse d-md-block mt-3" id="sidebarContent">
                     <h3 class="text-start fw-bold">Your Upcoming Events <button v-if="pastEvents.length > 5" type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#upcomingEventsModal">View All</button></h3>
 
                     <div v-for="event in upcomingEvents" class="mt-3 row" :key="event.eventID">
                         
                         <!-- Column 1: banner -->
-                        <div class="col-12 col-lg-6" style="max-height: 200px;">
+                        <div class="col-12 col-lg-5 text-start" style="max-height: 150px;">
                             <img v-if="event.eventBanners" :src="event.eventBanners[0]" class="img-fluid event-banner" alt="Event Banner" style="object-fit: contain; max-height: 100%;">
                             <img v-else :src="defaultEventBanner" class="img-fluid event-banner" alt="Event Banner" style="object-fit: contain; max-height: 100%;">
                         </div>
 
                         <!-- Column 2: -->
-                        <div class="col-12 col-lg-6 text-start">
+                        <div class="col-12 col-lg-7 text-start">
                             <!-- Event Name -->
                             <p class="fw-bold">
-                                <router-link :to="{ name: 'eventview', params: { eventID: event.eventID } }" class="text-black fs-4">
+                                <router-link :to="{ name: 'eventview', params: { eventID: event.eventID } }" class="text-black fs-5 event-link">
                                     {{ event.eventName }}
                                 </router-link>
                             </p>
@@ -105,7 +109,7 @@
                 </div>
 
                 <!-- Error message for error retrieving upcoming events -->
-                <div v-if="upcomingEventsError" class="mt-3">
+                <div v-if="upcomingEventsError" class="collapse d-md-block mt-3" id="sidebarContent">
                     <h2>{{ upcomingEventsError }}</h2>
                 </div>
 
@@ -130,14 +134,39 @@
                     </div>
                 </div>
 
+                <hr class="collapse d-md-block" id="sidebarContent"/>
+
                 <!-- Past events -->
-                <div v-if="pastEvents.length > 0" class="mt-3">
+                <div v-if="pastEvents.length > 0" class="collapse d-md-block mt-3" id="sidebarContent">
                     <h3 class="text-start fw-bold">Past Events <button v-if="pastEvents.length > 5" type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#pastEventsModal">View All</button></h3>
                     
+                    <div v-for="event in pastEvents" class="mt-3 row" :key="event.eventID">
+                        
+                        <!-- Column 1: banner -->
+                        <div class="col-12 col-lg-5 text-start" style="max-height: 150px;">
+                            <img v-if="event.eventBanners" :src="event.eventBanners[0]" class="img-fluid event-banner" alt="Event Banner" style="object-fit: contain; max-height: 100%;">
+                            <img v-else :src="defaultEventBanner" class="img-fluid event-banner" alt="Event Banner" style="object-fit: contain; max-height: 100%;">
+                        </div>  
+
+                        <!-- Column 2: -->
+                        <div class="col-12 col-lg-7 text-start">
+                            <!-- Event Name -->
+                            <p class="fw-bold">
+                                <router-link :to="{ name: 'eventview', params: { eventID: event.eventID } }" class="text-black fs-5 event-link">
+                                    {{ event.eventName }}
+                                </router-link>
+                            </p>
+
+                            <!-- Event Details -->
+                            <p class="text-success">
+                                Happened on {{ formatDate(event.eventStartDate) }} | {{ formatTime(event.eventStartTime) }} - {{ formatTime(event.eventEndTime) }} | {{ event.eventType }}
+                            </p>    
+                        </div>  
+                    </div>
                 </div>
 
                 <!-- Error message for error retrieving past events -->
-                <div v-if="pastEventsError" class="mt-3">
+                <div v-if="pastEventsError" class="collapse d-md-block mt-3" id="sidebarContent">
                     <h2>{{ pastEventsError }}</h2>
                 </div>
 
@@ -161,28 +190,133 @@
                     </div>  
                 </div>
 
-                <!-- Recommended Events -->
-                <h3 class="text-start fw-bold mt-3">Recommended Events </h3>
-                <div v-if="recommendedEvents.length > 0">
+                <hr>
 
+                <!-- Recommended Events -->
+                <h3 class="text-start fw-bold mt-3 collapse d-md-block" id="sidebarContent">Recommended Events </h3>
+                <div v-if="recommendedEvents.length > 0" class="collapse d-md-block" id="sidebarContent">
+
+                    <div v-for="event in recommendedEvents" class="row mt-3" :key="event.eventID">
+                        
+                        <!-- Column 1: banner -->
+                        <div class="col-12 col-lg-5 text-start" style="max-height: 150px;">
+                            <img v-if="event.eventBanners" :src="event.eventBanners[0]" class="img-fluid event-banner" alt="Event Banner" style="object-fit: contain; max-height: 100%;">
+                            <img v-else :src="defaultEventBanner" class="img-fluid event-banner" alt="Event Banner" style="object-fit: contain; max-height: 100%;">
+                        </div>
+
+                        <!-- Column 2: -->
+                        <div class="col-12 col-lg-7 text-start">
+                            <!-- Event Name -->
+                            <p class="fw-bold">
+                                <router-link :to="{ name: 'eventview', params: { eventID: event.eventID } }" class="text-black fs-5 event-link">
+                                    {{ event.eventName }}   
+                                </router-link>
+                            </p>
+
+                            <!-- Event Details -->
+                            <p class="text-success mb-0">
+                                Happening {{ formatDate(event.eventStartDate) }} | {{ formatTime(event.eventStartTime) }} - {{ formatTime(event.eventEndTime) }} | {{ event.eventType }}
+                            </p>
+                        </div>
+                    </div>  
                 </div>
 
                 <!-- Error message for error retrieving recommended events -->
-                <div v-if="recommendedEventsError" class="mt-3">
+                <div v-if="recommendedEventsError" class="collapse d-md-block mt-3" id="sidebarContent">
                     <h2>{{ recommendedEventsError }}</h2>
                 </div>
             </div>
 
-            <!-- Trending events and events from brands/venues you follow -->
+            <!-- Search Results, Trending events and events from brands/venues you follow -->
             <div class="col-12 col-md-9">
 
-                <!-- Search Term Text -->
+                <!-- Search Term -->
+                <div v-if="searchMessage" class="mt-3 text-start">
+                    <h3 class="fw-bold text-decoration-underline">Search Results</h3>
+                    <p class="fw-bold">{{ searchMessage }} 
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="red" class="bi bi-x-lg" viewBox="0 0 16 16" style="cursor: pointer;" @click="resetSearch">
+                        <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
+                    </svg>
+                    </p>
+                </div>
 
                 <!-- Search Results -->
+                <div v-if="searchResults.length > 0" class="row">
+                    <div v-for="event in searchResults" class="col-6" :key="event.eventID">
+                        
+                        <!-- Column 1: banner -->
+                        <div class="row text-start" style="max-height: 150px; overflow: hidden;">
+                            <img v-if="event.eventBanners" :src="event.eventBanners[0]" class="img-fluid event-banner" alt="Event Banner" style="object-fit: cover; max-height: 100%; width: 100%;">
+                            <img v-else :src="defaultEventBanner" class="img-fluid event-banner" alt="Event Banner" style="object-fit: cover; max-height: 100%; width: 100%;">
+                        </div>
+
+                        <!-- Column 2: -->
+                        <div class=" row text-start">
+                            <!-- Event Name -->
+                            <p class="fw-bold">
+                                <router-link :to="{ name: 'eventview', params: { eventID: event.eventID } }" class="text-black fs-5 event-link">
+                                    {{ event.eventName }}
+                                </router-link>
+                            </p>
+                        
+                            <!-- Event Details -->
+                            <p class="text-success">
+                                Happening {{ formatDate(event.eventStartDate) }} | {{ formatTime(event.eventStartTime) }} - {{ formatTime(event.eventEndTime) }} | {{ event.eventType }}
+                            </p>
+
+                            <!-- Number of attendees -->
+                            <p class="text-muted">Number of Attendees: {{ event.numAttendees }}</p>
+
+                            <!-- Event description -->
+                            <p class="text-muted event-desc">{{ event.eventDesc }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Load More Button -->
+                <div v-if="showLoadButton && searchMessage" class="d-flex justify-content-center mt-3">
+                    <button type="button" class="btn secondary-btn btn-md" @click="loadMoreSearchResults">Load More</button>
+                </div> 
 
                 <!-- Trending events -->
                 <h3 class="text-start fw-bold text-decoration-underline">Trending Events</h3>
-                <div v-if="trendingEvents.length > 0 && !searchQuery">   
+                <div v-if="trendingEvents.length > 0" id="trendingEventsCarousel" class="carousel slide" data-bs-ride="true">
+                    <div class="carousel-inner">
+                        <div v-for="(event, index) in trendingEvents" :key="event.eventID" :class="['carousel-item px-5', index == 0 ? 'active' : '']" style="height: 350px">
+                            <div class="text-center row" style="height: 150px;">
+                                <img v-if="event.eventBanners" :src="event.eventBanners[0]" class="img-fluid event-banner" alt="Event Banner" style="object-fit: cover; max-height: 100%; width: 100%;">
+                                <img v-else :src="defaultEventBanner" class="img-fluid event-banner" alt="Event Banner" style="object-fit: cover; max-height: 100%; width: 100%;">
+                            </div>
+
+                            <div class="text-start row mt-3">
+                                <!-- Event Name -->
+                                <p class="fw-bold">
+                                    <router-link :to="{ name: 'eventview', params: { eventID: event.eventID } }" class="text-black fs-5 event-link">
+                                        {{ event.eventName }}   
+                                    </router-link>
+                                </p>
+
+                                <!-- Event Details -->
+                                <p class="text-success">
+                                    {{ formatDate(event.eventStartDate) }} | {{ formatTime(event.eventStartTime) }} - {{ formatTime(event.eventEndTime) }} | {{ event.eventType }}
+                                </p>
+
+                                <!-- Number of attendees -->
+                                <p class="text-muted">Number of Attendees: {{ event.numAttendees }}</p>
+
+                                <!-- Event description -->
+                                <p class="text-muted event-desc">{{ event.eventDesc }}</p>
+                            </div>
+                        </div>  
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#trendingEventsCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#trendingEventsCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
                 </div>
 
                 <!--- Error message for error retrieving recent activity or no recent activtiy found -->
@@ -191,18 +325,53 @@
                     <hr>
                 </div>
 
-                <!-- Display no results found if search term does not exist in any of the clubs -->
-                <div v-if="searchResults && searchQuery" class="mt-3 text-start">
-                    <p class="fw-bold">{{ searchResults }}</p>
-                </div>
-
                 <!-- Events from Brands/Venues You Follow  --> 
                 <h3 class="text-start fw-bold text-decoration-underline">Events from Brands / Venues You Follow</h3>
-                <div v-if="followedEvents && !searchQuery" class="row mt-3">
-                    
+                <div v-if="followedEvents.length > 0" id="followedEventsCarousel" class="carousel slide" data-bs-ride="true">
+                    <div class="carousel-inner">
+                        <div v-for="(event, index) in followedEvents" :key="event.eventID" :class="['carousel-item px-5', index == 0 ? 'active' : '']" style="height: 350px">
+                            <div class="text-center row" style="height: 150px;">
+                                <img v-if="event.eventBanners" :src="event.eventBanners[0]" class="img-fluid event-banner" alt="Event Banner" style="object-fit: cover; max-height: 100%; width: 100%;">
+                                <img v-else :src="defaultEventBanner" class="img-fluid event-banner" alt="Event Banner" style="object-fit: cover; max-height: 100%; width: 100%;">
+                            </div>
+
+                            <div class="text-start row mt-3">
+                                <!-- Event Name -->
+                                <p class="fw-bold">
+                                    <router-link :to="{ name: 'eventview', params: { eventID: event.eventID } }" class="text-black fs-5 event-link">
+                                        {{ event.eventName }}
+                                    </router-link>
+                                </p>
+                                
+                                <!-- Event Details -->
+                                <p class="text-success">
+                                    {{ formatDate(event.eventStartDate) }} | {{ formatTime(event.eventStartTime) }} - {{ formatTime(event.eventEndTime) }} | {{ event.eventType }}
+                                </p>
+
+                                <!-- Number of attendees -->
+                                <p class="text-muted">Number of Attendees: {{ event.numAttendees }}</p>
+                                
+                                <!-- Event description -->
+                                <p class="text-muted event-desc">{{ event.eventDesc }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="carousel-control-prev" type="button" data-bs-target="#followedEventsCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+
+                    <button class="carousel-control-next" type="button" data-bs-target="#followedEventsCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
                 </div>
 
-                
+                <!-- Error message for error retrieving followed events -->
+                <div v-if="followedEventsError" class="mt-3">
+                    <h2>{{ followedEventsError }}</h2>
+                </div>
             </div>
         </div>
 
@@ -214,6 +383,7 @@
 import { useToast } from 'vue-toastification';
 import NavBar from '@/components/NavBar.vue';
 import CreateEventPage from '@/components/CreateEventPage.vue';
+import * as bootstrap from 'bootstrap';
 
 
 export default {
@@ -233,6 +403,10 @@ export default {
 
             // Variables for search
             searchQuery: '',
+            searchMessage: '',
+            searchOffset: 0,
+            searchResults: [],
+            showLoadButton: true,
 
             // Variable to store default event banner
             defaultEventBanner: require("@/assets/defaultEventBanner.jpg"),
@@ -366,7 +540,40 @@ export default {
         },
 
         // Function to search events
-        searchEvents() {
+        async searchEvents() {
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/events/searchEvents/${this.searchQuery}/${this.searchOffset}`);
+                this.searchResults = response.data.events;
+                this.searchMessage = `Search results for "${this.searchQuery}"`;
+            }
+            catch (error) {
+                console.error(error);
+                this.searchMessage = `No results found for "${this.searchQuery}"`;
+                this.showLoadButton = false;
+            }
+        },
+
+        // Function to load more search results
+        async loadMoreSearchResults() {
+            this.searchOffset += 10;
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/events/searchEvents/${this.searchQuery}/${this.searchOffset}`);
+                this.searchResults = this.searchResults.concat(response.data.events);
+            }
+            catch (error) {
+                console.error(error);
+                this.showLoadButton = false;
+                this.searchOffset = 0;
+            }
+        },
+
+        // Function to reset search
+        resetSearch() {
+            this.searchQuery = '';
+            this.searchMessage = '';
+            this.searchResults = [];
+            this.searchOffset = 0;
+            this.showLoadButton = true;
         },
 
         // Function to change date "YYYY-MM-DD" to "DD Month YYYY"
@@ -407,18 +614,27 @@ export default {
             this.disableButton = true;
             try {
 
+                // Check if all fields are filled
+                if (!this.newEvent.eventName || !this.newEvent.eventDescription || !this.newEvent.eventType || !this.newEvent.eventStartDate || !this.newEvent.eventEndDate || !this.newEvent.eventStartTime || !this.newEvent.eventEndTime || !this.newEvent.ticketed || !this.newEvent.eventLocation) {
+                    alert("Please fill in all fields.");
+                    this.disableButton = false;
+                    return;
+                }
+
                 // Check if the start time is after the current time if the start date is today
                 let todayDate = new Date().toISOString().split('T')[0];
                 let currentTime = new Date().toTimeString().split(' ')[0];
                 
                 if (this.newEvent.eventStartDate == todayDate && this.newEvent.eventStartTime <= currentTime) {
                     alert("Start time must be after the current time.");
+                    this.disableButton = false;
                     return;
                 }
 
                 // Check if the end time is after the start time
                 if (this.newEvent.eventEndDate == this.newEvent.eventStartDate && this.newEvent.eventEndTime <= this.newEvent.eventStartTime) {
                     alert("End time must be after start time.");
+                    this.disableButton = false;
                     return;
                 }
 
@@ -449,7 +665,16 @@ export default {
                 if (response.status == 201) {
                     const toast = useToast();
                     toast.success("Event created successfully.");
-                    this.getEvents();
+
+                    // Close the modal programmatically
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('createEventModal'));
+                    modal.hide();
+                    // Hide the modal backdrop
+                    document.querySelector('.modal-backdrop')?.remove();
+
+                    // Restore scrolling on the body
+                    document.body.style.overflow = 'auto'; 
+                    document.documentElement.style.overflow = 'auto';
                 }
             }
             catch (error) {
@@ -478,16 +703,34 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 /* Resize Quill toolbar icons */
 .ql-toolbar .ql-formats svg {
-width: 20px;
-height: 20px;
+    width: 20px;
+    height: 20px;
 }
 
 /* Resize SVGs inside the content */
 .ql-editor svg {
-width: 20px;
-height: 20px;
+    width: 20px;
+    height: 20px;
+}
+
+.event-link:hover {
+    color: #007bff !important;
+}
+
+.event-desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    line-clamp: 5;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(93deg) brightness(103%) contrast(103%);
 }
 </style>

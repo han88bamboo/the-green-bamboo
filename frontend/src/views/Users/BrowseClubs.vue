@@ -37,7 +37,7 @@
                 <!-- Search Input -->
                 <div>
                     <div class="input-group mb-3 position-relative">
-                        <input type="text" class="form-control rounded-pill" placeholder="Search for clubs" aria-label="Search for clubs" aria-describedby="search-club" v-model="searchQuery">
+                        <input type="text" class="form-control rounded-pill" placeholder="Search for clubs" aria-label="Search for clubs" aria-describedby="search-club" v-model="searchQuery" @keyup.enter="searchClubs">
                         <!-- Search Icon -->
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-search position-absolute" viewBox="0 0 16 16" style="right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; z-index: 5;"
                             @click="searchClubs">
@@ -80,11 +80,8 @@
                                     <path d="m10.97 4.97-.02.022-3.473 4.425-2.093-2.094a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05"/>
                                 </svg>
                             </div>
-
                             <hr>
                         </div>
-
-                        
                     </div>
                 </div>
 
@@ -256,14 +253,14 @@
                     <p class="text-center fw-bold">Get on it! Here are some we'd like to recommend!</p>
                 </div>
 
-                <div v-else>
+                <div v-if="searchResults == ''">
                     <h3 class="fw-bold text-start text-decoration-underline">Browse clubs here</h3>
                 </div>
 
                 <!-- Display no results found if search term does not exist in any of the clubs -->
                 <div v-if="searchResults && searchQuery" class="mt-3 text-start">
                     <p class="fw-bold">{{ searchResults }} 
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16" style="cursor: pointer;" @click="resetSearch">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="red" class="bi bi-x-lg" viewBox="0 0 16 16" style="cursor: pointer;" @click="resetSearch">
                         <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
                     </svg>
                     </p>
@@ -272,7 +269,7 @@
                 <!-- Club Lists --> 
                 <!-- Bootstrap Horizontal Card for each club -->
                 <div class="row mt-3">
-                    <div v-for="club in filteredClubs" :key="club.id" class="col-md-6 mb-3 justify-content-center border border-2 rounded-3 p-3">
+                    <div v-for="club in filteredClubs" :key="club.id" class="col-md-6 mb-3 justify-content-center p-3">
                         <div class="row g-0">
 
                             <!-- Club Banner Image -->
@@ -446,6 +443,10 @@ export default {
             }
             catch (error) {
                 console.log(error);
+                if (error.response.status == 404) {
+                    this.searchResults = "No results found for the search term!";
+                }
+                else
                 this.dataLoaded = null;
             }
         },
