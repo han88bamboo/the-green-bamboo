@@ -29,9 +29,9 @@
     </button>
   </div>
 
-  <!--tzh added -green and green-outline, changed mt-1 to mb-0_5 mt-0_5 -->
-  <div v-if="dataLoaded === true">
-    <h3 class="mb-0_5 mt-0_5 discover-and-following mobile-mb-0">
+  <!-- Main Page Header -->
+  <div class="text-info-emphasis fs-5 pt-5" v-if="dataLoaded === true">
+    <h3 class="mb-1 mt-1 mb-sm-0 text-start text-dark fw-bold">
       Latest Drinks News
     </h3>
     <!--loop through latest news-->
@@ -39,7 +39,7 @@
       <div
         v-for="(news, index) in latestNews"
         :key="index"
-        class="card mb-4 border-0 shadow-sm bg-white"
+        class="card mb-4 border-0 shadow-sm bg-white text-start fw-bold"
       >
         <div class="row g-0">
           <!-- Image Placeholder (if available) -->
@@ -68,7 +68,8 @@
             <a
               :href="news.link"
               target="_blank"
-              class="btn btn-sm btn-outline-dark"
+              class="btn secondary-btn btn-md"
+              style="font-weight: bold"
             >
               Read More
             </a>

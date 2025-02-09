@@ -17,6 +17,7 @@ import os
 import json
 import feedparser
 import re
+import requests
 from bs4 import BeautifulSoup
 from bson import json_util, ObjectId
 from flask import Blueprint, g, jsonify, request
@@ -73,6 +74,22 @@ def parse_rss(rss_url):
         rss_data["entries"].append(formatted_entry)
 
     return rss_data
+
+def get_og_image(url):
+    """Extract Open Graph image from a given article URL."""
+    try:
+        headers = {'User-Agent': 'Mozilla/5.0'}  # Prevent bot-blocking
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+        
+        soup = BeautifulSoup(response.text, 'html.parser')
+        og_image = soup.find("meta", property="og:image")
+
+        if og_image and og_image.get("content"):
+            return og_image["content"]
+        return None  # No OG image found
+    except requests.exceptions.RequestException:
+        return None  # Request failed
 
 
 # converts BSON to JSON
@@ -2208,6 +2225,12 @@ def getLatestNews():
 
     try:
         rss_json = parse_rss(rss_url)
+
+         # Add Open Graph images to each news entry
+        for entry in rss_json.get("entries", []):
+            og_image = get_og_image(entry["link"])
+            entry["image"] = og_image if og_image else "https://via.placeholder.com/600x400"  # Place your own placeholder image
+
         return jsonify(rss_json)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
