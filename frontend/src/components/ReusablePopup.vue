@@ -120,6 +120,7 @@ export default {
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  padding: 10px;
 }
 
 .popup-content {
@@ -127,23 +128,32 @@ export default {
   padding: 20px;
   border-radius: 10px;
   text-align: center;
-  max-width: 90%;
-  max-height: 90%;
+  width: 50vw; /* Default width for desktops */
+  max-height: 90vh; /* Prevents scrolling on desktop */
   overflow-y: auto;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
+/* Responsive for Mobile */
+@media (max-width: 768px) {
+  .popup-content {
+    width: 90vw; /* Full width for mobile */
+    max-height: 80vh; /* Allows scrolling if needed */
+    padding: 15px;
+  }
+}
+
 .popup-image {
     width: 100%;
-    max-width: 400px;
+    max-width: 300px;
     height: auto;
-    margin: 20px;
+    margin: 10px 0;
   }
 
 .popup-title {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: bold;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
 
 .popup-question {
@@ -158,7 +168,7 @@ export default {
 
 .popup-options {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   gap: 10px;
   margin-bottom: 20px;
 }

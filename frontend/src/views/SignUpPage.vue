@@ -269,7 +269,7 @@
         title="Create your profile and build your taste palate!"
         question="What types of flavours do you usually prefer?"
         note="(Please pick at least 3 flavours)"
-        :options="['Sweet', 'Sour', 'Umami', 'Floral', 'Fruity', 'Green', 'Confectionary', 'Cereal', 'Earthy', 'Spices', 'Mineral', 'Lactic', 'Umami', 'Smoky']"
+        :options="['Sweet', 'Sour', 'Umami', 'Floral', 'Fruity', 'Green', 'Confectionary ', 'Cereal', 'Earthy', 'Spices', 'Mineral', 'Lactic', 'Umami', 'Smoky']"
         :preselectedOptions="selectedFlavors"
         :minSelections="3"
         showBackButton
