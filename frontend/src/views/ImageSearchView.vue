@@ -25,29 +25,47 @@
       <div>OR</div>
 
       <div class="link-section">
-        <input
-          type="text"
-          placeholder="Paste image link"
-          v-model="imageLink"
-          @keypress.enter="onImageLinkSubmit"
-        />
+        <div class="input-container">
+          <input
+            type="text"
+            placeholder="Paste image link"
+            v-model="imageLink"
+            class="image-link-input"
+          />
+          <img
+            src="@../../../Images/Others/search.png"
+            alt="View Image"
+            class="search-icon"
+            @click="onShowImage"
+          />
+        </div>
+        <button @click="onSubmitImage" class="submit-button">
+          Submit for Reverse Image Search
+        </button>
       </div>
 
-      <!-- Display the uploaded image -->
-      <div class="uploaded-image" v-if="uploadedImage">
+      <!-- Show/Hide Image Button -->
+      <button v-if="uploadedImage" @click="toggleImage" class="toggle-button">
+        {{ imagePreview ? "Hide Image" : "Show Image" }}
+      </button>
+
+      <!-- Display Image -->
+      <div v-if="imagePreview" class="uploaded-image">
         <h3>Uploaded Image:</h3>
         <img
+          v-if="uploadedImage"
           :src="uploadedImage"
           alt="Uploaded drink label"
           class="image-preview"
         />
+        <p v-else>No image</p>
       </div>
-      <button @click="onImageLinkSubmit" class="search-button">
-        Search Now!
-        <img src="@../../../Images/Others/search.png" alt="Search" class="search-icon" />
-      </button>
-
     </div>
+  </div>
+
+  <!-- Popup Notification -->
+  <div v-if="showPopup" class="popup">
+    <p>Image Uploaded Successfully!</p>
   </div>
 </template>
 
@@ -56,14 +74,14 @@ import NavBar from "@/components/NavBar.vue";
 
 export default {
   name: "ImageSearchView",
-  components: {
-    NavBar,
-  },
+  components: { NavBar },
   data() {
     return {
       imageLink: "",
-      uploadedImage: "", // To store the uploaded image data URL
-      isDragging: false, // To style the drag area
+      uploadedImage: "", // Stores the displayed image (uploaded or linked)
+      isDragging: false,
+      imagePreview: false, // Controls image visibility
+      showPopup: false, // Controls popup display
     };
   },
   methods: {
@@ -73,41 +91,66 @@ export default {
         const reader = new FileReader();
         reader.onload = () => {
           this.uploadedImage = reader.result;
+          this.imagePreview = true;
+          this.triggerPopup();
         };
         reader.readAsDataURL(file);
       } else {
         console.error("No file selected");
       }
     },
-    onImageLinkSubmit() {
+    onShowImage() {
       if (this.imageLink.trim()) {
-        console.log(this.imageLink);
-        // Implement the logic for processing the image link here
+        this.uploadedImage = this.imageLink;
+        this.imagePreview = true;
+        this.triggerPopup();
       } else {
-        console.error("Image link is empty");
+        console.error("Invalid image link");
       }
     },
+    toggleImage() {
+      this.imagePreview = !this.imagePreview;
+    },
+    onSubmitImage() {
+      if (this.uploadedImage || this.imageLink.trim()) {
+        const imageToSend = this.uploadedImage || this.imageLink;
+        this.reverseImageSearch(imageToSend);
+      } else {
+        console.error("No image to submit");
+      }
+    },
+    reverseImageSearch(image) {
+      console.log("Sending image to reverse image search API:", image);
+      // Actual API call would go here
+    },
     onDragOver(event) {
-      event.preventDefault(); // Prevent default behavior
-      this.isDragging = true; // Add visual feedback for drag
+      event.preventDefault();
+      this.isDragging = true;
     },
     onDragLeave() {
-      this.isDragging = false; // Reset visual feedback
+      this.isDragging = false;
     },
     onDrop(event) {
-      event.preventDefault(); // Prevent default behavior
-      this.isDragging = false; // Reset visual feedback
+      event.preventDefault();
+      this.isDragging = false;
 
       const file = event.dataTransfer.files[0];
       if (file) {
         const reader = new FileReader();
         reader.onload = () => {
           this.uploadedImage = reader.result;
+          this.triggerPopup();
         };
         reader.readAsDataURL(file);
       } else {
         console.error("No file dropped");
       }
+    },
+    triggerPopup() {
+      this.showPopup = true;
+      setTimeout(() => {
+        this.showPopup = false;
+      }, 3000);
     },
   },
 };
@@ -149,33 +192,8 @@ export default {
   border: 2px dashed #ccc;
 }
 
-input[type="text"] {
-  width: calc(100% - 50px);
-  padding: 10px;
-  display: inline-block;
-  vertical-align: middle;
-}
-
-button {
-  padding: 10px 20px;
-  background-color: #027562;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-
-.link-section {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.search-icon {
-  width: 24px;
-  height: 24px;
-  cursor: pointer;
-  display: inline-block;
-  margin-left: 10px;
+.uploaded-image {
+  margin-top: 10px;
 }
 
 .custom-file-upload {
@@ -187,12 +205,14 @@ button {
   border: 2px dashed #ccc;
   text-align: center;
 }
+
 .camera-icon {
   width: 24px;
   height: 24px;
   margin-right: 10px;
   vertical-align: middle;
 }
+
 .image-preview {
   max-width: 100%;
   height: auto;
@@ -206,30 +226,40 @@ button {
   border-color: #027562;
 }
 
-.search-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+.submit-button {
+  margin-top: 20px;
+  padding: 12px 24px;
   background-color: #027562;
   color: white;
   border: none;
-  padding: 12px 16px;
+  border-radius: 8px;
   font-size: 16px;
+  font-weight: 600;
   cursor: pointer;
-  border-radius: 5px;
-  width: 100%;  /* Full width inside parent */
-  max-width: 300px;  /* Prevents it from being too wide */
-  margin: 20px auto; /* Centers it */
+  transition: background-color 0.3s, transform 0.3s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 
-.search-button:hover {
+.submit-button:hover {
   background-color: #066251;
+  transform: translateY(-2px); /* Adds a hover effect to lift the button */
 }
 
-.search-icon {
+.submit-button:active {
+  transform: translateY(1px); /* Adds a pressed effect */
+}
+
+.submit-button img {
   width: 20px;
   height: 20px;
+}
+
+.submit-button span {
+  font-size: 18px;
+  font-weight: bold;
 }
 
 .link-section {
@@ -242,9 +272,80 @@ button {
 
 @media (max-width: 600px) {
   .search-button {
-    width: 90%;  /* Makes it more responsive on smaller screens */
+    width: 90%;
     font-size: 14px;
   }
 }
 
+/* Popup Style */
+.popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #0f0275;
+  color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 200px;
+}
+
+/* Make input bar longer */
+.input-container {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+}
+
+.image-link-input {
+  flex: 1;
+  width: 100%;
+  padding: 10px 40px 10px 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.search-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  height: 24px;
+  transform: translateY(-50%);
+  margin-left: 5px;
+  cursor: pointer;
+  background-color: rgb(255, 255, 255); /* Opaque background */
+}
+
+.toggle-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #027562;
+  color: white;
+  border: none;
+  padding: 12px 16px;
+  cursor: pointer;
+  border-radius: 25px; /* More rounded for a modern look */
+  width: auto; /* Auto width to fit text */
+  min-width: 150px; /* Ensures a decent size */
+  font-size: clamp(14px, 1.2vw, 16px);
+  text-align: center;
+  transition: background-color 0.3s, transform 0.2s;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.toggle-button:hover {
+  background-color: #025c4f;
+  transform: scale(1.05);
+}
+
+.toggle-button:active {
+  background-color: #02473c;
+  transform: scale(0.98);
+}
 </style>
