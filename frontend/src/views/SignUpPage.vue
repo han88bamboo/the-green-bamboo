@@ -298,7 +298,7 @@
       title="Now it’s time to log your first review!"
       message="Search for a drink and share your review with the community!"
       @close="loginUser"
-      @search="handleSearch"
+      @search="goSearch"
     />
 
     
@@ -575,75 +575,46 @@
                 
             },
             goToPopup2(selectedOptions) {
-    if (selectedOptions.length >= 1) {
-      this.selectedDrinks = selectedOptions;
-      this.showPopup1 = false;
-      this.showPopup2 = true;
-    } else {
-      alert("Please select at least 1 drink option.");
-    }
-  },
-  goToPopup3(selectedOptions) {
-    if (selectedOptions.length >= 3) {
-      this.selectedFlavors = selectedOptions;
-      this.showPopup2 = false;
-      this.showPopup3 = true;
-    } else {
-      alert("Please select at least 3 flavors.");
-    }
-  },
-  completeSetup(selectedOptions) {
-    this.selectedPreferences = selectedOptions;
-    console.log("Final selections:", {
-      drinks: this.selectedDrinks,
-      flavors: this.selectedFlavors,
-      preferences: this.selectedPreferences,
-    });
-    this.showOnboardPopup = true;
-    this.showPopup3 = false;
-  },
-  goToPopup1() {
-    this.showPopup2 = false;
-    this.showPopup1 = true;
-  },
-  goToPopup2From3() {
-    this.showPopup3 = false;
-    this.showPopup2 = true;
-  },
-  closePopup() {
-    this.showPopup1 = false;
-    this.showPopup2 = false;
-    this.showPopup3 = false;
-    this.showOnboardPopup = false;
-  },
-            // goToPopup2() {
-            // this.showPopup1 = false;
-            // this.showPopup2 = true;
-            // this.showPopup3 = false;
-            // },
-            // goToPopup3() {
-            // this.showPopup2 = false;
-            // this.showPopup3 = true;
-            // },
-            // goToOnboardPopup() {
-            // this.showPopup3 = false;
-            // this.showOnboardPopup = true;
-            // },
-            // goToPopup1() {
-            // this.showPopup2 = false;
-            // this.showPopup1 = true;
-            // },
-            // completeSetup() {
-            // this.showPopup3 = false;
-            // this.showOnboardPopup = true;
-            // console.log("Signup process completed!");
-            // },
-            // closePopup() {
-            // this.showPopup1 = false;
-            // this.showPopup2 = false;
-            // this.showPopup3 = false;
-            // this.showOnboardPopup = false;
-            // },
+                if (selectedOptions.length >= 1) {
+                    this.selectedDrinks = selectedOptions;
+                    this.showPopup1 = false;
+                    this.showPopup2 = true;
+                } else {
+                    alert("Please select at least 1 drink option.");
+                }
+            },
+            goToPopup3(selectedOptions) {
+                if (selectedOptions.length >= 3) {
+                    this.selectedFlavors = selectedOptions;
+                    this.showPopup2 = false;
+                    this.showPopup3 = true;
+                } else {
+                    alert("Please select at least 3 flavors.");
+                }
+            },
+            completeSetup(selectedOptions) {
+                this.selectedPreferences = selectedOptions;
+                console.log("Final selections:", {
+                drinks: this.selectedDrinks,
+                flavors: this.selectedFlavors,
+                preferences: this.selectedPreferences,});
+                this.showOnboardPopup = true;
+                this.showPopup3 = false;
+            },
+            goToPopup1() {
+                this.showPopup2 = false;
+                this.showPopup1 = true;
+            },
+            goToPopup2From3() {
+                this.showPopup3 = false;
+                this.showPopup2 = true;
+            },
+            closePopup() {
+                this.showPopup1 = false;
+                this.showPopup2 = false;
+                this.showPopup3 = false;
+                this.showOnboardPopup = false;
+            },
 
             // create unique hash based on username and password
             hashPassword(username, password) {
@@ -715,7 +686,19 @@
                     this.successSubmission = false
                 }
             },
-            
+            goSearch(searchInput) {
+                if (searchInput.trim() !== "") {
+                    // Remove any '/' from search input
+                    searchInput = searchInput.replace(/\//g, '');
+                    // If already on search page, refresh the page with new search input
+                    if (this.$route.path.startsWith('/search')) {
+                        window.location.href = `/search/${searchInput}`;
+                    } else {
+                        // Re-route to search page
+                        this.$router.push({ path: `/search/${searchInput}` });
+                    }
+                }
+            }
         }
     }
 
