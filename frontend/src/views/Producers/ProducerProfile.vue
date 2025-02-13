@@ -158,10 +158,10 @@
                                 </div>
 
                                 <!-- Location and Website -->
-                                <div class="col-6">
+                                <!-- <div class="col-6">
                                     <label for="locationInput">Location</label>
                                     <input type="text" class="form-control mb-3" id="locationInput" v-model="edit_location">
-                                </div>
+                                </div> -->
                                 <div class="col-6">
                                     <label for="websiteInput">Website</label>
                                     <input type="url" class="form-control mb-3" id="websiteInput" v-model="edit_website">
@@ -177,7 +177,7 @@
                                 </div>
 
                                 <!-- Open for Tours -->
-                                <div class="col-12 d-flex align-items-center">
+                                <div class="col-12 d-flex align-items-center mb-3">
                                     <label class="me-3 mb-0">Open for Tours:</label>
                                     <input type="checkbox" id="openForToursCheckbox" v-model="edit_openForTours" :true-value="true" :false-value="false">
                                     <label for="openForToursCheckbox" class="ms-2">{{ edit_openForTours === true ? 'Yes' : 'No' }}</label>
@@ -186,27 +186,8 @@
                             <div v-else class="row" style="margin-top: 4.5rem; margin-left: -1.4rem;">
                                 <div class="col-12">
                                     <p class="text-body-secondary fs-6 mb-0">
-                                        <span v-if="specified_producer.yearFounded">
-                                            <strong>Year Founded:</strong> {{ specified_producer.yearFounded }}
-                                        </span>
-                                        <span v-if="specified_producer.yearFounded && (specified_producer.activeStatus || specified_producer.owner || specified_producer.openForTours || specified_producer.website)"> | </span>
-                                        <span v-if="specified_producer.activeStatus !== null && specified_producer.activeStatus !== undefined">
-                                            <strong>Status:</strong> {{ specified_producer.activeStatus === 'active' ? 'Active' : 'Inactive' }}
-                                        </span>
-                                        <span v-if="(specified_producer.activeStatus !== null && specified_producer.activeStatus !== undefined) && (specified_producer.owner || specified_producer.openForTours || !specified_producer.openForTours || specified_producer.website)"> | </span>
-
-                                        <span v-if="specified_producer.owner">
-                                            <strong>Owner:</strong> {{ specified_producer.owner }} | 
-                                        </span>
-                                        <span v-if="specified_producer.owner && (specified_producer.openForTours || specified_producer.website)"> | </span>
-
-                                        <span v-if="specified_producer.openForTours !== null && specified_producer.openForTours !== undefined">
-                                            <strong>{{ specified_producer.openForTours === true ? 'Open' : 'Closed' }} for Tours</strong>
-                                        </span>
-                                        <span v-if="(specified_producer.openForTours !== null && specified_producer.openForTours !== undefined) && specified_producer.website"> | </span>
-
                                         <span v-if="specified_producer.website">
-                                            <strong>Website:&nbsp;</strong>{{ specified_producer.website }}
+                                            <strong>Website:&nbsp;</strong><a :href="specified_producer.website" target="_blank">{{ specified_producer.website }}</a>
                                         </span>
                                     </p>
                                 </div>
@@ -218,12 +199,58 @@
                 <!-- more information (expressions, reviews) -->
                 <div class="row mt-3 mobile-mt-1">
                     <div class="col-7 d-flex justify-content-start mobile-pe-0">
+                        <div v-if="specified_producer.yearFounded" class="col-6 col-lg-3 text-start mobile-view-hide text-color-black">
+                            <h5 class="text-body-secondary" style="margin-bottom:0;"> <b> {{ specified_producer["yearFounded"] }} </b> </h5>
+                            <p class="mb-1"> <u> Year Founded </u> </p>
+                        </div>
+
+                        <div v-if="specified_producer.activeStatus" class="col-6 col-lg-3 text-start mobile-view-hide text-color-black">
+                            <h5 class="text-body-secondary text-capitalize" style="margin-bottom:0;"> <b> {{ specified_producer["activeStatus"] }} </b> </h5>
+                            <p class="mb-1"> <u> Status </u> </p>
+                        </div>
+
+                        <div v-if="specified_producer.openForTours !== null && specified_producer.openForTours !== undefined" class="col-6 col-lg-3 text-start mobile-view-hide text-color-black">
+                            <h5 class="text-body-secondary text-capitalize" style="margin-bottom:0;"> <b> {{ specified_producer["openForTours"] === true ? 'Yes' : 'No' }} </b> </h5>
+                            <p class="mb-1"> <u> Open for Tours?</u> </p>
+                        </div>
+
+                        <div v-if="specified_producer.owner" class="col-6 col-lg-3 text-start mobile-view-hide text-color-black">
+                            <h5 class="text-body-secondary" style="margin-bottom:0;"> <b> {{ specified_producer["owner"] }} </b> </h5>
+                            <p class="mb-1"> <u> Owner </u> </p>
+                        </div>
+
+                    </div>
+                  
+                    <!-- follow this business -->
+                    <div class="col-5 justify-content-end padding-for-followthisbusinessbutton-large-screen" v-if="userType == 'user'">
+                            <div v-if="!following" class="d-grid gap-2">
+                                <button class="btn primary-btn-less-round-blue btn-lg mobile-view-show fs-6" @click="editFollow('follow')" style="font-weight:bold;" >+ Follow</button> <!--tzh added -blue -->
+                                <button class="btn primary-btn-less-round-blue btn-lg mobile-view-hide" @click="editFollow('follow')" style="font-weight:bold;" >  <!--tzh added -blue -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 20">
+                                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                                    </svg>
+                                    Follow this business
+                                </button>
+                            </div>
+                            <div v-else class="d-grid gap-2">
+                                <button class="btn primary-btn-less-round-blue btn-lg" @click="editFollow('unfollow')" style="font-weight: bold;">  <!--tzh changed primary-btn-outline-less-round to primary-btn-less-round-blue -->
+                                    Following
+                                </button>
+                            </div>
+                    </div>
+
+                </div>
+                <div class="row mt-3 mobile-mt-1">
+                    <div class="col-7 d-flex justify-content-start mobile-pe-0">
                         <!-- toggle latest updates-->
                         <button v-if="showListings == false" class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" v-on:click="showAllReviews()"> Brand Overview </button>
                         <button v-else class="btn inactive-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" v-on:click="showAllReviews()"> Brand Overview </button>
                         <!-- toggle expressions view-->
                         <button v-if="showListings == true" class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" v-on:click="showAllListings()"> {{ allDrinksCount }} Expressions (View All) </button>
                         <button v-else class="btn inactive-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" v-on:click="showAllListings()"> {{ allDrinksCount }} Expressions (View All) </button>
+                        <!-- toggle tours&exp view -->
+                        <button v-if="showListings == true" class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" v-on:click="showAllTours()"> {{ allToursCount }} Tours & Experiences </button>
+                        <button v-else class="btn inactive-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" v-on:click="showAllTours()"> {{ allToursCount }} Tours & Experiences </button>
                         
                         
                             
@@ -247,27 +274,6 @@
                             
                         
                     </div>
-                  
-                    <!-- follow this business -->
-                    <div class="col-5 justify-content-end padding-for-followthisbusinessbutton-large-screen" v-if="userType == 'user'" >
-                            <div v-if="!following" class="d-grid gap-2">
-                                <button class="btn primary-btn-less-round-blue btn-lg mobile-view-show fs-6" @click="editFollow('follow')" style="font-weight:bold;" >+ Follow</button> <!--tzh added -blue -->
-                                <button class="btn primary-btn-less-round-blue btn-lg mobile-view-hide" @click="editFollow('follow')" style="font-weight:bold;" >  <!--tzh added -blue -->
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 20">
-                                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
-                                    </svg>
-                                    Follow this business
-                                </button>
-                            </div>
-                            <div v-else class="d-grid gap-2">
-                                <button class="btn primary-btn-less-round-blue btn-lg" @click="editFollow('unfollow')" style="font-weight: bold;">  <!--tzh changed primary-btn-outline-less-round to primary-btn-less-round-blue -->
-                                    Following
-                                </button>
-                            </div>
-                    </div>
-                        
-                    
-                    
                 </div>
                 <div class="padding-for-hr-below-followthisbusinessbutton-large-screen">
                     <hr>
@@ -1316,6 +1322,135 @@
 
                         </div>
                     </div>
+                    <div class="col-xl-12 col-lg-3 col-md-6 col-12">
+                        <div class="square primary-square-green-outline rounded p-3 mb-3"> <!--tzh changed secondary-square to primary-square-green-outline-->
+
+                            <!-- Header -->
+                            <h4 class="text-start"> Location </h4>
+                            <div class="pb-1 text-start" v-if="correctProducer || isAdmin">
+                                <!-- [if] not editing -->
+                                <button v-if="!editAddress" type="button" class="btn btn-warning rounded-0 reverse-clickable-text" @click="editAddress = true">
+                                    Edit
+                                </button>
+                                
+                                <!-- [else] if editing -->
+                                <button v-if="editAddress" type="button" class="btn btn-warning rounded-0 reverse-clickable-text ms-1" @click="newAddress = specified_producer['location']">
+                                    Reset
+                                </button>
+                                <button v-if="editAddress" type="button" class="btn btn-success rounded-0 reverse-clickable-text ms-1" @click="saveAddress" :disabled="!(newAddress.trim().length > 0)">
+                                    Save
+                                </button>
+                                <button v-if="editAddress" type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1" @click="editAddress = false">
+                                    Cancel
+                                </button>
+                                
+                            </div>
+
+                            <!-- Section Content (Edit Mode) -->
+                            <div v-if="editAddress">
+                                <textarea v-model="newAddress" class="form-control" id="addressTextArea" rows="3" placeholder="Enter producer address"></textarea>
+                            </div>
+
+                            <!-- Section Content (View Mode) -->
+                            <div>
+                                <p class="text-start mb-1 fst-italic">{{ specified_producer["location"] }}</p>
+                            </div>
+
+                            <!-- Map -->
+                            <GMapMap
+                                :center="{lat: mapLat, lng: mapLong}"
+                                :zoom="15"
+                                map-type-id="terrain"
+                                style="width: 100%; height: 200px"
+                            >
+                                <GMapMarker
+                                    :key="index"
+                                    v-for="(m, index) in mapMarkers"
+                                    :position="m.position"
+                                />
+                            </GMapMap>
+
+                        </div>
+                    </div>
+
+                    <!-- Opening Hours -->
+                    <div class="col-xl-12 col-lg-3 col-md-6 col-12">
+                        <div class="square primary-square-green-outline rounded p-3 mb-3">
+
+                            <!-- Header -->
+                            <div class="square-inline text-start">
+                                <h4 class="mr-auto"> Opening Hours and Reservation Details </h4>
+                            </div>
+
+                            <!-- Opening Hours Lock Message (producer Unclaimed) -->
+                            <div class="row text-center py-2 mx-1 default-text-no-background" v-if="!specified_producer['claimStatus']" style="background-color:#DDC8A9;">
+                                <p class="fs-3 fw-bold fst-italic mt-3" >
+                                    Do you own this business?
+                                </p>
+                                <p> Sign up for a venue account to share your opening hours and reservation details with your fans! </p>
+
+                                <div class="col-lg-2 col-1"></div>
+                                <button type="submit" class="col-lg-8 col-10 btn secondary-btn-border-thick mb-3" @click="claimProducerAccount"> Claim This Business </button>
+                                <div class="col-lg-2 col-1"></div>
+                            </div>
+
+                            <!-- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -->
+
+                            <!-- Opening Hours -->
+                            <div class="py-2 text-start" v-if="specified_producer['claimStatus']">
+
+                                <!-- Section Header -->
+                                <div class="square-inline">
+                                    <h5 class="mr-auto"> Opening Hours </h5>
+                                </div>
+
+                                <!-- Buttons -->
+                                <div class="pb-1" v-if="correctProducer || isAdmin">
+                                    <!-- [if] not editing -->
+                                    <button v-if="!editOpeningHours" type="button" class="btn btn-warning rounded-0 reverse-clickable-text" @click="editOpeningHours = true; checkOpeningHours()">
+                                        Edit
+                                    </button>
+                                    <!-- [else] if editing -->
+                                    <button v-if="editOpeningHours" type="button" class="btn btn-warning rounded-0 reverse-clickable-text ms-1" @click="newOpeningHours = JSON.parse(JSON.stringify(openingHours)); checkOpeningHours()">
+                                        Reset
+                                    </button>
+                                    <button v-if="editOpeningHours" type="button" class="btn btn-success rounded-0 reverse-clickable-text ms-1" @click="saveOpeningHours" :disabled="editOpeningHoursError">
+                                        Save
+                                    </button>
+                                    <button v-if="editOpeningHours" type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1" @click="editOpeningHours = false">
+                                        Cancel
+                                    </button>
+                                    
+                                </div>
+
+                                <!-- Section Content (Edit Mode) -->
+                                <div v-if="editOpeningHours">
+                                    <div class="default-text-no-background" v-for = "(hours, day) in newOpeningHours" v-bind:key="day">
+                                        <span class="fw-bold">{{ day }}: </span>
+                                        <div class="pb-1">
+                                            <div class="d-flex align-items-center">
+                                                <input type="time" class="form-control" :id="day + 'start'" v-model="hours[0]" @change="checkOpeningHours">
+                                                <span class="mx-2">-</span>
+                                                <input type="time" class="form-control" :id="day + 'end'" v-model="hours[1]" @change="checkOpeningHours">
+                                            </div>
+                                            <!-- for error message -->
+                                            <span :id="day + 'error'" class="text-danger ms-1 fst-italic d-none"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Section Content (View Mode) -->
+                                <div v-else>
+                                    <div class="default-text-no-background" v-for = "(hours, day) in openingHours" v-bind:key="day">
+                                        <span class="fw-bold">{{ day }}: </span>
+                                        <p class="d-inline">{{ hours[0] }} - {{ hours[1] }}</p>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- 88 bamboo's deepdive -->
                     <div class="col-xl-12 col-lg-4 col-md-6 col-12 mobile-view-hide">
                         <div class="square primary-square-green-outline rounded p-3 mb-3"> <!--tzh changed secondary-square to primary-square-green-outline -->
@@ -1525,7 +1660,19 @@
                 edit_owner: '',
                 edit_location: '',
                 edit_openForTours: '',
-                edit_website: '',              
+                edit_website: '',          
+                
+                // Map View
+                mapLat: null,
+                mapLong: null,
+                mapMarkers: [],
+
+                // Address + Opening Hours
+                editAddress: false,
+                newAddress: "",
+                editOpeningHours: false,
+                editOpeningHoursError: false,
+                newOpeningHours: {},
 
                 // search
                 searchInput: '',
@@ -1585,6 +1732,7 @@
                 answeredQuestions: [],
                 unansweredQuestions: [],
                 answerStatus: true,
+                openingHours: {},
 
                 // for producer to add new updates
                 currDate: new Date().toISOString(),
@@ -1714,9 +1862,45 @@
                 // _id, producerName, producerDesc, originCountry, statusOB, mainDrinks
                 try {
                         const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducer/${this.producer_id}`);
+                        console.log(response.data)
                         this.specified_producer = response.data
                         this.specified_producer_original_photo = this.specified_producer['photo']
+                        this.newAddress = this.specified_producer['location']
 
+                        this.openingHours = this.specified_producer['openingHours']
+                        const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                        const sortedOpeningHours = Object.fromEntries(
+                            dayOrder
+                                .filter(key => key in this.openingHours) // Filter keys that exist in this.openingHours
+                                .map(key => [key, this.openingHours[key]]) // Map each key to its corresponding value
+                        );
+                        this.openingHours = sortedOpeningHours;
+                        this.newOpeningHours = JSON.parse(JSON.stringify(this.openingHours));
+
+                        // Obtain map data
+                        const mapResponse = await this.$axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
+                            params: {
+                                address: this.specified_producer["location"],
+                                key: process.env.VUE_APP_GOOGLE_MAPS_API_KEY
+                            }
+                        }).catch(error => {
+                            console.error("Error fetching map data:", error);
+                        });
+
+                        // Check if map data is valid
+                        if (mapResponse && mapResponse.data.status == "OK") {
+                            const { lat, lng } = mapResponse.data.results[0].geometry.location;
+                            this.mapLat = lat;
+                            this.mapLong = lng;
+                            this.mapMarkers = [{ position: { lat, lng } }];
+                        }
+                        else {
+                            this.mapLat = 25;
+                            this.mapLong = -71;
+                            this.mapMarkers = [{ position: { lat: 25, lng: -71 } }];
+                            this.specified_producer["location"] = "(The Bermuda Triangle)";
+                        }
+                        
                         if (this.specified_producer.stripeCustomerId) {    
                             this.claimStatus = false                        
                             // check for active subscription if last check status date before today
@@ -1794,7 +1978,7 @@
                         this.formatDeepDiveLink()
                     } 
                     catch (error) {
-                        console.error(error);
+                        console.error("Error fetching producer data:", error);
                         this.dataLoaded = null;
                     }
                 // producer listings
@@ -1810,7 +1994,7 @@
                         this.getRecentlyAdded()
                     } 
                     catch (error) {
-                        console.error(error);
+                        console.error("Error fetching producer listings:", error);
                         this.dataLoaded = null;
                     }
                 // reviews
@@ -1825,7 +2009,7 @@
                         this.getMostPopular()
                     }
                     catch (error) {
-                        console.error(error);
+                        console.error("Error fetching producer reviews:", error);
                         this.dataLoaded = null;
                     }
                 // users
@@ -1841,7 +2025,7 @@
                             }
                         } 
                         catch (error) {
-                            console.error(error);
+                            console.error("Error fetching user data:", error);
                             this.dataLoaded = null;
                         }
                     }
@@ -2041,22 +2225,19 @@
                 this.showListings = false;
             },
 
+            // show all tours and experiences that a producer has
+
             // get ratings for a listing
             getRatings(listing) {
-                const ratings = this.reviews.filter((rating) => {
-                    return rating["reviewTarget"] == listing['id'];
-                });
+                const ratings = this.reviews.filter((rating) => rating["reviewTarget"] == listing['id']);
                 // if there are no ratings
-                if (ratings.length == 0) {
-                    return "-";
-                }
+                if (ratings.length == 0) return "-";
                 // else there are ratings
                 const averageRating = ratings.reduce((total, rating) => {
-                    return total + rating["rating"];
+                    return total + parseFloat(rating["rating"]);
                 }, 0) / ratings.length;
-                // round to 1 decimal place
-                const roundedRating = Math.round(averageRating * 10) / 10;
-                return roundedRating;
+
+                return averageRating.toFixed(1);
             },
 
             // check if user has already added listing to shelf, add colour to button accordingly
@@ -2129,6 +2310,7 @@
                 this.editing = true;
 
                 // set the current details to the edit details
+                console.log(this.specified_producer)
                 this.edit_producerName = this.specified_producer["producerName"];
                 this.edit_producerDesc = this.specified_producer["producerDesc"];
                 this.edit_originCountry = this.specified_producer["originCountry"];
@@ -2257,6 +2439,93 @@
                 // force page to reload
                 window.location.reload();
             },
+
+            // Update Public Holiday Information
+            async saveAddress() {
+                this.editAddress = false;
+                console.log("Saving", this.newAddress)
+                try {
+                    await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProducerProfile/editAddress`, 
+                        {
+                            producerID: this.producer_id,
+                            updatedLocation: this.newAddress,
+                        },
+                        {
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                    });
+                }
+                catch (error) {
+                    alert("An error occurred while attempting to save your changes, please try again!");
+                    // console.error(error);
+                }
+
+                // Refresh page
+                this.$router.go(0);
+            },
+
+            // Check Opening Hours
+            checkOpeningHours() {
+                // Reset error flag
+                this.editOpeningHoursError = false;
+                console.log(this.newOpeningHours);
+
+                for (let day in this.newOpeningHours) {
+                    const timeSlots = this.newOpeningHours[day];
+
+                    // Skip if there are no opening hours for the day
+                    if (!timeSlots || timeSlots.length < 2) {
+                        continue;
+                    }
+
+                    // Get start and end time values safely
+                    const startTimeValue = parseInt(timeSlots[0].replace(/:/g, ''));
+                    const endTimeValue = parseInt(timeSlots[1].replace(/:/g, ''));
+                    const errorElement = document.getElementById(day + 'error');
+
+                    // Check if start time is before end time
+                    if (startTimeValue >= endTimeValue) {
+                        this.editOpeningHoursError = true;
+                        if (errorElement) {
+                            errorElement.classList.remove('d-none');
+                            errorElement.innerText = "Start time must be before end time!";
+                        }
+                    } else {
+                        if (errorElement) {
+                            errorElement.classList.add('d-none');
+                            errorElement.innerText = "";
+                        }
+                    }
+                }
+            },
+
+            // Update Opening Hours
+            async saveOpeningHours() {
+
+                this.editOpeningHours = false;
+
+                try {
+                    await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProducerProfile/editOpeningHours`, 
+                        {
+                            producerID: this.producer_id,
+                            updatedOpeningHours: this.newOpeningHours,
+                        },
+                        {
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                }
+                catch (error) {
+                    alert("An error occurred while attempting to save your changes, please try again!");
+                    // console.error(error);
+                }
+
+                // Refresh page
+                this.$router.go(0);
+
+                },
 
             // for user to edit their catalogue
             // check user type:producer, admin or mod and set accordingly

@@ -1,5 +1,5 @@
 # Port: 5200
-# Routes: /editDetails (POST), /addUpdates (POST), /sendQuestions (POST), /sendAnswers (POST), /likeUpdates (POST), /unlikeUpdates (POST), /updateProducerStatus (POST), /addProfileCount (POST), /addNewProfileCount (POST), /editUpdate (POST), /deleteUpdate (POST), /editQA (POST), /deleteQA (POST)
+# Routes: /editDetails (POST), /addUpdates (POST), /sendQuestions (POST), /sendAnswers (POST), /likeUpdates (POST), /unlikeUpdates (POST), /updateProducerStatus (POST), /addProfileCount (POST), /addNewProfileCount (POST), /editUpdate (POST), /editAddress (POST), /editOpeningHours (POST), /deleteUpdate (POST), /editQA (POST), /deleteQA (POST)
 # -----------------------------------------------------------------------------------------
 
 import os
@@ -549,6 +549,120 @@ def editUpdate():
                 "code": 500,
                 "data": data,
                 "message": "An error occurred updating producer's update!"
+            }
+        ), 500
+    
+    finally:
+        cur.close()
+
+# -----------------------------------------------------------------------------------------
+
+# [POST] Edit address
+# - Edit address
+# - Possible return codes: 201 (Updated), 500 (Error during update)
+@blueprint.route('/editAddress', methods=['POST'])
+def editAddress():
+    conn = g.db
+    cur = conn.cursor()
+    data = request.get_json()
+    print(data)
+
+    producerID = int(data['producerID'])
+    updatedLocation = data['updatedLocation']
+
+    try:
+        cur.execute("""
+            UPDATE producers
+            SET "location" = %s
+            WHERE "id" = %s
+        """, (updatedLocation, producerID))
+        conn.commit()
+
+        return jsonify(
+            {
+                "code": 201,
+                "message": "Updated address successfully!"
+            }
+        ), 201
+    
+    except Exception as e:
+        conn.rollback()
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred updating address!"
+            }
+        ), 500
+    
+    finally:
+        cur.close()
+
+# -----------------------------------------------------------------------------------------
+
+# [POST] Edit opening hours
+# - Edit opening hours
+# - Possible return codes: 201 (Updated), 500 (Error during update)
+@blueprint.route('/editOpeningHours', methods=['POST'])
+def editOpeningHours():
+    conn = g.db
+    cur = conn.cursor()
+    data = request.get_json()
+    print(data)
+
+    producerID = int(data['producerID'])
+    updatedOpeningHours = data['updatedOpeningHours']
+
+    # Prepare the updated opening hours for insertion
+    opening_hours = (
+        updatedOpeningHours.get('Monday', []),
+        updatedOpeningHours.get('Tuesday', []),
+        updatedOpeningHours.get('Wednesday', []),
+        updatedOpeningHours.get('Thursday', []),
+        updatedOpeningHours.get('Friday', []),
+        updatedOpeningHours.get('Saturday', []),
+        updatedOpeningHours.get('Sunday', [])
+    )
+
+    try:
+        # Check if opening hours entry already exists
+        cur.execute('SELECT id FROM "producersOpeningHours" WHERE "producerId" = %s', (producerID,))
+        existing_entry = cur.fetchone()
+
+        if existing_entry:
+            cur.execute("""
+                UPDATE "producersOpeningHours" 
+                SET "Monday" = %s, "Tuesday" = %s, "Wednesday" = %s, 
+                    "Thursday" = %s, "Friday" = %s, "Saturday" = %s, 
+                    "Sunday" = %s 
+                WHERE "producerId" = %s
+            """, (*opening_hours, producerID))
+
+        else:
+            cur.execute(
+                """
+                    INSERT INTO "producersOpeningHours" ("Monday", "Tuesday", "Wednesday", 
+                    "Thursday", "Friday", "Saturday", "Sunday", "producerId") 
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                (*opening_hours, producerID)
+            )
+        conn.commit()
+
+        return jsonify(
+            {
+                "code": 201,
+                "message": "Updated opening hours successfully!"
+            }
+        ), 201
+    
+    except Exception as e:
+        conn.rollback()
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred updating opening hours!"
             }
         ), 500
     

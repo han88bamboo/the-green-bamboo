@@ -3455,15 +3455,22 @@
             
             // Check Opening Hours
             checkOpeningHours() {
-
                 // Reset error flag
                 this.editOpeningHoursError = false;
+                console.log(this.newOpeningHours);
 
                 for (let day in this.newOpeningHours) {
-                    // Get start and end time values
-                    const startTimeValue = parseInt(this.newOpeningHours[day][0].replace(/:/g, ''));
-                    const endTimeValue = parseInt(this.newOpeningHours[day][1].replace(/:/g, ''));
-                    const errorElement = document.getElementById(day + 'error')
+                    const timeSlots = this.newOpeningHours[day];
+
+                    // Skip if there are no opening hours for the day
+                    if (!timeSlots || timeSlots.length < 2) {
+                        continue;
+                    }
+
+                    // Get start and end time values safely
+                    const startTimeValue = parseInt(timeSlots[0].replace(/:/g, ''));
+                    const endTimeValue = parseInt(timeSlots[1].replace(/:/g, ''));
+                    const errorElement = document.getElementById(day + 'error');
 
                     // Check if start time is before end time
                     if (startTimeValue >= endTimeValue) {
@@ -3472,15 +3479,13 @@
                             errorElement.classList.remove('d-none');
                             errorElement.innerText = "Start time must be before end time!";
                         }
-                    }
-                    else {
+                    } else {
                         if (errorElement) {
                             errorElement.classList.add('d-none');
                             errorElement.innerText = "";
                         }
                     }
                 }
-
             },
             
             // Update Opening Hours

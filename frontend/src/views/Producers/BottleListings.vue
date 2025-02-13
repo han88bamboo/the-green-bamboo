@@ -1911,6 +1911,7 @@
                         try {
                             const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenues`);
                             this.venues = response.data;
+                            console.log("Venues", response.data)
                             this.locationOptions = response.data.map(item => ({name: item.venueName, id:item.id, address:item.address}));
                             this.addressDict = this.venues.reduce((dict, venue) => {
                                 dict[venue.address] = venue.id;

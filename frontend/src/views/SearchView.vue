@@ -867,20 +867,15 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
 
             // get ratings for a listing --> return "-" if no ratings
             getRatings(listing) {
-                const ratings = this.reviews.filter((rating) => {
-                    return rating["reviewTarget"] == listing['id'];
-                });
+                const ratings = this.reviews.filter((rating) => rating["reviewTarget"] == listing['id']);
                 // if there are no ratings
-                if (ratings.length == 0) {
-                    return "-";
-                }
+                if (ratings.length == 0) return "-";
                 // else there are ratings
                 const averageRating = ratings.reduce((total, rating) => {
-                    return total + rating["rating"];
+                    return total + parseFloat(rating["rating"]);
                 }, 0) / ratings.length;
-                // round to 1 decimal place
-                const roundedRating = Math.round(averageRating * 10) / 10;
-                return roundedRating;
+
+                return averageRating.toFixed(1);
             },
 
             // get ratings for a listing --> return 0 if no ratings
