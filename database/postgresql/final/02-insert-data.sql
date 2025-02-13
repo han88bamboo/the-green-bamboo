@@ -1222,6 +1222,10 @@ INSERT INTO "listings" (
     "listingName", "producerID", "bottler", "originCountry", "drinkType", "abv", "officialDesc", "allowMod", "addedDate", "typeCategory", "age", "reviewLink", "sourceLink", "photo")
 	VALUES ('Hennessy VS', 1, 'OB', 'Japan', 'Whiskey', 12, 'BEST EVEERRRR', true, '2024-10-05 00:14:37.661786', 'Spirit', 12, '', '', '');
 
+insert into "reviews" (
+"id", "userID", "reviewTarget", "rating", "reviewDesc", "reviewType", "createdDate", "language", "finish", "willRecommend", "wouldBuyAgain", "taggedUsers", "flavourTag", "photo", "colour", "aroma", "location", "taste", "observationTag", "address")
+values (21, 1, 1, 5, 'This was absolutely fantastic!', 'Listing', '2025-01-13 18:27:38.498', 'English', 'Long, alittle more oaky now', true, false, '{}', '{}', '', '', '', null, '', '{Beginner Friendly}', '');
+
 INSERT INTO "usersFollowLists" (
     "userId", "users", "producers", "venues")
     VALUES (1, '{}', '{}', '{}'), (2, '{}', '{}', '{}'), (3, '{}', '{}', '{}'), (4, '{}', '{}', '{}');
