@@ -2,7 +2,7 @@
   <NavBar />
 
   <div class="image-search">
-    <h1>Wondering if a drink is worth a try?</h1>
+    <h1 class="p-3">Wondering if a drink is worth a try?</h1>
     <p>Scan the drink label to discover more info!</p>
 
     <div
@@ -46,12 +46,12 @@
 
       <!-- Show/Hide Image Button -->
       <button v-if="uploadedImage" @click="toggleImage" class="toggle-button">
-        {{ imagePreview ? "Hide Image" : "Show Image" }}
+        {{ imagePreview ? "Hide Image ▼" : "Show Image ▼" }}
       </button>
 
       <!-- Display Image -->
       <div v-if="imagePreview" class="uploaded-image">
-        <h3>Uploaded Image:</h3>
+        <h4>Uploaded Image:</h4>
         <img
           v-if="uploadedImage"
           :src="uploadedImage"
@@ -163,7 +163,7 @@ export default {
 }
 
 .greybox {
-  width: 50%;
+  width: 90%;
   margin: 50px auto;
   background-color: #f4f4f47d;
   border-radius: 5px;

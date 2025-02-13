@@ -20,7 +20,7 @@
                 <div class="col mobile-view-hide d-flex align-items-center">
                     <!-- search bar tzh added mobile-view-hide -->
                     <div class="col-8 position-relative search-bar d-flex" style="height: 50px;">
-                        <input class="form-control fst-italic" type="text" placeholder="What are you drinking today?" style="width: 90%;" v-model="searchInput" v-on:keyup.enter="goSearch">
+                        <input class="form-control fst-italic" type="text" placeholder="What are you drinking today?" style="width: 100%;" v-model="searchInput" v-on:keyup.enter="goSearch">
                         <img src="../../Images/Others/search-green.png" style="width: 30px; height: 30px; margin: 0px 10px; align-self: center;" v-on:click="goSearch">
                     </div>
                     

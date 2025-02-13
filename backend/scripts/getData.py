@@ -1422,27 +1422,40 @@ def getObservationTags():
 
 @blueprint.route("/getListingsByObservationTag/<tag>")
 def get_listings_by_observation_tag(tag):
-    conn = g.db
+    selected_tag = tag  
+
+    if not selected_tag:
+        return jsonify({"error": "Tag is required"}), 400
+
+    conn = g.db  
 
     try:
         with conn.cursor() as cursor:
             query = """
-            SELECT "listings"."listingName", "reviews"."observationTag"::TEXT 
-            FROM "reviews" 
-            LEFT JOIN "listings" ON "reviews"."reviewTarget" = "listings"."id" 
-            WHERE %s = ANY("reviews"."observationTag")
+            SELECT DISTINCT l.*
+            FROM "listings" l
+            JOIN "reviews" r ON l."id" = r."reviewTarget"
+            WHERE %s = ANY(r."observationTag");
             """
-            cursor.execute(query, (tag,))  # Use the tag parameter in the query
+            cursor.execute(query, (selected_tag,))
 
             listings = cursor.fetchall()
 
-        columns = [col[0] for col in cursor.description]
-        listing_dicts = [dict(zip(columns, row)) for row in listings]  
+            columns = [col[0] for col in cursor.description]  
 
+            print("Columns:", columns)  
+            print("Listings:", listings)  
+
+            listing_dicts = [dict(zip(columns, row)) for row in listings]
+
+            print("Listing Dicts:", listing_dicts)  
+
+        # Return the result as JSON
         return jsonify(listing_dicts)
 
     except Exception as e:
-        print(f"Error fetching listings: {e}") 
+        # If an error occurs, print the error message and return an error response
+        print(f"Error fetching listings: {e}")
         return jsonify({"error": "A server error occurred."}), 500
         
 

@@ -2,72 +2,45 @@
     <NavBar />
     <!-- Hero Section with Search -->
     <div class="hero-section position-relative text-center py-5">
-        <img
-            src="../../Images/Background/LandingPage.png"
-            class="hero-bg position-absolute w-100 h-100 top-0 start-0"
-            style="object-fit: cover; z-index: -1; filter: brightness(0.7)"
-            alt="Background"
-        />
+        <img src="../../Images/Background/LandingPage.png" class="hero-bg position-absolute w-100 h-100 top-0 start-0"
+            style="object-fit: cover; z-index: -1; filter: brightness(0.7)" alt="Background" />
         <div class="container py-5">
             <h1 class="text-white mb-4">Find Your Next Favourite Drink</h1>
             <div class="row justify-content-center">
                 <div class="col-md-6">
                     <div class="col mobile-view-hide d-flex align-items-center">
                         <!-- search bar tzh added mobile-view-hide -->
-                        <div
-                            class="col-8 position-relative search-bar d-flex"
-                            style="height: 50px"
-                        >
-                            <input
-                                class="form-control fst-italic"
-                                type="text"
-                                placeholder=""
-                                style="width: 90%"
-                                v-model="searchInput"
-                                v-on:keyup.enter="goSearch"
-                            />
-                            <img
-                                src="../../Images/Others/search-green.png"
-                                style="
+                        <div class="col-8 position-relative search-bar d-flex" style="height: 50px">
+                            <input class="form-control fst-italic" type="text" placeholder="" style="width: 90%"
+                                v-model="searchInput" v-on:keyup.enter="goSearch" />
+                            <img src="../../Images/Others/search-green.png" style="
                                     width: 30px;
                                     height: 30px;
                                     margin: 0px 10px;
                                     align-self: center;
-                                "
-                                v-on:click="goSearch"
-                            />
+                                " v-on:click="goSearch" />
                         </div>
 
                         <!-- camera button -->
                         <div class="col mobile-view-hide">
-                            <button
-                                class="btn primary-btn-less-round-green d-flex align-items-center"
-                                style="
+                            <button class="btn primary-btn-less-round-green d-flex align-items-center" style="
                                     height: 50px;
                                     margin-left: 10px;
                                     padding: 0px 15px;
-                                "
-                                v-on:click="imageSearch"
-                            >
+                                " v-on:click="imageSearch">
                                 <span>Scan bottle</span>
-                                <img
-                                    src="../../Images/Others/camera-white.png"
-                                    style="
+                                <img src="../../Images/Others/camera-white.png" style="
                                         width: 30px;
                                         height: 30px;
                                         margin-left: 10px;
-                                    "
-                                />
+                                    " />
                             </button>
                         </div>
                     </div>
 
                     <router-link :to="'/'">
-                        <button
-                            class="btn btn-lg text-white"
-                            style="background-color: #83a9e8; margin-top: 20px"
-                            aria-label="Surprise Me!"
-                        >
+                        <button class="btn btn-lg text-white" style="background-color: #83a9e8; margin-top: 20px"
+                            aria-label="Surprise Me!">
                             Surprise Me!
                         </button>
                     </router-link>
@@ -82,23 +55,16 @@
         <div class="row g-4">
             <!-- Feature 1 -->
             <div class="col-lg-3 col-md-6 col-6">
-                <div
-                    class="d-flex flex-lg-column flex-row align-items-center h-100"
-                >
+                <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                     <router-link :to="'/login'">
                         <button class="btn border-0 fw-bold" type="button">
                             <div class="mb-lg-3 me-3 me-lg-0 icon-container">
-                                <img
-                                    src="../../Images/Landing Page/Layer1.png"
-                                    alt="Log Reviews"
-                                    class="img-fluid"
-                                />
+                                <img src="../../Images/Landing Page/Layer1.png" alt="Log Reviews" class="img-fluid" />
                             </div>
                         </button>
                     </router-link>
                     <h6
-                        class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height"
-                    >
+                        class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
                         Log Your Drink Reviews and Share Your Favorites
                     </h6>
                 </div>
@@ -106,23 +72,17 @@
 
             <!-- Feature 2 -->
             <div class="col-lg-3 col-md-6 col-6">
-                <div
-                    class="d-flex flex-lg-column flex-row align-items-center h-100"
-                >
+                <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                     <router-link :to="'/clubs/view'">
                         <button class="btn border-0 fw-bold" type="button">
                             <div class="mb-lg-3 me-3 me-lg-0 icon-container">
-                                <img
-                                    src="../../Images/Landing Page/Layer2.png"
-                                    alt="Find Communities"
-                                    class="img-fluid"
-                                />
+                                <img src="../../Images/Landing Page/Layer2.png" alt="Find Communities"
+                                    class="img-fluid" />
                             </div>
                         </button>
                     </router-link>
                     <h6
-                        class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height"
-                    >
+                        class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
                         Find Your Communities and Join Events
                     </h6>
                 </div>
@@ -130,23 +90,17 @@
 
             <!-- Feature 3 -->
             <div class="col-lg-3 col-md-6 col-6">
-                <div
-                    class="d-flex flex-lg-column flex-row align-items-center h-100"
-                >
+                <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                     <router-link :to="'/'">
                         <button class="btn border-0 fw-bold" type="button">
                             <div class="mb-lg-3 me-3 me-lg-0 icon-container">
-                                <img
-                                    src="../../Images/Landing Page/Layer3.png"
-                                    alt="Discover Drinks"
-                                    class="img-fluid"
-                                />
+                                <img src="../../Images/Landing Page/Layer3.png" alt="Discover Drinks"
+                                    class="img-fluid" />
                             </div>
                         </button>
                     </router-link>
                     <h6
-                        class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height"
-                    >
+                        class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
                         Discover New Drinks and Expand Your Taste Palette
                     </h6>
                 </div>
@@ -154,23 +108,16 @@
 
             <!-- Feature 4 -->
             <div class="col-lg-3 col-md-6 col-6">
-                <div
-                    class="d-flex flex-lg-column flex-row align-items-center h-100"
-                >
+                <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                     <router-link :to="'/clubs/view'">
                         <button class="btn border-0 fw-bold" type="button">
                             <div class="mb-lg-3 me-3 me-lg-0 icon-container">
-                                <img
-                                    src="../../Images/Landing Page/Layer4.png"
-                                    alt="Connect"
-                                    class="img-fluid"
-                                />
+                                <img src="../../Images/Landing Page/Layer4.png" alt="Connect" class="img-fluid" />
                             </div>
                         </button>
                     </router-link>
                     <h6
-                        class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height"
-                    >
+                        class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
                         Connect With Your Favorite Drink Makers
                     </h6>
                 </div>
@@ -189,73 +136,30 @@
                 </p>
             </div>
             <div class="d-none d-md-flex flex-wrap justify-content-start">
-                <button
-                    v-for="tag in tags"
-                    :key="tag"
-                    class="btn btn-warning rounded-pill m-2"
-                    :class="{ selected: tag === selectedTag }"
-                    @click="goSearchTag(tag)"
-                >
+                <button v-for="tag in tags" :key="tag" class="btn btn-warning rounded-pill m-2"
+                    :class="{ selected: tag === selectedTag }" @click="goSearchTag(tag)">
                     {{ tag }}
                 </button>
             </div>
 
-            <div
-                id="badgeCarousel"
-                class="carousel slide d-md-none"
-                data-bs-ride="carousel"
-                data-bs-interval="3000"
-            >
+            <div id="badgeCarousel" class="carousel slide d-md-none" data-bs-ride="carousel" data-bs-interval="3000">
+
                 <div class="carousel-inner">
                     <div class="carousel-item active">
-                        <div class="row g-3">
-                            <!-- Display 2 tags per carousel item (col-6 ensures 2 per row) -->
-                            <div
-                                v-for="(tag, index) in tags.slice(0, 2)"
-                                :key="index"
-                                class="col-6"
-                            >
-                                <button
-                                    class="btn btn-warning rounded-pill w-100 m-2"
-                                    :class="{ selected: tag === selectedTag }"
-                                    @click="goSearchTag(tag)"
-                                >
+                        <div class="row flex-nowrap overflow-visible">
+                            <div v-for="(tag, index) in tags.slice(0, 3)" :key="index" class="col-5 tag-container">
+                                <button class="btn btn-warning rounded-pill w-90 m-2"
+                                    :class="{ selected: tag === selectedTag }" @click="goSearchTag(tag)">
                                     {{ tag }}
                                 </button>
                             </div>
                         </div>
                     </div>
                     <div class="carousel-item">
-                        <div class="row g-3">
-                            <!-- Display the next set of 2 tags -->
-                            <div
-                                v-for="(tag, index) in tags.slice(2, 4)"
-                                :key="index"
-                                class="col-6"
-                            >
-                                <button
-                                    class="btn btn-warning rounded-pill w-100 m-2"
-                                    :class="{ selected: tag === selectedTag }"
-                                    @click="goSearchTag(tag)"
-                                >
-                                    {{ tag }}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="carousel-item">
-                        <div class="row g-3">
-                            <!-- Continue to display more tags, 2 per item -->
-                            <div
-                                v-for="(tag, index) in tags.slice(4, 6)"
-                                :key="index"
-                                class="col-6"
-                            >
-                                <button
-                                    class="btn btn-warning rounded-pill w-100 m-2"
-                                    :class="{ selected: tag === selectedTag }"
-                                    @click="goSearchTag(tag)"
-                                >
+                        <div class="row flex-nowrap overflow-visible">
+                            <div v-for="(tag, index) in tags.slice(2, 5)" :key="index" class="col-5 tag-container">
+                                <button class="btn btn-warning rounded-pill w-90 m-2"
+                                    :class="{ selected: tag === selectedTag }" @click="goSearchTag(tag)">
                                     {{ tag }}
                                 </button>
                             </div>
@@ -264,30 +168,15 @@
                 </div>
 
                 <!-- Carousel Controls -->
-                <button
-                    class="carousel-control-prev"
-                    type="button"
-                    data-bs-target="#badgeCarousel"
-                    data-bs-slide="prev"
-                >
-                    <span
-                        class="carousel-control-prev-icon"
-                        aria-hidden="true"
-                    ></span>
-                    <span class="visually-hidden">Previous</span>
+                <button class="carousel-control-prev custom-carousel-btn" type="button" data-bs-target="#badgeCarousel"
+                    data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                 </button>
-                <button
-                    class="carousel-control-next"
-                    type="button"
-                    data-bs-target="#badgeCarousel"
-                    data-bs-slide="next"
-                >
-                    <span
-                        class="carousel-control-next-icon"
-                        aria-hidden="true"
-                    ></span>
-                    <span class="visually-hidden">Next</span>
+                <button class="carousel-control-next custom-carousel-btn" type="button" data-bs-target="#badgeCarousel"
+                    data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
                 </button>
+
             </div>
         </div>
     </div>
@@ -296,10 +185,7 @@
     <!-- News Section -->
     <div class="container pb-4">
         <div class="d-sm-none border-0 mb-3">
-            <h2
-                class="fw-bold mb-0"
-                style="text-align: left; padding-left: 10px"
-            >
+            <h2 class="fw-bold mb-0" style="text-align: left; padding-left: 10px">
                 Latest Drink Buzz
             </h2>
         </div>
@@ -307,42 +193,24 @@
         <div class="container pb-4">
             <!-- Latest News Section -->
             <template v-for="(category, index) in articles" :key="index">
-                <div
-                    class="mb-4"
-                    v-if="Object.keys(category)[0] === 'latest_news'"
-                >
+                <div class="mb-4" v-if="Object.keys(category)[0] === 'latest_news'">
                     <div class="d-none d-md-flex align-items-start gap-3 mb-3">
                         <h2 class="h5 fw-bold mb-0">
                             {{ sectionTitles[Object.keys(category)[0]] }}
                         </h2>
                     </div>
                     <div class="row">
-                        <div
-                            class="col-12 col-sm-6 col-lg-3 mb-3"
-                            v-for="(
+                        <div class="col-12 col-sm-6 col-lg-3 mb-3" v-for="(
                                 article, artIndex
-                            ) in category.latest_news.slice(0, 4)"
-                            :key="'latest-' + artIndex"
-                        >
-                            <div
-                                class="card h-100"
-                                style="background-color: transparent"
-                            >
+                            ) in category.latest_news.slice(0, 4)" :key="'latest-' + artIndex">
+                            <div class="card h-100" style="background-color: transparent">
                                 <!-- Desktop view (sm and up) -->
                                 <div class="d-none d-sm-block">
-                                    <img
-                                        :src="article.image_url"
-                                        class="card-img-top"
-                                        alt="News Image"
-                                        style="height: 180px; object-fit: cover"
-                                    />
-                                    <div
-                                        class="card-body d-flex flex-column justify-content-between"
-                                        style="height: 100px"
-                                    >
-                                        <h6
-                                            class="fst-italic text-muted text-start"
-                                        >
+                                    <img :src="article.image_url" class="card-img-top" alt="News Image"
+                                        style="height: 180px; object-fit: cover" />
+                                    <div class="card-body d-flex flex-column justify-content-between"
+                                        style="height: 100px">
+                                        <h6 class="fst-italic text-muted text-start">
                                             {{
                                                 article.title
                                                     .split(" ")
@@ -354,11 +222,7 @@
                                                     : "")
                                             }}
                                         </h6>
-                                        <a
-                                            :href="article.link"
-                                            target="_blank"
-                                            class="stretched-link"
-                                        ></a>
+                                        <a :href="article.link" target="_blank" class="stretched-link"></a>
                                     </div>
                                 </div>
 
@@ -366,32 +230,21 @@
                                 <div class="d-sm-none border-0">
                                     <div class="row g-0">
                                         <div class="col-4">
-                                            <div
-                                                style="
+                                            <div style="
                                                     width: 120px;
                                                     height: 110px;
                                                     overflow: hidden;
-                                                "
-                                            >
-                                                <img
-                                                    :src="article.image_url"
-                                                    class="img-fluid"
-                                                    alt="News Image"
-                                                    style="
+                                                ">
+                                                <img :src="article.image_url" class="img-fluid" alt="News Image" style="
                                                         height: 120px;
                                                         object-fit: cover;
-                                                    "
-                                                />
+                                                    " />
                                             </div>
                                         </div>
                                         <div class="col-8 ps-2">
-                                            <div
-                                                class="card-body px-0 d-flex justify-content-center"
-                                                style="height: 100%"
-                                            >
-                                                <h6
-                                                    class="fst-italic text-muted text-start mb-0"
-                                                >
+                                            <div class="card-body px-0 d-flex justify-content-center"
+                                                style="height: 100%">
+                                                <h6 class="fst-italic text-muted text-start mb-0">
                                                     {{
                                                         article.title
                                                             .split(" ")
@@ -408,11 +261,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <a
-                                    :href="article.link"
-                                    target="_blank"
-                                    class="stretched-link"
-                                ></a>
+                                <a :href="article.link" target="_blank" class="stretched-link"></a>
                             </div>
                         </div>
                     </div>
@@ -422,51 +271,27 @@
             <!-- Spotlight and Reviews Row -->
             <div class="row">
                 <!-- Spotlight Section -->
-                <template
-                    v-for="(category, index) in articles"
-                    :key="'spotlight-section-' + index"
-                >
-                    <div
-                        class="col-lg-6"
-                        v-if="Object.keys(category)[0] === 'spotlight'"
-                    >
-                        <div
-                            class="d-none d-md-flex align-items-start gap-3 mb-3"
-                        >
+                <template v-for="(category, index) in articles" :key="'spotlight-section-' + index">
+                    <div class="col-lg-6" v-if="Object.keys(category)[0] === 'spotlight'">
+                        <div class="d-none d-md-flex align-items-start gap-3 mb-3">
                             <h2 class="h5 fw-bold mb-0">
                                 {{ sectionTitles[Object.keys(category)[0]] }}
                             </h2>
                         </div>
                         <div class="row">
-                            <div
-                                class="col-12 col-sm-6 mb-3"
-                                v-for="(
+                            <div class="col-12 col-sm-6 mb-3" v-for="(
                                     article, artIndex
-                                ) in category.spotlight.slice(0, 2)"
-                                :key="'spotlight-' + artIndex"
-                            >
-                                <div
-                                    class="card h-100"
-                                    style="background-color: transparent"
-                                >
+                                ) in category.spotlight.slice(0, 2)" :key="'spotlight-' + artIndex">
+                                <div class="card h-100" style="background-color: transparent">
                                     <!-- Desktop view (sm and up) -->
                                     <div class="d-none d-sm-block">
-                                        <img
-                                            :src="article.image_url"
-                                            class="card-img-top"
-                                            alt="News Image"
-                                            style="
+                                        <img :src="article.image_url" class="card-img-top" alt="News Image" style="
                                                 height: 180px;
                                                 object-fit: cover;
-                                            "
-                                        />
-                                        <div
-                                            class="card-body d-flex flex-column justify-content-between"
-                                            style="height: 100px"
-                                        >
-                                            <h6
-                                                class="fst-italic text-muted text-start"
-                                            >
+                                            " />
+                                        <div class="card-body d-flex flex-column justify-content-between"
+                                            style="height: 100px">
+                                            <h6 class="fst-italic text-muted text-start">
                                                 {{
                                                     article.title
                                                         .split(" ")
@@ -478,11 +303,7 @@
                                                         : "")
                                                 }}
                                             </h6>
-                                            <a
-                                                :href="article.link"
-                                                target="_blank"
-                                                class="stretched-link"
-                                            ></a>
+                                            <a :href="article.link" target="_blank" class="stretched-link"></a>
                                         </div>
                                     </div>
 
@@ -490,32 +311,22 @@
                                     <div class="d-sm-none border-0">
                                         <div class="row g-0">
                                             <div class="col-4">
-                                                <div
-                                                    style="
+                                                <div style="
                                                         width: 120px;
                                                         height: 110px;
                                                         overflow: hidden;
-                                                    "
-                                                >
-                                                    <img
-                                                        :src="article.image_url"
-                                                        class="img-fluid"
-                                                        alt="News Image"
+                                                    ">
+                                                    <img :src="article.image_url" class="img-fluid" alt="News Image"
                                                         style="
                                                             height: 120px;
                                                             object-fit: cover;
-                                                        "
-                                                    />
+                                                        " />
                                                 </div>
                                             </div>
                                             <div class="col-8 ps-2">
-                                                <div
-                                                    class="card-body px-0 d-flex justify-content-center"
-                                                    style="height: 100%"
-                                                >
-                                                    <h6
-                                                        class="fst-italic text-muted text-start mb-0"
-                                                    >
+                                                <div class="card-body px-0 d-flex justify-content-center"
+                                                    style="height: 100%">
+                                                    <h6 class="fst-italic text-muted text-start mb-0">
                                                         {{
                                                             article.title
                                                                 .split(" ")
@@ -532,11 +343,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <a
-                                        :href="article.link"
-                                        target="_blank"
-                                        class="stretched-link"
-                                    ></a>
+                                    <a :href="article.link" target="_blank" class="stretched-link"></a>
                                 </div>
                             </div>
                         </div>
@@ -544,51 +351,27 @@
                 </template>
 
                 <!-- Reviews Section -->
-                <template
-                    v-for="(category, index) in articles"
-                    :key="'reviews-section-' + index"
-                >
-                    <div
-                        class="col-lg-6"
-                        v-if="Object.keys(category)[0] === 'reviews'"
-                    >
-                        <div
-                            class="d-none d-md-flex align-items-start gap-3 mb-3"
-                        >
+                <template v-for="(category, index) in articles" :key="'reviews-section-' + index">
+                    <div class="col-lg-6" v-if="Object.keys(category)[0] === 'reviews'">
+                        <div class="d-none d-md-flex align-items-start gap-3 mb-3">
                             <h2 class="h5 fw-bold mb-0">
                                 {{ sectionTitles[Object.keys(category)[0]] }}
                             </h2>
                         </div>
                         <div class="row">
-                            <div
-                                class="col-12 col-sm-6 mb-3"
-                                v-for="(
+                            <div class="col-12 col-sm-6 mb-3" v-for="(
                                     article, artIndex
-                                ) in category.reviews.slice(0, 2)"
-                                :key="'review-' + artIndex"
-                            >
-                                <div
-                                    class="card h-100"
-                                    style="background-color: transparent"
-                                >
+                                ) in category.reviews.slice(0, 2)" :key="'review-' + artIndex">
+                                <div class="card h-100" style="background-color: transparent">
                                     <!-- Desktop view (sm and up) -->
                                     <div class="d-none d-sm-block">
-                                        <img
-                                            :src="article.image_url"
-                                            class="card-img-top"
-                                            alt="News Image"
-                                            style="
+                                        <img :src="article.image_url" class="card-img-top" alt="News Image" style="
                                                 height: 180px;
                                                 object-fit: cover;
-                                            "
-                                        />
-                                        <div
-                                            class="card-body d-flex flex-column justify-content-between"
-                                            style="height: 100px"
-                                        >
-                                            <h6
-                                                class="fst-italic text-muted text-start"
-                                            >
+                                            " />
+                                        <div class="card-body d-flex flex-column justify-content-between"
+                                            style="height: 100px">
+                                            <h6 class="fst-italic text-muted text-start">
                                                 {{
                                                     article.title
                                                         .split(" ")
@@ -600,11 +383,7 @@
                                                         : "")
                                                 }}
                                             </h6>
-                                            <a
-                                                :href="article.link"
-                                                target="_blank"
-                                                class="stretched-link"
-                                            ></a>
+                                            <a :href="article.link" target="_blank" class="stretched-link"></a>
                                         </div>
                                     </div>
 
@@ -612,32 +391,22 @@
                                     <div class="d-sm-none border-0">
                                         <div class="row g-0">
                                             <div class="col-4">
-                                                <div
-                                                    style="
+                                                <div style="
                                                         width: 120px;
                                                         height: 110px;
                                                         overflow: hidden;
-                                                    "
-                                                >
-                                                    <img
-                                                        :src="article.image_url"
-                                                        class="img-fluid"
-                                                        alt="News Image"
+                                                    ">
+                                                    <img :src="article.image_url" class="img-fluid" alt="News Image"
                                                         style="
                                                             height: 120px;
                                                             object-fit: cover;
-                                                        "
-                                                    />
+                                                        " />
                                                 </div>
                                             </div>
                                             <div class="col-8 ps-2">
-                                                <div
-                                                    class="card-body px-0 d-flex justify-content-center"
-                                                    style="height: 100%"
-                                                >
-                                                    <h6
-                                                        class="fst-italic text-muted text-start mb-0"
-                                                    >
+                                                <div class="card-body px-0 d-flex justify-content-center"
+                                                    style="height: 100%">
+                                                    <h6 class="fst-italic text-muted text-start mb-0">
                                                         {{
                                                             article.title
                                                                 .split(" ")
@@ -654,11 +423,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <a
-                                        :href="article.link"
-                                        target="_blank"
-                                        class="stretched-link"
-                                    ></a>
+                                    <a :href="article.link" target="_blank" class="stretched-link"></a>
                                 </div>
                             </div>
                         </div>
@@ -676,25 +441,17 @@
             <div class="row g-4">
                 <!-- Feature 1 -->
                 <div class="col-lg-3 col-md-6 col-6">
-                    <div
-                        class="d-flex flex-lg-column flex-row align-items-center h-100"
-                    >
+                    <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                         <router-link :to="'/login'">
                             <button class="btn border-0 fw-bold" type="button">
-                                <div
-                                    class="mb-lg-3 me-3 me-lg-0 icon-container"
-                                >
-                                    <img
-                                        src="../../Images/Landing Page/footer1.png"
-                                        alt="Log Reviews"
-                                        class="img-fluid"
-                                    />
+                                <div class="mb-lg-3 me-3 me-lg-0 icon-container">
+                                    <img src="../../Images/Landing Page/footer1.png" alt="Log Reviews"
+                                        class="img-fluid" />
                                 </div>
                             </button>
                         </router-link>
                         <h6
-                            class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height text-black"
-                        >
+                            class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height text-black">
                             Log Your Drink Reviews and Share Your Favorites
                         </h6>
                     </div>
@@ -702,25 +459,17 @@
 
                 <!-- Feature 2 -->
                 <div class="col-lg-3 col-md-6 col-6">
-                    <div
-                        class="d-flex flex-lg-column flex-row align-items-center h-100"
-                    >
+                    <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                         <router-link :to="'/clubs/view'">
                             <button class="btn border-0 fw-bold" type="button">
-                                <div
-                                    class="mb-lg-3 me-3 me-lg-0 icon-container"
-                                >
-                                    <img
-                                        src="../../Images/Landing Page/footer2.png"
-                                        alt="Find Communities"
-                                        class="img-fluid"
-                                    />
+                                <div class="mb-lg-3 me-3 me-lg-0 icon-container">
+                                    <img src="../../Images/Landing Page/footer2.png" alt="Find Communities"
+                                        class="img-fluid" />
                                 </div>
                             </button>
                         </router-link>
                         <h6
-                            class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height text-black"
-                        >
+                            class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height text-black">
                             Find Your Communities and Join Events
                         </h6>
                     </div>
@@ -728,25 +477,17 @@
 
                 <!-- Feature 3 -->
                 <div class="col-lg-3 col-md-6 col-6">
-                    <div
-                        class="d-flex flex-lg-column flex-row align-items-center h-100"
-                    >
+                    <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                         <router-link :to="'/'">
                             <button class="btn border-0 fw-bold" type="button">
-                                <div
-                                    class="mb-lg-3 me-3 me-lg-0 icon-container"
-                                >
-                                    <img
-                                        src="../../Images/Landing Page/footer3.png"
-                                        alt="Discover Drinks"
-                                        class="img-fluid"
-                                    />
+                                <div class="mb-lg-3 me-3 me-lg-0 icon-container">
+                                    <img src="../../Images/Landing Page/footer3.png" alt="Discover Drinks"
+                                        class="img-fluid" />
                                 </div>
                             </button>
                         </router-link>
                         <h6
-                            class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height text-black"
-                        >
+                            class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height text-black">
                             Discover New Drinks and Expand Your Taste Palette
                         </h6>
                     </div>
@@ -754,36 +495,24 @@
 
                 <!-- Feature 4 -->
                 <div class="col-lg-3 col-md-6 col-6">
-                    <div
-                        class="d-flex flex-lg-column flex-row align-items-center h-100"
-                    >
+                    <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                         <router-link :to="'/clubs/view'">
                             <button class="btn border-0 fw-bold" type="button">
-                                <div
-                                    class="mb-lg-3 me-3 me-lg-0 icon-container"
-                                >
-                                    <img
-                                        src="../../Images/Landing Page/footer4.png"
-                                        alt="Connect"
-                                        class="img-fluid"
-                                    />
+                                <div class="mb-lg-3 me-3 me-lg-0 icon-container">
+                                    <img src="../../Images/Landing Page/footer4.png" alt="Connect" class="img-fluid" />
                                 </div>
                             </button>
                         </router-link>
                         <h6
-                            class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height text-black"
-                        >
+                            class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height text-black">
                             Connect With Your Favorite Drink Makers
                         </h6>
                     </div>
                 </div>
             </div>
             <router-link :to="'/businessSignup'">
-                <button
-                    class="btn btn-warning text-white"
-                    style="background-color: #83a9e8; margin-top: 20px"
-                    aria-label="Try Out Your Drink-X Business Account"
-                >
+                <button class="btn btn-warning text-white" style="background-color: #83a9e8; margin-top: 20px"
+                    aria-label="Try Out Your Drink-X Business Account">
                     Try Out Your Drink-X Business Account
                 </button>
             </router-link>
