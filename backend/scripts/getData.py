@@ -1446,9 +1446,10 @@ def get_listings_by_observation_tag(tag):
             print("Columns:", columns)  
             print("Listings:", listings)  
 
-            listing_dicts = [dict(zip(columns, row)) for row in listings]
+            listing_dicts = [tuple(row.values()) for row in listings]
 
-            print("Listing Dicts:", listing_dicts)  
+            # Print the result
+            print("Listings as Tuples:", listing_dicts)
 
         # Return the result as JSON
         return jsonify(listing_dicts)

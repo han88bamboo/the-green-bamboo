@@ -837,25 +837,26 @@ export default {
                 this.loadError = true;
             }
 
-            // Observation Tags
-            const routeTag = this.$route.params.tag;
-            console.log("Tag passed to runSearch:", routeTag);
-            const observationTagPromise = this.$axios.get(`http://127.0.0.1:5000/getData/getListingsByObservationTag/${encodeURIComponent(this.$route.params.tag)}`)
-                .then(response => {
-                    this.tags = response.data;
-                    console.log("Observation Tags:", this.tags);
-                    this.observationTags = this.tags.filter(tag =>
-                        tag["observationTag"]?.toLowerCase().includes(this.searchTerm.toLowerCase())
-                    );
-                })
-                .catch(error => console.error("Error fetching observation tags:", error));
+            // // Observation Tags
+            // const routeTag = this.$route.params.tag;
+            // console.log("Tag passed to runSearch:", routeTag);
+            // const observationTagPromise = this.$axios.get(`http://127.0.0.1:5000/getData/getListingsByObservationTag/${encodeURIComponent(this.$route.params.tag)}`)
+            //     .then(response => {
+                    // this.resultListings = response.data;
+                    // console.log("Observation Tags:", this.resultListings);
 
-            Promise.all([observationTagPromise]).then(() => {
-                this.dataLoaded = true;
-            }).catch((error) => {
-                console.error("An error occurred with one of the promises", error);
-                this.dataLoaded = true;
-            });
+                    // this.observationTags = this.resultListings.filter(resultListings =>
+                    // resultListings["listingName"]?.toLowerCase().includes(this.searchTerm.toLowerCase())
+                    // );
+                // })
+            //     .catch(error => console.error("Error fetching observation tags:", error));
+
+            // Promise.all([observationTagPromise]).then(() => {
+            //     this.dataLoaded = true;
+            // }).catch((error) => {
+            //     console.error("An error occurred with one of the promises", error);
+            //     this.dataLoaded = true;
+            // });
 
             this.dataLoaded = true;
         },
