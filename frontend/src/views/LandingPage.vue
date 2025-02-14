@@ -129,37 +129,76 @@
     <!-- Trending Section -->
     <div class="container pb-4">
         <div class="container pb-0">
+            <!-- Desktop View: Trending and Description in One Row -->
             <div class="d-none d-md-flex align-items-start gap-3 mb-3">
                 <h2 class="h5 fw-bold mb-0">Trending</h2>
                 <p class="mb-0 text-muted fst-italic">
                     The drinks that are getting people talking!
                 </p>
             </div>
+            <!-- Mobile View: Trending and Description in Separate Rows -->
+            <div class="d-md-none">
+                <h2 class="fw-bold mb-2 text-start">Trending</h2>
+                <p class="mb-0 text-muted fst-italic text-start">
+                    The drinks that are getting people talking!
+                </p>
+            </div>
             <div class="d-none d-md-flex flex-wrap justify-content-start">
-                <button v-for="tag in tags" :key="tag" class="btn btn-warning rounded-pill m-2"
-                    :class="{ selected: tag === selectedTag }" @click="goSearchTag(tag)">
+                <button
+                    v-for="tag in tags"
+                    :key="tag"
+                    class="btn btn-warning rounded-pill m-2"
+                    :class="{ selected: tag === selectedTag }"
+                    @click="goSearchTag(tag)"
+                >
                     {{ tag }}
                 </button>
             </div>
 
-            <div id="badgeCarousel" class="carousel slide d-md-none" data-bs-ride="carousel" data-bs-interval="3000">
-
+            <div
+                id="badgeCarousel"
+                class="carousel slide d-md-none"
+                data-bs-ride="carousel"
+                data-bs-interval="3000"
+            >
                 <div class="carousel-inner">
                     <div class="carousel-item active">
-                        <div class="row flex-nowrap overflow-visible">
-                            <div v-for="(tag, index) in tags.slice(0, 3)" :key="index" class="col-5 tag-container">
-                                <button class="btn btn-warning rounded-pill w-90 m-2"
-                                    :class="{ selected: tag === selectedTag }" @click="goSearchTag(tag)">
+                        <div
+                            class="row flex-nowrap overflow-visible"
+                            style="min-height: 80px"
+                        >
+                            <div
+                                v-for="(tag, index) in tags.slice(0, 3)"
+                                :key="index"
+                                class="col-5 tag-container"
+                            >
+                                <button
+                                    class="btn btn-warning rounded-pill w-90 m-2"
+                                    :class="{ selected: tag === selectedTag }"
+                                    @click="goSearchTag(tag)"
+                                    style="min-height: 40px"
+                                >
                                     {{ tag }}
                                 </button>
                             </div>
                         </div>
                     </div>
                     <div class="carousel-item">
-                        <div class="row flex-nowrap overflow-visible">
-                            <div v-for="(tag, index) in tags.slice(2, 5)" :key="index" class="col-5 tag-container">
-                                <button class="btn btn-warning rounded-pill w-90 m-2"
-                                    :class="{ selected: tag === selectedTag }" @click="goSearchTag(tag)">
+                        <div
+                            class="row flex-nowrap overflow-visible"
+                            style="min-height: 80px"
+                        >
+                            <div
+                                v-for="(tag, index) in tags.slice(2, 5)"
+                                :key="index"
+                                class="col-5 tag-container"
+                            >
+                                <button
+                                    class="btn btn-warning rounded-pill w-90 m-2"
+                                    :class="{ selected: tag === selectedTag }"
+                                    @click="goSearchTag(tag)"
+                                    style="min-height: 40px"
+                                >
                                     {{ tag }}
                                 </button>
                             </div>
@@ -168,15 +207,28 @@
                 </div>
 
                 <!-- Carousel Controls -->
-                <button class="carousel-control-prev custom-carousel-btn" type="button" data-bs-target="#badgeCarousel"
-                    data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <button
+                    class="carousel-control-prev custom-carousel-btn"
+                    type="button"
+                    data-bs-target="#badgeCarousel"
+                    data-bs-slide="prev"
+                >
+                    <span
+                        class="carousel-control-prev-icon"
+                        aria-hidden="true"
+                    ></span>
                 </button>
-                <button class="carousel-control-next custom-carousel-btn" type="button" data-bs-target="#badgeCarousel"
-                    data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <button
+                    class="carousel-control-next custom-carousel-btn"
+                    type="button"
+                    data-bs-target="#badgeCarousel"
+                    data-bs-slide="next"
+                >
+                    <span
+                        class="carousel-control-next-icon"
+                        aria-hidden="true"
+                    ></span>
                 </button>
-
             </div>
         </div>
     </div>
