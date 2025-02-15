@@ -4,7 +4,7 @@
 #           /getVenue/<id> (GET), /getVenuesAPI (GET), /getDrinkTypes (GET), /getRequestListings (GET), /getRequestListing/<id> (GET), /getRequestEdits (GET), 
 #           /getRequestEdit/<id> (GET), /getModRequests (GET), /getFlavourTags (GET), /getSubTags (GET), /getObservationTags (GET), /getColours (GET), 
 #           /getSpecialColours (GET), /getLanguages (GET), /getServingTypes (GET), /getProducersProfileViews (GET), /getVenuesProfileViewsByVenue/<id> (GET), /getRequestInaccuracyByVenue/<id> (GET)
-#           /getUserFollowList/<id> (GET), /getUserNames (GET), /checkFollowing/<userId>/<userType>/<followId>/<followType> (GET)
+#           /getUserFollowList/<id> (GET), /getUserNames (GET), /checkFollowing/<userId>/<userType>/<followId>/<followType> (GET) /getLatestNews (GET)
 # -----------------------------------------------------------------------------------------
 
 # pip install python-bsonjs
@@ -15,12 +15,82 @@
 
 import os
 import json
+import feedparser
+import re
+import requests
+from bs4 import BeautifulSoup
 from bson import json_util, ObjectId
 from flask import Blueprint, g, jsonify, request
 from bson.objectid import ObjectId
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
+
+# clean up html tags
+def clean_html(html):
+    """Remove HTML tags and extract plain text."""
+    if not html:
+        return ""
+    soup = BeautifulSoup(html, "html.parser")
+    text = soup.get_text(separator=" ")  # Extract plain text with spaces instead of HTML tags
+    
+    text = text.replace("\\n", "\n")  # Replace escaped '\n' with actual new lines
+    text = text.replace('\\"', '"')  # Replace escaped quotes with actual quotes
+    text = text.replace("\\'", "'")  # Replace escaped single quotes (if needed)
+    text = re.sub(r'\\+', '', text)  # Remove any remaining backslashes
+    text = re.sub(r'\s+', ' ', text).strip()  # Remove excessive spaces
+    
+    return text
+
+# # converts 88 bamboo atom rss to JSON
+def parse_rss(rss_url):
+    feed = feedparser.parse(rss_url)
+
+    if not feed.entries:
+        return {"error": "Invalid RSS feed or no entries found."}
+
+    rss_data = {
+        "feed": {
+            "title": feed.feed.get("title", "No title"),
+            "link": feed.feed.get("link", "No link"),
+            "description": feed.feed.get("subtitle", "No description"),
+            "language": feed.feed.get("language", "Unknown"),
+            "updated": feed.feed.get("updated", "Unknown date"),
+            "author": feed.feed.get("author", "Unknown author")
+        },
+        "entries": []
+    }
+
+    for entry in feed.entries:
+        formatted_entry = {
+            "title": entry.get("title", "No title"),
+            "link": entry.get("link", "No link"),
+            "published": entry.get("published", "Unknown date"),
+            "summary": clean_html(entry.get("summary", "No summary")), 
+            "author": entry.get("author", "Unknown author"),
+            "categories": [tag.term for tag in entry.get("tags", [])] if "tags" in entry else [],
+            "content": clean_html(entry.get("content", [{"value": ""}])[0]["value"] if "content" in entry else ""),  
+        }
+        rss_data["entries"].append(formatted_entry)
+
+    return rss_data
+
+def get_og_image(url):
+    """Extract Open Graph image from a given article URL."""
+    try:
+        headers = {'User-Agent': 'Mozilla/5.0'}  # Prevent bot-blocking
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+        
+        soup = BeautifulSoup(response.text, 'html.parser')
+        og_image = soup.find("meta", property="og:image")
+
+        if og_image and og_image.get("content"):
+            return og_image["content"]
+        return None  # No OG image found
+    except requests.exceptions.RequestException:
+        return None  # Request failed
+
 
 # converts BSON to JSON
 def parse_json(data):
@@ -2190,4 +2260,24 @@ def checkUserInFollowList(userId, userType, followId, followType):
         cur.close()
 
 
+# -----------------------------------------------------------------------------------------
+# [GET] Get news from https://88bamboo.co/blogs/news.atom and convert from RSS to JSON //parse_rss funciton 
+@blueprint.route("/getLatestNews", methods=['GET'])
+def getLatestNews():
+    """API endpoint to fetch RSS data and return it as JSON."""
+    rss_url = "https://88bamboo.co/blogs/news.atom"
 
+    try:
+        rss_json = parse_rss(rss_url)
+
+         # Add Open Graph images to each news entry
+        for entry in rss_json.get("entries", []):
+            og_image = get_og_image(entry["link"])
+            entry["image"] = og_image if og_image else "https://via.placeholder.com/600x400"  # Place your own placeholder image
+
+        return jsonify(rss_json)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+   
