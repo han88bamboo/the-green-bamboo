@@ -1853,7 +1853,6 @@
                                 this.flavorTags.forEach(flavourTag => {
                                     // Filter subtags belonging to the current flavor tag
                                     const subTagsForFlavourTag = this.subTags.filter(subTag => subTag.familyTagId === flavourTag.id);
-                                    console.log(`Flavor Tag: ${flavourTag.familyTag}`, subTagsForFlavourTag);
 
                                     // Extract required information from subtags
                                     const subTagsInfo = subTagsForFlavourTag.map(subTag=> ({
@@ -2888,24 +2887,18 @@
 
             // from filtered reviews, create a dictionary with the count of each observation tag
             getFlavorTagCounts() {
-                
-                console.log("Sub Tags:", this.subTags);
-                console.log("Flavor Tags:", this.flavorTags);
-                console.log("Filtered Reviews:", this.filteredReviews); // Check if filteredReviews has data
-                
                 let allReviews = this.filteredReviews
                 let flavorTags = []
                 for (let review of allReviews) {
                     for (let tag of review.flavourTag) {
                         // convert ID into the string instead, make life easier
                         // flavorTags.push(tag)
-                        const subTag = this.subTags.find(subTag=>subTag.id === tag.id)
+                        const subTag = this.subTags.find(subTag=>subTag.id === parseInt(tag))
                         if(subTag){
                             const familyTag = this.flavorTags.find(family=>subTag.familyTagId === family.id)
                             if(familyTag){
                                 const hexcode = familyTag.hexcode
                                 const subtagInfo = subTag.subTag
-                                console.log(`SubTag Info: ${subtagInfo}, Hexcode: ${hexcode}`);
                                 flavorTags.push(subtagInfo + hexcode)
                             }
                         }
@@ -2933,20 +2926,10 @@
                 } else {
                     this.sorted_flavorTagCounts = sorted_flavorTagCounts
                 }
-                
-                // Debugging: Log the calculated values
-                console.log("Sorted Flavor Tag Counts:", this.sorted_flavorTagCounts);
-                for (const [tag, count] of Object.entries(this.sorted_flavorTagCounts)) {
-                    console.log(`Tag: ${tag}, Count: ${count}`);
-                }
-                console.log("Sorted Flavor Tag Counts:", this.sorted_flavorTagCounts);
             },
 
             // from filtered reviews, create a dictionary with the count of each flavour tag
-            getObservationTagCounts() {
-                console.log("Observation Tag Counts:", this.sorted_observationTagCounts);
-                
-
+            getObservationTagCounts() {                
                 let allReviews = this.filteredReviews
                 let observationTags = []
                 for (let review of allReviews) {
