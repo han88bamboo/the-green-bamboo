@@ -1,5 +1,5 @@
 # Port: 5023
-# Routes: /deleteReview/<id> (DELETE)
+# Routes: /deleteReview/<id> (DELETE), /deleteProducerReview/<id> (DELETE)
 # -----------------------------------------------------------------------------------------
 
 # [OLD] TO BE DELETED FOR POSTGRES:
@@ -95,4 +95,57 @@ def deleteReview(id):
                 "message": "An error occurred deleting the listing."
             }
         ), 500
+    
+# -----------------------------------------------------------------------------------------
+# [DELETE] Deletes a producer review
+# - Delete entry with specified id from the "producerReviews" collection.
+# - Possible return codes: 201 (Deleted), 400 (Review doesn't exist), 500 (Error during deletion)
+@blueprint.route("/deleteProducerReview/<id>", methods= ['DELETE'])
+def deleteProducerReview(id):
+    conn = g.db
+    cur = conn.cursor()
 
+    cur.execute("""SELECT * FROM "producerReviews" WHERE id = %s""", (id,))
+    existingReview = cur.fetchone()
+
+    if existingReview is None:
+        return jsonify(
+            {   
+                "code": 400,
+                "data": {
+                    "id": id
+                },
+                "message": "Review doesn't exist."
+            }
+        ), 400
+    
+    try:
+        if(existingReview['photo']):
+            s3Images.deleteImageFromS3(existingReview['photo'])
+
+        # Delete associated votes
+        cur.execute("DELETE FROM \"producerReviewsUserVotes\" WHERE \"reviewId\" = %s", (id,))
+
+        # Delete the review
+        cur.execute("DELETE FROM \"producerReviews\" WHERE id = %s", (id,))
+        
+        conn.commit()
+        
+        return jsonify(
+            {   
+                "code": 200,
+                "data": id
+            }
+        ), 200
+    
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "data": {
+                    "id": id
+                },
+                "message": "An error occurred deleting the listing."
+            }
+        ), 500

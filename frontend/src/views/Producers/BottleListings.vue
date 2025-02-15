@@ -690,38 +690,38 @@
                                         <div class="col-12 justify-content-start">
                                             
                                             <div class="form-group mb-2 mobile-mt-0 mt-3">
-    <div v-if="showFriendTagList.length > 0" class="form-label pb-2 text-start">
-        Tagged Friends:
-        <div class="row">
-            <div class="col">
-                <div class="d-flex flex-wrap gap-2">
-                    <div v-for="friend in showFriendTagList" :key="friend.id" class="mb-0 pb-0">
-                        <button @click="removeFriendTag(friend)" class="btn secondary-square-btn">
-                            {{ friend.username }}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+                                                <div v-if="showFriendTagList.length > 0" class="form-label pb-2 text-start">
+                                                    Tagged Friends:
+                                                    <div class="row">
+                                                        <div class="col">
+                                                            <div class="d-flex flex-wrap gap-2">
+                                                                <div v-for="friend in showFriendTagList" :key="friend.id" class="mb-0 pb-0">
+                                                                    <button @click="removeFriendTag(friend)" class="btn secondary-square-btn">
+                                                                        {{ friend.username }}
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
 
-    <input list="filteredFollowList" v-model="friendTag" class="form-control input-with-icon" id="friendTag"
-        placeholder="Tag friends" v-on:input="updateFriendTag">
-    
-    <datalist id="filteredFollowList">
-        <option v-for="user in filteredUsers" :key="user.id" :value="user.username">
-            {{ user.username }}
-        </option>
-    </datalist>
+                                                <input list="filteredFollowList" v-model="friendTag" class="form-control input-with-icon" id="friendTag"
+                                                    placeholder="Tag friends" v-on:input="updateFriendTag">
+                                                
+                                                <datalist id="filteredFollowList">
+                                                    <option v-for="user in filteredUsers" :key="user.id" :value="user.username">
+                                                        {{ user.username }}
+                                                    </option>
+                                                </datalist>
 
-    <div class="text-start mt-1">
-        <button v-if="selectedFriendTag !== null" class="btn tertiary-square-btn mt-1" @click="tagSpecificFriend">
-            Tag This Friend
-        </button>
-    </div>
-    
-    <p v-show="friendTag.length > 0" class="text-start mb-1 text-danger" id="friendTagError"></p>
-</div>
+                                                <div class="text-start mt-1">
+                                                    <button v-if="selectedFriendTag !== null" class="btn tertiary-square-btn mt-1" @click="tagSpecificFriend">
+                                                        Tag This Friend
+                                                    </button>
+                                                </div>
+                                                
+                                                <p v-show="friendTag.length > 0" class="text-start mb-1 text-danger" id="friendTagError"></p>
+                                            </div>
 
                                             <div class="form-group mb-2">
                                                 
@@ -2307,6 +2307,7 @@
                 const specificReview = this.filteredReviews.filter((review) => {
                     return review["userID"] == this.userID;
                 });
+                console.log("Specific Review", specificReview)
                 if(specificReview.length!=0){
                     this.inEdit=true
                     this.selectedLanguage= specificReview[0].language
