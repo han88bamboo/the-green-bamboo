@@ -205,9 +205,23 @@
                             <input type="text" v-model="form['listingName']" class="form-control" id="bottleName" placeholder="Enter Bottle Name">
                         </div>
 
+                        <!-- Input: Country of Origin -->
+                        <div class="form-group mb-3">
+                            <div class=" mb-3">
+                                <p class="text-start mb-1">Country of Origin <span class="text-danger" v-if="formType == 'power'">*</span></p>
+                                <div class="input-group">
+                                    <select class="form-select" id="countrySelect" v-model="form['originCountry']">
+                                        <option v-for="country in countries" :key="country" :value="country">
+                                        {{ country }}
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Input: drinkType (eg. Whiskey) + typeCategory (eg. Single Malt) -->
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-4 mb-3">
                                 <p class="text-start mb-1">Drink Type <span class="text-danger">*</span></p>
                                 <div class="input-group">
                                     <select class="form-select" id="drinkTypeSelect" v-model="tempDrinkType" @change="getDrinkCategoryList">
@@ -218,12 +232,12 @@
                                 </div>
                             </div>
                         
-                            <div class="col-md-6 mb-3">
-                                <p class="text-start mb-1">Drink Category</p>
+                            <div class="col-md-4 mb-3">
+                                <p class="text-start mb-1">Drink Category <span class="text-danger">*</span></p>
 
                                 <!-- For drink types that have serveral categories to choose from -->
                                 <div class="input-group" v-if="tempTypeCategoryList.length > 1">
-                                    <select class="form-select" id="inputGroupSelect01" v-model="tempTypeCategory">
+                                    <select class="form-select" id="inputGroupSelect01" v-model="tempTypeCategory" @change="getDrinkStyleList">
                                         <option v-for="cat in tempTypeCategoryList.sort()" :key="cat" :value="cat" >
                                             {{ cat }}
                                         </option>
@@ -231,6 +245,26 @@
                                 </div>
                                 
                                 <!-- If there are no categories to select, display disabled dummy selection field -->
+                                <div class="input-group" v-else>
+                                    <select class="form-select" disabled>
+                                        <option selected>-</option>
+                                    </select>
+                                </div>
+
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <p class="text-start mb-1">Drink Style</p>
+
+                                <!-- For drink categories that have serveral styles to choose from -->
+                                <div class="input-group" v-if="tempDrinkStylesList.length > 1">
+                                    <select class="form-select" id="inputGroupSelect02" v-model="tempDrinkStyle">
+                                        <option v-for="style in tempDrinkStylesList.sort()" :key="style" :value="style" >
+                                            {{ style }}
+                                        </option>
+                                    </select>
+                                </div>
+                                
+                                <!-- If there are no styles to select, display disabled dummy selection field -->
                                 <div class="input-group" v-else>
                                     <select class="form-select" disabled>
                                         <option selected>-</option>
@@ -281,20 +315,6 @@
                         <div class="form-group mb-3" v-if="indOperator">
                             <p class="text-start mb-1">If yes, who is the independent bottler? <span class="text-danger">*</span></p>
                             <input type="text" class="form-control" v-model="form['bottler']" :disabled="!indOperator" id="bottlerName" placeholder="Enter Bottler Name">
-                        </div>
-
-                        <!-- Input: Country of Origin -->
-                        <div class="form-group mb-3">
-                            <div class=" mb-3">
-                                <p class="text-start mb-1">Country of Origin <span class="text-danger" v-if="formType == 'power'">*</span></p>
-                                <div class="input-group">
-                                    <select class="form-select" id="countrySelect" v-model="form['originCountry']">
-                                        <option v-for="country in countries" :key="country" :value="country">
-                                        {{ country }}
-                                        </option>
-                                    </select>
-                                </div>
-                            </div>
                         </div>
 
                         <!-- Input: Alcohol Strength (% ABV) + Alcohol Age / Vintage (years old / Year Bottled) -->
@@ -423,6 +443,7 @@
                 tempTypeCategory: "",
                 tempProducer: "",
                 indOperator: true,
+                tempDrinkStyle: "",
 
                 // Form data variables
                 drinkCategories: [],
@@ -431,6 +452,9 @@
                 producerList: [],
                 countries: [],
                 selectedImage:"",
+                drinkStyles:[],
+                drinkStylesList:[],
+                tempDrinkStylesList: [],
 
                 form: {
                     "editDesc": "",
@@ -552,6 +576,22 @@
                     } 
                     catch (error) {
                         console.error(error);
+                    }
+
+                    // populate "drinkStyles" + "drinkStylesList" form data variable
+                    try {
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getTypeCategories`);
+                        console.log("Fetched Data:", response.data);  // Log data to Vue.js console
+                        this.drinkStyles = response.data;
+                        for (let drink of this.drinkStyles) {
+                            if (this.types.length === 0 || this.types.includes(drink.typeCategory)) {
+                                this.drinkStylesList.push(drink.typeCategory);
+                            }
+                        }
+                        this.drinkStylesList = this.drinkStylesList.sort();
+                    } 
+                    catch (error) {
+                        console.error("Error fetching data:",error);
                     }
 
                     // populate "producerList" form data variable
@@ -705,6 +745,8 @@
                 this.tempDrinkType = previousData.drinkType;
                 this.getDrinkCategoryList();
                 this.tempTypeCategory = previousData.typeCategory;
+                this.tempDrinkStyle = previousData.drinkStyle;
+                this.getDrinkStyleList();
 
                 this.form["sourceLink"] = previousData.sourceLink;
                 this.form["listingName"] = previousData.listingName;
@@ -775,6 +817,13 @@
                 this.tempTypeCategory = "";
             },
 
+            // Helper function to get drink style list for selected drink category ("tempTypeCategory")
+            getDrinkStyleList() {
+                const category = this.drinkStyles.find(style => style.typeCategory === this.tempTypeCategory);
+                this.tempDrinkStylesList = category ? category.drinkStyle : [];  // Ensure it doesn't break
+                this.tempDrinkStyle = "";
+            },
+
             // Helper function to handle file selection for photo
             handleFileSelect(event){
                 try {
@@ -834,6 +883,12 @@
                     if (!this.tempDrinkType.trim()) {
                         this.errors.push("Drink Type is required.");
                     }
+
+                    // Validate Drink Category
+                    if (!this.tempTypeCategory.trim()) {
+                        this.errors.push("Drink Category is required.");
+                    }
+
 
                     // Validate Independent Bottler Name (if OB, will be handled by database writing method)
                     if (!this.form["bottler"].trim() && this.indOperator == true) {
@@ -922,6 +977,7 @@
                                 "drinkType": this.tempDrinkType.trim(),
                                 "typeCategory": this.tempTypeCategory.trim(),
                                 "reviewStatus": false,
+                                "drinkStyle": this.tempDrinkStyle.trim(),
                             }
 
                             if (this.prevListing) {
@@ -971,6 +1027,7 @@
 
                             "drinkType": this.tempDrinkType.trim(),
                             "typeCategory": this.tempTypeCategory.trim(),
+                            "drinkStyle": this.tempDrinkStyle.trim(),
                         }
 
                         // Listing Creation Mode

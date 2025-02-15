@@ -575,7 +575,7 @@ def importListings():
     file_encoding = detect_encoding(file)
 
     # Define column data types
-    column_data_types = [str, str, str, str, str, str, str, float, str, str, str, str]
+    column_data_types = [str, str, str, str, str, str, str, str, float, str, str, str, str]
 
     # Read all rows from CSV
     with io.TextIOWrapper(file, encoding=file_encoding, errors='replace') as csv_file:
@@ -652,7 +652,7 @@ def importListings():
         producer_id = producer_name_id_dict.get(producer_name)
 
         # Collect image URL for parallel upload
-        image_urls.append(converted_row[11])
+        image_urls.append(converted_row[12])
 
         listings_to_insert.append({
             'listingName': converted_row[0],
@@ -661,11 +661,12 @@ def importListings():
             'originCountry': converted_row[3],
             'drinkType': converted_row[4],
             'typeCategory': converted_row[5],
-            'age': converted_row[6],
-            'abv': converted_row[7],
-            'reviewLink': converted_row[8],
-            'officialDesc': converted_row[9],
-            'sourceLink': converted_row[10],
+            'drinkStyle':converted_row[6], 
+            'age': converted_row[7],
+            'abv': converted_row[8],
+            'reviewLink': converted_row[9],
+            'officialDesc': converted_row[10],
+            'sourceLink': converted_row[11],
             'photo': None,  # Placeholder for S3 URL
             'allowMod': True,
             'addedDate': datetime.now()

@@ -894,26 +894,7 @@ VALUES (
         'IPA - All Others',
         'Koji Beer / Ginjo Beer / Sake Yeast Beer',
         'Kvass',
-        'Lager - Amber / Red',
-        'Lager - American Style (All Styles)',
-        'Lager - Dark',
-        'Lager - Dortmunder / Export',
-        'Lager - Dunkel',
-        'Lager - European Style',
-        'Lager - Helles',
-        'Lager - IPL (India Pale Lager)',
-        'Lager - Japanese Rice / All Rice',
-        'Lager - Leichtbier',
-        'Lager - Mexican',
-        'Lager - Pale',
-        'Lager - Strong',
-        'Lager - Vienna Style',
-        'Lager - Winter',
-        'Lager - All Others',
-        'Lambic - Framboise',
-        'Lambic - Other Fruit',
-        'Lambic - Gueuze',
-        'Lambic - Kriek',
+        'Lager - All Styles',
         'Lambic - All Others',
         'Malt Beverage - All Styles',
         'Mead - Traditional / Sack / Great / Imperial / Session',
@@ -1171,6 +1152,35 @@ VALUES (
     ]
 );
 
+-- Fetch the ID of the "Beer" drinkType
+WITH drink_type AS (
+    SELECT id FROM "drinkTypes" WHERE "drinkType" = 'Beer'
+)
+
+-- Insert corresponding type categories
+INSERT INTO "typeCategories" ("drinkType_id", "typeCategory", "drinkStyle")
+VALUES
+    ((SELECT id FROM drink_type), 'Aged Beer', ARRAY[
+        'Barrel-Aged Beer',
+        'Sour Aged Beer',
+        'Brett Beer'
+    ]),
+    ((SELECT id FROM drink_type), 'Ale - All Styles', ARRAY[
+        'Pale Ale',
+        'IPA',
+        'Stout',
+        'Porter',
+        'Wheat Beer',
+        'Belgian Ale'
+    ]),
+    ((SELECT id FROM drink_type), 'Lager - All Styles', ARRAY[
+        'Pilsner',
+        'Helles',
+        'Doppelbock',
+        'Vienna Lager',
+        'Amber Lager'
+    ]);
+
 INSERT INTO "producers" ("producerName", "producerDesc", "originCountry", "mainDrinks", "photo", "hashedPassword", "claimStatus", "claimStatusCheckDate", "statusOB", "username", "producerLink", "stripeCustomerId"
 ) VALUES 
     ('Hennessy', 'This is Hennessy', 'France', '{}', NULL, '-65180891', true, NULL, NULL, 'Hennessy', '', NULL),
@@ -1231,49 +1241,49 @@ INSERT INTO "producersQuestionAnswers" (
     VALUES ('When are you going to release the next promotion?', 'SOON! CHECK FOR UPDATES!', '2024-10-04 16:08:59.899', 1, 1);
 
 INSERT INTO "listings" (
-    "listingName", "producerID", "bottler", "originCountry", "drinkType", "abv", "officialDesc", "allowMod", "addedDate", "typeCategory", "age", "reviewLink", "sourceLink", "photo")
+    "listingName", "producerID", "bottler", "originCountry", "drinkType", "abv", "officialDesc", "allowMod", "addedDate", "typeCategory", "age", "reviewLink", "sourceLink", "photo", "drinkStyle")
 	VALUES 
-    ('Hennessy VS', 1, 'OB', 'Japan', 'Whiskey', 12, 'BEST EVEERRRR', true, '2024-10-05 00:14:37.661786', 'Spirit', 12, '', '', ''),
-    ('Jack Daniel''s Old No. 7', 2, 'Jack Daniel''s', 'United States', 'Whiskey', 40, 'The classic Tennessee whiskey with a smooth, charcoal-mellowed flavor.', true, '2024-02-02', 'Bourbon', NULL, '', '', ''),
-    ('Jack Daniel''s Single Barrel Select', 2, 'Jack Daniel''s', 'United States', 'Whiskey', 47, 'A richer and more complex version of the classic Jack Daniel’s.', true, '2024-02-02', 'Bourbon', NULL, '', '', ''),
-    ('Jack Daniel''s Tennessee Honey', 2, 'Jack Daniel''s', 'United States', 'Whiskey', 35, 'A smooth blend of Jack Daniel’s and honey liqueur.', true, '2024-02-02', 'Flavored Whiskey', NULL, '', '', ''),
-    ('Jack Daniel''s Sinatra Select', 2, 'Jack Daniel''s', 'United States', 'Whiskey', 45, 'A premium whiskey honoring Frank Sinatra, aged in specially designed barrels.', true, '2024-02-02', 'Bourbon', NULL, '', '', ''),
-    ('Jack Daniel''s Bonded', 2, 'Jack Daniel''s', 'United States', 'Whiskey', 50, 'Bottled-in-bond whiskey with a bolder, richer flavor.', true, '2024-02-02', 'Bourbon', NULL, '', '', ''),
-    ('Johnnie Walker Black Label', 3, 'Johnnie Walker', 'Scotland', 'Whiskey', 40, 'A smooth, well-balanced blended Scotch aged 12 years.', true, '2024-02-02', 'Blended Scotch', 12, '', '', ''),
-    ('Johnnie Walker Blue Label', 3, 'Johnnie Walker', 'Scotland', 'Whiskey', 43, 'An ultra-premium blend featuring rare, aged Scotch whiskies.', true, '2024-02-02', 'Blended Scotch', NULL, '', '', ''),
-    ('Johnnie Walker Red Label', 3, 'Johnnie Walker', 'Scotland', 'Whiskey', 40, 'A bold, fiery blend ideal for mixing in cocktails.', true, '2024-02-02', 'Blended Scotch', NULL, '', '', ''),
-    ('Johnnie Walker Green Label', 3, 'Johnnie Walker', 'Scotland', 'Whiskey', 43, 'A rich, green blend of malt whisky for a fresh taste.', true, '2024-02-02', 'Blended Scotch', NULL, '', '', ''),
-    ('Jameson Irish Whiskey', 4, 'Jameson', 'Ireland', 'Whiskey', 40, 'A triple-distilled, smooth Irish whiskey with hints of vanilla and spice.', true, '2024-02-02', 'Irish Whiskey', NULL, '', '', ''),
-    ('Jameson Black Barrel', 4, 'Jameson', 'Ireland', 'Whiskey', 40, 'A rich, intense version of Jameson aged in charred barrels.', true, '2024-02-02', 'Irish Whiskey', NULL, '', '', ''),
-    ('Jameson Caskmates Stout Edition', 4, 'Jameson', 'Ireland', 'Whiskey', 40, 'Jameson finished in craft beer stout barrels for a deeper taste.', true, '2024-02-02', 'Irish Whiskey', NULL, '', '', ''),
-    ('Jameson Crested', 4, 'Jameson', 'Ireland', 'Whiskey', 40, 'A rich, smooth blend of Jameson whiskey with a creamy finish.', true, '2024-02-02', 'Irish Whiskey', NULL, '', '', ''),
-    ('Chivas Regal 12', 5, 'Chivas Regal', 'Scotland', 'Whiskey', 40, 'A smooth, honeyed Scotch whisky aged for 12 years.', true, '2024-02-02', 'Blended Scotch', 12, '', '', ''),
-    ('Chivas Regal 18', 5, 'Chivas Regal', 'Scotland', 'Whiskey', 40, 'A more complex, rich Scotch aged 18 years.', true, '2024-02-02', 'Blended Scotch', 18, '', '', ''),
-    ('Chivas Regal Extra', 5, 'Chivas Regal', 'Scotland', 'Whiskey', 40, 'A rich, indulgent Scotch whisky with a warm, fruity flavor.', true, '2024-02-02', 'Blended Scotch', NULL, '', '', ''),
-    ('Glenfiddich 12', 6, 'Glenfiddich', 'Scotland', 'Whiskey', 40, 'A light and fruity single malt aged for 12 years.', true, '2024-02-02', 'Single Malt Scotch', 12, '', '', ''),
-    ('Glenfiddich 18', 6, 'Glenfiddich', 'Scotland', 'Whiskey', 43, 'A richer, sherry-aged single malt aged 18 years.', true, '2024-02-02', 'Single Malt Scotch', 18, '', '', ''),
-    ('Glenfiddich 21', 6, 'Glenfiddich', 'Scotland', 'Whiskey', 40, 'A rare single malt aged for 21 years with rich oak notes.', true, '2024-02-02', 'Single Malt Scotch', 21, '', '', ''),
-    ('Hennessy VS', 7, 'Hennessy', 'France', 'Cognac', 40, 'A smooth and bold cognac with notes of oak and fruit.', true, '2024-02-02', 'Cognac', NULL, '', '', ''),
-    ('Hennessy XO', 7, 'Hennessy', 'France', 'Cognac', 40, 'An extra-aged blend with a rich, complex flavor.', true, '2024-02-02', 'Cognac', NULL, '', '', ''),
-    ('Hennessy Paradis', 7, 'Hennessy', 'France', 'Cognac', 40, 'A luxurious, multi-layered cognac with deep, smooth flavors.', true, '2024-02-02', 'Cognac', NULL, '', '', ''),
-    ('Bacardi Superior', 8, 'Bacardi', 'Cuba', 'Rum', 40, 'A light, smooth white rum perfect for cocktails.', true, '2024-02-02', 'White Rum', NULL, '', '', ''),
-    ('Bacardi Gold', 8, 'Bacardi', 'Cuba', 'Rum', 40, 'A smooth, mellow gold rum with hints of vanilla.', true, '2024-02-02', 'Gold Rum', NULL, '', '', ''),
-    ('Captain Morgan Original Spiced Rum', 9, 'Captain Morgan', 'Jamaica', 'Rum', 35, 'A smooth, spiced rum with hints of vanilla and cinnamon.', true, '2024-02-02', 'Spiced Rum', NULL, '', '', ''),
-    ('Captain Morgan Private Stock', 9, 'Captain Morgan', 'Jamaica', 'Rum', 40, 'A premium spiced rum with a bold, rich flavor.', true, '2024-02-02', 'Spiced Rum', NULL, '', '', ''),
-    ('Don Julio Blanco', 10, 'Don Julio', 'Mexico', 'Tequila', 40, 'A fresh, crisp silver tequila with a smooth agave finish.', true, '2024-02-02', 'Tequila Blanco', NULL, '', '', ''),
-    ('Patrón Silver', 10, 'Patrón', 'Mexico', 'Tequila', 40, 'A smooth, premium silver tequila with citrus and agave notes.', true, '2024-02-02', 'Tequila Blanco', NULL, '', '', ''),
-    ('Patrón Añejo', 10, 'Patrón', 'Mexico', 'Tequila', 40, 'Aged tequila with rich, oak and vanilla flavors.', true, '2024-02-02', 'Tequila Añejo', NULL, '', '', ''),
-    ('Tanqueray London Dry Gin', 12, 'Tanqueray', 'United Kingdom', 'Gin', 47.3, 'A classic gin with a crisp, juniper-forward taste.', true, '2024-02-02', 'London Dry Gin', NULL, '', '', ''),
-    ('Hendrick''s Gin', 13, 'Hendrick''s', 'Scotland', 'Gin', 44, 'A unique gin infused with cucumber and rose petals.', true, '2024-02-02', 'Gin', NULL, '', '', ''),
-    ('Bombay Sapphire Gin', 14, 'Bombay Sapphire', 'United Kingdom', 'Gin', 40, 'A smooth gin with a rich blend of 10 botanicals.', true, '2024-02-02', 'Gin', NULL, '', '', ''),
-    ('Suntory Hibiki', 15, 'Suntory', 'Japan', 'Whiskey', 43, 'A harmonious blend of malt and grain whiskies aged in various casks.', true, '2024-02-02', 'Blended Whisky', NULL, '', '', ''),
-    ('Nikka From The Barrel', 16, 'Nikka', 'Japan', 'Whiskey', 51.4, 'A bold, rich whisky with complex flavors of fruit and spice.', true, '2024-02-02', 'Blended Whisky', NULL, '', '', ''),
-    ('Tito''s Handmade Vodka', 17, 'Tito''s', 'United States', 'Vodka', 40, 'A premium American vodka distilled from corn for a smooth finish.', true, '2024-02-02', 'Vodka', NULL, '', '', ''),
-    ('Grey Goose Vodka', 18, 'Grey Goose', 'France', 'Vodka', 40, 'A premium French vodka made from high-quality wheat.', true, '2024-02-02', 'Vodka', NULL, '', '', ''),
-    ('Absolut Vodka', 19, 'Absolut', 'Sweden', 'Vodka', 40, 'A famous Swedish vodka made with 100% natural ingredients.', true, '2024-02-02', 'Vodka', NULL, '', '', ''),
-    ('Tiger Beer', 20, 'Tiger Brewery', 'Singapore', 'Beer', 5, 'A crisp, refreshing lager brewed in Singapore.', true, '2024-02-02', 'Lager', NULL, '', '', ''),
-    ('Tiger Crystal', 20, 'Tiger Brewery', 'Singapore', 'Beer', 4.6, 'A smooth, lighter version of the classic Tiger Beer.', true, '2024-02-02', 'Lager', NULL, '', '', ''),
-    ('Tiger Black', 20, 'Tiger Brewery', 'Singapore', 'Beer', 6.9, 'A full-bodied, stronger version of Tiger Beer.', true, '2024-02-02', 'Lager', NULL, '', '', '');
+    ('Hennessy VS', 1, 'OB', 'Japan', 'Whiskey', 12, 'BEST EVEERRRR', true, '2024-10-05 00:14:37.661786', 'Spirit', 12, '', '', '', ''),
+    ('Jack Daniel''s Old No. 7', 2, 'Jack Daniel''s', 'United States', 'Whiskey', 40, 'The classic Tennessee whiskey with a smooth, charcoal-mellowed flavor.', true, '2024-02-02', 'Bourbon', NULL, '', '', '', ''),
+    ('Jack Daniel''s Single Barrel Select', 2, 'Jack Daniel''s', 'United States', 'Whiskey', 47, 'A richer and more complex version of the classic Jack Daniel’s.', true, '2024-02-02', 'Bourbon', NULL, '', '', '', ''),
+    ('Jack Daniel''s Tennessee Honey', 2, 'Jack Daniel''s', 'United States', 'Whiskey', 35, 'A smooth blend of Jack Daniel’s and honey liqueur.', true, '2024-02-02', 'Flavored Whiskey', NULL, '', '', '', ''),
+    ('Jack Daniel''s Sinatra Select', 2, 'Jack Daniel''s', 'United States', 'Whiskey', 45, 'A premium whiskey honoring Frank Sinatra, aged in specially designed barrels.', true, '2024-02-02', 'Bourbon', NULL, '', '', '', ''),
+    ('Jack Daniel''s Bonded', 2, 'Jack Daniel''s', 'United States', 'Whiskey', 50, 'Bottled-in-bond whiskey with a bolder, richer flavor.', true, '2024-02-02', 'Bourbon', NULL, '', '', '', ''),
+    ('Johnnie Walker Black Label', 3, 'Johnnie Walker', 'Scotland', 'Whiskey', 40, 'A smooth, well-balanced blended Scotch aged 12 years.', true, '2024-02-02', 'Blended Scotch', 12, '', '', '', ''),
+    ('Johnnie Walker Blue Label', 3, 'Johnnie Walker', 'Scotland', 'Whiskey', 43, 'An ultra-premium blend featuring rare, aged Scotch whiskies.', true, '2024-02-02', 'Blended Scotch', NULL, '', '', '', ''),
+    ('Johnnie Walker Red Label', 3, 'Johnnie Walker', 'Scotland', 'Whiskey', 40, 'A bold, fiery blend ideal for mixing in cocktails.', true, '2024-02-02', 'Blended Scotch', NULL, '', '', '', ''),
+    ('Johnnie Walker Green Label', 3, 'Johnnie Walker', 'Scotland', 'Whiskey', 43, 'A rich, green blend of malt whisky for a fresh taste.', true, '2024-02-02', 'Blended Scotch', NULL, '', '', '', ''),
+    ('Jameson Irish Whiskey', 4, 'Jameson', 'Ireland', 'Whiskey', 40, 'A triple-distilled, smooth Irish whiskey with hints of vanilla and spice.', true, '2024-02-02', 'Irish Whiskey', NULL, '', '', '', ''),
+    ('Jameson Black Barrel', 4, 'Jameson', 'Ireland', 'Whiskey', 40, 'A rich, intense version of Jameson aged in charred barrels.', true, '2024-02-02', 'Irish Whiskey', NULL, '', '', '', ''),
+    ('Jameson Caskmates Stout Edition', 4, 'Jameson', 'Ireland', 'Whiskey', 40, 'Jameson finished in craft beer stout barrels for a deeper taste.', true, '2024-02-02', 'Irish Whiskey', NULL, '', '', '', ''),
+    ('Jameson Crested', 4, 'Jameson', 'Ireland', 'Whiskey', 40, 'A rich, smooth blend of Jameson whiskey with a creamy finish.', true, '2024-02-02', 'Irish Whiskey', NULL, '', '', '', ''),
+    ('Chivas Regal 12', 5, 'Chivas Regal', 'Scotland', 'Whiskey', 40, 'A smooth, honeyed Scotch whisky aged for 12 years.', true, '2024-02-02', 'Blended Scotch', 12, '', '', '', ''),
+    ('Chivas Regal 18', 5, 'Chivas Regal', 'Scotland', 'Whiskey', 40, 'A more complex, rich Scotch aged 18 years.', true, '2024-02-02', 'Blended Scotch', 18, '', '', '', ''),
+    ('Chivas Regal Extra', 5, 'Chivas Regal', 'Scotland', 'Whiskey', 40, 'A rich, indulgent Scotch whisky with a warm, fruity flavor.', true, '2024-02-02', 'Blended Scotch', NULL, '', '', '', ''),
+    ('Glenfiddich 12', 6, 'Glenfiddich', 'Scotland', 'Whiskey', 40, 'A light and fruity single malt aged for 12 years.', true, '2024-02-02', 'Single Malt Scotch', 12, '', '', '', ''),
+    ('Glenfiddich 18', 6, 'Glenfiddich', 'Scotland', 'Whiskey', 43, 'A richer, sherry-aged single malt aged 18 years.', true, '2024-02-02', 'Single Malt Scotch', 18, '', '', '', ''),
+    ('Glenfiddich 21', 6, 'Glenfiddich', 'Scotland', 'Whiskey', 40, 'A rare single malt aged for 21 years with rich oak notes.', true, '2024-02-02', 'Single Malt Scotch', 21, '', '', '', ''),
+    ('Hennessy VS', 7, 'Hennessy', 'France', 'Cognac', 40, 'A smooth and bold cognac with notes of oak and fruit.', true, '2024-02-02', 'Cognac', NULL, '', '', '', ''),
+    ('Hennessy XO', 7, 'Hennessy', 'France', 'Cognac', 40, 'An extra-aged blend with a rich, complex flavor.', true, '2024-02-02', 'Cognac', NULL, '', '', '', ''),
+    ('Hennessy Paradis', 7, 'Hennessy', 'France', 'Cognac', 40, 'A luxurious, multi-layered cognac with deep, smooth flavors.', true, '2024-02-02', 'Cognac', NULL, '', '', '', ''),
+    ('Bacardi Superior', 8, 'Bacardi', 'Cuba', 'Rum', 40, 'A light, smooth white rum perfect for cocktails.', true, '2024-02-02', 'White Rum', NULL, '', '', '', ''),
+    ('Bacardi Gold', 8, 'Bacardi', 'Cuba', 'Rum', 40, 'A smooth, mellow gold rum with hints of vanilla.', true, '2024-02-02', 'Gold Rum', NULL, '', '', '', ''),
+    ('Captain Morgan Original Spiced Rum', 9, 'Captain Morgan', 'Jamaica', 'Rum', 35, 'A smooth, spiced rum with hints of vanilla and cinnamon.', true, '2024-02-02', 'Spiced Rum', NULL, '', '', '', ''),
+    ('Captain Morgan Private Stock', 9, 'Captain Morgan', 'Jamaica', 'Rum', 40, 'A premium spiced rum with a bold, rich flavor.', true, '2024-02-02', 'Spiced Rum', NULL, '', '', '', ''),
+    ('Don Julio Blanco', 10, 'Don Julio', 'Mexico', 'Tequila', 40, 'A fresh, crisp silver tequila with a smooth agave finish.', true, '2024-02-02', 'Tequila Blanco', NULL, '', '', '', ''),
+    ('Patrón Silver', 10, 'Patrón', 'Mexico', 'Tequila', 40, 'A smooth, premium silver tequila with citrus and agave notes.', true, '2024-02-02', 'Tequila Blanco', NULL, '', '', '', ''),
+    ('Patrón Añejo', 10, 'Patrón', 'Mexico', 'Tequila', 40, 'Aged tequila with rich, oak and vanilla flavors.', true, '2024-02-02', 'Tequila Añejo', NULL, '', '', '', ''),
+    ('Tanqueray London Dry Gin', 12, 'Tanqueray', 'United Kingdom', 'Gin', 47.3, 'A classic gin with a crisp, juniper-forward taste.', true, '2024-02-02', 'London Dry Gin', NULL, '', '', '', ''),
+    ('Hendrick''s Gin', 13, 'Hendrick''s', 'Scotland', 'Gin', 44, 'A unique gin infused with cucumber and rose petals.', true, '2024-02-02', 'Gin', NULL, '', '', '', ''),
+    ('Bombay Sapphire Gin', 14, 'Bombay Sapphire', 'United Kingdom', 'Gin', 40, 'A smooth gin with a rich blend of 10 botanicals.', true, '2024-02-02', 'Gin', NULL, '', '', '', ''),
+    ('Suntory Hibiki', 15, 'Suntory', 'Japan', 'Whiskey', 43, 'A harmonious blend of malt and grain whiskies aged in various casks.', true, '2024-02-02', 'Blended Whisky', NULL, '', '', '', ''),
+    ('Nikka From The Barrel', 16, 'Nikka', 'Japan', 'Whiskey', 51.4, 'A bold, rich whisky with complex flavors of fruit and spice.', true, '2024-02-02', 'Blended Whisky', NULL, '', '', '', ''),
+    ('Tito''s Handmade Vodka', 17, 'Tito''s', 'United States', 'Vodka', 40, 'A premium American vodka distilled from corn for a smooth finish.', true, '2024-02-02', 'Vodka', NULL, '', '', '', ''),
+    ('Grey Goose Vodka', 18, 'Grey Goose', 'France', 'Vodka', 40, 'A premium French vodka made from high-quality wheat.', true, '2024-02-02', 'Vodka', NULL, '', '', '', ''),
+    ('Absolut Vodka', 19, 'Absolut', 'Sweden', 'Vodka', 40, 'A famous Swedish vodka made with 100% natural ingredients.', true, '2024-02-02', 'Vodka', NULL, '', '', '', ''),
+    ('Tiger Beer', 20, 'Tiger Brewery', 'Singapore', 'Beer', 5, 'A crisp, refreshing lager brewed in Singapore.', true, '2024-02-02', 'Lager - All Styles', NULL, '', '', '', 'Pilsner'),
+    ('Tiger Crystal', 20, 'Tiger Brewery', 'Singapore', 'Beer', 4.6, 'A smooth, lighter version of the classic Tiger Beer.', true, '2024-02-02', 'Lager - All Styles', NULL, '', '', '', 'Helles'),
+    ('Tiger Black', 20, 'Tiger Brewery', 'Singapore', 'Beer', 6.9, 'A full-bodied, stronger version of Tiger Beer.', true, '2024-02-02', 'Lager - All Styles', NULL, '', '', '', 'Vienna Lager');
 
 INSERT INTO "usersFollowLists" (
     "userId", "users", "producers", "venues")

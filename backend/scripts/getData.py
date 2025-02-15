@@ -1399,6 +1399,21 @@ def getDrinkTypes():
     return jsonify(drink_types_data)
 
 # -----------------------------------------------------------------------------------------
+# [GET] DrinkCategories
+@blueprint.route("/getTypeCategories")
+def getTypeCategories():
+    conn = g.db
+    
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "typeCategories"')
+        type_categories_data = cursor.fetchall()
+    
+    if not type_categories_data:
+        return jsonify([])
+
+    return jsonify(type_categories_data)
+
+# -----------------------------------------------------------------------------------------
 # [GET] RequestListings
 @blueprint.route("/getRequestListings")
 def getRequestListings():
