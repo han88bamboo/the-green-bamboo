@@ -23,6 +23,7 @@ DROP TABLE IF EXISTS "observationTags" CASCADE;
 DROP TABLE IF EXISTS "producerUpdateLikes" CASCADE;
 DROP TABLE IF EXISTS "producers" CASCADE;
 DROP TABLE IF EXISTS "producersProfileViews" CASCADE;
+DROP TABLE IF EXISTS "producersOpeningHours" CASCADE;
 DROP TABLE IF EXISTS "producersProfileViewsViews" CASCADE;
 DROP TABLE IF EXISTS "producersQuestionAnswers" CASCADE;
 DROP TABLE IF EXISTS "producersUpdates" CASCADE;
@@ -245,6 +246,19 @@ CREATE TABLE "producersProfileViews" (
     "count" INTEGER, -- do i need this?
     "producerId" INTEGER REFERENCES "producers"("id") ON DELETE SET NULL -- [!] reference "producers" FK
     -- "views" INTEGER REFERENCES "producersProfileViewsViews"("id") ON DELETE SET NULL  -- [!] reference "producersProfileViewsViews" FK
+);
+
+-- ========= "producersOpeningHours" =========
+CREATE TABLE "producersOpeningHours" (
+    "id" SERIAL PRIMARY KEY,
+    "Monday" TEXT[],
+    "Tuesday" TEXT[],
+    "Wednesday" TEXT[],
+    "Thursday" TEXT[],
+    "Friday" TEXT[],
+    "Saturday" TEXT[],
+    "Sunday" TEXT[],
+    "producerId" INTEGER REFERENCES "producers"("id") ON DELETE SET NULL -- [!] reference "producers" FK
 );
 
 -- -- ========= [NEW!] "producersProfileViewsViews" =========

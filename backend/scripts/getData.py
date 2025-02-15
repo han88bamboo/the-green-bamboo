@@ -361,6 +361,11 @@ def getProducers():
                     WHERE qa."producerId" = p.id
                 ), '[]') AS "questionsAnswers",
                 COALESCE((
+                    SELECT row_to_json(oh)
+                    FROM "producersOpeningHours" oh
+                    WHERE oh."producerId" = p.id
+                ), '{}'::json) AS "openingHours",
+                COALESCE((
                     SELECT json_agg(json_build_object(
                         'id', u.id,
                         'date', u.date,
@@ -390,6 +395,7 @@ def getProducers():
         for row in producers_data:
             producer = dict(row)
             producer['questionsAnswers'] = producer['questionsAnswers'] if producer['questionsAnswers'] else []
+            producer['openingHours'] = producer['openingHours'] if producer['openingHours'] else {}
             producer['updates'] = producer['updates'] if producer['updates'] else []
             producers_list.append(producer)
 
@@ -434,6 +440,11 @@ def getProducer(id):
                     WHERE qa."producerId" = p.id
                 ), '[]') AS "questionsAnswers",
                 COALESCE((
+                    SELECT row_to_json(oh)
+                    FROM "producersOpeningHours" oh
+                    WHERE oh."producerId" = p.id
+                ), '{}'::json) AS "openingHours",
+                COALESCE((
                     SELECT json_agg(json_build_object(
                         'id', u.id,
                         'date', u.date,
@@ -461,6 +472,7 @@ def getProducer(id):
 
         producer = dict(producer_data)
         producer['questionsAnswers'] = producer['questionsAnswers'] if producer['questionsAnswers'] else []
+        producer['openingHours'] = producer['openingHours'] if producer['openingHours'] else {}
         producer['updates'] = producer['updates'] if producer['updates'] else []
 
         return jsonify(producer), 200
@@ -503,6 +515,11 @@ def getProducerByRequestId(id):
                     WHERE qa."producerId" = p.id
                 ), '[]') AS "questionsAnswers",
                 COALESCE((
+                    SELECT row_to_json(oh)
+                    FROM "producersOpeningHours" oh
+                    WHERE oh."producerId" = p.id
+                ), '{}'::json) AS "openingHours",
+                COALESCE((
                     SELECT json_agg(json_build_object(
                         'id', u.id,
                         'date', u.date,
@@ -530,6 +547,7 @@ def getProducerByRequestId(id):
 
         producer = dict(producer_data)
         producer['questionsAnswers'] = producer['questionsAnswers'] if producer['questionsAnswers'] else []
+        producer['openingHours'] = producer['openingHours'] if producer['openingHours'] else {}
         producer['updates'] = producer['updates'] if producer['updates'] else []
 
         return jsonify(producer), 200
