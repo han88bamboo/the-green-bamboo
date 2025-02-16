@@ -1,5 +1,4 @@
 # BA Wizards
-# “Happy Hour!” UGC Product Review Application
 
 <a>
     <img src="Images/Logo/88 Bamboo.png" title="The Green Bamboo" alt="The Green Bamboo" style="height: 150px">
@@ -37,7 +36,7 @@ The business objectives of this project are to enhance user engagement and reten
 
 ### Clone
 
-- Clone our github repository to your local machine using `https://github.com/shanniekwok/the-green-bamboo`
+- Clone our github repository to your local machine using `https://github.com/CarissaChia/the-green-bamboo/tree/Group-3`
 
 ### Setup
 
