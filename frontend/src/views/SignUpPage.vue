@@ -327,12 +327,10 @@
                 showPopup2: false,
                 showPopup3: false,
                 showOnboardPopup: false,
-                selectedDrinks: [],  // Stores selections from Popup 1
-                selectedFlavors: [], // Stores selections from Popup 2
-
+                
                 // Initial user variable
                 response:[],
-
+                
                 // Form variables
                 username:"",
                 displayName:'',
@@ -344,10 +342,12 @@
                 birthday:'',
                 ageCheck:'',
                 selectedCountry:'',
-
+                
                 countries: [],
                 // Submission variables
-
+                selectedDrinks: [],  // Stores selections from Popup 1
+                selectedFlavors: [], // Stores selections from Popup 2
+                
                 missingUsername:false,
                 missingDisplayName:false,
                 missingEmail:false,
@@ -499,7 +499,8 @@
 
                 let hashedPassword = this.hashPassword(this.username, this.password)
                 let joinDate = new Date().toISOString();
-                let submitAPI =  `${process.env.VUE_APP_API_URL}/createAccount/createAccount`
+                let submitAPI =  `${process.env.VUE_APP_API_URL}/createAccount/createAccount`  // comment out for local
+                // let submitAPI = "http://127.0.0.1:5000/createAccount/createAccount"  // comment our for deployment
                 let submitData = {
                     // pass in first name, last name, email, isadmin
                     "username": this.username,
@@ -529,6 +530,8 @@
                     },
                     "birthday":this.birthday,
                     "isAdmin":false,
+                    "choiceFlavours":[],
+                    "preferences":[]
                 }
                 this.createAccount(submitAPI, submitData);
             },
@@ -575,46 +578,92 @@
                 
             },
             goToPopup2(selectedOptions) {
-                if (selectedOptions.length >= 1) {
-                    this.selectedDrinks = selectedOptions;
-                    this.showPopup1 = false;
-                    this.showPopup2 = true;
-                } else {
-                    alert("Please select at least 1 drink option.");
-                }
-            },
-            goToPopup3(selectedOptions) {
-                if (selectedOptions.length >= 3) {
-                    this.selectedFlavors = selectedOptions;
-                    this.showPopup2 = false;
-                    this.showPopup3 = true;
-                } else {
-                    alert("Please select at least 3 flavors.");
-                }
-            },
-            completeSetup(selectedOptions) {
-                this.selectedPreferences = selectedOptions;
-                console.log("Final selections:", {
-                drinks: this.selectedDrinks,
-                flavors: this.selectedFlavors,
-                preferences: this.selectedPreferences,});
-                this.showOnboardPopup = true;
-                this.showPopup3 = false;
-            },
-            goToPopup1() {
-                this.showPopup2 = false;
-                this.showPopup1 = true;
-            },
-            goToPopup2From3() {
-                this.showPopup3 = false;
-                this.showPopup2 = true;
-            },
-            closePopup() {
-                this.showPopup1 = false;
-                this.showPopup2 = false;
-                this.showPopup3 = false;
-                this.showOnboardPopup = false;
-            },
+    if (selectedOptions.length >= 1) {
+      this.selectedDrinks = selectedOptions;
+      this.showPopup1 = false;
+      this.showPopup2 = true;
+    } else {
+      alert("Please select at least 1 drink option.");
+    }
+  },
+  goToPopup3(selectedOptions) {
+    if (selectedOptions.length >= 3) {
+      this.selectedFlavors = selectedOptions;
+      this.showPopup2 = false;
+      this.showPopup3 = true;
+    } else {
+      alert("Please select at least 3 flavors.");
+    }
+  },
+   async completeSetup(selectedOptions) {
+    this.selectedPreferences = selectedOptions;
+    console.log("Final selections:", {
+      user: this.username,
+      drinks: this.selectedDrinks,
+      flavors: this.selectedFlavors,
+      preferences: this.selectedPreferences,
+    });
+    this.showOnboardPopup = true;
+    this.showPopup3 = false;
+    let submitData = {
+        choiceDrinks: this.selectedDrinks,
+        choiceFlavours: this.selectedFlavors,
+        preferences: this.selectedPreferences,
+    }
+    try{
+        // let submitAPI = `http://127.0.0.1:5000/createAccount/addPreferences/${this.username}`   // comment out for deployment
+        let submitAPI = `${process.env.VUE_APP_API_URL}/createAccount/addPreferences/${this.username}`  // comment out for local
+        const response = await this.$axios.post(submitAPI, submitData)
+        return response;
+    } catch (error) {
+        console.error(error);
+        this.errorSubmission = true;
+        this.errorMessage = true;
+        this.submitForm = false;
+    }
+  },
+  goToPopup1() {
+    this.showPopup2 = false;
+    this.showPopup1 = true;
+  },
+  goToPopup2From3() {
+    this.showPopup3 = false;
+    this.showPopup2 = true;
+  },
+  closePopup() {
+    this.showPopup1 = false;
+    this.showPopup2 = false;
+    this.showPopup3 = false;
+    this.showOnboardPopup = false;
+  },
+            // goToPopup2() {
+            // this.showPopup1 = false;
+            // this.showPopup2 = true;
+            // this.showPopup3 = false;
+            // },
+            // goToPopup3() {
+            // this.showPopup2 = false;
+            // this.showPopup3 = true;
+            // },
+            // goToOnboardPopup() {
+            // this.showPopup3 = false;
+            // this.showOnboardPopup = true;
+            // },
+            // goToPopup1() {
+            // this.showPopup2 = false;
+            // this.showPopup1 = true;
+            // },
+            // completeSetup() {
+            // this.showPopup3 = false;
+            // this.showOnboardPopup = true;
+            // console.log("Signup process completed!");
+            // },
+            // closePopup() {
+            // this.showPopup1 = false;
+            // this.showPopup2 = false;
+            // this.showPopup3 = false;
+            // this.showOnboardPopup = false;
+            // },
 
             // create unique hash based on username and password
             hashPassword(username, password) {
