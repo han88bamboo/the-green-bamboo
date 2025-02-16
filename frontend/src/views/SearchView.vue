@@ -736,7 +736,7 @@ export default {
                 const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListings`);
                 this.listings = response.data;
 
-                // clear previous results
+                // Clear previous results
                 this.resultListings = [];
 
                 for (let listing of response.data) {
@@ -745,20 +745,47 @@ export default {
                     });
                     if (producer) {
                         listing["producerName"] = producer["producerName"];
-                    }
-                    else {
+                    } else {
                         listing["producerName"] = "";
                     }
                     this.resultListings.push(listing);
                 }
 
-                // search by listingName, originCountry, drinkType, typeCategory
+                console.log("Search listings:", this.resultListings);
+
+                // Search by listingName, originCountry, drinkType, typeCategory
                 this.resultListings = this.resultListings.filter((listing) => {
-                    return listing["listingName"]?.toLowerCase().includes(this.searchTerm) || listing["originCountry"]?.toLowerCase().includes(this.searchTerm) || listing["drinkType"]?.toLowerCase().includes(this.searchTerm) || listing["typeCategory"]?.toLowerCase().includes(this.searchTerm);
+                    return listing["listingName"]?.toLowerCase().includes(this.searchTerm) ||
+                        listing["originCountry"]?.toLowerCase().includes(this.searchTerm) ||
+                        listing["drinkType"]?.toLowerCase().includes(this.searchTerm) ||
+                        listing["typeCategory"]?.toLowerCase().includes(this.searchTerm);
                 });
+
                 this.originalResults = this.resultListings;
-            }
-            catch (error) {
+
+                // Observation Tags
+                if (this.resultListings.length === 0) {
+                    console.log("No results found, trying observation tag search...");
+
+                    const routeTag = this.$route.params.tag;
+                    console.log("Tag passed to runSearch:", routeTag);
+
+                    try {
+                        const observationTagPromise = await this.$axios.get(`http://127.0.0.1:5000/getData/getListingsByObservationTag/${encodeURIComponent(routeTag)}`);
+
+                        this.resultListings = observationTagPromise.data || []; 
+                        console.log("Observation Tags:", this.resultListings);
+
+                        this.observationTags = this.resultListings.filter(result =>
+                            result["listingName"]?.toLowerCase().includes(this.searchTerm.toLowerCase())
+                        );
+                    } catch (error) {
+                        console.error("Error fetching observation tags:", error);
+                        this.resultListings = []; 
+                        this.observationTags = [];
+                    }
+                }
+            } catch (error) {
                 console.error(error);
                 this.loadError = true;
             }
@@ -836,27 +863,6 @@ export default {
                 console.error(error);
                 this.loadError = true;
             }
-
-            // // Observation Tags
-            // const routeTag = this.$route.params.tag;
-            // console.log("Tag passed to runSearch:", routeTag);
-            // const observationTagPromise = this.$axios.get(`http://127.0.0.1:5000/getData/getListingsByObservationTag/${encodeURIComponent(this.$route.params.tag)}`)
-            //     .then(response => {
-                    // this.resultListings = response.data;
-                    // console.log("Observation Tags:", this.resultListings);
-
-                    // this.observationTags = this.resultListings.filter(resultListings =>
-                    // resultListings["listingName"]?.toLowerCase().includes(this.searchTerm.toLowerCase())
-                    // );
-                // })
-            //     .catch(error => console.error("Error fetching observation tags:", error));
-
-            // Promise.all([observationTagPromise]).then(() => {
-            //     this.dataLoaded = true;
-            // }).catch((error) => {
-            //     console.error("An error occurred with one of the promises", error);
-            //     this.dataLoaded = true;
-            // });
 
             this.dataLoaded = true;
         },

@@ -1440,7 +1440,6 @@ def get_listings_by_observation_tag(tag):
             cursor.execute(query, (selected_tag,))
 
             listings = cursor.fetchall()
-
             columns = [col[0] for col in cursor.description]  
 
             print("Columns:", columns)  
