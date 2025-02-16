@@ -95,9 +95,9 @@
       <div class="col-lg-9 col-md-6 col-12">
         <div class="container">
           <div class="row">
-            <div class="ps-lg-4 pe-lg-4 mobile-ps-4 mobile-pe-3">
+            <div class="ps-lg-4 pe-lg-4 mobile-pe-3">
               <h3
-                class="ps-lg-3 mobile-ps-1 mb-1 mt-1 mb-1 text-start text-dark fw-bold"
+                class="ps-lg-3 mb-1 mt-1 mb-1 text-start text-dark fw-bold mobile-mb-2 mobile-fs-4"
               >
                 Latest Drinks News
               </h3>
@@ -112,27 +112,34 @@
                 v-for="(news, index) in latestNews"
                 :key="index"
                 class="row pb-3"
-                style="max-height: 360px; overflow: hidden"
+                style="overflow: hidden"
               >
-                <img
-                  v-if="news.image"
-                  :src="news.image"
-                  class="img-fluid col-5"
-                  style="max-height: inherit"
-                  alt="News Image"
-                />
+                <!--image wrapper-->
+                <div
+                  class="img-fluid pe-0 mobile-ps-0"
+                  style="aspect-ratio: 1/1; width: 30%"
+                >
+                  <img
+                    v-if="news.image"
+                    :src="news.image"
+                    style="aspect-ratio: 1/1; object-fit: cover; width: 100%"
+                    alt="News Image"
+                  />
+                </div>
 
-                <div class="col-7 mobile-p-0">
+                <div class="col col-lg-7 mobile-p-0">
                   <div class="card-body ms-3">
-                    <h5 class="card-title fw-bold mb-3 mobile-fs-6">
+                    <h5 class="card-title fw-bold mb-3 mobile-fs-7 mobile-mb-1">
                       {{ news.title }}
                     </h5>
                     <p
-                      class="card-subtitle text-muted small mb-3 fst-italic mobile-fs-8"
+                      class="card-subtitle text-muted small mb-3 fst-italic mobile-fs-8 mobile-view-hide"
                     >
                       {{ formatDate(news.published) }}
                     </p>
-                    <p class="card-text text-muted mt-2 fst-italic mobile-fs-7">
+                    <p
+                      class="card-text text-muted mt-2 fst-italic mobile-fs-7 mobile-mb-2"
+                    >
                       {{ truncate(news.summary, 200) }}
                     </p>
                     <a
@@ -143,6 +150,11 @@
                     >
                       Read More
                     </a>
+                    <p
+                      class="card-subtitle text-muted small fst-italic mobile-fs-8 mobile-view-show"
+                    >
+                      {{ formatDate(news.published) }}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -212,7 +224,7 @@ export default {
       if (!text) return "";
 
       if (this.isMobile) {
-        const wordLimit = 10;
+        const wordLimit = 6;
         const words = text.split(" ");
         return words.length > wordLimit
           ? words.slice(0, wordLimit).join(" ") + "..."
