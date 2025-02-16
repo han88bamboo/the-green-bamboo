@@ -1,4 +1,4 @@
-# The Green Bamboo
+# BA Wizards
 # “Happy Hour!” UGC Product Review Application
 
 <a>
@@ -9,10 +9,12 @@
 
 | Member | Picture | Email
 | :---:  | :----: | :---: |
-| Leong Jun Wei | <img src="Images/Team Pictures/Jun Wei.png" width="100" height="100"> | jwleong.2020@scis.smu.edu.sg |
-| Shannie Kwok | <img src="Images/Team Pictures/Shannie.png" width="100" height="100"> | shanniekwok.2021@scis.smu.edu.sg |
-| Poh Li Ying | <img src="Images/Team Pictures/Li Ying.png" width="100" height="100"> |  liying.poh.2021@scis.smu.edu.sg |
-| Matthew Foo | <img src="Images/Team Pictures/Matthew.png" width="100" height="100"> | matthew.foo.2021@scis.smu.edu.sg |
+| Carissa Chia Shenru |  | carissachia.2022@scis.smu.edu.sg |
+| Chin Hui Juan Dycia |  | dycia.chin.2022@scis.smu.edu.sg |
+| Liew Wai Horng |  |  whliew.2022@scis.smu.edu.sg |
+| Kenneth Lim Hu Gui |  | kenneth.lim.2021@scis.smu.edu.sg |
+| Khoo Teck Xuan |  | txkhoo.2022@scis.smu.edu.sg |
+| Lee Pei Wen Jovinne |  | jovinne.lee.2022@scis.smu.edu.sg |
 | Kai Lin Choo | <img src="Images/Team Pictures/Kai Lin.jpeg" width="100" height="100"> | Product Owner | kailin@88bamboo.co |
 | Wesley Chia | <img src="Images/Team Pictures/Wesley.jpeg" width="100" height="100"> | Product Owner | wesley@88bamboo.co |
 
@@ -22,18 +24,14 @@
 
 ## Project Goals
 
-The goal of the project is to build out a program that allows users to search, bookmark, rate and review different bottle expressions, as well as to engage with other reviewers through upvotes/downvotes and comment replies. These features will be integrated within the broader 88Bamboo.co site, where the same user account can be used to access the already existing editorial and marketplace features on the site. The purpose of this feature would be to help deepen user engagement and retention, and make the process of drinks discovery more fun and interactive!
+The business objectives of this project are to enhance user engagement and retention on 88 Bamboo's DrinkX app by implementing two advanced features: personalised recommendation logic and a reverse image search tool. To achieve these goals, we will develop a recommendation engine using collaborative and content-based filtering to suggest bottle listings tailored to individual user preferences, and a reverse image search feature leveraging Convolutional Neural Networks (CNNs) for image-based identification and similarity matching. Expected outcomes are increased user interaction on the explore page, and a higher conversion rate from casual browsing to purchases. 
 
 ## Key Features
 
 <!-- TODO: to be filled -->
-- Browse drinks catalogue (listings table in database)
-- Search, sort and filter drinks listing
-- Find out where to try (venues like bars etc., based on proximity if location enabled) and where to buy (producers like distilleries) listings/drinks
-- Profile dashboards (Users, Venues, Producers)
-- Venue Menu
-- Profile Q & A and updates (Venues, Producers)
-- Administrator controls
+- Onboarding
+- Recommender System
+- Reverse Image Search
 
 ## Getting Started
 
