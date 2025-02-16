@@ -1220,11 +1220,15 @@ INSERT INTO "producersQuestionAnswers" (
 
 INSERT INTO "listings" (
     "listingName", "producerID", "bottler", "originCountry", "drinkType", "abv", "officialDesc", "allowMod", "addedDate", "typeCategory", "age", "reviewLink", "sourceLink", "photo")
-	VALUES ('Hennessy VS', 1, 'OB', 'Japan', 'Whiskey', 12, 'BEST EVEERRRR', true, '2024-10-05 00:14:37.661786', 'Spirit', 12, '', '', '');
+	VALUES 
+('Hennessy VS', 1, 'OB', 'Japan', 'Whiskey', 12, 'BEST EVEERRRR', true, '2024-10-05 00:14:37.661786', 'Spirit', 12, '', '', ''),
+('Hennessy VS2', 1, 'OB', 'Japan', 'Whiskey', 12, 'WOOHOOOOO', true, '2024-10-06 00:14:37.661786', 'Spirit', 12, '', '', '');
 
 insert into "reviews" (
 "id", "userID", "reviewTarget", "rating", "reviewDesc", "reviewType", "createdDate", "language", "finish", "willRecommend", "wouldBuyAgain", "taggedUsers", "flavourTag", "photo", "colour", "aroma", "location", "taste", "observationTag", "address")
-values (21, 1, 1, 5, 'This was absolutely fantastic!', 'Listing', '2025-01-13 18:27:38.498', 'English', 'Long, alittle more oaky now', true, false, '{}', '{}', '', '', '', null, '', '{Beginner Friendly}', '');
+values 
+(21, 1, 1, 5, 'This was absolutely fantastic!', 'Listing', '2025-01-13 18:27:38.498', 'English', 'Long, alittle more oaky now', true, false, '{}', '{}', '', '', '', null, '', '{Beginner Friendly}', ''),
+(17, 2, 2, 4, 'gooooooood goooooooodgoooooooodgoooooooodgoooooooodgooooooood', 'Listing', '2025-01-08 04:52:10.957', 'English', '', false, false, '{2}', '{2}', '', '', '', null, '', '{Beginner Friendly, Good for Gifts}', '');
 
 INSERT INTO "usersFollowLists" (
     "userId", "users", "producers", "venues")
