@@ -1562,11 +1562,6 @@ button.primary-square:hover {
     aspect-ratio: 1 / 1; /* Ensures the image remains a square */
     object-fit: cover; /* Ensures the image covers the entire area without stretching */
   }
-
-  .news-container.latestnews {
-    max-height: 250px !important;
-    overflow: hidden;
-  }
 }
 
 .producer-bottle-listing-page-image {
