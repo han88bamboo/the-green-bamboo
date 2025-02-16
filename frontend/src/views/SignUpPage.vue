@@ -287,7 +287,7 @@
         :options="['Good for Gifts', 'Beginner Friendly', 'Overhyped!', 'Is This Water?', 'For My Worst Enemy!', 'Broke the Bank', 'Acquired Taste']"
         showBackButton
         nextButtonText="Done"
-        @back="goToPopup2"
+        @back="goToPopup2From3"
         @next="completeSetup"
     />
 
@@ -577,7 +577,7 @@
                 }
                 
             },
-            goToPopup2(selectedOptions) {
+            goToPopup2(selectedOptions=[]) {
     if (selectedOptions.length >= 1) {
       this.selectedDrinks = selectedOptions;
       this.showPopup1 = false;
