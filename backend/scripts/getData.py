@@ -1,6 +1,6 @@
 # Port: 5000
 # Routes: /getAccountRequests (GET), /getCountries (GET), /getListings (GET), /getListing/<id> (GET), /getProducers (GET), /getProducer/<id> (GET),
-#           /getReviews (GET), /getReviewByTarget/<id> (GET), /getReviewsByUserIds (GET), /getUsers (GET), /getUser/<id> (GET), /getUserByUsername/<username> (GET), /getVenues (GET), 
+#           /getReviews (GET), /getReviewByTarget/<id> (GET), /getReviewsByUserIds (GET), /getProducerTourReviews (GET), /getUsers (GET), /getUser/<id> (GET), /getUserByUsername/<username> (GET), /getVenues (GET), 
 #           /getVenue/<id> (GET), /getVenuesAPI (GET), /getDrinkTypes (GET), /getRequestListings (GET), /getRequestListing/<id> (GET), /getRequestEdits (GET), 
 #           /getRequestEdit/<id> (GET), /getModRequests (GET), /getFlavourTags (GET), /getSubTags (GET), /getObservationTags (GET), /getColours (GET), 
 #           /getSpecialColours (GET), /getLanguages (GET), /getServingTypes (GET), /getProducersProfileViews (GET), /getVenuesProfileViewsByVenue/<id> (GET), /getRequestInaccuracyByVenue/<id> (GET)
@@ -786,6 +786,32 @@ def getReviewsByUserIds():
         'data': latest_reviews
     })
 
+# [GET] Producer Tour Reviews
+@blueprint.route("/getProducerTourReviews")
+def getTourReviews():
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        cursor.execute("""
+            SELECT "producerReviews".*, "producerReviewsUserVotes"."upvotes", "producerReviewsUserVotes"."downvotes"
+            FROM "producerReviews"
+            LEFT JOIN "producerReviewsUserVotes" ON "producerReviews"."id" = "producerReviewsUserVotes"."reviewId"
+        """)
+
+        reviews_data = cursor.fetchall()
+
+        if not reviews_data:
+            return jsonify([])
+        
+        for review in reviews_data:
+            review["userVotes"] = {
+                "upvotes": review["upvotes"] if review["upvotes"] else [],
+                "downvotes": review["downvotes"] if review["downvotes"] else []
+            }
+            del review["upvotes"]
+            del review["downvotes"]
+
+        return jsonify(reviews_data)
 # ----------------------
 # [NEW] TO BE ADDED:
 # ----------------------

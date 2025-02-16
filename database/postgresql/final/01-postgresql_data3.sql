@@ -32,6 +32,8 @@ DROP TABLE IF EXISTS "requestInaccuracy" CASCADE;
 DROP TABLE IF EXISTS "requestListings" CASCADE;
 DROP TABLE IF EXISTS "reviews" CASCADE;
 DROP TABLE IF EXISTS "reviewsUserVotes" CASCADE;
+DROP TABLE IF EXISTS "producerReviews" CASCADE;
+DROP TABLE IF EXISTS "producerReviewsUserVotes" CASCADE;
 DROP TABLE IF EXISTS "servingTypes" CASCADE;
 DROP TABLE IF EXISTS "specialColours" CASCADE;
 DROP TABLE IF EXISTS "subTags" CASCADE;
@@ -221,7 +223,7 @@ CREATE TABLE "users" (
     "pin" VARCHAR(255)
 );
 
--- ========= [NEW!] "producersQuestionAnswers" =========
+"-- ========= [NEW!] "producersQuestionAnswers" =========
 CREATE TABLE "producersQuestionAnswers" (
     "id" SERIAL PRIMARY KEY,
     "question" VARCHAR(255),
@@ -229,7 +231,7 @@ CREATE TABLE "producersQuestionAnswers" (
     "date" TIMESTAMP,
     "userId" INTEGER REFERENCES "users"("id") ON DELETE SET NULL, -- [!] reference "users"("id")
     "producerId" INTEGER REFERENCES "producers"("id") ON DELETE SET NULL -- [!] reference "producers"("id")
-);
+);"
 
 -- ========= [NEW!] "producersUpdates" =========
 CREATE TABLE "producersUpdates" (
@@ -358,6 +360,24 @@ CREATE TABLE "reviewsUserVotes" (
     "upvotes" TEXT[], -- Contain "users"("id")s
     "downvotes" TEXT[], -- Contain "users"("id")s
     "reviewId" INTEGER REFERENCES "reviews"("id") on DELETE SET NULL -- [!] reference "reviews" FK
+);
+
+CREATE TABLE "producerReviews" (
+    "id" SERIAL PRIMARY KEY,
+    "userID" INTEGER REFERENCES "users"("id") ON DELETE SET NULL, -- Reference to users table
+    "producerID" INTEGER REFERENCES "producers"("id") ON DELETE SET NULL, -- Reference to producers table
+    "rating" DECIMAL(3,1),
+    "reviewDesc" TEXT,
+    "createdDate" TIMESTAMP,
+    "photo" TEXT
+    -- "userVotes" SERIAL, -- [!] reference "producerReviewsUserVotes" FK
+);
+
+CREATE TABLE "producerReviewsUserVotes" (
+    "id" SERIAL PRIMARY KEY,
+    "upvotes" TEXT[], -- Contain "users"("id")s
+    "downvotes" TEXT[], -- Contain "users"("id")s
+    "reviewId" INTEGER REFERENCES "producerReviews"("id") on DELETE SET NULL -- [!] reference "producerReviews" FK
 );
 
 -- ========= "tokens" =========

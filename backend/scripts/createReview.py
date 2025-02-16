@@ -1,6 +1,6 @@
 # Port: 5021
-# Routes: /createReview (POST)
-# Dataclass: reviews
+# Routes: /createReview (POST), /createProducerReview (POST)
+# Dataclass: reviews, producerReviews
 # -----------------------------------------------------------------------------------------
 
 
@@ -283,3 +283,54 @@ def createReviews():
             "message": "An error occurred creating the listing."
         }), 500
 # ======================================================
+
+# [POST] Creates a producer tour review
+@blueprint.route("/createProducerReview", methods= ['POST'])
+def createProducerReviews():
+    raw_review = request.get_json()
+    conn = g.db
+    cur = conn.cursor()
+
+    producer_id = int(raw_review['producerID'])
+    user_id = int(raw_review['userID'])
+    created_date = datetime.strptime(raw_review['createdDate'], "%Y-%m-%dT%H:%M:%S.%fZ")
+
+    # Checking for duplicate review
+    cur.execute("""
+        SELECT * FROM "producerReviews" WHERE "producerID" = %s AND "userID" = %s
+    """, (producer_id, user_id))
+
+    if cur.fetchone() is not None:
+        return jsonify({
+            "code": 400,
+            "data": {
+                "review": None
+            },
+            "message": "Review already exists."
+        }), 400
+    
+    # Upload image into S3
+    if raw_review['photo']:
+        raw_review['photo'] = s3Images.uploadBase64ImageToS3(raw_review['photo'])
+
+    # Prepare the insert SQL for reviews
+    insert_review_sql = """INSERT INTO "producerReviews" ("userID", "producerID", "rating", "reviewDesc", "createdDate", "photo") 
+                           VALUES (%s, %s, %s, %s, %s, %s)"""
+    review_values = (user_id, producer_id, float(raw_review['rating']), raw_review['reviewDesc'], created_date, raw_review['photo'])
+
+    try:
+        cur.execute(insert_review_sql, review_values)
+        conn.commit()
+        return jsonify({
+            "code": 201,
+            "data": raw_review['reviewDesc']
+        }), 201
+    except Exception as e:
+        print(str(e))
+        return jsonify({
+            "code": 500,
+            "data": {
+                "review": None
+            },
+            "message": "An error occurred creating the listing."
+        }), 500

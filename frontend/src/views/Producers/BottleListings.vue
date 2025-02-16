@@ -698,38 +698,38 @@
                                         <div class="col-12 justify-content-start">
                                             
                                             <div class="form-group mb-2 mobile-mt-0 mt-3">
-    <div v-if="showFriendTagList.length > 0" class="form-label pb-2 text-start">
-        Tagged Friends:
-        <div class="row">
-            <div class="col">
-                <div class="d-flex flex-wrap gap-2">
-                    <div v-for="friend in showFriendTagList" :key="friend.id" class="mb-0 pb-0">
-                        <button @click="removeFriendTag(friend)" class="btn secondary-square-btn">
-                            {{ friend.username }}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+                                                <div v-if="showFriendTagList.length > 0" class="form-label pb-2 text-start">
+                                                    Tagged Friends:
+                                                    <div class="row">
+                                                        <div class="col">
+                                                            <div class="d-flex flex-wrap gap-2">
+                                                                <div v-for="friend in showFriendTagList" :key="friend.id" class="mb-0 pb-0">
+                                                                    <button @click="removeFriendTag(friend)" class="btn secondary-square-btn">
+                                                                        {{ friend.username }}
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
 
-    <input list="filteredFollowList" v-model="friendTag" class="form-control input-with-icon" id="friendTag"
-        placeholder="Tag friends" v-on:input="updateFriendTag">
-    
-    <datalist id="filteredFollowList">
-        <option v-for="user in filteredUsers" :key="user.id" :value="user.username">
-            {{ user.username }}
-        </option>
-    </datalist>
+                                                <input list="filteredFollowList" v-model="friendTag" class="form-control input-with-icon" id="friendTag"
+                                                    placeholder="Tag friends" v-on:input="updateFriendTag">
+                                                
+                                                <datalist id="filteredFollowList">
+                                                    <option v-for="user in filteredUsers" :key="user.id" :value="user.username">
+                                                        {{ user.username }}
+                                                    </option>
+                                                </datalist>
 
-    <div class="text-start mt-1">
-        <button v-if="selectedFriendTag !== null" class="btn tertiary-square-btn mt-1" @click="tagSpecificFriend">
-            Tag This Friend
-        </button>
-    </div>
-    
-    <p v-show="friendTag.length > 0" class="text-start mb-1 text-danger" id="friendTagError"></p>
-</div>
+                                                <div class="text-start mt-1">
+                                                    <button v-if="selectedFriendTag !== null" class="btn tertiary-square-btn mt-1" @click="tagSpecificFriend">
+                                                        Tag This Friend
+                                                    </button>
+                                                </div>
+                                                
+                                                <p v-show="friendTag.length > 0" class="text-start mb-1 text-danger" id="friendTagError"></p>
+                                            </div>
 
                                             <div class="form-group mb-2">
                                                 
@@ -1861,7 +1861,6 @@
                                 this.flavorTags.forEach(flavourTag => {
                                     // Filter subtags belonging to the current flavor tag
                                     const subTagsForFlavourTag = this.subTags.filter(subTag => subTag.familyTagId === flavourTag.id);
-                                    console.log(`Flavor Tag: ${flavourTag.familyTag}`, subTagsForFlavourTag);
 
                                     // Extract required information from subtags
                                     const subTagsInfo = subTagsForFlavourTag.map(subTag=> ({
@@ -2315,6 +2314,7 @@
                 const specificReview = this.filteredReviews.filter((review) => {
                     return review["userID"] == this.userID;
                 });
+                console.log("Specific Review", specificReview)
                 if(specificReview.length!=0){
                     this.inEdit=true
                     this.selectedLanguage= specificReview[0].language
@@ -2895,24 +2895,18 @@
 
             // from filtered reviews, create a dictionary with the count of each observation tag
             getFlavorTagCounts() {
-                
-                console.log("Sub Tags:", this.subTags);
-                console.log("Flavor Tags:", this.flavorTags);
-                console.log("Filtered Reviews:", this.filteredReviews); // Check if filteredReviews has data
-                
                 let allReviews = this.filteredReviews
                 let flavorTags = []
                 for (let review of allReviews) {
                     for (let tag of review.flavourTag) {
                         // convert ID into the string instead, make life easier
                         // flavorTags.push(tag)
-                        const subTag = this.subTags.find(subTag=>subTag.id === tag.id)
+                        const subTag = this.subTags.find(subTag=>subTag.id === parseInt(tag))
                         if(subTag){
                             const familyTag = this.flavorTags.find(family=>subTag.familyTagId === family.id)
                             if(familyTag){
                                 const hexcode = familyTag.hexcode
                                 const subtagInfo = subTag.subTag
-                                console.log(`SubTag Info: ${subtagInfo}, Hexcode: ${hexcode}`);
                                 flavorTags.push(subtagInfo + hexcode)
                             }
                         }
@@ -2940,20 +2934,10 @@
                 } else {
                     this.sorted_flavorTagCounts = sorted_flavorTagCounts
                 }
-                
-                // Debugging: Log the calculated values
-                console.log("Sorted Flavor Tag Counts:", this.sorted_flavorTagCounts);
-                for (const [tag, count] of Object.entries(this.sorted_flavorTagCounts)) {
-                    console.log(`Tag: ${tag}, Count: ${count}`);
-                }
-                console.log("Sorted Flavor Tag Counts:", this.sorted_flavorTagCounts);
             },
 
             // from filtered reviews, create a dictionary with the count of each flavour tag
-            getObservationTagCounts() {
-                console.log("Observation Tag Counts:", this.sorted_observationTagCounts);
-                
-
+            getObservationTagCounts() {                
                 let allReviews = this.filteredReviews
                 let observationTags = []
                 for (let review of allReviews) {
