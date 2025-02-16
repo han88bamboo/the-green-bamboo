@@ -174,6 +174,9 @@ export default {
 }
 
 .popup-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 10px;
   text-align: center;
   border: 2px solid #ccc;
@@ -181,6 +184,9 @@ export default {
   background-color: #f9f9f9;
   cursor: pointer;
   transition: background-color 0.3s ease, color 0.3s ease;
+  min-height: 40px; /* Ensures consistent height */
+  word-wrap: break-word; /* Wraps long words */
+  white-space: normal; /* Ensures text wraps instead of overflowing */
 }
 
 /* Selected option turns orange */
