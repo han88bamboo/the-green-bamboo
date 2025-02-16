@@ -194,7 +194,9 @@ CREATE TABLE "users" (
     "email" VARCHAR(255),
     "isAdmin" BOOLEAN,
     "birthday" TIMESTAMP,
-    "pin" VARCHAR(255)
+    "pin" VARCHAR(255),
+    "choiceFlavours" TEXT[],
+    "preferences" TEXT[]
 );
 
 -- ========= [NEW!] "producersQuestionAnswers" =========
