@@ -676,6 +676,8 @@
                             // For request mode
                             if (this.formType == "req") {
 
+                                console.log("Debugging previousData.duplicateLink:", previousData["duplicateLink"]);
+
                                 // If set to duplicate mode, but duplicate link is not present, redirect to edit mode
                                 if (this.formMode == "dup" && !previousData["duplicateLink"].trim()) {
                                     alert("This request is not a duplicate report!\nRedirecting to edit mode...\nNOTE: Please reload the page after redirection.");
@@ -820,8 +822,16 @@
             // Helper function to get drink style list for selected drink category ("tempTypeCategory")
             getDrinkStyleList() {
                 const category = this.drinkStyles.find(style => style.typeCategory === this.tempTypeCategory);
+
+                // Debugging check
+                if (!category || !category.drinkStyle) { 
+                    console.error("Category or drinkStyle is null:", category); 
+                }
+
+
                 this.tempDrinkStylesList = category ? category.drinkStyle : [];  // Ensure it doesn't break
-                this.tempDrinkStyle = "";
+                // If category.drinkStyle is an array, pick first element; otherwise, set to empty string
+                this.tempDrinkStyle = (category && category.drinkStyle.length > 0) ? category.drinkStyle[0] : ""; 
             },
 
             // Helper function to handle file selection for photo
@@ -857,7 +867,10 @@
             // Function to submit form
             async submitFunction(){
                 this.errors = [];
-                
+
+                console.log("Debugging editDesc:", this.form["editDesc"] ?? "Value is undefined or null");
+                console.log("Debugging duplicateLink:", this.form["duplicateLink"] ?? "Value is undefined or null");
+
                 // Form Validation for Edit/Duplicate Request
                 if (this.formType == "req" && (this.formMode == "edit" || this.formMode == "dup")) {
 
@@ -959,6 +972,13 @@
                         // Request Creation Mode
                         if (this.formMode == "new") {
                             submitAPI = `${process.env.VUE_APP_API_URL}/requestListing/requestListing`
+
+                             // Debugging before trimming drinkStyle
+                            console.log("DEBUG: tempDrinkStyle before trim:", this.tempDrinkStyle);
+                            if (this.tempDrinkStyle == null) {
+                                console.error("ERROR: tempDrinkStyle is null or undefined!");
+                            }
+
                             submitData = {
                                 "sourceLink": this.form["sourceLink"].trim(),
                                 "listingName": this.form["listingName"].trim(),
@@ -974,10 +994,10 @@
                                 "producerID": this.form["producerID"],
                                 "photo": this.form["photo"],
 
-                                "drinkType": this.tempDrinkType.trim(),
-                                "typeCategory": this.tempTypeCategory.trim(),
+                                "drinkType": (this.tempDrinkType || "").trim(),
+                                "typeCategory": (this.tempTypeCategory || "").trim(),
                                 "reviewStatus": false,
-                                "drinkStyle": this.tempDrinkStyle.trim(),
+                                "drinkStyle": (this.tempDrinkStyle || "").trim(),
                             }
 
                             if (this.prevListing) {
@@ -1011,9 +1031,18 @@
                         }
 
                     } else if (this.formType == "power") {
+                        // Debugging each form field before trimming
+                        console.log("Checking sourceLink:", this.form["sourceLink"]);
+                        console.log("Checking listingName:", this.form["listingName"]);
+                        console.log("Checking reviewLink:", this.form["reviewLink"]);
+                        console.log("Checking producerNew:", this.form["producerNew"]);
+                        console.log("Checking bottler:", this.form["bottler"]);
+                        console.log("Checking originCountry:", this.form["originCountry"]);
+                        console.log("Checking abv:", this.form["abv"]);
+                        console.log("Checking age:", this.form["age"]);
 
                         submitData = {
-                            "sourceLink": this.form["sourceLink"].trim(),
+                            "sourceLink": (this.form["sourceLink"] || "").trim(),
                             "listingName": this.form["listingName"].trim(),
                             "officialDesc": this.form["officialDesc"].trim(),
                             "reviewLink": this.form["reviewLink"].trim(),

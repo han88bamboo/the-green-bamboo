@@ -367,7 +367,7 @@
                                                         </span>
                                                         <span v-else>{{ specified_listing["drinkType"] }} | </span>
                                                         <span  class="text-decoration-none">{{ specified_listing["typeCategory"] }} | </span>
-                                                        <span  class="text-decoration-none">{{ specified_listing["drinkStyle"] }} | </span>
+                                                        <span  v-if="specified_listing['drinkStyle']"  class="text-decoration-none">{{ specified_listing["drinkStyle"] }} | </span>
                                                         <span  class="text-decoration-none">{{ specified_listing["abv"] }}% | </span>
                                                         <span class="text-decoration-none">{{ specified_listing["originCountry"] }}</span>
                 </p>
@@ -394,7 +394,7 @@
 
                             <!-- drink styles - added by tzh -->
                             <div class="col-6 col-lg-2 px-1 text-start mobile-view-hide text-color-black">
-                                <h5 class="text-body-secondary" style="margin-bottom:0;"> <b> {{ specified_listing["drinkStyle"] }} </b> </h5>
+                                <h5 class="text-body-secondary" style="margin-bottom:0;"> <b v-if="specified_listing['drinkStyle']"  > {{ specified_listing["drinkStyle"] }} </b> <b v-else> N/A </b></h5>
                                 <p class="mb-2"> <u> Drink Style </u> </p>
                                 
                             </div>
