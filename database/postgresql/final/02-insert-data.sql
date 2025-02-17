@@ -1155,7 +1155,8 @@ VALUES (
 );
 
 INSERT INTO "producers" (
-    "producerName", 
+    "id",
+	"producerName", 
     "producerDesc", 
     "originCountry", 
     "mainDrinks", 
@@ -1167,20 +1168,9 @@ INSERT INTO "producers" (
     "username", 
     "producerLink", 
     "stripeCustomerId"
-) VALUES (
-    'Hennessy', 
-    'This is Hennessy', 
-    'France', 
-    '{}', 
-    NULL, 
-    '-6552510', 
-    true, 
-    NULL, 
-    NULL, 
-    'Hennessy', 
-    '', 
-    NULL
-);
+) VALUES 
+    (3136, 'Hennessy', 'This is Hennessy', 'France', '{}', NULL, '-6552510', true, NULL, NULL, 'Hennessy', '', NULL),
+    (3127, 'Foursquare Distillery', 'Foursquare Rum Distillery is located on a former sugar plantation that dates back to approximately 1720.', 'Barbados', '{}', NULL, '-2099862240', true, NULL, null, 'Foursquare Distillery', '', null);
 
 INSERT INTO "venues" (
     "venueName", 
@@ -1219,16 +1209,16 @@ INSERT INTO "producersQuestionAnswers" (
     VALUES ('When are you going to release the next promotion?', 'SOON! CHECK FOR UPDATES!', '2024-10-04 16:08:59.899', 1, 1);
 
 INSERT INTO "listings" (
-    "listingName", "producerID", "bottler", "originCountry", "drinkType", "abv", "officialDesc", "allowMod", "addedDate", "typeCategory", "age", "reviewLink", "sourceLink", "photo")
+    "id", "listingName", "producerID", "bottler", "originCountry", "drinkType", "abv", "officialDesc", "allowMod", "addedDate", "typeCategory", "age", "reviewLink", "sourceLink", "photo")
 	VALUES 
-('Hennessy VS', 1, 'OB', 'Japan', 'Whiskey', 12, 'BEST EVEERRRR', true, '2024-10-05 00:14:37.661786', 'Spirit', 12, '', '', ''),
-('Hennessy VS2', 1, 'OB', 'Japan', 'Whiskey', 12, 'WOOHOOOOO', true, '2024-10-06 00:14:37.661786', 'Spirit', 12, '', '', '');
+(544777, 'Test Expression 1 - Foursquare “Doorlys” 14 Years', 3127, 'Original Bottling', 'Japan', 'Rum / Rhum', 17, 'BEST EVEERRRR', true, '2024-12-31 16:26:12.044', 'Molasses - Single Blended Rum (Pot & Column Still)', 12, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/ce6a60a0-2b0f-47a7-9992-dab21a447858.jpg'),
+(544778, 'Hennessy VS2', 3136, 'OB', 'Japan', 'Whiskey', 12, 'WOOHOOOOO', true, '2024-10-06 00:14:37.661786', 'Spirit', 12, '', '', '');
 
 insert into "reviews" (
 "id", "userID", "reviewTarget", "rating", "reviewDesc", "reviewType", "createdDate", "language", "finish", "willRecommend", "wouldBuyAgain", "taggedUsers", "flavourTag", "photo", "colour", "aroma", "location", "taste", "observationTag", "address")
 values 
-(21, 1, 1, 5, 'This was absolutely fantastic!', 'Listing', '2025-01-13 18:27:38.498', 'English', 'Long, alittle more oaky now', true, false, '{}', '{}', '', '', '', null, '', '{Beginner Friendly}', ''),
-(17, 2, 2, 4, 'gooooooood goooooooodgoooooooodgoooooooodgoooooooodgooooooood', 'Listing', '2025-01-08 04:52:10.957', 'English', '', false, false, '{2}', '{2}', '', '', '', null, '', '{Beginner Friendly, Good for Gifts}', '');
+(21, 1, 544777, 5, 'This was absolutely fantastic!', 'Listing', '2025-01-13 18:27:38.498', 'English', 'Long, alittle more oaky now', true, false, '{}', '{}', '', '', '', null, '', '{Beginner Friendly}', ''),
+(17, 2, 544777, 4, 'gooooooood goooooooodgoooooooodgoooooooodgoooooooodgooooooood', 'Listing', '2025-01-08 04:52:10.957', 'English', '', false, false, '{2}', '{2}', '', '', '', null, '', '{Beginner Friendly, Good for Gifts}', '');
 
 INSERT INTO "usersFollowLists" (
     "userId", "users", "producers", "venues")

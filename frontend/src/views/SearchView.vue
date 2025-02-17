@@ -773,15 +773,41 @@ export default {
                     try {
                         const observationTagPromise = await this.$axios.get(`http://127.0.0.1:5000/getData/getListingsByObservationTag/${encodeURIComponent(routeTag)}`);
 
-                        this.resultListings = observationTagPromise.data || []; 
+                        this.resultListings = observationTagPromise.data || [];
                         console.log("Observation Tags:", this.resultListings);
 
-                        this.observationTags = this.resultListings.filter(result =>
-                            result["listingName"]?.toLowerCase().includes(this.searchTerm.toLowerCase())
-                        );
+                        this.resultListings = this.resultListings.map(listing => ({
+                            id: listing[0],
+                            listingName: listing[1],
+                            producerID: listing[2],
+                            bottler: listing[3] || "",
+                            originCountry: listing[4] || "",
+                            drinkType: listing[5] || "",
+                            abv: listing[6] || null,
+                            officialDesc: listing[7] || "",
+                            allowMod: listing[8] || false,
+                            addedDate: listing[9] ? new Date(listing[9]).toUTCString() : "",
+                            drinkStyle: listing[10] || null,
+                            age: listing[11] || "",
+                            photo: listing[12] || "",
+                            producerName: listing[13] || "",
+                            reviewLink: listing[14] || "",
+                            sourceLink: listing[15] || "",
+                            typeCategory: listing[16] || ""
+                        }));
+
+                        console.log("Formatted Listings:", this.resultListings);
+
+                        this.observationTags = this.resultListings.filter((listing) => {
+                            return listing["listingName"]?.toLowerCase().includes(this.searchTerm) ||
+                                listing["originCountry"]?.toLowerCase().includes(this.searchTerm) ||
+                                listing["drinkType"]?.toLowerCase().includes(this.searchTerm) ||
+                                listing["typeCategory"]?.toLowerCase().includes(this.searchTerm);
+                        });
+
                     } catch (error) {
                         console.error("Error fetching observation tags:", error);
-                        this.resultListings = []; 
+                        this.resultListings = [];
                         this.observationTags = [];
                     }
                 }
