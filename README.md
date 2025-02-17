@@ -1,9 +1,5 @@
 # BA Wizards
 
-<a>
-    <img src="Images/Logo/88 Bamboo.png" title="The Green Bamboo" alt="The Green Bamboo" style="height: 150px">
-</a>
-
 ## Team
 
 | Member | Picture | Email
