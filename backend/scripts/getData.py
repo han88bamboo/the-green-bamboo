@@ -14,9 +14,12 @@
 
 import os
 import json
+import random
 from bson import json_util, ObjectId
 from flask import Blueprint, g, jsonify, request
 from bson.objectid import ObjectId
+from psycopg2.extras import RealDictCursor
+
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -134,6 +137,46 @@ def getListings():
     
     if not listings_data:
         return jsonify([])
+
+    return jsonify(listings_data)
+
+# -----------------------------------------------------------------------------------------
+# [GET] Get Listings from a randomly selected date
+@blueprint.route("/getRandomListings")
+def getRandomListings():
+    conn = g.db
+
+    with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        # Fetch distinct dates by converting timestamps to dates
+        cursor.execute('SELECT DISTINCT "addedDate"::DATE FROM "listings"')
+        date_results = cursor.fetchall()
+
+        if not date_results:
+            return jsonify({"error": "No dates found in listings"}), 400
+
+        # Log the fetched dates
+        print("Fetched date_results:", date_results)
+
+        try:
+            # Extract 'addedDate' values properly from RealDictRow
+            date_list = [row['addedDate'] for row in date_results if 'addedDate' in row]
+            
+            # Log the extracted date list
+            print("Extracted date_list:", date_list)
+
+            if not date_list:
+                return jsonify({"error": "Date extraction failed (empty list)"}), 400
+
+            random_date = random.choice(date_list)  # Select a random date
+        except Exception as e:
+            return jsonify({"error": f"Random selection failed: {str(e)}"}), 500
+
+        # Fetch listings from the selected random date
+        cursor.execute('SELECT * FROM "listings" WHERE "addedDate"::DATE = %s ORDER BY RANDOM() LIMIT 20', (random_date,))
+        listings_data = cursor.fetchall()
+
+    if not listings_data:
+        return jsonify({"error": "No listings found for selected date"}), 400
 
     return jsonify(listings_data)
 

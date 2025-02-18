@@ -61,6 +61,11 @@ const routes = [
     name: 'successfulonboarding',
     component: () => import('../views/SuccessfulOnboarding.vue')
   },
+  {
+    path: '/explore',
+    name: 'explore',
+    component: () => import('../views/RandomExplorePage.vue')
+  },
   // -------------------------------------------------------------------------------------
 
   // ----------------- PROFILE PAGES -----------------
