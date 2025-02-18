@@ -1,46 +1,70 @@
-# import random
-# from datetime import datetime, timedelta
-# from flask import Flask, request, jsonify
-# # from sqlalchemy import create_engine
+import random
+from flask import Flask, jsonify, Blueprint
+import os
+import psycopg2
+from dotenv import load_dotenv
+
+app = Flask(__name__)
+
+file_name = os.path.basename(__file__)
+blueprint = Blueprint(file_name[:-3], __name__)
+
+# Get a new database connection
+def get_db_connection():
+    load_dotenv()
+    return psycopg2.connect(
+        dbname=os.getenv("POSTGRES_DB"),
+        user=os.getenv("POSTGRES_USER"),
+        password=os.getenv("POSTGRES_PASSWORD"),
+        host=os.getenv("POSTGRES_HOST"),
+        port=os.getenv("POSTGRES_PORT")
+    )
 
 
-# app = Flask(__name__)
-
-# # Database connection
-# DATABASE_URL = "sqlite:///bottles.db"  # Replace with your actual database
-# engine = create_engine(DATABASE_URL)
-
-# def get_random_time_frame():
-#     """Selects a random time frame (2 weeks or 1 month) and generates a date range."""
-#     today = datetime.utcnow()
+# Fetch unique dates from addedDate column
+def get_random_date():
+    """Fetches a fresh random date from available listing dates each time."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
     
-#     # Pick either 14 days (2 weeks)
-#     duration = random.choice([14])
+    cursor.execute('SELECT DISTINCT DATE("addedDate") FROM "listings"')
+    dates = cursor.fetchall()
     
-#     # Randomly choose a start date within the last 6 months
-#     max_past_days = 180 
-#     random_days_back = random.randint(0, max_past_days)
-#     start_date = today - timedelta(days=random_days_back)
-#     end_date = start_date + timedelta(days=duration)
+    cursor.close()
+    conn.close()
+    
+    if not dates:
+        return None  # Return None if no dates exist
+    
+    return random.choice([date[0] for date in dates])  # Pick a fresh random date
 
-#     return start_date, end_date
+# Fetch bottles listed on a fresh randomly chosen existing date
+def fetch_random_bottles():
+    random_date = get_random_date()
 
-# @app.route("/explore", methods=["GET"])
-# def get_explore_bottles():
-#     """Fetches a random set of bottles based on a random time frame."""
-#     start_date, end_date = get_random_time_frame()
+    if not random_date:
+        return []  # Return empty list if no dates exist
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        SELECT * FROM "listings"
+        WHERE DATE("addedDate") = %s
+        ORDER BY RANDOM()
+        LIMIT 20
+    """, (random_date,))
+    
+    bottles = cursor.fetchall()
+    
+    cursor.close()
+    conn.close()
+    
+    return bottles
 
-#     with engine.connect() as conn:
-#         query = text("""
-#             SELECT * FROM bottles
-#             WHERE posted_at BETWEEN :start_date AND :end_date
-#             ORDER BY RANDOM()
-#             LIMIT 20
-#         """)
-#         results = conn.execute(query, {"start_date": start_date, "end_date": end_date}).fetchall()
+@blueprint.route("/explore", methods=["GET"])
+def get_explore_bottles():
+    """Fetches a random set of bottles from a fresh random date each request."""
+    bottles = fetch_random_bottles()
+    return jsonify(bottles)
 
-#     bottles = [dict(row) for row in results]
-#     return jsonify(bottles)
-
-# if __name__ == "__main__":
-#     app.run(debug=True)
