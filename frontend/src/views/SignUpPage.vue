@@ -284,6 +284,7 @@
         :isVisible="true"
         title="Create your profile and build your taste palate!"
         question="Which of these drinks would you most like to try?"
+        note="(Please pick at least 1 category)"
         :options="['Good for Gifts', 'Beginner Friendly', 'Overhyped!', 'Is This Water?', 'For My Worst Enemy!', 'Broke the Bank', 'Acquired Taste']"
         showBackButton
         nextButtonText="Done"
