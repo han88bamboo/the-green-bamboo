@@ -140,6 +140,22 @@ def getListings():
 
     return jsonify(listings_data)
 
+#  [GET] ALL Listing Names in Listing Table
+@blueprint.route("/getListingsName")
+def getListingsName():
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "listings"')
+        listingsName_data = cursor.fetchall()
+    
+    if not listingsName_data:
+        return jsonify([])
+    
+    # Extract listingName from each record
+    listing_names = [listing['listingName'] for listing in listingsName_data]
+
+    return jsonify(listing_names)
 # -----------------------------------------------------------------------------------------
 # [GET] Get Listings from a randomly selected date
 @blueprint.route("/getRandomListings")
