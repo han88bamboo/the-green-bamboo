@@ -334,7 +334,7 @@
 
         <!-- candy fixing this -->
 
-        <router-link :to="latestnews">
+        <router-link :to="'/Latest-News'">
           <button
             class="btn primary-btn border-0 fw-bold"
             type="button"
