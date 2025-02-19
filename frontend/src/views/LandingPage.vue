@@ -1,5 +1,6 @@
 <template>
-    <NavBar />
+    <LandingPageNavBar />
+    
     <!-- Hero Section with Search -->
     <div class="hero-section position-relative text-center py-5">
         <img src="../../Images/Background/LandingPage.png" class="hero-bg position-absolute w-100 h-100 top-0 start-0"
@@ -8,35 +9,7 @@
             <h1 class="text-white mb-4">Find Your Next Favourite Drink</h1>
             <div class="row justify-content-center">
                 <div class="col-md-6">
-                    <div class="col mobile-view-hide d-flex align-items-center">
-                        <!-- search bar tzh added mobile-view-hide -->
-                        <div class="col-8 position-relative search-bar d-flex" style="height: 50px">
-                            <input class="form-control fst-italic" type="text" placeholder="" style="width: 90%"
-                                v-model="searchInput" v-on:keyup.enter="goSearch" />
-                            <img src="../../Images/Others/search-green.png" style="
-                                    width: 30px;
-                                    height: 30px;
-                                    margin: 0px 10px;
-                                    align-self: center;
-                                " v-on:click="goSearch" />
-                        </div>
-
-                        <!-- camera button -->
-                        <div class="col mobile-view-hide">
-                            <button class="btn primary-btn-less-round-green d-flex align-items-center" style="
-                                    height: 50px;
-                                    margin-left: 10px;
-                                    padding: 0px 15px;
-                                " v-on:click="imageSearch">
-                                <span>Scan bottle</span>
-                                <img src="../../Images/Others/camera-white.png" style="
-                                        width: 30px;
-                                        height: 30px;
-                                        margin-left: 10px;
-                                    " />
-                            </button>
-                        </div>
-                    </div>
+                    <SearchBar/>
 
                     <router-link :to="'/'">
                         <button class="btn btn-lg text-white" style="background-color: #83a9e8; margin-top: 20px"
@@ -49,7 +22,7 @@
         </div>
     </div>
     <!-- Hero End -->
-
+    
     <!-- Icon Section -->
     <div class="container py-4">
         <div class="row g-4">
@@ -574,11 +547,13 @@
 </template>
 
 <script>
-import NavBar from "@/components/NavBar.vue";
+import LandingPageNavBar from "@/components/LandingPageNavBar.vue";
+import SearchBar from "@/components/SearchBar.vue";
 
 export default {
     components: {
-        NavBar,
+        LandingPageNavBar,
+        SearchBar
     },
     data() {
         return {
@@ -637,6 +612,7 @@ export default {
         },
 
         // For search feature
+        /*
         goSearch() {
             if (this.searchInput !== "") {
                 // Remove any '/' from search input
@@ -651,7 +627,7 @@ export default {
                 }
             }
         },
-
+        */
         goSearchTag(tag = "") {
             if (!tag) return;
 
@@ -676,6 +652,7 @@ export default {
         },
 
         // Route to image search page
+        /*
         imageSearch() {
             // If already on image search page, refresh the page
             if (this.$route.path.split("/")[1] === "imageSearch") {
@@ -685,7 +662,7 @@ export default {
                 this.$router.push({ path: "/imageSearch" });
             }
         },
-
+        */
         async fetchRSS() {
             try {
                 const response = await this.$axios.get(
