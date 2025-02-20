@@ -639,6 +639,10 @@ def importListings():
     image_urls = []
 
     for row in rows:
+        if len(row) < len(column_data_types):
+            print(f"Skipping row with missing columns: {row}")
+            continue
+        
         converted_row = []
         for data_type, value in zip(column_data_types, row):
             if data_type is float:
@@ -684,14 +688,20 @@ def importListings():
     for listing, s3_url in zip(listings_to_insert, s3_urls):
         listing['photo'] = s3_url
 
+    print(f"Total rows in CSV: {len(rows)}")
+    print(f"Total listings perpared for insertion: {len(listings_to_insert)}")
+
     # Bulk insert listings
-    listing_columns = listings_to_insert[0].keys()
-    listing_query = "INSERT INTO listings ({}) VALUES %s".format(
-        ', '.join(f'"{col}"' for col in listing_columns)
-    )
-    listing_values = [tuple(listing.values()) for listing in listings_to_insert]
-    execute_values(cur, listing_query, listing_values)
-    conn.commit()
+    if listings_to_insert:
+        listing_columns = listings_to_insert[0].keys()
+        listing_query = "INSERT INTO listings ({}) VALUES %s".format(
+            ', '.join(f'"{col}"' for col in listing_columns)
+        )
+        listing_values = [tuple(listing.values()) for listing in listings_to_insert]
+        execute_values(cur, listing_query, listing_values)
+        conn.commit()
+
+        print(f"Succesfully inserted {len(listings_to_insert)} listings")
 
     return jsonify({
         "code": 201,
