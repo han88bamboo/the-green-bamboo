@@ -1170,7 +1170,8 @@ INSERT INTO "producers" (
     "stripeCustomerId"
 ) VALUES 
     (3136, 'Hennessy', 'This is Hennessy', 'France', '{}', NULL, '-6552510', true, NULL, NULL, 'Hennessy', '', NULL),
-    (3127, 'Foursquare Distillery', 'Foursquare Rum Distillery is located on a former sugar plantation that dates back to approximately 1720.', 'Barbados', '{}', NULL, '-2099862240', true, NULL, null, 'Foursquare Distillery', '', null);
+    (3127, 'Foursquare Distillery', 'Foursquare Rum Distillery is located on a former sugar plantation that dates back to approximately 1720.', 'Barbados', '{}', NULL, '-2099862240', true, NULL, null, 'Foursquare Distillery', '', null),
+	(1, 'HennessyVS2', 'This is HennessyVS2', 'France', '{}', NULL, '10362460', true, NULL, NULL, 'Hennessy', '', null);
 
 INSERT INTO "venues" (
     "venueName", 
