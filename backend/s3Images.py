@@ -24,6 +24,7 @@ else:
 
 
 def uploadBase64ImageToS3(base64_string):
+    credentials = None # Initialize credentials to avoid reference error
 
     # For local development (comment out before deployment)
     if purpose == 'development':
@@ -46,7 +47,7 @@ def uploadBase64ImageToS3(base64_string):
     if purpose == 'production':
         s3 = boto3.client('s3')
     else:
-        s3 = boto3.client('s3', region_name=region, **credentials)
+        s3 = boto3.client('s3', region_name=region, **credentials) if credentials else boto3.client('s3', region_name=region)
 
     object_key = f'{uuid.uuid4()}.jpg'
     try:
@@ -80,6 +81,7 @@ def uploadURLtoS3(url):
     return ''
 
 def deleteImageFromS3(url):
+    credentials = None # Initialize credentials to avoid reference error
 
     # For local development (comment out before deployment)
     if purpose == 'development':
@@ -105,7 +107,7 @@ def deleteImageFromS3(url):
 
     # For local development (comment out before deployment)
     if purpose == 'development':
-        s3 = boto3.client('s3', region_name=region, **credentials)
+        s3 = boto3.client('s3', region_name=region, **credentials) if credentials else boto3.client('s3', region_name=region)
     else:
         s3 = boto3.client('s3')
 
