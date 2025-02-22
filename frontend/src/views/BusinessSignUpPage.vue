@@ -484,6 +484,8 @@
                     errorCount++
                 }
 
+                console.log(1)
+
                 // First name validation
                 if(this.firstName == ''){
                     this.missingFirstName = true
@@ -505,9 +507,10 @@
                 if(this.businessLink!=''){
                     if (!this.businessLink.includes('/')){
                         this.invalidBusinessLink = true
+                        errorCount++
                     }
-                    errorCount++
                 }
+
                 if(errorCount>0){
                     return null
                 }
@@ -539,6 +542,8 @@
                     "isNew": true
                 }
                 this.createAccount(submitAPI,submitData)
+                console.log(submitData)
+                console.log(errorCount)
             },
 
             async createAccount(submitAPI,submitData){
