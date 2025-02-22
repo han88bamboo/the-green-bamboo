@@ -208,6 +208,7 @@
     <!-- Trending End -->
 
     <!-- News Section -->
+    <!-- News Section -->
     <div class="container pb-4">
         <div class="d-sm-none border-0 mb-3">
             <h2 class="fw-bold mb-0" style="text-align: left; padding-left: 10px">
@@ -216,245 +217,240 @@
         </div>
 
         <div class="container pb-4">
-            <!-- Latest News Section -->
-            <template v-for="(category, index) in articles" :key="index">
-                <div class="mb-4" v-if="Object.keys(category)[0] === 'latest_news'">
-                    <div class="d-none d-md-flex align-items-start gap-3 mb-3">
-                        <h2 class="h5 fw-bold mb-0">
-                            {{ sectionTitles[Object.keys(category)[0]] }}
-                        </h2>
-                    </div>
-                    <div class="row">
-                        <div class="col-12 col-sm-6 col-lg-3 mb-3" v-for="(
-                                article, artIndex
-                            ) in category.latest_news.slice(0, 4)" :key="'latest-' + artIndex">
-                            <div class="card h-100" style="background-color: transparent">
-                                <!-- Desktop view (sm and up) -->
-                                <div class="d-none d-sm-block">
-                                    <img :src="article.image_url" class="card-img-top" alt="News Image"
-                                        style="height: 180px; object-fit: cover" />
-                                    <div class="card-body d-flex flex-column justify-content-between"
-                                        style="height: 100px">
-                                        <h6 class="fst-italic text-muted text-start">
-                                            {{
-                                                article.title
-                                                    .split(" ")
-                                                    .slice(0, 15)
-                                                    .join(" ") +
-                                                (article.title.split(" ")
-                                                    .length > 15
-                                                    ? "..."
-                                                    : "")
-                                            }}
-                                        </h6>
-                                        <a :href="article.link" target="_blank" class="stretched-link"></a>
-                                    </div>
-                                </div>
+            <!-- Loading Spinner -->
+            <div v-if="loading" class="d-flex justify-content-center align-items-center" style="height: 6rem;">
+                <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
 
-                                <!-- Mobile view (xs only) -->
-                                <div class="d-sm-none border-0">
-                                    <div class="row g-0">
-                                        <div class="col-4">
-                                            <div style="
-                                                    width: 120px;
-                                                    height: 110px;
-                                                    overflow: hidden;
-                                                ">
-                                                <img :src="article.image_url" class="img-fluid" alt="News Image" style="
-                                                        height: 120px;
-                                                        object-fit: cover;
-                                                    " />
+            <!-- Content (only shown when not loading) -->
+            <template v-else>
+                <!-- Latest News Section -->
+                <template v-for="(category, index) in articles" :key="index">
+                    <div class="mb-4" v-if="Object.keys(category)[0] === 'latest_news'">
+                        <div class="d-none d-md-flex align-items-start gap-3 mb-3">
+                            <h2 class="h5 fw-bold mb-0">
+                                {{ sectionTitles[Object.keys(category)[0]] }}
+                            </h2>
+                        </div>
+                        <div class="row">
+                            <div class="col-12 col-sm-6 col-lg-3 mb-3" 
+                                 v-for="(article, artIndex) in category.latest_news.slice(0, 4)" 
+                                 :key="'latest-' + artIndex">
+                                <div class="card h-100" style="background-color: transparent">
+                                    <!-- Desktop view (sm and up) -->
+                                    <div class="d-none d-sm-block">
+                                        <img :src="article.image_url" 
+                                             class="card-img-top" 
+                                             alt="News Image"
+                                             style="height: 180px; object-fit: cover" />
+                                        <div class="card-body d-flex flex-column justify-content-between"
+                                             style="height: 100px">
+                                            <h6 class="fst-italic text-muted text-start">
+                                                {{
+                                                    article.title
+                                                        .split(" ")
+                                                        .slice(0, 15)
+                                                        .join(" ") +
+                                                    (article.title.split(" ")
+                                                        .length > 15
+                                                        ? "..."
+                                                        : "")
+                                                }}
+                                            </h6>
+                                            <a :href="article.link" target="_blank" class="stretched-link"></a>
+                                        </div>
+                                    </div>
+
+                                    <!-- Mobile view (xs only) -->
+                                    <div class="d-sm-none border-0">
+                                        <div class="row g-0">
+                                            <div class="col-4">
+                                                <div style="width: 120px; height: 110px; overflow: hidden;">
+                                                    <img :src="article.image_url" 
+                                                         class="img-fluid" 
+                                                         alt="News Image"
+                                                         style="height: 120px; object-fit: cover;" />
+                                                </div>
+                                            </div>
+                                            <div class="col-8 ps-2">
+                                                <div class="card-body px-0 d-flex justify-content-center"
+                                                     style="height: 100%">
+                                                    <h6 class="fst-italic text-muted text-start mb-0">
+                                                        {{
+                                                            article.title
+                                                                .split(" ")
+                                                                .slice(0, 20)
+                                                                .join(" ") +
+                                                            (article.title.split(" ")
+                                                                .length > 20
+                                                                ? "..."
+                                                                : "")
+                                                        }}
+                                                    </h6>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div class="col-8 ps-2">
-                                            <div class="card-body px-0 d-flex justify-content-center"
-                                                style="height: 100%">
-                                                <h6 class="fst-italic text-muted text-start mb-0">
+                                    </div>
+                                    <a :href="article.link" target="_blank" class="stretched-link"></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Spotlight and Reviews Row -->
+                <div class="row">
+                    <!-- Spotlight Section -->
+                    <template v-for="(category, index) in articles" :key="'spotlight-section-' + index">
+                        <div class="col-lg-6" v-if="Object.keys(category)[0] === 'spotlight'">
+                            <div class="d-none d-md-flex align-items-start gap-3 mb-3">
+                                <h2 class="h5 fw-bold mb-0">
+                                    {{ sectionTitles[Object.keys(category)[0]] }}
+                                </h2>
+                            </div>
+                            <div class="row">
+                                <div class="col-12 col-sm-6 mb-3" 
+                                     v-for="(article, artIndex) in category.spotlight.slice(0, 2)" 
+                                     :key="'spotlight-' + artIndex">
+                                    <div class="card h-100" style="background-color: transparent">
+                                        <!-- Desktop view -->
+                                        <div class="d-none d-sm-block">
+                                            <img :src="article.image_url" 
+                                                 class="card-img-top" 
+                                                 alt="News Image"
+                                                 style="height: 180px; object-fit: cover;" />
+                                            <div class="card-body d-flex flex-column justify-content-between"
+                                                 style="height: 100px">
+                                                <h6 class="fst-italic text-muted text-start">
                                                     {{
                                                         article.title
                                                             .split(" ")
-                                                            .slice(0, 20)
+                                                            .slice(0, 15)
                                                             .join(" ") +
-                                                        (article.title.split(
-                                                            " "
-                                                        ).length > 20
+                                                        (article.title.split(" ")
+                                                            .length > 15
                                                             ? "..."
                                                             : "")
                                                     }}
                                                 </h6>
+                                                <a :href="article.link" target="_blank" class="stretched-link"></a>
                                             </div>
                                         </div>
+
+                                        <!-- Mobile view -->
+                                        <div class="d-sm-none border-0">
+                                            <div class="row g-0">
+                                                <div class="col-4">
+                                                    <div style="width: 120px; height: 110px; overflow: hidden;">
+                                                        <img :src="article.image_url" 
+                                                             class="img-fluid" 
+                                                             alt="News Image"
+                                                             style="height: 120px; object-fit: cover;" />
+                                                    </div>
+                                                </div>
+                                                <div class="col-8 ps-2">
+                                                    <div class="card-body px-0 d-flex justify-content-center"
+                                                         style="height: 100%">
+                                                        <h6 class="fst-italic text-muted text-start mb-0">
+                                                            {{
+                                                                article.title
+                                                                    .split(" ")
+                                                                    .slice(0, 20)
+                                                                    .join(" ") +
+                                                                (article.title.split(" ")
+                                                                    .length > 20
+                                                                    ? "..."
+                                                                    : "")
+                                                            }}
+                                                        </h6>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <a :href="article.link" target="_blank" class="stretched-link"></a>
                                     </div>
                                 </div>
-                                <a :href="article.link" target="_blank" class="stretched-link"></a>
                             </div>
                         </div>
-                    </div>
+                    </template>
+
+                    <!-- Reviews Section -->
+                    <template v-for="(category, index) in articles" :key="'reviews-section-' + index">
+                        <div class="col-lg-6" v-if="Object.keys(category)[0] === 'reviews'">
+                            <div class="d-none d-md-flex align-items-start gap-3 mb-3">
+                                <h2 class="h5 fw-bold mb-0">
+                                    {{ sectionTitles[Object.keys(category)[0]] }}
+                                </h2>
+                            </div>
+                            <div class="row">
+                                <div class="col-12 col-sm-6 mb-3" 
+                                     v-for="(article, artIndex) in category.reviews.slice(0, 2)" 
+                                     :key="'review-' + artIndex">
+                                    <div class="card h-100" style="background-color: transparent">
+                                        <!-- Desktop view -->
+                                        <div class="d-none d-sm-block">
+                                            <img :src="article.image_url" 
+                                                 class="card-img-top" 
+                                                 alt="News Image"
+                                                 style="height: 180px; object-fit: cover;" />
+                                            <div class="card-body d-flex flex-column justify-content-between"
+                                                 style="height: 100px">
+                                                <h6 class="fst-italic text-muted text-start">
+                                                    {{
+                                                        article.title
+                                                            .split(" ")
+                                                            .slice(0, 15)
+                                                            .join(" ") +
+                                                        (article.title.split(" ")
+                                                            .length > 15
+                                                            ? "..."
+                                                            : "")
+                                                    }}
+                                                </h6>
+                                                <a :href="article.link" target="_blank" class="stretched-link"></a>
+                                            </div>
+                                        </div>
+
+                                        <!-- Mobile view -->
+                                        <div class="d-sm-none border-0">
+                                            <div class="row g-0">
+                                                <div class="col-4">
+                                                    <div style="width: 120px; height: 110px; overflow: hidden;">
+                                                        <img :src="article.image_url" 
+                                                             class="img-fluid" 
+                                                             alt="News Image"
+                                                             style="height: 120px; object-fit: cover;" />
+                                                    </div>
+                                                </div>
+                                                <div class="col-8 ps-2">
+                                                    <div class="card-body px-0 d-flex justify-content-center"
+                                                         style="height: 100%">
+                                                        <h6 class="fst-italic text-muted text-start mb-0">
+                                                            {{
+                                                                article.title
+                                                                    .split(" ")
+                                                                    .slice(0, 20)
+                                                                    .join(" ") +
+                                                                (article.title.split(" ")
+                                                                    .length > 20
+                                                                    ? "..."
+                                                                    : "")
+                                                            }}
+                                                        </h6>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <a :href="article.link" target="_blank" class="stretched-link"></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
                 </div>
             </template>
-
-            <!-- Spotlight and Reviews Row -->
-            <div class="row">
-                <!-- Spotlight Section -->
-                <template v-for="(category, index) in articles" :key="'spotlight-section-' + index">
-                    <div class="col-lg-6" v-if="Object.keys(category)[0] === 'spotlight'">
-                        <div class="d-none d-md-flex align-items-start gap-3 mb-3">
-                            <h2 class="h5 fw-bold mb-0">
-                                {{ sectionTitles[Object.keys(category)[0]] }}
-                            </h2>
-                        </div>
-                        <div class="row">
-                            <div class="col-12 col-sm-6 mb-3" v-for="(
-                                    article, artIndex
-                                ) in category.spotlight.slice(0, 2)" :key="'spotlight-' + artIndex">
-                                <div class="card h-100" style="background-color: transparent">
-                                    <!-- Desktop view (sm and up) -->
-                                    <div class="d-none d-sm-block">
-                                        <img :src="article.image_url" class="card-img-top" alt="News Image" style="
-                                                height: 180px;
-                                                object-fit: cover;
-                                            " />
-                                        <div class="card-body d-flex flex-column justify-content-between"
-                                            style="height: 100px">
-                                            <h6 class="fst-italic text-muted text-start">
-                                                {{
-                                                    article.title
-                                                        .split(" ")
-                                                        .slice(0, 15)
-                                                        .join(" ") +
-                                                    (article.title.split(" ")
-                                                        .length > 15
-                                                        ? "..."
-                                                        : "")
-                                                }}
-                                            </h6>
-                                            <a :href="article.link" target="_blank" class="stretched-link"></a>
-                                        </div>
-                                    </div>
-
-                                    <!-- Mobile view (xs only) -->
-                                    <div class="d-sm-none border-0">
-                                        <div class="row g-0">
-                                            <div class="col-4">
-                                                <div style="
-                                                        width: 120px;
-                                                        height: 110px;
-                                                        overflow: hidden;
-                                                    ">
-                                                    <img :src="article.image_url" class="img-fluid" alt="News Image"
-                                                        style="
-                                                            height: 120px;
-                                                            object-fit: cover;
-                                                        " />
-                                                </div>
-                                            </div>
-                                            <div class="col-8 ps-2">
-                                                <div class="card-body px-0 d-flex justify-content-center"
-                                                    style="height: 100%">
-                                                    <h6 class="fst-italic text-muted text-start mb-0">
-                                                        {{
-                                                            article.title
-                                                                .split(" ")
-                                                                .slice(0, 20)
-                                                                .join(" ") +
-                                                            (article.title.split(
-                                                                " "
-                                                            ).length > 20
-                                                                ? "..."
-                                                                : "")
-                                                        }}
-                                                    </h6>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <a :href="article.link" target="_blank" class="stretched-link"></a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </template>
-
-                <!-- Reviews Section -->
-                <template v-for="(category, index) in articles" :key="'reviews-section-' + index">
-                    <div class="col-lg-6" v-if="Object.keys(category)[0] === 'reviews'">
-                        <div class="d-none d-md-flex align-items-start gap-3 mb-3">
-                            <h2 class="h5 fw-bold mb-0">
-                                {{ sectionTitles[Object.keys(category)[0]] }}
-                            </h2>
-                        </div>
-                        <div class="row">
-                            <div class="col-12 col-sm-6 mb-3" v-for="(
-                                    article, artIndex
-                                ) in category.reviews.slice(0, 2)" :key="'review-' + artIndex">
-                                <div class="card h-100" style="background-color: transparent">
-                                    <!-- Desktop view (sm and up) -->
-                                    <div class="d-none d-sm-block">
-                                        <img :src="article.image_url" class="card-img-top" alt="News Image" style="
-                                                height: 180px;
-                                                object-fit: cover;
-                                            " />
-                                        <div class="card-body d-flex flex-column justify-content-between"
-                                            style="height: 100px">
-                                            <h6 class="fst-italic text-muted text-start">
-                                                {{
-                                                    article.title
-                                                        .split(" ")
-                                                        .slice(0, 15)
-                                                        .join(" ") +
-                                                    (article.title.split(" ")
-                                                        .length > 15
-                                                        ? "..."
-                                                        : "")
-                                                }}
-                                            </h6>
-                                            <a :href="article.link" target="_blank" class="stretched-link"></a>
-                                        </div>
-                                    </div>
-
-                                    <!-- Mobile view (xs only) -->
-                                    <div class="d-sm-none border-0">
-                                        <div class="row g-0">
-                                            <div class="col-4">
-                                                <div style="
-                                                        width: 120px;
-                                                        height: 110px;
-                                                        overflow: hidden;
-                                                    ">
-                                                    <img :src="article.image_url" class="img-fluid" alt="News Image"
-                                                        style="
-                                                            height: 120px;
-                                                            object-fit: cover;
-                                                        " />
-                                                </div>
-                                            </div>
-                                            <div class="col-8 ps-2">
-                                                <div class="card-body px-0 d-flex justify-content-center"
-                                                    style="height: 100%">
-                                                    <h6 class="fst-italic text-muted text-start mb-0">
-                                                        {{
-                                                            article.title
-                                                                .split(" ")
-                                                                .slice(0, 20)
-                                                                .join(" ") +
-                                                            (article.title.split(
-                                                                " "
-                                                            ).length > 20
-                                                                ? "..."
-                                                                : "")
-                                                        }}
-                                                    </h6>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <a :href="article.link" target="_blank" class="stretched-link"></a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </template>
-            </div>
         </div>
     </div>
     <!-- News End -->
@@ -582,6 +578,7 @@ export default {
                 spotlight: "Spotlight",
                 reviews: "Reviews From The Editorial",
             }, // This is the titles for the news section
+            loading: true, // tracks the loading status
         };
     },
     mounted() {
@@ -664,13 +661,14 @@ export default {
         },
         */
         async fetchRSS() {
+            this.loading = true; // Show loading spinner
             try {
-                const response = await this.$axios.get(
-                    `http://127.0.0.1:5000/rssFeed/rssfeed`
-                );
+                const response = await this.$axios.get(`http://127.0.0.1:5000/rssFeed/rssfeed`);
                 this.articles = response.data;
             } catch (error) {
                 console.error(error);
+            } finally {
+                this.loading = false; // Hide loading spinner
             }
         },
     },
