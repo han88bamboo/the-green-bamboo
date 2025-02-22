@@ -223,7 +223,7 @@ CREATE TABLE "users" (
     "pin" VARCHAR(255)
 );
 
-"-- ========= [NEW!] "producersQuestionAnswers" =========
+-- ========= [NEW!] "producersQuestionAnswers" =========
 CREATE TABLE "producersQuestionAnswers" (
     "id" SERIAL PRIMARY KEY,
     "question" VARCHAR(255),
@@ -231,7 +231,7 @@ CREATE TABLE "producersQuestionAnswers" (
     "date" TIMESTAMP,
     "userId" INTEGER REFERENCES "users"("id") ON DELETE SET NULL, -- [!] reference "users"("id")
     "producerId" INTEGER REFERENCES "producers"("id") ON DELETE SET NULL -- [!] reference "producers"("id")
-);"
+);
 
 -- ========= [NEW!] "producersUpdates" =========
 CREATE TABLE "producersUpdates" (
