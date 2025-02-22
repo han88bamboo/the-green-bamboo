@@ -76,24 +76,24 @@
                                     <span v-if="drinkChoice.length == 0"><i>None</i></span>
                                     <span v-else>{{ drinkChoice }}</span>
                                 </div>
-                                <div class="row">
+                            </div>
+                            <div class="row">
                                     <div class="col-5">
                                         <b>Flavour Choice</b>
                                     </div>
                                     <div class="col-7 text-end">
-                                        <!-- <span v-if="flavourTags.length == 0"><i>None</i></span>
-                                        <span v-else>{{ flavourTags }}</span> -->
+                                        <span v-if="selectedFlavours.length == 0"><i>None</i></span>
+                                        <span v-else>{{ selectedFlavours.join(', ') }}</span>
                                     </div>
-                                </div>
-                                <div class="row">
+                            </div>
+                            <div class="row">
                                     <div class="col-5">
                                         <b>Observation Tags</b>
                                     </div>
-                                    <!-- <div class="col-7 text-end">
-                                        <span v-if="observationTags.length == 0"><i>None</i></span>
-                                        <span v-else>{{ observationTags }}</span>
-                                    </div> -->
-                                </div>
+                                    <div class="col-7 text-end">
+                                        <span v-if="selectedObservationTags.length == 0"><i>None</i></span>
+                                        <span v-else>{{ selectedObservationTags.join(', ') }}</span>
+                                    </div>
                             </div>
                             <div class="row">
                                 <div class="col-5">
@@ -1387,7 +1387,6 @@ export default {
             displayUser: {},
             drinkChoice: "",
             observationTags: [],
-            selectedObservationTags: [],
             drinkCount: 0,
             joinDate: "",
             following: false,
@@ -1407,6 +1406,7 @@ export default {
             // flavourTags: null,
             flavourTags: [],
             selectedFlavours: [],
+            selectedObservationTags: [],
 
             filteredDrinkType: [],
 
@@ -1530,7 +1530,7 @@ export default {
 
             this.accType = localStorage.getItem('88B_accType');
             let accID = localStorage.getItem('88B_accID');
-            let url = `${process.env.VUE_APP_API_URL}/getData/get`;
+            let url = `http://127.0.0.1:5000/getData/get`;
 
             if (this.accType == 'user') {
                 url = url + 'User/' + accID;
@@ -1641,7 +1641,7 @@ export default {
 
             // Listings
             try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListings`);
+                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getListings`);
                 this.listings = response.data;
                 // originally, make filteredListings the entire collection of listings
                 this.filteredListings = this.listings;
@@ -1652,7 +1652,7 @@ export default {
             }
             // Reviews
             try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getReviews`);
+                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getReviews`);
                 this.reviews = response.data;
                 this.reversedReviews = this.reviews.reverse();
                 this.recentReviews = this.reversedReviews.filter(review => review.userID === parseInt(this.displayUserID) && review.reviewType === 'Listing');
@@ -1663,7 +1663,7 @@ export default {
             }
             // Producers
             try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducers`);
+                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getProducers`);
                 this.producers = response.data;
                 this.dataLoaded = true;
             }
@@ -1673,7 +1673,7 @@ export default {
             }
             // Venues
             try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenues`);
+                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getVenues`);
                 this.venues = response.data;
                 this.dataLoaded = true;
             }
@@ -1683,7 +1683,7 @@ export default {
             }
             // for Badges
             try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getBadges`);
+                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getBadges`);
                 this.badges = response.data;
                 this.dataLoaded = true;
             }
@@ -1693,7 +1693,7 @@ export default {
             }
             // Users
             try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUsers`);
+                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getUsers`);
                 this.users = response.data;
                 this.user = this.getUser(this.userID);
                 this.displayUser = this.getUser(this.displayUserID);
@@ -1715,6 +1715,8 @@ export default {
                     const month = new Date(dateString).toLocaleString('default', { month: 'long' });
                     this.joinDate = `${month} ${year}`;
                     this.selectedDrinks = this.user.choiceDrinks;
+                    this.selectedFlavours = this.user.choiceFlavours;
+                    this.selectedObservationTags = this.user.preferences;
                     this.userBookmarks = this.user.drinkLists;
                     this.following = JSON.stringify(this.user.followLists.users).includes(JSON.stringify(this.displayUserID));
 
@@ -1760,7 +1762,7 @@ export default {
             }
             // mod requests
             try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getModRequests`);
+                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getModRequests`);
                 this.modRequests = response.data;
                 this.modRequestsType = this.modRequests
                     .filter(request => request.userID === this.userID && request.reviewStatus === true)
@@ -1772,7 +1774,7 @@ export default {
             }
             // drinkCategories
             try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getDrinkTypes`);
+                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getDrinkTypes`);
                 this.drinkTypes = response.data;
                 // retrieve the drink type and put them into an array
                 this.drinkType = this.drinkTypes.map(category => category.drinkType);
@@ -1827,7 +1829,7 @@ export default {
             // subTags
             // _id, familyTagId, subtag
             try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getSubTags`);
+                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getSubTags`);
                 this.subTags = response.data
                 this.flavourTags.forEach(flavourTag => {
                     // Filter subtags belonging to the current flavor tag
@@ -1899,7 +1901,7 @@ export default {
 
             try {
                 console.log(this.image64)
-                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/editDetails`,
+                const response = await this.$axios.post(`http://127.0.0.1:5000/editProfile/editDetails`,
                     {
                         userID: this.userID,
                         image64: this.image64,
@@ -1921,6 +1923,7 @@ export default {
         // reset edit profile form
         cancelChanges() {
             this.selectedDrinks = this.user.choiceDrinks;
+            this.selectedFlavours = this.user.choiceFlavours;
             this.selectedImage = null;
             this.$refs.fileInput.value = '';
         },
