@@ -1161,7 +1161,7 @@
 
                                                 <!-- Item Price / Item Serving Type -->
                                                 <div class="col-6">
-                                                    <p class="text-start fs-6 fw-bold default-text-no-background mb-0">${{ sectionItem.itemPrice || " -" }} / {{ sectionItem.itemDetails.itemServingTypeName }}</p>
+                                                    <p class="text-start fs-6 fw-bold default-text-no-background mb-0">${{ sectionItem.itemPrice == -1 ? '-' : sectionItem.itemPrice }} / {{ sectionItem.itemDetails.itemServingTypeName }}</p>
                                                 </div>
 
                                                 
@@ -1299,7 +1299,8 @@
 
                                                 <!-- Item Price / Item Serving Type -->
                                                 <div class="col-4">
-                                                    <p class="text-start fs-5 fw-bold default-text-no-background">${{ sectionItem.itemPrice || " -" }} / {{ sectionItem.itemDetails.itemServingTypeName }}</p>
+                                                    <p class="text-start fs-5 fw-bold default-text-no-background">${{ sectionItem.itemPrice == -1 ? '-' : sectionItem.itemPrice }}
+                                                        / {{ sectionItem.itemDetails.itemServingTypeName }}</p>
                                                 </div>
 
                                                 <!-- See User Reviews -->
@@ -1720,8 +1721,8 @@
 
                                         <!-- [input] menu item price -->
                                         <div class="form-group mb-3">
-                                            <p class="text-start mb-1"> Menu Item Price </p>
-                                            <input type="number" class="form-control" v-model="newMenuItemPrice" placeholder="-" min="0" step="0.01">
+                                            <p class="text-start mb-1"> Menu Item Price (Note: If there is no price, leave it as -1)</p>
+                                            <input type="number" class="form-control" v-model="newMenuItemPrice" min="-1" step="0.01">
                                         </div>
 
                                         <!-- [input] menu serving type -->
@@ -1813,7 +1814,7 @@
 
                                     <!-- Modal Footer -->
                                     <div class="modal-footer">
-                                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal" @click="newMenuItemTargetSection = {}; newMenuItemTarget = {} ; newMenuItemID = ''; newMenuItemPrice = ''; getDefaultServingType();">Cancel</button>
+                                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal" @click="newMenuItemTargetSection = {}; newMenuItemTarget = {} ; newMenuItemID = ''; newMenuItemPrice = -1; getDefaultServingType();">Cancel</button>
                                         <button type="button" class="btn secondary-btn rounded reverse-clickable-text" data-bs-dismiss="modal" @click="addMenuItem"
                                             v-bind:disabled="Object.keys(newMenuItemTargetSection).length === 0 || Object.keys(newMenuItemTarget).length === 0">
                                             Add Item
@@ -2538,7 +2539,7 @@
                 newMenuItemID: '',
                 newMenuItemTarget: {},
                 newMenuItemTargetSection: {},
-                newMenuItemPrice: '',
+                newMenuItemPrice: -1,
                 newMenuItemServingType: {},
                 renameMenuSectionModalTarget: {},
                 renameMenuSectionModalOld: '',
@@ -2597,7 +2598,7 @@
                     disabled: false,
                     ghostClass: "ghost"
                 };
-            }
+            },
         },
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         mounted() {
@@ -3711,6 +3712,11 @@
                         itemServingTypeName: "Serving",
                     }
                 });
+
+
+                if (!this.newMenuItemPrice || this.newMenuItemPrice == "") {
+                    this.newMenuItemPrice = -1;
+                }
 
                 try {
                     const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editVenueProfile/addListingToMenu`, 
