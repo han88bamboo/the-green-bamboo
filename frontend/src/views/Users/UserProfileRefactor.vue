@@ -439,8 +439,8 @@
 
                             <div v-else class="container text-center mb-3">
                                 <!-- badges for different drink types -->
-                                <div class="row">
-                                    <div class="mobile-col-3 col-12 col-sm-4 col-md-6 col-xl-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2 " v-for="drinkTypeDetails in matchedDrinkTypes" :key="drinkTypeDetails.id">
+                                <div class="row" v-if="matchedDrinkTypes.length > 0">
+                                    <div class="mobile-col-3 col-12 col-sm-4 col-md-6 col-xl-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2 " v-for="(drinkTypeDetails, index) in matchedDrinkTypes" :key="drinkTypeDetails.id || index">
                                         <!-- image of actual badge  style="width: 100px; height: 100px;"  -->
                                         <!-- <img :src="'data:image/png;base64,'+ (drinkTypeDetails.badgePhoto || defaultProfilePhoto)" 
                                             alt="" class="rounded-circle-white-bg border border-dark badge-img">  -->
@@ -1287,7 +1287,7 @@ export default {
                     this.getSubTags(),
                 ]);
 
-                this.getReviewsSummary();
+                await this.getReviewsSummary();
 
                 // Check if all data is loaded
                 if (this.displayUserDataLoaded && this.reviewsDataLoaded && this.listingDataLoaded && this.bookedMarkedListingsLoaded && this.badgesDataLoaded && this.subTagsDataLoaded && this.flavorTagsDataLoaded && this.drinkTypesDataLoaded) {
@@ -1503,6 +1503,11 @@ export default {
             try {
                 const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getDrinkTypes`);
                 this.drinkTypes = response.data;
+
+                // Add "Whiskey" to drinkType "Whisky"
+                const whiskeyIndex = this.drinkTypes.findIndex(drinkType => drinkType.drinkType === "Whisky");
+                this.drinkTypes[whiskeyIndex].drinkType = "Whiskey / Whisky";
+
 
                 // retrieve the drink type and put them into an array
                 this.drinkType = this.drinkTypes.map(category => category.drinkType);
