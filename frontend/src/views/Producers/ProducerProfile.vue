@@ -2348,10 +2348,12 @@
                 // producer listings
                 // _id, listingName, producerID, bottler, originCountry, drinkType, typeCategory, age, abv, reviewLink, officialDesc, sourceLink, photo
                     try {
-                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/ByProducer/${this.producer_id}`);
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingsByProducer/${this.producer_id}`);
                         this.listings = response.data;
+                        this.allDrinks = response.data;
+                        this.allDrinksCount = response.data.length
 
-                        this.getAllDrinks()
+                        // this.getAllDrinks()
                         this.getCountsByType()
                         this.getTotalCounts()
                         this.getMostDiscussed()
@@ -2442,12 +2444,12 @@
                 }
             },
 
-            // get all drinks that a producer has
-            async getAllDrinks() {
-                let allProducerDrinks = this.listings.filter(listing => listing.producerID == this.producer_id);
-                this.allDrinks = allProducerDrinks;
-                this.allDrinksCount = allProducerDrinks.length
-            },
+            // // get all drinks that a producer has
+            // async getAllDrinks() {
+            //     let allProducerDrinks = this.listings.filter(listing => listing.producerID == this.producer_id);
+            //     this.allDrinks = allProducerDrinks;
+            //     this.allDrinksCount = allProducerDrinks.length
+            // },
 
             // get all reviews that a producer has
             async getAllReviews() {
