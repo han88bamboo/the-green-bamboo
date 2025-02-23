@@ -1,6 +1,8 @@
 # Port: 5000
-# Routes: /getAccountRequests (GET), /getCountries (GET), /getListings (GET), /getListing/<id> (GET), /getProducers (GET), /getProducer/<id> (GET),
-#           /getReviews (GET), /getReviewByTarget/<id> (GET), /getReviewsByUserIds (GET), /getProducerTourReviews (GET), /getUsers (GET), /getUser/<id> (GET), /getUserByUsername/<username> (GET), /getVenues (GET), 
+# Routes: /getAccountRequests (GET), /getCountries (GET), /getListings (GET), /getListingsByIDs (POST), /getListing/<id> (GET), /getProducers (GET), /getProducer/<id> (GET),
+#           /getRecentListingReviews/<id> (GET), /getAllListingsNames (GET), /getBookmarkListings (POST), /getUserReviewSummary/<id> (GET),
+#           /getReviews (GET), /getReviewByTarget/<id> (GET), /getReviewsByUserIds (GET), /getProducerTourReviews (GET), /getUsers (GET), /getUser/<id> (GET), 
+#           /getUserPhoto/<id>/<userType> (GET), /getUserByUsername/<username> (GET), /getVenues (GET), 
 #           /getVenue/<id> (GET), /getVenuesAPI (GET), /getDrinkTypes (GET), /getRequestListings (GET), /getRequestListing/<id> (GET), /getRequestEdits (GET), 
 #           /getRequestEdit/<id> (GET), /getModRequests (GET), /getFlavourTags (GET), /getSubTags (GET), /getObservationTags (GET), /getColours (GET), 
 #           /getSpecialColours (GET), /getLanguages (GET), /getServingTypes (GET), /getProducersProfileViews (GET), /getVenuesProfileViewsByVenue/<id> (GET), /getRequestInaccuracyByVenue/<id> (GET)
@@ -195,12 +197,33 @@ def getCountries():
 
 # -----------------------------------------------------------------------------------------
 # [GET] Listings
-@blueprint.route("/getListings")
+@blueprint.route("/getListings", methods=['GET'])
 def getListings():
     conn = g.db
 
     with conn.cursor() as cursor:
         cursor.execute('SELECT * FROM "listings"')
+        listings_data = cursor.fetchall()
+    
+    if not listings_data:
+        return jsonify([])
+
+    return jsonify(listings_data)
+
+
+# -----------------------------------------------------------------------------------------
+# [POST] Listings by IDs
+@blueprint.route("/getListingsByIDs", methods=['POST'])
+def getListingsByIDs():
+    conn = g.db
+
+    listing_ids = request.json.get('listingIDs', [])
+
+    if not listing_ids:
+        return jsonify([]), 404
+
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "listings" WHERE "id" IN %s', (tuple(listing_ids),))
         listings_data = cursor.fetchall()
     
     if not listings_data:
@@ -682,6 +705,183 @@ def getUniqueProducersNamesID():
 #     "reviewId" INTEGER REFERENCES "reviews"("id") on DELETE SET NULL -- [!] reference "reviews" FK
 # );
 
+
+# [GET] Get recent listing reviews by a specific user + top 5 listings based on the review ratings + number of reviews done (aka drink count)
+@blueprint.route("/getRecentListingReviews/<id>")
+def getRecentListingReviews(id):
+
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        cursor.execute("""
+            SELECT "reviews".*, "reviewsUserVotes"."upvotes", "reviewsUserVotes"."downvotes"
+            FROM "reviews"
+            LEFT JOIN "reviewsUserVotes" ON "reviews"."id" = "reviewsUserVotes"."reviewId"
+            WHERE "reviews"."userID" = %s 
+            AND "reviews"."reviewType" = 'Listing'
+            AND "reviews"."createdDate" >= NOW() - INTERVAL '5 days'
+            ORDER BY "reviews"."createdDate" DESC
+            LIMIT 10
+        """, (id,))
+
+        reviews_data = cursor.fetchall()
+
+        if not reviews_data:
+            reviews_data = []
+
+    for review in reviews_data:
+        review["userVotes"] = {
+            "upvotes": review["upvotes"] if review["upvotes"] else [],
+            "downvotes": review["downvotes"] if review["downvotes"] else []
+        }
+        del review["upvotes"]
+        del review["downvotes"]
+
+    # Retrieve top 5 listings based on the review ratings
+    with conn.cursor() as cursor:
+        cursor.execute("""
+            SELECT "reviewTarget" FROM "reviews" WHERE "reviewType" = 'Listing' AND "rating" >= 8
+            LIMIT 10
+        """)
+        top_listings_data = cursor.fetchall()
+
+    top_listings = []
+
+    # Convert the top listings data to a list
+    for listing in top_listings_data:
+        top_listings.append(listing["reviewTarget"])
+
+    # Retrieve the number of reviews done by the user (number of unique listings reviewed)
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT COUNT(DISTINCT "reviewTarget") FROM "reviews" WHERE "userID" = %s', (id,))
+        drink_count = cursor.fetchone()
+
+
+    return jsonify({"recentReview" : reviews_data,
+                    "topListings" : top_listings,
+                    "drinkCount" : drink_count["count"]}), 200
+    
+
+# [GET] Get all listings names
+@blueprint.route("/getAllListingsNames")
+def getAllListingsNames():
+    conn = g.db
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT "id", "listingName" FROM "listings"')
+        listings_data = cursor.fetchall()
+
+    if not listings_data:
+        return jsonify([]), 404
+
+    return jsonify(listings_data), 200
+
+# [POST] Get bookmarked listings
+@blueprint.route("/getBookmarkListings", methods=['POST'])
+def getBookmarkListings():
+    conn = g.db
+    listing_ids = request.json.get('listingIDs', None)
+
+    if not listing_ids:
+        return jsonify({
+            "code": 404,
+            "message": "At least one listing ID is required."
+        }), 404
+
+    # Retrieve listing information based on the provided IDs
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "listings" WHERE "id" IN %s', (tuple(listing_ids),))
+        bookmarked_listings = cursor.fetchall()
+
+        if not bookmarked_listings:
+            return jsonify([]), 404
+
+        return_data = {}
+        # Fetch the average review rating for each listing
+        for listing in bookmarked_listings:
+            cursor.execute('SELECT AVG("rating") FROM "reviews" WHERE "reviewTarget" = %s', (listing["id"],))
+            avg_rating = cursor.fetchone()
+
+            # Add to listing data
+            return_data[listing["id"]] = listing
+            return_data[listing["id"]]["avgRating"] = avg_rating["avg"]
+        print(return_data)
+    return jsonify(return_data), 200
+
+# [GET] Get user's review summary
+@blueprint.route("/getUserReviewSummary/<id>")
+def getUserReviewSummary(id):
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        # Step 1: Get all listings reviewed by the user
+        cursor.execute('''
+            SELECT "reviewTarget", "address", "taggedUsers"
+                FROM "reviews"
+                WHERE "userID" = %s
+            ''', (id,))
+        reviewed_listings = cursor.fetchall()
+
+        if not reviewed_listings:
+            return jsonify({
+                "code": 404,
+                "message": "No reviews found for the specified user."
+            }), 404
+        
+        print(reviewed_listings)
+        # Use a set for distinct reviewTargets and addresses,
+        # but allow duplicates for taggedUsers
+        unique_listing_id = []
+        locations_tagged = set()
+        tagged_users = []
+
+        for review in reviewed_listings:
+            # Add distinct reviewTargets
+            if review.get("reviewTarget"):
+                if review["reviewTarget"] not in unique_listing_id:
+                    unique_listing_id.append(review["reviewTarget"])
+            # Add distinct addresses
+            if review.get("address"):
+                locations_tagged.add(review["address"])
+            # For taggedUsers, append all users (assuming it's stored as an array)
+            if review.get("taggedUsers"):
+                tagged_users.extend(review["taggedUsers"])
+
+        locations_tagged = list(locations_tagged)
+        tagged_users_count = len(tagged_users)
+
+        print(locations_tagged)
+        # Step 2: Get the number of unique drinkType and typeCategory based on the listings reviewed
+        categories_reviewed_dict = {}  # {drinkType: {typeCategory: count, ...}, ...}
+        for listing_id in unique_listing_id:
+            cursor.execute('SELECT "drinkType", "typeCategory" FROM "listings" WHERE "id" = %s', (listing_id,),)
+            drink_data = cursor.fetchone()
+            drink_type = drink_data["drinkType"]
+            drink_category = drink_data["typeCategory"]
+
+            if drink_type not in categories_reviewed_dict:
+                categories_reviewed_dict[drink_type] = {}
+
+            # Increment the count for the drink_category within the given drink_type.
+            if drink_category in categories_reviewed_dict[drink_type]:
+                categories_reviewed_dict[drink_type][drink_category] += 1
+            else:
+                categories_reviewed_dict[drink_type][drink_category] = 1
+
+        # Step 3: Get the number of upvotes for the user's reviews
+        cursor.execute('SELECT COUNT(*) FROM "reviewsUserVotes" WHERE %s = ANY("upvotes")', (id,))
+        upvotes_count = cursor.fetchone()['count']
+
+    return jsonify({
+        "code": 200,
+        "message": "User review summary fetched successfully.",
+        "data": {
+            "categoriesReviewed": categories_reviewed_dict,
+            "locationsTagged": locations_tagged,
+            "upvotesCount": upvotes_count,
+            "taggedUsers": tagged_users_count
+        }
+    })
+
 # [GET] Reviews
 @blueprint.route("/getReviews")
 def getReviews():
@@ -883,7 +1083,6 @@ def getUsers():
 # [GET] Specific User by ID
 @blueprint.route("/getUser/<id>")
 def getUser(id):
-    print("Getting user with id: ", id)
     conn = g.db
     
     try:
@@ -895,11 +1094,48 @@ def getUser(id):
             user_data["drinkLists"] = fetch_drink_lists(cursor, id)
             user_data["followLists"] = fetch_follow_lists(cursor, id)
 
+            # Remove unnecessary fields
+            del user_data["hashedPassword"]
+            del user_data["birthday"]
+            del user_data["email"]
+            del user_data["pin"]
+
+
         return jsonify(user_data), 200
 
     except Exception as e:
         print(str(e))
         return jsonify({"code": 500, "message": "An error occurred while fetching the user."}), 500
+
+
+# [GET] Get user profile photo by ID
+@blueprint.route("/getUserPhoto/<id>/<userType>")
+def getUserPhoto(id, userType):
+
+    conn = g.db
+    try:
+        with conn.cursor() as cursor:
+            if userType == "producer":
+                cursor.execute('SELECT "photo" FROM "producers" WHERE "id" = %s', (id,))
+            elif userType == "venue":
+                cursor.execute('SELECT "photo" FROM "venues" WHERE "id" = %s', (id,))
+            else:
+                cursor.execute('SELECT "photo" FROM "users" WHERE "id" = %s', (id,))
+            photo = cursor.fetchone()
+        
+        if not photo:
+            return jsonify([]), 404
+        
+        # Standardize the photo field
+        if photo["photo"] == None:
+            photo["photo"] = ""
+
+        return jsonify(photo), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({"code": 500, "message": "An error occurred while fetching the user photo."}), 500
+
 
 # [GET] Specific User by Username
 @blueprint.route("/getUserByUsername/<username>")
