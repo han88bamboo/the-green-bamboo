@@ -889,7 +889,8 @@
                 // _id, listingName, producerID, bottler, originCountry, drinkType, typeCategory, age, abv, reviewLink, officialDesc, sourceLink, photo
                     try {
                         // const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListings`);
-                        const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getRandomListings`);
+                        // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getRandomListings`);
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getRandomListings`);
                         this.listings = response.data;
                         // originally, make filteredListings the entire collection of listings
                         this.filteredListings = this.listings;

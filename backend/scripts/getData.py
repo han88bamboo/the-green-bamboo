@@ -285,6 +285,87 @@ def getFilteredFollowing30(id):
 
     return jsonify(listings_data)
 
+# [GET] For You Page Recommender
+# @blueprint.route("/getRecommendedListings")
+# def getRecommendedListings():
+#     conn = g.db
+#     # data = request.get_json()
+#     # userID = data['userID']
+#     userID = request.args.get('userID')
+#     print(userID)
+
+#     with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+#         # Fetch user's drink choice, flavour choice, and preferences
+#         cursor.execute(
+#             'SELECT "choiceDrinks", "choiceFlavours", "preferences" FROM users WHERE id = %s',
+#             (userID,)
+#         )
+#         user_data = cursor.fetchone()
+
+#         if not user_data:
+#             return jsonify({"error": "User not found"}), 404
+
+#         choiceDrink = user_data["choiceDrinks"] or []
+#         choiceFlavour = user_data["choiceFlavours"] or []
+#         preferences = user_data["preferences"] or []
+#         print("User Data:", user_data)
+
+#         recommended = []
+
+#         # Get listings with the same drink type
+#         if choiceDrink:
+#             drink_query = '''
+#                 SELECT * FROM listings 
+#                 WHERE "drinkType" = ANY(%s)
+#             '''
+#             cursor.execute(drink_query, (choiceDrink,))
+#             drink_listings = cursor.fetchall()
+
+#             for listing in drink_listings:
+#                 if listing["id"] not in recommended:
+#                     recommended.append(listing["id"])
+
+#         # Get listings with the same flavour tags
+#         if choiceFlavour:
+#             cursor.execute('SELECT id FROM "subTags" WHERE "subTag" = ANY(%s)', (choiceFlavour,))
+#             flavour_ids = [row["id"] for row in cursor.fetchall()]
+
+#             if flavour_ids:
+#                 flavour_query = '''
+#                     SELECT DISTINCT l.*
+#                     FROM "listings" l
+#                     JOIN "reviews" r ON l."id" = r."reviewTarget"
+#                     WHERE r."flavourTag" && %s::text[]
+#                 '''
+#                 cursor.execute(flavour_query, (flavour_ids,))
+#                 flavour_listings = cursor.fetchall()
+
+#                 for listing in flavour_listings:
+#                     if listing["id"] not in recommended:
+#                         recommended.append(listing["id"])
+
+#         # Get listings with the same observation tags
+#         if preferences:
+#             observation_query = '''
+#                 SELECT DISTINCT l.*
+#                 FROM "listings" l
+#                 JOIN "reviews" r ON l."id" = r."reviewTarget"
+#                 WHERE r."observationTag" && %s::text[]
+#             '''
+#             cursor.execute(observation_query, (preferences,))
+#             observation_listings = cursor.fetchall()
+
+#             for listing in observation_listings:
+#                 if listing["id"] not in recommended:
+#                     recommended.append(listing["id"])
+
+#     print("Recommended Listings:", recommended)
+
+#     if not recommended:
+#         return jsonify({"error": "No recommended listings found"}), 400
+
+#     return jsonify(recommended)
+
 # -----------------------------------------------------------------------------------------
 # [GET] Specific Listing
 @blueprint.route("/getListing/<id>")
