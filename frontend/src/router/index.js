@@ -77,12 +77,12 @@ const routes = [
     name: 'explore',
     component: () => import('../views/RandomExplorePage.vue')
   },
-  // {
-  //   path: '/foryou',
-  //   name: 'foryou',
-  //   component: () => import('../views/ForYouPage.vue'),
-  //   props: true
-  // },
+  {
+    path: '/foryou/:userID?',
+    name: 'foryou',
+    component: () => import('../views/ForYouPage.vue'),
+    props: true
+  },
   // -------------------------------------------------------------------------------------
 
   // ----------------- PROFILE PAGES -----------------

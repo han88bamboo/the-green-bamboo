@@ -383,8 +383,8 @@
         methods:{
             async loadData(){
                 try {
-                    const response =  `${process.env.VUE_APP_API_URL}/getData/getCountries`  // comment out for local
-                    // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getCountries`); // comment out for deployment
+                    // const response =  `${process.env.VUE_APP_API_URL}/getData/getCountries`  // comment out for local
+                    const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getCountries`); // comment out for deployment
                     this.countries = response.data.sort((a,b)=>{
                             return a.originCountry.localeCompare(b.originCountry)
                             })
@@ -396,8 +396,8 @@
                     }
                 // get the flavourTags from database
                 try {
-                    const response =  `${process.env.VUE_APP_API_URL}/getData/getFlavourTags`  // comment out for local
-                    // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getFlavourTags`); // comment out for deployment
+                    // const response =  `${process.env.VUE_APP_API_URL}/getData/getFlavourTags`  // comment out for local
+                    const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getFlavourTags`); // comment out for deployment
                     // Set flavourTags dynamically based on the API response
                     this.flavourTags = response.data.map(item => item.familyTag);
                     
@@ -410,8 +410,8 @@
                 }
                 // get the observationTags from database
                 try {
-                    const response =  `${process.env.VUE_APP_API_URL}/getData/getObservationTags`  // comment out for local
-                    // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getObservationTags`);  // comment out for deployment
+                    // const response =  `${process.env.VUE_APP_API_URL}/getData/getObservationTags`  // comment out for local
+                    const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getObservationTags`);  // comment out for deployment
                     // Set flavourTags dynamically based on the API response
                     this.observationTags = response.data.map(item => item.observationTag);
                     
@@ -531,8 +531,8 @@
 
                 let hashedPassword = this.hashPassword(this.username, this.password)
                 let joinDate = new Date().toISOString();
-                let submitAPI =  `${process.env.VUE_APP_API_URL}/createAccount/createAccount`  // comment out for local
-                // let submitAPI = "http://127.0.0.1:5000/createAccount/createAccount"  // comment our for deployment
+                // let submitAPI =  `${process.env.VUE_APP_API_URL}/createAccount/createAccount`  // comment out for local
+                let submitAPI = "http://127.0.0.1:5000/createAccount/createAccount"  // comment our for deployment
                 let submitData = {
                     // pass in first name, last name, email, isadmin
                     "username": this.username,
@@ -643,8 +643,8 @@
         preferences: this.selectedPreferences,
     }
     try{
-        // let submitAPI = `http://127.0.0.1:5000/createAccount/addPreferences/${this.username}`   // comment out for deployment
-        let submitAPI = `${process.env.VUE_APP_API_URL}/createAccount/addPreferences/${this.username}`  // comment out for local
+        let submitAPI = `http://127.0.0.1:5000/createAccount/addPreferences/${this.username}`   // comment out for deployment
+        // let submitAPI = `${process.env.VUE_APP_API_URL}/createAccount/addPreferences/${this.username}`  // comment out for local
         const response = await this.$axios.post(submitAPI, submitData)
         return response;
     } catch (error) {
@@ -734,8 +734,8 @@
             // ----- added by Group 3 
             async checkUsername(username){
                 try {
-                    // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getUsers`);
-                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUsers`);
+                    const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getUsers`);
+                    // const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUsers`);
                     let duplicateUser = response.data.filter((user)=>{
                         return user.username == username
                     })
@@ -775,8 +775,8 @@
             async loginUser(){
                 // Get specific user by username and set local storage then redirect
                 try {
-                    // const submitURL = `http://127.0.0.1:5000/getData/getUserByUsername/` + this.username
-                    const submitURL = `${process.env.VUE_APP_API_URL}/getData/getUserByUsername/` + this.username
+                    const submitURL = `http://127.0.0.1:5000/getData/getUserByUsername/` + this.username
+                    // const submitURL = `${process.env.VUE_APP_API_URL}/getData/getUserByUsername/` + this.username
                     const response = await this.$axios.get(submitURL);
                     if(response.data.username== this.username){
                         localStorage.setItem("88B_accID", response.data['id']);
