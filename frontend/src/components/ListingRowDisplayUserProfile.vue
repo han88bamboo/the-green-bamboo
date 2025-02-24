@@ -57,18 +57,18 @@
         props: {
             displayName: String,
             listingArr: Array,
-            user: Object,
-            listing: Object,
+            // user: Object,
+            // listing: Object,
             columnWidth: {
                 type: String,
                 default: '195px'
             }
 },
-        methods: {
-            handleIconClick(data) {
-                this.$emit('icon-clicked', data);
-            },
+        // methods: {
+        //     handleIconClick(data) {
+        //         this.$emit('icon-clicked', data);
+        //     },
 
-        }
+        // }
     }
 </script>

@@ -731,7 +731,7 @@
                 this.missingCountry=false
                 this.underAge=false
             },
-
+            // ----- added by Group 3 
             async checkUsername(username){
                 try {
                     // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getUsers`);
@@ -745,11 +745,32 @@
                     }else{
                         this.duplicateUser = true
                     }
+                    else{
+                        this.duplicateUser = false
+                    }
                 } 
                 catch (error) {
                     console.error(error);
                 }
             },
+            
+            // ----- TZH removed from refactor to try Group 3's code
+            // async checkUsername(username){
+            //     try {
+            //         const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getAllUsernames`);
+                    
+            //         // Check if username is already taken and is present in the list 
+            //         if (response.data.usernames.includes(username)){
+            //             this.duplicateUser = true
+            //         }
+            //         else{
+            //             this.duplicateUser = false
+            //         }
+            //     } 
+            //     catch (error) {
+            //         console.error(error);
+            //     }
+            // },
 
             async loginUser(){
                 // Get specific user by username and set local storage then redirect

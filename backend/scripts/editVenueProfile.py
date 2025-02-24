@@ -2,7 +2,7 @@
 # Routes: /editDetails (POST), /addUpdates (POST), /sendQuestions (POST), /sendAnswers (POST), /likeUpdates (POST), /unlikeUpdates (POST)
 #         /editAddress (POST), /editOpeningHours (POST), /editPublicHolidays (POST), /editReservationDetails (POST), /addListingToMenu (POST)
 #         /editSectionName (PUT), /editMenu (POST), /updateVenueStatus (POST), /editUpdate (POST), /deleteUpdate (POST), /editQA (POST)
-#         /deleteQA (POST), /addProfileCount (POST), /addNewProfileCount (POST)
+#         /deleteQA (POST), /addProfileCount (POST), /addNewProfileCount (POST), /deleteMenuItem (DELETE), /updateVenueClaimStatus (POST)
 # -----------------------------------------------------------------------------------------
 
 import os
@@ -33,6 +33,9 @@ def editDetails():
     venueDesc = data['venueDesc']
     originLocation = data['originLocation']
     image64 = data.get('image64', '')
+    yearOpened = data.get('yearOpened', None)
+    openForReservations = data.get('openForReservations')
+    website = data.get('website', '')
 
     try:
         # Find existing venue
@@ -54,10 +57,13 @@ def editDetails():
                     "venueName" = %s,
                     "venueDesc" = %s,
                     "originLocation" = %s,
+                    "yearOpened" = %s,
+                    "openForReservations" = %s,
+                    "website" = %s,
                     "photo" = %s
                 WHERE id = %s
                 """,
-                (venueName, venueDesc, originLocation, image64, venueID)
+                (venueName, venueDesc, originLocation, yearOpened, openForReservations, website, image64, venueID)
             )
             conn.commit()
 

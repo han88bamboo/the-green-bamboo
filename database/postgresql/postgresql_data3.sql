@@ -35,6 +35,7 @@ DROP TABLE IF EXISTS "venuesUpdates";
 DROP TABLE IF EXISTS "venueUpdateLikes";
 DROP TABLE IF EXISTS "venuesProfileViews";
 DROP TABLE IF EXISTS "venuesProfileViewsViews";
+DROP TABLE IF EXISTS "typeCategories";
 
 -- CREATE TABLES -- 
 -- ========= "accountRequests" =========
@@ -113,6 +114,15 @@ CREATE TABLE "drinkTypes" (
     "drinkType" VARCHAR(255),
     "badgePhoto" TEXT,
     "typeCategory" TEXT[]
+);
+
+-- ========= "typeCategories" -added by tzh for drinkStyle-should be deleted as put wrongly =========
+CREATE TABLE "typeCategories" (
+    "id" SERIAL PRIMARY KEY,
+    "drinkType_id" INT REFERENCES "drinkTypes"(id) ON DELETE CASCADE,
+    "typeCategory" VARCHAR(255) NOT NULL,
+    "drinkStyle" TEXT[],
+    UNIQUE("drinkType_id", "typeCategory") 
 );
 
 -- ========= "languages" =========
@@ -251,7 +261,8 @@ CREATE TABLE "listings" (
     "age" VARCHAR(255),
     "reviewLink" VARCHAR(255),
     "sourceLink" VARCHAR(255),
-    "photo" TEXT 
+    "photo" TEXT,
+    "drinkStyle" VARCHAR(255) -- added by tzh
 );
 
 -- ========= "modRequests" =========
@@ -437,7 +448,8 @@ CREATE TABLE "requestListings" (
     "typeCategory" VARCHAR(255),
     "abv" VARCHAR(255),
     "age" VARCHAR(255),
-    "reviewLink" VARCHAR(255)
+    "reviewLink" VARCHAR(255),
+    "drinkStyle" VARCHAR(255) -- added by tzh
 );
 
 -- ========= "requestEdits" =========

@@ -4,7 +4,7 @@
 export default {
     name: "FetchData",
     data() {
-        return {
+        return { // retain this
             // data from database
             countries: [],
             listings: [],
@@ -76,6 +76,13 @@ export default {
             try {
                 const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingsByObservationTag`);
                 this.tags = response.data;
+            } catch (error) {
+                console.error(error);
+            }
+            // Latest News
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getLatestNews`);
+                this.news = response.data;
             } catch (error) {
                 console.error(error);
             }

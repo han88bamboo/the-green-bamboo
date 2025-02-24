@@ -11,6 +11,8 @@ import unicodedata
 import s3Images
 import base64
 import chardet
+from psycopg2.extras import execute_values
+from concurrent.futures import ThreadPoolExecutor
 
 from flask import Blueprint, g, request, jsonify
 from datetime import datetime
@@ -569,130 +571,142 @@ def importListings():
     cur = conn.cursor()
     file = request.files['file']
 
-    # detect encoding of CSV file
+    # Detect encoding of CSV file
     file_encoding = detect_encoding(file)
 
-    # define column data types
-    column_data_types = [str, str, str, str, str, str, str, float, str, str, str, str]
-    print(file_encoding)
-    # Wrap csv in context manager to process safely
+    # Define column data types
+    column_data_types = [str, str, str, str, str, str, str, str, float, str, str, str, str]
+
+    # Read all rows from CSV
     with io.TextIOWrapper(file, encoding=file_encoding, errors='replace') as csv_file:
-        print("enters here")
-        # read csv data
         csv_data = csv.reader(csv_file)
-        for _ in range(4):
+        for _ in range(4):  # Skip header rows
             next(csv_data)
-        # Fetch all existing producers and built a name to id mapping
-        cur.execute('SELECT "producerName", "id" FROM "producers"')
-        producers = cur.fetchall()
-        producer_name_id_dict = {row['producerName']: row['id'] for row in producers}
-
-        listings_to_insert = []
-        try:
-            for row in csv_data:
-                converted_row = []
-                for data_type, value in zip(column_data_types, row):
-                    if data_type is float:
-                        value = value.replace('%', '').strip()
-                        converted_value = data_type(value) if value else None
-                    else:
-                        converted_value = data_type(value) if value else None
-                    converted_row.append(converted_value)
-
-                # Lookup producer ID based on producer name
-                producer_name = converted_row[1]
-                producer_id = producer_name_id_dict.get(producer_name)
-
-                if producer_id is None:
-                    producer_to_insert = {
-                        "producerName": producer_name,
-                        "producerDesc": "",
-                        "originCountry": "",
-                        "mainDrinks": [],
-                        "photo": "",
-                        "hashedPassword": hash_password(producer_name, "admin1234"),
-                        "claimStatus": False,
-                        "statusOB": "",
-                        "username": None,
-                        "producerLink": "",
-                        "stripeCustomerId": None,
-                        "claimStatusCheckDate": None
-                    }
-
-                    cur.execute("""
-                        INSERT INTO producers (
-                            "producerName", "producerDesc", "originCountry", "mainDrinks", "photo", "hashedPassword",
-                            "claimStatus", "statusOB", "username", "producerLink", "stripeCustomerId", "claimStatusCheckDate"
-                        )
-                        VALUES (%(producerName)s, %(producerDesc)s, %(originCountry)s, %(mainDrinks)s, %(photo)s, %(hashedPassword)s,
-                                %(claimStatus)s, %(statusOB)s, %(username)s, %(producerLink)s, %(stripeCustomerId)s, %(claimStatusCheckDate)s)
-                        RETURNING "id"
-                    """, producer_to_insert)
-
-                    new_producer_id = cur.fetchone()['id']
-                    conn.commit()
-
-                    producer_name_id_dict[producer_name] = new_producer_id
-                    producer_id = new_producer_id
-
-                # Upload url to s3 bucket to store as own image
-                s3_url = s3Images.uploadURLtoS3(converted_row[11]) if converted_row[11] else None
-
-                # # Convert the image URL to base64
-                # base64_str = image_url_to_base64(converted_row[11]) if converted_row[11] else None
-
-                # # upload image to S3 object and retrieve the URL
-                # s3_url = s3Images.uploadBase64ImageToS3(base64_str) if base64_str else ''
-
-                # Build the listing data
-                listing_data = {
-                    'listingName': converted_row[0],
-                    'producerID': producer_id,
-                    'bottler': converted_row[2],
-                    'originCountry': converted_row[3],
-                    'drinkType': converted_row[4],
-                    'typeCategory': converted_row[5],
-                    'age': converted_row[6],
-                    'abv': converted_row[7],
-                    'reviewLink': converted_row[8],
-                    'officialDesc': converted_row[9],
-                    'sourceLink': converted_row[10],
-                    'photo': s3_url,
-                    'allowMod': True,
-                    'addedDate': datetime.now()
-                }
-                
-                # Append to listings to insert
-                listings_to_insert.append(listing_data)
-            # Now, insert the listings into the 'strings' table
-            for listing in listings_to_insert:
-                columns = ', '.join(f'"{col}"' for col in listing.keys())
-                placeholders = ', '.join(['%s'] * len(listing))
-                sql = f"INSERT INTO listings ({columns}) VALUES ({placeholders})"
-                cur.execute(sql, list(listing.values()))
-            conn.commit()
-            
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-            conn.rollback()
-            return jsonify(
-                {
-                    "code": 500,
-                    "message": "Bulk Import Listings Failed. An error occurred."
-                }
-            ), 500
         
-        finally:
-            cur.close()
+        rows = list(csv_data)
 
-        return jsonify(
-            {
-                "code": 201,
-                "message": "Bulk Import Listings Successful"
-            }
-        ), 201
-    print("nopes")
+    # Fetch existing producers
+    cur.execute('SELECT "producerName", "id" FROM "producers"')
+    producers = cur.fetchall()
+    producer_name_id_dict = {row['producerName']: row['id'] for row in producers}
+
+    # Collect producer names from CSV
+    csv_producers = set(row[1] for row in rows if row[1])
+
+    # Determine new producers to insert
+    new_producers = csv_producers - set(producer_name_id_dict.keys())
+    new_producer_data = [
+        {
+            "producerName": name,
+            "producerDesc": "",
+            "originCountry": "",
+            "mainDrinks": [],
+            "photo": "",
+            "hashedPassword": hash_password(name, "admin1234"),
+            "claimStatus": False,
+            "statusOB": "",
+            "username": None,
+            "producerLink": "",
+            "stripeCustomerId": None,
+            "claimStatusCheckDate": None
+        }
+        for name in new_producers
+    ]
+
+    # Bulk insert new producers and fetch their IDs
+    if new_producer_data:
+        insert_query = """
+            INSERT INTO producers (
+                "producerName", "producerDesc", "originCountry", "mainDrinks", "photo", "hashedPassword",
+                "claimStatus", "statusOB", "username", "producerLink", "stripeCustomerId", "claimStatusCheckDate"
+            ) VALUES %s RETURNING "producerName", "id"
+        """
+        execute_values(cur, insert_query, [
+            (
+                producer["producerName"], producer["producerDesc"], producer["originCountry"],
+                producer["mainDrinks"], producer["photo"], producer["hashedPassword"],
+                producer["claimStatus"], producer["statusOB"], producer["username"],
+                producer["producerLink"], producer["stripeCustomerId"], producer["claimStatusCheckDate"]
+            )
+            for producer in new_producer_data
+        ])
+        conn.commit()
+        new_producers_with_ids = cur.fetchall()
+        producer_name_id_dict.update({row["producerName"]: row["id"] for row in new_producers_with_ids})
+
+    # Process listings and prepare for bulk insert
+    listings_to_insert = []
+    image_urls = []
+
+    for row in rows:
+        if len(row) < len(column_data_types):
+            print(f"Skipping row with missing columns: {row}")
+            continue
+        
+        converted_row = []
+        for data_type, value in zip(column_data_types, row):
+            if data_type is float:
+                value = value.replace('%', '').strip()
+                converted_value = float(value) if value and value.lower() != 'n/a' else None
+            else:
+                converted_value = data_type(value) if value else None
+            converted_row.append(converted_value)
+
+        producer_name = converted_row[1]
+        producer_id = producer_name_id_dict.get(producer_name)
+
+        # Collect image URL for parallel upload
+        image_urls.append(converted_row[12])
+
+        listings_to_insert.append({
+            'listingName': converted_row[0],
+            'producerID': producer_id,
+            'bottler': converted_row[2],
+            'originCountry': converted_row[3],
+            'drinkType': converted_row[4],
+            'typeCategory': converted_row[5],
+            'drinkStyle':converted_row[6], 
+            'age': converted_row[7],
+            'abv': converted_row[8],
+            'reviewLink': converted_row[9],
+            'officialDesc': converted_row[10],
+            'sourceLink': converted_row[11],
+            'photo': None,  # Placeholder for S3 URL
+            'allowMod': True,
+            'addedDate': datetime.now()
+        })
+
+    # Parallelize S3 image uploads
+    def upload_image(image_url):
+        return s3Images.uploadURLtoS3(image_url) if image_url else None
+
+    with ThreadPoolExecutor() as executor:
+        s3_urls = list(executor.map(upload_image, image_urls))
+        print("S3 URLs:", s3_urls)
+
+    # Update photo URLs in listings
+    for listing, s3_url in zip(listings_to_insert, s3_urls):
+        listing['photo'] = s3_url
+
+    print(f"Total rows in CSV: {len(rows)}")
+    print(f"Total listings perpared for insertion: {len(listings_to_insert)}")
+
+    # Bulk insert listings
+    if listings_to_insert:
+        listing_columns = listings_to_insert[0].keys()
+        listing_query = "INSERT INTO listings ({}) VALUES %s".format(
+            ', '.join(f'"{col}"' for col in listing_columns)
+        )
+        listing_values = [tuple(listing.values()) for listing in listings_to_insert]
+        execute_values(cur, listing_query, listing_values)
+        conn.commit()
+
+        print(f"Succesfully inserted {len(listings_to_insert)} listings")
+
+    return jsonify({
+        "code": 201,
+        "message": f"{file.filename} has been fully uploaded!"
+    }), 201
 
 
     # # for loop for each observation tag and update

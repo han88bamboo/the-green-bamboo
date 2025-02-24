@@ -367,6 +367,7 @@
                                                         </span>
                                                         <span v-else>{{ specified_listing["drinkType"] }} | </span>
                                                         <span  class="text-decoration-none">{{ specified_listing["typeCategory"] }} | </span>
+                                                        <span  v-if="specified_listing['drinkStyle']"  class="text-decoration-none">{{ specified_listing["drinkStyle"] }} | </span>
                                                         <span  class="text-decoration-none">{{ specified_listing["abv"] }}% | </span>
                                                         <span class="text-decoration-none">{{ specified_listing["originCountry"] }}</span>
                 </p>
@@ -385,13 +386,20 @@
                     <div class="col-7 col-lg-7">
                         <div class="row">
                             <!-- category -->
-                            <div class="col-6 col-lg-3 text-start mobile-view-hide text-color-black">
+                            <div class="col-6 col-lg-3 pe-1 text-start mobile-view-hide text-color-black">
                                 <h5 class="text-body-secondary" style="margin-bottom:0;"> <b> {{ specified_listing["typeCategory"] }} </b> </h5>
                                 <p class="mb-2"> <u> Category </u> </p>
                                 
                             </div>
+
+                            <!-- drink styles - added by tzh -->
+                            <div class="col-6 col-lg-2 px-1 text-start mobile-view-hide text-color-black">
+                                <h5 class="text-body-secondary" style="margin-bottom:0;"> <b v-if="specified_listing['drinkStyle']"  > {{ specified_listing["drinkStyle"] }} </b> <b v-else> N/A </b></h5>
+                                <p class="mb-2"> <u> Drink Style </u> </p>
+                                
+                            </div>
                             <!-- age --> 
-                            <div class="col-6 col-lg-3 text-start mobile-view-hide text-color-black">
+                            <div class="col-6 col-lg-2 px-1 text-start mobile-view-hide text-color-black">
                                 <!-- for wine listings -->
                                 <div v-if="specified_listing['drinkType'] == 'Wine'">
                                     <h5 class="text-body-secondary" style="margin-bottom:0;"> <b>  {{ specified_listing["age"] }} </b> </h5>
@@ -406,13 +414,13 @@
                                 </div>
                             </div>
                             <!-- country of origin -->
-                            <div class="col-6 col-lg-4 text-start mobile-view-hide text-color-black">
+                            <div class="col-6 col-lg-3 px-1 text-start mobile-view-hide text-color-black">
                                 <h5 class="text-body-secondary" style="margin-bottom:0;"> <b> {{ specified_listing["originCountry"] }} </b> </h5>
                                 <p class="mb-2"> <u> Country of Origin </u> </p>
                                 
                             </div>
                             <!-- abv -->
-                            <div class="col-6 col-lg-2 text-start mobile-view-hide text-color-black">
+                            <div class="col-6 col-lg-1 px-1 text-start mobile-view-hide text-color-black">
                                 <h5 class="text-body-secondary" style="margin-bottom:0;"> <b> {{ specified_listing["abv"] }}% </b> </h5>
                                 <p class="mb-1"> <u> ABV </u> </p>
                                 
@@ -690,28 +698,36 @@
                                         <div class="col-12 justify-content-start">
                                             
                                             <div class="form-group mb-2 mobile-mt-0 mt-3">
-                                                <div v-if="showFriendTagList.length > 0" class="form-label pb-2 text-start"> 
-                                                Tagged Friends: 
+                                                <div v-if="showFriendTagList.length > 0" class="form-label pb-2 text-start">
+                                                    Tagged Friends:
                                                     <div class="row">
                                                         <div class="col">
                                                             <div class="d-flex flex-wrap gap-2">
-                                                                <div v-for="friend in showFriendTagList" v-bind:key="friend.id" class="mb-0 pb-0">
-                                                                    <button @click='removeFriendTag(friend)' class="btn secondary-square-btn"> {{ friend.username }} </button> 
+                                                                <div v-for="friend in showFriendTagList" :key="friend.id" class="mb-0 pb-0">
+                                                                    <button @click="removeFriendTag(friend)" class="btn secondary-square-btn">
+                                                                        {{ friend.username }}
+                                                                    </button>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <!-- <input type="text" class="form-control" id="friendTag"> -->
-                                                <input list="followList" v-model="friendTag" class="form-control input-with-icon" id="friendTag" placeholder="Tag friends" v-on:keyup="updateFriendTag">
-                                                <datalist id="followList">
-                                                    <option v-for="user in followList" :key="user.id" :value="user.username">
-                                                        {{user.username}}
+
+                                                <input list="filteredFollowList" v-model="friendTag" class="form-control input-with-icon" id="friendTag"
+                                                    placeholder="Tag friends" v-on:input="updateFriendTag">
+                                                
+                                                <datalist id="filteredFollowList">
+                                                    <option v-for="user in filteredUsers" :key="user.id" :value="user.username">
+                                                        {{ user.username }}
                                                     </option>
-                                                </datalist>  
-                                                <div class="text-start mt-1">                                            
-                                                    <button v-if="selectedFriendTag!==null" class="btn tertiary-square-btn mt-1" @click="tagSpecificFriend">Tag This Friend</button>
-                                                </div>  
+                                                </datalist>
+
+                                                <div class="text-start mt-1">
+                                                    <button v-if="selectedFriendTag !== null" class="btn tertiary-square-btn mt-1" @click="tagSpecificFriend">
+                                                        Tag This Friend
+                                                    </button>
+                                                </div>
+                                                
                                                 <p v-show="friendTag.length > 0" class="text-start mb-1 text-danger" id="friendTagError"></p>
                                             </div>
 
@@ -760,19 +776,35 @@
                               
                                 <!-- row 4: buttons (would recommend, would buy again) -->
                                 <div class="row">
-                                    <div class = 'col justify-content-start mb-3 text-start'>
-                                        <div class = "col-md-12">
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="checkbox" id="inlineCheckbox1" v-model="wouldRecommend" value="option1">
-                                                <label class="form-check-label text-start fw-bold" for="inlineCheckbox1">Would Recommend</label>
-                                            </div>
-                                            <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="checkbox" id="inlineCheckbox2" v-model="wouldBuyAgain" value="option2">
-                                                <label class="form-check-label text-start fw-bold" for="inlineCheckbox2">Would Buy Again</label>
-                                            </div>                                                                                                   
-                                        </div>                                         
+                                    <!-- Would Recommend Section -->
+                                    <div class="col-md-6 mb-3 text-start">
+                                        <label class="fw-bold" for="recommendDropdown">Would Recommend</label>
+                                        <select
+                                            class="form-select"
+                                            id="recommendDropdown"
+                                            v-model="wouldRecommend"
+                                        >
+                                            <option :value="null" selected disabled>Select Yes / No</option>
+                                            <option :value="true">Yes</option>
+                                            <option :value="false">No</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Would Buy Again Section -->
+                                    <div class="col-md-6 mb-3 text-start">
+                                        <label class="fw-bold" for="buyAgainDropdown">Would Buy Again</label>
+                                        <select 
+                                            class="form-select" 
+                                            id="buyAgainDropdown" 
+                                            v-model="wouldBuyAgain">
+                                            <option :value="null" disabled selected>Select Yes / No</option>
+                                            <option :value="true">Yes</option>
+                                            <option :value="false">No</option>
+                                        </select>
                                     </div>
                                 </div>
+
+
                                 
 
                                 <!-- row 5: extend review -->
@@ -895,7 +927,7 @@
                                             </div>
                                             <div class="col">
                                                 <div class="slider-container" style="position: relative;">
-                                                    <input v-model="rating" type="range" class="form-range" min="1" max="10" step="0.5" id="customRange">
+                                                    <input v-model="rating" type="range" class="form-range" min="1" max="10" step="0.1" id="customRange">
                                                     <div class="tickmarks">
                                                         <span class="tick" style="left: 5%;">|</span>
                                                         <span class="tick" style="left: 15%;">|</span>
@@ -937,9 +969,9 @@
                                         </div>
                                         Select flavour tags:
                                         <br>
-                                        <button class="btn mb-2 me-2" @click="toggleBox(family)" v-for="family in flavourTags" v-bind:key="family['_id']" :style="{ color:'white', backgroundColor: family['hexcode'], borderColor:family['hexcode'], borderWidth:'1px' }">{{ family['familyTag'] }}</button>
+                                        <button class="btn mb-2 me-2" @click="toggleBox(family)" v-for="family in flavorTags" v-bind:key="family['_id']" :style="{ color:'white', backgroundColor: family['hexcode'], borderColor:family['hexcode'], borderWidth:'1px' }">{{ family['familyTag'] }}</button>
                                         <!-- This is the container/dropdown box for the subtags -->
-                                        <div v-for="family in flavourTags" :key="family['_id']">
+                                        <div v-for="family in flavorTags" :key="family['_id']">
                                             <div v-if="family.showBox" class="rounded p-3" :style="{border: '3px solid ' + family['hexcode'] }">
                                                 <div class="row">
                                                     <div class="col-3 mobile-px-1" v-for="(element, index) in family.subTag2" :key="index">
@@ -1000,8 +1032,15 @@
                             
                             <!-- End of modal body -->
                             <div class="modal-footer d-flex">
-                                <span v-for="review in filteredReviews" v-bind:key="review.id" class="me-auto">
-                                    <button class="btn btn-danger py-1  mobile-fs-7" @click="setDeleteID(review)" data-bs-toggle="modal" data-bs-target="#deleteReview">Delete Review</button> 
+                                <span v-for="review in filteredReviews.filter(review => review.userID === parseInt(userID))" v-bind:key="review.id" class="me-auto">
+                                    <button 
+                                        v-if="inEdit" 
+                                        class="btn btn-danger py-1 mobile-fs-7" 
+                                        @click="setDeleteID(filteredReviews.find(review => review.userID === parseInt(userID)))" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#deleteReview">
+                                        Delete Review
+                                    </button>
                                 </span>
                                 <button type="button" class="btn secondary-btn-less-round-inverse " data-bs-dismiss="modal">Close</button> <!--tzh removed btn-secondary added secondary-btn-less-round-inverse-->
                                 <button v-if="!inEdit" type="button" @click="addReview" class="btn secondary-btn-less-round">Submit Review</button>
@@ -1144,8 +1183,8 @@
                                     <!-- flavour tag tzh changed mb-2 to mb-3-->
                                     <div class="text-start mb-3">
                                         <!-- flavor tag -->
-                                            <span v-for="(tag, index) in review.flavourTag" :key="index" class="badge rounded-pill me-2" :style="{ backgroundColor: getTagColor(parseInt(tag)) }">{{ getTagName(parseInt(tag)) }}</span>
-                                            <span v-for="(tag, index) in review.observationTag" :key="index" class="badge rounded-pill me-2" style="background-color: #F0B358; color:black;">{{ tag }}</span> <!--tzh changed grey to #F0B358-->
+                                            <span v-for="(tag, index) in review.flavourTag" :key="index" class="badge rounded-pill me-2 mb-1" :style="{ backgroundColor: getTagColor(parseInt(tag)) }">{{ getTagName(parseInt(tag)) }}</span>
+                                            <span v-for="(tag, index) in review.observationTag" :key="index" class="badge rounded-pill me-2 mb-1" style="background-color: #F0B358; color:black;">{{ tag }}</span> <!--tzh changed grey to #F0B358-->
                                     </div>
                                     <div style="display: inline;" class="text-start">
                                         <!-- voting -->
@@ -1267,14 +1306,14 @@
                                                     <span v-if="detailedReview.location !== '' && checkVenue(detailedReview.location)">
                                                         <a style="color: inherit" >
                                                             <router-link :to="'/profile/venue/' + checkVenue(detailedReview.location)" style="color: inherit">
-                                                                <b>{{ detailedReview.location }}</b>
+                                                                <b>{{ getVenueNameFromID(detailedReview.location) }}</b> <!--tzh testing code anchor-->
                                                             </router-link>
                                                         </a>
                                                     </span>
 
                                                     <span v-else-if="detailedReview.location !== ''">
                                                         <a :href="'https://www.google.com/maps/search/' + detailedReview.location" style="color: inherit" target="_blank"> 
-                                                            <b>{{ detailedReview.location }}</b>
+                                                            <b>{{ getVenueNameFromID(detailedReview.location) }}</b> <!--tzh testing code anchor-->
                                                         </a>
                                                     </span>
                                                     <span v-else>-</span>
@@ -1540,7 +1579,7 @@
     
         </div> <!-- end of your drinks shelf & brands you follow -->
 
-    
+        <FooterBar />
     
 
 </template>
@@ -1553,7 +1592,8 @@
     // import ReviewModal from '@/components/EditReview.vue'
     import BookmarkIcon from '@/components/BookmarkIcon.vue';
     import BookmarkModal from '@/components/BookmarkModal.vue';
-    
+    import FooterBar from "@/components/FooterBar.vue";
+
     export default {
         // setup(){
 
@@ -1562,7 +1602,8 @@
         components: {
             NavBar,
             BookmarkIcon, 
-            BookmarkModal
+            BookmarkModal,
+            FooterBar
         },
         data() {
             return {
@@ -1653,15 +1694,15 @@
                 photo: null,
                 observationTags: [],
                 selectedObservations:[],
-                flavourTags: [],
+                flavorTags: [],
                 subTags: [],
                 selectedFlavourTags:[],
                 finalSelectedFlavourTags:[],
                 aroma:"",
                 taste:"",
                 finish:"",
-                wouldRecommend:false,
-                wouldBuyAgain:false,
+                wouldRecommend:null,
+                wouldBuyAgain:null,
                 extendReview:false,
                 locationOptions: [], // Your list of options
                 locationSearchTerm: "",
@@ -1680,6 +1721,7 @@
                 duplicateEntry: false,
                 errorSubmission:false,
                 followList:[],
+                filteredUsers: [],
                 friendTag:'',
                 selectedFriendTag:null,
                 friendTagList:[],
@@ -1804,7 +1846,7 @@
                     // _id, hexcode, familyTag, subtag, showbox
                     try {
                                 const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getFlavourTags`);
-                                this.flavourTags = response.data.map(item => {
+                                this.flavorTags = response.data.map(item => {
                                     return { ...item, showBox: false };
                                 })                            } 
                         catch (error) {
@@ -1816,9 +1858,10 @@
                     try {
                                 const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getSubTags`);
                                 this.subTags = response.data
-                                this.flavourTags.forEach(flavourTag => {
+                                this.flavorTags.forEach(flavourTag => {
                                     // Filter subtags belonging to the current flavor tag
                                     const subTagsForFlavourTag = this.subTags.filter(subTag => subTag.familyTagId === flavourTag.id);
+
                                     // Extract required information from subtags
                                     const subTagsInfo = subTagsForFlavourTag.map(subTag=> ({
                                         id: subTag.id,
@@ -1875,6 +1918,7 @@
                         try {
                             const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenues`);
                             this.venues = response.data;
+                            console.log("Venues", response.data)
                             this.locationOptions = response.data.map(item => ({name: item.venueName, id:item.id, address:item.address}));
                             this.addressDict = this.venues.reduce((dict, venue) => {
                                 dict[venue.address] = venue.id;
@@ -1899,6 +1943,11 @@
                         this.filteredReviews = this.getReviewsForListing(this.specified_listing);
                         this.getFilteredReviewsWithImages() // to get only those filtered reviews with photos
                         this.getFlavorTagCounts(); // to get the flavor tag counts
+                        // this.sorted_flavorTagCounts = {
+                        //     "Fruity#FF5733": 10,
+                        //     "Floral#33FF57": 5,
+                        //     "Woody#3357FF": 2
+                        // };
                         this.getObservationTagCounts(); // to get the observation tag counts
                         this.specificReview = this.getLoggedUserReview();
                         this.formatDeepDiveLink();
@@ -2211,61 +2260,43 @@
 
             // get ratings for a listing
             getRatings(listing) {
-                const ratings = this.reviews.filter((rating) => {
-                try {
-                    return rating["reviewTarget"] == listing['id'];
-                }
-                catch(error){console.error(error)}
-                });
+                const ratings = this.reviews.filter((rating) => rating["reviewTarget"] == listing['id']);
                 // if there are no ratings
-                if (ratings.length == 0) {
-                    return "-";
-                }
+                if (ratings.length == 0) return "-";
                 // else there are ratings
                 const averageRating = ratings.reduce((total, rating) => {
-                    return total + rating["rating"];
+                    return total + parseFloat(rating["rating"]);
                 }, 0) / ratings.length;
                 return averageRating.toFixed(1);  //tzh changed .toFixed(2) to .toFixed(1)
             },
 
             // get will drink again for a listing
             getWillRecommend(listing) {
-                const ratings = this.reviews.filter((rating) => {
-                try {
-                    return rating["reviewTarget"] == listing['id'];
-                }
-                catch(error){console.error(error)}
-                });
-                // if there are no ratings
-                if (ratings.length == 0) {
-                    return "-";
-                }
-                // else there are ratings
-                const numberRecommend = ratings.reduce((total, rating) => {
-                    return total + (rating["willRecommend"] ? 1 : 0);
-                }, 0);
-                const averageRecommend = (numberRecommend / ratings.length) * 100;
-                return averageRecommend.toFixed(0);  //tzh changed .toFixed(2) to .toFixed(0)
+                const ratings = this.reviews.filter((rating) => rating["reviewTarget"] == listing['id']);
+                if (ratings.length === 0) return "-";
+
+                // Filter out null values
+                const validRatings = ratings.filter(rating => rating["willRecommend"] !== null);
+
+                if (validRatings.length === 0) return "-";
+
+                const numberRecommend = validRatings.reduce((total, rating) => total + (rating["willRecommend"] ? 1 : 0), 0);
+                const averageRecommend = (numberRecommend / validRatings.length) * 100;
+                return averageRecommend.toFixed(0);
             },
 
-            // get will drink again for a listing
             getWillDrinkAgain(listing) {
-                const ratings = this.reviews.filter((rating) => {
-                try {
-                    return rating["reviewTarget"] == listing['id'];
-                }
-                catch(error){console.error(error)}
-                });
-                // if there are no ratings
-                if (ratings.length == 0) {
-                    return "-";
-                }
-                // else there are ratings
-                const numberDrinkAgain = ratings.reduce((total, rating) => {
-                    return total + (rating["wouldBuyAgain"] ? 1 : 0);
-                }, 0);
-                const averageDrinkAgain = (numberDrinkAgain / ratings.length) * 100;
-                return averageDrinkAgain.toFixed(0);  //tzh changed .toFixed(2) to .toFixed(0)
+                const ratings = this.reviews.filter((rating) => rating["reviewTarget"] == listing['id']);
+                if (ratings.length === 0) return "-";
+
+                // Filter out null values
+                const validRatings = ratings.filter(rating => rating["wouldBuyAgain"] !== null);
+
+                if (validRatings.length === 0) return "-";
+
+                const numberDrinkAgain = validRatings.reduce((total, rating) => total + (rating["wouldBuyAgain"] ? 1 : 0), 0);
+                const averageDrinkAgain = (numberDrinkAgain / validRatings.length) * 100;
+                return averageDrinkAgain.toFixed(0);
             },
 
             // add user's uploaded photo to database (TO BE IMPLEMENTED)
@@ -2283,6 +2314,7 @@
                 const specificReview = this.filteredReviews.filter((review) => {
                     return review["userID"] == this.userID;
                 });
+                console.log("Specific Review", specificReview)
                 if(specificReview.length!=0){
                     this.inEdit=true
                     this.selectedLanguage= specificReview[0].language
@@ -2300,7 +2332,7 @@
                         specificReview[0].flavourTag.forEach(subtag=>{
                             const subTag = this.subTags.find(subTag => parseInt(subtag)===subTag.id)         
                             if(subTag){
-                                const familyTag = this.flavourTags.find(family=>subTag.familyTagId===family.id)
+                                const familyTag = this.flavorTags.find(family=>subTag.familyTagId===family.id)
                                 if(familyTag){
                                     const hexcode = familyTag.hexcode
                                     const subtagInfo = subTag.subTag
@@ -2575,7 +2607,7 @@
             
             toggleBox(family) {
                 let tempShowBox = family.showBox
-                this.flavourTags.forEach(item => {
+                this.flavorTags.forEach(item => {
                     item.showBox = false;
                 });
                 family.showBox = !tempShowBox; // Toggle the visibility of the box
@@ -2708,7 +2740,7 @@
             getTagName(tag) {
                 const subTag = this.subTags.find(subTag=>subTag.id === tag)
                 if(subTag){
-                    const familyTag = this.flavourTags.find(family=>subTag.familyTagId===family.id)
+                    const familyTag = this.flavorTags.find(family=>subTag.familyTagId===family.id)
                     if(familyTag){
                         const hexcode = familyTag.hexcode
                         const subtagInfo = subTag.subTag
@@ -2723,7 +2755,7 @@
             getTagColor(tag) {
                 const subTag = this.subTags.find(subTag=>subTag.id === tag)
                 if(subTag){
-                    const familyTag = this.flavourTags.find(family=>subTag.familyTagId===family.id)
+                    const familyTag = this.flavorTags.find(family=>subTag.familyTagId===family.id)
                     if(familyTag){
                         const hexcode = familyTag.hexcode
                         const subtagInfo = subTag.subTag
@@ -2869,9 +2901,9 @@
                     for (let tag of review.flavourTag) {
                         // convert ID into the string instead, make life easier
                         // flavorTags.push(tag)
-                        const subTag = this.subTags.find(subTag=>subTag.id === tag.id)
+                        const subTag = this.subTags.find(subTag=>subTag.id === parseInt(tag))
                         if(subTag){
-                            const familyTag = this.flavourTags.find(family=>subTag.familyTagId === family.id)
+                            const familyTag = this.flavorTags.find(family=>subTag.familyTagId === family.id)
                             if(familyTag){
                                 const hexcode = familyTag.hexcode
                                 const subtagInfo = subTag.subTag
@@ -2905,7 +2937,7 @@
             },
 
             // from filtered reviews, create a dictionary with the count of each flavour tag
-            getObservationTagCounts() {
+            getObservationTagCounts() {                
                 let allReviews = this.filteredReviews
                 let observationTags = []
                 for (let review of allReviews) {
@@ -2962,33 +2994,45 @@
             );
             },
             
-            updateFriendTag(){
-                let friendTagError = document.getElementById("friendTagError")
-                // find listing based on bottle name
-                let user = this.followList.find(user => user.username === this.friendTag)
-                if (user) {
-                    this.selectedFriendTag = user
-                    friendTagError.innerHTML = ""
-                }
-                else {
-                    this.selectedfriendTag = null
-                    friendTagError.innerHTML = "Please enter a valid username"
-                }
-            },
+            updateFriendTag() {
+        let friendTagError = document.getElementById("friendTagError");
 
-            tagSpecificFriend(){
-                if (this.selectedFriendTag !== null && !this.friendTagList.includes(this.selectedFriendTag.id)) {
-                    this.friendTagList.push(this.selectedFriendTag.id);
-                    this.showFriendTagList.push({username:this.selectedFriendTag.username,id:this.selectedFriendTag.id})
-                    this.friendTag=''
-                    this.selectedFriendTag=null
-                }
-            },
+        // Show suggestions only if at least 2 characters are typed
+        if (this.friendTag.length >= 2) {
+            this.filteredUsers = this.users.filter(user =>
+                user.username.toLowerCase().includes(this.friendTag.toLowerCase())
+            );
+        } else {
+            this.filteredUsers = []; // Hide suggestions if less than 2 characters
+        }
 
-            removeFriendTag(friend){
-                this.showFriendTagList = this.showFriendTagList.filter(item => item.username !== friend.username);
-                this.friendTagList = this.friendTagList.filter(item => item !== friend.id);
-            },
+        let user = this.users.find(user => user.username === this.friendTag);
+        if (user) {
+            this.selectedFriendTag = user;
+            friendTagError.innerHTML = "";
+        } else {
+            this.selectedFriendTag = null;
+            friendTagError.innerHTML = "Please enter a valid username";
+        }
+    },
+
+            tagSpecificFriend() {
+        if (this.selectedFriendTag !== null && !this.friendTagList.includes(this.selectedFriendTag.id)) {
+            this.friendTagList.push(this.selectedFriendTag.id);
+            this.showFriendTagList.push({
+                username: this.selectedFriendTag.username,
+                id: this.selectedFriendTag.id
+            });
+            this.friendTag = '';
+            this.selectedFriendTag = null;
+            this.filteredUsers = []; // Clear suggestions after tagging
+        }
+    },
+
+    removeFriendTag(friend) {
+        this.showFriendTagList = this.showFriendTagList.filter(item => item.username !== friend.username);
+        this.friendTagList = this.friendTagList.filter(item => item !== friend.id);
+    },
 
             sortDistanceValues(distanceObject) {
                 let sortedDistanceValues = Object.fromEntries(

@@ -181,41 +181,37 @@
                 // Calling of backend to import csv file
                 async importCSV() {
                     console.log(this.csvFile)
-                    this.importComplete=false
-                    if (this.csvFile != []) {
+                    this.importComplete = false;
+
+                    if (this.csvFile != null) {
                         const formData = new FormData();
                         formData.append('file', this.csvFile);
-                    
+
                         try {
                             const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/adminFunctions/importListings`, 
                                 formData, {
                                 headers: {
                                     'Content-Type': 'multipart/form-data'
                                 }
-                            })
-                            .then((response)=>{
-                            this.responseCode = response.data.code
-                            if(this.responseCode == 201){
-                            this.importSuccess=true; // Display success message
-                            }else{
-                                this.importSuccess = false
-                            }
-                            })
-                            .catch((error)=>{
-                                if (error.code === 'ECONNABORTED'){
-                                    console.error('>Request timed out!!!)')
-                                } else{    
-                                console.error(error);
-                                this.responseCode = error.response.data.code
-                                }
                             });
                             
-                        this.importComplete=true
-                        
-                        return response
+                            this.responseCode = response.data.code;
+
+                            if (this.responseCode == 201) {
+                                this.importSuccess = true; // Display success message
+                                console.log(`${this.csvFile.name} has been fully uploaded!`); // Log success message
+                            } else {
+                                this.importSuccess = false;
+                            }
                         } catch (error) {
-                            this.importComplete=true
-                            console.error('Error:', error);
+                            if (error.code === 'ECONNABORTED') {
+                                console.error('>Request timed out!!!)');
+                            } else {
+                                console.error(error);
+                                this.responseCode = error.response?.data?.code || 'Unknown error code';
+                            }
+                        } finally {
+                            this.importComplete = true;
                         }
                     }
                 },

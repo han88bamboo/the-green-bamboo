@@ -1,5 +1,5 @@
 <template>
-    <NavBar />
+     <NavBar />
 
     <!-- Display when data is still loading -->
     <div class="text-info-emphasis fst-italic fw-bold fs-5 pt-5" v-if="dataLoaded == false">
@@ -24,8 +24,8 @@
         </router-link>
     </div>
 
+    <!-- Main Content -->
     <div v-if="displayUser && displayUser.modType && dataLoaded" class="userprofile mt-5 mobile-mt-3">
-
         <div class="container text-start">
             <div class="row">
                 <!-- user profile -->
@@ -55,6 +55,7 @@
                             </div>
                         </div>
 
+
                         <!-- additional information -->
                         <div class="mt-3">
                             <div class="row">
@@ -70,8 +71,8 @@
                                     <b>Drink of Choice</b>
                                 </div>
                                 <div class="col-7 text-end">
-                                    <span v-if="drinkChoice.length == 0"><i>None</i></span>
-                                    <span v-else>{{ drinkChoice }}</span>
+                                    <span v-if="!displayUserDrinkChoice"><i>None</i></span>
+                                    <span v-else>{{ displayUserDrinkChoice }}</span>
                                 </div>
                             </div>
                             <div class="row">
@@ -83,6 +84,7 @@
                                 </div>
                             </div>
                         </div>
+
 
                         <!-- buttons -->
                         <div class="row mt-3">
@@ -96,63 +98,159 @@
                                 <div v-if="!ownProfile && displayUser.modType != []" class="speech-bubble">{{ displayUser.modType ? displayUser.modType.join(', ') : 'None' }}</div>
                                 <button v-if="user && user.isAdmin" class="btn tertiary-btn-blue reverse-clickable-text mt-3" style="width: 100%" type="button" data-bs-toggle="modal" data-bs-target="#addModeratorModal">Add/Remove Moderator Rights</button>
                             </span>
-                            
-                        
                             <button v-if="ownProfile && user" type="button" class="btn secondary-btn-less-round mt-3" data-bs-toggle="modal" data-bs-target="#changePasswordModal">Change/Reset Password</button>
                         </div>
+
+                        <!-- editProfileModal start -->
+                        <div v-if="user" class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered modal-lg">
+                                <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="exampleModalLabel">Edit Profile</h1> 
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <!-- edit profile photo -->
+                                    <div class="edit-profile-pic">
+                                        <div class="row mb-3">
+                                            <div class="col-4 text-start ps-5" style="margin: auto;">
+                                                Image Preview
+                                            </div>
+                                            <div class="col-8">
+                                                <!-- <img :src="selectedImage || 'data:image/jpeg;base64,' + (user.photo || defaultProfilePhoto)" alt="" class="rounded-circle-no-bg border border-dark profile-img" id="output" style="height:auto; width:100%; "> -->
+                                                <img :src="selectedImage || (user.photo || defaultProfilePhoto)" alt="" class="rounded-circle-no-bg border border-dark profile-img" id="output" style="height:auto; width:100%; ">
+                                            </div>
+                                        </div>
+                                        <div class="row mb-3">
+                                            <div class="col-4 text-start ps-5" style="margin: auto;">
+                                                Edit Image
+                                            </div>
+                                            <div class="col-8">
+                                                <input class="form-control" id="file" type="file" @change="loadFile" ref="fileInput"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- change drink of choice -->
+                                    <div class="edit-drink-choice">
+                                        <div class="row">
+                                            <div class="col-4 text-start ps-5" style="margin: auto;">
+                                                Drink Choice
+                                            </div>
+                                            <div class="col-8 text-start">
+                                                <!-- checkbox to choose drinks -->
+                                                <div v-for="(type, index) in drinkType" :key="index" class="m-1" style="display: inline-block">
+                                                    <input type="checkbox" class="btn-check" :id="index" autocomplete="off" v-model="selectedDrinks" :value="type">
+                                                    <label v-if="selectedDrinks.includes(type)" class="btn primary-btn-less-round" :for="index" style="color: whitesmoke; background-color: #535C72; border: 4px solid #535C72;">{{type}}</label>
+                                                    <label v-else class="btn primary-btn-outline-less-round" :for="index">{{type}}</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="cancelChanges">Close</button>
+                                    <button type="button" class="btn btn-primary" @click="saveChangesDetails" data-bs-dismiss="modal">Save changes</button>
+                                </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- editProfileModal end -->
+
 
                         <!-- join as a moderator modal start -->
                         <div class="modal fade" id="moderatormodal" tabindex="-1" aria-labelledby="moderatorModalLabel" aria-hidden="true" data-bs-backdrop="static">
 
                             <div class="modal-dialog xmodal-lg d-flex align-items-center" style="height: 100vh;">
+                                <div class="modal-content">
 
-                            <div class="modal-content">
-
-                            <div v-if="drinkChoice.length == 0" class="modal-body px-4">
-                                <div class="d-flex justify-content-between ">
-                                    <button v-if="displayUser.modType && displayUser.modType.length != 0" data-bs-toggle="modal" data-bs-target="#moderatormodal" class="btn btn-warning hover-button p-1 mb-3" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button> 
-                                    <!-- REMOVED ADMIN MODERATOR BADGE -->
-                                    <!-- <button v-if="user && user.isAdmin" data-bs-toggle="modal" data-bs-target="#moderatormodal" class="btn btn-warning hover-button p-1 mb-3" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button> -->
-                                    <button type="button" class="btn-close uninvert" data-bs-dismiss="modal" aria-label="Close" ></button>
-                                </div>
-                                <p><b>{{ displayUser.displayName }} is a Drink-X moderator.</b></p> 
-                                <p><b><em>Moderators help shape the drinks community and ensure drink reviews remain fun, useful and respectful!</em></b></p>
-                                <b><a v-if="user && !user.isAdmin" href="#" class="mt-3" data-bs-toggle="modal" data-bs-target="#applyModerator" style="color: black">Want to be a moderator? Apply here!</a></b>   
-                            </div>
-                            <div v-else class="modal-body px-4">
-                                <div class="d-flex justify-content-between ">
-                                    <button v-if="displayUser.modType && displayUser.modType.length != 0" data-bs-toggle="modal" data-bs-target="#moderatormodal" class="btn btn-warning hover-button p-1 mb-3" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button> 
-                                    <!-- REMOVED ADMIN MODERATOR BADGE -->
-                                    <button type="button" class="btn-close uninvert" data-bs-dismiss="modal" aria-label="Close" ></button>
-                                </div>
-                                <!--<div style="display: flex; justify-content: space-between; ">
-                                    <div style="display: inline-block;">
-                                        <button v-if="!ownProfile && displayUser.modType.length !=0" data-bs-toggle="modal" data-bs-target="#moderatormodal" class="btn btn-warning hover-button p-1 mb-3" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button> 
-                                         REMOVED ADMIN MODERATOR BADGE 
-                                         <button v-if="user && user.isAdmin" data-bs-toggle="modal" data-bs-target="#moderatormodal" class="btn btn-warning hover-button p-1 mb-3" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button> 
+                                    <div v-if="displayUserDrinkChoice.length == 0" class="modal-body px-4">
+                                        <div class="d-flex justify-content-between ">
+                                            <button v-if="displayUser.modType && displayUser.modType.length != 0" data-bs-toggle="modal" data-bs-target="#moderatormodal" class="btn btn-warning hover-button p-1 mb-3" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button> 
+                                            <!-- REMOVED ADMIN MODERATOR BADGE -->
+                                            <!-- <button v-if="user && user.isAdmin" data-bs-toggle="modal" data-bs-target="#moderatormodal" class="btn btn-warning hover-button p-1 mb-3" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button> -->
+                                            <button type="button" class="btn-close uninvert" data-bs-dismiss="modal" aria-label="Close" ></button>
+                                        </div>
+                                        <p>
+                                            <b>{{ displayUser.displayName }} is a Drink-X moderator.</b>
+                                        </p> 
+                                        <p>
+                                            <b>
+                                                <em>Moderators help shape the drinks community and ensure drink reviews remain fun, useful and respectful!</em>
+                                            </b>
+                                        </p>
+                                        <b>
+                                            <a v-if="user && !user.isAdmin" href="#" class="mt-3" data-bs-toggle="modal" data-bs-target="#applyModerator" style="color: black">Want to be a moderator? Apply here!</a>
+                                        </b>   
                                     </div>
-                                    <div style="display: flex; justify-content: flex-end;">
-                                        <button type="button" class="btn-close uninvert" data-bs-dismiss="modal" aria-label="Close" ></button>
+                                    <div v-else class="modal-body px-4">
+                                        <div class="d-flex justify-content-between ">
+                                            <button v-if="displayUser.modType && displayUser.modType.length != 0" data-bs-toggle="modal" data-bs-target="#moderatormodal" class="btn btn-warning hover-button p-1 mb-3" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button> 
+                                            <!-- REMOVED ADMIN MODERATOR BADGE -->
+                                            <button type="button" class="btn-close uninvert" data-bs-dismiss="modal" aria-label="Close" ></button>
+                                        </div>
+                                        <p>
+                                            <b>{{ displayUser.displayName }} is a moderator of the following communities:</b>
+                                        </p> 
+                                        <p>{{ displayUser.modType.join(', ') }}</p>
+                                        <p>
+                                            <b>
+                                                <em>Moderators help shape the drinks community and ensure drink reviews remain fun, useful and respectful!</em>
+                                            </b>
+                                        </p>        
+                                        
+                                        <b>
+                                            <a v-if="user && !user.isAdmin" href="#" class="mt-3" data-bs-toggle="modal" data-bs-target="#applyModerator" style="color: black">Want to be a moderator? Apply here!</a>
+                                        </b>                    
                                     </div>
-                                </div>   -->
-                                <p><b>{{ displayUser.displayName }} is a moderator of the following communities:</b></p> 
-                                <p>{{ displayUser.modType.join(', ') }}</p>
-                                <p><b><em>Moderators help shape the drinks community and ensure drink reviews remain fun, useful and respectful!</em></b></p>        
-                                
-                                <b><a v-if="user && !user.isAdmin" href="#" class="mt-3" data-bs-toggle="modal" data-bs-target="#applyModerator" style="color: black">Want to be a moderator? Apply here!</a></b>                    
+                                </div>
                             </div>
-                            
-
-                            </div>
-
-
-                            </div>
-
                         </div>
-
-                        
-
                         <!-- join as a moderator modal end -->
+
+
+                        <!-- applyModerator start -->
+                        <div v-if="userID" class="modal fade" id="applyModerator" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-lg modal-dialog-centered">
+                                <div class="modal-content" >
+                                    <div class="modal-header" style="background-color: #535C72"> <!-- style="background-color: #DDC8A9;"-->
+                                        <p class="modal-title fs-5" style="color: white;">
+                                        <b>Apply to be a moderator!</b>
+                                        </p>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body  px-5"> <!--text-center-->
+                                        <div class="row">
+
+                                            <div style="max-width:110px;">
+                                                <img :src="displayUser.photo || defaultProfilePhoto" alt="" class="rounded-circle-no-bg border border-dark profile-img" style="height:auto; width:100%; ">
+                                            </div>
+                                            <div style="max-width:170px;" class="px-0">
+                                                <button class="btn btn-warning hover-button p-1" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button> 
+                                            </div>
+                                        </div>
+
+
+                                        <p class="fs-5"><b>Help shape the drinks community and share your expertise as a moderator! Just some quick questions:</b></p>
+                                        <!--- <a href="#" class="m-2" style="font-style: italic; color: inherit">Click here to learn more about being a moderator</a>-->
+                                        
+                                        <div class="px-3">
+                                            <h6 class="m-3 mx-0">What drinks category would you like to moderate for?</h6>
+                                            <select class="form-select w-50 mx-auto" style="border: 2px solid #535C72;" aria-label="Default select example" v-model="modCat">
+                                                <option v-for="(type, index) in filteredDrinkType" :key="index" :value="type">{{type}}</option>
+                                            </select>
+                                            <h6 class="m-3 mx-0">Why do you want to be a Drink X moderator? What's your experience with this drink category?</h6>
+                                            <div class="mb-3">
+                                                <textarea class="form-control Xw-50 mx-auto" style="border: 2px solid #535C72;" id="exampleFormControlTextarea1" rows="3" v-model="modDesc"></textarea>
+                                            </div>
+                                        </div>
+                                        <btn class="btn secondary-btn-border " data-bs-dismiss="modal" @click="submitModeratorApplication" style="margin-right: 40%;margin-left:40%;"><b>Apply Now!</b></btn>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- applyModerator end -->
+
 
                         <!-- Add/Remove modal start -->
                         <!-- Mod addition modal -->
@@ -231,7 +329,7 @@
 
                                     <!-- Initial confirm mod to promote to promote footer -->
                                     <div v-if="(chooseMod=='add' || chooseMod=='remove') && !doubleConfirmMod && !(successAddMod||errorAddMod||successRemoveMod||errorRemoveMod)" class="modal-footer">
-                                        <button type="button" @click="selectMode" class="btn btn-secondary">Return</button>
+                                        <button type="button" @click="resetAddRemoveModMode" class="btn btn-secondary">Return</button>
                                         <button v-if="chooseMod=='add'" type="button" @click="doubleConfirm" class="btn btn-primary">Add Moderator</button>
                                         <button v-if="chooseMod=='remove'" type="button" @click="doubleConfirm" class="btn btn-primary">Remove Moderator</button>
                                     </div>
@@ -245,8 +343,8 @@
 
                                     <!-- successaddmod and erroraddmod footer -->
                                     <div v-if="successAddMod||errorAddMod||successRemoveMod||errorRemoveMod" class="modal-footer">
-                                        <button type="button" @click="selectMode" class="btn btn-secondary">Return</button>
-                                        <button type="button" @click="selectMode" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        <button type="button" @click="resetAddRemoveModMode" class="btn btn-secondary">Return</button>
+                                        <button type="button" @click="resetAddRemoveModMode" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                                     </div>
                                 </div>
                             </div>
@@ -254,111 +352,8 @@
                         <!-- Add/Remove moderator modal end -->
 
 
-                        <!-- editProfileModal start -->
-                        <div v-if="user" class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered modal-lg">
-                                <div class="modal-content">
-                                <div class="modal-header">
-                                    <h1 class="modal-title fs-5" id="exampleModalLabel">Edit Profile</h1> 
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body text-center">
-                                    <!-- edit profile photo -->
-                                    <div class="edit-profile-pic">
-                                        <div class="row mb-3">
-                                            <div class="col-4 text-start ps-5" style="margin: auto;">
-                                                Image Preview
-                                            </div>
-                                            <div class="col-8">
-                                                <!-- <img :src="selectedImage || 'data:image/jpeg;base64,' + (user.photo || defaultProfilePhoto)" alt="" class="rounded-circle-no-bg border border-dark profile-img" id="output" style="height:auto; width:100%; "> -->
-                                                <img :src="selectedImage || (user.photo || defaultProfilePhoto)" alt="" class="rounded-circle-no-bg border border-dark profile-img" id="output" style="height:auto; width:100%; ">
-                                            </div>
-                                        </div>
-                                        <div class="row mb-3">
-                                            <div class="col-4 text-start ps-5" style="margin: auto;">
-                                                Edit Image
-                                            </div>
-                                            <div class="col-8">
-                                                <input class="form-control" id="file" type="file" @change="loadFile" ref="fileInput"/>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- change drink of choice -->
-                                    <div class="edit-drink-choice">
-                                        <div class="row">
-                                            <div class="col-4 text-start ps-5" style="margin: auto;">
-                                                Drink Choice
-                                            </div>
-                                            <div class="col-8 text-start">
-                                                <!-- checkbox to choose drinks -->
-                                                <div v-for="(type, index) in drinkType" :key="index" class="m-1" style="display: inline-block">
-                                                    <input type="checkbox" class="btn-check" :id="index" autocomplete="off" v-model="selectedDrinks" :value="type">
-                                                    <label v-if="selectedDrinks.includes(type)" class="btn primary-btn-less-round" :for="index" style="color: whitesmoke; background-color: #535C72; border: 4px solid #535C72;">{{type}}</label>
-                                                    <label v-else class="btn primary-btn-outline-less-round" :for="index">{{type}}</label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="cancelChanges">Close</button>
-                                    <button type="button" class="btn btn-primary" @click="saveChangesDetails" data-bs-dismiss="modal">Save changes</button>
-                                </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- editProfileModal end -->
-
-                        <!-- applyModerator start -->
-                        <div v-if="user" class="modal fade" id="applyModerator" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                            <div class="modal-dialog modal-lg modal-dialog-centered">
-                                <div class="modal-content" >
-                                    <div class="modal-header" style="background-color: #535C72"> <!-- style="background-color: #DDC8A9;"-->
-                                        <p class="modal-title fs-5" style="color: white;">
-                                        <b>Apply to be a moderator!</b>
-                                        </p>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body  px-5"> <!--text-center-->
-                                        <div class="row">
-
-                                            <div style="max-width:110px;">
-                                                <svg v-if="photo == ''" xmlns="http://www.w3.org/2000/svg" style="height:auto; width:100%; " class="rounded-circle-no-bg border border-dark profile-img" >
-                                                    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
-                                                    <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
-                                                </svg>
-                                                <!-- <img v-else :src="'data:image/png;base64,'+ photo" style="height:auto; width:100%;" class="rounded-circle-no-bg border border-dark profile-img" > -->
-                                                <img v-else :src="photo" style="height:auto; width:100%;" class="rounded-circle-no-bg border border-dark profile-img" >
-                                            </div>
-                                            <div style="max-width:170px;" class="px-0">
-                                                <button class="btn btn-warning hover-button p-1" style="border-radius: 20px; font-size: 0.8rem;">★ Certified Moderator</button> 
-                                            </div>
-                                        </div>
-
-
-                                        <p class="fs-5"><b>Help shape the drinks community and share your expertise as a moderator! Just some quick questions:</b></p>
-                                        <!--- <a href="#" class="m-2" style="font-style: italic; color: inherit">Click here to learn more about being a moderator</a>-->
-                                        
-                                        <div class="px-3">
-                                            <h6 class="m-3 mx-0">What drinks category would you like to moderate for?</h6>
-                                            <select class="form-select w-50 mx-auto" style="border: 2px solid #535C72;" aria-label="Default select example" v-model="modCat">
-                                                <option v-for="(type, index) in filteredDrinkType" :key="index" :value="type">{{type}}</option>
-                                            </select>
-                                            <h6 class="m-3 mx-0">Why do you want to be a Drink X moderator? What's your experience with this drink category?</h6>
-                                            <div class="mb-3">
-                                                <textarea class="form-control Xw-50 mx-auto" style="border: 2px solid #535C72;" id="exampleFormControlTextarea1" rows="3" v-model="modDesc"></textarea>
-                                            </div>
-                                        </div>
-                                        <btn class="btn secondary-btn-border " data-bs-dismiss="modal" @click="submitModeratorApplication" style="margin-right: 40%;margin-left:40%;"><b>Apply Now!</b></btn>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- applyModerator end -->
-
                         <!-- Change Password start -->
-                        <div v-if="user" class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div v-if="ownProfile" class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                             <div class="modal-dialog">
                                 <div class="modal-content">
                                     <div class="modal-header" style="background-color: #535C72">
@@ -367,10 +362,10 @@
                                     </div>
                                     <!-- Initial select mode, change or reset password -->
                                     <div v-if="changingPassword==''" class="modal-body">
-                                        <button class="btn tertiary-btn reverse-clickable-text m-1" type="button" @click="changePasswordMode('change')">
+                                        <button class="btn tertiary-btn reverse-clickable-text m-1" type="button" @click="changingPassword = 'change'">
                                             Change Password
                                         </button>      
-                                        <button class="btn tertiary-btn reverse-clickable-text m-1" type="button" @click="changePasswordMode('reset')">
+                                        <button class="btn tertiary-btn reverse-clickable-text m-1" type="button" @click="changingPassword = 'reset'">
                                             Reset Password
                                         </button>      
                                     </div>
@@ -437,21 +432,20 @@
                         <div class="mt-3">
                             <h3 class="mobile-view-hide">Badges Unlocked</h3>
                             <p class="mobile-view-show"><strong>Badges Unlocked</strong></p>
-                            <!--<hr>-->
-
+                            <hr>
                             <div v-if="topCategoriesReviewed.length == 0 && otherBadges.length == 0">
                                 You have no badges yet.
                             </div>
 
                             <div v-else class="container text-center mb-3">
                                 <!-- badges for different drink types -->
-                                <div class="row">
-                                    <div class="mobile-col-3 col-12 col-sm-4 col-md-6 col-xl-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2 " v-for="drinkTypeDetails in matchedDrinkTypes" :key="drinkTypeDetails.id">
+                                <div class="row" v-if="matchedDrinkTypes.length > 0">
+                                    <div class="mobile-col-3 col-12 col-sm-4 col-md-6 col-xl-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2 " v-for="(drinkTypeDetails, index) in matchedDrinkTypes" :key="drinkTypeDetails.id || index">
                                         <!-- image of actual badge  style="width: 100px; height: 100px;"  -->
                                         <!-- <img :src="'data:image/png;base64,'+ (drinkTypeDetails.badgePhoto || defaultProfilePhoto)" 
-                                            alt="" class="rounded-circle-white-bg border border-dark badge-img"> -->
+                                            alt="" class="rounded-circle-white-bg border border-dark badge-img">  -->
                                         <img :src="(drinkTypeDetails.badgePhoto || defaultProfilePhoto)" 
-                                            alt="" class="rounded-circle-white-bg border border-dark badge-img">
+                                            alt="" class="rounded-circle-white-bg border border-dark badge-img"> 
                                         <!-- badge description -->
                                         <div class="pt-1" style="line-height: 1;"> 
                                             <small> 
@@ -467,16 +461,16 @@
                                                     </i>
                                                 </span>
                                             </small>
-                                        </div>
+                                        </div> 
                                     </div>
-                                </div>
+                                </div> 
                                 <!-- badges based on other user activities -->
-                                <div class="row">
+                                <div class="row" >
                                     <div class="mobile-col-3 col-12 col-sm-4 col-md-6 col-xl-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2" v-for="badge in otherBadges" :key="badge">
                                         <!-- image of actual badge style="width: 100px; height: 100px;" -->
                                         <!-- <img :src="'data:image/png;base64,'+ (getBadgeInfo(badge).badgePhoto)" 
                                             alt="" class="rounded-circle-white-bg border border-dark badge-img"> -->
-                                        <img :src="(getBadgeInfo(badge)?.badgePhoto)" 
+                                        <img :src="(getBadgeInfo(badge)?.badgePhoto || defaultProfilePhoto)" style="width: 100px; height: 100px;" 
                                             alt="" class="rounded-circle-white-bg border border-dark badge-img">
                                         <!-- badge description -->
                                         <p class="pt-1" style="line-height: 1;"> 
@@ -486,12 +480,18 @@
                                         </p>
                                     </div>
                                 </div>
-                            </div>
+                            </div> 
                             
                             <div>
                                 <a href="#" style="color: black">Learn more about badges.</a>
                             </div>
 
+                        </div>
+                        
+
+                        <!-- Events-->
+                        <div class="mt-3">
+                            <EventBox :selfView="ownProfile" :targetUserID="displayUserID" targetUserType="user"/>
                         </div>
                         
                     </div>
@@ -500,160 +500,161 @@
 
                 <!-- Welcome section and Reviews/Lists -->
                 <div class="col-12 col-md-8">
+
+                    <!-- Welcome Section -->
                     <div style=" border: 1px solid #e0e0e0;
                         border-radius: 8px;
                         padding: 16px;
                         background-color: #ffffff;
-                        "
-                    >
-                    <!-- Welcome section -->
-                    <div style="margin-bottom: 24px;">
-                        <div style="position: relative; width: 100%; height: 200px; overflow: hidden; border-radius: 0; margin-bottom: 16px;">
+                        ">
+                        <!-- Welcome section -->
+                        <div style="margin-bottom: 24px;">
+                            <div style="position: relative; width: 100%; height: 200px; overflow: hidden; border-radius: 0; margin-bottom: 16px;">
+                                <img
+                                src="/Rectangle126.png"
+                                style="
+                                    width: 100%;
+                                    height: 100%;
+                                    object-fit: cover;
+                                "
+                                />
+                                <div
+                                style="
+                                    position: absolute;
+                                    inset: 0;
+                                    background-color: rgba(0, 0, 0, 0.2);
+                                "
+                                >
+                                </div>
+                            </div>
+                        </div>
+
+                        <h2 style="font-size: 24px; font-weight: normal; border-bottom: 1px solid #e0e0e0; padding-bottom: 16px;">
+                            Welcome to Drink-X. Let's get started!
+                        </h2>
+
+                        <div>
+                            <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px;">
                             <img
-                            src="/Rectangle126.png"
-                            style="
-                                width: 100%;
-                                height: 100%;
-                                object-fit: cover;
-                            "
+                                src="/Layer3.png"
+                                style="
+                                width: 64px;
+                                height: 64px;
+                                object-fit: contain;
+                                border-radius: 4px;
+                                "
+                                alt="Review your first drink"
                             />
-                            <div
-                            style="
-                                position: absolute;
-                                inset: 0;
-                                background-color: rgba(0, 0, 0, 0.2);
-                            "
-                            >
+                                <div>
+                                    <p style="font-size: 18px; margin-bottom: 8px;">Review your first drink.</p>
+                                    <button
+                                    style="
+                                        padding: 8px 16px;
+                                        background-color: #F0B358;
+                                        border: none;
+                                        color: black;
+                                        border-radius: 4px;
+                                        cursor: pointer;
+                                    "
+                                    @mouseover="hoverButton($event)"
+                                    @mouseleave="leaveButton($event)"
+                                    >
+                                    Find A Drink
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px;">
+                                <img
+                                    src="/address-book.png"
+                                    style="
+                                    width: 64px;
+                                    height: 64px;
+                                    object-fit: contain;
+                                    border-radius: 4px;
+                                    "
+                                    alt="Invite two friends"
+                                />
+                                <div>
+                                    <p style="font-size: 18px; margin-bottom: 8px;">Invite two friends.</p>
+                                    <button
+                                    style="
+                                        padding: 8px 16px;
+                                        background-color: #F0B358;
+                                        border: none;
+                                        color: black;
+                                        border-radius: 4px;
+                                        cursor: pointer;
+                                    "
+                                    @mouseover="hoverButton($event)"
+                                    @mouseleave="leaveButton($event)"
+                                    >
+                                    Add A Friend
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px;">
+                                <img
+                                    src="/Layer1.png"
+                                    style="
+                                    width: 64px;
+                                    height: 64px;
+                                    object-fit: contain;
+                                    border-radius: 4px;
+                                    "
+                                    alt="Curate a list to share"
+                                />
+                                <div>
+                                    <p style="font-size: 18px; margin-bottom: 8px;">Curate a list to share.</p>
+                                    <button
+                                    style="
+                                        padding: 8px 16px;
+                                        background-color: #F0B358;
+                                        border: none;
+                                        color: black;
+                                        border-radius: 4px;
+                                        cursor: pointer;
+                                    "
+                                    @mouseover="hoverButton($event)"
+                                    @mouseleave="leaveButton($event)"
+                                    >
+                                    Create A List
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px;">
+                                <img
+                                    src="/Layer2.png"
+                                    style="
+                                    width: 64px;
+                                    height: 64px;
+                                    object-fit: contain;
+                                    border-radius: 4px;
+                                    "
+                                    alt="Explore and join a club!"
+                                />
+                                <div>
+                                    <p style="font-size: 18px; margin-bottom: 8px;">Explore and join a club!</p>
+                                    <button
+                                    style="
+                                        padding: 8px 16px;
+                                        background-color: #F0B358;
+                                        border: none;
+                                        color: black;
+                                        border-radius: 4px;
+                                        cursor: pointer;
+                                    "
+                                    @mouseover="hoverButton($event)"
+                                    @mouseleave="leaveButton($event)"
+                                    >
+                                    Find A Club
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-
-                    <h2 style="font-size: 24px; font-weight: normal; border-bottom: 1px solid #e0e0e0; padding-bottom: 16px;">
-                        Welcome to Drink-X. Let's get started!
-                    </h2>
-
-                    <div>
-                        <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px;">
-                        <img
-                            src="/Layer3.png"
-                            style="
-                            width: 64px;
-                            height: 64px;
-                            object-fit: contain;
-                            border-radius: 4px;
-                            "
-                            alt="Review your first drink"
-                        />
-                            <div>
-                                <p style="font-size: 18px; margin-bottom: 8px;">Review your first drink.</p>
-                                <button
-                                style="
-                                    padding: 8px 16px;
-                                    background-color: #F0B358;
-                                    border: none;
-                                    color: black;
-                                    border-radius: 4px;
-                                    cursor: pointer;
-                                "
-                                @mouseover="hoverButton($event)"
-                                @mouseleave="leaveButton($event)"
-                                >
-                                Find A Drink
-                                </button>
-                            </div>
-                        </div>
-
-                        <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px;">
-                            <img
-                                src="/address-book.png"
-                                style="
-                                width: 64px;
-                                height: 64px;
-                                object-fit: contain;
-                                border-radius: 4px;
-                                "
-                                alt="Invite two friends"
-                            />
-                            <div>
-                                <p style="font-size: 18px; margin-bottom: 8px;">Invite two friends.</p>
-                                <button
-                                style="
-                                    padding: 8px 16px;
-                                    background-color: #F0B358;
-                                    border: none;
-                                    color: black;
-                                    border-radius: 4px;
-                                    cursor: pointer;
-                                "
-                                @mouseover="hoverButton($event)"
-                                @mouseleave="leaveButton($event)"
-                                >
-                                Add A Friend
-                                </button>
-                            </div>
-                        </div>
-
-                        <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px;">
-                            <img
-                                src="/Layer1.png"
-                                style="
-                                width: 64px;
-                                height: 64px;
-                                object-fit: contain;
-                                border-radius: 4px;
-                                "
-                                alt="Curate a list to share"
-                            />
-                            <div>
-                                <p style="font-size: 18px; margin-bottom: 8px;">Curate a list to share.</p>
-                                <button
-                                style="
-                                    padding: 8px 16px;
-                                    background-color: #F0B358;
-                                    border: none;
-                                    color: black;
-                                    border-radius: 4px;
-                                    cursor: pointer;
-                                "
-                                @mouseover="hoverButton($event)"
-                                @mouseleave="leaveButton($event)"
-                                >
-                                Create A List
-                                </button>
-                            </div>
-                        </div>
-
-                        <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px;">
-                            <img
-                                src="/Layer2.png"
-                                style="
-                                width: 64px;
-                                height: 64px;
-                                object-fit: contain;
-                                border-radius: 4px;
-                                "
-                                alt="Explore and join a club!"
-                            />
-                            <div>
-                                <p style="font-size: 18px; margin-bottom: 8px;">Explore and join a club!</p>
-                                <button
-                                style="
-                                    padding: 8px 16px;
-                                    background-color: #F0B358;
-                                    border: none;
-                                    color: black;
-                                    border-radius: 4px;
-                                    cursor: pointer;
-                                "
-                                @mouseover="hoverButton($event)"
-                                @mouseleave="leaveButton($event)"
-                                >
-                                Find A Club
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                     <!-- reviews and lists -->
                     <div class="mt-4">
@@ -665,6 +666,8 @@
                             @click="switchTab('reviews')"> 
                             Reviews 
                         </button>
+
+                        <!-- drink list button -->
                         <button 
                             class="btn mx-1 fw-bold no-hover"
                             :class="{ 'primary-btn-green active-toggle-button-user-profile': activeTab !== 'reviews', 'primary-btn-green-thin-outline inactive-toggle-button-user-profile': activeTab === 'reviews' }"
@@ -673,14 +676,16 @@
                             <span v-if="!ownProfile">Drink List</span> 
                         </button>
 
+                        <!-- Tab Section -->
                         <div class="tab-content container mt-2 mobile-px-0" >
+
                             <!-- reviews tab -->
                             <div v-if="activeTab == 'reviews'" id="reviews">
                                 <h3 class="text-body-secondary text-start pt-4"> 
                                     <b> Recent Reviews </b> 
                                 </h3>
-                                <div v-if="Object.keys(recentReviews).length > 0">
-                                    <div v-for="(review, index) in recentReviews.slice(0, 5)" :key="index">  
+                                <div v-if="recentReviews && recentReviews.length > 0">
+                                    <div v-for="review in recentReviews" :key="review.id">  
                                         <div style="display: flex" class="row mb-2">
                                             <div class="col-3 mobile-col-3 mobile-pe-0">
                                                 <!-- <img :src="'data:image/png;base64,' + (review.photo || defaultDrinkImage)" alt="" class="rounded bottle-img "> me-3 -->
@@ -704,34 +709,24 @@
                                                 </p>
                                                 <p class="fs-4 mobile-fs-5 fw-bold rating-text mobile-mb-1" >
                                                     {{ parseFloat(review.rating).toFixed(1) }}★
-                                                    <!--<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-star-fill " viewBox="0 0 16 16">
-                                                        <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                                    </svg>-->
                                                 </p>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div v-else class="container m-2">
-                                    No reviews yet. To explore more drinks in the home page, 
+                                <div v-else class="container">No reviews yet. To explore more drinks in the home page, 
                                     <router-link to="/" style="color: inherit;">click here</router-link>. 
                                 </div>
 
                                 <ListingRowDisplayUserProfile 
-                                    :listingArr="favouriteListings" 
+                                    :listingArr="top5ListingsData" 
                                     displayName="Favourite Listings" 
-                                    :user="user" 
-                                    :listing="listing" 
-                                    columnWidth="165px"
-                                    @icon-clicked="handleIconClick"/>
+                                    columnWidth="165px"/>
 
                                 <ListingRowDisplayUserProfile 
                                     :listingArr="recentActivity" 
-                                    displayName="Recent Activity" 
-                                    :user="user" 
-                                    :listing="listing" 
-                                    columnWidth="165px"
-                                    @icon-clicked="handleIconClick"/>
+                                    displayName="Recent Activity"  
+                                    columnWidth="165px"/>
                             </div>
 
                             <!-- lists tab -->
@@ -777,7 +772,9 @@
                                 <div v-for="(bookmarkList, name, index) in displayUserBookmarks" :key="name" style="display: flex" class="row mb-3">
                                     <div class="col-3 mobile-col-4 mobile-pe-0" >
                                         <!-- <img :src=" 'data:image/png;base64,' + ( getListingFromID(bookmarkList.listItems[0]).photo || defaultDrinkImage )" alt="" class="bottle-img me-3"> xyz -->
-                                        <img :src="( getListingFromID(bookmarkList.listItems[0])?.photo || defaultDrinkImage )" alt="" class="bottle-img me-3">
+                                        <img :src="( bookmarkList.listItems.length > 0 
+                                                    ? (bookedMarkedListings[bookmarkList.listItems[0]]?.photo || defaultDrinkImage)
+                                                    : defaultDrinkImage )"  alt="" class="bottle-img me-3">
                                     </div>
                                     <div  class="col-9 mobile-col-8 mobile-ps-1" > <!-- style="height: 150px; display: flex; flex-direction: column;" -->
                                         <h5 class="mt-1" @click="viewList(name)" style="cursor: pointer"> {{ name }} </h5>
@@ -970,14 +967,15 @@
 
                                 <!-- list details -->
                                 <div class="row mb-3" v-for="(listingID, index) in displayUser.drinkLists[currentList].listItems" :key="index">
+                                    
                                     <div class="col-10 pe-0" style="display: flex">
                                         <!-- <img :src=" 'data:image/png;base64,' + ( getListingFromID(listingID[1]).photo || defaultDrinkImage )" alt="" style="width:130px; height:130px;" class="bottle-img me-3"> -->
-                                        <img :src=" ( getListingFromID(listingID)?.photo || defaultDrinkImage )" alt="" style="width:130px; height:130px;" class="bottle-img me-3">
+                                        <img :src=" ( bookedMarkedListings[listingID]?.photo || defaultDrinkImage )" alt="" style="width:130px; height:130px;" class="bottle-img me-3">
                                         <div style="min-height: 150px; display: flex; flex-direction: column;">
                                             <a :href="'/listing/view/' + listingID" style="text-decoration: none; color: inherit;">
-                                                <h4>{{ getListingFromID(listingID)?.listingName }}</h4>
+                                                <h4>{{ bookedMarkedListings[listingID]?.listingName }}</h4>
                                             </a>
-                                            <p style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;"> {{ getListingFromID(listingID)?.officialDesc }} </p>
+                                            <p style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;"> {{ bookedMarkedListings[listingID]?.officialDesc }} </p>
                                             <div v-if="ownProfile" style="display: flex; margin-top: auto" class="mb-0">
                                                 <a href="#" style="text-decoration: none; color: #535C72;" data-bs-toggle="modal" :data-bs-target="`#deleteFromListModal${index}`">
                                                     <!-- cross icon -->
@@ -993,7 +991,11 @@
                                     </div>
                                     <div class="col-2 text-center ps-0">
                                         <h2>
-                                            {{ getAverageReview(listingID) }}
+                                            {{ 
+                                            bookedMarkedListings[listingID].avgRating !== null && bookedMarkedListings[listingID].avgRating !== undefined 
+                                                ? parseFloat(bookedMarkedListings[listingID].avgRating).toFixed(2) 
+                                                : '-' 
+                                            }}
                                             <svg class="mb-2" xmlns="http://www.w3.org/2000/svg" height="18" width="20.25" viewBox="0 0 576 512">
                                                 <!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc. -->
                                                 <path d="M287.9 0c9.2 0 17.6 5.2 21.6 13.5l68.6 141.3 153.2 22.6c9 1.3 16.5 7.6 19.3 16.3s.5 18.1-5.9 24.5L433.6 328.4l26.2 155.6c1.5 9-2.2 18.1-9.7 23.5s-17.3 6-25.3 1.7l-137-73.2L151 509.1c-8.1 4.3-17.9 3.7-25.3-1.7s-11.2-14.5-9.7-23.5l26.2-155.6L31.1 218.2c-6.5-6.4-8.7-15.9-5.9-24.5s10.3-14.9 19.3-16.3l153.2-22.6L266.3 13.5C270.4 5.2 278.7 0 287.9 0zm0 79L235.4 187.2c-3.5 7.1-10.2 12.1-18.1 13.3L99 217.9 184.9 303c5.5 5.5 8.1 13.3 6.8 21L171.4 443.7l105.2-56.2c7.1-3.8 15.6-3.8 22.6 0l105.2 56.2L384.2 324.1c-1.3-7.7 1.2-15.5 6.8-21l85.9-85.1L358.6 200.5c-7.8-1.2-14.6-6.1-18.1-13.3L287.9 79z"/>
@@ -1013,7 +1015,7 @@
                                                     <img src="../../../Images/Others/cancel.png" alt="" class="rounded-circle border border-dark text-center" style="width: 100px; height: 100px;">
                                                     <h3>Are you sure?</h3>
                                                     <br>
-                                                    <p>Do you really want to delete <b><i>{{ getListingFromID(listingID)?.listingName }}</i></b> from <b><i>{{ currentList }}</i></b>? </p>
+                                                    <p>Do you really want to delete <b><i>{{ bookedMarkedListings[listingID]?.listingName }}</i></b> from <b><i>{{ currentList }}</i></b>? </p>
                                                 </div>
                                                 <div style="display: inline" class="text-center mb-4">
                                                     <button type="button" class="btn btn-secondary me-3" data-bs-dismiss="modal">Cancel</button>
@@ -1024,49 +1026,46 @@
                                     </div>
                                     <!-- modal end -->
                                 </div>
-                            
+
                             </div>
+
                         </div>
 
                     </div>
 
+
                 </div>
 
-                <!-- Events Details -->
-                <div class="col-md-3 col-12">
-                    <EventBox :selfView="ownProfile" :targetUserID="displayUserID" targetUserType="user"/>
-                </div>
+                <!-- Bookmark Modal -->
+                <BookmarkModal 
+                    v-if="ownProfile" 
+                    :user="displayUser" 
+                    :listings="listings" 
+                    :listingID="bookmarkListingID" />
             </div>
-            <BookmarkModal 
-                v-if="user" 
-                :user="user" 
-                :listings="listings" 
-                :listingID="bookmarkListingID" />
-            
         </div>
+
         <FooterBar />
-
-
-    
     </div>
+
 </template>
 
 <script>
-import EventBox from '@/components/EventBox.vue';
-import NavBar from '@/components/NavBar.vue';
-import ListingRowDisplayUserProfile from '@/components/ListingRowDisplayUserProfile.vue';
-import BookmarkModal from '@/components/BookmarkModal.vue';
+import NavBar from "@/components/NavBar.vue";
 import FooterBar from "@/components/FooterBar.vue";
+import { useToast } from "vue-toastification";
+import EventBox from "@/components/EventBox.vue";
+import BookmarkModal from "@/components/BookmarkModal.vue";
+import ListingRowDisplayUserProfile from "@/components/ListingRowDisplayUserProfile.vue";
 
-
-// toggling between lists and list details
 export default {
+    name: "UserProfileRefactor",
     components: {
-        NavBar, 
-        ListingRowDisplayUserProfile, 
-        BookmarkModal,
+        NavBar,
+        FooterBar,
         EventBox,
-        FooterBar
+        BookmarkModal,
+        ListingRowDisplayUserProfile,
     },
     data() {
         return {
@@ -1076,84 +1075,60 @@ export default {
             defaultProfilePhoto: "https://drinkximages.s3.us-east-1.amazonaws.com/images/27e129b8-2d6e-44a3-8c14-d78c815b8056.jpg",       
             defaultDrinkImage: "https://drinkximages.s3.us-east-1.amazonaws.com/images/2d4d94bc-313e-4621-9a15-4bfbf77958de.jpg",   
             
-            //personal profile image
-            photo: '',
-            profileURL: '/login',
-            onProfile: false,
 
-            // user details
-            loggedIn: false,
-            userID: "",
-            user: {},
-            userBookmarks: {},
+            // Data loading variables
+            displayUserDataLoaded: false,
+            reviewsDataLoaded: false,
+            listingDataLoaded: false,
+            bookedMarkedListingsLoaded: false,
+            badgesDataLoaded: false,
+            subTagsDataLoaded: false,
+            flavorTagsDataLoaded: false,
+            drinkTypesDataLoaded: false,
+
+            // Page Data
+            listingNames:[], // list of listing names
+            listingNamesDictionary:{}, // dictionary of listing names where key is listing name and value is listing ID - used to get listing ID from listing name to query database
+            listingIDDictionary:{}, // dictionary of listing IDs where key is listing ID and value is listing name - use to exclude listing names from searchResults
+
+            // User Data
+            user: null,
+            userID: null,
+            userType: null,
             ownProfile: false,
-
-            // user being viewed
-            displayUserID: null,
-            displayUser: {},
-            drinkChoice: "",
-            drinkCount: 0,
-            joinDate: "",
             following: false,
-
-            // data from database
-            listings: [],
-            producers: [],
-            venues: [],
-            reviews: [],
-            reversedReviews: [],
-            users: [],
-            drinkCategories: [],
-            drinkTypes: [],
-            badges: [],
-            drinkType: [],
-            subTags: null,
-            flavourTags: null,
-
-            filteredDrinkType: [],
-
-            // data for tab
-            showCurrentContent: true, 
-            activeTab: 'reviews',
-
-            // image upload
-            selectedImage: null,
+            userBookmarks: {},
             selectedDrinks: [],
-            image64: null,
 
-            // display user drink activity
-            favouriteListings: {},
-            recentActivity: {},
-            recentReviews: {},
+            // Display User Data
+            displayUserID: null,
+            displayUser: null,
+            displayUserDrinkChoice: "",
+            displayUserBookmarks: {},
+            photo: null,
+            joinDate: null,
+            listingIDs: [],
+            listings: null,
+            drinkCount: null,
+            drinkType: [],
+            drinkTypes: [],    
+            bookedMarkedListings: {},        
 
-            // create list
-            currentList: "",
-            newListName: "",
-            newListDesc: "",
-            newListNameError: "",
+            // Reviews information 
+            subTags: [],
+            flavourTags: [],
+            recentReviews: [],
+            top5Listings: [], // only contains top 5 listings IDs
+            top5ListingsData: [], // contains top 5 listings data
 
-            // edit list
-            editListName: "",
-            editListDesc: "",
-            editListNameError: "",
+            // Recent Activity information
+            recentActivity: [],
 
-            // add or edit drink from list
-            drinksToAdd: [],
-            drinkSearch: "",
-            drinkSearchResults: [],
-
-            // mod request
-            modType: "",
-            modDesc: "",
-
-            // for bookmark component
-            bookmarkListingID: {},
-
-            // flags and variables for adding moderator
-            successAddMod:false,
-            successRemoveMod:false,
-            errorRemoveMod:false,
-            errorAddMod:false,
+            // Add or remove moderator variables 
+            successRemoveMod: false,
+            errorRemoveMod: false,
+            successAddMod: false,
+            errorAddMod: false,
             addableDrinkType:[],
             removableDrinkType:[],
             promotedType:"",
@@ -1163,34 +1138,33 @@ export default {
             chooseMod:"",
             doubleConfirmMod:false,
 
-            // flags and variables for changing/resetting password
-            oldPassword:"",
-            newPassword:"",
-            changingPassword:"",
+            // Apply moderator variables
+            filteredDrinkType: [],
+            modCat: '',
+            modDesc: '',
+
+            // Change password variables
+            oldPassword: '',
+            newPassword: '',
+            changingPassword: '',
             confirmChangePassword: false,
             confirmResetPassword: false,
             passwordError: false,
             passwordSuccess: false,
             passwordMismatch: false,
-            resetPin: "",
+            resetPin: '',
             isButtonDisabled: false,
-            verifyErrorMessage:"",
-            resettingPassword:false,
+            verifyErrorMessage: '',
+            resettingPassword: false,
 
-            // for badges
-            allListingsReviewedByUser: [],
-            allCategoriesReviewedByUser: {},
-            allSubCategoriesReviewedByUser: {},
-            matchedDrinkTypes: [],
-            topCategoriesReviewed: [],
-            topSubcategoriesReviewed: {},
-            reviewCountriesTagged: [],
+            // Badges
+            reviewsSummary: {},
+            // Badge criteria
             badgeLevels: { // CHANGE THIS! if there is a change in criterion for minimum # of reviews that a user needs to gain a badge level
                 novice: 3,
                 lover: 10,
                 master: 30,
             },
-            categoryBadges: {},
             otherBadgesLimit: { // CHANGE THIS! if there is a change in minimum # that a user needs to gain a badge level
                 reviewDrinkCategory: 10,
                 tagFriend: 3,
@@ -1198,99 +1172,56 @@ export default {
                 tagCountry: 3,
                 upvotes: 10
             },
+            badges: [],
+            topCategoriesReviewed: [],
+            categoryBadges: {},
+            reviewCountriesTagged: [],
             otherBadges: [],
             totalBadges: 0,
+            matchedDrinkTypes: [],
 
-            // for points
-            pointSystem: { // CHANGE THIS! if there is a change in the point system (just change this.pointsDefault to a numerical value for the corresponding criteria)
-                // format: { action: [count, points] }
-                logReview: [0, 50], // log a review
-                tagFriend: [0, 50], // tag a friend
-                tagLocation: [0, 50], // tag a location
-                tagCountry: [0, 50], // tag a country
-                askProducer: [0, 50], // ask a producer a question
-                askVenue: [0, 50], // ask a venue a question
-            },
-            totalPoints: 0,
-        };  
-    },
-    computed: {
-        formattedModTypes() {
-            // Join the modType array elements with commas and spaces
-            if(this.displayUser.modType.length === 0){
-                return "This user is currently not a moderator!"
-            }
-            else{
-                return "This user is currently a moderator for <b>" + this.displayUser.modType.join(', ') +"</b>!";
-            }
-        },
+            // Tabs variables (reviews or drink lists)
+            activeTab: 'reviews',
+
+            // View Bookmark Variables
+            currentList: '',
+            
+            // Create Bookmark Variables 
+            newListName: '',
+            newListNameError: '',
+            newListDesc: '',
+
+            // Edit Bookmark Variables
+            editListName: '',
+            editListNameError: '',
+            editListDesc: '',
+
+            // Add Drinks to List Variables
+            excludeListingNamesList: [],
+            drinksToAdd: [],
+            drinkSearch: '',
+            drinkSearchResults: [],
+
+
+        };
     },
     mounted() {
-
-        // Obtain user's profile picture + set profile URL
-        if (localStorage.getItem('88B_accID') != null) {
-
-        this.accType = localStorage.getItem('88B_accType');
-        let accID = localStorage.getItem('88B_accID');
-        let url = `${process.env.VUE_APP_API_URL}/getData/get`;
-
-        if (this.accType == 'user') {
-            url = url + 'User/' + accID;
-            this.loadData(url);
-
-            this.profileURL = '/profile/user/'+accID;
-            this.dashboardURL = '/dashboard/user';
-            this.dashboardWord = 'Drink';
-        } 
-        else if (this.accType == 'producer') {
-            url = url + 'Producer/' + accID;
-            this.loadData(url);
-
-            this.profileURL = '/profile/producer/' + accID;
-            this.dashboardURL = '/Producers/ProducersDashboard/' + accID;
-            this.dashboardWord = 'Brand';
-            
-        } 
-        else if (this.accType == 'venue') {
-            url = url + 'Venue/' + accID;
-            this.loadData(url);
-
-            this.profileURL = '/profile/venue';
-            this.dashboardURL = '/dashboard/venue';
-            this.dashboardWord = 'Venue';
-        }
-
-        // check if current page is profile page
-        if (this.$route.path.split('/')[1] == 'profile') {
-            this.onProfile = true;
-        }
-
-        // check if current page is create listing page
-        if (this.$route.path.split('/').length >= 3 && this.$route.path.split('/')[2] == 'create') {
-            this.onCreate = true;
-        }
-
-        // check if current page is request page
-        if (this.$route.path.split('/')[1] == 'request') {
-            this.onRequest = true;
-        }
-        }
-
         // get local storage
         const accID = localStorage.getItem("88B_accID");
         if(accID !== null){
-            this.userID = localStorage.getItem('88B_accID')
-            this.loggedIn = true
+            this.userID = accID;
+        }
+
+        const accType = localStorage.getItem("88B_accType");
+        if (accType !== null) {
+            this.userType = accType;
         }
 
         // get displayUserID from URL
         try {
             this.displayUserID = this.$route.params.userID;
             if (this.displayUserID === this.userID) {
-                this.$router.push('/profile/user');
-            }
-            else if (!this.displayUserID) {
-                this.displayUserID = this.userID;
+                this.ownProfile = true
             }
         }
         catch (error) {
@@ -1311,156 +1242,254 @@ export default {
             console.error(error);
         }
 
+        // load data
+        this.loadData();
     },
     methods: {
-        hoverButton(event) {
-            event.target.style.backgroundColor = "#E5A443";
-        },
-        leaveButton(event) {
-            event.target.style.backgroundColor = "#F0B358";
-        },
         // load data from database
-        async loadData(url) {
-            //profile picture
-            if (url){
-                try {
-                    const response = await this.$axios.get(url);
-                    this.photo = response.data["photo"];
+        async loadData() {
+            try {
+                await this.getAllListingNames();
 
-                if (this.accType == 'user') {
-                    if (response.data.isAdmin) {
-                        this.isAdmin = true;
+                await Promise.all([
+                    this.getDisplayUserProfile(),
+                    this.getReviews(),
+                ]);
+
+                await this.getListing();
+
+                if (this.userID) {      
+
+                    if (this.ownProfile) {
+                        this.user = this.displayUser;
+                    } else {
+                        try {
+                            const response  = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUser/${this.userID}`);
+                            this.user = response.data;
+                        }
+                        catch (error) {
+                            console.error(error);
+                        }
                     }
-                    if (Array.isArray(response.data.modType) && response.data.modType.length > 0) {
-                        this.isModerator = true;
+                    // check if current user is following the user being viewed
+                    if (this.userType === 'user') {
+                        this.following = this.user.followLists.users.includes(this.displayUserID);
+                    } else if (this.userType == "producer") {
+                        this.following = this.user.followLists.producers.includes(this.displayUserID);
+                    } else {
+                        this.following = this.user.followLists.venues.includes(this.displayUserID);
                     }
+
+                    await Promise.all([
+                        this.getModRequest(),
+                    ]);
+                }
+
+                await Promise.all([
+                    this.getDrinkTypes(),
+                    this.getBadges(),
+                    this.getFlavorTags(),
+                    this.getSubTags(),
+                ]);
+
+                await this.getReviewsSummary();
+
+                // Check if all data is loaded
+                if (this.displayUserDataLoaded && this.reviewsDataLoaded && this.listingDataLoaded && this.bookedMarkedListingsLoaded && this.badgesDataLoaded && this.subTagsDataLoaded && this.flavorTagsDataLoaded && this.drinkTypesDataLoaded) {
+                    this.dataLoaded = true;
+                } else {
+                    this.dataLoaded = null;
+                }
+            } catch (error) {
+                console.error("An error occurred:", error);
+                this.dataLoaded = null;
+            }
+        },
+
+        // ------------------- Get Page Data -------------------
+        // get Display User Profile
+        async getDisplayUserProfile() {
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUser/${this.displayUserID}`);
+                this.displayUser = response.data;
+                this.displayUserDataLoaded = true;
+
+                // get display user profile picture
+                this.photo = this.displayUser.photo;
+                
+                // get display user drink choice
+                this.displayUserDrinkChoice = this.displayUser.choiceDrinks.join(", ");
+
+                // get display user bookmark lists
+                this.displayUserBookmarks = this.displayUser.drinkLists; 
+
+                // get listings details in bookmark lists
+                this.getBookmarkListings();
+
+                if (this.ownProfile) {
+                    this.userBookmarks = this.displayUserBookmarks;
+                    this.user = this.displayUser;
+                }
+
+                // format join data
+                const dateString = this.displayUser.joinDate;
+                const dateParts = dateString.split('-');
+                const year = dateParts[0];
+                const month = new Date(dateString).toLocaleString('default', { month: 'long' });
+                this.joinDate = `${month} ${year}`;
+            }
+            catch (error) {
+                console.error(error);
+                this.displayUserDataLoaded = false;
+            }
+        },
+
+        // Reviews
+        async getReviews() {
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getRecentListingReviews/${this.displayUserID}`);
+                this.top5Listings = response.data.topListings;
+                this.recentReviews = response.data.recentReview;
+
+                // get number of unique listings reviewed by user
+                this.drinkCount = response.data.drinkCount;
+
+                this.reviewsDataLoaded = true;
+
+                // get listing IDs from all the recent reviews that is not currently in the listingIDs array
+                for (const review in this.recentReviews) {
+                    if (!this.listingIDs.includes(this.recentReviews[review].reviewTarget)) {
+                        this.listingIDs.push(this.recentReviews[review].reviewTarget);
+                    }
+                }
+
+                // get listing IDs from all the top 5 listings that is not currently in the listingIDs array
+                for (const id of this.top5Listings) {
+                    if (!this.listingIDs.includes(id)) {
+                        this.listingIDs.push(id);
+                    }
+                }
+
+            }   
+            catch (error) {
+                console.error(error);
+                
+                if (error.status === 404) {
+                    this.reviewsDataLoaded = true;
+                } else {
+                    this.reviewsDataLoaded = false;
+                }
+            }
+        },
+
+        // Summary of all user reviews 
+        async getReviewsSummary() {
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUserReviewSummary/${this.displayUserID}`);
+                this.reviewsSummary = response.data.data;
+
+                // ==== for badges ====
+                this.getTopCategoriesReviewed();
+                this.getAllCountriesTagged();
+                this.checkOtherBadges();
+                this.calculateTotalBadges();
+            } 
+            catch (error) {
+                console.error(error);
+            }
+        },
+
+        // Listings (get only listings that are in the recent reviews, top 5 listings, and bookmark lists)
+        async getListing() {
+            try {
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/getData/getListingsByIDs`, { 'listingIDs': this.listingIDs });
+                this.listings = response.data;
+
+                this.listingDataLoaded = true;
+
+                if (this.listings) {
+                    this.formatTop5ListingsData();
+                }
+            } 
+            catch (error) {
+                console.error(error);
+                if (error.status === 404) {
+                    this.listingDataLoaded = true;
+                } else {
+                    this.listingDataLoaded = false;
+                }
+            }
+        },
+
+        // Listings Names
+        async getAllListingNames() {
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getAllListingsNames`);
+                
+                // Format the listingNames and listingNamesDictionary
+                for (const listing of response.data) {
+                    this.listingNames.push(listing.listingName);
+                    this.listingNamesDictionary[listing.listingName] = listing.id;
+                    this.listingIDDictionary[listing.id] = listing.listingName;
                 }
             } 
             catch (error) {
                 console.error(error);
             }
+        },
+
+        // Listings in Bookmark Lists (separate from getListing as it also includes average ratings)
+        async getBookmarkListings() {
+            let listing_ids = [];
+            for (const list in this.displayUserBookmarks) {
+                for (const listingID of this.displayUserBookmarks[list].listItems) {
+                    if (!listing_ids.includes(listingID)) {
+                        listing_ids.push(listingID);
+                    }
+                }
             }
 
-            // Listings
             try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListings`);
-                this.listings = response.data;
-                // originally, make filteredListings the entire collection of listings
-                this.filteredListings = this.listings;
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/getData/getBookmarkListings`, { 'listingIDs': listing_ids });
+                this.bookedMarkedListings = response.data;
+                console.log(this.bookedMarkedListings);
+                this.bookedMarkedListingsLoaded = true;
             } 
             catch (error) {
                 console.error(error);
-                this.dataLoaded = null;
+                if (error.status === 404) {
+                    this.bookedMarkedListingsLoaded = true;
+                } else {
+                    this.bookedMarkedListingsLoaded = false;
+                }
             }
-            // Reviews
-            try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getReviews`);
-                this.reviews = response.data;
-                this.reversedReviews = this.reviews.reverse();
-                this.recentReviews = this.reversedReviews.filter(review => review.userID === parseInt(this.displayUserID) && review.reviewType === 'Listing');
-            }
-            catch (error) {
-                console.error(error);
-                this.dataLoaded = null;
-            }
-            // Producers
-            try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducers`);
-                this.producers = response.data;
-                this.dataLoaded = true;
-            } 
-            catch (error) {
-                console.error(error);
-                this.dataLoaded = null;
-            }
-            // Venues
-            try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenues`);
-                this.venues = response.data;
-                this.dataLoaded = true;
-            } 
-            catch (error) {
-                console.error(error);
-                this.dataLoaded = null;
-            }
+        },
+
+        // Recent Activity (not implemented yet)
+        async getRecentActivity() {
+            
+        },
+
+        // Badges
+        async getBadges() {
             // for Badges
             try {
                 const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getBadges`);
                 this.badges = response.data;
-                this.dataLoaded = true;
+                this.badgesDataLoaded = true;
             } 
             catch (error) {
                 console.error(error);
-                this.dataLoaded = null;
-            }
-            // Users
-            try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUsers`);
-                this.users = response.data;
-                this.user = this.getUser(this.userID);
-                this.displayUser = this.getUser(this.displayUserID);
-                console.log(this.displayUser)
-                
-                if (this.userID === this.displayUserID) {
-                    this.ownProfile = true;
-                }
-                else {
-                    this.ownProfile = false;
-                }
-
-                this.drinkChoice = this.getDrinkOfChoice();
-                this.drinkCount = this.getDrinkCount();
-                if (this.user) {
-                    // join date
-                    const dateString = this.user.joinDate;
-                    const dateParts = dateString.split('-');
-                    const year = dateParts[0];
-                    const month = new Date(dateString).toLocaleString('default', { month: 'long' });
-                    this.joinDate = `${month} ${year}`;
-                    this.selectedDrinks = this.user.choiceDrinks;
-                    this.userBookmarks = this.user.drinkLists;
-                    this.following = JSON.stringify(this.user.followLists.users).includes(JSON.stringify(this.displayUserID));
-
+                if (error.status === 404) {
+                    this.badgesDataLoaded = true;
                 } else {
-                    const dateString = this.displayUser.joinDate;
-                    const dateParts = dateString.split('-');
-                    const year = dateParts[0];
-                    const month = new Date(dateString).toLocaleString('default', { month: 'long' });
-                    this.joinDate = `${month} ${year}`;
+                    this.badgesDataLoaded = false;
                 }
-
-                this.userDrinkChoice = this.getDrinkOfChoice(this.user);
-                this.displayUserDrinkChoice = this.getDrinkOfChoice(this.displayUser);
-                this.displayUserBookmarks = this.displayUser.drinkLists;
-                this.getUserFavourite();
-                this.getRecentActivity();
-
-                // ==== for badges ====
-                this.getAllListingsReviewed();
-                this.getAllCategoriesReviewed();
-                await this.getAllCountriesTagged();
-
-                // ==== for points ====
-                this.pointSystem.logReview[0] = this.allListingsReviewedByUser.length;
-                this.getTotalFriendsTagged();
-                this.getTotalLocationsTagged();
-                this.getTotalCountriesTagged();
-                this.getAskedProducerQuestions();
-                this.getAskedVenueQuestions();
-                this.calculateTotalPoints();
-
-                // ==== for badges (others) ====
-                this.checkEnoughLocationTagged();
-                this.checkEnoughCountriesTagged();
-                this.checkEnoughFriendsTagged();
-                this.getTotalUpvotes();
-                this.checkEnoughUpvotes();
-
-            } 
-            catch (error) {
-                console.error(error);
-                this.dataLoaded = null;
             }
+        },
+
+        // Mod Request
+        async getModRequest() {
             // mod requests
             try {
                 const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getModRequests`);
@@ -1471,12 +1500,21 @@ export default {
             } 
             catch (error) {
                 console.error(error);
-                this.dataLoaded = null;
             }
+        },
+
+        // Drink Types
+        async getDrinkTypes() {
             // drinkCategories
             try {
                 const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getDrinkTypes`);
                 this.drinkTypes = response.data;
+
+                // Add "Whiskey" to drinkType "Whisky"
+                const whiskeyIndex = this.drinkTypes.findIndex(drinkType => drinkType.drinkType === "Whisky");
+                this.drinkTypes[whiskeyIndex].drinkType = "Whiskey / Whisky";
+
+
                 // retrieve the drink type and put them into an array
                 this.drinkType = this.drinkTypes.map(category => category.drinkType);
                 if (this.user && this.drinkTypes) {
@@ -1485,7 +1523,7 @@ export default {
                         this.filteredDrinkType = this.filteredDrinkType.filter(type => !this.modRequestsType.includes(type));
                     }
                 }
-                if(this.displayUser){
+                if (this.displayUser) {
                     let currentMod = this.displayUser.modType
                     this.removableDrinkType = this.drinkTypes.filter(drinkType=>{
                         return currentMod.includes(drinkType.drinkType);
@@ -1495,16 +1533,16 @@ export default {
                     })
                 }
 
-                // ==== for badges ====
-                this.getTopCategoriesReviewed();
-                this.getMatchedDrinkType();
-                this.calculateTotalBadges();
-
+                this.drinkTypesDataLoaded = true;
             } 
             catch (error) {
                 console.error(error);
-                this.dataLoaded = null;
+                this.drinkTypesDataLoaded = false;
             }
+        },
+
+        // Flavor Tags
+        async getFlavorTags() {
             // flavourTags
             // _id, hexcode, familyTag, subtag, showbox
             try {
@@ -1512,11 +1550,17 @@ export default {
                 this.flavourTags = response.data.map(item => {
                     return { ...item, showBox: false };
                 })
+
+                this.flavorTagsDataLoaded = true;
             } 
             catch (error) {
                 console.error(error);
-                this.dataLoaded = null;
+                this.flavorTagsDataLoaded = false;
             }
+        },
+
+        // Sub Tags
+        async getSubTags() {
             // subTags
             // _id, familyTagId, subtag
             try {
@@ -1533,375 +1577,24 @@ export default {
                     // Assign subtag information to flavor tag object
                     flavourTag.subTag2 = subTagsInfo;
                 });
+
+                this.subTagsDataLoaded = true;
             } 
             catch (error) {
                 console.error(error);
-                this.dataLoaded = null;
-            }
-
-            // Set data loaded flag
-            if (this.dataLoaded !== null) {
-                this.dataLoaded = true;
+                this.subTagsDataLoaded = false;
             }
         },
 
-        // ------------------- User Profile -------------------
-        // get user from user ID
-        getUser(id) {
-            return this.users.find(user => user.id === parseInt(id));
-        },
-        // get display user details
-        getDrinkCount() {
-            if (this.ownProfile) {
-                return this.reviews.filter(review => review.userID === parseInt(this.userID) && review.reviewType === 'Listing').length;
-            }
-            else {
-                return this.reviews.filter(review => review.userID === parseInt(this.displayUserID) && review.reviewType === 'Listing').length;
-            }
-        },
-        getDrinkOfChoice() {
-            if (this.ownProfile) {
-                return this.user.choiceDrinks.join(", ");
-            }
-            else {
-                return this.displayUser.choiceDrinks.join(", ");
-            }
-        },
-
-        // ------------------- Edit User Profile -------------------
-        // read uploaded image
-        async loadFile(event) {
-            const file = event.target.files[0];
-            const reader = new FileReader();
-
-            reader.onloadend = async () => {
-                this.selectedImage = reader.result;
-                const base64String = reader.result.replace('data:', '').replace(/^.+,/, '');
-
-                this.image64 = base64String;
-
-            };
-            reader.readAsDataURL(file);
-        
-        },
-        // save changes to user profile
-        async saveChangesDetails() {
-            if (this.image64 == null) {
-                this.image64 = this.user["profile_picture"];
-            }
-            
-            try {
-                console.log(this.image64)
-                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/editDetails`, 
-                    {
-                        userID: this.userID,
-                        image64: this.image64,
-                        drinkChoice: this.selectedDrinks,
-                    }, {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                console.log(response.data);
-            } catch (error) {
-                console.error(error);
-            }
-
-            // window.location.reload();
-        },
-        // reset edit profile form
-        cancelChanges() {
-            this.selectedDrinks = this.user.choiceDrinks;
-            this.selectedImage = null;
-            this.$refs.fileInput.value = '';
-        }, 
-
-        // ------------------- User Bookmarks -------------------
-        // checks if an item has been bookmarked
-        checkBookmarkStatus(listingID) {
-            // check if listingID is in user bookmark
-            for (const category of Object.values(this.userBookmarks)) {
-                if (category.listItems) {
-                    if (category.listItems.some(item => item === parseInt(listingID))) {
-                        return true;
-                    }
-                }
-            }
-        },
-        getListingFromID(listingID) {
-            return this.listings.find(listing => listing.id === parseInt(listingID));
-        },
-
-        // return oid from name of drink listing
-        getListingID(listingName) {
-            const listing = this.listings.find(listing => listing.listingName === listingName);
-            return listing.id;
-        },
-        // return search items for bookmarking
-        searchResult() {
-            this.drinkSearchResults = this.listings
-                .filter(listing => listing.listingName.toLowerCase().includes(this.drinkSearch.toLowerCase()))
-                .filter(listing => !this.checkBookmarkStatus(listing.id))
-                .map(listing => listing.listingName);
-        },
-        // bookmark item through search
-        async addDrinkToList(listName) {
-            for (const drink of this.drinksToAdd) {
-                let addListingId = this.getListingID(drink);
-                let itemExist = this.userBookmarks[listName].listItems.find(item => item === addListingId);
-                if (!itemExist) {
-                    this.userBookmarks[listName].listItems.push(addListingId);
-                }
-            }
-
-            try {
-                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/updateBookmark`, 
-                    {
-                        userID: this.userID,
-                        bookmark: this.userBookmarks,
-                    }, {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                console.log(response.data);
-            } catch (error) {
-                console.error(error);
-            }
-            
-           window.location.reload();
-        },
-        // add new list
-        async addNewList() {
-            if (this.userBookmarks[this.newListName]) {
-                this.newListNameError = "List name already exists";
-                return;
-            } else if (this.newListName === "") {
-                this.newListNameError = "List name cannot be empty";
-                return;
-            }
-            
-            this.newListNameError = "";
-            this.userBookmarks[this.newListName] = {};
-            this.userBookmarks[this.newListName].listDesc = this.newListDesc;
-            this.userBookmarks[this.newListName].listItems = [];
-
-            try {
-                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/updateBookmark`, 
-                    {
-                        userID: this.userID,
-                        bookmark: this.userBookmarks,
-                    }, {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                console.log(response.data);
-            } catch (error) {
-                console.error(error);
-            }
-            
-            window.location.reload();
-
-        },
-        // delete drink from list
-        async deleteFromList(listName, listingID) {
-            // param: objectId
-            const index = this.userBookmarks[listName].listItems.indexOf(listingID);
-            this.userBookmarks[listName].listItems.splice(index, 1);
-
-            try {
-                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/updateBookmark`, 
-                    {
-                        userID: this.userID,
-                        bookmark: this.userBookmarks,
-                    }, {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                console.log(response.data);
-            } catch (error) {
-                console.error(error);
-            }
-        },
-        // delete list
-        async deleteList(listName) {
-            // delete the list from the user's bookmark list
-            delete this.userBookmarks[listName];
-
-            try {
-                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/updateBookmark`, 
-                    {
-                        userID: this.userID,
-                        bookmark: this.userBookmarks,
-                    }, {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                console.log(response.data);
-            } catch (error) {
-                console.error(error);
-            }
-
-            window.location.reload();
-        }, 
-        // reset form details
-        resetEditList(listName, listDesc) {
-            this.editListName = listName;
-            this.editListDesc = listDesc;
-            this.editListNameError = "";
-        },
-        // edit list details
-        async editList(currentListName) {
-            if (this.editListName === "") {
-                this.editListNameError = "List name cannot be empty";
-                return;
-            } else if (this.editListName !== currentListName && this.userBookmarks[this.editListName]) {
-                this.editListNameError = "List name already exists";
-                return;
-            }
-
-            this.listNameError = "";
-
-            if (this.editListName !== currentListName) {
-                this.userBookmarks[this.editListName] = {};
-                this.userBookmarks[this.editListName].listDesc = this.editListDesc;
-                this.userBookmarks[this.editListName].listItems = this.userBookmarks[currentListName].listItems;
-                delete this.userBookmarks[currentListName];
-            } 
-            
-            this.userBookmarks[this.editListName].listDesc = this.editListDesc;
-
-            try {
-                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/updateBookmark`, 
-                    {
-                        userID: this.userID,
-                        bookmark: this.userBookmarks,
-                    }, {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                console.log(response.data);
-            } catch (error) {
-                console.error(error);
-            }
-
-            window.location.reload();
-
-        }, 
-
-        // ------------------- Moderator Application -------------------
-        // submit moderator application
-        async submitModeratorApplication() {
-            try {
-                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editModRequests/submitModRequest`, 
-                    {
-                        userID: this.userID,
-                        drinkType: this.modCat,
-                        modDesc: this.modDesc,
-                    }, {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                console.log(response.data);
-                if (response.data.code == 201) {
-                    alert("Moderator application submitted successfully!");
-                }
-            } catch (error) {
-                console.error(error);
-            }
-            const index = this.filteredDrinkType.indexOf(this.modCat);
-            if (index !== -1) {
-                this.filteredDrinkType.splice(index, 1);
-            }
-            this.modCat = "";
-            this.modDesc = "";
-        },
-        
-        // ------------------- User Drink Activity -------------------
-        // check if review is for listing
-        async checkReviewType(listingID) {
-            const review = this.reviews.find(review => review.listingID === listingID);
-            return review.reviewType == "Listing"
-        },
-        // get listing name from listing ID
-        getListingName(listingID) {
-            if (this.listings) {
-                return this.listings.find(listing => listing.id === listingID).listingName;
-            }
-        },
-        // get user's favourite listings
-        getUserFavourite() {
-            const favouriteListingReviews = this.reviews
-                .filter(review => review.reviewType === "Listing" && 
-                    review.userID === this.displayUserID &&
-                    review.rating >= 5)
-                .sort((a, b) => b.rating - a.rating);
-
-            const favouriteListingIds = favouriteListingReviews
-                .map(review => review.reviewTarget)
-
-            this.favouriteListings = this.listings
-                .filter(listing => favouriteListingIds.includes(listing.id))
-                .sort((a, b) => {
-                    // Get the indices of the IDs in favouriteIdList
-                    const indexA = favouriteListingIds.indexOf(a.id);
-                    const indexB = favouriteListingIds.indexOf(b.id);
-                    
-                    // Sort based on the indices in favouriteIdList
-                    return indexA - indexB;
-                })
-                .slice(0, 5);
-        },
-        // get user's recent activity
-        getRecentActivity() {
-
-            // // reviews
-            let userReviews = this.reviews
-                .filter(review => review.reviewType === "Listing" && 
-                    review.userID === this.displayUserID)
-                .map(review => {
-                    review.listingID = review.reviewTarget;
-                    return review;
-                });
-
-            // bookmarks
-            let allUserBookmarks = Object.values(this.userBookmarks).map(item => item.listItems).flat();
-            let allUserBookmarksDict = allUserBookmarks.map(listingID => ({listingID}));
-
-            // combine reviews and bookmarks
-            let userActivity = userReviews.concat(allUserBookmarksDict);
-
-            this.recentActivity = userActivity
-                .reverse()
-                .filter((item, index, self) =>
-                    index === self.findIndex((t) => (
-                    t.listingID === item.listingID
-                    ))
-                )
-                .map(item => {
-                    item = this.listings.find(listing => listing.id === parseInt(item.listingID));
-                    return item;
-                })
-                .slice(0, 5);
-
-        }, 
-        getListingPhoto(listingID) {
-            const listing = this.listings.find(listing => listing.id === listingID);
-            return listing.photo;
-        },
         getTagName(tag) {
             if (!this.subTags || !this.flavourTags) {
                 return "";
             }
+
             const subTag = this.subTags.find(subTag=>subTag.id === tag)
-            if(subTag){
+            if (subTag) {
                 const familyTag = this.flavourTags.find(family=>subTag.familyTagId===family.id)
-                if(familyTag){
+                if (familyTag) {
                     const hexcode = familyTag.hexcode
                     const subtagInfo = subTag.subTag
                     const tagInfo = subtagInfo + hexcode
@@ -1911,11 +1604,11 @@ export default {
                 if (!familyTag || !subTag) {
                     return "";
                 }
-            }else{
+            } else { 
                 return "<deleted>"
             }
-
         },
+
         getTagColor(tag) {
             if (!this.subTags || !this.flavourTags) {
                 return "";
@@ -1939,111 +1632,30 @@ export default {
             
         },
 
-        // ------------------- User Follow -------------------
-        // follow or unfollow user
-        async editFollow(action) {
-            if (action === "unfollow") {
-                this.following = false;
-            } else {
-                this.following = true
-            }
-            try {
-                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/updateFollowLists`, 
-                    {
-                        userID: this.userID,
-                        action: action,
-                        target: "users",
-                        followerID: this.displayUserID,
-                    }, {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                console.log(response.data);
-            } catch (error) {
-                console.error(error);
-            }
-        }, 
-
-        // others
-        // get average review
-        getAverageReview(listingID) {
-            // param: objectId
-            const reviews = this.reviews.filter(review => review.reviewTarget === listingID);
-            if (reviews.length > 0) {
-                const totalRating = reviews.reduce((acc, review) => acc + review.rating, 0);
-                return (totalRating / reviews.length).toFixed(1);
-            }
-            return "-";
+        // ------------------- Button Hover -------------------
+        hoverButton(event) {
+            event.target.style.backgroundColor = "#E5A443";
         },
 
-        // ------------------- UI -------------------
-        // review and drink list toggle
-        viewList(name) {
-            if (name == "lists") {
-                this.activeTab = 'lists';
-                this.$router.push('/profile/user/' + this.displayUserID);
-            } else {
-                this.activeTab = 'list';
-                this.currentList = name;
-                this.$router.push('/profile/user/' + this.displayUserID + '/' + name);
-            }
-        },
-        switchTab(tab) {
-            this.activeTab = tab;
-            this.$router.push('/profile/user/' + this.displayUserID);
+        leaveButton(event) {
+            event.target.style.backgroundColor = "#F0B358";
         },
 
-        // drink list sharing
-        updateCurrentURL() {
-            this.currentURL = window.location.href;
-        },
-
-        copyToClipboard(text) {
-            navigator.clipboard.writeText(text)
-            .then(() => {
-                this.clipboardItem = true;
-                setTimeout(() => {
-                    this.clipboardItem = false;
-                }, 3000);
-            })
-            .catch(err => {
-                console.error('Failed to copy text: ', err);
-            });
-        },
+        // ------------------- Add or Remove Moderator -------------------
         
-        // for bookmark component
-        handleIconClick(data) {
-            this.bookmarkListingID = data
+        // Add Mod Mode
+        addModMode() {
+            this.chooseMod = 'add';
+            this.doubleConfirmMod = false;
         },
-        updateDrinkType(){
-            // get error message element
-            let promotedTypeError = document.getElementById("promotedTypeError")
-            // find listing based on bottle name
-            let drinkType = this.addableDrinkType.find(drinkType => drinkType.drinkType === this.promotedType)
-            if (drinkType) {
-                this.selectedPromotedType = drinkType
-                promotedTypeError.innerHTML = ""
-            }
-            else {
-                this.selectedPromotedType = null
-                promotedTypeError.innerHTML = "Please enter a valid drink type"
-            }
+
+        // Remove Mod Mode
+        removeModMode() {
+            this.chooseMod = 'remove';
+            this.doubleConfirmMod = false;
         },
-        updateRemovedDrinkType(){
-            // get error message element
-            let removedTypeError = document.getElementById("removedTypeError")
-            // find listing based on bottle name
-            let drinkType = this.removableDrinkType.find(drinkType => drinkType.drinkType === this.removedType)
-            if (drinkType) {
-                this.selectedRemoveType = drinkType
-                removedTypeError.innerHTML = ""
-            }
-            else {
-                this.selectedRemoveType = null
-                removedTypeError.innerHTML = "Please enter a valid drink type"
-            }
-        },
+
+        // Double Confirm
         doubleConfirm(){
             if(this.chooseMod == 'add'){
                 let errorMessage = ''
@@ -2081,20 +1693,11 @@ export default {
             }
             this.doubleConfirmMod = true
         },
-        addModMode(){
-            this.chooseMod = 'add'
-            this.doubleConfirmMod = false
-        },
-        removeModMode(){
-            this.chooseMod = 'remove'
-            this.doubleConfirmMod = false
-        },
-        selectMode(){
+
+        // Select Mode
+        resetAddRemoveModMode(){
             this.chooseMod = ''
             this.doubleConfirmMod = false
-            this.resetErrors()
-        },
-        resetErrors(){
             this.successAddMod = false
             this.successRemoveMod =false
             this.errorAddMod = false
@@ -2104,6 +1707,68 @@ export default {
             this.promotedType = ''
             this.removedType = ''
         },
+
+        // ------------------- Apply Moderator -------------------
+        async submitModeratorApplication() {
+            try {
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editModRequests/submitModRequest`, 
+                    {
+                        userID: this.userID,
+                        drinkType: this.modCat,
+                        modDesc: this.modDesc,
+                    }, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                if (response.data.code == 201) {
+                    const toast = useToast();
+                    toast.success("Moderator application submitted successfully!");
+                }
+            } catch (error) {
+                console.error(error);
+            }
+            const index = this.filteredDrinkType.indexOf(this.modCat);
+            if (index !== -1) {
+                this.filteredDrinkType.splice(index, 1);
+            }
+            this.modCat = "";
+            this.modDesc = "";
+        },
+
+        // ------------------- Modify Moderator -------------------
+        // promote user to moderator
+        updateDrinkType(){
+            // get error message element
+            let promotedTypeError = document.getElementById("promotedTypeError")
+            // find listing based on bottle name
+            let drinkType = this.addableDrinkType.find(drinkType => drinkType.drinkType === this.promotedType)
+            if (drinkType) {
+                this.selectedPromotedType = drinkType
+                promotedTypeError.innerHTML = ""
+            }
+            else {
+                this.selectedPromotedType = null
+                promotedTypeError.innerHTML = "Please enter a valid drink type"
+            }
+        },
+
+        // remove user from certain drink type moderator
+        updateRemovedDrinkType(){
+            // get error message element
+            let removedTypeError = document.getElementById("removedTypeError")
+            // find listing based on bottle name
+            let drinkType = this.removableDrinkType.find(drinkType => drinkType.drinkType === this.removedType)
+            if (drinkType) {
+                this.selectedRemoveType = drinkType
+                removedTypeError.innerHTML = ""
+            }
+            else {
+                this.selectedRemoveType = null
+                removedTypeError.innerHTML = "Please enter a valid drink type"
+            }
+        },
+
         async confirmModifyModerator(){
             try {
                 let submitURL = ''
@@ -2167,10 +1832,77 @@ export default {
                 }
             }
         },
-        // To handle change and reset password
-        changePasswordMode(mode){
-            this.changingPassword = mode
+
+        // ------------------- Edit User Profile -------------------
+        // read uploaded image
+        async loadFile(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+
+            reader.onloadend = async () => {
+                this.selectedImage = reader.result;
+                const base64String = reader.result.replace('data:', '').replace(/^.+,/, '');
+
+                this.image64 = base64String;
+
+            };
+            reader.readAsDataURL(file);
+        
         },
+
+        // save changes to user profile
+        async saveChangesDetails() {
+            if (this.image64 == null) {
+                this.image64 = this.user["profile_picture"];
+            }
+            
+            try {
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/editDetails`, 
+                    {
+                        userID: this.userID,
+                        image64: this.image64,
+                        drinkChoice: this.selectedDrinks,
+                    }, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const toast = useToast();
+                if (response.data.code == 201) {
+                    toast.success("Profile updated successfully!");
+                }
+            } catch (error) {
+                console.error(error);
+                const toast = useToast();
+                toast.error("An error occurred while updating profile. Please try again.");
+            }
+
+            // window.location.reload();
+        },
+
+        // reset edit profile form
+        cancelChanges() {
+            this.selectedDrinks = this.user.choiceDrinks;
+            this.selectedImage = null;
+            this.$refs.fileInput.value = '';
+        }, 
+
+        // ------------------- Change Password -------------------
+        // Reset Change Password variables 
+        resetChangePassword(){
+            if(this.passwordError||this.passwordSuccess||this.passwordMismatch){
+                this.passwordError = false
+                this.passwordMismatch = false
+                this.passwordSuccess = false
+                this.confirmChangePassword = false
+                this.confirmResetPassword = false
+                this.changingPassword = ""
+                this.verifyErrorMessage = ""
+            }
+        },
+
+        // To return to previous step to choose if change or reset password
         selectPasswordMode(){
             if(this.confirmChangePassword||this.confirmResetPassword){
                 this.passwordError = false
@@ -2184,17 +1916,8 @@ export default {
                 this.changingPassword = ""
             }
         },
-        resetChangePassword(){
-            if(this.passwordError||this.passwordSuccess||this.passwordMismatch){
-                this.passwordError = false
-                this.passwordMismatch = false
-                this.passwordSuccess = false
-                this.confirmChangePassword = false
-                this.confirmResetPassword = false
-                this.changingPassword = ""
-                this.verifyErrorMessage = ""
-            }
-        },
+
+        // Function to check if old and new password is entered
         updatePassword(){
             if(this.oldPassword=="" || this.newPassword==""){
                 alert("One of the passwords is empty, please check again")
@@ -2202,6 +1925,7 @@ export default {
             }
             this.confirmChangePassword = true
         },
+
         // Function to hash password
         // create unique hash based on username and password
         hashPassword(username, password) {
@@ -2217,6 +1941,7 @@ export default {
             return hash;
         },
 
+        // Function to update password
         async confirmUpdatePassword(){
             let oldHash = this.hashPassword(this.user.username, this.oldPassword)
             let newHash = this.hashPassword(this.user.username, this.newPassword)
@@ -2245,6 +1970,7 @@ export default {
             }
         },
 
+        // Function to send OTP
         async sendResetPin(){
             // clear all message
             let sendPinSuccess = document.getElementById("sendPinSuccess")
@@ -2283,6 +2009,7 @@ export default {
             }
         },
 
+        // Function to verify OTP
         async verifyOTP(){
             // remove trailing and leading spaces
             this.resetPin = this.resetPin.trim()
@@ -2318,6 +2045,7 @@ export default {
             
         },
 
+        // Function to reset password
         async resetPassword(){
             this.resettingPassword=true
             let submitURL = `${process.env.VUE_APP_API_URL}/authcheck/resetPassword/` + this.user.id
@@ -2335,7 +2063,6 @@ export default {
                     console.error(error);
                     responseCode = error.response.data.code
                 });
-            console.log(responseCode)
             this.resettingPassword= false
             if(responseCode==201){
                 this.passwordSuccess=true; // Display success message
@@ -2345,133 +2072,109 @@ export default {
         },
 
         // ------------------- Badges -------------------
-
-        // get all listings reviewed by the user
-        getAllListingsReviewed() {
-            this.allListingsReviewedByUser = this.recentReviews.map(review => this.listings.find(listing => listing.id === review.reviewTarget));
-        },
-
-        // get all drinkType and typeCategory reviewed by the user
-        getAllCategoriesReviewed() {
-            for (let listing of this.allListingsReviewedByUser) {
-                // check if this.allCategoriesReviewedByUser already contains the count for listing.drinkType
-                // [if] no, assign the count as 1
-                // [else] yes, add 1 to the count
-                this.allCategoriesReviewedByUser[listing.drinkType] = (this.allCategoriesReviewedByUser[listing.drinkType] || 0) + 1;
-                // check if this.allSubCategoriesReviewedByUser already contains the count for listing.typeCategory for that listing.drinkType
-                // [if] no, assign the count as 1
-                // [else] yes, add 1 to the count
-                if (!this.allSubCategoriesReviewedByUser[listing.drinkType]) {
-                    this.allSubCategoriesReviewedByUser[listing.drinkType] = {};
-                }
-                this.allSubCategoriesReviewedByUser[listing.drinkType][listing.typeCategory] = (this.allSubCategoriesReviewedByUser[listing.drinkType][listing.typeCategory] || 0) + 1;
-            }
-        },
-
         // extract out only the drink categories that the user has >= this.badgeLevels.novice (most basic level) reviews for
         // assign this.categoryBadges[category] to user based on # of reviews for that category
         // CHANGE! name of this.categoryBadges[category] if the criterion for minimum # of reviews to get a badge changes
         getTopCategoriesReviewed() {
-            this.topCategoriesReviewed = Object.keys(this.allCategoriesReviewedByUser).reduce((acc, category) => {
-                // check if user has reviewed enough subcategories for this category
-                for (let subcategory in this.allSubCategoriesReviewedByUser[category]) {
-                    let count = this.allSubCategoriesReviewedByUser[category][subcategory];
-                    if (count >= this.otherBadgesLimit.reviewDrinkCategory) {
-                        this.topSubcategoriesReviewed[category] = this.topSubcategoriesReviewed[category] || [];
-                        this.topSubcategoriesReviewed[category].push(subcategory);
-                    }
+            this.topCategoriesReviewed = Object.keys(this.reviewsSummary.categoriesReviewed).reduce((acc, category) => {
+                // Get the subcategory counts for this category
+                const subcategories = this.reviewsSummary.categoriesReviewed[category];
+
+                // Calculate the total number of reviews for this category
+                let totalReviews = 0;
+
+                // Loop through each subcategory and add the number of reviews to the total
+                for (let subcategory in subcategories) {
+                    totalReviews += subcategories[subcategory];
                 }
-                // --> HIGHEST TIER : MASTER (>= 30 reviews)
-                if (this.allCategoriesReviewedByUser[category] >= this.badgeLevels.master) {
-                    acc[category] = this.allCategoriesReviewedByUser[category];
-                    this.categoryBadges[category] = "Master"
+
+                // Overwrite "Whiskey" or "Whisky" to "Whiskey / Whisky"
+                if (category === "Whiskey" || category === "Whisky") {
+                    category = "Whiskey / Whisky";
                 }
-                // --> MIDDLE TIER: LOVER (>= 10 reviews)
-                else if (this.allCategoriesReviewedByUser[category] >= this.badgeLevels.lover) {
-                    acc[category] = this.allCategoriesReviewedByUser[category];
-                    this.categoryBadges[category] = "Lover"
-                }
-                // --> LOWEST TIER: NOVICE (>= 3 reviews)
-                else if (this.allCategoriesReviewedByUser[category] >= this.badgeLevels.novice) {
-                    acc[category] = this.allCategoriesReviewedByUser[category];
-                    this.categoryBadges[category] = "Novice"
+
+                // Based on the total reviews, assign the badge level.
+                if (totalReviews >= this.badgeLevels.master) {
+                    acc[category] = totalReviews;
+                    this.categoryBadges[category] = "Master";
+                } else if (totalReviews >= this.badgeLevels.lover) {
+                    acc[category] = totalReviews;
+                    this.categoryBadges[category] = "Lover";
+                } else if (totalReviews >= this.badgeLevels.novice) {
+                    acc[category] = totalReviews;
+                    this.categoryBadges[category] = "Novice";
                 }
                 return acc;
+                
             }, {});
+
+            this.getMatchedDrinkType();
         },
 
         // match categories to "drinkType" database
         // currently all "drinkTypes" in the reviews are hardcoded, so there is a need to map the objects so that all the badgePhoto can be retrieved
         getMatchedDrinkType() {
-            this.matchedDrinkTypes = Object.keys(this.topCategoriesReviewed).map(category => this.drinkTypes.find(drinkType => drinkType.drinkType === category));
+            this.matchedDrinkTypes = Object.keys(this.topCategoriesReviewed).map(category => this.drinkTypes.find(drinkType => drinkType.drinkType.includes(category)));
         },
 
         // get all countries user has tagged location in reviews
         async getAllCountriesTagged() {
             const apiKey = process.env.VUE_APP_GOOGLE_MAPS_API_KEY;
-            const promises = this.recentReviews.map(async (review) => {
-                const address = encodeURIComponent(review.address);
-                if (address) {
-                    const response = await this.$axios.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${apiKey}`);
-                    const { results } = response.data;
-                    if (results[0]) {
-                        const countryComponent = results[0].address_components.find(component => component.types.includes('country'));
-                        if (countryComponent) {
-                            const country = countryComponent.long_name;
-                            if (!this.reviewCountriesTagged.includes(country)) {
-                                this.reviewCountriesTagged.push(country);
-                            }
+            const promises = this.reviewsSummary.locationsTagged.map(async (address) => {
+            const encodedAddress = encodeURIComponent(address);
+            if (encodedAddress) {
+                const response = await this.$axios.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress}&key=${apiKey}`);
+                const { results } = response.data;
+                if (results[0]) {
+                    const countryComponent = results[0].address_components.find(component => component.types.includes('country'));
+                    if (countryComponent) {
+                        const country = countryComponent.long_name;
+                        if (!this.reviewCountriesTagged.includes(country)) {
+                            this.reviewCountriesTagged.push(country);
                         }
                     }
                 }
+            }
             });
 
             await Promise.all(promises);
         },
 
-        // check if user has tagged locations in reviews
-        checkEnoughLocationTagged() {
-            if (this.pointSystem.tagLocation[0] >= this.otherBadgesLimit.tagLocation) {
-                this.otherBadges.push("tagLocation")
+        // check if user achieved other badges
+        checkOtherBadges() {
+            
+            // check if user has tagged enough locations in reviews
+            if (this.reviewsSummary.locationsTagged.length >= this.otherBadgesLimit.tagLocation) {
+                this.otherBadges.push("location")
             }
-        },
 
-        // check if user has tagged locations in reviews
-        checkEnoughCountriesTagged() {
-            if (this.pointSystem.tagCountry[0] >= this.otherBadgesLimit.tagCountry) {
-                this.otherBadges.push("tagCountry")
+            // check if user has tagged enough countries in reviews
+            if (this.reviewCountriesTagged.length >= this.otherBadgesLimit.tagCountry) {
+                this.otherBadges.push("country")
             }
-        },
 
-        // check if user has tagged friends in reviews
-        checkEnoughFriendsTagged() {
-            if (this.pointSystem.tagFriend[0] >= this.otherBadgesLimit.tagFriend) {
-                this.otherBadges.push("tagFriend")
+            // check if user has tagged enough friends in reviews
+            if (this.reviewsSummary.taggedUsers.length >= this.otherBadgesLimit.tagFriends) {
+                this.otherBadges.push("friends")
             }
-        },
 
-        // get total number of upvotes received
-        getTotalUpvotes() {
-            let totalUpvotes = this.recentReviews.reduce((count, review) => {
-                if (review.userVotes.upvotes.some(vote => vote.userID === this.displayUserID)) {
-                    count += 1;
-                }
-                return count;
-            }, 0);
-            return totalUpvotes;
-        },
-
-        // check if user has upvotes from reviews
-        checkEnoughUpvotes() {
-            if (this.getTotalUpvotes() >= this.otherBadgesLimit.upvotes) {
+            // check if user has enough upvotes from reviews
+            if (this.reviewsSummary.upvotesCount >= this.otherBadgesLimit.upvotes) {
                 this.otherBadges.push("upvotes")
             }
         },
 
         getBadgeInfo(badgeName) {
-            if (badgeName) {
-                const badge = this.badges.find(badge => badge.badgeName === badgeName);
-                return badge ? badge : null;
+            if (badgeName && this.badgesDataLoaded) {
+                if (badgeName == "friends") {
+                    return this.badges[0];
+                } else if (badgeName == "location") {
+                    return this.badges[1];
+                } else if (badgeName == "country") {
+                    return this.badges[2];
+                } else if (badgeName == "upvotes") {
+                    return this.badges[3];
+                }
             }
         },
 
@@ -2479,54 +2182,267 @@ export default {
             this.totalBadges = Object.keys(this.categoryBadges).length + this.otherBadges.length;
         },
 
-        // ------------------- Points -------------------
-
-        // get total number of friends tagged
-        getTotalFriendsTagged() {
-            // loop through all reviews and get the number of friends tagged for each review
-            // add up all the friends tagged
-            this.pointSystem.tagFriend[0] = this.recentReviews.reduce((sum, review) => sum + review.taggedUsers.length, 0);
+        // ------------------- Switch Tabs  between Reviews and Drink Lists -------------------
+        switchTab(tab) {
+            this.activeTab = tab;
+            this.$router.push('/profile/user/' + this.displayUserID);
         },
 
-        // get total number of locations tagged in reviews
-        getTotalLocationsTagged() {
-            // loop through all reviews and get the number of locations tagged for each review
-            // add up all the locations tagged
-            this.pointSystem.tagLocation[0] = this.recentReviews.reduce((sum, review) => {
-                if (review.location) {
-                    return sum + 1;
+        // ------------------- Reviews -------------------
+        // get listing name from listing ID
+        getListingName(listingID) {
+            if (this.listings) {
+                return this.listings.find(listing => listing.id === listingID).listingName;
+            }
+        },
+
+        // ------------------ Unfollow Display User ------------------
+        async editFollow(action) {
+            if (action === "unfollow") {
+                this.following = false;
+            } else {
+                this.following = true
+            }
+            try {
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/updateFollowLists`, 
+                    {
+                        userID: this.userID,
+                        action: action,
+                        target: "users",
+                        followerID: this.displayUserID,
+                    }, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                console.log(response.data);
+            } catch (error) {
+                console.error(error);
+            }
+        }, 
+
+        // ------------------ Format Top 5 Listings Data for Component ------------------
+        formatTop5ListingsData() {
+            this.top5ListingsData = this.top5Listings.map(listingID => this.listings.find(listing => listing.id === listingID));
+        },
+
+        // ------------------ View Bookmark List Functions ------------------
+        getListingFromID(listingID) {
+            return this.listings.find(listing => listing.id === parseInt(listingID));
+        },
+
+        // Changes the url to the selected list
+        viewList(name) {
+            if (name == "lists") {
+                this.activeTab = 'lists';
+                this.$router.push('/profile/user/' + this.displayUserID);
+            } else {
+                this.activeTab = 'list';
+                this.currentList = name;
+                this.$router.push('/profile/user/' + this.displayUserID + '/' + name);
+
+                if (this.ownProfile) {
+                    this.removeExistingListingInList();
                 }
-                return sum;
-            }, 0);
+            }
         },
 
-        // get total number of countries user tagged in reviews
-        getTotalCountriesTagged() {
-            // loop through all reviews and get the number of countries tagged
-            this.pointSystem.tagCountry[0] = this.reviewCountriesTagged.length;
+        // ------------------ Add Bookmark List Functions ------------------
+        removeExistingListingInList() {
+            // get all the listing IDs in the current list
+            const listingIDs = this.userBookmarks[this.currentList].listItems;
+            // add the listing names in the current list to the excludeListingNamesList array
+            for (const id of listingIDs) {
+                this.excludeListingNamesList.push(this.listingIDDictionary[id]);
+            }
         },
 
-        // get total number of questions asked by user to producers
-        getAskedProducerQuestions() {
-            this.pointSystem.askProducer[0] = this.producers.reduce((totalQuestions, producer) => {
-                return totalQuestions + producer.questionsAnswers.filter(qa => qa.userID === this.displayUserID).length;
-            }, 0);
+        searchResult() {
+            // First, filter out the excluded listings
+            const filteredListings = this.listingNames.filter(listing => !this.excludeListingNamesList.includes(listing));
+
+            // Then, perform the search on the remaining listings
+            if (this.drinkSearch) {
+                this.drinkSearchResults = filteredListings.filter(listing => listing.toLowerCase().includes(this.drinkSearch.toLowerCase()));
+            } else {
+                this.drinkSearchResults = filteredListings;
+            }
+        },
+        
+        async addNewList() {
+            if (this.userBookmarks[this.newListName]) {
+                this.newListNameError = "List name already exists";
+                return;
+            } else if (this.newListName === "") {
+                this.newListNameError = "List name cannot be empty";
+                return;
+            }
+            
+            this.newListNameError = "";
+            this.userBookmarks[this.newListName] = {};
+            this.userBookmarks[this.newListName].listDesc = this.newListDesc;
+            this.userBookmarks[this.newListName].listItems = [];
+
+            try {
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/updateBookmark`, 
+                    {
+                        userID: this.userID,
+                        bookmark: this.userBookmarks
+                    }, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                console.log(response.data);
+            } catch (error) {
+                console.error(error);
+            }
+            
+            window.location.reload();
+
         },
 
-        // get total number of questions asked by user to venues
-        getAskedVenueQuestions() {
-            this.pointSystem.askVenue[0] = this.venues.reduce((totalQuestions, venue) => {
-                return totalQuestions + venue.questionsAnswers.filter(qa => qa.userID === this.displayUserID).length;
-            }, 0);
+        // ------------------ Edit Bookmark List Functions ------------------
+
+        // reset form details
+        resetEditList(listName, listDesc) {
+            this.editListName = listName;
+            this.editListDesc = listDesc;
+            this.editListNameError = "";
         },
 
-        // calculate total points
-        calculateTotalPoints() {
-            // in this.pointSystem, the key is the action, and the value is an array of [points, count]
-            // to calculate total points, take value[0] = points | value[1] = count, and sum up all points * count
-            this.totalPoints = Object.values(this.pointSystem).reduce((sum, value) => sum + (value[0] * value[1]), 0);
+        // edit list details
+        async editList(currentListName) {
+            if (this.editListName === "") {
+                this.editListNameError = "List name cannot be empty";
+                return;
+            } else if (this.editListName !== currentListName && this.userBookmarks[this.editListName]) {
+                this.editListNameError = "List name already exists";
+                return;
+            }
+
+            this.listNameError = "";
+
+            if (this.editListName !== currentListName) {
+                this.userBookmarks[this.editListName] = {};
+                this.userBookmarks[this.editListName].listDesc = this.editListDesc;
+                this.userBookmarks[this.editListName].listItems = this.userBookmarks[currentListName].listItems;
+                delete this.userBookmarks[currentListName];
+            } 
+            
+            this.userBookmarks[this.editListName].listDesc = this.editListDesc;
+
+            try {
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/updateBookmark`, 
+                    {
+                        userID: this.userID,
+                        bookmark: this.userBookmarks,
+                    }, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                console.log(response.data);
+            } catch (error) {
+                console.error(error);
+            }
+
+            window.location.reload();
+
+        }, 
+
+        // ------------------ Add Drink to List Functions ------------------
+        async addDrinkToList(listName) {
+            for (const drink of this.drinksToAdd) {
+                let addListingId = this.listingNamesDictionary[drink];
+                let itemExist = this.userBookmarks[listName].listItems.find(item => item === addListingId);
+                if (!itemExist) {
+                    this.userBookmarks[listName].listItems.push(addListingId);
+                }
+            }
+
+            try {
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/updateBookmark`, 
+                    {
+                        userID: this.userID,
+                        bookmark: this.userBookmarks,
+                    }, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                console.log(response.data);
+            } catch (error) {
+                console.error(error);
+            }
+            
+           window.location.reload();
         },
 
-    },
+
+        // ------------------ Delete Drink from List Functions ------------------
+        async deleteFromList(listName, listingID) {
+            // param: objectId
+            const index = this.userBookmarks[listName].listItems.indexOf(listingID);
+            this.userBookmarks[listName].listItems.splice(index, 1);
+
+            try {
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/updateBookmark`, 
+                    {
+                        userID: this.userID,
+                        bookmark: this.userBookmarks,
+                    }, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                console.log(response.data);
+            } catch (error) {
+                console.error(error);
+            }
+        },
+
+        // ------------------ Delete Bookmark List Functions ------------------
+        async deleteList(listName) {
+            // delete the list from the user's bookmark list
+            delete this.userBookmarks[listName];
+
+            try {
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/updateBookmark`, 
+                    {
+                        userID: this.userID,
+                        bookmark: this.userBookmarks,
+                    }, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                console.log(response.data);
+            } catch (error) {
+                console.error(error);
+            }
+
+            window.location.reload();
+        }, 
+
+
+        // ------------------ Drink List Sharing Functions ------------------
+        updateCurrentURL() {
+            this.currentURL = window.location.href;
+        },
+
+        copyToClipboard(text) {
+            navigator.clipboard.writeText(text)
+            .then(() => {
+                this.clipboardItem = true;
+                setTimeout(() => {
+                    this.clipboardItem = false;
+                }, 3000);
+            })
+            .catch(err => {
+                console.error('Failed to copy text: ', err);
+            });
+        },
+    }
 };
 </script>
