@@ -35,25 +35,14 @@ def editDetails():
             cursor.execute("UPDATE users SET photo = %s WHERE id = %s", (image64, userID))
         drinkChoice = data['drinkChoice']
         cursor.execute("UPDATE users SET \"choiceDrinks\" = %s WHERE id = %s", (drinkChoice, userID))
-        # retrieve the updated flavour tags from frontend
-        flavourTags = data['flavourTags']
-        # update the database with the new flavour tags
-        cursor.execute("UPDATE users SET \"choiceFlavours\" = %s WHERE id = %s", (flavourTags, userID))
-        
-        # retrieve the updated obeservation tags from frontend
-        observationTags = data['observationTags']
-        # update the database with the new observation tags
-        cursor.execute("UPDATE users SET \"preferences\" = %s WHERE id = %s", (observationTags, userID))
-        
+
         conn.commit()
         return jsonify(
             {   
                 "code": 201,
                 "data": {
                     "userID": userID,
-                    "drinkChoice": drinkChoice,
-                    "flavourTags": flavourTags,
-                    "observationTags": observationTags
+                    "drinkChoice": drinkChoice
                 }
             }
         ), 201
@@ -66,9 +55,7 @@ def editDetails():
                 "code": 500,
                 "data": {
                     "userID": userID,
-                    "drinkChoice": data["drinkChoice"],
-                    "flavourTags": data["flavourTags"],
-                    "observationTags": data["observationTags"]
+                    "drinkChoice": data["drinkChoice"]
                 },
                 "message": "An error occurred updating the image or drink choice."
             }
