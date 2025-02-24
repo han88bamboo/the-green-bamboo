@@ -23,7 +23,7 @@ INSERT INTO "countries" ("originCountry", "legalAge") VALUES
 ('Angola', 18),
 ('Antigua and Barbuda', 16),
 ('Argentina', 18),
-('Armenia', 18),
+('Armenia', 18), 
 ('Australia', 18),
 ('Austria', 16),
 ('Azerbaijan', 18),
@@ -643,6 +643,41 @@ INSERT INTO "observationTags" ("observationTag") VALUES
 ('Netflix & Chill 🍆'),
 ('Healthy');
 
+
+INSERT INTO "users" ("username","displayName","choiceDrinks","modType","photo","hashedPassword","joinDate","firstName","lastName","email","isAdmin","birthday","pin","choiceFlavours","preferences") VALUES
+	 ('admin','admin','{}','{}','','-1522920846','2024-10-28 18:45:31.403','admin','admin','admin@drink-x.com',false,'2000-01-01 00:00:00','175029,2024-10-28 18:46:29','{}','{}'),
+	 ('Lotusroot518','Lotusroot518','{}','{}','','-289780632','2024-10-29 01:31:56.379','Lotusroot518','Lotusroot518','Kailinchoo@gmail.com',true,'1995-08-11 00:00:00',NULL,'{}','{}'),
+	 ('charsiucharlie','charsiucharlie','{}','{}','','-65180891','2024-10-30 13:48:46.277','charsiucharlie','charsiucharlie','tzhehan@gmail.com',true,'1993-06-29 00:00:00',NULL,'{}','{}'),
+	 ('DumplingBoy','DumplingBoy','{}','{}','','2108394495','2024-11-03 09:49:51.179','DumplingBoy','DumplingBoy','jwleong.199@gmail.com',false,'1999-10-21 00:00:00',NULL,'{}','{}');
+
+INSERT INTO "drinkTypes" ("drinkType", "badgePhoto", "typeCategory")
+VALUES (
+    'Whiskey / Whisky',                           -- drinkType
+    NULL,                                         -- badgePhoto (set a URL if available)
+    ARRAY[
+        'Single Malt',
+        'Single Grain',
+        'Blended Malt',
+        'Blended Grain',
+        'Blended Malt & Grain',
+        'Single Blended (Malt & Grain from the Same Distillery)',
+        'Irish Pot Still Whisk(e)y',
+        'Irish Blended Whisk(e)y',
+        'Bourbon Whisk(e)y',
+        'Tennessee Whisk(e)y',
+        'Rye Whisk(e)y',
+        'Rye Malt Whisk(e)y',
+        'Malt Whisk(e)y',
+        'Corn Whisk(e)y',
+        'Wheat Whisk(e)y',
+        'American Whisk(e)y (Others)',
+        'Rice Whisk(e)y',
+        'Flavoured',
+        'New Make / Moonshine / White Dog',
+        'Others'
+    ]
+);
+
 INSERT INTO "users" ("username","displayName","choiceDrinks","modType","photo","hashedPassword","joinDate","firstName","lastName","email","isAdmin","birthday","pin") VALUES
 	 ('admin','admin','{}','{}','','-1522920846','2024-10-28 18:45:31.403','admin','admin','admin@drink-x.com',false,'2000-01-01 00:00:00','175029,2024-10-28 18:46:29'),
 	 ('Lotusroot518','Lotusroot518','{}','{}','','-289780632','2024-10-29 01:31:56.379','Lotusroot518','Lotusroot518','Kailinchoo@gmail.com',true,'1995-08-11 00:00:00',NULL),
@@ -665,6 +700,7 @@ INSERT INTO "users" ("username","displayName","choiceDrinks","modType","photo","
      ('user14', 'User Fourteen', '{}', '{}', '', '-984422997', '2024-02-02', 'Isabella', 'Robinson', 'user14@example.com', false, '1998-01-25', NULL),
      ('user15', 'User Fifteen', '{}', '{}', '', '-855340277', '2024-02-02', 'Matthew', 'Walker', 'user15@example.com', false, '1993-03-14', NULL),
      ('user16', 'User Sixteen', '{}', '{}', '', '-726257557', '2024-02-02', 'Mia', 'Young', 'user16@example.com', false, '1994-06-28', NULL);
+
 
 INSERT INTO "drinkTypes" ("drinkType", "badgePhoto", "typeCategory")
 VALUES (
@@ -1124,6 +1160,26 @@ VALUES (
     ]
 );
 
+
+INSERT INTO "producers" (
+    "id",
+	"producerName", 
+    "producerDesc", 
+    "originCountry", 
+    "mainDrinks", 
+    "photo", 
+    "hashedPassword", 
+    "claimStatus", 
+    "claimStatusCheckDate", 
+    "statusOB", 
+    "username", 
+    "producerLink", 
+    "stripeCustomerId"
+) VALUES 
+    (3136, 'Hennessy', 'This is Hennessy', 'France', '{}', NULL, '-6552510', true, NULL, NULL, 'Hennessy', '', NULL),
+    (3127, 'Foursquare Distillery', 'Foursquare Rum Distillery is located on a former sugar plantation that dates back to approximately 1720.', 'Barbados', '{}', NULL, '-2099862240', true, NULL, null, 'Foursquare Distillery', '', null),
+	(1, 'HennessyVS2', 'This is HennessyVS2', 'France', '{}', NULL, '10362460', true, NULL, NULL, 'Hennessy', '', null);
+
 -- Fetch the ID of the "Beer" drinkType
 WITH drink_type AS (
     SELECT id FROM "drinkTypes" WHERE "drinkType" = 'Beer'
@@ -1176,6 +1232,7 @@ INSERT INTO "producers" ("producerName", "producerDesc", "originCountry", "mainD
     ('Absolut', 'One of the most famous vodka brands, known for its pure Swedish vodka.', 'Sweden', '{}', NULL, '-1030449104', false, NULL, NULL, 'absolut', '', NULL),
     ('Tiger Beer', 'A popular Asian beer brand, brewed in Singapore.', 'Singapore', '{}', NULL, '165298405', false, NULL, NULL, 'tigerbeer', '', NULL);
 
+
 INSERT INTO "venues" (
     "venueName", 
     "address", 
@@ -1213,6 +1270,66 @@ INSERT INTO "producersQuestionAnswers" (
     VALUES ('When are you going to release the next promotion?', 'SOON! CHECK FOR UPDATES!', '2024-10-04 16:08:59.899', 1, 1);
 
 INSERT INTO "listings" (
+
+    "id", "listingName", "producerID", "bottler", "originCountry", "drinkType", "abv", "officialDesc", "allowMod", "addedDate", "typeCategory", "age", "reviewLink", "sourceLink", "photo")
+	VALUES 
+(544777, 'Test Expression 1 - Foursquare “Doorlys” 14 Years', 3127, 'Original Bottling', 'Japan', 'Rum / Rhum', 17, 'BEST EVEERRRR', true, '2024-12-31 16:26:12.044', 'Molasses - Single Blended Rum (Pot & Column Still)', 12, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/ce6a60a0-2b0f-47a7-9992-dab21a447858.jpg'),
+(544778, 'Hennessy VS2', 3136, 'OB', 'Japan', 'Whiskey', 12, 'WOOHOOOOO', true, '2024-10-06 00:14:37.661786', 'Spirit', 12, '', '', ''),
+(544779,'Macallan 12', 1, 'OB', 'Scotland', 'Whiskey', 12, 'Smooth and rich', true, '2024-10-01 10:00:00', 'Spirit', 12, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/1ac19066-5194-4eb5-ae2c-5da9a58214b1.jpg'),
+    (544780,'Glenfiddich 18', 1, 'OB', 'Scotland', 'Whiskey', 18, 'Aged to perfection', true, '2024-10-01 13:30:00', 'Spirit', 18, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/1ac19066-5194-4eb5-ae2c-5da9a58214b1.jpg'),
+    (544781,'Yamazaki 12', 1, 'OB', 'Japan', 'Whiskey', 12, 'Elegant Japanese whisky', true, '2024-10-01 16:45:00', 'Spirit', 12, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/dd4d9aaa-aa3c-4235-9d2d-e1dcd2f24684.jpg'),
+    (544782,'Chivas Regal 15', 1, 'OB', 'Scotland', 'Whiskey', 15, 'Rich and smooth', true, '2024-10-01 19:15:00', 'Spirit', 15, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/53cfde50-8a5b-4fe9-b0ca-736823baa705.jpg'),
+    (544783,'Johnnie Walker Blue', 1, 'OB', 'Scotland', 'Whiskey', 40, 'Premium blended whisky', true, '2024-10-02 09:20:00', 'Spirit', 20, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/640a2d86-0b1e-40f8-ad29-f60ac13aa68f.jpg'),
+    (544784,'Hibiki Harmony', 1, 'OB', 'Japan', 'Whiskey', 43, 'A symphony of flavors', true, '2024-10-02 12:10:00', 'Spirit', 12, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/a9dcdff8-f1a7-46a2-86c5-87cce12ea3a5.jpg'),
+    (544785,'Jack Daniels Single Barrel', 1, 'OB', 'USA', 'Whiskey', 47, 'Bold and intense', true, '2024-10-02 15:30:00', 'Spirit', 8, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/670c3fab-50ad-4e81-8b80-30c40500ffa0.jpg'),
+    (544786,'Jameson Black Barrel', 1, 'OB', 'Ireland', 'Whiskey', 40, 'Triple distilled', true, '2024-10-02 18:50:00', 'Spirit', 12, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/3022fcec-b123-4581-827c-ad1c24d33bb9.jpg'),    
+    (544787,'Balvenie 14 Caribbean Cask', 1, 'OB', 'Scotland', 'Whiskey', 43, 'Rum cask finish', true, '2024-10-03 11:15:00', 'Spirit', 14, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/57f82a9f-6cb8-441a-97b1-40d034c180ef.jpg'),
+    (544788,'Nikka From The Barrel', 1, 'OB', 'Japan', 'Whiskey', 51, 'High ABV and rich', true, '2024-10-03 14:20:00', 'Spirit', 12, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/968b7f63-f2ae-44df-b1f9-bd89e17d9f4e.jpg'),
+    (544789,'Buffalo Trace', 1, 'OB', 'USA', 'Whiskey', 45, 'Classic bourbon', true, '2024-10-03 17:10:00', 'Spirit', 6, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/ac59d5e1-efad-4837-a949-1f23ba85a44d.jpg'),
+    (544790,'Redbreast 12', 1, 'OB', 'Ireland', 'Whiskey', 40, 'Irish pot still whiskey', true, '2024-10-03 20:30:00', 'Spirit', 12, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/d1c2e589-d79d-4f6d-ad23-a439578fac3e.jpg'),
+    (544791,'Ardbeg 10', 1, 'OB', 'Scotland', 'Whiskey', 46, 'Heavily peated', true, '2024-10-04 08:45:00', 'Spirit', 10, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/f357de59-9c4b-4685-9fe2-74fd80c9d8f8.jpg'),
+    (544792,'Hakushu Distiller’s Reserve', 1, 'OB', 'Japan', 'Whiskey', 43, 'Fresh and smoky', true, '2024-10-04 12:25:00', 'Spirit', 12, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/3d5fcf43-4c1b-499c-b5ad-e8a8853bef41.jpg'),
+    (544793,'Woodford Reserve', 1, 'OB', 'USA', 'Whiskey', 45, 'Rich and full-bodied', true, '2024-10-04 15:40:00', 'Spirit', 8, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/d0cce865-051a-4bb6-b8bb-96aa6e9d5d74.jpg'),
+    (544794,'Powers Gold Label', 1, 'OB', 'Ireland', 'Whiskey', 40, 'Smooth and complex', true, '2024-10-04 19:05:00', 'Spirit', 10, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/7e98691e-eaeb-479b-b2be-0f789a4894ba.jpg'),
+    (544795,'Laphroaig 10', 1, 'OB', 'Scotland', 'Whiskey', 40, 'Heavily peated Islay', true, '2024-10-05 09:50:00', 'Spirit', 10, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/702eafbd-6873-43c3-9fd0-701ee3568a16.jpg'),
+    (544796,'Yoichi Single Malt', 1, 'OB', 'Japan', 'Whiskey', 45, 'Coastal and peaty', true, '2024-10-05 13:00:00', 'Spirit', 12, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/a256e2b5-3020-422f-acdd-988533a16d6d.jpg'),
+    (544797,'Eagle Rare 10', 1, 'OB', 'USA', 'Whiskey', 45, 'Rich and smooth bourbon', true, '2024-10-05 16:20:00', 'Spirit', 10, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/00bfd4bd-4914-486a-9c5e-5fc64a9015cf.jpg'),
+    (544798,'Teeling Small Batch', 1, 'OB', 'Ireland', 'Whiskey', 46, 'Non-chill filtered', true, '2024-10-05 18:40:00', 'Spirit', 6, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/bddc19bd-5fa3-4c18-80cd-fcc7ae935a36.jpg'),
+    (544799,'Château Margaux 2015', 1, 'OB', 'France', 'Wine', 14, 'Elegant and complex Bordeaux', true, '2024-10-06 10:30:00', 'Spirit', NULL, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/cba2ff76-0050-4729-9789-5ef3b871329c.jpg'),
+    (544800,'Domaine de la Romanée-Conti La Tâche 2018', 1, 'OB', 'France', 'Wine', 13, 'Silky and aromatic Pinot Noir', true, '2024-10-06 13:00:00', 'Spirit', NULL, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/072900f8-290f-42aa-9b33-da6e015018ff.jpg'),
+    (544801,'Opus One 2019', 1, 'OB', 'USA', 'Wine', 14.5, 'Full-bodied Napa Valley red', true, '2024-10-06 15:20:00', 'Spirit', NULL, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/7d385cc6-9bb3-4378-b4bf-20a23dee5602.jpg'),
+    (544802,'Penfolds Grange 2017', 1, 'OB', 'Australia', 'Wine', 14.5, 'Rich and bold Shiraz', true, '2024-10-06 18:45:00', 'Spirit', NULL, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/b4c91210-f475-4d05-95f9-5a9ac6cd76c5.jpg'),
+    (544803,'Screaming Eagle 2018', 1, 'OB', 'USA', 'Wine', 14, 'Exclusive cult Cabernet Sauvignon', true, '2024-10-07 09:10:00', 'Spirit', NULL, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/704935cd-4a94-46db-b0ba-6b9e8acf5327.jpg'),
+    (544804,'Château Latour 2016', 1, 'OB', 'France', 'Wine', 13.5, 'A timeless Bordeaux classic', true, '2024-10-07 12:30:00', 'Spirit', NULL, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/cce2160d-e513-43e4-a85e-3f3eb3bc7ba8.jpg'),
+    (544805,'Dassai 23', 1, 'OB', 'Japan', 'Sake', 16, 'Refined and delicate Daiginjo', true, '2024-10-07 15:50:00', 'Spirit', NULL, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/183207c5-8dac-4975-8295-cc2fa9f9a319.jpg'),
+    (544806,'Hakkaisan Junmai Daiginjo', 1, 'OB', 'Japan', 'Sake', 15.5, 'Smooth and crisp sake', true, '2024-10-07 18:20:00', 'Spirit', NULL, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/f8680e03-caa7-436c-9cdc-7c6a21cb9ffc.jpg'),
+    (544807,'Kubota Manjyu', 1, 'OB', 'Japan', 'Sake', 15, 'Premium smooth Junmai Daiginjo', true, '2024-10-08 09:00:00', 'Spirit', NULL, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/56bee648-0cf3-402a-899e-d8b42a399e4a.jpg'),
+    (544808,'Gekkeikan Horin', 1, 'OB', 'Japan', 'Sake', 16, 'Elegant and well-balanced sake', true, '2024-10-08 12:40:00', 'Spirit', NULL, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/9695fd1a-3e7c-473b-bbae-865751246b2b.jpg'),
+    (544809,'Hibiki 21', 1, 'OB', 'Japan', 'Whiskey', 43, 'Aged and harmonious blend', true, '2024-10-08 15:10:00', 'Spirit', 21, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/43a088d3-c8a4-4470-a150-53a08debff71.jpg'),
+    (544810,'Lagavulin 16', 1, 'OB', 'Scotland', 'Whiskey', 43, 'Intensely peated Islay whisky', true, '2024-10-08 18:00:00', 'Spirit', 16, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/96109599-f3bf-467e-8352-a47747492b31.jpg'),
+    (544811,'Springbank 15', 1, 'OB', 'Scotland', 'Whiskey', 46, 'Rich and balanced Campbeltown malt', true, '2024-10-09 09:45:00', 'Spirit', 15, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/7b5e2811-9dd6-4724-9256-ac6d5506a027.jpg'),
+    (544812,'GlenDronach 18', 1, 'OB', 'Scotland', 'Whiskey', 46, 'Sherry cask aged single malt', true, '2024-10-09 12:30:00', 'Spirit', 18, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/d5cda88c-98e3-4bd8-a1af-c57da3eb0491.jpg'),
+    (544813,'Château d’Yquem 2010', 1, 'OB', 'France', 'Wine', 13.5, 'Lusciously sweet Sauternes', true, '2024-10-09 15:50:00', 'Spirit', NULL, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/8781880b-3ec0-432e-a963-185c9c56c13d.jpg'),
+    (544814,'Krug Grande Cuvée', 1, 'OB', 'France', 'Wine', 12.5, 'Elegant and complex Champagne', true, '2024-10-09 18:30:00', 'Spirit', NULL, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/5b723158-5188-457c-b6bb-574d8c8c5b01.jpg'),
+    (544815,'Dom Pérignon 2012', 1, 'OB', 'France', 'Wine', 12.5, 'Refined vintage Champagne', true, '2024-10-10 09:20:00', 'Spirit', NULL, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/47dbaa2b-f229-445c-af25-ec1409aa54f0.jpg'),
+    (544816,'Bollinger La Grande Année 2014', 1, 'OB', 'France', 'Wine', 12, 'Rich and expressive Champagne', true, '2024-10-10 12:40:00', 'Spirit', NULL, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/2ad0a582-6299-4fc6-a8d3-6dddffaa52ef.jpg'),
+    (544817,'Junmai Ginjo Hakutsuru', 1, 'OB', 'Japan', 'Sake', 15, 'Smooth and well-rounded', true, '2024-10-10 15:00:00', 'Spirit', NULL, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/160abd8c-38ca-45b5-afa8-1f0b752c9142.jpg'),
+    (544818,'Glenlivet 21', 1, 'OB', 'Scotland', 'Whiskey', 43, 'Matured and refined Speyside', true, '2024-10-10 18:10:00', 'Spirit', 21, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/e1a9f871-6040-444c-acaf-cae4bc7fdb07.jpg'),
+    (544819,'Hakushu 18', 1, 'OB', 'Japan', 'Whiskey', 43, 'Crisp and fresh Highland whisky', true, '2024-10-11 09:45:00', 'Spirit', 18, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/03fec8f6-46ff-433b-9792-4d3e55ef1c43.jpg'),
+    (544820,'Yamazaki 18', 1, 'OB', 'Japan', 'Whiskey', 43, 'Highly acclaimed single malt', true, '2024-10-11 12:20:00', 'Spirit', 18, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/74d31017-50fb-4286-9364-37afc001192f.jpg'),
+    (544821,'Gaja Barbaresco 2017', 1, 'OB', 'Italy', 'Wine', 14, 'Elegant and structured Nebbiolo', true, '2024-10-11 15:10:00', 'Spirit', NULL, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/68ab6b2c-0242-4ab9-ac2e-297b62773ad4.jpg'),
+    (544822,'Caymus Special Selection 2018', 1, 'OB', 'USA', 'Wine', 14.5, 'Rich and opulent Cabernet Sauvignon', true, '2024-10-11 18:00:00', 'Spirit', NULL, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/b2bdb754-7cc0-40c6-abed-fc3004dfc626.jpg'),
+    (544823,'Dewazakura Oka Ginjo', 1, 'OB', 'Japan', 'Sake', 15, 'Floral and crisp sake', true, '2024-10-12 09:15:00', 'Spirit', NULL, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/ddefd395-ae60-407a-86f4-0a9f5f8d33a2.jpg'),
+    (544824,'Laphroaig Quarter Cask', 1, 'OB', 'Scotland', 'Whiskey', 48, 'Bold and peaty Islay', true, '2024-10-12 12:40:00', 'Spirit', 10, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/43ac906e-2eef-43ba-af11-87fd7c4a4c2c.jpg'),
+    (544825,'Château Pétrus 2015', 1, 'OB', 'France', 'Wine', 14.5, 'Silky and legendary Merlot', true, '2024-10-12 15:30:00', 'Spirit', NULL, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/0bcbde64-096e-452d-8baf-41eb11043277.jpg'),
+    (544826,'Taketsuru Pure Malt', 1, 'OB', 'Japan', 'Whiskey', 43, 'Balanced and smooth blended malt', true, '2024-10-12 18:20:00', 'Spirit', 12, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/51308e78-8266-4f14-913f-20f39714c1b9.jpg');
+
+insert into "reviews" (
+"id", "userID", "reviewTarget", "rating", "reviewDesc", "reviewType", "createdDate", "language", "finish", "willRecommend", "wouldBuyAgain", "taggedUsers", "flavourTag", "photo", "colour", "aroma", "location", "taste", "observationTag", "address")
+values 
+(21, 1, 544777, 5, 'This was absolutely fantastic!', 'Listing', '2025-01-13 18:27:38.498', 'English', 'Long, alittle more oaky now', true, false, '{}', '{}', '', '', '', null, '', '{Beginner Friendly}', ''),
+(17, 2, 544777, 4, 'gooooooood goooooooodgoooooooodgoooooooodgoooooooodgooooooood', 'Listing', '2025-01-08 04:52:10.957', 'English', '', false, false, '{2}', '{2}', '', '', '', null, '', '{Beginner Friendly, Good for Gifts}', '');
+
     "listingName", "producerID", "bottler", "originCountry", "drinkType", "abv", "officialDesc", "allowMod", "addedDate", "typeCategory", "age", "reviewLink", "sourceLink", "photo", "drinkStyle")
 	VALUES 
     ('Hennessy VS', 1, 'OB', 'Japan', 'Whiskey', 12, 'BEST EVEERRRR', true, '2024-10-05 00:14:37.661786', 'Spirit', 12, '', '', '', ''),
@@ -1256,6 +1373,7 @@ INSERT INTO "listings" (
     ('Tiger Beer', 20, 'Tiger Brewery', 'Singapore', 'Beer', 5, 'A crisp, refreshing lager brewed in Singapore.', true, '2024-02-02', 'Lager - All Styles', NULL, '', '', '', 'Pilsner'),
     ('Tiger Crystal', 20, 'Tiger Brewery', 'Singapore', 'Beer', 4.6, 'A smooth, lighter version of the classic Tiger Beer.', true, '2024-02-02', 'Lager - All Styles', NULL, '', '', '', 'Helles'),
     ('Tiger Black', 20, 'Tiger Brewery', 'Singapore', 'Beer', 6.9, 'A full-bodied, stronger version of Tiger Beer.', true, '2024-02-02', 'Lager - All Styles', NULL, '', '', '', 'Vienna Lager');
+
 
 INSERT INTO "usersFollowLists" (
     "userId", "users", "producers", "venues")

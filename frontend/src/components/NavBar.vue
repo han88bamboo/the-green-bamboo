@@ -48,12 +48,13 @@
 
           <!-- camera button -->
           <!-- <div class="col mobile-view-hide">
+
                             <button class="btn primary-btn-less-round-green d-flex align-items-center" style="height: 50px; margin-left: 10px; padding: 0px 15px;" v-on:click="imageSearch">
                                 <span>Scan bottle</span>
                                 <img src="../../Images/Others/camera-white.png" style="width: 30px; height: 30px; margin-left: 10px;">
                             </button>
-                    </div> -->
-        </div>
+          </div> -->
+          </div>
 
         <div class="col-2 dropdown mobile-col-4">
           <!-- profile icon -->
@@ -261,6 +262,7 @@
                 >
               </li>
             </div>
+
 
             <li><hr class="dropdown-divider" /></li>
             <li v-if="profileURL == '/login'">

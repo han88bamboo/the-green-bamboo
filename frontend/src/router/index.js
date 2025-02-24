@@ -14,13 +14,20 @@ const routes = [
     component: () =>
       import(/* webpackChunkName: "about" */ "../views/LandingPage.vue"),
   },
+  
+//   {
+//     path: "/explore",
+//     name: "explore",
+//     component: () =>
+//       import(
+//         /* webpackChunkName: "about" */ "../views/Users/BottleListings.vue"
+//       ),
+//   },
   {
-    path: "/explore",
-    name: "explore",
-    component: () =>
-      import(
-        /* webpackChunkName: "about" */ "../views/Users/BottleListings.vue"
-      ),
+    path: '/landing',
+    name: 'landing',
+    component: () => import('../views/LandingPage.vue'), 
+    props: true
   },
   {
     path: "/login",
@@ -28,24 +35,27 @@ const routes = [
     component: () => import("../views/LoginPage.vue"),
   },
   {
-    path: "/landing",
-    name: "landing",
-    component: () => import("../views/LandingPage.vue"),
-  },
-  {
-    path: "/landing",
-    name: "landing",
-    component: () => import("../views/LandingPage.vue"),
-  },
-  {
     path: "/signup",
     name: "signup",
     component: () => import("../views/SignUpPage.vue"),
   },
   {
+    path: '/search/:input?',
+    name: 'search',
+    component: () => import('../views/SearchView.vue'),
+    props: true
+  },
+  {
+    path: '/getListingsByObservationTag/:tag?',
+    name: 'getlistingsbyobservationtag',
+    component: () => import('../views/ListingsByTag.vue'),
+    props: true
+  },  
+  {
     path: "/businessSignup",
     name: "businesssignup",
     component: () => import("../views/BusinessSignUpPage.vue"),
+
   },
   {
     path: "/billingSecurity",
@@ -53,11 +63,6 @@ const routes = [
     component: () => import("../views/BillingSecurity.vue"),
   },
   {
-    path: "/search/:input?",
-    name: "search",
-    component: () => import("../views/SearchView.vue"),
-  },
-  {
     path: "/imageSearch",
     name: "imagesearch",
     component: () => import("../views/ImageSearchView.vue"),
@@ -68,15 +73,16 @@ const routes = [
     component: () => import("../views/SuccessfulOnboarding.vue"),
   },
   {
-    path: "/imageSearch",
-    name: "imagesearch",
-    component: () => import("../views/ImageSearchView.vue"),
+    path: '/explore',
+    name: 'explore',
+    component: () => import('../views/RandomExplorePage.vue')
   },
-  {
-    path: "/successfulOnboarding",
-    name: "successfulonboarding",
-    component: () => import("../views/SuccessfulOnboarding.vue"),
-  },
+  // {
+  //   path: '/foryou',
+  //   name: 'foryou',
+  //   component: () => import('../views/ForYouPage.vue'),
+  //   props: true
+  // },
   // -------------------------------------------------------------------------------------
 
   // ----------------- PROFILE PAGES -----------------
@@ -149,6 +155,7 @@ const routes = [
 
     component: () => import("../views/Producers/EditListing.vue"),
   },
+
   // -------------------------------------------------------------------------------------
 
   // ----------------- REQUEST PAGES -----------------

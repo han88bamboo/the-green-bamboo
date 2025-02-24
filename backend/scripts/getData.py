@@ -17,6 +17,7 @@
 
 import os
 import json
+import random
 import feedparser
 import re
 import requests
@@ -24,6 +25,8 @@ from bs4 import BeautifulSoup
 from bson import json_util, ObjectId
 from flask import Blueprint, g, jsonify, request
 from bson.objectid import ObjectId
+from psycopg2.extras import RealDictCursor
+
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -211,6 +214,61 @@ def getListings():
     return jsonify(listings_data)
 
 
+#  [GET] ALL Listing Names in Listing Table
+@blueprint.route("/getListingsName")
+def getListingsName():
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "listings"')
+        listingsName_data = cursor.fetchall()
+    
+    if not listingsName_data:
+        return jsonify([])
+    
+    # Extract listingName from each record
+    listing_names = [listing['listingName'] for listing in listingsName_data]
+
+    return jsonify(listing_names)
+# -----------------------------------------------------------------------------------------
+# [GET] Get Listings from a randomly selected date
+@blueprint.route("/getRandomListings")
+def getRandomListings():
+    conn = g.db
+
+    with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        # Fetch distinct dates by converting timestamps to dates
+        cursor.execute('SELECT DISTINCT "addedDate"::DATE FROM "listings"')
+        date_results = cursor.fetchall()
+
+        if not date_results:
+            return jsonify({"error": "No dates found in listings"}), 400
+
+        # Log the fetched dates
+        print("Fetched date_results:", date_results)
+
+        try:
+            # Extract 'addedDate' values properly from RealDictRow
+            date_list = [row['addedDate'] for row in date_results if 'addedDate' in row]
+            
+            # Log the extracted date list
+            print("Extracted date_list:", date_list)
+
+            if not date_list:
+                return jsonify({"error": "Date extraction failed (empty list)"}), 400
+
+            random_date = random.choice(date_list)  # Select a random date
+        except Exception as e:
+            return jsonify({"error": f"Random selection failed: {str(e)}"}), 500
+
+        # Fetch listings from the selected random date
+        cursor.execute('SELECT * FROM "listings" WHERE "addedDate"::DATE = %s ORDER BY RANDOM() LIMIT 20', (random_date,))
+        listings_data = cursor.fetchall()
+
+    if not listings_data:
+        return jsonify({"error": "No listings found for selected date"}), 400
+
+
 # -----------------------------------------------------------------------------------------
 # [POST] Listings by IDs
 @blueprint.route("/getListingsByIDs", methods=['POST'])
@@ -228,6 +286,7 @@ def getListingsByIDs():
     
     if not listings_data:
         return jsonify([])
+
 
     return jsonify(listings_data)
 
@@ -319,6 +378,87 @@ def getFilteredFollowing30(id):
         return jsonify([])
 
     return jsonify(listings_data)
+
+# [GET] For You Page Recommender
+# @blueprint.route("/getRecommendedListings")
+# def getRecommendedListings():
+#     conn = g.db
+#     # data = request.get_json()
+#     # userID = data['userID']
+#     userID = request.args.get('userID')
+#     print(userID)
+
+#     with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+#         # Fetch user's drink choice, flavour choice, and preferences
+#         cursor.execute(
+#             'SELECT "choiceDrinks", "choiceFlavours", "preferences" FROM users WHERE id = %s',
+#             (userID,)
+#         )
+#         user_data = cursor.fetchone()
+
+#         if not user_data:
+#             return jsonify({"error": "User not found"}), 404
+
+#         choiceDrink = user_data["choiceDrinks"] or []
+#         choiceFlavour = user_data["choiceFlavours"] or []
+#         preferences = user_data["preferences"] or []
+#         print("User Data:", user_data)
+
+#         recommended = []
+
+#         # Get listings with the same drink type
+#         if choiceDrink:
+#             drink_query = '''
+#                 SELECT * FROM listings 
+#                 WHERE "drinkType" = ANY(%s)
+#             '''
+#             cursor.execute(drink_query, (choiceDrink,))
+#             drink_listings = cursor.fetchall()
+
+#             for listing in drink_listings:
+#                 if listing["id"] not in recommended:
+#                     recommended.append(listing["id"])
+
+#         # Get listings with the same flavour tags
+#         if choiceFlavour:
+#             cursor.execute('SELECT id FROM "subTags" WHERE "subTag" = ANY(%s)', (choiceFlavour,))
+#             flavour_ids = [row["id"] for row in cursor.fetchall()]
+
+#             if flavour_ids:
+#                 flavour_query = '''
+#                     SELECT DISTINCT l.*
+#                     FROM "listings" l
+#                     JOIN "reviews" r ON l."id" = r."reviewTarget"
+#                     WHERE r."flavourTag" && %s::text[]
+#                 '''
+#                 cursor.execute(flavour_query, (flavour_ids,))
+#                 flavour_listings = cursor.fetchall()
+
+#                 for listing in flavour_listings:
+#                     if listing["id"] not in recommended:
+#                         recommended.append(listing["id"])
+
+#         # Get listings with the same observation tags
+#         if preferences:
+#             observation_query = '''
+#                 SELECT DISTINCT l.*
+#                 FROM "listings" l
+#                 JOIN "reviews" r ON l."id" = r."reviewTarget"
+#                 WHERE r."observationTag" && %s::text[]
+#             '''
+#             cursor.execute(observation_query, (preferences,))
+#             observation_listings = cursor.fetchall()
+
+#             for listing in observation_listings:
+#                 if listing["id"] not in recommended:
+#                     recommended.append(listing["id"])
+
+#     print("Recommended Listings:", recommended)
+
+#     if not recommended:
+#         return jsonify({"error": "No recommended listings found"}), 400
+
+#     return jsonify(recommended)
 
 # -----------------------------------------------------------------------------------------
 # [GET] Specific Listing
@@ -1791,6 +1931,45 @@ def getObservationTags():
         return jsonify([])
 
     return jsonify(observation_tags_data)
+
+@blueprint.route("/getListingsByObservationTag/<tag>")
+def get_listings_by_observation_tag(tag):
+    selected_tag = tag  
+
+    if not selected_tag:
+        return jsonify({"error": "Tag is required"}), 400
+
+    conn = g.db  
+
+    try:
+        with conn.cursor() as cursor:
+            query = """
+            SELECT DISTINCT l.*
+            FROM "listings" l
+            JOIN "reviews" r ON l."id" = r."reviewTarget"
+            WHERE %s = ANY(r."observationTag");
+            """
+            cursor.execute(query, (selected_tag,))
+
+            listings = cursor.fetchall()
+            columns = [col[0] for col in cursor.description]  
+
+            print("Columns:", columns)  
+            print("Listings:", listings)  
+
+            listing_dicts = [tuple(row.values()) for row in listings]
+
+            # Print the result
+            print("Listings as Tuples:", listing_dicts)
+
+        # Return the result as JSON
+        return jsonify(listing_dicts)
+
+    except Exception as e:
+        # If an error occurs, print the error message and return an error response
+        print(f"Error fetching listings: {e}")
+        return jsonify({"error": "A server error occurred."}), 500
+        
 
 # -----------------------------------------------------------------------------------------
 # [GET] colours

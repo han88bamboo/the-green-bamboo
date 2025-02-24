@@ -12,6 +12,8 @@ from bson import json_util
 from flask import Blueprint, g, request, jsonify
 from bson.objectid import ObjectId
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
+import psycopg2
 
 import secrets
 
@@ -138,6 +140,38 @@ def createAccount():
             }
         ), 500
     
+# -----------------------------------------------------------------------------------------
+# [POST] Updates User Preferences from Onboarding Form
+@blueprint.route("/addPreferences/<username>", methods = ['POST'])
+def add_preferences(username):
+    load_dotenv
+    # conn = psycopg2.connect(
+    #     dbname=os.getenv("POSTGRES_DB"),
+    #     user=os.getenv("POSTGRES_USER"),
+    #     password=os.getenv("POSTGRES_PASSWORD"),
+    #     host=os.getenv("POSTGRES_HOST"),
+    #     port=os.getenv("POSTGRES_PORT")
+    # )
+    conn = g.db
+    cur = conn.cursor()
+    rawAccount = request.get_json()
+    cur.execute("""
+                UPDATE "users"
+                SET "choiceDrinks" = %s,
+                "choiceFlavours" = %s,
+                "preferences" = %s
+                WHERE "username" = %s
+            """, (
+                rawAccount['choiceDrinks'],
+                rawAccount['choiceFlavours'],
+                rawAccount['preferences'],
+                username
+            ))
+    conn.commit()
+    # cur.close()
+    # conn.close()
+
+
 # -----------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------
 # [POST] Creates a Business Account Request
