@@ -1291,7 +1291,7 @@ INSERT INTO "venuesMenu" (
     
 INSERT INTO "menuItems"(
     "itemOrder", "itemPrice", "itemAvailability", "itemID", "itemServingType", "sectionId")
-VALUES(0, 12.00, true, 1, 1, 1);
+VALUES(0, 12.00, true, 544777, 1, 1);
 
 INSERT INTO "clubs"(
     "clubName", "clubDesc", "isInviteOnly", "clubLink", "clubBanner", "dateCreated")
@@ -1417,3 +1417,43 @@ INSERT INTO "clubPostCommentsLikes"(
     "postID", "commentID", "memberID")
 VALUES
     (1, 1, 3);
+
+INSERT INTO "associations"( "subTag1", "subTag2")
+VALUES
+    ('Fruit Flowers', 'Tinned Fruit'),
+    ('Fruit Flowers', 'Orchard Fruits'),
+    ('Fruit Flowers', 'Stone Fruits'),
+    ('Fruit Flowers', 'Green Fruits'),
+    ('Fruit Flowers', 'Yellow Fruits'),
+    ('Dried Fruits', 'Fruit Flowers'),
+    ('Orchard Fruits', 'Tinned Fruit'),
+    ('Tinned Fruit', 'Tropical Fruits'),
+    ('Green Fruits', 'Tinned Fruit'),
+    ('Tinned Fruit', 'Yellow Fruits'),
+    ('Dried Fruits', 'Tinned Fruit'),
+    ('Orchard Fruits', 'Stone Fruits'),
+    ('Orchard Fruits', 'Tropical Fruits'),
+    ('Green Fruits', 'Orchard Fruits'),
+    ('Orchard Fruits', 'Yellow Fruits'),
+    ('Orchard Fruits', 'Unripe Fruits'),
+    ('Dried Fruits', 'Orchard Fruits'),
+    ('Orchard Fruits', 'Vines'),
+    ('Green Fruits', 'Stone Fruits'),
+    ('Stone Fruits', 'Yellow Fruits'),
+    ('Stone Fruits', 'Unripe Fruits'),
+    ('Green Fruits', 'Tropical Fruits'),
+    ('Tropical Fruits', 'Yellow Fruits'),
+    ('Dried Fruits', 'Tropical Fruits'),
+    ('Citrus', 'Green Fruits'),
+    ('Green Fruits', 'Yellow Fruits'),
+    ('Green Fruits', 'Unripe Fruits'),
+    ('Dried Fruits', 'Green Fruits'),
+    ('Green Fruits', 'Melons'),
+    ('Green Fruits', 'Vines'),
+    ('Citrus', 'Yellow Fruits'),
+    ('Unripe Fruits', 'Yellow Fruits'),
+    ('Dried Fruits', 'Yellow Fruits'),
+    ('Melons', 'Yellow Fruits'),
+    ('Vines', 'Yellow Fruits'),
+    ('Dried Fruits', 'Vines'),
+    ('Sweet Wine', 'Vines');
