@@ -974,7 +974,6 @@ export default {
                         return b.producerName.localeCompare(a.producerName);
                     });
                 }
-
                 // #3: Ratings (Highest - Lowest)
                 else if (category == 'Ratings (Highest - Lowest)') {
                     this.producerListings.sort((a, b) => {
@@ -986,30 +985,6 @@ export default {
                     this.producerListings.sort((a, b) => {
                         return this.getAvgProducerRating(a) - this.getAvgProducerRating(b);
                     });
-
-            },
-            // ---- Function to get ratings for a listing ----
-            // get ratings for a listing --> return "-" if no ratings
-            getRatings(listing) {
-                const ratings = this.reviews.filter((rating) => rating["reviewTarget"] == listing['id']);
-                // if there are no ratings
-                if (ratings.length == 0) return "-";
-                // else there are ratings
-                const averageRating = ratings.reduce((total, rating) => {
-                    return total + parseFloat(rating["rating"]);
-                }, 0) / ratings.length;
-
-                return averageRating.toFixed(1);
-            },
-
-            // get ratings for a listing --> return 0 if no ratings
-            getAllRatings(listing) {
-                const ratings = this.reviews.filter((rating) => {
-                    return rating["reviewTarget"] == listing['id'];
-                });
-                // if there are no ratings
-                if (ratings.length == 0) {
-                    return 0;
                 }
             }
 

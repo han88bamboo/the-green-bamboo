@@ -1040,7 +1040,6 @@ export default {
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    // data: { userID: this.userID }  // Pass userID in the request body
                 });
                 this.listings = response.data;
                 console.log(this.listings);
@@ -1131,7 +1130,7 @@ export default {
             // drinkTypes
             // _id, drinkType, typeCategory
             try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getDrinkTypes`);
+                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getDrinkTypes`);
                 this.drinkTypes = response.data;
                 this.drinkTypes.sort((a, b) => {
                     return a.drinkType.localeCompare(b.drinkType)
@@ -1144,7 +1143,7 @@ export default {
             // requestListings
             // _id, listingName, producerNew, producerID, bottler, originCountry, drinkType, typeCategory, age, abv, reviewLink, sourceLink, brandRelation, reviewStatus, userID, photo
             try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getRequestListings`);
+                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getRequestListings`);
                 this.requestListings = response.data;
                 // Filter requests based on user role
                 if (this.userType == 'producer') {
@@ -1733,7 +1732,7 @@ export default {
             let user_ids = this.user.followLists.users.join(",");
 
             try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getReviewsByUserIds?user_ids=${user_ids}`);
+                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getReviewsByUserIds?user_ids=${user_ids}`);
                 this.latestReviews = response.data.data;
             }
             catch (error) {

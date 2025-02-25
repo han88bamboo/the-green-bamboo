@@ -1,12 +1,8 @@
 -- DROP TABLES IF EXISTS -- 
-DROP TABLE IF EXISTS "eventAttendees" CASCADE;
-DROP TABLE IF EXISTS "events" CASCADE;
 DROP TABLE IF EXISTs "clubPostCommentsLikes" CASCADE;
 DROP TABLE IF EXISTS "clubPostComments" CASCADE;
 DROP TABLE IF EXISTS "clubPostsLikes" CASCADE;
 DROP TABLE IF EXISTS "clubPosts" CASCADE;
-DROP TABLE IF EXISTS "clubRequests" CASCADE;
-DROP TABLE IF EXISTS "clubInvites" CASCADE;
 DROP TABLE IF EXISTS "clubMembers" CASCADE;
 DROP TABLE IF EXISTS "clubs" CASCADE;
 DROP TABLE IF EXISTS "accountRequests" CASCADE;
@@ -23,7 +19,6 @@ DROP TABLE IF EXISTS "observationTags" CASCADE;
 DROP TABLE IF EXISTS "producerUpdateLikes" CASCADE;
 DROP TABLE IF EXISTS "producers" CASCADE;
 DROP TABLE IF EXISTS "producersProfileViews" CASCADE;
-DROP TABLE IF EXISTS "producersOpeningHours" CASCADE;
 DROP TABLE IF EXISTS "producersProfileViewsViews" CASCADE;
 DROP TABLE IF EXISTS "producersQuestionAnswers" CASCADE;
 DROP TABLE IF EXISTS "producersUpdates" CASCADE;
@@ -32,8 +27,6 @@ DROP TABLE IF EXISTS "requestInaccuracy" CASCADE;
 DROP TABLE IF EXISTS "requestListings" CASCADE;
 DROP TABLE IF EXISTS "reviews" CASCADE;
 DROP TABLE IF EXISTS "reviewsUserVotes" CASCADE;
-DROP TABLE IF EXISTS "producerReviews" CASCADE;
-DROP TABLE IF EXISTS "producerReviewsUserVotes" CASCADE;
 DROP TABLE IF EXISTS "servingTypes" CASCADE;
 DROP TABLE IF EXISTS "specialColours" CASCADE;
 DROP TABLE IF EXISTS "subTags" CASCADE;
@@ -49,7 +42,6 @@ DROP TABLE IF EXISTS "venuesProfileViews" CASCADE;
 DROP TABLE IF EXISTS "venuesProfileViewsViews" CASCADE;
 DROP TABLE IF EXISTS "venuesQuestionAnswers" CASCADE;
 DROP TABLE IF EXISTS "venuesUpdates" CASCADE;
-DROP TABLE IF EXISTS "typeCategories" CASCADE;
 
 -- CREATE TABLES -- 
 -- ========= "accountRequests" =========
@@ -131,15 +123,6 @@ CREATE TABLE "drinkTypes" (
     "typeCategory" TEXT[]
 );
 
--- ========= "typeCategories" -added by tzh for drinkStyle =========
-CREATE TABLE "typeCategories" (
-    "id" SERIAL PRIMARY KEY,
-    "drinkType_id" INT REFERENCES "drinkTypes"(id) ON DELETE CASCADE,
-    "typeCategory" VARCHAR(255) NOT NULL,
-    "drinkStyle" TEXT[],
-    UNIQUE("drinkType_id", "typeCategory") 
-);
-
 -- ========= "languages" =========
 CREATE TABLE "languages" (
     "id" SERIAL PRIMARY KEY,
@@ -164,16 +147,10 @@ CREATE TABLE "producers" (
     "claimStatus" BOOLEAN,
     "claimStatusCheckDate" TIMESTAMP,
     "statusOB" VARCHAR(255),
-    "yearFounded" INTEGER,
-    "activeStatus" VARCHAR(10),
-    "owner" VARCHAR(255),
-    "location" VARCHAR(255),
-    "openForTours" BOOLEAN,
-    "website" TEXT,
     -- "questionAnswers" INTEGER REFERENCES "producersQuestionAnswers"("id") ON DELETE SET NULL, -- Alternative ON DELETE CASCADE to delete all related child records[!] reference "producersQuestionAnswers" as FK
     -- "updates" INTEGER REFERENCES "producersUpdates"("id") ON DELETE SET NULL, -- Alternative ON DELETE CASCADE to delete all related child records[!] reference "producersUpdates" as FK
     "username" VARCHAR(255),
-    "producerLink" TEXT,
+    "producerLink" VARCHAR(255),
     "stripeCustomerId" VARCHAR(255)
 );
 
@@ -190,9 +167,6 @@ CREATE TABLE "venues" (
     "photo" TEXT,
     "claimStatus" BOOLEAN,
     "claimStatusCheckDate" TIMESTAMP,
-    "yearOpened" INTEGER,
-    "openForReservations" BOOLEAN,
-    "website" TEXT,
     -- "openingHours" SERIAL, -- [!] reference "venuesOpeningHours"
     -- "questionAnswers" SERIAL, -- [!] reference "venuesQuestionAnswers"
     -- "updates" SERIAL, -- [!] reference "venuesUpdates"
@@ -262,19 +236,6 @@ CREATE TABLE "producersProfileViews" (
     -- "views" INTEGER REFERENCES "producersProfileViewsViews"("id") ON DELETE SET NULL  -- [!] reference "producersProfileViewsViews" FK
 );
 
--- ========= "producersOpeningHours" =========
-CREATE TABLE "producersOpeningHours" (
-    "id" SERIAL PRIMARY KEY,
-    "Monday" TEXT[],
-    "Tuesday" TEXT[],
-    "Wednesday" TEXT[],
-    "Thursday" TEXT[],
-    "Friday" TEXT[],
-    "Saturday" TEXT[],
-    "Sunday" TEXT[],
-    "producerId" INTEGER REFERENCES "producers"("id") ON DELETE SET NULL -- [!] reference "producers" FK
-);
-
 -- -- ========= [NEW!] "producersProfileViewsViews" =========
 -- CREATE TABLE "producersProfileViewsViews" (
 --     "id" SERIAL PRIMARY KEY,
@@ -287,7 +248,7 @@ CREATE TABLE "producersOpeningHours" (
 -- ========= "listings" =========
 CREATE TABLE "listings" (
     "id" SERIAL PRIMARY KEY,
-    "listingName" VARCHAR(500),
+    "listingName" VARCHAR(255),
     "producerID" INTEGER REFERENCES "producers"("id") ON DELETE SET NULL, -- [!] reference "producers" FK
     "bottler" VARCHAR(255),
     "originCountry" VARCHAR(255),
@@ -297,11 +258,10 @@ CREATE TABLE "listings" (
     "allowMod" BOOLEAN,
     "addedDate" TIMESTAMP,
     "typeCategory" VARCHAR(255),
-    "age" VARCHAR(500),
+    "age" VARCHAR(255),
     "reviewLink" VARCHAR(255),
     "sourceLink" VARCHAR(255),
-    "photo" TEXT,
-    "drinkStyle" VARCHAR(255) -- added by tzh 
+    "photo" TEXT 
 );
 
 -- ========= "modRequests" =========
@@ -336,14 +296,14 @@ CREATE TABLE "reviews" (
     "id" SERIAL PRIMARY KEY,
     "userID" INTEGER REFERENCES "users"("id") ON DELETE SET NULL, -- [!] reference "users"("id")
     "reviewTarget" INTEGER REFERENCES "listings"("id") ON DELETE SET NULL, -- [!] reference "listings"("id")
-    "rating" DECIMAL(3,1),
+    "rating" INT,
     "reviewDesc" TEXT,
     "reviewType" VARCHAR(255),
     "createdDate" TIMESTAMP,
     "language" VARCHAR(255),
     "finish" VARCHAR(255),
-    "willRecommend" BOOLEAN NULL,
-    "wouldBuyAgain" BOOLEAN NULL,
+    "willRecommend" BOOLEAN,
+    "wouldBuyAgain" BOOLEAN,
     -- "userVotes" SERIAL, -- [!] reference "reviewsUserVotes" FK
     "taggedUsers" TEXT[], -- Contains "users"("id")s
     "flavourTag" TEXT[], -- Contains "flavourTags"("id")s
@@ -362,24 +322,6 @@ CREATE TABLE "reviewsUserVotes" (
     "upvotes" TEXT[], -- Contain "users"("id")s
     "downvotes" TEXT[], -- Contain "users"("id")s
     "reviewId" INTEGER REFERENCES "reviews"("id") on DELETE SET NULL -- [!] reference "reviews" FK
-);
-
-CREATE TABLE "producerReviews" (
-    "id" SERIAL PRIMARY KEY,
-    "userID" INTEGER REFERENCES "users"("id") ON DELETE SET NULL, -- Reference to users table
-    "producerID" INTEGER REFERENCES "producers"("id") ON DELETE SET NULL, -- Reference to producers table
-    "rating" DECIMAL(3,1),
-    "reviewDesc" TEXT,
-    "createdDate" TIMESTAMP,
-    "photo" TEXT
-    -- "userVotes" SERIAL, -- [!] reference "producerReviewsUserVotes" FK
-);
-
-CREATE TABLE "producerReviewsUserVotes" (
-    "id" SERIAL PRIMARY KEY,
-    "upvotes" TEXT[], -- Contain "users"("id")s
-    "downvotes" TEXT[], -- Contain "users"("id")s
-    "reviewId" INTEGER REFERENCES "producerReviews"("id") on DELETE SET NULL -- [!] reference "producerReviews" FK
 );
 
 -- ========= "tokens" =========
@@ -505,8 +447,7 @@ CREATE TABLE "requestListings" (
     "typeCategory" VARCHAR(255),
     "abv" VARCHAR(255),
     "age" VARCHAR(255),
-    "reviewLink" VARCHAR(255),
-    "drinkStyle" VARCHAR(255) -- added by tzh 
+    "reviewLink" VARCHAR(255)
 );
 
 -- ========= "requestEdits" =========
@@ -529,8 +470,7 @@ CREATE TABLE "clubs" (
     "isInviteOnly" BOOLEAN,
     "clubLink" VARCHAR(255),
     "clubBanner" TEXT,
-    "dateCreated" TIMESTAMP,
-    "totalMembers" INTEGER
+    "dateCreated" TIMESTAMP
 );
 
 -- ========= "clubMembers" =========
@@ -540,27 +480,8 @@ CREATE TABLE "clubMembers" (
     "userID" INTEGER,
     "userType" VARCHAR(255),
     "joinDate" TIMESTAMP,
-    "isAdmin" BOOLEAN
-);
-
--- ========= "clubInvites" =========
-CREATE TABLE "clubInvites" (
-    "id" SERIAL PRIMARY KEY,
-    "clubID" INTEGER REFERENCES "clubs"("id") ON DELETE SET NULL, -- [!] References clubs FK
-    "inviteeID" INTEGER,
-    "inviteeUserType" VARCHAR(255),
-    "inviterID" INTEGER,
-    "inviterUserType" VARCHAR(255),
-    "inviteDate" TIMESTAMP
-);
-
--- ========= "clubRequests" =========
-CREATE TABLE "clubRequests" (
-    "id" SERIAL PRIMARY KEY,
-    "clubID" INTEGER REFERENCES "clubs"("id") ON DELETE SET NULL, -- [!] References clubs FK
-    "userID" INTEGER,
-    "userType" VARCHAR(255),
-    "requestDate" TIMESTAMP
+    "isAdmin" BOOLEAN,
+    "joinStatus" BOOLEAN
 );
 
 -- ========= "clubPosts" =========
@@ -596,37 +517,4 @@ CREATE TABLE "clubPostCommentsLikes" (
     "postID" INTEGER REFERENCES "clubPosts"("id") ON DELETE SET NULL, -- [!] References clubPosts FK
     "commentID" INTEGER REFERENCES "clubPostComments"("id") ON DELETE SET NULL, -- [!] References clubPostComments FK
     "memberID" INTEGER REFERENCES "clubMembers"("id") ON DELETE SET NULL -- [!] References clubMembers FK
-);
-
--- ========= "events" =========
-CREATE TABLE "events" (
-    "id" SERIAL PRIMARY KEY,
-    "eventName" VARCHAR(255),
-    "eventDesc" TEXT,
-    "eventType" VARCHAR(255),
-    "eventStartDate" DATE,
-    "eventEndDate" DATE,
-    "eventStartTime" TIME,
-    "eventEndTime" TIME,
-    "eventLimit" INTEGER,
-    "eventBanners" TEXT[],
-    "ticketed" BOOLEAN,
-    "paidEvent" BOOLEAN,
-    "eventLocation" TEXT,
-    "paymentLink" VARCHAR(255),
-    "eventOwnerID" INTEGER, -- [!] "producers" or "venues" or "users" id in their respective tables 
-    "eventOwnerType" VARCHAR(255), -- [!] "producers" or "venues" or "users"
-    "numAttendees" INTEGER,
-    "createdDate" TIMESTAMP
-);
-
--- ========= "eventAttendees" =========
-CREATE TABLE "eventAttendees" (
-    "id" SERIAL PRIMARY KEY,
-    "eventID" INTEGER REFERENCES "events"("id") ON DELETE SET NULL, -- [!] References events FK
-    "eventDate" DATE,
-    "eventStartTime" TIME,
-    "userID" INTEGER,
-    "attendeeType" VARCHAR(255),
-    "attendeeStatus" BOOLEAN
-);
+)
