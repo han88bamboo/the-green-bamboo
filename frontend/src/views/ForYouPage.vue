@@ -495,8 +495,16 @@
                                         </li>
                                     </ul>
                                 </div>
-
+                                
                             </div>
+                            <div>
+                                <button>
+                                    <span class="mobile-view-show" style="margin-left: 5px;"> Refresh {{
+                                        sortSelection.category != '' ? sortSelection.category : 'Category' }}
+                                    </span>
+                                </button>
+                            </div>
+
                         </div>
 
                         <!-- listings  TZH removed class scrollable-listings--->
@@ -1130,7 +1138,8 @@ export default {
             // drinkTypes
             // _id, drinkType, typeCategory
             try {
-                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getDrinkTypes`);
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getDrinkTypes`);
+                // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getDrinkTypes`);
                 this.drinkTypes = response.data;
                 this.drinkTypes.sort((a, b) => {
                     return a.drinkType.localeCompare(b.drinkType)
@@ -1143,7 +1152,8 @@ export default {
             // requestListings
             // _id, listingName, producerNew, producerID, bottler, originCountry, drinkType, typeCategory, age, abv, reviewLink, sourceLink, brandRelation, reviewStatus, userID, photo
             try {
-                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getRequestListings`);
+                // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getRequestListings`);
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getRequestListings`);
                 this.requestListings = response.data;
                 // Filter requests based on user role
                 if (this.userType == 'producer') {
@@ -1918,7 +1928,8 @@ export default {
                 // if not, meaning listings are not filtered, retrieve next 30 listings in DB
                 else {
                     let lastId = this.listings[this.listings.length - 1].id
-                    const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getNext30` + '/' + lastId);
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getNext30` + '/' + lastId);
+                    // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getNext30` + '/' + lastId);
                     this.listings.push(...response.data);
                     if (response.data.length == 0) {
                         this.moreListings = false
