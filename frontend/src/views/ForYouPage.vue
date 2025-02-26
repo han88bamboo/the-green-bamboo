@@ -356,12 +356,12 @@
                                         :class="{ 'primary-btn-green mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0 mobile-pe-0': discovery, 'primary-btn-green-outline mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0': !discovery }"
                                         v-on:click="changeDiscoveryStatus()">
                                         <!--tzh added -green and green-outline, changed mt-1 to mb-0_5 mt-0_5 -->
-                                        <p class="mb-0_5 mt-0_5 discover-and-following mobile-mb-0"> Discover </p>
+                                        <p class="mb-0_5 mt-0_5 discover-and-following mobile-mb-0"> For You </p>
                                     </button>
                                 </div>
                             </div>
                             <!-- following tzh changed col-12 to col-4-->
-                            <div class="col-xl-3 col-lg-4 col-4 mb-3 mobile-view-no-padding">
+                            <!-- <div class="col-xl-3 col-lg-4 col-4 mb-3 mobile-view-no-padding">
                                 <div class="d-grid gap-2 mx-1">
                                     <button class="btn btn-sm mobile-ps-0 text-center"
                                         :class="{ 'primary-btn-green mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0': following, 'primary-btn-green-outline mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0': !following }"
@@ -369,12 +369,12 @@
                                         <p class="mb-0_5 mt-0_5 discover-and-following mobile-mb-0"> Following </p>
                                     </button>
                                 </div>
-                            </div>
+                            </div> -->
                             <!-- filter by drink type / category tzh changed col-12 to col-4 -->
-                            <div class="dropdown col-xl-3 col-lg-4 col-4 mb-3 mobile-col-2 mobile-pe-0">
-                                <div class="d-grid gap-2">
+                            <!-- <div class="dropdown col-xl-3 col-lg-4 col-4 mb-3 mobile-col-2 mobile-pe-0">
+                                <div class="d-grid gap-2"> -->
                                     <!-- tzh added -homepage and some changes for mobile-->
-                                    <div v-if="selectedDrinkType != ''"
+                                    <!-- <div v-if="selectedDrinkType != ''"
                                         style="position:absolute; width:100%; font-size:0.8em; transform: translate3d(-20px, -20px, 0px);"
                                         class="cross-icon mobile-view-hide ps-4" @click="clearSelection">&#10005; Clear
                                         Selection</div>
@@ -390,9 +390,9 @@
                                         <span class="mobile-view-hide" style="margin-left: 5px;">{{ selectedDrinkType ?
                                             selectedDrinkType['drinkType'] : 'Filter: Drink Type' }}</span>
 
-                                    </button>
+                                    </button> -->
                                     <!-- tzh - above to be replaced for mobile-->
-                                    <div class="dropdown-menu pt-0" aria-labelledby="dropdownMenuButton" @click.stop>
+                                    <!-- <div class="dropdown-menu pt-0" aria-labelledby="dropdownMenuButton" @click.stop>
 
                                         <div class="d-flex filter-div">
                                             <div class="dropdown-column ms-2 pt-3"
@@ -401,9 +401,9 @@
                                                         :class="{ 'text-decoration-underline': !selectedDrinkType }">Drink
                                                         Type</span> </h6>
                                                 <hr>
-                                                <div v-for="drinkType in drinkTypes" v-bind:key="drinkType.id">
+                                                <div v-for="drinkType in drinkTypes" v-bind:key="drinkType.id"> -->
                                                     <!-- Filter button for drink type -->
-                                                    <a class="dropdown-item"
+                                                    <!-- <a class="dropdown-item"
                                                         :class="{ 'active': selectedDrinkType === drinkType }"
                                                         @click="selectDrinkType(drinkType)">
                                                         <span>{{ drinkType['drinkType'] }}</span>
@@ -432,7 +432,7 @@
                                                     </a>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </div> -->
                                         <!-- Filter button for drink type 
                                         <div class="d-flex  mobile-view-show">
                                             <div class="dropdown-column ms-2 mt-2" >
@@ -463,9 +463,9 @@
                                             </div>
                                         </div>
                                         -->
-                                    </div>
+                                    <!-- </div>
                                 </div>
-                            </div>
+                            </div> -->
                             <!-- sort by drink type - tzh changed col-12 to col-4 -->
                             <div class="dropdown col-xl-3 col-lg-4 col-4 mb-3 mobile-col-2 mobile-ps-0">
                                 <div class="d-grid gap-2">
