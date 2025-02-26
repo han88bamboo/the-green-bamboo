@@ -347,7 +347,7 @@ def getProducers():
                 p.id, p."producerName", p."producerDesc", p."originCountry", p."mainDrinks", p.photo, 
                 p."hashedPassword", p."claimStatus", p."statusOB", p.username, p."producerLink", 
                 p."yearFounded", p."activeStatus", p.owner, p.location, p."openForTours", p.website,
-                p."stripeCustomerId", p."claimStatusCheckDate",
+                p."stripeCustomerId", p."claimStatusCheckDate", p."isIndependentBottler",
                 COALESCE((
                     SELECT json_agg(json_build_object(
                         'id', qa.id,
@@ -426,7 +426,7 @@ def getProducer(id):
                 p.id, p."producerName", p."producerDesc", p."originCountry", p."mainDrinks", p.photo, 
                 p."hashedPassword", p."claimStatus", p."statusOB", p.username, p."producerLink", 
                 p."yearFounded", p."activeStatus", p.owner, p.location, p."openForTours", p.website,
-                p."stripeCustomerId", p."claimStatusCheckDate",
+                p."stripeCustomerId", p."claimStatusCheckDate", p."isIndependentBottler",
                 COALESCE((
                     SELECT json_agg(json_build_object(
                         'id', qa.id,
@@ -501,7 +501,7 @@ def getProducerByRequestId(id):
                 p.id, p."producerName", p."producerDesc", p."originCountry", p."mainDrinks", p.photo, 
                 p."hashedPassword", p."claimStatus", p."statusOB", p.username, p."producerLink", 
                 p."yearFounded", p."activeStatus", p.owner, p.location, p."openForTours", p.website,
-                p."stripeCustomerId", p."claimStatusCheckDate",
+                p."stripeCustomerId", p."claimStatusCheckDate", p."isIndependentBottler",
                 COALESCE((
                     SELECT json_agg(json_build_object(
                         'id', qa.id,
@@ -569,7 +569,7 @@ def getProducerByRequestId(id):
 def getUniqueProducersNamesID():
     conn = g.db
     with conn.cursor() as cursor:
-        cursor.execute('SELECT DISTINCT "producerName", "id" FROM "producers"')
+        cursor.execute('SELECT DISTINCT "producerName", "isIndependentBottler", "id" FROM "producers"')
         producers_data = cursor.fetchall()
 
     if not producers_data:
@@ -586,6 +586,7 @@ def getUniqueProducersNamesID():
             continue
         producer_dict = {
             "producerName": producer["producerName"],
+            "isIndependentBottler": producer["isIndependentBottler"],
             "id": producer["id"]
         }
         producers_list.append(producer_dict)

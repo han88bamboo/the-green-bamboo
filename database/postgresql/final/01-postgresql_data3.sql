@@ -58,6 +58,7 @@ CREATE TABLE "accountRequests" (
     "businessId" INTEGER,
     "businessName" VARCHAR(255),
     "businessType" VARCHAR(255),
+    "isIndependentBottler" BOOLEAN,
     "businessDesc" TEXT,
     "country" VARCHAR(255),
     "pricing" VARCHAR(255),
@@ -158,6 +159,7 @@ CREATE TABLE "producers" (
     "producerName" VARCHAR(255),
     "producerDesc" TEXT,
     "originCountry" VARCHAR(255),
+    "isIndependentBottler" BOOLEAN DEFAULT FALSE,
     "mainDrinks" TEXT[],
     "photo" TEXT,
     "hashedPassword" VARCHAR(255),
@@ -288,6 +290,7 @@ CREATE TABLE "listings" (
     "listingName" VARCHAR(500),
     "producerID" INTEGER REFERENCES "producers"("id") ON DELETE SET NULL, -- [!] reference "producers" FK
     "bottler" VARCHAR(255),
+    "bottlerID" INTEGER REFERENCES "producers"("id") ON DELETE SET NULL, -- [!] reference "producers" FK
     "originCountry" VARCHAR(255),
     "drinkType" VARCHAR(255),
     "abv" FLOAT,
@@ -499,6 +502,7 @@ CREATE TABLE "requestListings" (
     "photo" TEXT,
     "originCountry" VARCHAR(255),
     "producerID" INTEGER REFERENCES "producers"("id") ON DELETE SET NULL, -- [!] References producers FK
+    "bottlerID" INTEGER REFERENCES "producers"("id") ON DELETE SET NULL, -- [!] References producers FK
     "producerNew" VARCHAR(255),
     "typeCategory" VARCHAR(255),
     "abv" VARCHAR(255),

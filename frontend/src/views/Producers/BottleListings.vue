@@ -120,12 +120,14 @@
                                         </div>
                                         <!-- bottler -->
                                         <div class="col-12 col-lg-6">
-                                            <h6 v-if="specified_listing['bottler'] != 'OB'" class="text-body-secondary producer-page"> Bottler: <u> {{ specified_listing["bottler"] }} </u>  </h6>
-                                                <h6 v-else class="text-body-secondary producer-page"> Bottler:
-                                                    <router-link :to="{ path: '/profile/producer/' + this.producer_id }" class="default-text-no-background"> 
-                                                        <u style="color:black;"> {{ getProducerName(specified_listing["producerID"]) }} </u>  
-                                                    </router-link>
-                                                </h6>
+                                            <h6 v-if="specified_listing['bottler'] == 'OB' || !specified_listing['bottlerID']" class="text-body-secondary producer-page">
+                                                Bottler: <u>Original Bottling</u>
+                                            </h6>
+                                            <h6 v-else class="text-body-secondary producer-page"> Bottler:
+                                                <router-link :to="{ path: '/profile/producer/' + this.bottler_id }" class="default-text-no-background"> 
+                                                    <u style="color:black;"> {{ getBottlerName(specified_listing["bottlerID"]) }} </u>  
+                                                </router-link>
+                                            </h6>
                                         </div>
                                     </div>
                                 </div>
@@ -1650,6 +1652,7 @@
 
                 // specified producer
                 producer_id: null,
+                bottler_id: null,
                 correctProducer: false,
 
                 // check whether user is moderator, whether correct type and whether listing allows mod
@@ -1938,6 +1941,7 @@
                         this.filteredListings = this.listings; // originally, make filtered listings the entire collection of listings
                         this.specified_listing = this.listings.find(listing => listing.id == this.listing_id); // find specified listing
                         this.producer_id = this.specified_listing.producerID // find specified producer
+                        this.bottler_id = this.specified_listing.bottlerID // find specified bottler
                         this.whereToBuy(); // find where to buy specified listing
                         this.whereToTry(); // find where to try specified listing [RE-ENABLE WHEN VENUES HAVE MENU ATTRIBUTE]
                         this.filteredReviews = this.getReviewsForListing(this.specified_listing);
@@ -2203,6 +2207,21 @@
                 if (producer) {
                     const producerName = producer["producerName"];
                     return producerName;
+                }
+                else {
+                    return null;
+                }
+            },
+
+            // get BottlerName for a listing based on producerID
+            getBottlerName(bottlerID) {
+                const bottlers = this.producers.filter(producer => producer?.isIndependentBottler == true);
+                const bottler = bottlers.find((bottler) => {
+                    return bottler["id"] == bottlerID;
+                });
+                if (bottler) {
+                    const bottlerName = bottler["producerName"];
+                    return bottlerName;
                 }
                 else {
                     return null;
