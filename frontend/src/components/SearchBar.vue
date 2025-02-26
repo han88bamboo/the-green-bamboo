@@ -281,4 +281,9 @@ export default {
     border-color: #dee2e6;
     color: white; /* standardised the colour */
 }
+input.form-control {
+    border: none; /* Match the outer border color */
+    box-shadow: none !important; /* Remove the inner shadow */
+    outline: none; /* Remove the focus outline */
+}
 </style>
