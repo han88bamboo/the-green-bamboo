@@ -254,7 +254,7 @@
         title="Create your profile and build your taste palate!"
         question="What’s your drink of choice?"
         note="(Please pick at least 1 drink)"
-        :options="['Whisky', 'Beer', 'Wine', 'Cocktails', 'Gin', 'Tequila', 'Mezcal', 'Sake', 'Rum', 'Brandy', 'Baijiu', 'Soju', 'Umeshu', 'Makgeolli', 'Brandy', 'Vodka', 'Liqueurs', 'Shochu', 'Sotol', 'Arrack']"
+        :options="drinkType"
         :preselectedOptions="selectedDrinks"
         :minSelections="1"
         nextButtonText="Next"
@@ -375,6 +375,7 @@
                 loginError:false,
                 flavourTags: [], // Store the flavour tags from database
                 observationTags: [], // Store the observation tags from database
+                drinkType:[], // Store the drink type from database
             }
         },
         mounted() {
@@ -394,6 +395,20 @@
                         console.error(error);
                         this.dataLoaded = null;
                     }
+                // get the drink types from database
+                try {
+                    // const response =  `${process.env.VUE_APP_API_URL}/getData/getDrinkTypes`  // comment out for local
+                    const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getDrinkTypes`); // comment out for deployment
+                    // Set drinkType dynamically based on the API response
+                    this.drinkType = response.data.map(item => item.drinkType);
+                    
+                    // Log the transformed array
+                    console.log("Updated Drink type:", this.drinkType);
+                }
+                catch (error) {
+                    console.error(error);
+                    this.dataLoaded = null;
+                }
                 // get the flavourTags from database
                 try {
                     // const response =  `${process.env.VUE_APP_API_URL}/getData/getFlavourTags`  // comment out for local
