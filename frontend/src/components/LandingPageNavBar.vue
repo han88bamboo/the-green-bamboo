@@ -9,7 +9,7 @@
             <div class="container-fluid align-items-center col-xxl-11 col-xl-11 col-lg-11 col-md-12 col-sm-12">
 
                 <!-- logo -->
-                <div class="align-items-center col-3 mobile-col-5">
+                <div class="align-items-center col-11 mobile-col-5">
                     <router-link :to="'/'">
                         <img src="../../Images/Logo/Drink-X Logo.png" style="width: auto; height: 35px;">
                     </router-link>
