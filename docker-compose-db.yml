@@ -28,6 +28,7 @@ services:
         - "5432"
         - "-U"
         # - "drinkx"
+        - "postgres"
         - "-d"
         - "postgres"
       interval: "10s"

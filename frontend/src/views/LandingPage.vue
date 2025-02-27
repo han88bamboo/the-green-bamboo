@@ -5,21 +5,17 @@
     <div class="hero-section position-relative text-center py-5">
         <img src="../../Images/Background/LandingPage.png" class="hero-bg position-absolute w-100 h-100 top-0 start-0"
             style="object-fit: cover; z-index: -1; filter: brightness(0.7)" alt="Background" />
-        <div class="container py-5">
-            <h1 class="text-white mb-4">Find Your Next Favourite Drink</h1>
-            <div class="row justify-content-center">
-                <div class="col-md-6">
-                    <SearchBar/>
-
-                    <router-link :to="'/'">
-                        <button class="btn btn-lg text-white" style="background-color: #83a9e8; margin-top: 20px"
-                            aria-label="Surprise Me!">
-                            Surprise Me!
-                        </button>
-                    </router-link>
+            <div class="container py-5">
+                <!-- Center the heading text -->
+                <h1 class="text-white mb-4 text-center">Find Your Next Favourite Drink</h1>
+                
+                <!-- This centers the SearchBar component on the page -->
+                <div class="row justify-content-center">
+                <div class="col-12 col-md-8 col-lg-6">
+                    <SearchBar />
+                </div>
                 </div>
             </div>
-        </div>
     </div>
     <!-- Hero End -->
     
@@ -30,14 +26,13 @@
             <div class="col-lg-3 col-md-6 col-6">
                 <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                     <router-link :to="'/login'">
-                        <button class="btn border-0 fw-bold" type="button">
+                        <button class="btn border-0 fw-bold tilt-hover" type="button">
                             <div class="mb-lg-3 me-3 me-lg-0 icon-container">
                                 <img src="../../Images/Landing Page/Layer1.png" alt="Log Reviews" class="img-fluid" />
                             </div>
                         </button>
                     </router-link>
-                    <h6
-                        class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
+                    <h6 class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
                         Log Your Drink Reviews and Share Your Favorites
                     </h6>
                 </div>
@@ -47,7 +42,7 @@
             <div class="col-lg-3 col-md-6 col-6">
                 <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                     <router-link :to="'/clubs/view'">
-                        <button class="btn border-0 fw-bold" type="button">
+                        <button class="btn border-0 fw-bold tilt-hover" type="button">
                             <div class="mb-lg-3 me-3 me-lg-0 icon-container">
                                 <img src="../../Images/Landing Page/Layer2.png" alt="Find Communities"
                                     class="img-fluid" />
@@ -65,7 +60,7 @@
             <div class="col-lg-3 col-md-6 col-6">
                 <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                     <router-link :to="'/'">
-                        <button class="btn border-0 fw-bold" type="button">
+                        <button class="btn border-0 fw-bold tilt-hover" type="button">
                             <div class="mb-lg-3 me-3 me-lg-0 icon-container">
                                 <img src="../../Images/Landing Page/Layer3.png" alt="Discover Drinks"
                                     class="img-fluid" />
@@ -83,7 +78,7 @@
             <div class="col-lg-3 col-md-6 col-6">
                 <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                     <router-link :to="'/clubs/view'">
-                        <button class="btn border-0 fw-bold" type="button">
+                        <button class="btn border-0 fw-bold tilt-hover" type="button">
                             <div class="mb-lg-3 me-3 me-lg-0 icon-container">
                                 <img src="../../Images/Landing Page/Layer4.png" alt="Connect" class="img-fluid" />
                             </div>
@@ -238,7 +233,7 @@
                             <div class="col-12 col-sm-6 col-lg-3 mb-3" 
                                  v-for="(article, artIndex) in category.latest_news.slice(0, 4)" 
                                  :key="'latest-' + artIndex">
-                                <div class="card h-100" style="background-color: transparent">
+                                <div class="card h-100 shadow" style="background-color: transparent">
                                     <!-- Desktop view (sm and up) -->
                                     <div class="d-none d-sm-block">
                                         <img :src="article.image_url" 
@@ -314,7 +309,7 @@
                                 <div class="col-12 col-sm-6 mb-3" 
                                      v-for="(article, artIndex) in category.spotlight.slice(0, 2)" 
                                      :key="'spotlight-' + artIndex">
-                                    <div class="card h-100" style="background-color: transparent">
+                                    <div class="card h-100 shadow" style="background-color: transparent">
                                         <!-- Desktop view -->
                                         <div class="d-none d-sm-block">
                                             <img :src="article.image_url" 
@@ -388,7 +383,7 @@
                                 <div class="col-12 col-sm-6 mb-3" 
                                      v-for="(article, artIndex) in category.reviews.slice(0, 2)" 
                                      :key="'review-' + artIndex">
-                                    <div class="card h-100" style="background-color: transparent">
+                                    <div class="card h-100 shadow" style="background-color: transparent">
                                         <!-- Desktop view -->
                                         <div class="d-none d-sm-block">
                                             <img :src="article.image_url" 
@@ -700,4 +695,25 @@ export default {
         font-size: 0.875rem !important;
     }
 }
+
+/* Add hover tilt effect */
+.tilt-hover img {
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Tilt right on hover from right */
+.tilt-hover:hover img {
+    transform: rotate(5deg);
+}
+
+/* Add scale effect on hover */
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: scale(1.03); /* Slightly enlarge the card */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1), 0 6px 20px rgba(0, 0, 0, 0.1); /* Optional shadow for emphasis */
+}
+
 </style>

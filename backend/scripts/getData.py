@@ -446,14 +446,13 @@ def advanced_algo_reviews(userID):
 def getRecommendedListings(userID):
     print(userID)
     conn = g.db
+    recommended = basic_algo(userID)
     with conn.cursor(cursor_factory=RealDictCursor) as cursor:
         cursor.execute('SELECT COUNT(*) from "reviews" where "userID" = %s', (userID,))
         review_count = cursor.fetchone()
         if review_count["count"] >= 5:
             advanced_algo_review_recc = advanced_algo_reviews(userID)
-    # return basic_algo(userID)
-    basic_algo_recc = basic_algo(userID)
-    recommended = {**basic_algo_recc, **advanced_algo_review_recc}
+            recommended = {**recommended, **advanced_algo_review_recc}
     recommended = list(recommended.values())
     random.shuffle(recommended)
     return jsonify(recommended)

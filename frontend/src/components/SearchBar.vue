@@ -1,67 +1,111 @@
 <template>
     <div>
-      <div class="col d-flex align-items-center">
-        <div
-            class="col-8 position-relative search-bar d-flex"
-            style="height: 50px"
-        >
-            <div class="w-100 position-relative">
-                <input
-                    class="form-control fst-italic"
-                    type="text"
-                    placeholder="What are you drinking today?"
-                    v-model="searchInput"
-                    v-on:keyup.enter="goSearch"
-                    v-on:input="getSuggestions"
-                    autocomplete="off"
-                />
+        <!-- Row 1: Search bar + Scan Bottle (side by side on desktop, search bar only on mobile) -->
+        <div class="row">
+            <!-- Search bar - full width on mobile, partial width on desktop -->
+            <div
+                class="col-12 col-md-8 d-flex align-items-center justify-content-center"
+            >
                 <div
-                    class="autocomplete-container position-absolute w-100"
-                    v-if="showSuggestions && filteredSuggestions.length > 0"
+                    class="col-8 position-relative search-bar d-flex w-100"
+                    style="height: 50px"
                 >
-                    <ul class="list-group">
-                        <li
-                            class="list-group-item list-group-item-action"
-                            v-for="(suggestion, index) in filteredSuggestions"
-                            :key="index"
-                            v-on:click="selectSuggestion(suggestion)"
-                            :class="{ active: selectedIndex === index }"
-                            v-on:mouseover="selectedIndex = index"
+                    <div class="w-100 position-relative">
+                        <input
+                            class="form-control fst-italic"
+                            type="text"
+                            placeholder="What are you drinking today?"
+                            v-model="searchInput"
+                            v-on:keyup.enter="goSearch"
+                            v-on:input="getSuggestions"
+                            autocomplete="off"
+                        />
+                        <div
+                            class="autocomplete-container position-absolute w-100"
+                            v-if="
+                                showSuggestions &&
+                                filteredSuggestions.length > 0
+                            "
                         >
-                            {{ suggestion }}
-                        </li>
-                    </ul>
+                            <ul class="list-group">
+                                <li
+                                    class="list-group-item list-group-item-action text-start"
+                                    v-for="(
+                                        suggestion, index
+                                    ) in filteredSuggestions"
+                                    :key="index"
+                                    v-on:click="selectSuggestion(suggestion)"
+                                    :class="{ active: selectedIndex === index }"
+                                    v-on:mouseover="selectedIndex = index"
+                                >
+                                    {{ suggestion }}
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <img
+                        src="../../Images/Others/search-green.png"
+                        style="
+                            width: 30px;
+                            height: 30px;
+                            margin: 0px 10px;
+                            align-self: center;
+                        "
+                        v-on:click="goSearch"
+                    />
                 </div>
             </div>
-            <img
-                src="../../Images/Others/search-green.png"
-                style="
-                    width: 30px;
-                    height: 30px;
-                    margin: 0px 10px;
-                    align-self: center;
-                "
-                v-on:click="goSearch"
-            />
-        </div>
-        <!-- camera button -->
-        <div class="col">
-            <button
-                class="btn primary-btn-less-round-green d-flex align-items-center"
-                style="height: 50px; margin-left: 10px; padding: 0px 15px"
-                v-on:click="imageSearch"
+
+            <!-- Scan bottle - beside search on desktop, moves to second row on mobile -->
+            <div
+                class="col-6 col-md-4 d-none d-md-block d-flex justify-content-center"
             >
-                <span>Scan bottle</span>
-                <img
-                    src="../../Images/Others/camera-white.png"
-                    style="width: 30px; height: 30px; margin-left: 10px"
-                />
-            </button>
+                <button
+                    class="btn primary-btn-less-round-green d-flex align-items-center"
+                    style="height: 50px; padding: 0px 15px"
+                    v-on:click="imageSearch"
+                >
+                    <span>Scan bottle</span>
+                    <img
+                        src="../../Images/Others/camera-white.png"
+                        style="width: 30px; height: 30px; margin-left: 10px"
+                    />
+                </button>
+            </div>
         </div>
-      </div>
+
+        <!-- Row 2: Surprise Me on desktop, Scan bottle + Surprise Me on mobile -->
+        <div class="row mt-3">
+            <!-- Scan bottle button - Only visible on mobile in this row -->
+            <div class="col-6 d-md-none d-flex justify-content-center">
+                <button
+                    class="btn primary-btn-less-round-green d-flex align-items-center"
+                    style="height: 50px; padding: 0px 15px"
+                    v-on:click="imageSearch"
+                >
+                    <span>Scan bottle</span>
+                    <img
+                        src="../../Images/Others/camera-white.png"
+                        style="width: 30px; height: 30px; margin-left: 10px"
+                    />
+                </button>
+            </div>
+
+            <!-- Surprise Me button - full row on desktop, half width on mobile -->
+            <div class="col-6 col-md-12 d-flex justify-content-center">
+                <router-link :to="'/'">
+                    <button
+                        class="btn btn-lg text-white"
+                        style="background-color: #83a9e8"
+                        aria-label="Surprise Me!"
+                    >
+                        Surprise Me!
+                    </button>
+                </router-link>
+            </div>
+        </div>
     </div>
 </template>
-
 <script>
 import axios from "axios";
 
@@ -79,12 +123,40 @@ export default {
     computed: {
         filteredSuggestions() {
             if (this.searchInput.trim() === "") return [];
+
             const searchTerm = this.searchInput.toLowerCase();
-            return this.suggestions
-                .filter((suggestion) =>
-                    suggestion.toLowerCase().includes(searchTerm)
-                )
-                .slice(0, 7); // Limit to 7 suggestions
+
+            // First prioritize items that start with the search term
+            const startsWithMatches = this.suggestions.filter((item) =>
+                item.toLowerCase().startsWith(searchTerm)
+            );
+
+            // Then add items where any word starts with the search term
+            const wordStartsWithMatches = this.suggestions.filter((item) => {
+                const words = item.toLowerCase().split(" ");
+                return (
+                    words.some((word) => word.startsWith(searchTerm)) &&
+                    !item.toLowerCase().startsWith(searchTerm)
+                ); // exclude already matched items
+            });
+
+            // Finally add substring matches not covered by above rules
+            const substringMatches = this.suggestions.filter(
+                (item) =>
+                    item.toLowerCase().includes(searchTerm) &&
+                    !item.toLowerCase().startsWith(searchTerm) &&
+                    !item
+                        .toLowerCase()
+                        .split(" ")
+                        .some((word) => word.startsWith(searchTerm))
+            );
+
+            // Combine all matches with priority order and limit to 7
+            return [
+                ...startsWithMatches,
+                ...wordStartsWithMatches,
+                ...substringMatches,
+            ].slice(0, 7);
         },
     },
     mounted() {
@@ -205,8 +277,13 @@ export default {
     cursor: pointer;
 }
 .list-group-item.active {
-    background-color: #e9ecef;
+    background-color: #83a9e8; /* standardised the colour */
     border-color: #dee2e6;
-    color: #212529;
+    color: white; /* standardised the colour */
+}
+input.form-control {
+    border: none; /* Match the outer border color */
+    box-shadow: none !important; /* Remove the inner shadow */
+    outline: none; /* Remove the focus outline */
 }
 </style>
