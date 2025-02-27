@@ -2006,13 +2006,13 @@
                             }
                             if (this.user.drinkLists && Object.keys(this.user.drinkLists).length > 0) {
                                 for (let drink of this.user.drinkLists["Drinks I Have Tried"]["listItems"]) {
-                                    let triedDrink = this.listings.find(listing => listing.id === parseInt(drink))?.listingName;
+                                    let triedDrink = this.listings.find(listing => listing.id === parseInt(drink?.drinkId))?.listingName;
                                     if (triedDrink) {
                                         triedDrinks.push(triedDrink)
                                     }
                                 }
                                 for (let drink of this.user.drinkLists["Drinks I Want To Try"]["listItems"]) {
-                                    let wantDrinkName = this.listings.find(listing => listing.id === parseInt(drink))?.listingName;   
+                                    let wantDrinkName = this.listings.find(listing => listing.id === parseInt(drink?.drinkId))?.listingName;   
                                     if (wantDrinkName) {
                                         wantToTryDrinks.push(wantDrinkName)
                                     }

@@ -2708,28 +2708,32 @@
                         this.getDefaultServingType();
 
                         // Obtain map data
-                        const mapResponse = await this.$axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
-                            params: {
-                                address: this.targetVenue["address"],
-                                key: process.env.VUE_APP_GOOGLE_MAPS_API_KEY
+                        try {
+                            const mapResponse = await this.$axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
+                                params: {
+                                    address: this.targetVenue["address"],
+                                    key: process.env.VUE_APP_GOOGLE_MAPS_API_KEY
+                                }
+                            });
+
+                            // Check if map data is valid
+                            if (mapResponse.data.status == "OK") {
+                                const { lat, lng } = mapResponse.data.results[0].geometry.location;
+                                this.mapLat = lat;
+                                this.mapLong = lng;
+                                this.mapMarkers = [{ position: { lat, lng } }];
                             }
-                        });
+                            else {
+                                this.mapLat = 25;
+                                this.mapLong = -71;
+                                this.mapMarkers = [{ position: { lat: 25, lng: -71 } }];
+                                this.targetVenue["address"] = "(The Bermuda Triangle)";
+                            }
 
-                        // Check if map data is valid
-                        if (mapResponse.data.status == "OK") {
-                            const { lat, lng } = mapResponse.data.results[0].geometry.location;
-                            this.mapLat = lat;
-                            this.mapLong = lng;
-                            this.mapMarkers = [{ position: { lat, lng } }];
+                            this.venueExists = true;
+                        } catch(error) {
+                            console.error("Error getting maps data: ", error)
                         }
-                        else {
-                            this.mapLat = 25;
-                            this.mapLong = -71;
-                            this.mapMarkers = [{ position: { lat: 25, lng: -71 } }];
-                            this.targetVenue["address"] = "(The Bermuda Triangle)";
-                        }
-
-                        this.venueExists = true;
 
 
                         // get claim status
@@ -2853,7 +2857,7 @@
                                     }
                                     else if (reviewData != null && reviewData != "") {
                                         listingData["reviews"] = reviewData;
-                                        listingData["avgRating"] = reviewData.reduce((a, b) => a + b.rating, 0) / reviewData.length;
+                                        listingData["avgRating"] = reviewData.reduce((a, b) => a + parseFloat(b.rating), 0) / reviewData.length;
                                     }
                                     else {
                                         // Error
@@ -2911,7 +2915,7 @@
                                     itemABV: listingData["abv"],
                                     itemCountry: listingData["originCountry"],
                                     itemDesc: listingData["officialDesc"],
-                                    itemRating: listingData["avgRating"].toFixed(2),
+                                    itemRating: listingData["avgRating"].toFixed(1),
                                     itemProducer: listingData["producerName"],
                                     itemProducerID: listingData["producerID"],
                                 };
@@ -3753,7 +3757,7 @@
                             }
                             else if (listingReviews != null && listingReviews != "") {
                                 listingData["reviews"] = listingReviews;
-                                listingData["avgRating"] = listingReviews.reduce((a, b) => a + b.rating, 0) / listingReviews.length;
+                                listingData['avgRating'] = listingReviews.reduce((a, b) => a + parseFloat(b.rating), 0) / listingReviews.length;
                             }
                             else {
                                 // Error

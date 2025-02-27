@@ -328,8 +328,17 @@ CREATE TABLE "usersDrinkLists" (
     "id" SERIAL PRIMARY KEY,
     "userId" INTEGER REFERENCES "users"("id") ON DELETE SET NULL,  -- [!] reference "users" FK
     "listName" TEXT,
-    "drinks" TEXT[],-- Contains "listings"("id")s
+    -- "drinks" TEXT[],-- Contains "listings"("id")s
     UNIQUE ("userId", "listName")
+);
+
+-- ========= [NEW!] "usersDrinkListItems" =========
+CREATE TABLE "usersDrinkListItems" (
+    "id" SERIAL PRIMARY KEY,
+    "listId" INTEGER REFERENCES "usersDrinkLists"("id") ON DELETE CASCADE, -- [!] reference "usersDrinkLists" FK
+    "drinkId" INTEGER REFERENCES "listings"("id") ON DELETE CASCADE,
+    "addedDate" TIMESTAMP,
+    UNIQUE ("listId", "drinkId")
 );
 
 -- ========= "reviews" =========

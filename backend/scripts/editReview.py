@@ -108,20 +108,18 @@ def updateReview(id):
         cur.execute("""
             SELECT "id" FROM "venues" WHERE "venueName" = %s AND "address" = %s
         """, (location_name, address))
-        venue = cur.fetchone()
+        venue_id = cur.fetchone()['id'] if cur.rowcount > 0 else None
 
-        if not venue:
-            # Insert new venue
-            cur.execute("""
-                INSERT INTO "venues" ("venueName", "address", "venueType", "originLocation", "venueDesc", "menu", 
-                                      "hashedPassword", "claimStatus", "photo", "reservationDetails", "username")
-                VALUES (%s, %s, '', '', '', NULL, 'hashed_password', FALSE, '', '', %s)
-                RETURNING "id"
-            """, (location_name, address, create_username(location_name)))
-            venue_id = cur.fetchone()[0]
+        if not venue_id:
+            username = create_username(location_name)
+            insert_venue_sql = """INSERT INTO venues ("venueName", "address", "venueType", "originLocation", "venueDesc",
+                                  "hashedPassword", "claimStatus", photo, "reservationDetails", username)
+                                  VALUES (%s, %s, '', '', '', %s, FALSE, '', '', %s) RETURNING id"""
+            hashed_password = 'hashed_password'  # Replace with actual password hashing logic
+            cur.execute(insert_venue_sql, (location_name, address, hashed_password, username))
+            venue_id = cur.fetchone()['id'] if cur.rowcount > 0 else None
+            print("Venue ID: ", venue_id)
             conn.commit()
-        else:
-            venue_id = venue[0]
 
     # Update review photo
     if existing_review['photo']:
@@ -140,7 +138,7 @@ def updateReview(id):
             "photo" = %s, "colour" = %s, "aroma" = %s, "taste" = %s, "observationTag" = %s, "location" = %s, "address" = %s
         WHERE "id" = %s
     """
-    
+
     review_values = (
         data.get('userID'), data.get('reviewTarget'), float(data.get('rating', 0.0)), data.get('reviewDesc'),
         data.get('reviewType'), created_date,
