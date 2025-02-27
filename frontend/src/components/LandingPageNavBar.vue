@@ -1,7 +1,5 @@
-<!-- Component for global Navigation Bar. Used in most pages on the application. -->
+<!-- Component for Navigation Bar. Used in landing page on the application. -->
 
-<!-- Requires Review. Search function is not complete, and may require modification. -->
-<!-- TODO: Implement this component into all pages that require them, replacing in-built navbar code -->
 
 <template>
     <div class="navbar-container">
@@ -11,26 +9,10 @@
             <div class="container-fluid align-items-center col-xxl-11 col-xl-11 col-lg-11 col-md-12 col-sm-12">
 
                 <!-- logo -->
-                <div class="align-items-center col-3 mobile-col-5">
+                <div class="align-items-center col-11 mobile-col-5">
                     <router-link :to="'/'">
                         <img src="../../Images/Logo/Drink-X Logo.png" style="width: auto; height: 35px;">
                     </router-link>
-                </div>
-
-                <div class="col mobile-view-hide d-flex align-items-center">
-                    <!-- search bar tzh added mobile-view-hide -->
-                    <div class="col-8 position-relative search-bar d-flex" style="height: 50px;">
-                        <input class="form-control fst-italic" type="text" placeholder="What are you drinking today?" style="width: 100%;" v-model="searchInput" v-on:keyup.enter="goSearch">
-                        <img src="../../Images/Others/search-green.png" style="width: 30px; height: 30px; margin: 0px 10px; align-self: center;" v-on:click="goSearch">
-                    </div>
-                    
-                    <!-- camera button -->
-                    <div class="col mobile-view-hide">
-                            <button class="btn primary-btn-less-round-green d-flex align-items-center" style="height: 50px; margin-left: 10px; padding: 0px 15px;" v-on:click="imageSearch">
-                                <span>Scan bottle</span>
-                                <img src="../../Images/Others/camera-white.png" style="width: 30px; height: 30px; margin-left: 10px;">
-                            </button>
-                    </div>
                 </div>
 
                 <div class="col-1 dropdown mobile-col-3 d-flex">
@@ -83,7 +65,7 @@
                         <li v-if="isAdmin"><router-link :to="'/admin/importListings'" class="dropdown-item">Import Listings</router-link></li>
                         
                         <div class="mobile-view-show">
-                            <li><router-link :to="'/explore'" class="dropdown-item">Explore</router-link></li>
+                            <li><router-link :to="'/'" class="dropdown-item">Explore</router-link></li>
                             <li><router-link :to="'/foryou'" class="dropdown-item">For You</router-link></li>
                             <li><router-link :to="'/'" class="dropdown-item">Best Of</router-link></li>
                             <li><router-link :to="dashboardURL" class="dropdown-item">{{ dashboardWord }} Dashboard</router-link></li>
@@ -109,16 +91,10 @@
 
         <!-- secondary nav bar -tzh added mobile-view-hide -->
         <div class="col-12 primary-square mt-2 py-1 ">
-            <div class="mobile-view-show col-11 ps-4 pe-4 d-flex">
-                <!-- <input class="search-bar form-control rounded fst-italic" type="text" placeholder="What are you drinking today?" style="height: 50px;" v-model="searchInput" v-on:keyup.enter="goSearch"> -->
-                <div class="search-bar d-flex align-items-center col-12" >
-                     <input class="form-control fst-italic" type="text" placeholder="What are you drinking today?" style="width: 90%;" v-model="searchInput" v-on:keyup.enter="goSearch">
-                     <img src="../../Images/Others/search-green.png" style="width: 30px; height: 30px; margin: 0px 10px; align-self: center;" v-on:click="goSearch">
-                </div>
-            </div>
+            
             <div class="mobile-view-hide container-fluid align-items-center col-xxl-8 col-xl-9 col-lg-10 col-md-11 col-sm-12">
 
-                <router-link :to="'/explore'">
+                <router-link :to="'/'">
                     <button class="btn primary-btn border-0 fw-bold" type="button">
                         Explore
                     </button>
@@ -129,6 +105,7 @@
                         For You
                     </button>
                 </router-link>
+
 
                 <router-link :to="'/'">
                     <button class="btn primary-btn border-0 fw-bold" type="button">
@@ -178,7 +155,7 @@
 
 <script>
     export default {
-        name: "NavBar",
+        name: "LandingPageNavBar",
         data() {
             return {
                 searchInput: '',
