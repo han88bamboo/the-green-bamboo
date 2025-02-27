@@ -2021,9 +2021,9 @@ nav a.router-link-exact-active.dropdown-item {
     margin-right: 10px;
   }
 
-  .d-flex {
+  /* .d-flex {
     flex-direction: column;
-  }
+  } */
 }
 
 .footer-col {
