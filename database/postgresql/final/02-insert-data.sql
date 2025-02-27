@@ -3091,6 +3091,8 @@ VALUES
    'Primary', 
    1);
 
+INSERT INTO "associations"( "subTag1", "subTag2")
+VALUES
     ('Fruit Flowers', 'Tinned Fruit'),
     ('Fruit Flowers', 'Orchard Fruits'),
     ('Fruit Flowers', 'Stone Fruits'),

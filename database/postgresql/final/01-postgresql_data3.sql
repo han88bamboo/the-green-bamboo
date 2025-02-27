@@ -565,7 +565,6 @@ CREATE TABLE "pointSystemRules" (
     "proofPoints" INTEGER
 );
 
-
 -- ======== "pointsRecorder" =========
 CREATE TABLE "pointsRecorder" (
     "id" SERIAL PRIMARY KEY,
@@ -574,24 +573,6 @@ CREATE TABLE "pointsRecorder" (
     "currentPoints" INTEGER,
 );
 
-
--- ========= "pointSystemRules" =========
-CREATE TABLE "pointSystemRules" (
-    "id" SERIAL PRIMARY KEY,
-    "ruleName" VARCHAR(255),
-    "ruleDesc" TEXT,
-    "ruleCategory" VARCHAR(255),
-    "proofPoints" INTEGER
-);
-
-
--- ======== "pointsRecorder" =========
-CREATE TABLE "pointsRecorder" (
-    "id" SERIAL PRIMARY KEY,
-    "userID" INTEGER,
-    "userType" VARCHAR(255),
-    "currentPoints" INTEGER,
-);
 
 -- ========= "typeCategories" =========
 CREATE TABLE "typeCategories" (
