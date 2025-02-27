@@ -238,15 +238,15 @@ def createReviews():
         location_name = raw_review['location']
         address = raw_review['address']
         cur.execute("""SELECT id FROM venues WHERE "venueName" = %s AND "address" = %s""", (location_name, address))
-        venue = cur.fetchone()
-        if not venue:
+        venue_id = cur.fetchone()['id'] if cur.rowcount > 0 else None
+        if not venue_id:
             username = create_username(location_name)
             insert_venue_sql = """INSERT INTO venues ("venueName", "address", "venueType", "originLocation", "venueDesc",
                                   "hashedPassword", "claimStatus", photo, "reservationDetails", username)
                                   VALUES (%s, %s, '', '', '', %s, FALSE, '', '', %s) RETURNING id"""
-            hashed_password = 'hashed_password'  # Replace with actual password hashing logic
+            hashed_password = 'hashed_password'
             cur.execute(insert_venue_sql, (location_name, address, hashed_password, username))
-            venue_id = cur.fetchone()['id']
+            venue_id = cur.fetchone()['id'] if cur.rowcount > 0 else None
             print(venue_id)
             conn.commit()
 

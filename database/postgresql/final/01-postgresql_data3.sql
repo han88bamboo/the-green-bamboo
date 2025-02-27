@@ -31,6 +31,8 @@ DROP TABLE IF EXISTS "requestInaccuracy" CASCADE;
 DROP TABLE IF EXISTS "requestListings" CASCADE;
 DROP TABLE IF EXISTS "reviews" CASCADE;
 DROP TABLE IF EXISTS "reviewsUserVotes" CASCADE;
+DROP TABLE IF EXISTS "producerReviews" CASCADE;
+DROP TABLE IF EXISTS "producerReviewsUserVotes" CASCADE;
 DROP TABLE IF EXISTS "servingTypes" CASCADE;
 DROP TABLE IF EXISTS "specialColours" CASCADE;
 DROP TABLE IF EXISTS "subTags" CASCADE;
@@ -56,6 +58,7 @@ CREATE TABLE "accountRequests" (
     "businessId" INTEGER,
     "businessName" VARCHAR(255),
     "businessType" VARCHAR(255),
+    "isIndependentBottler" BOOLEAN,
     "businessDesc" TEXT,
     "country" VARCHAR(255),
     "pricing" VARCHAR(255),
@@ -147,6 +150,7 @@ CREATE TABLE "producers" (
     "producerName" VARCHAR(255),
     "producerDesc" TEXT,
     "originCountry" VARCHAR(255),
+    "isIndependentBottler" BOOLEAN DEFAULT FALSE,
     "mainDrinks" TEXT[],
     "photo" TEXT,
     "hashedPassword" VARCHAR(255),
@@ -255,6 +259,7 @@ CREATE TABLE "listings" (
     "listingName" VARCHAR(255),
     "producerID" INTEGER REFERENCES "producers"("id") ON DELETE SET NULL, -- [!] reference "producers" FK
     "bottler" VARCHAR(255),
+    "bottlerID" INTEGER REFERENCES "producers"("id") ON DELETE SET NULL, -- [!] reference "producers" FK
     "originCountry" VARCHAR(255),
     "drinkType" VARCHAR(255),
     "abv" FLOAT,
@@ -291,8 +296,17 @@ CREATE TABLE "usersDrinkLists" (
     "id" SERIAL PRIMARY KEY,
     "userId" INTEGER REFERENCES "users"("id") ON DELETE SET NULL,  -- [!] reference "users" FK
     "listName" TEXT,
-    "drinks" TEXT[],-- Contains "listings"("id")s
+    -- "drinks" TEXT[],-- Contains "listings"("id")s
     UNIQUE ("userId", "listName")
+);
+
+-- ========= [NEW!] "usersDrinkListItems" =========
+CREATE TABLE "usersDrinkListItems" (
+    "id" SERIAL PRIMARY KEY,
+    "listId" INTEGER REFERENCES "usersDrinkLists"("id") ON DELETE CASCADE, -- [!] reference "usersDrinkLists" FK
+    "drinkId" INTEGER REFERENCES "listings"("id") ON DELETE CASCADE,
+    "addedDate" TIMESTAMP,
+    UNIQUE ("listId", "drinkId")
 );
 
 -- ========= "reviews" =========
@@ -326,6 +340,24 @@ CREATE TABLE "reviewsUserVotes" (
     "upvotes" TEXT[], -- Contain "users"("id")s
     "downvotes" TEXT[], -- Contain "users"("id")s
     "reviewId" INTEGER REFERENCES "reviews"("id") on DELETE SET NULL -- [!] reference "reviews" FK
+);
+
+CREATE TABLE "producerReviews" (
+    "id" SERIAL PRIMARY KEY,
+    "userID" INTEGER REFERENCES "users"("id") ON DELETE SET NULL, -- Reference to users table
+    "producerID" INTEGER REFERENCES "producers"("id") ON DELETE SET NULL, -- Reference to producers table
+    "rating" DECIMAL(3,1),
+    "reviewDesc" TEXT,
+    "createdDate" TIMESTAMP,
+    "photo" TEXT
+    -- "userVotes" SERIAL, -- [!] reference "producerReviewsUserVotes" FK
+);
+
+CREATE TABLE "producerReviewsUserVotes" (
+    "id" SERIAL PRIMARY KEY,
+    "upvotes" TEXT[], -- Contain "users"("id")s
+    "downvotes" TEXT[], -- Contain "users"("id")s
+    "reviewId" INTEGER REFERENCES "producerReviews"("id") on DELETE SET NULL -- [!] reference "producerReviews" FK
 );
 
 -- ========= "tokens" =========
@@ -447,6 +479,7 @@ CREATE TABLE "requestListings" (
     "photo" TEXT,
     "originCountry" VARCHAR(255),
     "producerID" INTEGER REFERENCES "producers"("id") ON DELETE SET NULL, -- [!] References producers FK
+    "bottlerID" INTEGER REFERENCES "producers"("id") ON DELETE SET NULL, -- [!] References producers FK
     "producerNew" VARCHAR(255),
     "typeCategory" VARCHAR(255),
     "abv" VARCHAR(255),

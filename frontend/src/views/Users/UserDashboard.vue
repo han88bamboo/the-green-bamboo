@@ -77,7 +77,7 @@
                         <div v-else class="container text-center mb-3">
                             <!-- badges for different drink types -->
                             <div class="row">
-                                <div class="mobile-col-3 col-12 col-sm-4 col-md-6 col-xl-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2 " v-for="drinkTypeDetails in matchedDrinkTypes" :key="drinkTypeDetails._id">
+                                <div class="mobile-col-3 col-12 col-sm-4 col-md-6 col-xl-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2 " v-for="drinkTypeDetails in matchedDrinkTypes" :key="drinkTypeDetails.id">
                                     <!-- image of actual badge  style="width: 100px; height: 100px;"  -->
                                     <!-- <img :src="'data:image/png;base64,'+ (drinkTypeDetails.badgePhoto || defaultProfilePhoto)" 
                                         alt="" class="rounded-circle-white-bg border border-dark badge-img"> -->
@@ -155,7 +155,7 @@
                             <div style="height: 85%;">
                                 <div class="overflow-auto" style="max-height: 100%;">
                                     <!-- v-for loop here-->
-                                    <div v-for="activity in recentFollowerActivity" v-bind:key="activity._id" class="py-2">
+                                    <div v-for="activity in recentFollowerActivity" v-bind:key="activity.id" class="py-2">
                                         <div v-if="activity.type === 'tag'">
                                             <i> 
                                                 <router-link :to="{ path: '/profile/user/' + activity.userID }" class="reverse-clickable-text">
@@ -194,7 +194,7 @@
                             <div style="height: 85%;">
                                 <div class="overflow-auto" style="max-height: 100%;">
                                     <!-- v-for loop here-->
-                                    <div v-for="activity in recentFollowerActivity" v-bind:key="activity._id" class="py-2">
+                                    <div v-for="activity in recentFollowerActivity" v-bind:key="activity.id" class="py-2">
                                         <div v-if="activity.type === 'tag'">
                                             <i> 
                                                 <router-link :to="{ path: '/profile/user/' + activity.userID }" class="reverse-clickable-text">
@@ -251,7 +251,7 @@
                             <div style="height: 85%;">
                                 <div class="overflow-auto" style="max-height: 100%;">
                                     <!-- v-for loop here-->
-                                    <div v-for="activity in recentReviewActivity" v-bind:key="activity._id" class="py-2">
+                                    <div v-for="activity in recentReviewActivity" v-bind:key="activity.id" class="py-2">
                                         <div v-if="activity.type === 'upvote' || activity.type === 'downvote'">
                                             <svg v-if="activity.type == 'upvote'" fill="#ffffff" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="m4 14h2 2v3 4c0 .553.447 1 1 1h6c.553 0 1-.447 1-1v-5-2h1 3c.385 0 .734-.221.901-.566.166-.347.12-.758-.12-1.059l-8-10c-.381-.475-1.181-.475-1.562 0l-8 10c-.24.301-.286.712-.12 1.059.167.345.516.566.901.566z"/></svg>
                                             <svg v-if="activity.type == 'downvote'" fill="#ffffff" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="m20.901 10.566c-.167-.345-.516-.566-.901-.566h-2-2v-3-4c0-.553-.447-1-1-1h-6c-.553 0-1 .447-1 1v5 2h-1-3c-.385 0-.734.221-.901.566-.166.347-.12.758.12 1.059l8 10c.19.237.477.375.781.375s.591-.138.781-.375l8-10c.24-.301.286-.712.12-1.059z"/></svg>
@@ -289,7 +289,7 @@
                             <div style="height: 85%;">
                                 <div class="overflow-auto" style="max-height: 100%;">
                                     <!-- v-for loop here-->
-                                    <div v-for="activity in recentReviewActivity" v-bind:key="activity._id" class="py-2">
+                                    <div v-for="activity in recentReviewActivity" v-bind:key="activity.id" class="py-2">
                                         <div v-if="activity.type === 'upvote' || activity.type === 'downvote'">
                                             <svg v-if="activity.type == 'upvote'" fill="#ffffff" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="m4 14h2 2v3 4c0 .553.447 1 1 1h6c.553 0 1-.447 1-1v-5-2h1 3c.385 0 .734-.221.901-.566.166-.347.12-.758-.12-1.059l-8-10c-.381-.475-1.181-.475-1.562 0l-8 10c-.24.301-.286.712-.12 1.059.167.345.516.566.901.566z"/></svg>
                                             <svg v-if="activity.type == 'downvote'" fill="#ffffff" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="m20.901 10.566c-.167-.345-.516-.566-.901-.566h-2-2v-3-4c0-.553-.447-1-1-1h-6c-.553 0-1 .447-1 1v5 2h-1-3c-.385 0-.734.221-.901.566-.166.347-.12.758.12 1.059l8 10c.19.237.477.375.781.375s.591-.138.781-.375l8-10c.24-.301.286-.712.12-1.059z"/></svg>
@@ -308,6 +308,115 @@
                                                 </router-link> 
                                                 started following you
                                                 {{ getTimeDifference(activity.date) }}
+                                            </i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- row 5: your recent activity on mobile -->
+                    <div class="row pt-3 mobile-view-show ps-2 pe-2">
+                        <button v-if="showRecentActivity"
+                        type="button" 
+                        class="active-toggle-producer-QnA tertiary-text pt-2 pb-2 " 
+                        data-bs-toggle="collapse" 
+                        data-bs-target="#collapseUserActivity" 
+                        aria-expanded="false" 
+                        aria-controls="collapseUserActivity" 
+                        style="font-weight:bold;"
+                        @click="checkToShowRecentActivity()">Your Recent Activity ↑</button>
+                        <button v-else
+                        type="button" 
+                        class="primary-btn-less-round-green tertiary-text pt-2 pb-2 border" 
+                        data-bs-toggle="collapse" 
+                        data-bs-target="#collapseUserActivity" 
+                        aria-expanded="false" 
+                        aria-controls="collapseUserActivity" 
+                        style="font-weight:bold;"
+                        @click="checkToShowRecentActivity()">Your Recent Activity ↓</button>
+                        <div class="mt-3 collapse square primary-square-green rounded p-3 mb-3 text-start" style="height: 325px;" id="collapseUserActivity">
+                            <div class="square-inline pb-2">
+                                <h4 class="square-inline text-start mr-auto"> Your Recent Activity </h4>
+                            </div>
+                            <!-- body -->
+                            <div style="height: 85%;">
+                                <div class="overflow-auto" style="max-height: 100%;">
+                                    <div v-for="activity in recentUserActivity" v-bind:key="activity.date" class="py-2">
+                                        <div v-if="activity.type == 'review'">
+                                            <i> 
+                                                You rated 
+                                                <b>
+                                                    <router-link :to="{ path: '/listing/view/' + activity.listingID }" class="reverse-clickable-text">
+                                                        <u> {{ getListingFromID(activity.listingID).listingName }} </u>
+                                                    </router-link>
+                                                    &nbsp;<span style="color: #F0B358">{{ activity.rating }} stars</span>
+                                                </b>
+                                                {{ getTimeDifference(activity.date) }}
+                                            </i>
+                                        </div>
+                                        <div v-else>
+                                            <i>
+                                                You added
+                                                <b>
+                                                    <router-link :to="{ path: '/listing/view/' + activity.listingID }" class="reverse-clickable-text">
+                                                        <u> {{ getListingFromID(activity.listingID).listingName }} </u>
+                                                    </router-link>
+                                                </b>
+                                                &nbsp;to your list:&nbsp;
+                                                <b>
+                                                    <router-link :to="{ path: `/profile/user/${userID}/${activity.listName}`}" class="reverse-clickable-text">
+                                                        <u><span style="color: #F0B358;">{{ activity.listName }}</span></u>
+                                                    </router-link>
+                                                </b>
+                                                <br />{{ getTimeDifference(activity.date) }}
+                                            </i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- row 5: your recent activity on desktop -->
+                    <div class="row pt-3 mobile-view-hide">
+                        <div class="square primary-square-green rounded p-3 mb-3 text-start">
+                            <!-- header text -->
+                            <div class="square-inline pb-2">
+                                <h4 class="square-inline text-start mr-auto"> Your Recent Activity </h4>
+                            </div>
+                            <!-- body -->
+                            <div style="height: 85%;">
+                                <div class="overflow-auto" style="max-height: 100%;">
+                                    <div v-for="activity in recentUserActivity" v-bind:key="activity.date" class="py-2">
+                                        <div v-if="activity.type == 'review'">
+                                            <i> 
+                                                You rated 
+                                                <b>
+                                                    <router-link :to="{ path: '/listing/view/' + activity.listingID }" class="reverse-clickable-text">
+                                                        <u> {{ getListingFromID(activity.listingID).listingName }} </u>
+                                                    </router-link>
+                                                    &nbsp;<span style="color: #F0B358">{{ activity.rating }} stars</span>
+                                                </b>
+                                                {{ getTimeDifference(activity.date) }}
+                                            </i>
+                                        </div>
+                                        <div v-else>
+                                            <i>
+                                                You added
+                                                <b>
+                                                    <router-link :to="{ path: '/listing/view/' + activity.listingID }" class="reverse-clickable-text">
+                                                        <u> {{ getListingFromID(activity.listingID).listingName }} </u>
+                                                    </router-link>
+                                                </b>
+                                                &nbsp;to your list:&nbsp;
+                                                <b>
+                                                    <router-link :to="{ path: `/profile/user/${userID}/${activity.listName}`}" class="reverse-clickable-text">
+                                                        <u><span style="color: #F0B358;">{{ activity.listName }}</span></u>
+                                                    </router-link>
+                                                </b>
+                                                <br />{{ getTimeDifference(activity.date) }}
                                             </i>
                                         </div>
                                     </div>
@@ -359,7 +468,7 @@
                     <div style="min-height:450px;" class="row mobile-view-show tab-content">
                         <!-- col 1: your best rated drinks -->
                         <div id="BestRatedExpressions" class="tab-pane fade show active col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-3 ps-lg-0 pe-lg-0 mobile-mx-0">
-                            <div class="text-start pb-2" v-for="listing in bestRatedListings" v-bind:key="listing._id">
+                            <div class="text-start pb-2" v-for="listing in bestRatedListings" v-bind:key="listing.id">
                                 <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
                                     <div class="d-flex align-items-center">
                                         <!-- <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;"> -->
@@ -422,7 +531,7 @@
                     <!-- col 1: your best rated drinks -->
                     <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5  mx-3 ps-lg-0 pe-lg-0" style="color:black;">
                         <h3> Your Best Rated Drinks </h3>
-                        <div class="text-start pb-2" v-for="listing in bestRatedListings" v-bind:key="listing._id">
+                        <div class="text-start pb-2" v-for="listing in bestRatedListings" v-bind:key="listing.id">
                             <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
                                 <div class="d-flex align-items-center">
                                     <!-- <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;"> -->
@@ -461,6 +570,62 @@
                     </div>
 
                 </div> <!-- end of row 2-->
+
+                <!-- row 3: your top venues & your top brands -->
+                <div class="row mobile-view-hide">
+
+                    <!-- col 1: your top venues -->
+                    <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5  mx-3 ps-lg-0 pe-lg-0" style="color:black;">
+                        <h3> Your Top Venues </h3>
+                        <div class="text-start pb-2" v-for="venue in topVenues" v-bind:key="venue">
+                            <div class="row ms-0 default-clickable-text "> 
+                                <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
+                                    <h5 class="my-auto"> {{ topVenues.indexOf(venue) + 1 }} </h5>
+                                </div>
+                                <div class="col-10 shrink-width-on-dashboard" >
+                                    <b> {{ venue.venueName }} </b> 
+                                    <br>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- col 2: your top brands -->
+                    <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5  mx-3 ps-lg-0 pe-lg-0" style="color:black;">
+                        <h3> Your Top Brands </h3>
+                        <div class="text-start pb-2" v-for="producer in topBrands" v-bind:key="producer">
+                            <div class="row ms-0 default-clickable-text "> 
+                                <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
+                                    <h5 class="my-auto"> {{ topBrands.indexOf(producer) + 1 }} </h5>
+                                </div>
+                                <div class="col-10 shrink-width-on-dashboard" >
+                                    <b> {{ producer.producerName }} </b> 
+                                    <br>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- row 3: your top styles -->
+                <div class="row mobile-view-hide">
+
+                    <!-- col 1: your top venues -->
+                    <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5  mx-3 ps-lg-0 pe-lg-0" style="color:black;">
+                        <h3> Your Top Styles </h3>
+                        <div class="text-start pb-2" v-for="listing in topStyles" v-bind:key="listing">
+                            <div class="row ms-0 default-clickable-text "> 
+                                <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
+                                    <h5 class="my-auto"> {{ topStyles.indexOf(listing) + 1 }} </h5>
+                                </div>
+                                <div class="col-10 shrink-width-on-dashboard" >
+                                    <b> {{ listing.style }} </b> 
+                                    <br>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
             </div>
 
@@ -598,7 +763,7 @@
                 const categories = [...new Set(reviewsWithCat.map(review => review.drinkType))];
                 const bestRatedCategories = categories.map(category => {
                     const reviewsInCategory = reviewsWithCat.filter(review => review.drinkType === category);
-                    const averageRating = reviewsInCategory.reduce((acc, review) => acc + review.rating, 0) / reviewsInCategory.length;
+                    const averageRating = reviewsInCategory.reduce((acc, review) => acc + parseFloat(review.rating), 0) / reviewsInCategory.length;
                     return {
                         category,
                         averageRating
@@ -607,7 +772,66 @@
                 bestRatedCategories.sort((a, b) => b.averageRating - a.averageRating);
                 bestRatedCategories.splice(5);
                 return bestRatedCategories;
-            }, 
+            },
+            topVenues() {
+                const venueReviewCounts = this.userReviews
+                    .filter(review => review.location)
+                    .reduce((acc, review) => {
+                        console.log(review)
+                        acc[review.location] = (acc[review.location] || 0) + 1;
+                        return acc;
+                    }, {});
+
+
+                const sortedVenues = Object.entries(venueReviewCounts)
+                    .map(([venueId, count]) => {
+                        const venue = this.venues.find(v => v.id === parseInt(venueId));
+                        return venue ? { ...venue, reviewCount: count } : null;
+                    })
+                    .filter(Boolean)
+                    .sort((a, b) => b.reviewCount - a.reviewCount)
+                    .slice(0, 5);
+                
+                return sortedVenues;
+            },
+            topBrands() {
+                const producerReviewCounts = this.userReviews
+                    .filter(review => review.reviewTarget)
+                    .reduce((acc, review) => {
+                        acc[review.reviewTarget] = (acc[review.reviewTarget] || 0) + 1;
+                        return acc;
+                    }, {});
+
+                const sortedProducers = Object.entries(producerReviewCounts)
+                    .map(([producerId, count]) => {
+                        const producer = this.producers.find(p => p.id === parseInt(producerId));
+                        return producer ? { ...producer, reviewCount: count } : null;
+                    })
+                    .filter(Boolean)
+                    .sort((a, b) => b.reviewCount - a.reviewCount)
+                    .slice(0, 5);
+
+                return sortedProducers;
+            },
+            topStyles() {
+                const styleReviewCounts = this.userReviews
+                    .map(review => {
+                        const listing = this.listings.find(listing => listing.id === review.reviewTarget);
+                        return listing ? listing.drinkStyle : null;
+                    })
+                    .filter(Boolean)
+                    .reduce((acc, style) => {
+                        acc[style] = (acc[style] || 0) + 1;
+                        return acc;
+                    }, {});
+
+                const sortedStyles = Object.entries(styleReviewCounts)
+                    .map(([style, count]) => ({ style, reviewCount: count }))
+                    .sort((a, b) => b.reviewCount - a.reviewCount)
+                    .slice(0, 5);
+
+                return sortedStyles;
+            },
             recentFollowerActivity() {
                 // follows and review tags
                 const follows = this.users
@@ -615,7 +839,7 @@
                         const followUser = user.followLists.users.find(followUser => followUser.followerI === this.userID);
                         return followUser ? {
                             username: user.username,
-                            userID: user._id,
+                            userID: user.id,
                             date: followUser.date
                         } : null;
                     })
@@ -664,7 +888,36 @@
                 activities.sort((a, b) => new Date(b.date) - new Date(a.date));
                 
                 return activities;
-            }
+            },
+            recentUserActivity() {
+                let activities = [];
+
+                // Add review activities
+                this.userReviews.forEach(review => {
+                    activities.push({
+                        type: "review",
+                        listingID: review?.reviewTarget,
+                        rating: review?.rating,
+                        date: new Date(review.createdDate),
+                    });
+                });
+
+                // Add bookmark activities
+                Object.entries(this.userBookmarks).forEach(([listName, listData]) => {
+                    listData.listItems.forEach(item => {
+                        activities.push({
+                            type: "bookmark",
+                            listingID: item?.drinkId,
+                            listName: listName,
+                            date: new Date(item.addedDate),
+                        });
+                    });
+                });
+
+                activities.sort((a, b) => b.date - a.date);
+
+                return activities.slice(0, 10);
+            },
         },
         data() {
             return {
@@ -744,6 +997,9 @@
 
                 // to get review activity
                 showReviewActivity: false,
+
+                // to get recent activity
+                showRecentActivity: false,
                
 
                 // display user drink activity
@@ -888,6 +1144,7 @@
                         const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUsers`);
                         this.users = response.data;
                         this.user = this.users.find(user => user.id == this.userID);
+                        this.userBookmarks = this.user.drinkLists
                         this.displayUser = this.getUser(this.displayUserID);
                         
                         if (this.userID === this.displayUserID) {
@@ -1001,6 +1258,7 @@
             }, 
 
             getListingFromID(listingID) {
+                console.log("listingID", listingID)
                 return this.listings.find(listing => listing.id == listingID);
             },
 
@@ -1025,6 +1283,16 @@
                 } 
                 else {
                     this.showReviewActivity = true;
+                }
+            },
+
+            // to check if recent activity should be shown
+            checkToShowRecentActivity() {
+                if (this.showRecentActivity == true) {
+                    this.showRecentActivity = false;
+                } 
+                else {
+                    this.showRecentActivity = true;
                 }
             },
 
