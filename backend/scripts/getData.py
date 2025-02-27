@@ -212,6 +212,36 @@ def getNext30(id):
 
     return jsonify(listings_data)
 
+# Testing Next 30 randomised
+# @blueprint.route("/getNext30random/<int:id>")
+# def getNext30random(id):
+#     conn = g.db
+
+#     with conn.cursor() as cursor:
+#         # 1️⃣ Get the date of the given listing ID
+#         cursor.execute('SELECT "addedDate" FROM "listings" WHERE "id" = %s', (id,))
+#         date_result = cursor.fetchone()
+
+#         if not date_result:
+#             return jsonify({"error": "Listing not found"}), 404
+
+#         listing_date = date_result[0]  # Extract the date
+
+#         # 2️⃣ Get the next 30 listings from the same date
+#         cursor.execute('''
+#             SELECT * FROM "listings" 
+#             WHERE "addedDate"::DATE = %s AND "id" > %s 
+#             ORDER BY "id" ASC 
+#             LIMIT 30
+#         ''', (listing_date, id))
+
+#         listings_data = cursor.fetchall()
+
+#     if not listings_data:
+#         return jsonify([])  # Return an empty list if no more listings are found
+
+#     return jsonify(listings_data)
+
 # -----------------------------------------------------------------------------------------
 # [GET] Listings from db when filter is applied for next 30 in discovery tab
 @blueprint.route("/getFiltered30/<id>")
