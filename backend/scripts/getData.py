@@ -1,10 +1,9 @@
 # Port: 5000
 # Routes: /getAccountRequests (GET), /getCountries (GET), /getListings (GET), /getListing/<id> (GET), /getProducers (GET), /getProducer/<id> (GET),
-#           /getReviews (GET), /getReviewByTarget/<id> (GET), /getReviewsByUserIds (GET), /getProducerTourReviews (GET), /getUsers (GET), /getUser/<id> (GET), /getUserByUsername/<username> (GET), /getVenues (GET), 
+#           /getReviews (GET), /getReviewByTarget/<id> (GET), /getReviewsByUserIds (GET), /getProducerTourReviews (GET), /getUsers (GET), /getUser/<id> (GET), /getUserByUsername/<username> (GET), /getVenues (GET),
 #           /getVenue/<id> (GET), /getVenuesAPI (GET), /getDrinkTypes (GET), /getRequestListings (GET), /getRequestListing/<id> (GET), /getRequestEdits (GET), 
 #           /getRequestEdit/<id> (GET), /getModRequests (GET), /getFlavourTags (GET), /getSubTags (GET), /getObservationTags (GET), /getColours (GET), 
 #           /getSpecialColours (GET), /getLanguages (GET), /getServingTypes (GET), /getProducersProfileViews (GET), /getVenuesProfileViewsByVenue/<id> (GET), /getRequestInaccuracyByVenue/<id> (GET)
-#           /getUserFollowList/<id> (GET), /getUserNames (GET), /checkFollowing/<userId>/<userType>/<followId>/<followType> (GET) /getLatestNews (GET)
 # -----------------------------------------------------------------------------------------
 
 # pip install python-bsonjs
@@ -15,82 +14,20 @@
 
 import os
 import json
+import random
+from bson import json_util, ObjectId
+from flask import Blueprint, g, jsonify, request
+from bson.objectid import ObjectId
+from psycopg2.extras import RealDictCursor
+import random
+
 import feedparser
 import re
 import requests
 from bs4 import BeautifulSoup
-from bson import json_util, ObjectId
-from flask import Blueprint, g, jsonify, request
-from bson.objectid import ObjectId
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
-
-# clean up html tags
-def clean_html(html):
-    """Remove HTML tags and extract plain text."""
-    if not html:
-        return ""
-    soup = BeautifulSoup(html, "html.parser")
-    text = soup.get_text(separator=" ")  # Extract plain text with spaces instead of HTML tags
-    
-    text = text.replace("\\n", "\n")  # Replace escaped '\n' with actual new lines
-    text = text.replace('\\"', '"')  # Replace escaped quotes with actual quotes
-    text = text.replace("\\'", "'")  # Replace escaped single quotes (if needed)
-    text = re.sub(r'\\+', '', text)  # Remove any remaining backslashes
-    text = re.sub(r'\s+', ' ', text).strip()  # Remove excessive spaces
-    
-    return text
-
-# # converts 88 bamboo atom rss to JSON
-def parse_rss(rss_url):
-    feed = feedparser.parse(rss_url)
-
-    if not feed.entries:
-        return {"error": "Invalid RSS feed or no entries found."}
-
-    rss_data = {
-        "feed": {
-            "title": feed.feed.get("title", "No title"),
-            "link": feed.feed.get("link", "No link"),
-            "description": feed.feed.get("subtitle", "No description"),
-            "language": feed.feed.get("language", "Unknown"),
-            "updated": feed.feed.get("updated", "Unknown date"),
-            "author": feed.feed.get("author", "Unknown author")
-        },
-        "entries": []
-    }
-
-    for entry in feed.entries:
-        formatted_entry = {
-            "title": entry.get("title", "No title"),
-            "link": entry.get("link", "No link"),
-            "published": entry.get("published", "Unknown date"),
-            "summary": clean_html(entry.get("summary", "No summary")), 
-            "author": entry.get("author", "Unknown author"),
-            "categories": [tag.term for tag in entry.get("tags", [])] if "tags" in entry else [],
-            "content": clean_html(entry.get("content", [{"value": ""}])[0]["value"] if "content" in entry else ""),  
-        }
-        rss_data["entries"].append(formatted_entry)
-
-    return rss_data
-
-def get_og_image(url):
-    """Extract Open Graph image from a given article URL."""
-    try:
-        headers = {'User-Agent': 'Mozilla/5.0'}  # Prevent bot-blocking
-        response = requests.get(url, headers=headers, timeout=10)
-        response.raise_for_status()
-        
-        soup = BeautifulSoup(response.text, 'html.parser')
-        og_image = soup.find("meta", property="og:image")
-
-        if og_image and og_image.get("content"):
-            return og_image["content"]
-        return None  # No OG image found
-    except requests.exceptions.RequestException:
-        return None  # Request failed
-
 
 # converts BSON to JSON
 def parse_json(data):
@@ -229,6 +166,80 @@ def getListings():
 
     return jsonify(listings_data)
 
+#  [GET] ALL Listing Names in Listing Table
+@blueprint.route("/getListingsName")
+def getListingsName():
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "listings"')
+        listingsName_data = cursor.fetchall()
+    
+    if not listingsName_data:
+        return jsonify([])
+    
+    # Extract listingName from each record
+    listing_names = [listing['listingName'] for listing in listingsName_data]
+
+    return jsonify(listing_names)
+# -----------------------------------------------------------------------------------------
+# [GET] Get Listings from a randomly selected date
+@blueprint.route("/getRandomListings")
+def getRandomListings():
+    conn = g.db
+
+    with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        # Fetch distinct dates by converting timestamps to dates
+        cursor.execute('SELECT DISTINCT "addedDate"::DATE FROM "listings"')
+        date_results = cursor.fetchall()
+
+        if not date_results:
+            return jsonify({"error": "No dates found in listings"}), 400
+
+        # Log the fetched dates
+        print("Fetched date_results:", date_results)
+
+        try:
+            # Extract 'addedDate' values properly from RealDictRow
+            date_list = [row['addedDate'] for row in date_results if 'addedDate' in row]
+            
+            # Log the extracted date list
+            print("Extracted date_list:", date_list)
+
+            if not date_list:
+                return jsonify({"error": "Date extraction failed (empty list)"}), 400
+
+            random_date = random.choice(date_list)  # Select a random date
+        except Exception as e:
+            return jsonify({"error": f"Random selection failed: {str(e)}"}), 500
+
+        # Fetch listings from the selected random date
+        cursor.execute('SELECT * FROM "listings" WHERE "addedDate"::DATE = %s ORDER BY RANDOM() LIMIT 20', (random_date,))
+        listings_data = cursor.fetchall()
+
+    if not listings_data:
+        return jsonify({"error": "No listings found for selected date"}), 400
+
+# -----------------------------------------------------------------------------------------
+# [POST] Listings by IDs
+@blueprint.route("/getListingsByIDs", methods=['POST'])
+def getListingsByIDs():
+    conn = g.db
+
+    listing_ids = request.json.get('listingIDs', [])
+
+    if not listing_ids:
+        return jsonify([]), 404
+
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "listings" WHERE "id" IN %s', (tuple(listing_ids),))
+        listings_data = cursor.fetchall()
+    
+    if not listings_data:
+        return jsonify([])
+
+    return jsonify(listings_data)
+
 # -----------------------------------------------------------------------------------------
 # [GET] Get Listings from db where id> last item in list
 @blueprint.route("/getNext30/<id>")
@@ -319,6 +330,177 @@ def getFilteredFollowing30(id):
     return jsonify(listings_data)
 
 # -----------------------------------------------------------------------------------------
+# [GET] For You Page Recommender
+# helper function for basic algo
+def basic_algo(userID):
+    conn = g.db
+    with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        # Fetch user's drink choice, flavour choice, and preferences
+        cursor.execute(
+            'SELECT "choiceDrinks", "choiceFlavours", "preferences" FROM users WHERE id = %s',
+            (userID,)
+        )
+        user_data = cursor.fetchone()
+
+        if not user_data:
+            return jsonify({"error": "User not found"}), 404
+
+        choiceDrink = user_data["choiceDrinks"] or []
+        choiceFlavour = user_data["choiceFlavours"] or []
+        preferences = user_data["preferences"] or []
+        print("User Data:", user_data)
+
+        recommended = {}
+
+        # Get listings with the same drink type
+        if choiceDrink:
+            drink_query = '''
+                SELECT * FROM listings 
+                WHERE "drinkType" = ANY(%s)
+            '''
+            cursor.execute(drink_query, (choiceDrink,))
+            drink_listings = cursor.fetchall()
+
+            for listing in drink_listings:
+                if listing["id"] not in recommended:
+                    recommended[listing["id"]] = listing 
+
+        # Get listings with the same flavour tags
+        if choiceFlavour:
+            cursor.execute('SELECT id FROM "subTags" WHERE "subTag" = ANY(%s)', (choiceFlavour,))
+            flavour_ids = [row["id"] for row in cursor.fetchall()]
+
+            if flavour_ids:
+                flavour_query = '''
+                    SELECT DISTINCT l.*
+                    FROM "listings" l
+                    JOIN "reviews" r ON l."id" = r."reviewTarget"
+                    WHERE r."flavourTag" && %s::text[]
+                '''
+                cursor.execute(flavour_query, (flavour_ids,))
+                flavour_listings = cursor.fetchall()
+
+                for listing in flavour_listings:
+                    if listing["id"] not in recommended:
+                        recommended[listing["id"]] = listing
+
+        # Get listings with the same observation tags
+        if preferences:
+            observation_query = '''
+                SELECT DISTINCT l.*
+                FROM "listings" l
+                JOIN "reviews" r ON l."id" = r."reviewTarget"
+                WHERE r."observationTag" && %s::text[]
+            '''
+            cursor.execute(observation_query, (preferences,))
+            observation_listings = cursor.fetchall()
+
+            for listing in observation_listings:
+                    if listing["id"] not in recommended:
+                        recommended[listing["id"]] = listing
+
+        query = """
+        SELECT DISTINCT l.*
+        FROM "listings" l
+        LEFT JOIN "reviews" r ON l."id" = r."reviewTarget"
+        LEFT JOIN "subTags" st ON r."flavourTag" && ARRAY[st.id]::text[]
+        WHERE 
+            l."drinkType" = ANY(%s) OR 
+            r."flavourTag" && %s::text[] OR 
+            r."observationTag" && %s::text[]
+        """
+        cursor.execute(query, (choiceDrink, choiceFlavour, preferences))
+        results = cursor.fetchall()
+
+        # Store results in a dictionary
+        for listing in results:
+            recommended[listing["id"]] = listing
+
+    print("Recommended Listings:", list(recommended.values()))
+
+    if not recommended:
+        # return jsonify({"error": "No recommended listings found"}), 400
+        return {}
+
+    # return jsonify(list(recommended.values()))
+    return recommended
+
+# helper function for advanced algo (reviews)
+def advanced_algo_reviews(userID):
+    conn = g.db
+    with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        # Fetch user's reviews
+        cursor.execute('SELECT "flavourTag" FROM "reviews" WHERE "userID" = %s', (userID,))
+        user_reviews_tags = cursor.fetchall()
+        if not user_reviews_tags:
+            return jsonify([])
+        cursor.execute('''SELECT s1."id" as "id1", s2."id" as "id2" FROM "associations" a, "subTags" s1, "subTags" s2 
+                        WHERE s1."subTag" = a."subTag1" AND s2."subTag" = a."subTag2"''')     
+        associations = cursor.fetchall()
+        tag1 = [assoc['id1'] for assoc in associations]
+        tag2 = [assoc['id2'] for assoc in associations]
+        associations_dict = {}
+        for i in range(len(tag1)):
+            if tag1[i] not in associations_dict:
+                associations_dict[tag1[i]] = []
+            associations_dict[tag1[i]].append(tag2[i])
+            if tag2[i] not in associations_dict:
+                associations_dict[tag2[i]] = []
+            associations_dict[tag2[i]].append(tag1[i])
+        # print(associations_dict)
+        # return jsonify(associations_dict)
+        tags_used = {}
+        for tag in user_reviews_tags:
+            for num in tag["flavourTag"]:
+                if num not in tags_used:
+                    tags_used[num] = 1
+                else:
+                    tags_used[num] += 1
+        top_tags = sorted(tags_used, key=tags_used.get, reverse=True)[:5]
+        print(top_tags)
+        close_tags = []
+        for tag in top_tags:
+            if int(tag) in associations_dict:
+                close_tags += associations_dict[int(tag)]
+        close_tags = list(set(close_tags))
+        print(close_tags)
+        recommended = {}
+        flavour_query = '''
+            SELECT DISTINCT l.*
+            FROM "listings" l
+            JOIN "reviews" r ON l."id" = r."reviewTarget"
+            WHERE r."flavourTag" && %s::text[]
+        '''
+        cursor.execute(flavour_query, (close_tags,))
+        flavour_listings = cursor.fetchall()
+
+        for listing in flavour_listings:
+            if listing["id"] not in recommended:
+                recommended[listing["id"]] = listing
+
+        if not recommended:
+            return {}
+        return recommended
+        
+# helper function for advanced algo (drink lists) [TO DO]
+# def advanced_algo_list(userID):
+
+@blueprint.route("/getRecommendedListings/<userID>")
+def getRecommendedListings(userID):
+    print(userID)
+    conn = g.db
+    recommended = basic_algo(userID)
+    with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        cursor.execute('SELECT COUNT(*) from "reviews" where "userID" = %s', (userID,))
+        review_count = cursor.fetchone()
+        if review_count["count"] >= 5:
+            advanced_algo_review_recc = advanced_algo_reviews(userID)
+            recommended = {**recommended, **advanced_algo_review_recc}
+    recommended = list(recommended.values())
+    random.shuffle(recommended)
+    return jsonify(recommended)
+
+# -----------------------------------------------------------------------------------------
 # [GET] Specific Listing
 @blueprint.route("/getListing/<id>")
 def getListing(id):
@@ -367,7 +549,6 @@ def getProducers():
             SELECT 
                 p.id, p."producerName", p."producerDesc", p."originCountry", p."mainDrinks", p.photo, 
                 p."hashedPassword", p."claimStatus", p."statusOB", p.username, p."producerLink", 
-                p."yearFounded", p."activeStatus", p.owner, p.location, p."openForTours", p.website,
                 p."stripeCustomerId", p."claimStatusCheckDate", p."isIndependentBottler",
                 COALESCE((
                     SELECT json_agg(json_build_object(
@@ -416,7 +597,6 @@ def getProducers():
         for row in producers_data:
             producer = dict(row)
             producer['questionsAnswers'] = producer['questionsAnswers'] if producer['questionsAnswers'] else []
-            producer['openingHours'] = producer['openingHours'] if producer['openingHours'] else {}
             producer['updates'] = producer['updates'] if producer['updates'] else []
             producers_list.append(producer)
 
@@ -446,7 +626,6 @@ def getProducer(id):
             SELECT 
                 p.id, p."producerName", p."producerDesc", p."originCountry", p."mainDrinks", p.photo, 
                 p."hashedPassword", p."claimStatus", p."statusOB", p.username, p."producerLink", 
-                p."yearFounded", p."activeStatus", p.owner, p.location, p."openForTours", p.website,
                 p."stripeCustomerId", p."claimStatusCheckDate", p."isIndependentBottler",
                 COALESCE((
                     SELECT json_agg(json_build_object(
@@ -493,7 +672,6 @@ def getProducer(id):
 
         producer = dict(producer_data)
         producer['questionsAnswers'] = producer['questionsAnswers'] if producer['questionsAnswers'] else []
-        producer['openingHours'] = producer['openingHours'] if producer['openingHours'] else {}
         producer['updates'] = producer['updates'] if producer['updates'] else []
 
         return jsonify(producer), 200
@@ -521,7 +699,6 @@ def getProducerByRequestId(id):
             SELECT 
                 p.id, p."producerName", p."producerDesc", p."originCountry", p."mainDrinks", p.photo, 
                 p."hashedPassword", p."claimStatus", p."statusOB", p.username, p."producerLink", 
-                p."yearFounded", p."activeStatus", p.owner, p.location, p."openForTours", p.website,
                 p."stripeCustomerId", p."claimStatusCheckDate", p."isIndependentBottler",
                 COALESCE((
                     SELECT json_agg(json_build_object(
@@ -568,7 +745,6 @@ def getProducerByRequestId(id):
 
         producer = dict(producer_data)
         producer['questionsAnswers'] = producer['questionsAnswers'] if producer['questionsAnswers'] else []
-        producer['openingHours'] = producer['openingHours'] if producer['openingHours'] else {}
         producer['updates'] = producer['updates'] if producer['updates'] else []
 
         return jsonify(producer), 200
@@ -834,6 +1010,7 @@ def getTourReviews():
             del review["downvotes"]
 
         return jsonify(reviews_data)
+
 # ----------------------
 # [NEW] TO BE ADDED:
 # ----------------------
@@ -1031,7 +1208,6 @@ def getVenues():
             SELECT 
                 v.id, v.address, v."claimStatus", v."hashedPassword", v."venueName", v."venueDesc", 
                 v."originLocation", v.photo, v."publicHolidays", v."reservationDetails", v."claimStatusCheckDate",
-                v."yearOpened", v."openForReservations", v.website,
                 v.username, v."venueType", v."stripeCustomerId", v.pin,
                 -- Build the menu JSON
                 COALESCE((
@@ -1134,7 +1310,6 @@ def getVenue(id):
             SELECT 
                 v.id, v.address, v."claimStatus", v."hashedPassword", v."venueName", v."venueDesc", 
                 v."originLocation", v.photo, v."publicHolidays", v."reservationDetails", v."claimStatusCheckDate",
-                v."yearOpened", v."openForReservations", v.website,
                 v.username, v."venueType", v."stripeCustomerId", v.pin,
                 -- Build the menu JSON
                 COALESCE((
@@ -1235,7 +1410,6 @@ def getVenueByRequestId(id):
             SELECT 
                 v.id, v.address, v."claimStatus", v."hashedPassword", v."venueName", v."venueDesc", 
                 v."originLocation", v.photo, v."publicHolidays", v."reservationDetails", v."claimStatusCheckDate",
-                v."yearOpened", v."openForReservations", v.website,
                 v.username, v."venueType", v."stripeCustomerId", v.pin,
                 -- Build the menu JSON
                 COALESCE((
@@ -1445,21 +1619,6 @@ def getDrinkTypes():
         return jsonify([])
 
     return jsonify(drink_types_data)
-
-# -----------------------------------------------------------------------------------------
-# [GET] DrinkCategories
-@blueprint.route("/getTypeCategories")
-def getTypeCategories():
-    conn = g.db
-    
-    with conn.cursor() as cursor:
-        cursor.execute('SELECT * FROM "typeCategories"')
-        type_categories_data = cursor.fetchall()
-    
-    if not type_categories_data:
-        return jsonify([])
-
-    return jsonify(type_categories_data)
 
 # -----------------------------------------------------------------------------------------
 # [GET] RequestListings
@@ -2120,201 +2279,3 @@ def getUserByEmail(email):
     
     finally:
         cur.close()
-
-
-# -----------------------------------------------------------------------------------------
-# [GET] A list of users a specific user is following
-# @param id: The id of the user
-# @return: A list of users the user is following and their photos
-# Used: CreateClub.vue (frontend/src/views/Users/CreateClub.vue)
-@blueprint.route("/getUserFollowList/<id>")
-def getUserFollowList(id):
-    conn = g.db
-    cur = conn.cursor()
-
-    try:
-        # Step 1: Check if id is a valid user in the table based on userType
-        cur.execute('SELECT * FROM "users" WHERE "id" = %s', (id,))
-        user_data = cur.fetchone()
-
-        if user_data is None:
-            return jsonify(
-                {
-                    "code": 404,
-                    "message": "User not found."
-                }
-            ), 404
-        
-        # Step 2: Retrieve the follow list using the fetch_user_follow_list function
-        follow_list = fetch_follow_lists(cur, id)
-
-
-        return_data = {
-            'users': {}, # A dictionary of objects containing the id, displayName, and photo of the users in the follow list
-        }
-
-        # Step 3: Get the id, displayName and photo of the users in the follow list
-        for user in follow_list['users']:
-            cur.execute('SELECT "id", "displayName", "photo" FROM "users" WHERE "id" = %s', (user,))
-            user = cur.fetchone()
-
-            return_data['users'][user['id']] = { 'displayName': user['displayName'], 'photo': user['photo'] }
-
-        return jsonify({
-            'followList': return_data
-        }), 200
-
-    except Exception as e:
-        print(str(e))
-        return jsonify(
-            {
-                "code": 500,
-                "message": "An error occurred retrieving the follow list."
-            }
-        ), 500
-    
-    finally:
-        cur.close()
-
-# -----------------------------------------------------------------------------------------
-# [GET] All the usernames in the database [users only]
-@blueprint.route("/getAllUsernames")
-def getAllUsernames():
-    conn = g.db
-    cur = conn.cursor()
-
-    try:
-        # Step 1: Get all the usernames from the users table
-        cur.execute('SELECT "username" FROM "users"')
-        user_usernames = cur.fetchall()
-
-        if not user_usernames:
-            return jsonify({
-                "message": "No usernames found."
-            }), 404
-        
-        return jsonify({
-            "usernames": [username['username'] for username in user_usernames]
-        }), 200
-    
-    except Exception as e:
-        print(str(e))
-        return jsonify(
-            {
-                "code": 500,
-                "message": "An error occurred retrieving usernames."
-            }
-        ), 500
-    
-    finally:
-        cur.close()
-
-
-# -----------------------------------------------------------------------------------------
-# [GET] Check if a user is in the follow list of another user
-@blueprint.route("/checkUserInFollowList/<userId>/<userType>/<followId>/<followType>")
-def checkUserInFollowList(userId, userType, followId, followType):
-    conn = g.db
-    cur = conn.cursor()
-
-    try:
-        # Step 1: Check if userId and followId are valid users in the table based on userType and followType
-        if userType == 'user':
-            cur.execute('SELECT * FROM "users" WHERE "id" = %s', (userId,))
-        elif userType == 'producer':
-            cur.execute('SELECT * FROM "producers" WHERE "id" = %s', (userId,))
-        else:
-            cur.execute('SELECT * FROM "venues" WHERE "id" = %s', (userId,))
-        user_data = cur.fetchone()
-
-        if user_data is None:
-            return jsonify(
-                {
-                    "code": 404,
-                    "message": "User not found."
-                }
-            ), 404
-
-        if followType == 'user':
-            cur.execute('SELECT * FROM "users" WHERE "id" = %s', (followId,))
-        elif followType == 'producer':
-            cur.execute('SELECT * FROM "producers" WHERE "id" = %s', (followId,))
-        else:
-            cur.execute('SELECT * FROM "venues" WHERE "id" = %s', (followId,))
-        follow_data = cur.fetchone()
-        
-        if follow_data is None:
-            return jsonify(
-                {
-                    "code": 404,
-                    "message": "Follow user not found."
-                }
-            ), 404
-        
-        # Step 2: Retrieve the follow list of the user
-        if followType == 'venue':
-            cur.execute('SELECT venues FROM "usersFollowLists" WHERE "userId" = %s', (userId,))
-        elif followType == 'producer':
-            cur.execute('SELECT producers FROM "usersFollowLists" WHERE "userId" = %s', (userId,))
-        else:
-            cur.execute('SELECT users FROM "usersFollowLists" WHERE "userId" = %s', (userId,))
-        follow_list = cur.fetchone()
-
-        if follow_list is None:
-            return jsonify(
-                {
-                    "code": 404,
-                    "message": "Follow list not found."
-                }
-            ), 404
-        
-        # Step 3: Check if the followId is in the follow list of the userId
-        if followId in follow_list['venues']:
-            return jsonify(
-                {
-                    "code": 200,
-                    "following": True
-                }
-            ), 200
-        
-        return jsonify(
-            {
-                "code": 404,
-                "following": False
-            }
-        ), 404
-
-    except Exception as e:
-        print(str(e))
-        return jsonify(
-            {
-                "code": 500,
-                "message": "An error occurred checking the follow list."
-            }
-        ), 500
-    
-    finally:
-        cur.close()
-
-
-# -----------------------------------------------------------------------------------------
-# [GET] Get news from https://88bamboo.co/blogs/news.atom and convert from RSS to JSON //parse_rss funciton 
-@blueprint.route("/getLatestNews", methods=['GET'])
-def getLatestNews():
-    """API endpoint to fetch RSS data and return it as JSON."""
-    rss_url = "https://88bamboo.co/blogs/news.atom"
-
-    try:
-        rss_json = parse_rss(rss_url)
-
-         # Add Open Graph images to each news entry
-        for entry in rss_json.get("entries", []):
-            og_image = get_og_image(entry["link"])
-            entry["image"] = og_image if og_image else "https://via.placeholder.com/600x400"  # Place your own placeholder image
-
-        return jsonify(rss_json)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-   

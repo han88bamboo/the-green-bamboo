@@ -2240,9 +2240,13 @@
                         this.specified_producer = response.data
                         this.specified_producer_original_photo = this.specified_producer['photo']
                         this.newAddress = this.specified_producer['location']
-
+                        console.log("abc", this.specified_producer)
                         this.openingHours = this.specified_producer['openingHours']
                         const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                        if (!this.openingHours) {
+                            console.error("openingHours is undefined");
+                            return;
+                        }
                         const sortedOpeningHours = Object.fromEntries(
                             dayOrder
                                 .filter(key => key in this.openingHours) // Filter keys that exist in this.openingHours
@@ -2360,8 +2364,10 @@
                     try {
                         const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingsByProducer/${this.producer_id}`);
                         this.listings = response.data;
+                        this.allDrinks = response.data;
+                        this.allDrinksCount = response.data.length
 
-                        this.getAllDrinks()
+                        // this.getAllDrinks()
                         this.getCountsByType()
                         this.getTotalCounts()
                         this.getMostDiscussed()
@@ -2452,12 +2458,12 @@
                 }
             },
 
-            // get all drinks that a producer has
-            async getAllDrinks() {
-                let allProducerDrinks = this.listings.filter(listing => listing.producerID == this.producer_id);
-                this.allDrinks = allProducerDrinks;
-                this.allDrinksCount = allProducerDrinks.length
-            },
+            // // get all drinks that a producer has
+            // async getAllDrinks() {
+            //     let allProducerDrinks = this.listings.filter(listing => listing.producerID == this.producer_id);
+            //     this.allDrinks = allProducerDrinks;
+            //     this.allDrinksCount = allProducerDrinks.length
+            // },
 
             // get all reviews that a producer has
             async getAllReviews() {

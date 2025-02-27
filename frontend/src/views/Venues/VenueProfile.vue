@@ -1055,7 +1055,7 @@
                             <!-- Sort Menu -->
                             <div class="col-2 me-0">
                                 <div class="d-grid gap-2 dropdown">
-                                    <button class="btn primary-light-dropdown-homepage dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
+                                    <button class="btn primary-light-dropdown-homepage dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;" :disabled="editMenuMode">
                                         Sort{{ sortMenuTerm ? ': ' + sortMenuTerm : ' By...' }}
                                     </button>
                                     <ul class="dropdown-menu">
@@ -1161,7 +1161,7 @@
 
                                                 <!-- Item Price / Item Serving Type -->
                                                 <div class="col-6">
-                                                    <p class="text-start fs-6 fw-bold default-text-no-background mb-0">${{ sectionItem.itemPrice || " -" }} / {{ sectionItem.itemDetails.itemServingTypeName }}</p>
+                                                    <p class="text-start fs-6 fw-bold default-text-no-background mb-0">${{ sectionItem.itemPrice == -1 ? '-' : sectionItem.itemPrice }} / {{ sectionItem.itemDetails.itemServingTypeName }}</p>
                                                 </div>
 
                                                 
@@ -1299,7 +1299,8 @@
 
                                                 <!-- Item Price / Item Serving Type -->
                                                 <div class="col-4">
-                                                    <p class="text-start fs-5 fw-bold default-text-no-background">${{ sectionItem.itemPrice || " -" }} / {{ sectionItem.itemDetails.itemServingTypeName }}</p>
+                                                    <p class="text-start fs-5 fw-bold default-text-no-background">${{ sectionItem.itemPrice == -1 ? '-' : sectionItem.itemPrice }}
+                                                        / {{ sectionItem.itemDetails.itemServingTypeName }}</p>
                                                 </div>
 
                                                 <!-- See User Reviews -->
@@ -1569,7 +1570,12 @@
 
                                                                 <!-- Remove Item From Menu Section -->
                                                                 <div class="col-1 d-grid">
-                                                                    <button type="button" class="btn-close" @click="deleteMenuItem(menuSection.sectionOrder, menuItem.itemOrder)"></button>
+                                                                    <button type="button" class="btn btn-danger" @click="deleteMenuItem(menuSection.sectionOrder, menuItem.itemOrder)">
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                                                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                                                                            <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                                                                        </svg>
+                                                                    </button>
                                                                 </div>
 
                                                             </div>
@@ -1715,8 +1721,8 @@
 
                                         <!-- [input] menu item price -->
                                         <div class="form-group mb-3">
-                                            <p class="text-start mb-1"> Menu Item Price </p>
-                                            <input type="number" class="form-control" v-model="newMenuItemPrice" placeholder="-" min="0" step="0.01">
+                                            <p class="text-start mb-1"> Menu Item Price (Note: If there is no price, leave it as -1)</p>
+                                            <input type="number" class="form-control" v-model="newMenuItemPrice" min="-1" step="0.01">
                                         </div>
 
                                         <!-- [input] menu serving type -->
@@ -1808,7 +1814,7 @@
 
                                     <!-- Modal Footer -->
                                     <div class="modal-footer">
-                                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal" @click="newMenuItemTargetSection = {}; newMenuItemTarget = {} ; newMenuItemID = ''; newMenuItemPrice = ''; getDefaultServingType();">Cancel</button>
+                                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal" @click="newMenuItemTargetSection = {}; newMenuItemTarget = {} ; newMenuItemID = ''; newMenuItemPrice = -1; getDefaultServingType();">Cancel</button>
                                         <button type="button" class="btn secondary-btn rounded reverse-clickable-text" data-bs-dismiss="modal" @click="addMenuItem"
                                             v-bind:disabled="Object.keys(newMenuItemTargetSection).length === 0 || Object.keys(newMenuItemTarget).length === 0">
                                             Add Item
@@ -2416,6 +2422,7 @@
     import BookmarkModal from '@/components/BookmarkModal.vue';
     import EventBox from '@/components/EventBox.vue';
     import FooterBar from "@/components/FooterBar.vue";
+    import { useToast } from 'vue-toastification';
 
     export default {
         name: 'profileVenue',
@@ -2532,7 +2539,7 @@
                 newMenuItemID: '',
                 newMenuItemTarget: {},
                 newMenuItemTargetSection: {},
-                newMenuItemPrice: '',
+                newMenuItemPrice: -1,
                 newMenuItemServingType: {},
                 renameMenuSectionModalTarget: {},
                 renameMenuSectionModalOld: '',
@@ -2591,7 +2598,7 @@
                     disabled: false,
                     ghostClass: "ghost"
                 };
-            }
+            },
         },
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         mounted() {
@@ -2946,6 +2953,7 @@
                     // Set editMenu and searchMenuResults
                     this.resetEditMenu();
                     this.searchMenuResults = this.detailedMenu;
+
                     
                 }
                 catch (error) {
@@ -3683,8 +3691,9 @@
                     console.error(error);
                 }
             },
+
             // Add Menu Item
-            addMenuItem() {
+            async addMenuItem() {
                     
                 // Add item to section
                 this.newMenuItemTargetSection.sectionMenu.push({
@@ -3707,6 +3716,38 @@
                         itemServingTypeName: "Serving",
                     }
                 });
+
+
+                if (!this.newMenuItemPrice || this.newMenuItemPrice == "") {
+                    this.newMenuItemPrice = -1;
+                }
+
+                try {
+                    const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editVenueProfile/addListingToMenu`, 
+                        {
+                            venueID: this.targetVenue['id'],
+                            menuOrder: this.newMenuItemTargetSection.sectionMenu.length -1,
+                            listingID: this.newMenuItemTarget['id'],
+                            itemPrice: this.newMenuItemPrice,
+                            servingType: this.newMenuItemServingType,
+                            sectionName: this.newMenuItemTargetSection.sectionName,
+                        },
+                        {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.status == 201) {
+                        const toast = useToast();
+                        toast.success("Successfully added listing to menu.");                  
+                    }
+                }
+                catch (error) {
+                    alert("An error occurred while attempting to add the item, please try again!");
+                    // console.error(error);
+                }
+
 
                 // Reset newMenuItemID, newMenuItemTarget, newMenuItemTargetSection, newMenuItemPrice, newMenuItemServingType
                 this.newMenuItemID = "";
@@ -4178,6 +4219,7 @@
             changePasswordMode(mode){
                 this.changingPassword = mode
             },
+
             selectPasswordMode(){
                 if(this.confirmChangePassword||this.confirmResetPassword){
                     this.passwordError = false
@@ -4191,6 +4233,7 @@
                     this.changingPassword = ""
                 }
             },
+
             resetChangePassword(){
                 if(this.passwordError||this.passwordSuccess||this.passwordMismatch){
                     this.passwordError = false
@@ -4202,6 +4245,7 @@
                     this.verifyErrorMessage = ""
                 }
             },
+
             updatePassword(){
                 if(this.oldPassword=="" || this.newPassword==""){
                     alert("One of the passwords is empty, please check again")
@@ -4209,6 +4253,7 @@
                 }
                 this.confirmChangePassword = true
             },
+
             // Function to hash password
             // create unique hash based on username and password
             hashPassword(username, password) {
@@ -4223,6 +4268,7 @@
 
                 return hash;
             },
+
             async confirmUpdatePassword(){
                 let oldHash = this.hashPassword(this.targetVenue.venueName, this.oldPassword)
                 let newHash = this.hashPassword(this.targetVenue.venueName, this.newPassword)
@@ -4252,89 +4298,88 @@
             },
 
             async sendResetPin(){
-            // call api to send pin
-            this.isButtonDisabled = true;
-                setTimeout(() => {
-                    this.isButtonDisabled = false;
-                }, 60000);
-            let submitURL = `${process.env.VUE_APP_API_URL}/authcheck/sendResetPin/` + this.targetVenue.id
-            let submitData = {
-                userType: "venue",
-            }
-            let responseCode = ''
-            await this.$axios.post(submitURL,submitData)
-                .then((response)=>{
-                    responseCode = response.data.code
-                })
-                .catch((error)=>{
-                    console.error(error);
-                    responseCode = error.response.data.code
-                });
-            let sendPinSuccess = document.getElementById("sendPinSuccess")
-            let sendPinError = document.getElementById("sendPinError")
-            if(responseCode == 201){
-                sendPinSuccess.innerHTML = "OTP has been sent!"
-                sendPinError.innerHTML = ""
-            }
-            else{
-                sendPinSuccess.innerHTML = ""
-                sendPinError.innerHTML = "Error sending OTP, please try again in 60 seconds"
-            }
-        },
+                // call api to send pin
+                this.isButtonDisabled = true;
+                    setTimeout(() => {
+                        this.isButtonDisabled = false;
+                    }, 60000);
+                let submitURL = `${process.env.VUE_APP_API_URL}/authcheck/sendResetPin/` + this.targetVenue.id
+                let submitData = {
+                    userType: "venue",
+                }
+                let responseCode = ''
+                await this.$axios.post(submitURL,submitData)
+                    .then((response)=>{
+                        responseCode = response.data.code
+                    })
+                    .catch((error)=>{
+                        console.error(error);
+                        responseCode = error.response.data.code
+                    });
+                let sendPinSuccess = document.getElementById("sendPinSuccess")
+                let sendPinError = document.getElementById("sendPinError")
+                if(responseCode == 201){
+                    sendPinSuccess.innerHTML = "OTP has been sent!"
+                    sendPinError.innerHTML = ""
+                }
+                else{
+                    sendPinSuccess.innerHTML = ""
+                    sendPinError.innerHTML = "Error sending OTP, please try again in 60 seconds"
+                }
+            },
 
-        async verifyOTP(){
-            // call api to verify the pin
-            let submitURL = `${process.env.VUE_APP_API_URL}/authcheck/verifyPin/` + this.targetVenue.id
-            let submitData ={
-                userType:"venue",
-                pin:this.resetPin
-            }
-            let responseCode = ''
-            await this.$axios.post(submitURL,submitData)
-                .then((response)=>{
-                    responseCode = response.data.code
-                })
-                .catch((error)=>{
-                    console.error(error);
-                    responseCode = error.response.data.code
-                });
-            if(responseCode == 201){
-                this.confirmResetPassword = true
-                this.verifyErrorMessage = ""
-            }
-            else if(responseCode == 400){
-                this.verifyErrorMessage = "OTP is wrong or expired."
-            }else{
-                this.verifyErrorMessage = "An error verifying the OTP. Please resend OTP or try again."
-            }
-            
-        },
+            async verifyOTP(){
+                // call api to verify the pin
+                let submitURL = `${process.env.VUE_APP_API_URL}/authcheck/verifyPin/` + this.targetVenue.id
+                let submitData ={
+                    userType:"venue",
+                    pin:this.resetPin
+                }
+                let responseCode = ''
+                await this.$axios.post(submitURL,submitData)
+                    .then((response)=>{
+                        responseCode = response.data.code
+                    })
+                    .catch((error)=>{
+                        console.error(error);
+                        responseCode = error.response.data.code
+                    });
+                if(responseCode == 201){
+                    this.confirmResetPassword = true
+                    this.verifyErrorMessage = ""
+                }
+                else if(responseCode == 400){
+                    this.verifyErrorMessage = "OTP is wrong or expired."
+                }else{
+                    this.verifyErrorMessage = "An error verifying the OTP. Please resend OTP or try again."
+                }
+                
+            },
 
-        async resetPassword(){
-            this.resettingPassword=true
-            let submitURL = `${process.env.VUE_APP_API_URL}/authcheck/resetPassword/` + this.targetVenue.id
-            let submitData = {
-                userType:"venue",
-                pin:this.resetPin
-            }
-            // Send request over
-            let responseCode = ''
-            await this.$axios.post(submitURL,submitData)
-                .then((response)=>{
-                    responseCode = response.data.code
-                })
-                .catch((error)=>{
-                    console.error(error);
-                    responseCode = error.response.data.code
-                });
-            this.resettingPassword= false
-            if(responseCode==201){
-                this.passwordSuccess=true; // Display success message
-            }else{
-                this.passwordError = true // Display generic error message
-            }
-        },
-
+            async resetPassword(){
+                this.resettingPassword=true
+                let submitURL = `${process.env.VUE_APP_API_URL}/authcheck/resetPassword/` + this.targetVenue.id
+                let submitData = {
+                    userType:"venue",
+                    pin:this.resetPin
+                }
+                // Send request over
+                let responseCode = ''
+                await this.$axios.post(submitURL,submitData)
+                    .then((response)=>{
+                        responseCode = response.data.code
+                    })
+                    .catch((error)=>{
+                        console.error(error);
+                        responseCode = error.response.data.code
+                    });
+                this.resettingPassword= false
+                if(responseCode==201){
+                    this.passwordSuccess=true; // Display success message
+                }else{
+                    this.passwordError = true // Display generic error message
+                }
+            },
         }
     }
 </script>
