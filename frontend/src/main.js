@@ -13,6 +13,8 @@ import VueQRCodeComponent from 'vue-qrcode-component'
 import VueGoogleMaps from '@fawmi/vue-google-maps'
 import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
+import 'quill/dist/quill.snow.css';
+
 
 // Set up Axios as a global property in Vue prototype
 const app = createApp(App);

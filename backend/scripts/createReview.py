@@ -1,6 +1,6 @@
 # Port: 5021
-# Routes: /createReview (POST)
-# Dataclass: reviews
+# Routes: /createReview (POST), /createProducerReview (POST)
+# Dataclass: reviews, producerReviews
 # -----------------------------------------------------------------------------------------
 
 
@@ -219,6 +219,19 @@ def createReviews():
     flavour_tags = raw_review.get('flavourTag', [])
     observation_tags = raw_review.get('observationTag', [])
 
+    will_recommend = raw_review.get('willRecommend')
+    would_buy_again = raw_review.get('wouldBuyAgain')
+
+    if will_recommend is None:
+        will_recommend = None
+    else:
+        will_recommend = bool(will_recommend == 'true')
+
+    if would_buy_again is None:
+        would_buy_again = None
+    else:
+        would_buy_again = bool(would_buy_again == 'true')
+
     # Insert new venue if necessary
     venue_id = None
     if raw_review.get('location') and raw_review.get('address'):
@@ -247,9 +260,9 @@ def createReviews():
                           language, finish, "willRecommend", "wouldBuyAgain", "taggedUsers", "flavourTag", photo, colour, 
                           aroma, taste, "observationTag", location, address)
                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
-    review_values = (user_id, review_target, int(raw_review['rating']), raw_review['reviewDesc'], raw_review['reviewType'],
-                     created_date, raw_review['language'], raw_review['finish'], raw_review['willRecommend'],
-                     raw_review['wouldBuyAgain'], tagged_users, flavour_tags, raw_review['photo'],
+    review_values = (user_id, review_target, float(raw_review['rating']), raw_review['reviewDesc'], raw_review['reviewType'],
+                     created_date, raw_review['language'], raw_review['finish'], will_recommend,
+                     would_buy_again, tagged_users, flavour_tags, raw_review['photo'],
                      raw_review['colour'], raw_review['aroma'], raw_review['taste'],
                      observation_tags, venue_id, raw_review['address'])
 
@@ -270,3 +283,54 @@ def createReviews():
             "message": "An error occurred creating the listing."
         }), 500
 # ======================================================
+
+# [POST] Creates a producer tour review
+@blueprint.route("/createProducerReview", methods= ['POST'])
+def createProducerReviews():
+    raw_review = request.get_json()
+    conn = g.db
+    cur = conn.cursor()
+
+    producer_id = int(raw_review['producerID'])
+    user_id = int(raw_review['userID'])
+    created_date = datetime.strptime(raw_review['createdDate'], "%Y-%m-%dT%H:%M:%S.%fZ")
+
+    # Checking for duplicate review
+    cur.execute("""
+        SELECT * FROM "producerReviews" WHERE "producerID" = %s AND "userID" = %s
+    """, (producer_id, user_id))
+
+    if cur.fetchone() is not None:
+        return jsonify({
+            "code": 400,
+            "data": {
+                "review": None
+            },
+            "message": "Review already exists."
+        }), 400
+    
+    # Upload image into S3
+    if raw_review['photo']:
+        raw_review['photo'] = s3Images.uploadBase64ImageToS3(raw_review['photo'])
+
+    # Prepare the insert SQL for reviews
+    insert_review_sql = """INSERT INTO "producerReviews" ("userID", "producerID", "rating", "reviewDesc", "createdDate", "photo") 
+                           VALUES (%s, %s, %s, %s, %s, %s)"""
+    review_values = (user_id, producer_id, float(raw_review['rating']), raw_review['reviewDesc'], created_date, raw_review['photo'])
+
+    try:
+        cur.execute(insert_review_sql, review_values)
+        conn.commit()
+        return jsonify({
+            "code": 201,
+            "data": raw_review['reviewDesc']
+        }), 201
+    except Exception as e:
+        print(str(e))
+        return jsonify({
+            "code": 500,
+            "data": {
+                "review": None
+            },
+            "message": "An error occurred creating the listing."
+        }), 500

@@ -14,9 +14,13 @@
 
 import os
 import json
+import random
 from bson import json_util, ObjectId
 from flask import Blueprint, g, jsonify, request
 from bson.objectid import ObjectId
+from psycopg2.extras import RealDictCursor
+import random
+
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -137,6 +141,62 @@ def getListings():
 
     return jsonify(listings_data)
 
+#  [GET] ALL Listing Names in Listing Table
+@blueprint.route("/getListingsName")
+def getListingsName():
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "listings"')
+        listingsName_data = cursor.fetchall()
+    
+    if not listingsName_data:
+        return jsonify([])
+    
+    # Extract listingName from each record
+    listing_names = [listing['listingName'] for listing in listingsName_data]
+
+    return jsonify(listing_names)
+# -----------------------------------------------------------------------------------------
+# [GET] Get Listings from a randomly selected date
+@blueprint.route("/getRandomListings")
+def getRandomListings():
+    conn = g.db
+
+    with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        # Fetch distinct dates by converting timestamps to dates
+        cursor.execute('SELECT DISTINCT "addedDate"::DATE FROM "listings"')
+        date_results = cursor.fetchall()
+
+        if not date_results:
+            return jsonify({"error": "No dates found in listings"}), 400
+
+        # Log the fetched dates
+        print("Fetched date_results:", date_results)
+
+        try:
+            # Extract 'addedDate' values properly from RealDictRow
+            date_list = [row['addedDate'] for row in date_results if 'addedDate' in row]
+            
+            # Log the extracted date list
+            print("Extracted date_list:", date_list)
+
+            if not date_list:
+                return jsonify({"error": "Date extraction failed (empty list)"}), 400
+
+            random_date = random.choice(date_list)  # Select a random date
+        except Exception as e:
+            return jsonify({"error": f"Random selection failed: {str(e)}"}), 500
+
+        # Fetch listings from the selected random date
+        cursor.execute('SELECT * FROM "listings" WHERE "addedDate"::DATE = %s ORDER BY RANDOM() LIMIT 20', (random_date,))
+        listings_data = cursor.fetchall()
+
+    if not listings_data:
+        return jsonify({"error": "No listings found for selected date"}), 400
+
+    return jsonify(listings_data)
+
 # -----------------------------------------------------------------------------------------
 # [GET] Get Listings from db where id> last item in list
 @blueprint.route("/getNext30/<id>")
@@ -225,6 +285,177 @@ def getFilteredFollowing30(id):
         return jsonify([])
 
     return jsonify(listings_data)
+
+# -----------------------------------------------------------------------------------------
+# [GET] For You Page Recommender
+# helper function for basic algo
+def basic_algo(userID):
+    conn = g.db
+    with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        # Fetch user's drink choice, flavour choice, and preferences
+        cursor.execute(
+            'SELECT "choiceDrinks", "choiceFlavours", "preferences" FROM users WHERE id = %s',
+            (userID,)
+        )
+        user_data = cursor.fetchone()
+
+        if not user_data:
+            return jsonify({"error": "User not found"}), 404
+
+        choiceDrink = user_data["choiceDrinks"] or []
+        choiceFlavour = user_data["choiceFlavours"] or []
+        preferences = user_data["preferences"] or []
+        print("User Data:", user_data)
+
+        recommended = {}
+
+        # Get listings with the same drink type
+        if choiceDrink:
+            drink_query = '''
+                SELECT * FROM listings 
+                WHERE "drinkType" = ANY(%s)
+            '''
+            cursor.execute(drink_query, (choiceDrink,))
+            drink_listings = cursor.fetchall()
+
+            for listing in drink_listings:
+                if listing["id"] not in recommended:
+                    recommended[listing["id"]] = listing 
+
+        # Get listings with the same flavour tags
+        if choiceFlavour:
+            cursor.execute('SELECT id FROM "subTags" WHERE "subTag" = ANY(%s)', (choiceFlavour,))
+            flavour_ids = [row["id"] for row in cursor.fetchall()]
+
+            if flavour_ids:
+                flavour_query = '''
+                    SELECT DISTINCT l.*
+                    FROM "listings" l
+                    JOIN "reviews" r ON l."id" = r."reviewTarget"
+                    WHERE r."flavourTag" && %s::text[]
+                '''
+                cursor.execute(flavour_query, (flavour_ids,))
+                flavour_listings = cursor.fetchall()
+
+                for listing in flavour_listings:
+                    if listing["id"] not in recommended:
+                        recommended[listing["id"]] = listing
+
+        # Get listings with the same observation tags
+        if preferences:
+            observation_query = '''
+                SELECT DISTINCT l.*
+                FROM "listings" l
+                JOIN "reviews" r ON l."id" = r."reviewTarget"
+                WHERE r."observationTag" && %s::text[]
+            '''
+            cursor.execute(observation_query, (preferences,))
+            observation_listings = cursor.fetchall()
+
+            for listing in observation_listings:
+                    if listing["id"] not in recommended:
+                        recommended[listing["id"]] = listing
+
+        query = """
+        SELECT DISTINCT l.*
+        FROM "listings" l
+        LEFT JOIN "reviews" r ON l."id" = r."reviewTarget"
+        LEFT JOIN "subTags" st ON r."flavourTag" && ARRAY[st.id]::text[]
+        WHERE 
+            l."drinkType" = ANY(%s) OR 
+            r."flavourTag" && %s::text[] OR 
+            r."observationTag" && %s::text[]
+        """
+        cursor.execute(query, (choiceDrink, choiceFlavour, preferences))
+        results = cursor.fetchall()
+
+        # Store results in a dictionary
+        for listing in results:
+            recommended[listing["id"]] = listing
+
+    print("Recommended Listings:", list(recommended.values()))
+
+    if not recommended:
+        # return jsonify({"error": "No recommended listings found"}), 400
+        return {}
+
+    # return jsonify(list(recommended.values()))
+    return recommended
+
+# helper function for advanced algo (reviews)
+def advanced_algo_reviews(userID):
+    conn = g.db
+    with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        # Fetch user's reviews
+        cursor.execute('SELECT "flavourTag" FROM "reviews" WHERE "userID" = %s', (userID,))
+        user_reviews_tags = cursor.fetchall()
+        if not user_reviews_tags:
+            return jsonify([])
+        cursor.execute('''SELECT s1."id" as "id1", s2."id" as "id2" FROM "associations" a, "subTags" s1, "subTags" s2 
+                        WHERE s1."subTag" = a."subTag1" AND s2."subTag" = a."subTag2"''')     
+        associations = cursor.fetchall()
+        tag1 = [assoc['id1'] for assoc in associations]
+        tag2 = [assoc['id2'] for assoc in associations]
+        associations_dict = {}
+        for i in range(len(tag1)):
+            if tag1[i] not in associations_dict:
+                associations_dict[tag1[i]] = []
+            associations_dict[tag1[i]].append(tag2[i])
+            if tag2[i] not in associations_dict:
+                associations_dict[tag2[i]] = []
+            associations_dict[tag2[i]].append(tag1[i])
+        # print(associations_dict)
+        # return jsonify(associations_dict)
+        tags_used = {}
+        for tag in user_reviews_tags:
+            for num in tag["flavourTag"]:
+                if num not in tags_used:
+                    tags_used[num] = 1
+                else:
+                    tags_used[num] += 1
+        top_tags = sorted(tags_used, key=tags_used.get, reverse=True)[:5]
+        print(top_tags)
+        close_tags = []
+        for tag in top_tags:
+            if int(tag) in associations_dict:
+                close_tags += associations_dict[int(tag)]
+        close_tags = list(set(close_tags))
+        print(close_tags)
+        recommended = {}
+        flavour_query = '''
+            SELECT DISTINCT l.*
+            FROM "listings" l
+            JOIN "reviews" r ON l."id" = r."reviewTarget"
+            WHERE r."flavourTag" && %s::text[]
+        '''
+        cursor.execute(flavour_query, (close_tags,))
+        flavour_listings = cursor.fetchall()
+
+        for listing in flavour_listings:
+            if listing["id"] not in recommended:
+                recommended[listing["id"]] = listing
+
+        if not recommended:
+            return {}
+        return recommended
+        
+# helper function for advanced algo (drink lists) [TO DO]
+# def advanced_algo_list(userID):
+
+@blueprint.route("/getRecommendedListings/<userID>")
+def getRecommendedListings(userID):
+    print(userID)
+    conn = g.db
+    recommended = basic_algo(userID)
+    with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        cursor.execute('SELECT COUNT(*) from "reviews" where "userID" = %s', (userID,))
+        review_count = cursor.fetchone()
+        if review_count["count"] >= 5:
+            advanced_algo_review_recc = advanced_algo_reviews(userID)
+            recommended = {**recommended, **advanced_algo_review_recc}
+    recommended = list(recommended.values())
+    random.shuffle(recommended)
+    return jsonify(recommended)
 
 # -----------------------------------------------------------------------------------------
 # [GET] Specific Listing
@@ -1419,6 +1650,45 @@ def getObservationTags():
         return jsonify([])
 
     return jsonify(observation_tags_data)
+
+@blueprint.route("/getListingsByObservationTag/<tag>")
+def get_listings_by_observation_tag(tag):
+    selected_tag = tag  
+
+    if not selected_tag:
+        return jsonify({"error": "Tag is required"}), 400
+
+    conn = g.db  
+
+    try:
+        with conn.cursor() as cursor:
+            query = """
+            SELECT DISTINCT l.*
+            FROM "listings" l
+            JOIN "reviews" r ON l."id" = r."reviewTarget"
+            WHERE %s = ANY(r."observationTag");
+            """
+            cursor.execute(query, (selected_tag,))
+
+            listings = cursor.fetchall()
+            columns = [col[0] for col in cursor.description]  
+
+            print("Columns:", columns)  
+            print("Listings:", listings)  
+
+            listing_dicts = [tuple(row.values()) for row in listings]
+
+            # Print the result
+            print("Listings as Tuples:", listing_dicts)
+
+        # Return the result as JSON
+        return jsonify(listing_dicts)
+
+    except Exception as e:
+        # If an error occurs, print the error message and return an error response
+        print(f"Error fetching listings: {e}")
+        return jsonify({"error": "A server error occurred."}), 500
+        
 
 # -----------------------------------------------------------------------------------------
 # [GET] colours

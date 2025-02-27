@@ -70,18 +70,18 @@
                     <!-- details -->
                     <div class="col-lg-9 col-12 text-start padding-for-followthisbusinessbutton-large-screen mobile-col-7 mobile-ps-0 mobile-pe-0">
                         <div class="container text-start pe-lg-0">
-                            <!-- country  -->
-                            <div class="row ">
+                            <!-- country -->
+                            <div class="row">
                                 <div class="col-8 pe-4 ps-0">
                                     <!-- [if] editing -->
                                     <div v-if="editing">
-                                        <label for="originCountryInput "> Country of Origin </label>
+                                        <label for="originCountryInput"> Country of Origin </label>
                                         <input type="text" class="form-control mb-3" id="originCountryInput" aria-describedby="originCountry" v-model="edit_originCountry">
                                     </div>
                                     <!-- [else] not editing -->
                                     <div v-else>
-                                        <h5  class="text-body-secondary mobile-view-hide"> {{ specified_producer["originCountry"] }} </h5>
-                                        <h6  class="text-body-secondary mobile-view-show mb-0"> {{ specified_producer["originCountry"] }} </h6>
+                                        <h5 class="text-body-secondary mobile-view-hide">{{ specified_producer["originCountry"] }}</h5>
+                                        <h6 class="text-body-secondary mobile-view-show mb-0">{{ specified_producer["originCountry"] }}</h6>
                                     </div>
                                 </div>
                                 <!-- claim this business / add listing & edit profile -->
@@ -90,11 +90,8 @@
                                     <span v-if="correctProducer || isAdmin" class="row"> 
                                         <!-- add listing-->
                                         <div v-if="correctProducer && editing == false" class="col d-grid no-padding">
-                                            <!-- if not editing -->
                                             <button type="button" class="btn tertiary-btn-blue-outline rounded-0 reverse-clickable-text" v-on:click="window.location.href='/listing/create'">
-                                                <!--<router-link :to="`/listing/create`" class="reverse-clickable-text">-->
-                                                    Add Listing
-                                                <!--</router-link>-->
+                                                Add Listing
                                             </button>
                                         </div>
                                         <!-- edit profile -->
@@ -117,41 +114,82 @@
                             </div>
                             <!-- producer -->
                             <div class="row">
-                                <!-- [if] editing -->
                                 <div v-if="editing" class="pe-0 ps-0">
                                     <label for="producerNameInput"> Producer Name </label>
                                     <input type="text" class="form-control mb-3" id="producerNameInput" aria-describedby="producerDesc" v-model="edit_producerName">
                                 </div>
-                                <!-- [else] not editing -->
                                 <div v-else class="ps-0 pe-0">
-                                    <h3  class="text-body-secondary mobile-view-hide"> <b> {{ specified_producer["producerName"] }} </b> </h3>
-                                    <h4  class="text-body-secondary mobile-view-show pe-0 ps-0 mb-0"> <b> {{ specified_producer["producerName"] }} </b> </h4>
+                                    <h3 class="text-body-secondary mobile-view-hide"><b>{{ specified_producer["producerName"] }}</b></h3>
+                                    <h4 class="text-body-secondary mobile-view-show pe-0 ps-0 mb-0"><b>{{ specified_producer["producerName"] }}</b></h4>
                                 </div>
                             </div>
                             <!-- description -->
                             <div class="row scrollable">
                                 <div class="col-12 pe-lg-0 ps-0">
-                                    <!-- [if] editing -->
                                     <div v-if="editing">
                                         <label for="producerDescInput"> Producer Description </label>
-                                        <textarea type="text" class="form-control mb-3" id="producerDescInput" aria-describedby="producerDesc" v-model="edit_producerDesc"> </textarea>
+                                        <textarea type="text" class="form-control mb-3" id="producerDescInput" aria-describedby="producerDesc" v-model="edit_producerDesc"></textarea>
                                     </div>
-                                    <!-- [else] not editing -->
                                     <div v-else class="ps-0 pe-0">
                                         <div v-if="specified_producer.producerDesc.length > 150">
-                                            <p v-if="!showFullProducerDescription" class="text-body-secondary fs m-0 mobile-rating-smaller-text-2"> 
+                                            <p v-if="!showFullProducerDescription" class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">
                                                 {{ specified_producer["producerDesc"].slice(0,150) + (specified_producer["producerDesc"].length > 150 ? '...' : '') }} 
                                                 <a @click="showFullProducerDescription = true" style="font-weight: bold;">(Read More)</a>
                                             </p>
-                                            <p v-else class="text-body-secondary fs m-0 mobile-rating-smaller-text-2"> 
+                                            <p v-else class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">
                                                 {{ specified_producer["producerDesc"] }} 
                                                 <a @click="showFullProducerDescription = false" style="font-weight: bold;">(Read Less)</a>
                                             </p>
                                         </div>
-                                        <p v-else class="text-body-secondary fs m-0 mobile-rating-smaller-text-2"> 
-                                            {{ specified_producer["producerDesc"] }} 
-                                        </p>
+                                        <p v-else class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">{{ specified_producer["producerDesc"] }}</p>
                                     </div>
+                                </div>
+                            </div>
+                            <!-- Additional Fields -->
+                            <div v-if="editing" class="row" style="margin-left: -1.4rem;">
+                                <!-- Year Founded and Owner -->
+                                <div class="col-6">
+                                    <label for="yearFoundedInput">Year Founded</label>
+                                    <input type="number" class="form-control mb-3" id="yearFoundedInput" v-model="edit_yearFounded">
+                                </div>
+                                <div class="col-6">
+                                    <label for="ownerInput">Owner</label>
+                                    <input type="text" class="form-control mb-3" id="ownerInput" v-model="edit_owner">
+                                </div>
+
+                                <!-- Location and Website -->
+                                <!-- <div class="col-6">
+                                    <label for="locationInput">Location</label>
+                                    <input type="text" class="form-control mb-3" id="locationInput" v-model="edit_location">
+                                </div> -->
+                                <div class="col-6">
+                                    <label for="websiteInput">Website</label>
+                                    <input type="url" class="form-control mb-3" id="websiteInput" v-model="edit_website">
+                                </div>
+
+                                <!-- Status -->
+                                <div class="col-12 d-flex align-items-center mb-3">
+                                    <label class="me-3 mb-0">Status:</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="statusSwitch" v-model="edit_status" :true-value="'active'" :false-value="'inactive'">
+                                        <label class="form-check-label" for="statusSwitch">{{ edit_status === 'active' ? 'Active' : 'Inactive' }}</label>
+                                    </div>
+                                </div>
+
+                                <!-- Open for Tours -->
+                                <div class="col-12 d-flex align-items-center mb-3">
+                                    <label class="me-3 mb-0">Open for Tours:</label>
+                                    <input type="checkbox" id="openForToursCheckbox" v-model="edit_openForTours" :true-value="true" :false-value="false">
+                                    <label for="openForToursCheckbox" class="ms-2">{{ edit_openForTours === true ? 'Yes' : 'No' }}</label>
+                                </div>
+                            </div>
+                            <div v-else class="row" style="margin-top: 4.5rem; margin-left: -1.4rem;">
+                                <div class="col-12">
+                                    <p class="text-body-secondary fs-6 mb-0">
+                                        <span v-if="specified_producer.website">
+                                            <strong>Website:&nbsp;</strong><a :href="specified_producer.website" target="_blank">{{ specified_producer.website }}</a>
+                                        </span>
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -161,12 +199,58 @@
                 <!-- more information (expressions, reviews) -->
                 <div class="row mt-3 mobile-mt-1">
                     <div class="col-7 d-flex justify-content-start mobile-pe-0">
+                        <div v-if="specified_producer.yearFounded" class="col-6 col-lg-3 text-start mobile-view-hide text-color-black">
+                            <h5 class="text-body-secondary" style="margin-bottom:0;"> <b> {{ specified_producer["yearFounded"] }} </b> </h5>
+                            <p class="mb-1"> <u> Year Founded </u> </p>
+                        </div>
+
+                        <div v-if="specified_producer.activeStatus" class="col-6 col-lg-3 text-start mobile-view-hide text-color-black">
+                            <h5 class="text-body-secondary text-capitalize" style="margin-bottom:0;"> <b> {{ specified_producer["activeStatus"] }} </b> </h5>
+                            <p class="mb-1"> <u> Status </u> </p>
+                        </div>
+
+                        <div v-if="specified_producer.openForTours !== null && specified_producer.openForTours !== undefined" class="col-6 col-lg-3 text-start mobile-view-hide text-color-black">
+                            <h5 class="text-body-secondary text-capitalize" style="margin-bottom:0;"> <b> {{ specified_producer["openForTours"] === true ? 'Yes' : 'No' }} </b> </h5>
+                            <p class="mb-1"> <u> Open for Tours?</u> </p>
+                        </div>
+
+                        <div v-if="specified_producer.owner" class="col-6 col-lg-3 text-start mobile-view-hide text-color-black">
+                            <h5 class="text-body-secondary" style="margin-bottom:0;"> <b> {{ specified_producer["owner"] }} </b> </h5>
+                            <p class="mb-1"> <u> Owner </u> </p>
+                        </div>
+
+                    </div>
+                  
+                    <!-- follow this business -->
+                    <div class="col-5 justify-content-end padding-for-followthisbusinessbutton-large-screen" v-if="userType == 'user'">
+                            <div v-if="!following" class="d-grid gap-2">
+                                <button class="btn primary-btn-less-round-blue btn-lg mobile-view-show fs-6" @click="editFollow('follow')" style="font-weight:bold;" >+ Follow</button> <!--tzh added -blue -->
+                                <button class="btn primary-btn-less-round-blue btn-lg mobile-view-hide" @click="editFollow('follow')" style="font-weight:bold;" >  <!--tzh added -blue -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 20">
+                                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                                    </svg>
+                                    Follow this business
+                                </button>
+                            </div>
+                            <div v-else class="d-grid gap-2">
+                                <button class="btn primary-btn-less-round-blue btn-lg" @click="editFollow('unfollow')" style="font-weight: bold;">  <!--tzh changed primary-btn-outline-less-round to primary-btn-less-round-blue -->
+                                    Following
+                                </button>
+                            </div>
+                    </div>
+
+                </div>
+                <div class="row mt-3 mobile-mt-1">
+                    <div class="col-7 d-flex justify-content-start mobile-pe-0">
                         <!-- toggle latest updates-->
-                        <button v-if="showListings == false" class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" v-on:click="showAllReviews()"> Brand Overview </button>
+                        <button v-if="showListings == false && showTours == false" class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" v-on:click="showAllReviews()"> Brand Overview </button>
                         <button v-else class="btn inactive-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" v-on:click="showAllReviews()"> Brand Overview </button>
                         <!-- toggle expressions view-->
-                        <button v-if="showListings == true" class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" v-on:click="showAllListings()"> {{ allDrinksCount }} Expressions (View All) </button>
+                        <button v-if="showListings == true && showTours == false" class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" v-on:click="showAllListings()"> {{ allDrinksCount }} Expressions (View All) </button>
                         <button v-else class="btn inactive-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" v-on:click="showAllListings()"> {{ allDrinksCount }} Expressions (View All) </button>
+                        <!-- toggle tours&exp view -->
+                        <button v-if="showTours == true" class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" v-on:click="showAllTours()"> Tours & Experiences </button>
+                        <button v-else class="btn inactive-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" v-on:click="showAllTours()"> Tours & Experiences </button>
                         
                         
                             
@@ -190,33 +274,145 @@
                             
                         
                     </div>
-                  
-                    <!-- follow this business -->
-                    <div class="col-5 justify-content-end padding-for-followthisbusinessbutton-large-screen" v-if="userType == 'user'" >
-                            <div v-if="!following" class="d-grid gap-2">
-                                <button class="btn primary-btn-less-round-blue btn-lg mobile-view-show fs-6" @click="editFollow('follow')" style="font-weight:bold;" >+ Follow</button> <!--tzh added -blue -->
-                                <button class="btn primary-btn-less-round-blue btn-lg mobile-view-hide" @click="editFollow('follow')" style="font-weight:bold;" >  <!--tzh added -blue -->
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 20">
-                                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
-                                    </svg>
-                                    Follow this business
-                                </button>
-                            </div>
-                            <div v-else class="d-grid gap-2">
-                                <button class="btn primary-btn-less-round-blue btn-lg" @click="editFollow('unfollow')" style="font-weight: bold;">  <!--tzh changed primary-btn-outline-less-round to primary-btn-less-round-blue -->
-                                    Following
-                                </button>
-                            </div>
-                    </div>
-                        
-                    
-                    
                 </div>
                 <div class="padding-for-hr-below-followthisbusinessbutton-large-screen">
                     <hr>
                 </div>
+                <!-- Modal -->
+                <div v-if="user_id != 'defaultUser'" class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true" data-bs-backdrop="static">
+                    <div class="modal-dialog modal-lg">
+                        <div class="text-success fst-italic fw-bold fs-3 modal-content" v-if='successSubmission'>
+                            <span v-if="!inEdit">Your review has successfully been submitted!</span>
+                            <span v-else>Your review has successfully been updated!</span>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" @click="reloadRoute" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                        <div class="text-danger fst-italic fw-bold fs-3 modal-content" v-if="errorSubmission"> 
+                            <div v-if="errorMessage" class = "row"> 
+                                <span v-if="!inEdit">An error occurred while attempting to submit, please try again!</span>
+                                <span v-else>An error occurred while attempting to update, please try again!</span>
+                                <br>
+                                <button class="btn primary-btn btn-sm" @click="reset">
+                                    <span class="fs-5 fst-italic"> Retry your submission here! </span>
+                                </button>
+                            </div>
+                            <div v-if="duplicateEntry">
+                                <span v-if="!inEdit">You've already submitted a review for this bottle listing!</span>
+                                <span v-else>There is no review for this bottle listing!</span>
+                            </div>
+                            <br>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                        <div v-if='addingTourReview' class="modal-content">
+                            <div class="modal-header" style="background-color:#F0B358 "> <!--tzh changed #535C72 to #F0B358-->
+                                <!-- V-if to edit or add review -->
+                                <h5 v-if="!inEdit" class="modal-title" id="reviewModalLabel" style="color: black; font-weight:bold;">Add Your Review</h5> <!--tzh changed white to black and to bold-->
+                                <h5 v-else class="modal-title" id="reviewModalLabel" style="color: black;font-weight:bold;">Edit Your Review</h5>
+                                <button type="button"  class="btn-close review-modal"  data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+
+                            <div class="modal-body px-4">
+                                <div class="row " >
+                                    <div class="col-3 mobile-col-4">
+                                        <input class="form-control mb-2" @change="onFileChange" type="file" id="reviewPhoto" style="display: none;">
+                                        <label for="reviewPhoto" >
+                                            <div class="mobile-review-svg-button">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="M20.4 14.5L16 10 4 20"></path> <circle cx="19" cy="19" r="3" fill="black"></circle><line x1="18" y1="19" x2="20" y2="19" stroke="white" stroke-width="1"></line><line x1="19" y1="18" x2="19" y2="20" stroke="white" stroke-width="1"></line></svg>
+                                            </div>
+                                        </label>
+                                        <div class = "row">
+                                            <img :src="selectedImageForReview || (reviewImage64 )" alt="" id="output" class="py-2 review-preview-photo">
+                                        </div>
+                                        <div class="row justify-content-start mb-2">
+                                            <div class="col-md-4 text-start">
+                                                <button v-if="reviewImage64!==null" class="btn tertiary-square-btn mb-1" @click="clearPhoto">Clear Photo</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+            
+                                <div class="row">
+                                    <div class = 'col justify-content-start mb-3'>
+                                        <div class = "col-md-12">
+                                            <p class='text-start mb-2 fw-bold'>Review<span class="text-danger">*</span></p>
+                                            <textarea v-model="reviewDesc" class="form-control" id="reviewTextarea" rows="3" placeholder="Min 20 characters"></textarea>
+                                        </div>
+                                        <div v-if="reviewDescError!==''" class ="col-md-12">
+                                            <p class='text-danger text-start mb-2 fw-bold'>{{ reviewDescError }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+            
+                                <div class="row">
+                                    <!-- Dashed line -->
+                                    <div class = 'col justify-content-start mb-1 text-start'>
+                                        <div class = "col-md-12 text-center">
+                                            <p class="dotted-line">
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+            
+                                <div class="row">
+                                    <div class="col-12 mb-3">
+                                        <div class="row align-items-center text-start">
+                                            <p class='text-star mb-1 fw-bold'>My Rating<span class="text-danger">*</span></p>
+                                            <label for="customRange2" class="form-label"> <span style="color:#F0B358;">★</span><span style="font-weight:bold;">{{ rating }}</span> Stars
+                                            </label>
+                                            <div class="col-auto">
+                                                <label for="customRange" class="form-label fw-bold">1</label>
+                                            </div>
+                                            <div class="col">
+                                                <div class="slider-container" style="position: relative;">
+                                                    <input v-model="rating" type="range" class="form-range" min="1" max="10" step="0.1" id="customRange">
+                                                    <div class="tickmarks">
+                                                        <span class="tick" style="left: 5%;">|</span>
+                                                        <span class="tick" style="left: 15%;">|</span>
+                                                        <span class="tick" style="left: 25%;">|</span>
+                                                        <span class="tick" style="left: 35%;">|</span>
+                                                        <span class="tick" style="left: 45%;">|</span>
+                                                        <span class="tick" style="left: 55%;">|</span>
+                                                        <span class="tick" style="left: 65%;">|</span>
+                                                        <span class="tick" style="left: 75%;">|</span>
+                                                        <span class="tick" style="left: 85%;">|</span>
+                                                        <span class="tick" style="left: 95%;">|</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <label for="customRange" class="form-label fw-bold">10</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- End of modal body -->
+                            <div class="modal-footer d-flex">
+                                <span v-for="review in filteredTourReviews.filter(review => review.userID === parseInt(user_id))" v-bind:key="review.id" class="me-auto">
+                                    <button 
+                                        v-if="inEdit" 
+                                        class="btn btn-danger py-1 mobile-fs-7" 
+                                        @click="setDeleteID(filteredTourReviews.find(review => review.userID === parseInt(user_id)))" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#deleteReview">
+                                        Delete Review
+                                    </button>
+                                </span>
+                                <button type="button" class="btn secondary-btn-less-round-inverse " data-bs-dismiss="modal">Close</button> <!--tzh removed btn-secondary added secondary-btn-less-round-inverse-->
+                                <button v-if="!inEdit" type="button" @click="addTourReview" class="btn secondary-btn-less-round">Submit Review</button>
+                                <button v-else type="button" @click="editTourReview" class="btn secondary-btn-less-round">Update Review</button>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
                 <!-- main page (hide all listings) -->
-                <div v-if="showListings == false" class="padding-for-latestupdatesNmostpopularcontainer-large-screen">
+                <div v-if="showListings == false && showTours == false" class="padding-for-latestupdatesNmostpopularcontainer-large-screen">
 
                     <!-- [if] account is claimed -->
                     <div v-if="claimStatus" style="color:black;" >
@@ -701,7 +897,7 @@
                 </div> <!-- end of main page (hide all listings) -->
 
                 <!-- show all listings-->
-                <div v-else >
+                <div v-else-if="showListings == true && showTours == false" >
                     <!-- search & sort by -->
                     <div class="row">
                         <!-- back button -->
@@ -1092,6 +1288,189 @@
                     </div> <!-- end of listings -->
                 </div>
 
+                <div v-else class="container no-right-padding-large-screen">
+                    <h4 class="text-start" style="font-weight:bold; color:black; margin-bottom: 2rem;">Average Tour and Experience Rating:&nbsp;&nbsp;{{ getAverageTourRatings() }}<span style="color:#F0B358;">★</span></h4> 
+                    <h5 class="text-start" style="font-weight:bold; color:black;">In Photos</h5>
+                    <div class="row text-start" style="padding-left:1.5em;">
+                        <div class="col">
+                            <div class="justify-content-start row">
+                                <div v-if="userType == 'user' && user_id !== 'defaultUser' && !inEdit " class="row">
+                                    <!-- (1) add button -->
+                                    <div class="mobile-col-3 col-sm-6 col-md-4 col-lg-2 mobile-px-1">
+                                        <div data-bs-toggle="modal" data-bs-target="#reviewModal">
+                                            <svg xmlns="http://www.w3.org/2000/svg"  fill="#83A9E8" class="bi bi-plus-lg review-image" viewBox="0 0 16 16" style="cursor: pointer;"  > <!--tzh changed currentColor to 83A9E8-->
+                                                <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <!-- (2) to (6) other photos -->
+                                    <div v-for="review in filteredTourReviewsWithImages.slice(0,5)" v-bind:key="review" class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 mobile-px-1">
+                                        <img :src=" (review['photo'] || defaultPhoto)" alt="" class="review-image" >
+                                    </div>
+                                </div>
+                                <div v-else-if="user_id == 'defaultUser'" class="row">
+                                    <!-- (1) add button -->
+                                    <div class="mobile-col-3 col-sm-6 col-md-4 col-lg-2 mobile-px-1">
+                                        <div >
+                                            <svg xmlns="http://www.w3.org/2000/svg"  fill="#83A9E8" class="bi bi-plus-lg review-image" viewBox="0 0 16 16" @click="$router.push('/login')" style="cursor: pointer; "  > <!--tzh changed currentColor to 83A9E8-->
+                                                <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <!-- (2) to (6) other photos -->
+                                    <div v-for="review in filteredTourReviewsWithImages.slice(0,5)" v-bind:key="review" class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 mobile-px-1">
+                                        <img :src=" (review['photo'] || defaultPhoto)" alt="" class="review-image" >
+                                    </div>
+                                </div>
+                                <div v-else class="row">
+                                    <!-- (1) add button 
+                                    <div class="mobile-col-3 col-sm-6 col-md-4 col-lg-2 mobile-px-1">
+                                        <div >
+                                            <svg xmlns="http://www.w3.org/2000/svg"  fill="#83A9E8" class="bi bi-plus-lg review-image" viewBox="0 0 16 16"   @click="$router.push('/login')" style="cursor: pointer;"  > tzh changed currentColor to 83A9E8
+                                                <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
+                                            </svg>
+                                        </div>
+                                    </div>           -->                           
+                                    <!-- (2) to (6) other photos-->
+                                    <div v-for="review in filteredTourReviewsWithImages" v-bind:key="review" class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 p-0 mobile-px-1">
+                                        <img :src="(review['photo'] || defaultPhoto)" alt="" class="review-image" >
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row mb-3" v-for="review in filteredTourReviews" v-bind:key="review.id">
+                        <div class="col-9 xcol-lg-8">
+                            <div class="row">
+                                <div class="text-start mb-2 ">
+                                    <div class="row">
+                                        <!-- profile photo -->
+                                        <div class="col-12 col-lg-1 mobile-col-2" style="text-align: left;">
+                                            <router-link :to="`/profile/user/${review.userID}`">
+                                                <img :src="(getPhotoFromReview(review) || defaultProfilePhoto)" alt="" class="profile-image">
+                                            </router-link>
+                                        </div>
+                                        <div class="col-10 pe-0 mobile-fs-7 mobile-ps-4">
+                                            <!-- username -->
+                                            <router-link :to="`/profile/user/${review.userID}`" style="color: inherit">
+                                                <b>
+                                                    @{{ getUsernameFromReview(review) }}
+                                                </b>
+                                            </router-link>
+
+                                            &nbsp;rated <span style="color:#F0B358;">★</span> <span style="font-weight:bold;">{{ review['rating'] }}</span> Stars
+
+                                            <!-- user title -->
+                                            <span v-if="checkModFromUserID(review.userID)" class="badge rounded-pill ms-3 mobile-ms-0 mobile mt-1" style="color: black; background-color: #F0B358;">Moderator</span>
+
+                                            <!-- Insert Edit modal here -->
+                                            <div class="mt-2 mobile-mt-1">
+                                                <button v-if="review.userID === parseInt(user_id)"  class="btn btn-warning me-1 py-1  mobile-fs-7" @click="setUpdateID(review)" data-bs-toggle="modal" data-bs-target="#reviewModal">Edit</button>
+                                                <button v-if="canMod" class="btn btn-danger py-1  mobile-fs-7" @click="setDeleteID(review)" data-bs-toggle="modal" data-bs-target="#deleteReview">Delete</button> <!--tzh removed option to delete for ordinary users "parseInt(userID) || ")-->
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="text-start mb-2">
+                                        {{ review['reviewDesc'] }}
+                                    </div>
+                                    <div style="display: inline;" class="text-start">
+                                        <!-- voting -->
+                                        <svg v-if="!JSON.stringify(review.userVotes.upvotes).includes(JSON.stringify(user_id))" @click="voteReview(review, 'upvote')" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-caret-up" viewBox="0 0 16 16">
+                                            <path d="M3.204 11h9.592L8 5.519zm-.753-.659 4.796-5.48a1 1 0 0 1 1.506 0l4.796 5.48c.566.647.106 1.659-.753 1.659H3.204a1 1 0 0 1-.753-1.659"/>
+                                        </svg>
+                                        <svg v-else @click="voteReview(review, 'unupvote')" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-caret-up-fill" viewBox="0 0 16 16">
+                                            <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z"/>
+                                        </svg>
+                                        <span class="mx-2">{{ review.userVotes.upvotes.length - review.userVotes.downvotes.length }}</span>
+                                        <svg v-if="!JSON.stringify(review.userVotes.downvotes).includes(JSON.stringify(user_id))" @click="voteReview(review, 'downvote')" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-caret-down me-3" viewBox="0 0 16 16">
+                                            <path d="M3.204 5h9.592L8 10.481zm-.753.659 4.796 5.48a1 1 0 0 0 1.506 0l4.796-5.48c.566-.647.106-1.659-.753-1.659H3.204a1 1 0 0 0-.753 1.659"/>
+                                        </svg>
+                                        <svg v-else @click="voteReview(review, 'undownvote')" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-caret-down-fill me-3" viewBox="0 0 16 16">
+                                            <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
+                                        </svg>
+                                        <!-- <a href="#" class="text-decoration-underline text-secondary" data-bs-toggle="modal" data-bs-target="#detailedReviewModal" @click="updateDetailedReview(review)">Detailed Review ></a> -->
+                                    </div>
+
+                                    <!-- Delete review modal -->
+                                    <div class="modal fade" id="deleteReview" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <!-- DELETE SUCCESS -->
+                                            <div class="text-success fst-italic fw-bold fs-3 modal-content" v-if='successDelete'>
+                                                <span>Your review has successfully been deleted!</span>
+                                                <div class="modal-footer">
+                                                    <button type="button" @click="reloadRoute" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                </div>
+                                            </div>
+                                            <!-- DELETE ERROR -->
+                                            <div class="text-danger fst-italic fw-bold fs-3 modal-content" v-if="errorDelete"> 
+                                                <div v-if="errorDeleteMessage" class="row"> 
+                                                    <span >An error occurred while attempting to delete, please try again!</span>
+                                                    <br>
+                                                    <button class="btn primary-btn btn-sm" @click="reset">
+                                                        <span class="fs-5 fst-italic"> Retry your delete request here! </span>
+                                                    </button>
+                                                </div>
+                                                
+                                                <span v-if="notExist">There is no review by you for this bottle listing!</span>
+                                                <br>
+
+                                            
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                </div>
+
+                                            </div>
+                                            <!-- DELETE IN PROGRESS MODAL -->
+                                            <div v-if="deletingReview" class="modal-content">
+                                                <div class="modal-header" >
+                                                    <h5 class="modal-title" id="deleteReview" >Delete Review</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    Are you sure you want to delete your review?
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                    <button type="button" class="btn btn-danger" @click="deleteReview">Delete Review</button>
+                                                </div>
+                                            </div>
+                                        </div>                                
+                                    </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+
+                        <!-- review photo -->
+                        <div class="col-2 xcol-lg-3 text-end mobile-view-hide">
+                            <!-- review photo -->
+                            <div data-bs-toggle="modal" :data-bs-target="`#reviewImageModal${getUsernameFromReview(review)}`" style=" cursor: pointer;"> 
+                                <img :src="(review['photo'] || defaultPhoto)" alt="" class="review-image" style="width: 125px; height: 125px"> 
+                            </div>
+                        </div>
+                        <div class="col-3 xcol-lg-3 text-start mobile-view-show px-0">
+                            <!-- review photo -->
+                            <div data-bs-toggle="modal" :data-bs-target="`#reviewImageModal${getUsernameFromReview(review)}`" style=" cursor: pointer;"> 
+                                <img :src="(review['photo'] || defaultPhoto)" alt="" class="review-image" style="width: 100%; height: 100%"> <!--for mobile tzh replaced 125px with 100% -->
+                            </div>
+                        </div>
+                        <div  class="modal fade" :id="`reviewImageModal${getUsernameFromReview(review)}`" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-lg d-flex align-items-center" style="height: 100vh;">
+                                <div class="modal-content">
+                                    <div class="modal-body p-4">
+                                        <img :src="(review['photo'] || defaultPhoto)" alt="" style="width:100%; height:auto;" >
+                                    </div>    
+                                </div>
+                            </div>
+                        </div>
+                        <hr>
+                    </div>
+                </div>
+
             </div> <!-- end of producer information -->
             
             <!-- view analytics & q&a for producer & 88 bamboo's deepdive -->
@@ -1259,6 +1638,135 @@
 
                         </div>
                     </div>
+                    <div class="col-xl-12 col-lg-3 col-md-6 col-12">
+                        <div class="square primary-square-green-outline rounded p-3 mb-3"> <!--tzh changed secondary-square to primary-square-green-outline-->
+
+                            <!-- Header -->
+                            <h4 class="text-start"> Location </h4>
+                            <div class="pb-1 text-start" v-if="correctProducer || isAdmin">
+                                <!-- [if] not editing -->
+                                <button v-if="!editAddress" type="button" class="btn btn-warning rounded-0 reverse-clickable-text" @click="editAddress = true">
+                                    Edit
+                                </button>
+                                
+                                <!-- [else] if editing -->
+                                <button v-if="editAddress" type="button" class="btn btn-warning rounded-0 reverse-clickable-text ms-1" @click="newAddress = specified_producer['location']">
+                                    Reset
+                                </button>
+                                <button v-if="editAddress" type="button" class="btn btn-success rounded-0 reverse-clickable-text ms-1" @click="saveAddress" :disabled="!(newAddress.trim().length > 0)">
+                                    Save
+                                </button>
+                                <button v-if="editAddress" type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1" @click="editAddress = false">
+                                    Cancel
+                                </button>
+                                
+                            </div>
+
+                            <!-- Section Content (Edit Mode) -->
+                            <div v-if="editAddress">
+                                <textarea v-model="newAddress" class="form-control" id="addressTextArea" rows="3" placeholder="Enter producer address"></textarea>
+                            </div>
+
+                            <!-- Section Content (View Mode) -->
+                            <div>
+                                <p class="text-start mb-1 fst-italic">{{ specified_producer["location"] }}</p>
+                            </div>
+
+                            <!-- Map -->
+                            <GMapMap
+                                :center="{lat: mapLat, lng: mapLong}"
+                                :zoom="15"
+                                map-type-id="terrain"
+                                style="width: 100%; height: 200px"
+                            >
+                                <GMapMarker
+                                    :key="index"
+                                    v-for="(m, index) in mapMarkers"
+                                    :position="m.position"
+                                />
+                            </GMapMap>
+
+                        </div>
+                    </div>
+
+                    <!-- Opening Hours -->
+                    <div class="col-xl-12 col-lg-3 col-md-6 col-12">
+                        <div class="square primary-square-green-outline rounded p-3 mb-3">
+
+                            <!-- Header -->
+                            <div class="square-inline text-start">
+                                <h4 class="mr-auto"> Opening Hours and Reservation Details </h4>
+                            </div>
+
+                            <!-- Opening Hours Lock Message (producer Unclaimed) -->
+                            <div class="row text-center py-2 mx-1 default-text-no-background" v-if="!specified_producer['claimStatus']" style="background-color:#DDC8A9;">
+                                <p class="fs-3 fw-bold fst-italic mt-3" >
+                                    Do you own this business?
+                                </p>
+                                <p> Sign up for a venue account to share your opening hours and reservation details with your fans! </p>
+
+                                <div class="col-lg-2 col-1"></div>
+                                <button type="submit" class="col-lg-8 col-10 btn secondary-btn-border-thick mb-3" @click="claimProducerAccount"> Claim This Business </button>
+                                <div class="col-lg-2 col-1"></div>
+                            </div>
+
+                            <!-- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -->
+
+                            <!-- Opening Hours -->
+                            <div class="py-2 text-start" v-if="specified_producer['claimStatus']">
+
+                                <!-- Section Header -->
+                                <div class="square-inline">
+                                    <h5 class="mr-auto"> Opening Hours </h5>
+                                </div>
+
+                                <!-- Buttons -->
+                                <div class="pb-1" v-if="correctProducer || isAdmin">
+                                    <!-- [if] not editing -->
+                                    <button v-if="!editOpeningHours" type="button" class="btn btn-warning rounded-0 reverse-clickable-text" @click="editOpeningHours = true; checkOpeningHours()">
+                                        Edit
+                                    </button>
+                                    <!-- [else] if editing -->
+                                    <button v-if="editOpeningHours" type="button" class="btn btn-warning rounded-0 reverse-clickable-text ms-1" @click="newOpeningHours = JSON.parse(JSON.stringify(openingHours)); checkOpeningHours()">
+                                        Reset
+                                    </button>
+                                    <button v-if="editOpeningHours" type="button" class="btn btn-success rounded-0 reverse-clickable-text ms-1" @click="saveOpeningHours" :disabled="editOpeningHoursError">
+                                        Save
+                                    </button>
+                                    <button v-if="editOpeningHours" type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1" @click="editOpeningHours = false">
+                                        Cancel
+                                    </button>
+                                    
+                                </div>
+
+                                <!-- Section Content (Edit Mode) -->
+                                <div v-if="editOpeningHours">
+                                    <div class="default-text-no-background" v-for = "(hours, day) in newOpeningHours" v-bind:key="day">
+                                        <span class="fw-bold">{{ day }}: </span>
+                                        <div class="pb-1">
+                                            <div class="d-flex align-items-center">
+                                                <input type="time" class="form-control" :id="day + 'start'" v-model="hours[0]" @change="checkOpeningHours">
+                                                <span class="mx-2">-</span>
+                                                <input type="time" class="form-control" :id="day + 'end'" v-model="hours[1]" @change="checkOpeningHours">
+                                            </div>
+                                            <!-- for error message -->
+                                            <span :id="day + 'error'" class="text-danger ms-1 fst-italic d-none"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Section Content (View Mode) -->
+                                <div v-else>
+                                    <div class="default-text-no-background" v-for = "(hours, day) in openingHours" v-bind:key="day">
+                                        <span class="fw-bold">{{ day }}: </span>
+                                        <p class="d-inline">{{ hours[0] }} - {{ hours[1] }}</p>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- 88 bamboo's deepdive -->
                     <div class="col-xl-12 col-lg-4 col-md-6 col-12 mobile-view-hide">
                         <div class="square primary-square-green-outline rounded p-3 mb-3"> <!--tzh changed secondary-square to primary-square-green-outline -->
@@ -1291,6 +1799,12 @@
                             </div>
                             <div class="py-2"></div>
                         </div>
+                    </div>
+
+                    <!-- Event Box Component -->
+                    <!-- Events Details -->
+                    <div class="col-xl-12 col-lg-4 col-md-6 col-12">
+                        <EventBox :selfView="correctProducer" :targetUserID="producer_id" targetUserType="producer"/>
                     </div>
                 </div>
 
@@ -1382,6 +1896,7 @@
             :listingID="bookmarkListingID" />
 
     </div> <!-- end of main content -->
+    <FooterBar />
 
 </template>
 
@@ -1390,19 +1905,22 @@
 <!-- JavaScript -->
 <script>
 // import { all } from 'axios';
+    import EventBox from '@/components/EventBox.vue';
     import NavBar from '@/components/NavBar.vue';
     import ListingRowDisplayProducerProfile from '@/components/ListingRowDisplayProducerProfile.vue';
     import BookmarkIcon from '@/components/BookmarkIcon.vue';
     import BookmarkModal from '@/components/BookmarkModal.vue';
-
+    import FooterBar from "@/components/FooterBar.vue";
 
 
     export default {
         components: {
+            EventBox,
             NavBar,
             ListingRowDisplayProducerProfile,
             BookmarkIcon, 
-            BookmarkModal
+            BookmarkModal,
+            FooterBar
         },
         data() {
             return {
@@ -1413,7 +1931,7 @@
                 lazyListings: [],
                 // producers: [],
                 reviews: [],
-                // users: [],
+                users: [],
                 drinkTypes: [],
                 requestListings: [],
                 requestEdits: [],
@@ -1442,17 +1960,65 @@
                 sortedAverageRatings: {},
                 mostPopular: [],
 
+                tourReviews: [],
+                reviewDesc: '',
+                reviewDescError:'',
+                tourReviewResponseCode:'',
+                rating: 5,
+
+                // To delete review
+                deleteID :null,
+                successDelete:false,
+                deletingReview:true,
+                errorDelete:false,
+                errorDeleteMessage:false,
+                
+                updateID: null,
+
+                // to edit tour review
+                inEdit:false,
+                specificReview:[],
+                detailedReview: {},
+
                 // check if user is editing
                 editing: false,
+                successSubmission: false,
+                addingTourReview: true,
+                errorSubmission:false,
+                errorMessage: false,
+                duplicateEntry: false,
+                notExist: false,
 
                 // edit image
                 selectedImage: '', // changed image
                 image64: null, // original image
 
+                selectedImageForReview: '', // changed image
+                reviewImage64: null, // original image
+                photo: null,
+
                 // edit other fields
                 edit_producerName: '',
                 edit_producerDesc: '',
                 edit_originCountry: '',
+                edit_yearFounded: null,
+                edit_status: '',
+                edit_owner: '',
+                edit_location: '',
+                edit_openForTours: '',
+                edit_website: '',          
+                
+                // Map View
+                mapLat: null,
+                mapLong: null,
+                mapMarkers: [],
+
+                // Address + Opening Hours
+                editAddress: false,
+                newAddress: "",
+                editOpeningHours: false,
+                editOpeningHoursError: false,
+                newOpeningHours: {},
 
                 // search
                 searchInput: '',
@@ -1472,12 +2038,18 @@
                 // flag for admin
                 isAdmin: false,
 
+                correctModerator: false,
+
                 // q&a
                 question: '',
                 answer: '',
 
                 // status to indicate whether to show listings or not
                 showListings: false,
+                showTours: false,
+
+                filteredTourReviews: [],
+                filteredTourReviewsWithImages: [],
 
                 // customization for drinkLists buttons
                 // [TODO] get drink list of user, for now is hardcoded
@@ -1512,6 +2084,7 @@
                 answeredQuestions: [],
                 unansweredQuestions: [],
                 answerStatus: true,
+                openingHours: {},
 
                 // for producer to add new updates
                 currDate: new Date().toISOString(),
@@ -1637,13 +2210,61 @@
                             }
                         }
                     }
+
+                // reviews
+                // _id, userID, producerID, date, rating, reviewDesc, photo
+                try {
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducerTourReviews`);
+                    this.tourReviews = response.data;
+                    this.detailedReview = this.tourReviews[0];
+                }
+                catch (error) {
+                    console.error(error);
+                    this.dataLoaded = null;
+                }
                 // producers
                 // _id, producerName, producerDesc, originCountry, statusOB, mainDrinks
                 try {
                         const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducer/${this.producer_id}`);
+                        console.log(response.data)
                         this.specified_producer = response.data
                         this.specified_producer_original_photo = this.specified_producer['photo']
+                        this.newAddress = this.specified_producer['location']
 
+                        this.openingHours = this.specified_producer['openingHours']
+                        const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                        const sortedOpeningHours = Object.fromEntries(
+                            dayOrder
+                                .filter(key => key in this.openingHours) // Filter keys that exist in this.openingHours
+                                .map(key => [key, this.openingHours[key]]) // Map each key to its corresponding value
+                        );
+                        this.openingHours = sortedOpeningHours;
+                        this.newOpeningHours = JSON.parse(JSON.stringify(this.openingHours));
+
+                        // Obtain map data
+                        const mapResponse = await this.$axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
+                            params: {
+                                address: this.specified_producer["location"],
+                                key: process.env.VUE_APP_GOOGLE_MAPS_API_KEY
+                            }
+                        }).catch(error => {
+                            console.error("Error fetching map data:", error);
+                        });
+
+                        // Check if map data is valid
+                        if (mapResponse && mapResponse.data.status == "OK") {
+                            const { lat, lng } = mapResponse.data.results[0].geometry.location;
+                            this.mapLat = lat;
+                            this.mapLong = lng;
+                            this.mapMarkers = [{ position: { lat, lng } }];
+                        }
+                        else {
+                            this.mapLat = 25;
+                            this.mapLong = -71;
+                            this.mapMarkers = [{ position: { lat: 25, lng: -71 } }];
+                            this.specified_producer["location"] = "(The Bermuda Triangle)";
+                        }
+                        
                         if (this.specified_producer.stripeCustomerId) {    
                             this.claimStatus = false                        
                             // check for active subscription if last check status date before today
@@ -1721,7 +2342,7 @@
                         this.formatDeepDiveLink()
                     } 
                     catch (error) {
-                        console.error(error);
+                        console.error("Error fetching producer data:", error);
                         this.dataLoaded = null;
                     }
                 // producer listings
@@ -1729,15 +2350,20 @@
                     try {
                         const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingsByProducer/${this.producer_id}`);
                         this.listings = response.data;
+                        this.allDrinks = response.data;
+                        this.allDrinksCount = response.data.length
 
-                        this.getAllDrinks()
+                        // this.getAllDrinks()
                         this.getCountsByType()
                         this.getTotalCounts()
                         this.getMostDiscussed()
                         this.getRecentlyAdded()
+                        this.getFilteredReviewsWithImages()
+                        this.filteredTourReviews = this.getProducerTourReviews();
+                        this.specificReview = this.getLoggedUserReview();
                     } 
                     catch (error) {
-                        console.error(error);
+                        console.error("Error fetching producer listings:", error);
                         this.dataLoaded = null;
                     }
                 // reviews
@@ -1752,10 +2378,10 @@
                         this.getMostPopular()
                     }
                     catch (error) {
-                        console.error(error);
+                        console.error("Error fetching producer reviews:", error);
                         this.dataLoaded = null;
                     }
-                // users
+                // user
                 // _id, username, displayName, choiceDrinks, drinkLists, modType, photo
                     if (this.userType == "user") {
                         try {
@@ -1768,9 +2394,20 @@
                             }
                         } 
                         catch (error) {
-                            console.error(error);
+                            console.error("Error fetching user data:", error);
                             this.dataLoaded = null;
                         }
+                    }
+
+                // users
+                // _id, username, displayName, choiceDrinks, drinkLists, modType, photo
+                    try {
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUsers`);
+                        this.users = response.data;
+                    } 
+                    catch (error) {
+                        console.error("Error fetching users data:", error);
+                        this.dataLoaded = null;
                     }
                 // producersProfileViews
                 // _id, producerID, views
@@ -1791,7 +2428,8 @@
                     }
 
                 // check whether mod can edit any listing at all in the producer page
-                if(this.user_id != "" && this.userType=="user"){                    
+                if(this.user_id != "" && this.userType=="user"){  
+                    console.log("user modetype", this.user)               
                     if(this.user.modType.length>0){
                         const editableListing = this.allDrinks.filter(listing => this.user.modType.includes(listing.drinkType) && listing.allowMod)
                         if(editableListing.length>0){
@@ -1806,12 +2444,12 @@
                 }
             },
 
-            // get all drinks that a producer has
-            async getAllDrinks() {
-                let allProducerDrinks = this.listings.filter(listing => listing.producerID == this.producer_id);
-                this.allDrinks = allProducerDrinks;
-                this.allDrinksCount = allProducerDrinks.length
-            },
+            // // get all drinks that a producer has
+            // async getAllDrinks() {
+            //     let allProducerDrinks = this.listings.filter(listing => listing.producerID == this.producer_id);
+            //     this.allDrinks = allProducerDrinks;
+            //     this.allDrinksCount = allProducerDrinks.length
+            // },
 
             // get all reviews that a producer has
             async getAllReviews() {
@@ -1956,9 +2594,239 @@
                 return photo;
             },
 
+            getLoggedUserReview(){
+                const specificReview = this.filteredTourReviews.filter((review) => {
+                    return review["userID"] == parseInt(this.user_id);
+                });
+                if(specificReview.length!=0){
+                    this.inEdit=true
+                    this.reviewDesc= specificReview[0].reviewDesc
+                    this.rating= specificReview[0].rating
+                    this.reviewImage64= specificReview[0].photo
+                }
+
+                return specificReview
+            },
+
+            // get username from review
+            getUsernameFromReview(review) {
+                const user = this.users.find((user) => {
+                    return user["id"] == review["userID"];
+                });
+                if (user) {
+                    return user["username"];
+                }
+            },
+
+            // get photo from review
+            getPhotoFromReview(review) {
+                const user = this.users.find((user) => {
+                    return user["id"] == review["userID"];
+                });
+                if (user) {
+                    return user['photo']
+                }
+            },
+
+            onFileChange(event){
+                const file = event.target.files[0];
+                const reader = new FileReader();
+
+                reader.onloadend = async () => {
+                    this.selectedImageForReview = reader.result
+                    const base64String = reader.result.replace('data:', '').replace(/^.+,/, '');
+                    this.reviewImage64 = base64String;
+                };
+                reader.readAsDataURL(file);
+            },
+
+            addTourReview(){
+                if (this.reviewDesc.length < 20) {
+                    this.reviewDescError ="Character count is less than 20, please write more for a more detailed review."
+                    alert("Submission has error, please fill in the required fields properly")
+                    return "Submission error"
+                }
+                else {
+                    this.reviewDescError = ""
+                }
+                let createdDate = new Date().toISOString();
+                if (this.reviewDesc !== "") {
+                    this.reviewDesc = this.reviewDesc.trim();
+                }
+
+                let submitAPI = `${process.env.VUE_APP_API_URL}/createReview/createProducerReview`
+                let submitData = {
+                    'userID': parseInt(this.user_id),
+                    'producerID': this.producer_id,
+                    'rating': this.rating,
+                    'reviewDesc': this.reviewDesc,
+                    'photo': this.reviewImage64,
+                    'createdDate': createdDate,
+                    'userVotes': {
+                        "downvotes": [],
+                        "upvotes": []
+                    }
+                }
+                this.writeReview(submitAPI, submitData)
+            },
+
+            editTourReview(){
+                if (this.reviewDesc.length < 20) {
+                    this.reviewDescError ="Character count is less than 20, please write more for a more detailed review."
+                    alert("Submission has error, please fill in the required fields properly")
+                    return "Submission error"
+                }
+                if (this.reviewDesc !== "") {
+                    this.reviewDesc = this.reviewDesc.trim();
+                }
+                
+                let submitAPI = `${process.env.VUE_APP_API_URL}/editReview/updateProducerReview/` + this.specificReview[0].id
+                let submitData = {
+                    'userID': parseInt(this.user_id),
+                    'producerID': this.producer_id,
+                    'rating': this.rating,
+                    'reviewDesc': this.reviewDesc,
+                    'photo': this.reviewImage64,
+                    'createdDate': this.specificReview[0].createdDate
+                }
+                this.updateReview(submitAPI, submitData)
+            },
+
+            async updateReview(submitAPI, submitData){
+                const response = await this.$axios.put(submitAPI, submitData)
+                .then((response)=>{
+                    this.tourReviewResponseCode = response.data.code
+                })
+                .catch((error)=>{
+                    console.error(error);
+                    this.tourReviewResponseCode = error.response.data.code
+                });
+                if(this.tourReviewResponseCode==200){
+                    this.successSubmission=true; // Display success message
+                    this.addingTourReview=false; // Hide submission in progress message
+                }else{
+                    this.errorSubmission=true; // Display error message
+                    this.addingTourReview=false; // Hide submission in progress message
+                    if(this.tourReviewResponseCode==400){
+                        this.duplicateEntry = true // Display duplicate entry message
+                    }else{
+                        this.errorMessage = true // Display generic error message
+                    }
+                }
+                return response
+            },
+
+            async writeReview(submitAPI, submitData){
+                const response = await this.$axios.post(submitAPI, submitData)
+                .then((response)=>{
+                    this.tourReviewResponseCode = response.data.code
+                })
+                .catch((error)=>{
+                    console.error(error);
+                    this.tourReviewResponseCode = error.response.data.code
+                });
+                if(this.tourReviewResponseCode==201){
+                    this.successSubmission=true; // Display success message
+                    this.addingTourReview=false; // Hide submission in progress message
+                }else {
+                    this.errorSubmission=true;
+                    this.addingTourReview=false; // Hide submission in progress message
+                    if(this.tourReviewResponseCode==400){
+                        this.duplicateEntry = true // Display duplicate entry message
+                    }else{
+                        this.errorMessage = true // Display generic error message
+                    }
+                }
+                return response;
+            },
+
+            clearPhoto(){
+                this.reviewImage64 = null
+                this.selectedImageForReview = ""
+                document.getElementById('reviewPhoto').value = '';
+            },
+
+            async deleteReview(){
+                let deleteAPI = `${process.env.VUE_APP_API_URL}/deleteReview/deleteProducerReview/` + this.deleteID
+                const response = await this.$axios.delete(deleteAPI)
+                .then((response)=>{
+                    this.deleteReviewCode = response.data.code
+                })
+                .catch((error)=>{
+                    console.error(error);
+                    this.deleteReviewCode = error.response.data.code
+                });
+                if(this.deleteReviewCode==200){
+                    this.successDelete=true; // Display success message
+                    this.deletingReview=false; // Hide submission in progress message
+                }else{
+                    this.errorDelete=true; // Display error message
+                    this.deletingReview=false; // Hide submission in progress message
+                    if(this.reviewResponseCode==400){
+                        this.notExist = true // Display duplicate entry message
+                    }else{
+                        this.errorDeleteMessage = true // Display generic error message
+                    }
+                }
+                return response
+                
+            },
+
+            // check if user is mod
+            checkModFromUserID(userID){
+                const user = this.users.find((user) => {
+                    return user["id"] == userID;
+                });
+                if (user) {
+                    return user["modType"].length > 0;
+                }
+            },
+
+            setDeleteID(review){
+                this.deleteID = review.id
+            },
+
+            setUpdateID(review){
+                this.updateID = review.id
+            },
+
+            async voteReview(review, vote){
+                if (vote == "upvote") {
+                    review.userVotes.upvotes.push(this.user_id);
+                    review.userVotes.downvotes = review.userVotes.downvotes.filter(vote => vote !== this.user_id);
+                } else if (vote == "downvote") {
+                    review.userVotes.downvotes.push(this.user_id);
+                    review.userVotes.upvotes = review.userVotes.upvotes.filter(vote => vote !== this.user_id);
+                } else if (vote == "unupvote") {
+                    review.userVotes.upvotes = review.userVotes.upvotes.filter(vote => vote !== this.user_id);
+                } else if (vote == "undownvote") {
+                    review.userVotes.downvotes = review.userVotes.downvotes.filter(vote => vote !== this.user_id);
+                }
+
+                try {
+                    await this.$axios.post(`${process.env.VUE_APP_API_URL}/editReview/voteProducerReview`, 
+                        {
+                            reviewID: review.id,
+                            userVotes: review.userVotes,
+                            action: vote
+                        }, {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                } catch (error) {
+                    console.error(error);
+                }
+            },
+
+            reloadRoute() {
+                this.$router.go(); // Reloads the current route
+            },
+
             // show all listings that a producer has
             showAllListings() {
                 this.showListings = true;
+                this.showTours = false;
                 this.filteredListings = this.allDrinks; // initially set filtered drinks to all drinks
                 this.lazyListings = this.filteredListings.slice(0, 10);
             },
@@ -1966,24 +2834,54 @@
             // show all reviews that a producer has
             showAllReviews() {
                 this.showListings = false;
+                this.showTours = false;
+            },
+
+            // show all tours and experiences that a producer has
+            showAllTours() {
+                this.showTours = true;
+                this.showListings = false;
+            },
+
+            getProducerTourReviews() {
+                const reviews = this.tourReviews.filter((review) => {
+                    return review["producerID"] == this.producer_id;
+                });
+                return reviews;
+            },
+
+            getFilteredReviewsWithImages() {
+                let allReviews = this.filteredTourReviews
+                let reviewsWithImages = allReviews.filter(review => review.photo !== null)
+                // if reviewsWithImages more than 6, get the first 6
+                if (reviewsWithImages.length > 6) {
+                    this.filteredTourReviewsWithImages = reviewsWithImages.slice(0, 6)
+                } else {
+                    this.filteredTourReviewsWithImages = reviewsWithImages
+                }
+            },
+
+            // get producer tour ratings average
+            getAverageTourRatings() {
+                const ratings = this.filteredTourReviews.map(review => review.rating);
+                if (ratings.length == 0) return "-";
+                const averageRating = ratings.reduce((total, rating) => {
+                    return total + parseFloat(rating);
+                }, 0) / ratings.length;
+                return averageRating.toFixed(1);
             },
 
             // get ratings for a listing
             getRatings(listing) {
-                const ratings = this.reviews.filter((rating) => {
-                    return rating["reviewTarget"] == listing['id'];
-                });
+                const ratings = this.reviews.filter((rating) => rating["reviewTarget"] == listing['id']);
                 // if there are no ratings
-                if (ratings.length == 0) {
-                    return "-";
-                }
+                if (ratings.length == 0) return "-";
                 // else there are ratings
                 const averageRating = ratings.reduce((total, rating) => {
-                    return total + rating["rating"];
+                    return total + parseFloat(rating["rating"]);
                 }, 0) / ratings.length;
-                // round to 1 decimal place
-                const roundedRating = Math.round(averageRating * 10) / 10;
-                return roundedRating;
+
+                return averageRating.toFixed(1);
             },
 
             // check if user has already added listing to shelf, add colour to button accordingly
@@ -2056,9 +2954,16 @@
                 this.editing = true;
 
                 // set the current details to the edit details
+                console.log(this.specified_producer)
                 this.edit_producerName = this.specified_producer["producerName"];
                 this.edit_producerDesc = this.specified_producer["producerDesc"];
                 this.edit_originCountry = this.specified_producer["originCountry"];
+                this.edit_yearFounded = this.specified_producer["yearFounded"];
+                this.edit_status = this.specified_producer["activeStatus"];
+                this.edit_owner = this.specified_producer["owner"];
+                this.edit_location = this.specified_producer["location"];
+                this.edit_openForTours = this.specified_producer["openForTours"];
+                this.edit_website = this.specified_producer["website"];
             },
 
             // edit profile photo
@@ -2103,7 +3008,13 @@
                             image64: this.image64,
                             producerName: this.edit_producerName,
                             producerDesc: this.edit_producerDesc,
-                            originCountry: this.edit_originCountry
+                            originCountry: this.edit_originCountry,
+                            yearFounded: this.edit_yearFounded === '' ? null : this.edit_yearFounded,
+                            activeStatus: this.edit_status,
+                            owner: this.edit_owner,
+                            location: this.edit_location,
+                            openForTours: this.edit_openForTours,
+                            website: this.edit_website
                         },
                         {
                         headers: {
@@ -2172,6 +3083,93 @@
                 // force page to reload
                 window.location.reload();
             },
+
+            // Update Public Holiday Information
+            async saveAddress() {
+                this.editAddress = false;
+                console.log("Saving", this.newAddress)
+                try {
+                    await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProducerProfile/editAddress`, 
+                        {
+                            producerID: this.producer_id,
+                            updatedLocation: this.newAddress,
+                        },
+                        {
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                    });
+                }
+                catch (error) {
+                    alert("An error occurred while attempting to save your changes, please try again!");
+                    // console.error(error);
+                }
+
+                // Refresh page
+                this.$router.go(0);
+            },
+
+            // Check Opening Hours
+            checkOpeningHours() {
+                // Reset error flag
+                this.editOpeningHoursError = false;
+                console.log(this.newOpeningHours);
+
+                for (let day in this.newOpeningHours) {
+                    const timeSlots = this.newOpeningHours[day];
+
+                    // Skip if there are no opening hours for the day
+                    if (!timeSlots || timeSlots.length < 2) {
+                        continue;
+                    }
+
+                    // Get start and end time values safely
+                    const startTimeValue = parseInt(timeSlots[0].replace(/:/g, ''));
+                    const endTimeValue = parseInt(timeSlots[1].replace(/:/g, ''));
+                    const errorElement = document.getElementById(day + 'error');
+
+                    // Check if start time is before end time
+                    if (startTimeValue >= endTimeValue) {
+                        this.editOpeningHoursError = true;
+                        if (errorElement) {
+                            errorElement.classList.remove('d-none');
+                            errorElement.innerText = "Start time must be before end time!";
+                        }
+                    } else {
+                        if (errorElement) {
+                            errorElement.classList.add('d-none');
+                            errorElement.innerText = "";
+                        }
+                    }
+                }
+            },
+
+            // Update Opening Hours
+            async saveOpeningHours() {
+
+                this.editOpeningHours = false;
+
+                try {
+                    await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProducerProfile/editOpeningHours`, 
+                        {
+                            producerID: this.producer_id,
+                            updatedOpeningHours: this.newOpeningHours,
+                        },
+                        {
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                }
+                catch (error) {
+                    alert("An error occurred while attempting to save your changes, please try again!");
+                    // console.error(error);
+                }
+
+                // Refresh page
+                this.$router.go(0);
+
+                },
 
             // for user to edit their catalogue
             // check user type:producer, admin or mod and set accordingly
@@ -2447,6 +3445,12 @@
                     businessDesc: this.specified_producer.producerDesc,
                     businessLink: this.$route.fullPath,
                     originCountry: this.specified_producer.originCountry,
+                    yearFounded: this.specified_producer.yearFounded,
+                    activeStatus: this.specified_producer.activeStatus,
+                    owner: this.specified_producer.owner,
+                    location: this.specified_producer.location,
+                    openForTours: this.specified_producer.openForTours,
+                    website: this.specified_producer.website
                 }
                 this.$router.push({
                     path: '/BusinessSignup', 

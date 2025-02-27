@@ -20,7 +20,7 @@
                 <div class="col mobile-view-hide d-flex align-items-center">
                     <!-- search bar tzh added mobile-view-hide -->
                     <div class="col-8 position-relative search-bar d-flex" style="height: 50px;">
-                        <input class="form-control fst-italic" type="text" placeholder="What are you drinking today?" style="width: 90%;" v-model="searchInput" v-on:keyup.enter="goSearch">
+                        <input class="form-control fst-italic" type="text" placeholder="What are you drinking today?" style="width: 100%;" v-model="searchInput" v-on:keyup.enter="goSearch">
                         <img src="../../Images/Others/search-green.png" style="width: 30px; height: 30px; margin: 0px 10px; align-self: center;" v-on:click="goSearch">
                     </div>
                     
@@ -83,7 +83,8 @@
                         <li v-if="isAdmin"><router-link :to="'/admin/importListings'" class="dropdown-item">Import Listings</router-link></li>
                         
                         <div class="mobile-view-show">
-                            <li><router-link :to="'/'" class="dropdown-item">Explore</router-link></li>
+                            <li><router-link :to="'/explore'" class="dropdown-item">Explore</router-link></li>
+                            <li><router-link :to="'/foryou'" class="dropdown-item">For You</router-link></li>
                             <li><router-link :to="'/'" class="dropdown-item">Best Of</router-link></li>
                             <li><router-link :to="dashboardURL" class="dropdown-item">{{ dashboardWord }} Dashboard</router-link></li>
                             <li><span  @click="externalURL('https://88bamboo.co/')" class="dropdown-item">Latest News</span></li>
@@ -117,12 +118,17 @@
             </div>
             <div class="mobile-view-hide container-fluid align-items-center col-xxl-8 col-xl-9 col-lg-10 col-md-11 col-sm-12">
 
-                <router-link :to="'/'">
+                <router-link :to="'/explore'">
                     <button class="btn primary-btn border-0 fw-bold" type="button">
                         Explore
                     </button>
                 </router-link>
 
+                <router-link :to="'/foryou'">
+                    <button class="btn primary-btn border-0 fw-bold" type="button">
+                        For You
+                    </button>
+                </router-link>
 
                 <router-link :to="'/'">
                     <button class="btn primary-btn border-0 fw-bold" type="button">

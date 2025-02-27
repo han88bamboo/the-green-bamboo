@@ -42,6 +42,8 @@ DROP TABLE IF EXISTS "venuesProfileViews" CASCADE;
 DROP TABLE IF EXISTS "venuesProfileViewsViews" CASCADE;
 DROP TABLE IF EXISTS "venuesQuestionAnswers" CASCADE;
 DROP TABLE IF EXISTS "venuesUpdates" CASCADE;
+DROP TABLE IF EXISTS "typeCategories" CASCADE;
+DROP TABLE IF EXISTS "associations" CASCADE;
 
 -- CREATE TABLES -- 
 -- ========= "accountRequests" =========
@@ -91,7 +93,7 @@ CREATE TABLE "flavourTags" (
 CREATE TABLE "subTags" (
     "id" SERIAL PRIMARY KEY,
     "familyTagId" INTEGER REFERENCES "flavourTags"("id") ON DELETE SET NULL, -- [!] reference "flavourTags" as FK
-    "subTag" VARCHAR(255)
+    "subTag" VARCHAR(255) UNIQUE
 );
 
 -- ========= "badges" =========
@@ -194,7 +196,9 @@ CREATE TABLE "users" (
     "email" VARCHAR(255),
     "isAdmin" BOOLEAN,
     "birthday" TIMESTAMP,
-    "pin" VARCHAR(255)
+    "pin" VARCHAR(255),
+    "choiceFlavours" TEXT[],
+    "preferences" TEXT[]
 );
 
 -- ========= [NEW!] "producersQuestionAnswers" =========
@@ -515,4 +519,44 @@ CREATE TABLE "clubPostCommentsLikes" (
     "postID" INTEGER REFERENCES "clubPosts"("id") ON DELETE SET NULL, -- [!] References clubPosts FK
     "commentID" INTEGER REFERENCES "clubPostComments"("id") ON DELETE SET NULL, -- [!] References clubPostComments FK
     "memberID" INTEGER REFERENCES "clubMembers"("id") ON DELETE SET NULL -- [!] References clubMembers FK
-)
+);
+
+-- ========= "events" =========
+CREATE TABLE "events" (
+    "id" SERIAL PRIMARY KEY,
+    "eventName" VARCHAR(255),
+    "eventDesc" TEXT,
+    "eventType" VARCHAR(255),
+    "eventStartDate" DATE,
+    "eventEndDate" DATE,
+    "eventStartTime" TIME,
+    "eventEndTime" TIME,
+    "eventLimit" INTEGER,
+    "eventBanners" TEXT[],
+    "ticketed" BOOLEAN,
+    "paidEvent" BOOLEAN,
+    "eventLocation" TEXT,
+    "paymentLink" VARCHAR(255),
+    "eventOwnerID" INTEGER, -- [!] "producers" or "venues" or "users" id in their respective tables 
+    "eventOwnerType" VARCHAR(255), -- [!] "producers" or "venues" or "users"
+    "numAttendees" INTEGER,
+    "createdDate" TIMESTAMP
+);
+
+-- ========= "eventAttendees" =========
+CREATE TABLE "eventAttendees" (
+    "id" SERIAL PRIMARY KEY,
+    "eventID" INTEGER REFERENCES "events"("id") ON DELETE SET NULL, -- [!] References events FK
+    "eventDate" DATE,
+    "eventStartTime" TIME,
+    "userID" INTEGER,
+    "attendeeType" VARCHAR(255),
+    "attendeeStatus" BOOLEAN
+);
+
+-- ========= "associations" =========
+CREATE TABLE "associations" (
+    "id" SERIAL PRIMARY KEY,
+    "subTag1" VARCHAR(255) REFERENCES "subTags"("subTag") ON DELETE SET NULL, -- [!] References subTags FK
+    "subTag2" VARCHAR(255) REFERENCES "subTags"("subTag") ON DELETE SET NULL -- [!] References subTags FK
+);

@@ -329,7 +329,7 @@
                                     <div  class="dropdown-menu pt-0" aria-labelledby="dropdownMenuButton"   @click.stop>
                                         
                                         <div class="d-flex filter-div" >
-                                            <div class="dropdown-column ms-2 pt-3" :class="{ 'greyed-out': selectedDrinkType }">
+                                            <div class="dropdown-column ms-2 pt-3" :class="{ 'greyed-out': selectedDrinkType }" v-if="!(selectedDrinkType && isMobile)">
                                                 <h6 class="ms-3"> Filter by <span class="" :class="{ 'text-decoration-underline': !selectedDrinkType }">Drink Type</span> </h6>
                                                 <hr >
                                                 <div v-for="drinkType in drinkTypes" v-bind:key="drinkType.id">
@@ -339,8 +339,14 @@
                                                     </a>   
                                                 </div>
                                             </div>
-                                            <div v-show="selectedDrinkType" class="dropdown-column drink-category-column me-2 pt-3" :class="{ 'greyed-out': !selectedDrinkType }" >
-                                                <h6 class="ms-3"> Filter by <span class="" :class="{ 'text-decoration-underline': selectedDrinkType }">Drink Category</span> </h6>
+                                            <div v-show="selectedDrinkType" class="dropdown-column me-2 pt-3" :class="{ 'greyed-out': !selectedDrinkType }" > <!--tzh removed drink-category-column class-->
+                                                <h6 class="d-flex align-items-center ms-2" @click="clearSelection" style="cursor: pointer; padding: 3px 4px 3px 1px; background-color: #e6e8e9; border-radius: 5px; width: max-content;">
+                                                    <svg width="20px" height="20px" id="Layer_1" style="enable-background:new 0 0 512 512;" version="1.1" viewBox="0 0 512 512" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                                                        <polygon points="352,128.4 319.7,96 160,256 160,256 160,256 319.7,416 352,383.6 224.7,256"/>
+                                                    </svg>
+                                                    <span> Back </span>
+                                                </h6>
+                                                <h6 class="ms-3 pt-3"> Filter by <span class="" :class="{ 'text-decoration-underline': selectedDrinkType }">Drink Category</span> </h6>
                                                 <hr style="min-width:500px;">
                                                 <div v-if="selectedTypeCategory != ''">
                                                     <div v-for="category in selectedTypeCategory" v-bind:key="category">
@@ -727,11 +733,13 @@
                             </div>
 
                         </div> <!-- end of scrollable section -->
-
+                        
                     </div> <!-- end of container -->
                 </div> <!--  end of discover, following & filter by drink type -->
+                
             </div> <!-- end of row -->
         </div>
+        <FooterBar />
     </div>
 
     <!-- [else] with search inputs -->
@@ -753,17 +761,20 @@
     import NavBar from '@/components/NavBar.vue';
     import BookmarkIcon from '@/components/BookmarkIcon.vue';
     import BookmarkModal from '@/components/BookmarkModal.vue';
+    import FooterBar from "@/components/FooterBar.vue";
 
     export default {
         components: {
             NavBar,
             BookmarkIcon, 
-            BookmarkModal
+            BookmarkModal,
+            FooterBar
         },
 
         data() {
             return {
                 dataLoaded: false,
+                isMobile: false,
                 // data from database
                 // countries: [],
                 listings: [],
@@ -872,6 +883,11 @@
                 this.userType = userType
             }
             this.loadData();
+            this.checkIfMobile();
+            window.addEventListener('resize', this.checkIfMobile);
+        },
+        beforeUnmount() {
+            window.removeEventListener('resize', this.checkIfMobile);
         },
         methods: {
             // load data from database
@@ -1231,32 +1247,24 @@
 
             // get ratings for a listing
             getRatings(listing) {
-                const ratings = this.reviews.filter((rating) => {
-                    return rating["reviewTarget"] == listing["id"];
-                });
+                const ratings = this.reviews.filter((rating) => rating["reviewTarget"] == listing['id']);
                 // if there are no ratings
-                if (ratings.length == 0) {
-                    return "-";
-                }
+                if (ratings.length == 0) return "-";
                 // else there are ratings
                 const averageRating = ratings.reduce((total, rating) => {
-                    return total + rating["rating"];
+                    return total + parseFloat(rating["rating"]);
                 }, 0) / ratings.length;
-                return averageRating.toFixed(1); //tzh changed .toFixed(2) to .toFixed(1)
+                return averageRating.toFixed(1);  //tzh changed .toFixed(2) to .toFixed(1)
             },
 
             // get ratings for a listing --> return 0 if no ratings
             getAllRatings(listing) {
-                const ratings = this.reviews.filter((rating) => {
-                    return rating["reviewTarget"] == listing["id"];
-                });
+                const ratings = this.reviews.filter((rating) => rating["reviewTarget"] == listing['id']);
                 // if there are no ratings
-                if (ratings.length == 0) {
-                    return 0;
-                }
+                if (ratings.length == 0) return 0;
                 // else there are ratings
                 const averageRating = ratings.reduce((total, rating) => {
-                    return total + rating["rating"];
+                    return total + parseFloat(rating["rating"]);
                 }, 0) / ratings.length;
                 // round to 1 decimal place
                 const roundedRating = Math.round(averageRating * 10) / 10;
@@ -1298,6 +1306,7 @@
                 if(this.discovery){
 
                     const searchResults = this.mostReviews.filter((listing) => {
+                        if (!listing["drinkType"]) return false;
                         const drinkTypeListing = listing["drinkType"].toLowerCase();
                         return drinkTypeListing.includes(drinkTypeSearch);
                     });
@@ -1437,6 +1446,10 @@
                         }
                     }
                 }
+            },
+
+            checkIfMobile() {
+                this.isMobile = window.innerWidth <= 991;
             },
 
             clearSelection() {

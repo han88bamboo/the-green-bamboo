@@ -21,7 +21,8 @@ const routes = [
   {
     path: '/landing',
     name: 'landing',
-    component: () => import('../views/LandingPage.vue')
+    component: () => import('../views/LandingPage.vue'), 
+    props: true
   },
   {
     path: '/signup',
@@ -41,7 +42,14 @@ const routes = [
   {
     path: '/search/:input?',
     name: 'search',
-    component: () => import('../views/SearchView.vue')
+    component: () => import('../views/SearchView.vue'),
+    props: true
+  },
+  {
+    path: '/getListingsByObservationTag/:tag?',
+    name: 'getlistingsbyobservationtag',
+    component: () => import('../views/ListingsByTag.vue'),
+    props: true
   },
   {
     path: '/imageSearch',
@@ -52,6 +60,17 @@ const routes = [
     path: '/successfulOnboarding',
     name: 'successfulonboarding',
     component: () => import('../views/SuccessfulOnboarding.vue')
+  },
+  {
+    path: '/explore',
+    name: 'explore',
+    component: () => import('../views/RandomExplorePage.vue')
+  },
+  {
+    path: '/foryou',
+    name: 'foryou',
+    component: () => import('../views/ForYouPage.vue'),
+    props: true
   },
   // -------------------------------------------------------------------------------------
 
@@ -125,6 +144,7 @@ const routes = [
 
     component: () => import('../views/Producers/EditListing.vue')
   },
+
   // -------------------------------------------------------------------------------------
   
   // ----------------- REQUEST PAGES -----------------
