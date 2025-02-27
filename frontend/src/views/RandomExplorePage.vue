@@ -903,7 +903,7 @@
                 // _id, producerName, producerDesc, originCountry, statusOB, mainDrinks
                 // TODO: make retrieved producers only for listings that are retrieved initially
                     try {
-                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducers`);
+                        const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getProducers`);
                         this.producers = response.data;
                     } 
                     catch (error) {
