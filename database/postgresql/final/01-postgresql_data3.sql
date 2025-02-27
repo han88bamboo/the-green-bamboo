@@ -1,4 +1,6 @@
 -- DROP TABLES IF EXISTS -- 
+DROP TABLE IF EXISTS "pointsRecorder" CASCADE;
+DROP TABLE IF EXISTS "pointSystemRules" CASCADE;
 DROP TABLE IF EXISTS "eventAttendees" CASCADE;
 DROP TABLE IF EXISTS "events" CASCADE;
 DROP TABLE IF EXISTs "clubPostCommentsLikes" CASCADE;
@@ -627,4 +629,23 @@ CREATE TABLE "eventAttendees" (
     "userID" INTEGER,
     "attendeeType" VARCHAR(255),
     "attendeeStatus" BOOLEAN
+);
+
+
+-- ========= "pointSystemRules" =========
+CREATE TABLE "pointSystemRules" (
+    "id" SERIAL PRIMARY KEY,
+    "ruleName" VARCHAR(255),
+    "ruleDesc" TEXT,
+    "ruleCategory" VARCHAR(255),
+    "proofPoints" INTEGER
+);
+
+
+-- ======== "pointsRecorder" =========
+CREATE TABLE "pointsRecorder" (
+    "id" SERIAL PRIMARY KEY,
+    "userID" INTEGER,
+    "userType" VARCHAR(255),
+    "currentPoints" INTEGER,
 );
