@@ -189,7 +189,7 @@ def getRandomListings():
             return jsonify({"error": f"Random selection failed: {str(e)}"}), 500
 
         # Fetch listings from the selected random date
-        cursor.execute('SELECT * FROM "listings" WHERE "addedDate"::DATE = %s ORDER BY RANDOM() LIMIT 20', (random_date,))
+        cursor.execute('SELECT * FROM "listings" WHERE "addedDate"::DATE = %s ORDER BY RANDOM() LIMIT 30', (random_date,))
         listings_data = cursor.fetchall()
 
     if not listings_data:
