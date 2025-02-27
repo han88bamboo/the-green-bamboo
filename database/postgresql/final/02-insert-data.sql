@@ -2815,46 +2815,56 @@ INSERT INTO "listings" (
 
 
 INSERT INTO "reviews" (
-"id", "userID", "reviewTarget", "rating", "reviewDesc", "reviewType", "createdDate", "language", "finish", "willRecommend", "wouldBuyAgain", "taggedUsers", "flavourTag", "photo", "colour", "aroma", "location", "taste", "observationTag", "address")
+"userID", "reviewTarget", "rating", "reviewDesc", "reviewType", "createdDate", "language", "finish", "willRecommend", "wouldBuyAgain", "taggedUsers", "flavourTag", "photo", "colour", "aroma", "location", "taste", "observationTag", "address")
 values 
-(21, 1, 544777, 5, 'This was absolutely fantastic!', 'Listing', '2025-01-13 18:27:38.498', 'English', 'Long, alittle more oaky now', true, false, '{}', '{}', '', '', '', null, '', '{Beginner Friendly, OverHyped!}', ''),
-(17, 2, 544778, 4, 'gooooooood goooooooodgooooooood', 'Listing', '2025-01-08 04:52:10.957', 'English', '', false, false, '{2}', '{Common, Fruits}', '', '', '', null, '', '{Beginner Friendly, Good for Gifts}', ''),
-(22, 3, 544777, 5, 'An absolute masterpiece. Smooth and well-balanced.', 'Listing', '2025-01-15 12:34:56.789', 'English', 'Rich, lingering with subtle spice', true, true, '{}', '{Confectionary, Cereal}', '', '', '', null, '', '{Cool Packaging, Recommended for Enthusiasts}', ''),
-(23, 4, 544777, 3, 'It was okay, but I expected more depth.', 'Listing', '2025-01-14 09:18:32.112', 'English', 'Short, slightly bitter', false, false, '{}', '{Spices, Umami}', '', '', '', null, '', '{What Just Hit Me, Recommended for Enthusiasts}', ''),
-(24, 1, 544777, 4, 'Really enjoyable with friends. Would buy again!', 'Listing', '2025-01-12 20:45:22.674', 'English', 'Mellow and warm', true, true, '{}', '{Fruits, Green}', '', '', '', null, '', '{Social Drink, Recommended for Enthusiasts}', ''),
-(25, 2, 544777, 2, 'Not to my taste, too strong on the finish.', 'Listing', '2025-01-10 16:50:10.389', 'English', 'Harsh and overpowering', false, false, '{}', '{Green, Confectionary, Lactic}', '', '', '', null, '', '{Acquired Taste}', ''),
-(26, 3, 544777, 5, 'Absolutely delightful! A must-try.', 'Listing', '2025-01-09 11:30:45.876', 'English', 'Long, smooth caramel notes', true, true, '{}', '{Smoky, Earthy}', '', '', '', null, '', '{Daily Drinker}', ''),
-(27, 4, 544777, 3, 'A bit too complex for me, but I can appreciate the craftsmanship.', 'Listing', '2025-01-07 14:20:30.654', 'English', 'Layered and evolving', true, false, '{}', '{Floral, Mineral}', '', '', '', null, '', '{More Complex Than Inception}', ''),
-(28, 4, 544777, 4, 'Unexpectedly sharp, but it grows on you.', 'Listing', '2025-01-06 10:55:18.908', 'English', 'Sharp and intense', false, false, '{}', '{Spices, Others}', '', '', '', null, '', '{Sharp Like a Toothpick}', ''),
-(29, 3, 544777, 5, 'Great for a one-time experience, very unique.', 'Listing', '2025-01-05 19:38:50.782', 'English', 'Medium, balanced', true, false, '{}', '{Umami, Cereal}', '', '', '', null, '', '{Try Once, More Complex Than Inception}', ''),
-(30, 1, 544777, 4, 'Surprisingly fresh, makes me feel healthy drinking it.', 'Listing', '2025-01-04 08:22:16.543', 'English', 'Crisp and refreshing', true, true, '{}', '{Green, Mineral}', '', '', '', null, '', '{Healthy}', ''),
-(31, 3, 544777, 5, 'Absolutely delightful! A must-try.', 'Listing', '2025-01-09 11:30:45.876', 'English', 'Long, smooth caramel notes', true, true, '{}', '{Smoky, Green, Earthy}', '', '', '', null, '', '{Daily Drinker, OverHyped!, More Complex Than Inception}', ''),
-(32, 4, 544777, 3, 'A bit too complex for me, but I can appreciate the craftsmanship.', 'Listing', '2025-01-07 14:20:30.654', 'English', 'Layered and evolving', true, false, '{}', '{Floral, Mineral}', '', '', '', null, '', '{More Complex Than Inception}', ''),
-(33, 4, 544777, 4, 'Unexpectedly sharp, but it grows on you.', 'Listing', '2025-01-06 10:55:18.908', 'English', 'Sharp and intense', false, false, '{}', '{Spices, Others}', '', '', '', null, '', '{Sharp Like a Toothpick, OverHyped!}', ''),
-(34, 3, 544777, 5, 'Great for a one-time experience, very unique.', 'Listing', '2025-01-05 19:38:50.782', 'English', 'Medium, balanced', true, false, '{}', '{Umami, Green, Cereal}', '', '', '', null, '', '{Try Once}', ''),
-(35, 1, 544777, 4, 'Surprisingly fresh, makes me feel healthy drinking it.', 'Listing', '2025-01-04 08:22:16.543', 'English', 'Crisp and refreshing', true, true, '{}', '{Green, Mineral}', '', '', '', null, '', '{Healthy, Recommended for Enthusiasts}', ''),
-(36, 1, 544777, 5, 'This was absolutely fantastic!', 'Listing', '2025-01-13 18:27:38.498', 'English', 'Long, alittle more oaky now', true, false, '{}', '{}', '', '', '', null, '', '{Beginner Friendly, OverHyped!}', ''),
-(37, 2, 544777, 4, 'gooooooood goooooooodgooooooood', 'Listing', '2025-01-08 04:52:10.957', 'English', '', false, false, '{2}', '{Common, Fruits}', '', '', '', null, '', '{Beginner Friendly, Good for Gifts}', ''),
-(38, 3, 544777, 5, 'An absolute masterpiece. Smooth and well-balanced.', 'Listing', '2025-01-15 12:34:56.789', 'English', 'Rich, lingering with subtle spice', true, true, '{}', '{Confectionary, Cereal}', '', '', '', null, '', '{Cool Packaging}', ''),
-(39, 4, 544777, 3, 'It was okay, but I expected more depth.', 'Listing', '2025-01-14 09:18:32.112', 'English', 'Short, slightly bitter', false, false, '{}', '{Spices, Umami}', '', '', '', null, '', '{What Just Hit Me, OverHyped!}', ''),
-(40, 1, 544777, 4, 'Really enjoyable with friends. Would buy again!', 'Listing', '2025-01-12 20:45:22.674', 'English', 'Mellow and warm', true, true, '{}', '{Fruits, Common}', '', '', '', null, '', '{Social Drink, OverHyped!}', ''),
-(41, 2, 544777, 2, 'Not to my taste, too strong on the finish.', 'Listing', '2025-01-10 16:50:10.389', 'English', 'Harsh and overpowering', false, false, '{}', '{Green, Confectionary, Lactic}', '', '', '', null, '', '{Acquired Taste}', ''),
-(42, 3, 544777, 5, 'Absolutely delightful! A must-try.', 'Listing', '2025-01-09 11:30:45.876', 'English', 'Long, smooth caramel notes', true, true, '{}', '{Smoky, Earthy}', '', '', '', null, '', '{Daily Drinker, Recommended for Enthusiasts, More Complex Than Inception}', ''),
-(43, 4, 100164, 4, 'Unexpectedly sharp, but it grows on you.', 'Listing', '2025-01-06 10:55:18.908', 'English', 'Sharp and intense', false, false, '{}', '{Spices, Others}', '', '', '', null, '', '{Sharp Like a Toothpick}', ''),
-(44, 3, 101022, 5, 'Great for a one-time experience, very unique.', 'Listing', '2025-01-05 19:38:50.782', 'English', 'Medium, balanced', true, false, '{}', '{Umami, Cereal}', '', '', '', null, '', '{Try Once, More Complex Than Inception}', ''),
-(45, 1, 101214, 4, 'Surprisingly fresh, makes me feel healthy drinking it.', 'Listing', '2025-01-04 08:22:16.543', 'English', 'Crisp and refreshing', true, true, '{}', '{Green, Mineral}', '', '', '', null, '', '{Healthy}', ''),
-(46, 3, 100021, 5, 'Absolutely delightful! A must-try.', 'Listing', '2025-01-09 11:30:45.876', 'English', 'Long, smooth caramel notes', true, true, '{}', '{Smoky, Green, Earthy}', '', '', '', null, '', '{Daily Drinker, OverHyped!, More Complex Than Inception}', ''),
-(47, 4, 100663, 3, 'A bit too complex for me, but I can appreciate the craftsmanship.', 'Listing', '2025-01-07 14:20:30.654', 'English', 'Layered and evolving', true, false, '{}', '{Floral, Mineral}', '', '', '', null, '', '{More Complex Than Inception}', ''),
-(50, 4, 100868, 4, 'Unexpectedly sharp, but it grows on you.', 'Listing', '2025-01-06 10:55:18.908', 'English', 'Sharp and intense', false, false, '{}', '{Spices, Others}', '', '', '', null, '', '{Sharp Like a Toothpick, OverHyped!}', ''),
-(51, 3, 101246, 5, 'Great for a one-time experience, very unique.', 'Listing', '2025-01-05 19:38:50.782', 'English', 'Medium, balanced', true, false, '{}', '{Umami, Green, Cereal}', '', '', '', null, '', '{Try Once}', ''),
-(52, 1, 100744, 4, 'Surprisingly fresh, makes me feel healthy drinking it.', 'Listing', '2025-01-04 08:22:16.543', 'English', 'Crisp and refreshing', true, true, '{}', '{Green, Mineral}', '', '', '', null, '', '{Healthy, Recommended for Enthusiasts}', ''),
-(53, 1, 100224, 5, 'This was absolutely fantastic!', 'Listing', '2025-01-13 18:27:38.498', 'English', 'Long, alittle more oaky now', true, false, '{}', '{}', '', '', '', null, '', '{Beginner Friendly, OverHyped!}', ''),
-(54, 2, 101472, 4, 'gooooooood goooooooodgooooooood', 'Listing', '2025-01-08 04:52:10.957', 'English', '', false, false, '{2}', '{Common, Fruits}', '', '', '', null, '', '{Beginner Friendly, Good for Gifts}', ''),
-(55, 3, 100061, 5, 'An absolute masterpiece. Smooth and well-balanced.', 'Listing', '2025-01-15 12:34:56.789', 'English', 'Rich, lingering with subtle spice', true, true, '{}', '{Confectionary, Cereal}', '', '', '', null, '', '{Cool Packaging}', ''),
-(56, 4, 101490, 3, 'It was okay, but I expected more depth.', 'Listing', '2025-01-14 09:18:32.112', 'English', 'Short, slightly bitter', false, false, '{}', '{Spices, Umami}', '', '', '', null, '', '{What Just Hit Me, OverHyped!}', ''),
-(57, 1, 100028, 4, 'Really enjoyable with friends. Would buy again!', 'Listing', '2025-01-12 20:45:22.674', 'English', 'Mellow and warm', true, true, '{}', '{Fruits, Common}', '', '', '', null, '', '{Social Drink, OverHyped!}', ''),
-(58, 2, 100688, 2, 'Not to my taste, too strong on the finish.', 'Listing', '2025-01-10 16:50:10.389', 'English', 'Harsh and overpowering', false, false, '{}', '{Green, Confectionary, Lactic}', '', '', '', null, '', '{Acquired Taste}', ''),
-(59, 3, 101218, 5, 'Absolutely delightful! A must-try.', 'Listing', '2025-01-09 11:30:45.876', 'English', 'Long, smooth caramel notes', true, true, '{}', '{Smoky, Earthy}', '', '', '', null, '', '{Daily Drinker, Recommended for Enthusiasts, More Complex Than Inception}', '');
+(3, 5, 8.1, 'Amazing taste, very smooth.', 'Listing', '2024-02-01 14:32:00', 'English', 'long', TRUE, TRUE, ARRAY[2,3], ARRAY['oak', 'vanilla'], null, '#A52A2A', 'woody', 1, 'rich', ARRAY['mellow', 'deep'], '123 Street A'),
+(3, 12, 3.8, 'Good but a little harsh.', 'Listing', '2024-02-02 16:45:00', 'English', 'medium', FALSE, TRUE, ARRAY[4], ARRAY['caramel'], null, '#8B0000', 'spicy', 1, 'bold', ARRAY['sharp'], '456 Street B'),
+(3, 8, 4.2, 'Smooth and enjoyable.', 'Listing', '2024-02-03 19:10:00', 'English', 'short', TRUE, TRUE, ARRAY[3,5], ARRAY['honey'], null, '#FFD700', 'sweet', 1, 'balanced', ARRAY['fruity'], '789 Street C'),
+(3, 15, 2.9, 'Too bitter for my taste.', 'Listing', '2024-02-04 11:23:00', 'English', 'long', FALSE, FALSE, ARRAY[2], ARRAY['hops'], null, '#000000', 'earthy', 1, 'bitter', ARRAY['strong'], '321 Street D'),
+(3, 6, 4.9, 'Incredible complexity, highly recommend!', 'Listing', '2024-02-05 20:30:00', 'English', 'long', TRUE, TRUE, ARRAY[5], ARRAY['chocolate'], null, '#4B0082', 'rich', 1, 'deep', ARRAY['complex'], '567 Street E'),
+(3, 18, 9.3, 'Average experience, decent aftertaste.', 'Listing', '2024-02-06 09:15:00', 'English', 'medium', TRUE, FALSE, ARRAY[4,2], ARRAY['berry'], null, '#DC143C', 'fruity', 1, 'dry', ARRAY['light'], '890 Street F'),
+(3, 10, 4.0, 'Good balance of flavors.', 'Listing', '2024-02-07 13:05:00', 'English', 'medium', TRUE, TRUE, ARRAY[5], ARRAY['spice'], null, '#8B4513', 'warm', 1, 'smooth', ARRAY['balanced'], '234 Street G'),
+(3, 3, 3.0, 'A bit too strong for me.', 'Listing', '2024-02-08 17:40:00', 'English', 'short', FALSE, FALSE, ARRAY[2,3], ARRAY['citrus'], null, '#ADD8E6', 'sharp', 1, 'intense', ARRAY['burn'], '678 Street H'),
+(3, 14, 9.7, 'Very refreshing and crisp.', 'Listing', '2024-02-09 22:10:00', 'English', 'short', TRUE, TRUE, ARRAY[4], ARRAY['floral'], null, '#00FF00', 'fresh', 1, 'light', ARRAY['crisp'], '101 Street I'),
+(3, 9, 3.2, 'A bit underwhelming, expected more.', 'Listing', '2024-02-10 08:55:00', 'English', 'medium', FALSE, FALSE, ARRAY[3], ARRAY['oak'], null, '#800000', 'dry', 1, 'muted', ARRAY['flat'], '202 Street J'),
+(1, 544777, 5, 'This was absolutely fantastic!', 'Listing', '2025-01-13 18:27:38.498', 'English', 'Long, alittle more oaky now', true, false, '{}', '{}', '', '', '', null, '', '{Beginner Friendly, OverHyped!}', ''),
+(2, 544778, 4, 'gooooooood goooooooodgooooooood', 'Listing', '2025-01-08 04:52:10.957', 'English', '', false, false, '{2}', '{Common, Fruits}', '', '', '', null, '', '{Beginner Friendly, Good for Gifts}', ''),
+(3, 544777, 5, 'An absolute masterpiece. Smooth and well-balanced.', 'Listing', '2025-01-15 12:34:56.789', 'English', 'Rich, lingering with subtle spice', true, true, '{}', '{Confectionary, Cereal}', '', '', '', null, '', '{Cool Packaging, Recommended for Enthusiasts}', ''),
+(4, 544777, 3, 'It was okay, but I expected more depth.', 'Listing', '2025-01-14 09:18:32.112', 'English', 'Short, slightly bitter', false, false, '{}', '{Spices, Umami}', '', '', '', null, '', '{What Just Hit Me, Recommended for Enthusiasts}', ''),
+(1, 544777, 4, 'Really enjoyable with friends. Would buy again!', 'Listing', '2025-01-12 20:45:22.674', 'English', 'Mellow and warm', true, true, '{}', '{Fruits, Green}', '', '', '', null, '', '{Social Drink, Recommended for Enthusiasts}', ''),
+(2, 544777, 2, 'Not to my taste, too strong on the finish.', 'Listing', '2025-01-10 16:50:10.389', 'English', 'Harsh and overpowering', false, false, '{}', '{Green, Confectionary, Lactic}', '', '', '', null, '', '{Acquired Taste}', ''),
+(3, 544777, 5, 'Absolutely delightful! A must-try.', 'Listing', '2025-01-09 11:30:45.876', 'English', 'Long, smooth caramel notes', true, true, '{}', '{Smoky, Earthy}', '', '', '', null, '', '{Daily Drinker}', ''),
+(4, 544777, 3, 'A bit too complex for me, but I can appreciate the craftsmanship.', 'Listing', '2025-01-07 14:20:30.654', 'English', 'Layered and evolving', true, false, '{}', '{Floral, Mineral}', '', '', '', null, '', '{More Complex Than Inception}', ''),
+(4, 544777, 4, 'Unexpectedly sharp, but it grows on you.', 'Listing', '2025-01-06 10:55:18.908', 'English', 'Sharp and intense', false, false, '{}', '{Spices, Others}', '', '', '', null, '', '{Sharp Like a Toothpick}', ''),
+(3, 544777, 5, 'Great for a one-time experience, very unique.', 'Listing', '2025-01-05 19:38:50.782', 'English', 'Medium, balanced', true, false, '{}', '{Umami, Cereal}', '', '', '', null, '', '{Try Once, More Complex Than Inception}', ''),
+(1, 544777, 4, 'Surprisingly fresh, makes me feel healthy drinking it.', 'Listing', '2025-01-04 08:22:16.543', 'English', 'Crisp and refreshing', true, true, '{}', '{Green, Mineral}', '', '', '', null, '', '{Healthy}', ''),
+(3, 544777, 5, 'Absolutely delightful! A must-try.', 'Listing', '2025-01-09 11:30:45.876', 'English', 'Long, smooth caramel notes', true, true, '{}', '{Smoky, Green, Earthy}', '', '', '', null, '', '{Daily Drinker, OverHyped!, More Complex Than Inception}', ''),
+(4, 544777, 3, 'A bit too complex for me, but I can appreciate the craftsmanship.', 'Listing', '2025-01-07 14:20:30.654', 'English', 'Layered and evolving', true, false, '{}', '{Floral, Mineral}', '', '', '', null, '', '{More Complex Than Inception}', ''),
+(4, 544777, 4, 'Unexpectedly sharp, but it grows on you.', 'Listing', '2025-01-06 10:55:18.908', 'English', 'Sharp and intense', false, false, '{}', '{Spices, Others}', '', '', '', null, '', '{Sharp Like a Toothpick, OverHyped!}', ''),
+(3, 544777, 5, 'Great for a one-time experience, very unique.', 'Listing', '2025-01-05 19:38:50.782', 'English', 'Medium, balanced', true, false, '{}', '{Umami, Green, Cereal}', '', '', '', null, '', '{Try Once}', ''),
+(1, 544777, 4, 'Surprisingly fresh, makes me feel healthy drinking it.', 'Listing', '2025-01-04 08:22:16.543', 'English', 'Crisp and refreshing', true, true, '{}', '{Green, Mineral}', '', '', '', null, '', '{Healthy, Recommended for Enthusiasts}', ''),
+(1, 544777, 5, 'This was absolutely fantastic!', 'Listing', '2025-01-13 18:27:38.498', 'English', 'Long, alittle more oaky now', true, false, '{}', '{}', '', '', '', null, '', '{Beginner Friendly, OverHyped!}', ''),
+(2, 544777, 4, 'gooooooood goooooooodgooooooood', 'Listing', '2025-01-08 04:52:10.957', 'English', '', false, false, '{2}', '{Common, Fruits}', '', '', '', null, '', '{Beginner Friendly, Good for Gifts}', ''),
+(3, 544777, 5, 'An absolute masterpiece. Smooth and well-balanced.', 'Listing', '2025-01-15 12:34:56.789', 'English', 'Rich, lingering with subtle spice', true, true, '{}', '{Confectionary, Cereal}', '', '', '', null, '', '{Cool Packaging}', ''),
+(4, 544777, 3, 'It was okay, but I expected more depth.', 'Listing', '2025-01-14 09:18:32.112', 'English', 'Short, slightly bitter', false, false, '{}', '{Spices, Umami}', '', '', '', null, '', '{What Just Hit Me, OverHyped!}', ''),
+(1, 544777, 4, 'Really enjoyable with friends. Would buy again!', 'Listing', '2025-01-12 20:45:22.674', 'English', 'Mellow and warm', true, true, '{}', '{Fruits, Common}', '', '', '', null, '', '{Social Drink, OverHyped!}', ''),
+(2, 544777, 2, 'Not to my taste, too strong on the finish.', 'Listing', '2025-01-10 16:50:10.389', 'English', 'Harsh and overpowering', false, false, '{}', '{Green, Confectionary, Lactic}', '', '', '', null, '', '{Acquired Taste}', ''),
+(3, 544777, 5, 'Absolutely delightful! A must-try.', 'Listing', '2025-01-09 11:30:45.876', 'English', 'Long, smooth caramel notes', true, true, '{}', '{Smoky, Earthy}', '', '', '', null, '', '{Daily Drinker, Recommended for Enthusiasts, More Complex Than Inception}', ''),
+(4, 100164, 4, 'Unexpectedly sharp, but it grows on you.', 'Listing', '2025-01-06 10:55:18.908', 'English', 'Sharp and intense', false, false, '{}', '{Spices, Others}', '', '', '', null, '', '{Sharp Like a Toothpick}', ''),
+(3, 101022, 5, 'Great for a one-time experience, very unique.', 'Listing', '2025-01-05 19:38:50.782', 'English', 'Medium, balanced', true, false, '{}', '{Umami, Cereal}', '', '', '', null, '', '{Try Once, More Complex Than Inception}', ''),
+(1, 101214, 4, 'Surprisingly fresh, makes me feel healthy drinking it.', 'Listing', '2025-01-04 08:22:16.543', 'English', 'Crisp and refreshing', true, true, '{}', '{Green, Mineral}', '', '', '', null, '', '{Healthy}', ''),
+(3, 100021, 5, 'Absolutely delightful! A must-try.', 'Listing', '2025-01-09 11:30:45.876', 'English', 'Long, smooth caramel notes', true, true, '{}', '{Smoky, Green, Earthy}', '', '', '', null, '', '{Daily Drinker, OverHyped!, More Complex Than Inception}', ''),
+(4, 100663, 3, 'A bit too complex for me, but I can appreciate the craftsmanship.', 'Listing', '2025-01-07 14:20:30.654', 'English', 'Layered and evolving', true, false, '{}', '{Floral, Mineral}', '', '', '', null, '', '{More Complex Than Inception}', ''),
+(4, 100868, 4, 'Unexpectedly sharp, but it grows on you.', 'Listing', '2025-01-06 10:55:18.908', 'English', 'Sharp and intense', false, false, '{}', '{Spices, Others}', '', '', '', null, '', '{Sharp Like a Toothpick, OverHyped!}', ''),
+(3, 101246, 5, 'Great for a one-time experience, very unique.', 'Listing', '2025-01-05 19:38:50.782', 'English', 'Medium, balanced', true, false, '{}', '{Umami, Green, Cereal}', '', '', '', null, '', '{Try Once}', ''),
+(1, 100744, 4, 'Surprisingly fresh, makes me feel healthy drinking it.', 'Listing', '2025-01-04 08:22:16.543', 'English', 'Crisp and refreshing', true, true, '{}', '{Green, Mineral}', '', '', '', null, '', '{Healthy, Recommended for Enthusiasts}', ''),
+(1, 100224, 5, 'This was absolutely fantastic!', 'Listing', '2025-01-13 18:27:38.498', 'English', 'Long, alittle more oaky now', true, false, '{}', '{}', '', '', '', null, '', '{Beginner Friendly, OverHyped!}', ''),
+(2, 101472, 4, 'gooooooood goooooooodgooooooood', 'Listing', '2025-01-08 04:52:10.957', 'English', '', false, false, '{2}', '{Common, Fruits}', '', '', '', null, '', '{Beginner Friendly, Good for Gifts}', ''),
+(3, 100061, 5, 'An absolute masterpiece. Smooth and well-balanced.', 'Listing', '2025-01-15 12:34:56.789', 'English', 'Rich, lingering with subtle spice', true, true, '{}', '{Confectionary, Cereal}', '', '', '', null, '', '{Cool Packaging}', ''),
+(4, 101490, 3, 'It was okay, but I expected more depth.', 'Listing', '2025-01-14 09:18:32.112', 'English', 'Short, slightly bitter', false, false, '{}', '{Spices, Umami}', '', '', '', null, '', '{What Just Hit Me, OverHyped!}', ''),
+(1, 100028, 4, 'Really enjoyable with friends. Would buy again!', 'Listing', '2025-01-12 20:45:22.674', 'English', 'Mellow and warm', true, true, '{}', '{Fruits, Common}', '', '', '', null, '', '{Social Drink, OverHyped!}', ''),
+(2, 100688, 2, 'Not to my taste, too strong on the finish.', 'Listing', '2025-01-10 16:50:10.389', 'English', 'Harsh and overpowering', false, false, '{}', '{Green, Confectionary, Lactic}', '', '', '', null, '', '{Acquired Taste}', ''),
+(3, 101218, 5, 'Absolutely delightful! A must-try.', 'Listing', '2025-01-09 11:30:45.876', 'English', 'Long, smooth caramel notes', true, true, '{}', '{Smoky, Earthy}', '', '', '', null, '', '{Daily Drinker, Recommended for Enthusiasts, More Complex Than Inception}', '');
 
    
 INSERT INTO "usersFollowLists" (
@@ -2880,6 +2890,24 @@ INSERT INTO "venuesMenu" (
 INSERT INTO "menuItems"(
     "itemOrder", "itemPrice", "itemAvailability", "itemID", "itemServingType", "sectionId")
 VALUES(0, 12.00, true, 544777, 1, 1);
+
+INSERT INTO "reviewsUserVotes" ("upvotes", "downvotes", "reviewId") VALUES
+(ARRAY[2,1,4], ARRAY[5], 1),
+(ARRAY[1,4], ARRAY[2,5], 2),
+(ARRAY[2,5], ARRAY[1], 3),
+(ARRAY[4], ARRAY[2,1,5], 4),
+(ARRAY[1,5], ARRAY[2,4], 5),
+(ARRAY[2,4,5], ARRAY[1], 6),
+(ARRAY[1,5], ARRAY[2,4], 7),
+(ARRAY[2,1], ARRAY[4,5], 8),
+(ARRAY[4,5], ARRAY[2,1], 9),
+(ARRAY[2,1,4], ARRAY[5], 10);
+
+INSERT INTO "badges" ("badgeName", "badgePhoto", "badgeDesc") VALUES
+('User Tagger', 'https://tf-drinkx-prod-fe-static.s3.ap-southeast-1.amazonaws.com/drink-x.com/tagging_master_badge.jpg', 'Awarded for tagging users in reviews.'),
+('Location Explorer', 'https://tf-drinkx-prod-fe-static.s3.ap-southeast-1.amazonaws.com/drink-x.com/location_explorer_badge.jpg', 'Awarded for tagging multiple locations in reviews.'),
+('Country Traveler', 'https://tf-drinkx-prod-fe-static.s3.ap-southeast-1.amazonaws.com/drink-x.com/country_traveler_badge.jpg', 'Awarded for tagging reviews in various countries.'),
+('Popular Reviewer', 'https://tf-drinkx-prod-fe-static.s3.ap-southeast-1.amazonaws.com/drink-x.com/popular_reviewer_badge.jpg', 'Awarded for receiving a high number of upvotes on reviews.');
 
 INSERT INTO "clubs"(
     "clubName", "clubDesc", "isInviteOnly", "clubLink", "clubBanner", "dateCreated")
@@ -2917,14 +2945,59 @@ VALUES
 
 
 INSERT INTO "clubMembers"(
-    "clubID", "userID", "userType", "joinDate", "isAdmin", "joinStatus")
+    "clubID", "userID", "userType", "joinDate", "isAdmin")
 VALUES
-    (1, 1, 'user', '2024-10-28 18:47:31.403', true, true),
-    (1, 2, 'user', '2024-10-30 18:45:31.403', false, true),
-    (1, 3, 'user', '2024-10-30 18:45:31.403', false, false),
-    (1, 1, 'venue', '2024-10-30 18:53:31.403', false, false),
-    (1, 1, 'producer', '2024-10-30 18:53:31.403', false, false),
-    (2, 1, 'producer', '2024-10-28 18:55:31.403', true, true);
+    (1, 1, 'user', '2024-10-28 18:47:31.403', true),
+    (1, 2, 'user', '2024-10-30 18:45:31.403', false),
+    (1, 3, 'user', '2024-10-30 18:45:31.403', false),
+    (1, 1, 'venue', '2024-10-30 18:53:31.403', false),
+    (1, 1, 'producer', '2024-10-30 18:53:31.403', false),
+    (1, 6, 'user', '2024-10-31 18:45:00.403', false),
+    (1, 7, 'user', '2024-11-01 18:45:00.403', false),
+    (1, 8, 'user', '2024-11-02 18:45:00.403', false),
+    (1, 9, 'user', '2024-11-03 18:45:00.403', false),
+    (1, 10, 'user', '2024-11-04 18:45:00.403', false),
+    (1, 11, 'user', '2024-11-05 18:45:00.403', false),
+    (1, 12, 'user', '2024-11-06 18:45:00.403', false),
+    (1, 13, 'user', '2024-11-07 18:45:00.403', false),
+    (1, 14, 'user', '2024-11-08 18:45:00.403', false),
+    (1, 15, 'user', '2024-11-09 18:45:00.403', false),
+    (2, 1, 'producer', '2024-10-28 18:55:31.403', true),
+    (2, 5, 'user', '2024-10-28 18:55:31.403', true),
+    (3, 1, 'user', '2024-10-30 18:45:31.403', true),
+    (4, 1, 'user', '2024-10-30 18:45:31.403', true),
+    (5, 1, 'user', '2024-10-30 18:45:31.403', true),
+    (6, 1, 'user', '2024-10-30 18:45:31.403', true),
+    (7, 1, 'user', '2024-10-30 18:45:31.403', true),
+    (8, 1, 'user', '2024-10-30 18:45:31.403', true),
+    (9, 1, 'user', '2024-10-30 18:45:31.403', true),
+    (10, 5, 'user', '2024-10-30 18:45:31.403', true),
+    (11, 5, 'user', '2024-10-30 18:45:31.403', true),
+    (12, 5, 'user', '2024-10-30 18:45:31.403', true),
+    (13, 5, 'user', '2024-10-30 18:45:31.403', true),
+    (14, 5, 'user', '2024-10-30 18:45:31.403', true),
+    (15, 5, 'user', '2024-10-30 18:45:31.403', true),
+    (16, 5, 'user', '2024-10-30 18:45:31.403', true),
+    (17, 5, 'user', '2024-10-30 18:45:31.403', true),
+    (18, 5, 'user', '2024-11-01 18:45:31.403', true),
+    (19, 5, 'user', '2024-11-01 18:45:31.403', true),
+    (20, 5, 'user', '2024-11-01 18:45:31.403', true);
+
+INSERT INTO "clubInvites"(
+    "clubID", "inviteeID", "inviteeUserType", "inviterID", "inviterUserType", "inviteDate")
+VALUES
+    (3, 5, 'user', 1, 'user', '2024-10-30 18:45:31.403'),
+    (4, 5, 'user', 1, 'user', '2024-10-30 18:45:31.403'),
+    (5, 5, 'user', 1, 'user', '2024-10-30 18:45:31.403'),
+    (6, 5, 'user', 1, 'user', '2024-10-30 18:45:31.403'),
+    (7, 5, 'user', 1, 'user', '2024-10-30 18:45:31.403'),
+    (8, 5, 'user', 1, 'user', '2024-10-30 18:45:31.403');
+
+INSERT INTO "clubRequests"(
+    "clubID", "userID", "userType", "requestDate")
+VALUES
+    (2, 3, 'user', '2024-10-31 18:45:31.403'),
+    (2, 4, 'user', '2024-10-31 18:45:31.403');
 
 INSERT INTO "clubPosts"(
     "clubID", "postDate", "postContent", "postPhotos", "posterID")
@@ -3005,6 +3078,107 @@ INSERT INTO "clubPostCommentsLikes"(
     "postID", "commentID", "memberID")
 VALUES
     (1, 1, 3);
+
+INSERT INTO "events"(
+    "eventName", "eventDesc", "eventType", "eventStartDate", "eventEndDate", "eventStartTime", "eventEndTime", "eventLimit", "eventBanners", "ticketed", "paidEvent", "eventLocation", "paymentLink", "eventOwnerID", "eventOwnerType", "numAttendees", "createdDate") 
+VALUES 
+    ('Trivia Night', 'Test your knowledge in our weekly trivia night! Prizes for the top teams.', 'Online', '2025-01-20', '2025-01-20', '19:00:00', '22:00:00', 100, NULL, FALSE, FALSE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', '', 1, 'venue', 0, '2024-11-01 18:45:31.403'),
+    ('Whiskey Appreciation Night', 'Explore the world of whiskey with guided tastings of premium selections.', 'Online', '2025-03-05', '2025-03-05', '19:00:00', '22:00:00', 100, '{"https://img.pikbest.com/templates/20210426/bg/602bf6957a0b2.png!w700wp", "https://png.pngtree.com/png-clipart/20210502/original/pngtree-classic-bar-whiskey-leading-poster-png-image_6264354.png", "https://www.chivas.com/wp-content/uploads/2022/06/citrus-old-fashioned-whisky-cocktail-promo-1.jpg"}', TRUE, TRUE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 'https://www.google.com', 1, 'venue', 10, '2025-02-01 18:45:31.403'),
+    ('Beer Pong Tournament', 'Compete with friends and other teams in our ultimate beer pong showdown.', 'Online', '2025-03-03', '2025-03-03', '18:00:00', '22:00:00', 100, NULL, FALSE, FALSE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', '', 2, 'user', 7, '2025-02-05 18:45:31.403'),
+    ('Wine Tasting Night', 'Savor an evening of fine wines paired with small bites and expert insights.', 'Location', '2025-03-10', '2025-03-10', '18:30:00', '21:00:00', 100, NULL, TRUE, FALSE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 'https://www.google.com', 3, 'user', 4, '2025-02-12 18:45:31.403'),
+    ('Rum Cocktail Masterclass', 'Learn to craft the perfect rum-based cocktails with our expert mixologists.', 'Location', '2025-03-18', '2025-03-18', '17:00:00', '19:00:00', 100, NULL, TRUE, FALSE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 'https://www.google.com', 1, 'producer', 0, '2025-02-13 18:45:31.403'),
+    ('Ladies Night - Margaritas Galore', 'Enjoy $5 margaritas and a free welcome drink for all ladies.', 'Location', '2025-03-29', '2025-03-29', '18:00:00', '23:00:00', 100, NULL, FALSE, FALSE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', '', 1, 'venue', 0, '2025-02-14 18:45:31.403'),
+    ('Bourbon & Blues Night', 'Pair smooth bourbons with soulful blues music in a cozy atmosphere.', 'Location', '2025-03-15', '2025-03-15', '20:00:00', '23:00:00', 100, NULL, TRUE, TRUE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 'https://www.google.com', 1, 'producer', 0, '2025-02-15 18:45:31.403'),
+    ('IPA Showcase', 'Discover unique IPAs from local breweries in this beer lover’s event.','Location', '2025-03-20', '2025-03-20', '17:00:00', '20:00:00', 100, NULL, FALSE, FALSE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', '', 1, 'venue', 0, '2025-02-16 18:45:31.403'),
+    ('Cocktail Night: Around the World', 'Travel the globe one sip at a time with cocktails inspired by international flavors.', 'Location', '2025-03-25', '2025-03-25', '19:00:00', '23:00:00', 100, NULL, TRUE, FALSE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 'https://www.google.com', 1, 'user', 0, '2025-02-17 18:45:31.403'),
+    ('Cider Festival', 'Celebrate the best ciders with unlimited tastings and live music all day long.', 'Location', '2025-03-24', '2025-03-24', '14:00:00', '22:00:00', 100, NULL, TRUE, TRUE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 'https://www.google.com', 1, 'venue', 0, '2025-02-18 18:45:31.403');
+
+
+INSERT INTO "eventAttendees"(
+    "eventID", "eventDate", "eventStartTime", "userID", "attendeeType", "attendeeStatus")
+VALUES
+    (1, '2025-01-20', '19:00:00', 5, 'user', true),
+    (2, '2025-03-05', '19:00:00', 1, 'user', true),
+    (2, '2025-03-05', '19:00:00', 1, 'producer', true),
+    (2, '2025-03-05', '19:00:00', 2, 'user', true),
+    (2, '2025-03-05', '19:00:00', 3, 'user', true),
+    (2, '2025-03-05', '19:00:00', 6, 'user', true),
+    (2, '2025-03-05', '19:00:00', 7, 'user', true),
+    (2, '2025-03-05', '19:00:00', 8, 'user', true),
+    (2, '2025-03-05', '19:00:00', 9, 'user', true),
+    (2, '2025-03-05', '19:00:00', 10, 'user', true),
+    (2, '2025-03-05', '19:00:00', 11, 'user', true),
+    (3, '2025-03-03', '18:00:00', 1, 'user', true),
+    (3, '2025-03-03', '18:00:00', 2, 'user', true),
+    (3, '2025-03-03', '18:00:00', 3, 'user', true),
+    (3, '2025-03-03', '18:00:00', 4, 'user', true),
+    (3, '2025-03-03', '18:00:00', 5, 'user', true),
+    (3, '2025-03-03', '18:00:00', 6, 'user', true),
+    (3, '2025-03-03', '18:00:00', 7, 'user', true),
+    (4, '2025-03-10', '18:30:00', 1, 'user', true),
+    (4, '2025-03-10', '18:30:00', 2, 'user', true),
+    (4, '2025-03-10', '18:30:00', 3, 'user', true),
+    (4, '2025-03-10', '18:30:00', 4, 'user', true);
+
+
+INSERT INTO "pointSystemRules"("ruleName", "ruleDesc", "ruleCategory", "proofPoints")
+VALUES
+  ('Simple Review (Text Only)', 
+   'The bare minimum review. This is the base upon which more points can be earned for the same primary action', 
+   'Primary', 
+   5),
+  ('Extensive Review', 
+   'Fills up extended review component +Points on top of Simple Review (Text Only)', 
+   'Secondary', 
+   3),
+  ('Image Attached To Review', 
+   'Adds image to post +Points on top of Simple Review (Text Only)', 
+   'Secondary', 
+   2),
+  ('Tags Location', 
+   'Tags location to post +Points on top of Simple Review (Text Only)', 
+   'Secondary', 
+   2),
+  ('Tags Friends', 
+   'Tags friends to Review +Points on top of Simple Review (Text Only); Same points awarded regardless of how many friends tagged', 
+   'Secondary', 
+   2),
+  ('Posts In Clubs', 
+   'Creates a post in Clubs. Points awarded independent of any other event', 
+   'Primary', 
+   1),
+  ('Upvote', 
+   'When a review/comment/club post gets an upvote; awarded for each Upvote given', 
+   'Secondary', 
+   1),
+  ('Downvote', 
+   'When a review/comment/club post gets a downvote; deducted for each Downvote given', 
+   'Secondary', 
+   -1),
+  ('Comment', 
+   'Makes a comment on a Review of Club Post; independent of any other event', 
+   'Primary', 
+   1),
+  ('Invites Friends', 
+   'Invites Friends to join Drink-x; awarded for each invite sent', 
+   'Primary', 
+   3),
+  ('Adds New Drink Listing', 
+   'Adds New Drink Listing, that has been successfully approved; awarded for each new drink listing approved', 
+   'Primary', 
+   3),
+  ('Suggest Edit Drink Listing', 
+   'For each Edit successfully approved', 
+   'Primary', 
+   2),
+  ('Create Public Lists', 
+   'For each public list created', 
+   'Primary', 
+   2),
+  ('Submits Qns For Producers/Venues', 
+   'For each question posted to a Producer/Venue', 
+   'Primary', 
+   1);
 
 INSERT INTO "associations"( "subTag1", "subTag2")
 VALUES

@@ -5,7 +5,11 @@ services:
     image: postgres:15.8-alpine
     container_name: postgres
     ports:
-      - "127.0.0.1:5432:5432"
+<<<<<<< Updated upstream
+      - "127.0.0.1:5430:5430"
+=======
+      - "127.0.0.1:5430:5432"
+>>>>>>> Stashed changes
     volumes:
       - ./database/postgresql/data:/var/lib/postgresql/data
       - ./database/postgresql/final:/docker-entrypoint-initdb.d:ro

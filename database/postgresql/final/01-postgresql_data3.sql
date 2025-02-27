@@ -1,4 +1,8 @@
 -- DROP TABLES IF EXISTS -- 
+DROP TABLE IF EXISTS "pointsRecorder" CASCADE;
+DROP TABLE IF EXISTS "pointSystemRules" CASCADE;
+DROP TABLE IF EXISTS "eventAttendees" CASCADE;
+DROP TABLE IF EXISTS "events" CASCADE;
 DROP TABLE IF EXISTs "clubPostCommentsLikes" CASCADE;
 DROP TABLE IF EXISTS "clubPostComments" CASCADE;
 DROP TABLE IF EXISTS "clubPostsLikes" CASCADE;
@@ -484,6 +488,26 @@ CREATE TABLE "clubMembers" (
     "joinStatus" BOOLEAN
 );
 
+-- ========= "clubInvites" =========
+CREATE TABLE "clubInvites" (
+    "id" SERIAL PRIMARY KEY,
+    "clubID" INTEGER REFERENCES "clubs"("id") ON DELETE SET NULL, -- [!] References clubs FK
+    "inviteeID" INTEGER,
+    "inviteeUserType" VARCHAR(255),
+    "inviterID" INTEGER,
+    "inviterUserType" VARCHAR(255),
+    "inviteDate" TIMESTAMP
+);
+
+-- ========= "clubRequests" =========
+CREATE TABLE "clubRequests" (
+    "id" SERIAL PRIMARY KEY,
+    "clubID" INTEGER REFERENCES "clubs"("id") ON DELETE SET NULL, -- [!] References clubs FK
+    "userID" INTEGER,
+    "userType" VARCHAR(255),
+    "requestDate" TIMESTAMP
+);
+
 -- ========= "clubPosts" =========
 CREATE TABLE "clubPosts" (
     "id" SERIAL PRIMARY KEY,
@@ -551,6 +575,24 @@ CREATE TABLE "eventAttendees" (
     "attendeeType" VARCHAR(255),
     "attendeeStatus" BOOLEAN
 );
+
+-- ========= "pointSystemRules" =========
+CREATE TABLE "pointSystemRules" (
+    "id" SERIAL PRIMARY KEY,
+    "ruleName" VARCHAR(255),
+    "ruleDesc" TEXT,
+    "ruleCategory" VARCHAR(255),
+    "proofPoints" INTEGER
+);
+
+-- ======== "pointsRecorder" =========
+CREATE TABLE "pointsRecorder" (
+    "id" SERIAL PRIMARY KEY,
+    "userID" INTEGER,
+    "userType" VARCHAR(255),
+    "currentPoints" INTEGER
+);
+
 
 -- ========= "typeCategories" =========
 CREATE TABLE "typeCategories" (
