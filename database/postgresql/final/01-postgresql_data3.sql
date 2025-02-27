@@ -570,7 +570,7 @@ CREATE TABLE "pointsRecorder" (
     "id" SERIAL PRIMARY KEY,
     "userID" INTEGER,
     "userType" VARCHAR(255),
-    "currentPoints" INTEGER,
+    "currentPoints" INTEGER
 );
 
 

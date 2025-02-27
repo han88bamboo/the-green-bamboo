@@ -2817,6 +2817,16 @@ INSERT INTO "listings" (
 INSERT INTO "reviews" (
 "id", "userID", "reviewTarget", "rating", "reviewDesc", "reviewType", "createdDate", "language", "finish", "willRecommend", "wouldBuyAgain", "taggedUsers", "flavourTag", "photo", "colour", "aroma", "location", "taste", "observationTag", "address")
 values 
+(3, 5, 8.1, 'Amazing taste, very smooth.', 'Listing', '2024-02-01 14:32:00', 'English', 'long', TRUE, TRUE, ARRAY[2,3], ARRAY['oak', 'vanilla'], null, '#A52A2A', 'woody', 1, 'rich', ARRAY['mellow', 'deep'], '123 Street A'),
+(3, 12, 3.8, 'Good but a little harsh.', 'Listing', '2024-02-02 16:45:00', 'English', 'medium', FALSE, TRUE, ARRAY[4], ARRAY['caramel'], null, '#8B0000', 'spicy', 1, 'bold', ARRAY['sharp'], '456 Street B'),
+(3, 8, 4.2, 'Smooth and enjoyable.', 'Listing', '2024-02-03 19:10:00', 'English', 'short', TRUE, TRUE, ARRAY[3,5], ARRAY['honey'], null, '#FFD700', 'sweet', 1, 'balanced', ARRAY['fruity'], '789 Street C'),
+(3, 15, 2.9, 'Too bitter for my taste.', 'Listing', '2024-02-04 11:23:00', 'English', 'long', FALSE, FALSE, ARRAY[2], ARRAY['hops'], null, '#000000', 'earthy', 1, 'bitter', ARRAY['strong'], '321 Street D'),
+(3, 6, 4.9, 'Incredible complexity, highly recommend!', 'Listing', '2024-02-05 20:30:00', 'English', 'long', TRUE, TRUE, ARRAY[5], ARRAY['chocolate'], null, '#4B0082', 'rich', 1, 'deep', ARRAY['complex'], '567 Street E'),
+(3, 18, 9.3, 'Average experience, decent aftertaste.', 'Listing', '2024-02-06 09:15:00', 'English', 'medium', TRUE, FALSE, ARRAY[4,2], ARRAY['berry'], null, '#DC143C', 'fruity', 1, 'dry', ARRAY['light'], '890 Street F'),
+(3, 10, 4.0, 'Good balance of flavors.', 'Listing', '2024-02-07 13:05:00', 'English', 'medium', TRUE, TRUE, ARRAY[5], ARRAY['spice'], null, '#8B4513', 'warm', 1, 'smooth', ARRAY['balanced'], '234 Street G'),
+(3, 3, 3.0, 'A bit too strong for me.', 'Listing', '2024-02-08 17:40:00', 'English', 'short', FALSE, FALSE, ARRAY[2,3], ARRAY['citrus'], null, '#ADD8E6', 'sharp', 1, 'intense', ARRAY['burn'], '678 Street H'),
+(3, 14, 9.7, 'Very refreshing and crisp.', 'Listing', '2024-02-09 22:10:00', 'English', 'short', TRUE, TRUE, ARRAY[4], ARRAY['floral'], null, '#00FF00', 'fresh', 1, 'light', ARRAY['crisp'], '101 Street I'),
+(3, 9, 3.2, 'A bit underwhelming, expected more.', 'Listing', '2024-02-10 08:55:00', 'English', 'medium', FALSE, FALSE, ARRAY[3], ARRAY['oak'], null, '#800000', 'dry', 1, 'muted', ARRAY['flat'], '202 Street J')
 (21, 1, 544777, 5, 'This was absolutely fantastic!', 'Listing', '2025-01-13 18:27:38.498', 'English', 'Long, alittle more oaky now', true, false, '{}', '{}', '', '', '', null, '', '{Beginner Friendly, OverHyped!}', ''),
 (17, 2, 544778, 4, 'gooooooood goooooooodgooooooood', 'Listing', '2025-01-08 04:52:10.957', 'English', '', false, false, '{2}', '{Common, Fruits}', '', '', '', null, '', '{Beginner Friendly, Good for Gifts}', ''),
 (22, 3, 544777, 5, 'An absolute masterpiece. Smooth and well-balanced.', 'Listing', '2025-01-15 12:34:56.789', 'English', 'Rich, lingering with subtle spice', true, true, '{}', '{Confectionary, Cereal}', '', '', '', null, '', '{Cool Packaging, Recommended for Enthusiasts}', ''),
@@ -2881,6 +2891,24 @@ INSERT INTO "menuItems"(
     "itemOrder", "itemPrice", "itemAvailability", "itemID", "itemServingType", "sectionId")
 VALUES(0, 12.00, true, 544777, 1, 1);
 
+INSERT INTO "reviewsUserVotes" ("upvotes", "downvotes", "reviewId") VALUES
+(ARRAY[2,1,4], ARRAY[5], 1),
+(ARRAY[1,4], ARRAY[2,5], 2),
+(ARRAY[2,5], ARRAY[1], 3),
+(ARRAY[4], ARRAY[2,1,5], 4),
+(ARRAY[1,5], ARRAY[2,4], 5),
+(ARRAY[2,4,5], ARRAY[1], 6),
+(ARRAY[1,5], ARRAY[2,4], 7),
+(ARRAY[2,1], ARRAY[4,5], 8),
+(ARRAY[4,5], ARRAY[2,1], 9),
+(ARRAY[2,1,4], ARRAY[5], 10);
+
+INSERT INTO "badges" ("badgeName", "badgePhoto", "badgeDesc") VALUES
+('User Tagger', 'https://tf-drinkx-prod-fe-static.s3.ap-southeast-1.amazonaws.com/drink-x.com/tagging_master_badge.jpg', 'Awarded for tagging users in reviews.'),
+('Location Explorer', 'https://tf-drinkx-prod-fe-static.s3.ap-southeast-1.amazonaws.com/drink-x.com/location_explorer_badge.jpg', 'Awarded for tagging multiple locations in reviews.'),
+('Country Traveler', 'https://tf-drinkx-prod-fe-static.s3.ap-southeast-1.amazonaws.com/drink-x.com/country_traveler_badge.jpg', 'Awarded for tagging reviews in various countries.'),
+('Popular Reviewer', 'https://tf-drinkx-prod-fe-static.s3.ap-southeast-1.amazonaws.com/drink-x.com/popular_reviewer_badge.jpg', 'Awarded for receiving a high number of upvotes on reviews.');
+
 INSERT INTO "clubs"(
     "clubName", "clubDesc", "isInviteOnly", "clubLink", "clubBanner", "dateCreated")
 VALUES
@@ -2917,14 +2945,59 @@ VALUES
 
 
 INSERT INTO "clubMembers"(
-    "clubID", "userID", "userType", "joinDate", "isAdmin", "joinStatus")
+    "clubID", "userID", "userType", "joinDate", "isAdmin")
 VALUES
-    (1, 1, 'user', '2024-10-28 18:47:31.403', true, true),
-    (1, 2, 'user', '2024-10-30 18:45:31.403', false, true),
-    (1, 3, 'user', '2024-10-30 18:45:31.403', false, false),
-    (1, 1, 'venue', '2024-10-30 18:53:31.403', false, false),
-    (1, 1, 'producer', '2024-10-30 18:53:31.403', false, false),
-    (2, 1, 'producer', '2024-10-28 18:55:31.403', true, true);
+    (1, 1, 'user', '2024-10-28 18:47:31.403', true),
+    (1, 2, 'user', '2024-10-30 18:45:31.403', false),
+    (1, 3, 'user', '2024-10-30 18:45:31.403', false),
+    (1, 1, 'venue', '2024-10-30 18:53:31.403', false),
+    (1, 1, 'producer', '2024-10-30 18:53:31.403', false),
+    (1, 6, 'user', '2024-10-31 18:45:00.403', false),
+    (1, 7, 'user', '2024-11-01 18:45:00.403', false),
+    (1, 8, 'user', '2024-11-02 18:45:00.403', false),
+    (1, 9, 'user', '2024-11-03 18:45:00.403', false),
+    (1, 10, 'user', '2024-11-04 18:45:00.403', false),
+    (1, 11, 'user', '2024-11-05 18:45:00.403', false),
+    (1, 12, 'user', '2024-11-06 18:45:00.403', false),
+    (1, 13, 'user', '2024-11-07 18:45:00.403', false),
+    (1, 14, 'user', '2024-11-08 18:45:00.403', false),
+    (1, 15, 'user', '2024-11-09 18:45:00.403', false),
+    (2, 1, 'producer', '2024-10-28 18:55:31.403', true),
+    (2, 5, 'user', '2024-10-28 18:55:31.403', true),
+    (3, 1, 'user', '2024-10-30 18:45:31.403', true),
+    (4, 1, 'user', '2024-10-30 18:45:31.403', true),
+    (5, 1, 'user', '2024-10-30 18:45:31.403', true),
+    (6, 1, 'user', '2024-10-30 18:45:31.403', true),
+    (7, 1, 'user', '2024-10-30 18:45:31.403', true),
+    (8, 1, 'user', '2024-10-30 18:45:31.403', true),
+    (9, 1, 'user', '2024-10-30 18:45:31.403', true),
+    (10, 5, 'user', '2024-10-30 18:45:31.403', true),
+    (11, 5, 'user', '2024-10-30 18:45:31.403', true),
+    (12, 5, 'user', '2024-10-30 18:45:31.403', true),
+    (13, 5, 'user', '2024-10-30 18:45:31.403', true),
+    (14, 5, 'user', '2024-10-30 18:45:31.403', true),
+    (15, 5, 'user', '2024-10-30 18:45:31.403', true),
+    (16, 5, 'user', '2024-10-30 18:45:31.403', true),
+    (17, 5, 'user', '2024-10-30 18:45:31.403', true),
+    (18, 5, 'user', '2024-11-01 18:45:31.403', true),
+    (19, 5, 'user', '2024-11-01 18:45:31.403', true),
+    (20, 5, 'user', '2024-11-01 18:45:31.403', true);
+
+INSERT INTO "clubInvites"(
+    "clubID", "inviteeID", "inviteeUserType", "inviterID", "inviterUserType", "inviteDate")
+VALUES
+    (3, 5, 'user', 1, 'user', '2024-10-30 18:45:31.403'),
+    (4, 5, 'user', 1, 'user', '2024-10-30 18:45:31.403'),
+    (5, 5, 'user', 1, 'user', '2024-10-30 18:45:31.403'),
+    (6, 5, 'user', 1, 'user', '2024-10-30 18:45:31.403'),
+    (7, 5, 'user', 1, 'user', '2024-10-30 18:45:31.403'),
+    (8, 5, 'user', 1, 'user', '2024-10-30 18:45:31.403');
+
+INSERT INTO "clubRequests"(
+    "clubID", "userID", "userType", "requestDate")
+VALUES
+    (2, 3, 'user', '2024-10-31 18:45:31.403'),
+    (2, 4, 'user', '2024-10-31 18:45:31.403');
 
 INSERT INTO "clubPosts"(
     "clubID", "postDate", "postContent", "postPhotos", "posterID")
@@ -3006,7 +3079,23 @@ INSERT INTO "clubPostCommentsLikes"(
 VALUES
     (1, 1, 3);
 
-INSERT INTO "associations"( "subTag1", "subTag2")
+INSERT INTO "events"(
+    "eventName", "eventDesc", "eventType", "eventStartDate", "eventEndDate", "eventStartTime", "eventEndTime", "eventLimit", "eventBanners", "ticketed", "paidEvent", "eventLocation", "paymentLink", "eventOwnerID", "eventOwnerType", "numAttendees", "createdDate") 
+VALUES 
+    ('Trivia Night', 'Test your knowledge in our weekly trivia night! Prizes for the top teams.', 'Online', '2025-01-20', '2025-01-20', '19:00:00', '22:00:00', 100, NULL, FALSE, FALSE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', '', 1, 'venue', 0, '2024-11-01 18:45:31.403'),
+    ('Whiskey Appreciation Night', 'Explore the world of whiskey with guided tastings of premium selections.', 'Online', '2025-03-05', '2025-03-05', '19:00:00', '22:00:00', 100, '{"https://img.pikbest.com/templates/20210426/bg/602bf6957a0b2.png!w700wp", "https://png.pngtree.com/png-clipart/20210502/original/pngtree-classic-bar-whiskey-leading-poster-png-image_6264354.png", "https://www.chivas.com/wp-content/uploads/2022/06/citrus-old-fashioned-whisky-cocktail-promo-1.jpg"}', TRUE, TRUE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 'https://www.google.com', 1, 'venue', 10, '2025-02-01 18:45:31.403'),
+    ('Beer Pong Tournament', 'Compete with friends and other teams in our ultimate beer pong showdown.', 'Online', '2025-03-03', '2025-03-03', '18:00:00', '22:00:00', 100, NULL, FALSE, FALSE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', '', 2, 'user', 7, '2025-02-05 18:45:31.403'),
+    ('Wine Tasting Night', 'Savor an evening of fine wines paired with small bites and expert insights.', 'Location', '2025-03-10', '2025-03-10', '18:30:00', '21:00:00', 100, NULL, TRUE, FALSE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 'https://www.google.com', 3, 'user', 4, '2025-02-12 18:45:31.403'),
+    ('Rum Cocktail Masterclass', 'Learn to craft the perfect rum-based cocktails with our expert mixologists.', 'Location', '2025-03-18', '2025-03-18', '17:00:00', '19:00:00', 100, NULL, TRUE, FALSE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 'https://www.google.com', 1, 'producer', 0, '2025-02-13 18:45:31.403'),
+    ('Ladies Night - Margaritas Galore', 'Enjoy $5 margaritas and a free welcome drink for all ladies.', 'Location', '2025-03-29', '2025-03-29', '18:00:00', '23:00:00', 100, NULL, FALSE, FALSE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', '', 1, 'venue', 0, '2025-02-14 18:45:31.403'),
+    ('Bourbon & Blues Night', 'Pair smooth bourbons with soulful blues music in a cozy atmosphere.', 'Location', '2025-03-15', '2025-03-15', '20:00:00', '23:00:00', 100, NULL, TRUE, TRUE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 'https://www.google.com', 1, 'producer', 0, '2025-02-15 18:45:31.403'),
+    ('IPA Showcase', 'Discover unique IPAs from local breweries in this beer lover’s event.','Location', '2025-03-20', '2025-03-20', '17:00:00', '20:00:00', 100, NULL, FALSE, FALSE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', '', 1, 'venue', 0, '2025-02-16 18:45:31.403'),
+    ('Cocktail Night: Around the World', 'Travel the globe one sip at a time with cocktails inspired by international flavors.', 'Location', '2025-03-25', '2025-03-25', '19:00:00', '23:00:00', 100, NULL, TRUE, FALSE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 'https://www.google.com', 1, 'user', 0, '2025-02-17 18:45:31.403'),
+    ('Cider Festival', 'Celebrate the best ciders with unlimited tastings and live music all day long.', 'Location', '2025-03-24', '2025-03-24', '14:00:00', '22:00:00', 100, NULL, TRUE, TRUE, '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 'https://www.google.com', 1, 'venue', 0, '2025-02-18 18:45:31.403');
+
+
+INSERT INTO "eventAttendees"(
+    "eventID", "eventDate", "eventStartTime", "userID", "attendeeType", "attendeeStatus")
 VALUES
     (1, '2025-01-20', '19:00:00', 5, 'user', true),
     (2, '2025-03-05', '19:00:00', 1, 'user', true),
