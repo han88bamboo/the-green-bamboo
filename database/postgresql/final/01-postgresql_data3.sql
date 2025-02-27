@@ -552,6 +552,14 @@ CREATE TABLE "eventAttendees" (
     "attendeeStatus" BOOLEAN
 );
 
+-- ========= "typeCategories" =========
+CREATE TABLE "typeCategories" (
+    "id" SERIAL PRIMARY KEY,
+    "drinkType_id" INTEGER,
+    "typeCategory" VARCHAR(255),
+    "drinkStyle" TEXT[]
+);
+
 -- ========= "associations" =========
 CREATE TABLE "associations" (
     "id" SERIAL PRIMARY KEY,
