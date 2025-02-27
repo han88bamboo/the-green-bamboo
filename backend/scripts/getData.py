@@ -21,6 +21,10 @@ from bson.objectid import ObjectId
 from psycopg2.extras import RealDictCursor
 import random
 
+import feedparser
+import re
+import requests
+from bs4 import BeautifulSoup
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -194,6 +198,24 @@ def getRandomListings():
 
     if not listings_data:
         return jsonify({"error": "No listings found for selected date"}), 400
+
+# -----------------------------------------------------------------------------------------
+# [POST] Listings by IDs
+@blueprint.route("/getListingsByIDs", methods=['POST'])
+def getListingsByIDs():
+    conn = g.db
+
+    listing_ids = request.json.get('listingIDs', [])
+
+    if not listing_ids:
+        return jsonify([]), 404
+
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "listings" WHERE "id" IN %s', (tuple(listing_ids),))
+        listings_data = cursor.fetchall()
+    
+    if not listings_data:
+        return jsonify([])
 
     return jsonify(listings_data)
 
@@ -1650,45 +1672,6 @@ def getObservationTags():
         return jsonify([])
 
     return jsonify(observation_tags_data)
-
-@blueprint.route("/getListingsByObservationTag/<tag>")
-def get_listings_by_observation_tag(tag):
-    selected_tag = tag  
-
-    if not selected_tag:
-        return jsonify({"error": "Tag is required"}), 400
-
-    conn = g.db  
-
-    try:
-        with conn.cursor() as cursor:
-            query = """
-            SELECT DISTINCT l.*
-            FROM "listings" l
-            JOIN "reviews" r ON l."id" = r."reviewTarget"
-            WHERE %s = ANY(r."observationTag");
-            """
-            cursor.execute(query, (selected_tag,))
-
-            listings = cursor.fetchall()
-            columns = [col[0] for col in cursor.description]  
-
-            print("Columns:", columns)  
-            print("Listings:", listings)  
-
-            listing_dicts = [tuple(row.values()) for row in listings]
-
-            # Print the result
-            print("Listings as Tuples:", listing_dicts)
-
-        # Return the result as JSON
-        return jsonify(listing_dicts)
-
-    except Exception as e:
-        # If an error occurs, print the error message and return an error response
-        print(f"Error fetching listings: {e}")
-        return jsonify({"error": "A server error occurred."}), 500
-        
 
 # -----------------------------------------------------------------------------------------
 # [GET] colours
