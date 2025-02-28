@@ -1,24 +1,24 @@
 <template>
     <LandingPageNavBar />
-    
+
     <!-- Hero Section with Search -->
     <div class="hero-section position-relative text-center py-5">
         <img src="../../Images/Background/LandingPage.png" class="hero-bg position-absolute w-100 h-100 top-0 start-0"
             style="object-fit: cover; z-index: -1; filter: brightness(0.7)" alt="Background" />
-            <div class="container py-5">
-                <!-- Center the heading text -->
-                <h1 class="text-white mb-4 text-center">Find Your Next Favourite Drink</h1>
-                
-                <!-- This centers the SearchBar component on the page -->
-                <div class="row justify-content-center">
+        <div class="container py-5">
+            <!-- Center the heading text -->
+            <h1 class="text-white mb-4 text-center">Find Your Next Favourite Drink</h1>
+
+            <!-- This centers the SearchBar component on the page -->
+            <div class="row justify-content-center">
                 <div class="col-12 col-md-8 col-lg-6">
                     <SearchBar />
                 </div>
-                </div>
             </div>
+        </div>
     </div>
     <!-- Hero End -->
-    
+
     <!-- Icon Section -->
     <div class="container py-4">
         <div class="row g-4">
@@ -32,7 +32,8 @@
                             </div>
                         </button>
                     </router-link>
-                    <h6 class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
+                    <h6
+                        class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
                         Log Your Drink Reviews and Share Your Favorites
                     </h6>
                 </div>
@@ -112,61 +113,31 @@
                 </p>
             </div>
             <div class="d-none d-md-flex flex-wrap justify-content-start">
-                <button
-                    v-for="tag in tags"
-                    :key="tag"
-                    class="btn btn-warning rounded-pill m-2"
-                    :class="{ selected: tag === selectedTag }"
-                    @click="goSearchTag(tag)"
-                >
+                <button v-for="tag in tags" :key="tag" class="btn btn-warning rounded-pill m-2"
+                    :class="{ selected: tag === selectedTag }" @click="goSearchTag(tag)">
                     {{ tag }}
                 </button>
             </div>
 
-            <div
-                id="badgeCarousel"
-                class="carousel slide d-md-none"
-                data-bs-ride="carousel"
-                data-bs-interval="3000"
-            >
+            <div id="badgeCarousel" class="carousel slide d-md-none" data-bs-ride="carousel" data-bs-interval="3000">
                 <div class="carousel-inner">
                     <div class="carousel-item active">
-                        <div
-                            class="row flex-nowrap overflow-visible"
-                            style="min-height: 80px"
-                        >
-                            <div
-                                v-for="(tag, index) in tags.slice(0, 3)"
-                                :key="index"
-                                class="col-5 tag-container"
-                            >
-                                <button
-                                    class="btn btn-warning rounded-pill w-90 m-2"
-                                    :class="{ selected: tag === selectedTag }"
-                                    @click="goSearchTag(tag)"
-                                    style="min-height: 40px"
-                                >
+                        <div class="row flex-nowrap overflow-visible" style="min-height: 80px">
+                            <div v-for="(tag, index) in tags.slice(0, 3)" :key="index" class="col-5 tag-container">
+                                <button class="btn btn-warning rounded-pill w-90 m-2"
+                                    :class="{ selected: tag === selectedTag }" @click="goSearchTag(tag)"
+                                    style="min-height: 40px">
                                     {{ tag }}
                                 </button>
                             </div>
                         </div>
                     </div>
                     <div class="carousel-item">
-                        <div
-                            class="row flex-nowrap overflow-visible"
-                            style="min-height: 80px"
-                        >
-                            <div
-                                v-for="(tag, index) in tags.slice(2, 5)"
-                                :key="index"
-                                class="col-5 tag-container"
-                            >
-                                <button
-                                    class="btn btn-warning rounded-pill w-90 m-2"
-                                    :class="{ selected: tag === selectedTag }"
-                                    @click="goSearchTag(tag)"
-                                    style="min-height: 40px"
-                                >
+                        <div class="row flex-nowrap overflow-visible" style="min-height: 80px">
+                            <div v-for="(tag, index) in tags.slice(2, 5)" :key="index" class="col-5 tag-container">
+                                <button class="btn btn-warning rounded-pill w-90 m-2"
+                                    :class="{ selected: tag === selectedTag }" @click="goSearchTag(tag)"
+                                    style="min-height: 40px">
                                     {{ tag }}
                                 </button>
                             </div>
@@ -175,27 +146,13 @@
                 </div>
 
                 <!-- Carousel Controls -->
-                <button
-                    class="carousel-control-prev custom-carousel-btn"
-                    type="button"
-                    data-bs-target="#badgeCarousel"
-                    data-bs-slide="prev"
-                >
-                    <span
-                        class="carousel-control-prev-icon"
-                        aria-hidden="true"
-                    ></span>
+                <button class="carousel-control-prev custom-carousel-btn" type="button" data-bs-target="#badgeCarousel"
+                    data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                 </button>
-                <button
-                    class="carousel-control-next custom-carousel-btn"
-                    type="button"
-                    data-bs-target="#badgeCarousel"
-                    data-bs-slide="next"
-                >
-                    <span
-                        class="carousel-control-next-icon"
-                        aria-hidden="true"
-                    ></span>
+                <button class="carousel-control-next custom-carousel-btn" type="button" data-bs-target="#badgeCarousel"
+                    data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
                 </button>
             </div>
         </div>
@@ -230,18 +187,16 @@
                             </h2>
                         </div>
                         <div class="row">
-                            <div class="col-12 col-sm-6 col-lg-3 mb-3" 
-                                 v-for="(article, artIndex) in category.latest_news.slice(0, 4)" 
-                                 :key="'latest-' + artIndex">
+                            <div class="col-12 col-sm-6 col-lg-3 mb-3"
+                                v-for="(article, artIndex) in category.latest_news.slice(0, 4)"
+                                :key="'latest-' + artIndex">
                                 <div class="card h-100 shadow" style="background-color: transparent">
                                     <!-- Desktop view (sm and up) -->
                                     <div class="d-none d-sm-block">
-                                        <img :src="article.image_url" 
-                                             class="card-img-top" 
-                                             alt="News Image"
-                                             style="height: 180px; object-fit: cover" />
+                                        <img :src="article.image_url" class="card-img-top" alt="News Image"
+                                            style="height: 180px; object-fit: cover" />
                                         <div class="card-body d-flex flex-column justify-content-between"
-                                             style="height: 100px">
+                                            style="height: 100px">
                                             <h6 class="fst-italic text-muted text-start">
                                                 {{
                                                     article.title
@@ -263,15 +218,13 @@
                                         <div class="row g-0">
                                             <div class="col-4">
                                                 <div style="width: 120px; height: 110px; overflow: hidden;">
-                                                    <img :src="article.image_url" 
-                                                         class="img-fluid" 
-                                                         alt="News Image"
-                                                         style="height: 120px; object-fit: cover;" />
+                                                    <img :src="article.image_url" class="img-fluid" alt="News Image"
+                                                        style="height: 120px; object-fit: cover;" />
                                                 </div>
                                             </div>
                                             <div class="col-8 ps-2">
                                                 <div class="card-body px-0 d-flex justify-content-center"
-                                                     style="height: 100%">
+                                                    style="height: 100%">
                                                     <h6 class="fst-italic text-muted text-start mb-0">
                                                         {{
                                                             article.title
@@ -306,18 +259,16 @@
                                 </h2>
                             </div>
                             <div class="row">
-                                <div class="col-12 col-sm-6 mb-3" 
-                                     v-for="(article, artIndex) in category.spotlight.slice(0, 2)" 
-                                     :key="'spotlight-' + artIndex">
+                                <div class="col-12 col-sm-6 mb-3"
+                                    v-for="(article, artIndex) in category.spotlight.slice(0, 2)"
+                                    :key="'spotlight-' + artIndex">
                                     <div class="card h-100 shadow" style="background-color: transparent">
                                         <!-- Desktop view -->
                                         <div class="d-none d-sm-block">
-                                            <img :src="article.image_url" 
-                                                 class="card-img-top" 
-                                                 alt="News Image"
-                                                 style="height: 180px; object-fit: cover;" />
+                                            <img :src="article.image_url" class="card-img-top" alt="News Image"
+                                                style="height: 180px; object-fit: cover;" />
                                             <div class="card-body d-flex flex-column justify-content-between"
-                                                 style="height: 100px">
+                                                style="height: 100px">
                                                 <h6 class="fst-italic text-muted text-start">
                                                     {{
                                                         article.title
@@ -339,15 +290,13 @@
                                             <div class="row g-0">
                                                 <div class="col-4">
                                                     <div style="width: 120px; height: 110px; overflow: hidden;">
-                                                        <img :src="article.image_url" 
-                                                             class="img-fluid" 
-                                                             alt="News Image"
-                                                             style="height: 120px; object-fit: cover;" />
+                                                        <img :src="article.image_url" class="img-fluid" alt="News Image"
+                                                            style="height: 120px; object-fit: cover;" />
                                                     </div>
                                                 </div>
                                                 <div class="col-8 ps-2">
                                                     <div class="card-body px-0 d-flex justify-content-center"
-                                                         style="height: 100%">
+                                                        style="height: 100%">
                                                         <h6 class="fst-italic text-muted text-start mb-0">
                                                             {{
                                                                 article.title
@@ -380,18 +329,16 @@
                                 </h2>
                             </div>
                             <div class="row">
-                                <div class="col-12 col-sm-6 mb-3" 
-                                     v-for="(article, artIndex) in category.reviews.slice(0, 2)" 
-                                     :key="'review-' + artIndex">
+                                <div class="col-12 col-sm-6 mb-3"
+                                    v-for="(article, artIndex) in category.reviews.slice(0, 2)"
+                                    :key="'review-' + artIndex">
                                     <div class="card h-100 shadow" style="background-color: transparent">
                                         <!-- Desktop view -->
                                         <div class="d-none d-sm-block">
-                                            <img :src="article.image_url" 
-                                                 class="card-img-top" 
-                                                 alt="News Image"
-                                                 style="height: 180px; object-fit: cover;" />
+                                            <img :src="article.image_url" class="card-img-top" alt="News Image"
+                                                style="height: 180px; object-fit: cover;" />
                                             <div class="card-body d-flex flex-column justify-content-between"
-                                                 style="height: 100px">
+                                                style="height: 100px">
                                                 <h6 class="fst-italic text-muted text-start">
                                                     {{
                                                         article.title
@@ -413,15 +360,13 @@
                                             <div class="row g-0">
                                                 <div class="col-4">
                                                     <div style="width: 120px; height: 110px; overflow: hidden;">
-                                                        <img :src="article.image_url" 
-                                                             class="img-fluid" 
-                                                             alt="News Image"
-                                                             style="height: 120px; object-fit: cover;" />
+                                                        <img :src="article.image_url" class="img-fluid" alt="News Image"
+                                                            style="height: 120px; object-fit: cover;" />
                                                     </div>
                                                 </div>
                                                 <div class="col-8 ps-2">
                                                     <div class="card-body px-0 d-flex justify-content-center"
-                                                         style="height: 100%">
+                                                        style="height: 100%">
                                                         <h6 class="fst-italic text-muted text-start mb-0">
                                                             {{
                                                                 article.title
@@ -553,15 +498,16 @@ export default {
             isAdmin: false,
             isModerator: false,
             searchInput: "",
-            tags: [
-                "For My Worst Enemy!",
-                "Good for Gifts",
-                "Beginner Friendly",
-                "Is This Water?",
-                "Overhyped!",
-                "Broke the Bank",
-                "Holy Grails",
-            ],
+            tags: [],
+            // tags: [
+            //     "For My Worst Enemy!",
+            //     "Good for Gifts",
+            //     "Beginner Friendly",
+            //     "Is This Water?",
+            //     "Overhyped!",
+            //     "Broke the Bank",
+            //     "Holy Grails",
+            // ],
             selectedTag: "",
             hasFilteredListings: false,
             listings: [],
@@ -579,6 +525,7 @@ export default {
     mounted() {
         this.tag = this.$route.params.tag;
         this.fetchRSS(); // Fetch RSS when the component loads
+        this.fetchTop8();
     },
     methods: {
         // Load data from the database (e.g., profile picture)
@@ -640,6 +587,17 @@ export default {
                 console.error("Error in goSearchTag:", error);
             } finally {
                 this.loading = false; // Hide loading state
+            }
+        },
+
+        async fetchTop8() {
+            try {
+                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getTop8`);
+                this.tags = response.data;
+                // this.tags = response.data.map(item => item.tags);
+                console.log("tags:", this.tags);
+            } catch (error) {
+                console.error("Error fetching tag counts:", error);
             }
         },
 
@@ -712,8 +670,9 @@ export default {
 }
 
 .card:hover {
-    transform: scale(1.03); /* Slightly enlarge the card */
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1), 0 6px 20px rgba(0, 0, 0, 0.1); /* Optional shadow for emphasis */
+    transform: scale(1.03);
+    /* Slightly enlarge the card */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1), 0 6px 20px rgba(0, 0, 0, 0.1);
+    /* Optional shadow for emphasis */
 }
-
 </style>
