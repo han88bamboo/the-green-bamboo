@@ -19,17 +19,10 @@ const routes = [
     component: () => import('../views/LoginPage.vue')
   },
   {
-    path: "/explore",
-    name: "explore",
-    component: () =>
-      import(
-        /* webpackChunkName: "about" */ "../views/Users/BottleListings.vue"
-      ),
-  },
-  {
-    path: "/landing",
-    name: "landing",
-    component: () => import("../views/LandingPage.vue"),
+    path: '/landing',
+    name: 'landing',
+    component: () => import('../views/LandingPage.vue'), 
+    props: true
   },
   {
     path: '/signup',
@@ -47,35 +40,31 @@ const routes = [
     component: () => import('../views/BillingSecurity.vue')
   },
   {
+    path: '/search/:input?',
+    name: 'search',
+    component: () => import('../views/SearchView.vue'),
+    props: true
+  },
+  {
     path: '/getListingsByObservationTag/:tag?',
     name: 'getlistingsbyobservationtag',
     component: () => import('../views/ListingsByTag.vue'),
     props: true
   },
   {
-    path: "/search/:input?",
-    name: "search",
-    component: () => import("../views/SearchView.vue"),
+    path: '/imageSearch',
+    name: 'imagesearch',
+    component: () => import('../views/ImageSearchView.vue')
   },
   {
-    path: "/imageSearch",
-    name: "imagesearch",
-    component: () => import("../views/ImageSearchView.vue"),
+    path: '/successfulOnboarding',
+    name: 'successfulonboarding',
+    component: () => import('../views/SuccessfulOnboarding.vue')
   },
   {
-    path: "/successfulOnboarding",
-    name: "successfulonboarding",
-    component: () => import("../views/SuccessfulOnboarding.vue"),
-  },
-  {
-    path: "/imageSearch",
-    name: "imagesearch",
-    component: () => import("../views/ImageSearchView.vue"),
-  },
-  {
-    path: "/successfulOnboarding",
-    name: "successfulonboarding",
-    component: () => import("../views/SuccessfulOnboarding.vue"),
+    path: '/explore',
+    name: 'explore',
+    component: () => import('../views/RandomExplorePage.vue')
   },
   {
     path: '/foryou',
@@ -155,6 +144,7 @@ const routes = [
 
     component: () => import('../views/Producers/EditListing.vue')
   },
+
   // -------------------------------------------------------------------------------------
   
   // ----------------- REQUEST PAGES -----------------

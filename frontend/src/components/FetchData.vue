@@ -84,6 +84,5 @@ export default {
     created() {
         this.loadData();
     },
-  },
 };
 </script>

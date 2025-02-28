@@ -1,5 +1,4 @@
 <template>
-
     <LandingPageNavBar />
 
     <!-- Hero Section with Search -->
@@ -20,23 +19,16 @@
     </div>
     <!-- Hero End -->
 
-
     <!-- Icon Section -->
     <div class="container py-4">
         <div class="row g-4">
             <!-- Feature 1 -->
             <div class="col-lg-3 col-md-6 col-6">
-                <div
-                    class="d-flex flex-lg-column flex-row align-items-center h-100"
-                >
+                <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                     <router-link :to="'/login'">
                         <button class="btn border-0 fw-bold tilt-hover" type="button">
                             <div class="mb-lg-3 me-3 me-lg-0 icon-container">
-                                <img
-                                    src="../../Images/Landing Page/Layer1.png"
-                                    alt="Log Reviews"
-                                    class="img-fluid"
-                                />
+                                <img src="../../Images/Landing Page/Layer1.png" alt="Log Reviews" class="img-fluid" />
                             </div>
                         </button>
                     </router-link>
@@ -49,23 +41,17 @@
 
             <!-- Feature 2 -->
             <div class="col-lg-3 col-md-6 col-6">
-                <div
-                    class="d-flex flex-lg-column flex-row align-items-center h-100"
-                >
+                <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                     <router-link :to="'/clubs/view'">
                         <button class="btn border-0 fw-bold tilt-hover" type="button">
                             <div class="mb-lg-3 me-3 me-lg-0 icon-container">
-                                <img
-                                    src="../../Images/Landing Page/Layer2.png"
-                                    alt="Find Communities"
-                                    class="img-fluid"
-                                />
+                                <img src="../../Images/Landing Page/Layer2.png" alt="Find Communities"
+                                    class="img-fluid" />
                             </div>
                         </button>
                     </router-link>
                     <h6
-                        class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height"
-                    >
+                        class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
                         Find Your Communities and Join Events
                     </h6>
                 </div>
@@ -73,23 +59,17 @@
 
             <!-- Feature 3 -->
             <div class="col-lg-3 col-md-6 col-6">
-                <div
-                    class="d-flex flex-lg-column flex-row align-items-center h-100"
-                >
+                <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                     <router-link :to="'/'">
                         <button class="btn border-0 fw-bold tilt-hover" type="button">
                             <div class="mb-lg-3 me-3 me-lg-0 icon-container">
-                                <img
-                                    src="../../Images/Landing Page/Layer3.png"
-                                    alt="Discover Drinks"
-                                    class="img-fluid"
-                                />
+                                <img src="../../Images/Landing Page/Layer3.png" alt="Discover Drinks"
+                                    class="img-fluid" />
                             </div>
                         </button>
                     </router-link>
                     <h6
-                        class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height"
-                    >
+                        class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
                         Discover New Drinks and Expand Your Taste Palette
                     </h6>
                 </div>
@@ -97,30 +77,24 @@
 
             <!-- Feature 4 -->
             <div class="col-lg-3 col-md-6 col-6">
-                <div
-                    class="d-flex flex-lg-column flex-row align-items-center h-100"
-                >
+                <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                     <router-link :to="'/clubs/view'">
                         <button class="btn border-0 fw-bold tilt-hover" type="button">
                             <div class="mb-lg-3 me-3 me-lg-0 icon-container">
-                                <img
-                                    src="../../Images/Landing Page/Layer4.png"
-                                    alt="Connect"
-                                    class="img-fluid"
-                                />
+                                <img src="../../Images/Landing Page/Layer4.png" alt="Connect" class="img-fluid" />
                             </div>
                         </button>
                     </router-link>
                     <h6
-                        class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height"
-                    >
+                        class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
                         Connect With Your Favorite Drink Makers
                     </h6>
                 </div>
             </div>
         </div>
     </div>
-    
+    <!-- Icon End -->
+
     <!-- Trending Section -->
     <div class="container pb-4">
         <div class="container pb-0">
@@ -186,56 +160,24 @@
     <!-- Trending End -->
 
     <!-- News Section -->
+    <!-- News Section -->
     <div class="container pb-4">
-        <div class="d-flex align-items-start gap-3 mb-3">
-            <h2 class="h5 fw-bold mb-0">Latest Drink News</h2>
+        <div class="d-sm-none border-0 mb-3">
+            <h2 class="fw-bold mb-0" style="text-align: left; padding-left: 10px">
+                Latest Drink Buzz
+            </h2>
         </div>
-        <div class="row">
-            <!-- Large screen: Card layout with image and content in a card -->
-            <div
-                class="col-lg-4 col-xl-3 pb-2 col-md-6 col-12 d-none d-lg-block"
-            >
-                <div class="card" style="width: 18rem; border-radius: 20px">
-                    <img
-                        src="../../Images/Landing Page/Sample.jpg"
-                        class="card-img-top"
-                        alt="sample"
-                    />
-                    <div class="card-body">
-                        <h6 class="fsc-italic text-muted text-start">
-                            Latest News and New Releases:
-                        </h6>
-                        <p class="card-text text-start">
-                            Some quick example text to build on the card title
-                            and make up the bulk of the card's content.
-                        </p>
-                    </div>
-                </div>
-            </div>
 
-            <div
-                class="col-lg-4 col-xl-3 pb-2 col-md-6 col-12 d-none d-lg-block"
-            >
-                <div class="card" style="width: 18rem; border-radius: 20px">
-                    <img
-                        src="../../Images/Landing Page/Sample.jpg"
-                        class="card-img-top"
-                        alt="sample"
-                    />
-                    <div class="card-body">
-                        <h6 class="fsc-italic text-muted text-start">
-                            Latest News and New Releases:
-                        </h6>
-                        <p class="card-text text-start">
-                            Some quick example text to build on the card title
-                            and make up the bulk of the card's content.
-                        </p>
-                    </div>
+        <div class="container pb-4">
+            <!-- Loading Spinner -->
+            <div v-if="loading" class="d-flex justify-content-center align-items-center" style="height: 6rem;">
+                <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                    <span class="visually-hidden">Loading...</span>
                 </div>
             </div>
 
             <!-- Content (only shown when not loading) -->
-            <div>
+            <template v-else>
                 <!-- Latest News Section -->
                 <template v-for="(category, index) in articles" :key="index">
                     <div class="mb-4" v-if="Object.keys(category)[0] === 'latest_news'">
@@ -448,134 +390,29 @@
                         </div>
                     </template>
                 </div>
-            </div>
-
-            <div
-                class="col-lg-4 col-xl-3 pb-2 col-md-6 col-12 d-none d-lg-block"
-            >
-                <div class="card" style="width: 18rem; border-radius: 20px">
-                    <img
-                        src="../../Images/Landing Page/Sample.jpg"
-                        class="card-img-top"
-                        alt="sample"
-                    />
-                    <div class="card-body">
-                        <h6 class="fsc-italic text-muted text-start">
-                            Latest News and New Releases:
-                        </h6>
-                        <p class="card-text text-start">
-                            Some quick example text to build on the card title
-                            and make up the bulk of the card's content.
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Small screen: Flexbox layout with image and content side by side -->
-            <div class="col-12 d-block d-lg-none d-flex mb-3 gap-3">
-                <!-- Image section -->
-                <div class="col-4">
-                    <img
-                        src="../../Images/Landing Page/Sample.jpg"
-                        class="img-fluid"
-                        alt="sample"
-                        style="
-                            object-fit: cover;
-                            height: 100%;
-                            border-radius: 20px;
-                        "
-                    />
-                </div>
-
-                <!-- Content section -->
-                <div class="col-8">
-                    <div class="card-body">
-                        <h6 class="fsc-italic text-muted text-start">
-                            Latest News and New Releases:
-                        </h6>
-                        <p class="card-text text-start">
-                            Some quick example text to build on the card title
-                            and make up the bulk of the card's content.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 d-block d-lg-none d-flex mb-3 gap-3">
-            <!-- Image section -->
-            <div class="col-4">
-                <img
-                    src="../../Images/Landing Page/Sample.jpg"
-                    class="img-fluid"
-                    alt="sample"
-                    style="object-fit: cover; height: 100%; border-radius: 20px"
-                />
-            </div>
-
-            <!-- Content section -->
-            <div class="col-8">
-                <div class="card-body">
-                    <h6 class="fsc-italic text-muted text-start">
-                        Latest News and New Releases:
-                    </h6>
-                    <p class="card-text text-start">
-                        Some quick example text to build on the card title and
-                        make up the bulk of the card's content.
-                    </p>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 d-block d-lg-none d-flex mb-3 gap-3">
-            <!-- Image section -->
-            <div class="col-4">
-                <img
-                    src="../../Images/Landing Page/Sample.jpg"
-                    class="img-fluid"
-                    alt="sample"
-                    style="object-fit: cover; height: 100%; border-radius: 20px"
-                />
-            </div>
-
-            <!-- Content section -->
-            <div class="col-8">
-                <div class="card-body">
-                    <h6 class="fsc-italic text-muted text-start">
-                        Latest News and New Releases:
-                    </h6>
-                    <p class="card-text text-start">
-                        Some quick example text to build on the card title and
-                        make up the bulk of the card's content.
-                    </p>
-                </div>
-            </div>
+            </template>
         </div>
     </div>
+    <!-- News End -->
 
+    <!-- Footer Section -->
     <footer class="text-white py-4" style="background-color: #83a9e8">
         <div class="container py-4">
             <h1 class="text-white mb-4">Are you a business owner?</h1>
             <div class="row g-4">
                 <!-- Feature 1 -->
                 <div class="col-lg-3 col-md-6 col-6">
-                    <div
-                        class="d-flex flex-lg-column flex-row align-items-center h-100"
-                    >
+                    <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                         <router-link :to="'/login'">
                             <button class="btn border-0 fw-bold" type="button">
-                                <div
-                                    class="mb-lg-3 me-3 me-lg-0 icon-container"
-                                >
-                                    <img
-                                        src="../../Images/Landing Page/footer1.png"
-                                        alt="Log Reviews"
-                                        class="img-fluid"
-                                    />
+                                <div class="mb-lg-3 me-3 me-lg-0 icon-container">
+                                    <img src="../../Images/Landing Page/footer1.png" alt="Log Reviews"
+                                        class="img-fluid" />
                                 </div>
                             </button>
                         </router-link>
                         <h6
-                            class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height text-black"
-                        >
+                            class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height text-black">
                             Log Your Drink Reviews and Share Your Favorites
                         </h6>
                     </div>
@@ -583,25 +420,17 @@
 
                 <!-- Feature 2 -->
                 <div class="col-lg-3 col-md-6 col-6">
-                    <div
-                        class="d-flex flex-lg-column flex-row align-items-center h-100"
-                    >
+                    <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                         <router-link :to="'/clubs/view'">
                             <button class="btn border-0 fw-bold" type="button">
-                                <div
-                                    class="mb-lg-3 me-3 me-lg-0 icon-container"
-                                >
-                                    <img
-                                        src="../../Images/Landing Page/footer2.png"
-                                        alt="Find Communities"
-                                        class="img-fluid"
-                                    />
+                                <div class="mb-lg-3 me-3 me-lg-0 icon-container">
+                                    <img src="../../Images/Landing Page/footer2.png" alt="Find Communities"
+                                        class="img-fluid" />
                                 </div>
                             </button>
                         </router-link>
                         <h6
-                            class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height text-black"
-                        >
+                            class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height text-black">
                             Find Your Communities and Join Events
                         </h6>
                     </div>
@@ -609,25 +438,17 @@
 
                 <!-- Feature 3 -->
                 <div class="col-lg-3 col-md-6 col-6">
-                    <div
-                        class="d-flex flex-lg-column flex-row align-items-center h-100"
-                    >
+                    <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                         <router-link :to="'/'">
                             <button class="btn border-0 fw-bold" type="button">
-                                <div
-                                    class="mb-lg-3 me-3 me-lg-0 icon-container"
-                                >
-                                    <img
-                                        src="../../Images/Landing Page/footer3.png"
-                                        alt="Discover Drinks"
-                                        class="img-fluid"
-                                    />
+                                <div class="mb-lg-3 me-3 me-lg-0 icon-container">
+                                    <img src="../../Images/Landing Page/footer3.png" alt="Discover Drinks"
+                                        class="img-fluid" />
                                 </div>
                             </button>
                         </router-link>
                         <h6
-                            class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height text-black"
-                        >
+                            class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height text-black">
                             Discover New Drinks and Expand Your Taste Palette
                         </h6>
                     </div>
@@ -635,49 +456,40 @@
 
                 <!-- Feature 4 -->
                 <div class="col-lg-3 col-md-6 col-6">
-                    <div
-                        class="d-flex flex-lg-column flex-row align-items-center h-100"
-                    >
+                    <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                         <router-link :to="'/clubs/view'">
                             <button class="btn border-0 fw-bold" type="button">
-                                <div
-                                    class="mb-lg-3 me-3 me-lg-0 icon-container"
-                                >
-                                    <img
-                                        src="../../Images/Landing Page/footer4.png"
-                                        alt="Connect"
-                                        class="img-fluid"
-                                    />
+                                <div class="mb-lg-3 me-3 me-lg-0 icon-container">
+                                    <img src="../../Images/Landing Page/footer4.png" alt="Connect" class="img-fluid" />
                                 </div>
                             </button>
                         </router-link>
                         <h6
-                            class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height text-black"
-                        >
+                            class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height text-black">
                             Connect With Your Favorite Drink Makers
                         </h6>
                     </div>
                 </div>
             </div>
             <router-link :to="'/businessSignup'">
-                <button
-                    class="btn btn-warning text-white"
-                    style="background-color: #83a9e8; margin-top: 20px"
-                    aria-label="Try Out Your Drink-X Business Account"
-                >
+                <button class="btn btn-warning text-white" style="background-color: #83a9e8; margin-top: 20px"
+                    aria-label="Try Out Your Drink-X Business Account">
                     Try Out Your Drink-X Business Account
                 </button>
             </router-link>
         </div>
     </footer>
+    <!-- Footer End -->
 </template>
 
 <script>
-import NavBar from "@/components/NavBar.vue";
+import LandingPageNavBar from "@/components/LandingPageNavBar.vue";
+import SearchBar from "@/components/SearchBar.vue";
 
 export default {
     components: {
-        NavBar,
+        LandingPageNavBar,
+        SearchBar
     },
     data() {
         return {
@@ -716,13 +528,13 @@ export default {
         this.fetchTop8();
     },
     methods: {
-        // load data from database (profile picture)
+        // Load data from the database (e.g., profile picture)
         async loadData(url) {
             try {
                 const response = await this.$axios.get(url);
                 this.photo = response.data["photo"];
 
-                if (this.accType == "user") {
+                if (this.accType === "user") {
                     if (response.data.isAdmin) {
                         this.isAdmin = true;
                     }
@@ -738,17 +550,18 @@ export default {
             }
         },
 
-        // for search feature
+        // For search feature
+        /*
         goSearch() {
-            if (this.searchInput != "") {
-                // remove any '/' from search input
+            if (this.searchInput !== "") {
+                // Remove any '/' from search input
                 this.searchInput = this.searchInput.replace(/\//g, "");
 
-                // if already on search page, refresh the page with new search input
-                if (this.$route.path.split("/")[1] == "search") {
+                // If already on search page, refresh the page with new search input
+                if (this.$route.path.split("/")[1] === "search") {
                     window.location.href = "/search/" + this.searchInput;
                 } else {
-                    // re-route to search page
+                    // Re-route to search page
                     this.$router.push({ path: "/search/" + this.searchInput });
                 }
             }
@@ -791,11 +604,11 @@ export default {
         // Route to image search page
         /*
         imageSearch() {
-            // if already on image search page, refresh the page
-            if (this.$route.path.split("/")[1] == "imageSearch") {
+            // If already on image search page, refresh the page
+            if (this.$route.path.split("/")[1] === "imageSearch") {
                 window.location.href = "/imageSearch";
             } else {
-                // re-route to image search page
+                // Re-route to image search page
                 this.$router.push({ path: "/imageSearch" });
             }
         },
@@ -863,4 +676,3 @@ export default {
     /* Optional shadow for emphasis */
 }
 </style>
-
