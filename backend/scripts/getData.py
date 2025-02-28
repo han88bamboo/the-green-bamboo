@@ -21,6 +21,10 @@ from bson.objectid import ObjectId
 from psycopg2.extras import RealDictCursor
 import random
 
+import feedparser
+import re
+import requests
+from bs4 import BeautifulSoup
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -194,6 +198,24 @@ def getRandomListings():
 
     if not listings_data:
         return jsonify({"error": "No listings found for selected date"}), 400
+
+# -----------------------------------------------------------------------------------------
+# [POST] Listings by IDs
+@blueprint.route("/getListingsByIDs", methods=['POST'])
+def getListingsByIDs():
+    conn = g.db
+
+    listing_ids = request.json.get('listingIDs', [])
+
+    if not listing_ids:
+        return jsonify([]), 404
+
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "listings" WHERE "id" IN %s', (tuple(listing_ids),))
+        listings_data = cursor.fetchall()
+    
+    if not listings_data:
+        return jsonify([])
 
     return jsonify(listings_data)
 
@@ -1767,7 +1789,7 @@ def getTop8():
 
     return jsonify(final_listings) 
 
-
+  
 # -----------------------------------------------------------------------------------------
 # [GET] colours
 @blueprint.route("/getColours")

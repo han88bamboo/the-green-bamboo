@@ -254,11 +254,10 @@
         title="Create your profile and build your taste palate!"
         question="What’s your drink of choice?"
         note="(Please pick at least 1 drink)"
-        :options="drinkType"
+        :options="['Whisky', 'Beer', 'Wine', 'Cocktails', 'Gin', 'Tequila', 'Mezcal', 'Sake', 'Rum', 'Brandy', 'Baijiu', 'Soju', 'Umeshu', 'Makgeolli', 'Brandy', 'Vodka', 'Liqueurs', 'Shochu', 'Sotol', 'Arrack']"
         :preselectedOptions="selectedDrinks"
         :minSelections="1"
         nextButtonText="Next"
-        @updateSelection="selectedDrinks = $event"
         @next="goToPopup2"
     />
 
@@ -268,13 +267,9 @@
         :isVisible="true"
         title="Create your profile and build your taste palate!"
         question="What types of flavours do you usually prefer?"
-        note="(Please pick at least 3 flavours)"
-        :options="flavourTags"
-        :preselectedOptions="selectedFlavors"
-        :minSelections="3"
+        :options="['Sweet', 'Sour', 'Umami', 'Floral', 'Fruity', 'Green', 'Confectionary', 'Cereal', 'Earthy', 'Spices', 'Mineral', 'Lactic', 'Umami', 'Smoky']"
         showBackButton
-        @updateSelection="selectedFlavors = $event"
-        @back="showPopup1 = true; showPopup2 = false"
+        @back="goToPopup1"
         @next="goToPopup3"
     />
 
@@ -284,11 +279,10 @@
         :isVisible="true"
         title="Create your profile and build your taste palate!"
         question="Which of these drinks would you most like to try?"
-        note="(Please pick at least 1 category)"
-        :options="observationTags"
+        :options="['Good for Gifts', 'Beginner Friendly', 'Overhyped!', 'Is This Water?', 'For My Worst Enemy!', 'Broke the Bank', 'Acquired Taste']"
         showBackButton
         nextButtonText="Done"
-        @back="goToPopup2From3"
+        @back="goToPopup2"
         @next="completeSetup"
     />
 
@@ -298,8 +292,8 @@
       :isVisible="true"
       title="Now it’s time to log your first review!"
       message="Search for a drink and share your review with the community!"
-      @close="loginUser"
-      @search="goSearch"
+      @close="showOnboardPopup = false"
+      @search="handleSearch"
     />
 
     
@@ -328,10 +322,10 @@
                 showPopup2: false,
                 showPopup3: false,
                 showOnboardPopup: false,
-                
+
                 // Initial user variable
                 response:[],
-                
+
                 // Form variables
                 username:"",
                 displayName:'',
@@ -343,12 +337,10 @@
                 birthday:'',
                 ageCheck:'',
                 selectedCountry:'',
-                
+
                 countries: [],
                 // Submission variables
-                selectedDrinks: [],  // Stores selections from Popup 1
-                selectedFlavors: [], // Stores selections from Popup 2
-                
+
                 missingUsername:false,
                 missingDisplayName:false,
                 missingEmail:false,
@@ -375,7 +367,6 @@
                 loginError:false,
                 flavourTags: [], // Store the flavour tags from database
                 observationTags: [], // Store the observation tags from database
-                drinkType:[], // Store the drink type from database
             }
         },
         mounted() {
@@ -384,8 +375,8 @@
         methods:{
             async loadData(){
                 try {
-                    // const response =  `${process.env.VUE_APP_API_URL}/getData/getCountries`  // comment out for local
-                    const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getCountries`); // comment out for deployment
+                    const response =  `${process.env.VUE_APP_API_URL}/getData/getCountries`  // comment out for local
+                    // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getCountries`); // comment out for deployment
                     this.countries = response.data.sort((a,b)=>{
                             return a.originCountry.localeCompare(b.originCountry)
                             })
@@ -395,24 +386,10 @@
                         console.error(error);
                         this.dataLoaded = null;
                     }
-                // get the drink types from database
-                try {
-                    // const response =  `${process.env.VUE_APP_API_URL}/getData/getDrinkTypes`  // comment out for local
-                    const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getDrinkTypes`); // comment out for deployment
-                    // Set drinkType dynamically based on the API response
-                    this.drinkType = response.data.map(item => item.drinkType);
-                    
-                    // Log the transformed array
-                    console.log("Updated Drink type:", this.drinkType);
-                }
-                catch (error) {
-                    console.error(error);
-                    this.dataLoaded = null;
-                }
                 // get the flavourTags from database
                 try {
-                    // const response =  `${process.env.VUE_APP_API_URL}/getData/getFlavourTags`  // comment out for local
-                    const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getFlavourTags`); // comment out for deployment
+                    const response =  `${process.env.VUE_APP_API_URL}/getData/getFlavourTags`  // comment out for local
+                    // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getFlavourTags`); // comment out for deployment
                     // Set flavourTags dynamically based on the API response
                     this.flavourTags = response.data.map(item => item.familyTag);
                     
@@ -425,8 +402,8 @@
                 }
                 // get the observationTags from database
                 try {
-                    // const response =  `${process.env.VUE_APP_API_URL}/getData/getObservationTags`  // comment out for local
-                    const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getObservationTags`);  // comment out for deployment
+                    const response =  `${process.env.VUE_APP_API_URL}/getData/getObservationTags`  // comment out for local
+                    // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getObservationTags`);  // comment out for deployment
                     // Set flavourTags dynamically based on the API response
                     this.observationTags = response.data.map(item => item.observationTag);
                     
@@ -546,8 +523,8 @@
 
                 let hashedPassword = this.hashPassword(this.username, this.password)
                 let joinDate = new Date().toISOString();
-                // let submitAPI =  `${process.env.VUE_APP_API_URL}/createAccount/createAccount`  // comment out for local
-                let submitAPI = "http://127.0.0.1:5000/createAccount/createAccount"  // comment our for deployment
+                let submitAPI =  `${process.env.VUE_APP_API_URL}/createAccount/createAccount`  // comment out for local
+                // let submitAPI = "http://127.0.0.1:5000/createAccount/createAccount"  // comment our for deployment
                 let submitData = {
                     // pass in first name, last name, email, isadmin
                     "username": this.username,
@@ -577,8 +554,6 @@
                     },
                     "birthday":this.birthday,
                     "isAdmin":false,
-                    "choiceFlavours":[],
-                    "preferences":[]
                 }
                 this.createAccount(submitAPI, submitData);
             },
@@ -658,8 +633,8 @@
         preferences: this.selectedPreferences,
     }
     try{
-        let submitAPI = `http://127.0.0.1:5000/createAccount/addPreferences/${this.username}`   // comment out for deployment
-        // let submitAPI = `${process.env.VUE_APP_API_URL}/createAccount/addPreferences/${this.username}`  // comment out for local
+        // let submitAPI = `http://127.0.0.1:5000/createAccount/addPreferences/${this.username}`   // comment out for deployment
+        let submitAPI = `${process.env.VUE_APP_API_URL}/createAccount/addPreferences/${this.username}`  // comment out for local
         const response = await this.$axios.post(submitAPI, submitData)
         return response;
     } catch (error) {
@@ -749,8 +724,8 @@
 
             async checkUsername(username){
                 try {
-                    const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getUsers`);
-                    // const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUsers`);
+                    // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getUsers`);
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUsers`);
                     let duplicateUser = response.data.filter((user)=>{
                         return user.username == username
                     })
@@ -769,13 +744,13 @@
             async loginUser(){
                 // Get specific user by username and set local storage then redirect
                 try {
-                    const submitURL = `http://127.0.0.1:5000/getData/getUserByUsername/` + this.username
-                    // const submitURL = `${process.env.VUE_APP_API_URL}/getData/getUserByUsername/` + this.username
+                    // const submitURL = `http://127.0.0.1:5000/getData/getUserByUsername/` + this.username
+                    const submitURL = `${process.env.VUE_APP_API_URL}/getData/getUserByUsername/` + this.username
                     const response = await this.$axios.get(submitURL);
                     if(response.data.username== this.username){
                         localStorage.setItem("88B_accID", response.data['id']);
                         localStorage.setItem("88B_accType", "user");
-                        this.$router.push({ name: 'profileuser', params: { userID: response.data['id'] } });
+                        this.$router.push({path: '/'});
                     }
                 } 
                 catch (error) {
@@ -784,19 +759,7 @@
                     this.successSubmission = false
                 }
             },
-            goSearch(searchInput) {
-                if (searchInput.trim() !== "") {
-                    // Remove any '/' from search input
-                    searchInput = searchInput.replace(/\//g, '');
-                    // If already on search page, refresh the page with new search input
-                    if (this.$route.path.startsWith('/search')) {
-                        window.location.href = `/search/${searchInput}`;
-                    } else {
-                        // Re-route to search page
-                        this.$router.push({ path: `/search/${searchInput}` });
-                    }
-                }
-            }
+            
         }
     }
 

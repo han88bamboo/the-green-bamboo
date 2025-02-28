@@ -196,9 +196,7 @@ CREATE TABLE "users" (
     "email" VARCHAR(255),
     "isAdmin" BOOLEAN,
     "birthday" TIMESTAMP,
-    "pin" VARCHAR(255),
-    "choiceFlavours" TEXT[],
-    "preferences" TEXT[]
+    "pin" VARCHAR(255)
 );
 
 -- ========= [NEW!] "producersQuestionAnswers" =========
@@ -552,6 +550,14 @@ CREATE TABLE "eventAttendees" (
     "userID" INTEGER,
     "attendeeType" VARCHAR(255),
     "attendeeStatus" BOOLEAN
+);
+
+-- ========= "typeCategories" =========
+CREATE TABLE "typeCategories" (
+    "id" SERIAL PRIMARY KEY,
+    "drinkType_id" INTEGER,
+    "typeCategory" VARCHAR(255),
+    "drinkStyle" TEXT[]
 );
 
 -- ========= "associations" =========
