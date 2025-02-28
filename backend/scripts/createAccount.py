@@ -316,14 +316,14 @@ def createProducerAccount():
         cur.execute("""
             INSERT INTO producers (
                 "producerName", "producerDesc", "originCountry", "mainDrinks", "photo", "hashedPassword", 
-                "claimStatus", "statusOB", "username", "producerLink", "stripeCustomerId"
+                "claimStatus", "statusOB", "username", "producerLink", "stripeCustomerId", "isIndependentBottler"
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
         """, (
             newBusinessData['producerName'], newBusinessData['producerDesc'], newBusinessData['originCountry'],
             newBusinessData['mainDrinks'], newBusinessData['photo'], newBusinessData['hashedPassword'],
             newBusinessData['claimStatus'], newBusinessData['statusOB'], newBusinessData.get('username', None),
-            newBusinessData.get('producerLink', None), newBusinessData.get('stripeCustomerId', None)
+            newBusinessData.get('producerLink', None), newBusinessData.get('stripeCustomerId', None), newBusinessData.get('isIndependentBottler', False)
         ))
 
         # Extract the new producer ID

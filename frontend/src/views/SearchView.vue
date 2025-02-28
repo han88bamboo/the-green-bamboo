@@ -670,12 +670,237 @@ export default {
             userID: "",
             userType: "",
 
-            // for bookmark
-            user: null,
-            userBookmarks: [],
-            drinkList: {
-                "haveTried": [""],
-                "wantToTry": [""]
+                // ------ SORT LISTINGS --------
+                if (this.tabActive == 'listings') {
+                    // #1: Alphabetical (A - Z)
+                    if (category == 'Alphabetical (A - Z)') {
+                        this.resultListings.sort((a, b) => {
+                            return a.listingName.localeCompare(b.listingName);
+                        });
+                    }
+                    // #2: Alphabetical (Z - A)
+                    else if (category == 'Alphabetical (Z - A)') {
+                        this.resultListings.sort((a, b) => {
+                            return b.listingName.localeCompare(a.listingName);
+                        });
+                    }
+                    // #3: Date (Newest - Oldest)
+                    else if (category == 'Date (Newest - Oldest)') {
+                        this.resultListings.sort((a, b) => {
+                            return new Date(b.addedDate) - new Date(a.addedDate);
+                        });
+                    }
+                    // [DEFAULT] #4: Date (Oldest - Newest)
+                    else if (category == '' || category == 'Date (Oldest - Newest)') {
+                        this.resultListings.sort((a, b) => {
+                            return new Date(a.addedDate) - new Date(b.addedDate);
+                        });
+                    }
+                    // #5: Ratings (Highest - Lowest)
+                    else if (category == 'Ratings (Highest - Lowest)') {
+                        this.resultListings.sort((a, b) => {
+                            return this.getAllRatings(b) - this.getAllRatings(a);
+                        });
+                    }
+                    // #6: Ratings (Lowest - Highest)
+                    else if (category == 'Ratings (Lowest - Highest)') {
+                        this.resultListings.sort((a, b) => {
+                            return this.getAllRatings(a) - this.getAllRatings(b);
+                        });
+                    }
+                }
+
+                // ------ SORT PRODUCERS ------
+                else if (this.tabActive == 'producers') {
+                    // #1: [DEFAULT] Alphabetical (A - Z)
+                    if (category == '' || category == 'Alphabetical (A - Z)') {
+                        this.producerListings.sort((a, b) => {
+                            return a.producerName.localeCompare(b.producerName);
+                        });
+                    }
+                    // #2: Alphabetical (Z - A)
+                    else if (category == 'Alphabetical (Z - A)') {
+                        this.producerListings.sort((a, b) => {
+                            return b.producerName.localeCompare(a.producerName);
+                        });
+                    }
+                    // #3: Ratings (Highest - Lowest)
+                    else if (category == 'Ratings (Highest - Lowest)') {
+                        this.producerListings.sort((a, b) => {
+                            return this.getAvgProducerRating(b) - this.getAvgProducerRating(a);
+                        });
+                    }
+                    // #4: Ratings (Lowest - Highest)
+                    else if (category == 'Ratings (Lowest - Highest)') {
+                        this.producerListings.sort((a, b) => {
+                            return this.getAvgProducerRating(a) - this.getAvgProducerRating(b);
+                        });
+                    }
+                }
+
+                // ------ SORT VENUES ------
+                else if (this.tabActive == 'venues') {
+                    // #1: [DEFAULT] Alphabetical (A - Z)
+                    if (category == '' || category == 'Alphabetical (A - Z)') {
+                        this.venueListings.sort((a, b) => {
+                            return a.venueName.localeCompare(b.venueName);
+                        });
+                    }
+                    // #2: Alphabetical (Z - A)
+                    else if (category == 'Alphabetical (Z - A)') {
+                        this.venueListings.sort((a, b) => {
+                            return b.venueName.localeCompare(a.venueName);
+                        });
+                    }
+                    // #3: Ratings (Highest - Lowest)
+                    else if (category == 'Ratings (Highest - Lowest)') {
+                        this.venueListings.sort((a, b) => {
+                            return this.getAvgVenueRating(b) - this.getAvgVenueRating(a);
+                        });
+                    }
+                    // #4: Ratings (Lowest - Highest)
+                    else if (category == 'Ratings (Lowest - Highest)') {
+                        this.venueListings.sort((a, b) => {
+                            return this.getAvgVenueRating(a) - this.getAvgVenueRating(b);
+                        });
+                    }
+                }
+            },
+
+            // Sort Support Function (Category)
+            sortByCategory(category) {
+                // Check if the selected filter is the same as the current filter
+                if (this.sortSelection.category == category) {
+                    return;
+                }
+                else {
+                    this.sortSelection.category = category
+                    this.sortResults();
+                }
+            },
+
+            // get ratings for a listing --> return "-" if no ratings
+            getRatings(listing) {
+                const ratings = this.reviews.filter((rating) => rating["reviewTarget"] == listing['id']);
+                // if there are no ratings
+                if (ratings.length == 0) return "-";
+                // else there are ratings
+                const averageRating = ratings.reduce((total, rating) => {
+                    return total + parseFloat(rating["rating"]);
+                }, 0) / ratings.length;
+
+                return averageRating.toFixed(1);
+            },
+
+            // get ratings for a listing --> return 0 if no ratings
+            getAllRatings(listing) {
+                const ratings = this.reviews.filter((rating) => {
+                    return rating["reviewTarget"] == listing['id'];
+                });
+                // if there are no ratings
+                if (ratings.length == 0) {
+                    return 0;
+                }
+                // else there are ratings
+                const averageRating = ratings.reduce((total, rating) => {
+                    return total + parseFloat(rating["rating"]);
+                }, 0) / ratings.length;
+                // round to 1 decimal place
+                return averageRating.toFixed(1);
+            },
+
+            // get average rating for producer --> return "-" if no ratings
+            getAllProducerRating(producer) {
+                let allProducerReviews = this.reviews.filter(review => {
+                    let review_target = review.reviewTarget;
+                    let all_drinks = this.listings.filter(listing => listing.producerID == producer.id);
+                    return all_drinks.some(drink => drink.id === review_target);
+                });
+                // if there are no ratings
+                if (allProducerReviews.length == 0) {
+                    return "-";
+                }
+                // else there are ratings
+                const averageRating = allProducerReviews.reduce((total, review) => {
+                    return total + parseFloat(review.rating);
+                }, 0) / allProducerReviews.length;
+                // round to 1 decimal place
+                return averageRating.toFixed(1);
+            },
+
+            // get average rating for producer --> return 0 if no ratings
+            getAvgProducerRating(producer) {
+                let allProducerReviews = this.reviews.filter(review => {
+                    let review_target = review.reviewTarget;
+                    let all_drinks = this.listings.filter(listing => listing.producerID == producer.id);
+                    return all_drinks.some(drink => drink.id === review_target);
+                });
+                // if there are no ratings
+                if (allProducerReviews.length == 0) {
+                    return 0;
+                }
+                // else there are ratings
+                const averageRating = allProducerReviews.reduce((total, review) => {
+                    return total + parseFloat(review.rating);
+                }, 0) / allProducerReviews.length;
+                // round to 1 decimal place
+                return averageRating.toFixed(1);
+            },
+
+            // get all drinks that a venue has
+            getAllVenueDrinks(venue) {
+                let allMenuItems = venue["menu"]
+                let allSectionMenus = allMenuItems.reduce((acc, menuItem) => {
+                    return acc.concat(menuItem.sectionMenu);
+                }, []);
+                let allListingsIDs = allSectionMenus.reduce((acc, menuItem) => {
+                    return acc.concat(menuItem.itemID); 
+                }, []);
+                let uniqueListingsIDs = [...new Set(allListingsIDs.map(item => item))];
+                let allVenueDrinks = this.listings.filter(listing => {
+                    let listing_id = listing.id;
+                    return uniqueListingsIDs.includes(listing_id);
+                });
+                return allVenueDrinks
+            },
+
+            // get average rating for venue --> return "-" if no ratings
+            getAllVenueRating(venue) {
+                console.log(venue)
+                let allVenueReviews = this.reviews.filter(review => {
+                    let review_target = review.reviewTarget;
+                    let all_drinks = this.getAllVenueDrinks(venue)
+                    return all_drinks.some(drink => drink.id === review_target);
+                });
+                // if there are no ratings
+                if (allVenueReviews.length == 0) {
+                    return "-";
+                }
+                // else there are ratings
+                const averageRating = allVenueReviews.reduce((total, review) => {
+                    return total + parseFloat(review.rating);
+                }, 0) / allVenueReviews.length;
+                // round to 1 decimal place
+                return averageRating.toFixed(1);
+            },
+
+            // get average rating for venue --> return 0 if no ratings
+            getAvgVenueRating(venue) {
+                let allVenueReviews = this.reviews.filter(review => {
+                    let review_target = review.reviewTarget;
+                    let all_drinks = this.getAllVenueDrinks(venue)
+                    return all_drinks.some(drink => drink.id === review_target);
+                });
+                // if there are no ratings
+                if (allVenueReviews.length == 0) {
+                    return 0;
+                }
+                // else there are ratings
+                const averageRating = allVenueReviews.reduce((total, review) => {
+                    return total + parseFloat(review.rating);
+                }, 0) / allVenueReviews.length;
+                // round to 1 decimal place
+                return averageRating.toFixed(1);
             },
             haveTried: false,
             wantToTry: false,

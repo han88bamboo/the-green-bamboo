@@ -97,8 +97,8 @@
                   <b>Flavour Choice</b>
                 </div>
                 <div class="col-7 text-end">
-                  <span v-if="selectedFlavours.length == 0"><i>None</i></span>
-                  <span v-else>{{ selectedFlavours.join(", ") }}</span>
+                  <span v-if="selectedFlavours?.length == 0"><i>None</i></span>
+                  <span v-else>{{ selectedFlavours?.join(", ") }}</span>
                 </div>
               </div>
               <div class="row">
@@ -106,10 +106,10 @@
                   <b>Observation Tags</b>
                 </div>
                 <div class="col-7 text-end">
-                  <span v-if="selectedObservationTags.length == 0"
+                  <span v-if="selectedObservationTags?.length == 0"
                     ><i>None</i></span
                   >
-                  <span v-else>{{ selectedObservationTags.join(", ") }}</span>
+                  <span v-else>{{ selectedObservationTags?.join(", ") }}</span>
                 </div>
               </div>
               <div class="row">
@@ -765,6 +765,7 @@
                               v-model="selectedFlavours"
                               :value="tag.familyTag"
                             />
+                            {{ console.log("abc", selectedFlavours) }}
                             <label
                               v-if="selectedFlavours.includes(tag.familyTag)"
                               class="btn primary-btn-less-round"
@@ -1658,7 +1659,7 @@
                         <p
                           class="fs-4 mobile-fs-5 fw-bold rating-text mobile-mb-1"
                         >
-                          {{ review.rating.toFixed(1) }}★
+                          {{ parseFloat(review.rating).toFixed(1) }}★
                           <!--<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-star-fill " viewBox="0 0 16 16">
                                                         <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
                                                     </svg>-->
@@ -2861,8 +2862,8 @@ export default {
           });
           this.joinDate = `${month} ${year}`;
           this.selectedDrinks = this.user.choiceDrinks;
-          this.selectedFlavours = this.user.choiceFlavours;
-          this.selectedObservationTags = this.user.preferences;
+          this.selectedFlavours = this.user.choiceFlavours || [];
+          this.selectedObservationTags = this.user.preferences || [];
           this.userBookmarks = this.user.drinkLists;
           this.following = JSON.stringify(this.user.followLists.users).includes(
             JSON.stringify(this.displayUserID)

@@ -686,6 +686,21 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        <div v-if="businessType == 'producer'">
+                                            <div class="mb-2 fw-bold">
+                                                Independent Bottler <span style="color: red;">*</span>
+                                            </div>
+                                            <div class="mb-4">
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" id="independentBottler" v-model="independentBottler" value="true" name="bottler">
+                                                    <label class="form-check-label text-start" for="independentBottler">Yes</label>
+                                                </div>
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" id="notIndependentBottler" v-model="independentBottler" value="false" name="bottler">
+                                                    <label class="form-check-label text-start" for="notIndependentBottler">No</label>
+                                                </div>
+                                            </div>
+                                        </div>
                                         <div>
                                             <div class="mb-2 fw-bold">
                                                 Name <span style="color: red;">*</span>
@@ -974,6 +989,7 @@
 
                     // create business
                     businessType: "",
+                    isIndependentBottler: false,
                     businessName: "",
                     businessDesc: "",
                     businessCountry: "",
@@ -1454,6 +1470,7 @@
                             const newBusinessData = {
                                 businessName: request.businessName,
                                 businessDesc: request.businessDesc,
+                                isIndependentBottler: request.isIndependentBottler,
                                 country: request.country,
                                 hashedPassword: hashedPassword,
                                 claimStatus: false,
@@ -1500,6 +1517,7 @@
                             this.businessType = request.businessType;
                             this.businessName = request.businessName;
                             this.businessDesc = request.businessDesc;
+                            this.isIndependentBottler = request.isIndependentBottler;
                             this.businessCountry = request.country;
                             this.venueAddress = request.country;
                             this.venueType = 'Bar';
@@ -1611,6 +1629,7 @@
                                 producerName: this.businessName,
                                 producerDesc: this.businessDesc,
                                 originCountry: this.businessCountry,
+                                isIndependentBottler: this.isIndependentBottler,
                                 statusOB: "",
                                 mainDrinks: [],
                                 photo: "",

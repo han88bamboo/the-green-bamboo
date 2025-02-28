@@ -25,6 +25,7 @@ def editDetails():
     producerID = int(data['producerID'])
     producerName = data['producerName']
     producerDesc = data['producerDesc']
+    isIndependentBottler = data['isIndependentBottler']
     originCountry = data['originCountry']
     yearFounded = data.get('yearFounded', None)
     activeStatus = data['activeStatus']
@@ -51,6 +52,7 @@ def editDetails():
                     "photo" = %s,
                     "producerName" = %s,
                     "producerDesc" = %s,
+                    "isIndependentBottler" = %s,
                     "originCountry" = %s,
                     "yearFounded" = %s,
                     "activeStatus" = %s,
@@ -60,7 +62,7 @@ def editDetails():
                     "website" = %s
                 WHERE id = %s
                 """,
-                (image64, producerName, producerDesc, originCountry, yearFounded, activeStatus, owner, location, openForTours, website, producerID)
+                (image64, producerName, producerDesc, isIndependentBottler, originCountry, yearFounded, activeStatus, owner, location, openForTours, website, producerID)
             )
             conn.commit()
 
