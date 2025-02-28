@@ -46,12 +46,12 @@ const routes = [
     name: 'billingsecurity',
     component: () => import('../views/BillingSecurity.vue')
   },
-  {
-    path: '/getListingsByObservationTag/:tag?',
-    name: 'getlistingsbyobservationtag',
-    component: () => import('../views/ListingsByTag.vue'),
-    props: true
-  },
+  // {
+  //   path: '/getListingsByObservationTag/:tag?',
+  //   name: 'getlistingsbyobservationtag',
+  //   component: () => import('../views/ListingsByTag.vue'),
+  //   props: true
+  // },
   {
     path: "/search/:input?",
     name: "search",
@@ -94,7 +94,7 @@ const routes = [
     // path: '/Users/Profile-Page/:id',
     // name: 'userprofilepage',
 
-    component: () => import('../views/Users/UserProfile.vue')
+    component: () => import('../views/Users/UserProfileRefactor.vue')
   },
   {
     path: '/profile/producer/:producerID?',

@@ -1,4 +1,5 @@
 -- DROP TABLES IF EXISTS -- 
+DROP TABLE IF EXISTS "associations" CASCADE;
 DROP TABLE IF EXISTS "pointsRecorder" CASCADE;
 DROP TABLE IF EXISTS "pointSystemRules" CASCADE;
 DROP TABLE IF EXISTS "eventAttendees" CASCADE;
@@ -7,6 +8,8 @@ DROP TABLE IF EXISTs "clubPostCommentsLikes" CASCADE;
 DROP TABLE IF EXISTS "clubPostComments" CASCADE;
 DROP TABLE IF EXISTS "clubPostsLikes" CASCADE;
 DROP TABLE IF EXISTS "clubPosts" CASCADE;
+DROP TABLE IF EXISTS "clubRequests" CASCADE;
+DROP TABLE IF EXISTS "clubInvites" CASCADE;
 DROP TABLE IF EXISTS "clubMembers" CASCADE;
 DROP TABLE IF EXISTS "clubs" CASCADE;
 DROP TABLE IF EXISTS "accountRequests" CASCADE;
@@ -23,6 +26,7 @@ DROP TABLE IF EXISTS "observationTags" CASCADE;
 DROP TABLE IF EXISTS "producerUpdateLikes" CASCADE;
 DROP TABLE IF EXISTS "producers" CASCADE;
 DROP TABLE IF EXISTS "producersProfileViews" CASCADE;
+DROP TABLE IF EXISTS "producersOpeningHours" CASCADE;
 DROP TABLE IF EXISTS "producersProfileViewsViews" CASCADE;
 DROP TABLE IF EXISTS "producersQuestionAnswers" CASCADE;
 DROP TABLE IF EXISTS "producersUpdates" CASCADE;
@@ -49,7 +53,6 @@ DROP TABLE IF EXISTS "venuesProfileViewsViews" CASCADE;
 DROP TABLE IF EXISTS "venuesQuestionAnswers" CASCADE;
 DROP TABLE IF EXISTS "venuesUpdates" CASCADE;
 DROP TABLE IF EXISTS "typeCategories" CASCADE;
-DROP TABLE IF EXISTS "associations" CASCADE;
 
 -- CREATE TABLES -- 
 -- ========= "accountRequests" =========
@@ -507,7 +510,8 @@ CREATE TABLE "clubs" (
     "isInviteOnly" BOOLEAN,
     "clubLink" VARCHAR(255),
     "clubBanner" TEXT,
-    "dateCreated" TIMESTAMP
+    "dateCreated" TIMESTAMP,
+    "totalMembers" INTEGER
 );
 
 -- ========= "clubMembers" =========
@@ -517,8 +521,7 @@ CREATE TABLE "clubMembers" (
     "userID" INTEGER,
     "userType" VARCHAR(255),
     "joinDate" TIMESTAMP,
-    "isAdmin" BOOLEAN,
-    "joinStatus" BOOLEAN
+    "isAdmin" BOOLEAN
 );
 
 -- ========= "clubInvites" =========

@@ -1452,7 +1452,6 @@ export default {
             try {
                 const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/getData/getBookmarkListings`, { 'listingIDs': listing_ids });
                 this.bookedMarkedListings = response.data;
-                console.log(this.bookedMarkedListings);
                 this.bookedMarkedListingsLoaded = true;
             } 
             catch (error) {
@@ -1510,11 +1509,6 @@ export default {
                 const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getDrinkTypes`);
                 this.drinkTypes = response.data;
 
-                // Add "Whiskey" to drinkType "Whisky"
-                const whiskeyIndex = this.drinkTypes.findIndex(drinkType => drinkType.drinkType === "Whisky");
-                this.drinkTypes[whiskeyIndex].drinkType = "Whiskey / Whisky";
-
-
                 // retrieve the drink type and put them into an array
                 this.drinkType = this.drinkTypes.map(category => category.drinkType);
                 if (this.user && this.drinkTypes) {
@@ -1525,6 +1519,7 @@ export default {
                 }
                 if (this.displayUser) {
                     let currentMod = this.displayUser.modType
+                
                     this.removableDrinkType = this.drinkTypes.filter(drinkType=>{
                         return currentMod.includes(drinkType.drinkType);
                     })
