@@ -1154,24 +1154,59 @@ VALUES (
     ]
 );
 
-INSERT INTO "producers" (
-    "id",
-	"producerName", 
-    "producerDesc", 
-    "originCountry", 
-    "mainDrinks", 
-    "photo", 
-    "hashedPassword", 
-    "claimStatus", 
-    "claimStatusCheckDate", 
-    "statusOB", 
-    "username", 
-    "producerLink", 
-    "stripeCustomerId"
+-- Fetch the ID of the "Beer" drinkType
+WITH drink_type AS (
+    SELECT id FROM "drinkTypes" WHERE "drinkType" = 'Beer'
+)
+
+-- Insert corresponding type categories
+INSERT INTO "typeCategories" ("drinkType_id", "typeCategory", "drinkStyle")
+VALUES
+    ((SELECT id FROM drink_type), 'Aged Beer', ARRAY[
+        'Barrel-Aged Beer',
+        'Sour Aged Beer',
+        'Brett Beer'
+    ]),
+    ((SELECT id FROM drink_type), 'Ale - All Styles', ARRAY[
+        'Pale Ale',
+        'IPA',
+        'Stout',
+        'Porter',
+        'Wheat Beer',
+        'Belgian Ale'
+    ]),
+    ((SELECT id FROM drink_type), 'Lager - All Styles', ARRAY[
+        'Pilsner',
+        'Helles',
+        'Doppelbock',
+        'Vienna Lager',
+        'Amber Lager'
+    ]);
+
+INSERT INTO "producers" ("producerName", "producerDesc", "originCountry", "isIndependentBottler", "mainDrinks", "photo", "hashedPassword", "claimStatus", "claimStatusCheckDate", "statusOB", "username", "producerLink", "stripeCustomerId"
 ) VALUES 
-    (3136, 'Hennessy', 'This is Hennessy', 'France', '{}', NULL, '-6552510', true, NULL, NULL, 'Hennessy', '', NULL),
-    (3127, 'Foursquare Distillery', 'Foursquare Rum Distillery is located on a former sugar plantation that dates back to approximately 1720.', 'Barbados', '{}', NULL, '-2099862240', true, NULL, null, 'Foursquare Distillery', '', null),
-	(3145, 'Young Spirits (YoSp)', 'This is Young Spirits (YoSp)', 'France', '{}', NULL, '1211997405', true, NULL, NULL, 'Hennessy', '', null);
+    ('Hennessy', 'This is Hennessy', 'France', FALSE, '{}', NULL, '-6552510', true, NULL, NULL, 'Hennessy', '', NULL),
+    ('Jack Daniel''s', 'Famous Tennessee whiskey brand known for its smooth, charcoal-mellowed whiskey.', 'United States', FALSE, '{}', NULL, '-1469695901', false, NULL, NULL, 'jackdaniels', '', NULL),
+    ('Johnnie Walker', 'One of the most iconic Scotch whisky brands, known for its blended whiskies.', 'Scotland', FALSE, '{}', NULL, '640032836', false, NULL, NULL, 'johnniewalker', '', NULL),
+    ('Jameson', 'The most famous Irish whiskey, triple-distilled for smoothness.', 'Ireland', FALSE, '{}', NULL, '-152907913', false, NULL, NULL, 'jameson', '', NULL),
+    ('Chivas Regal', 'A well-known brand of blended Scotch whisky.', 'Scotland', FALSE, '{}', NULL, '1650366560', false, NULL, NULL, 'chivasregal', '', NULL),
+    ('Glenfiddich', 'One of the most famous single malt Scotch whisky brands.', 'Scotland', FALSE, '{}', NULL, '626732607', false, NULL, NULL, 'glenfiddich', '', NULL),
+    ('Bacardi', 'World-famous rum brand, known for white and dark rums.', 'Cuba', FALSE, '{}', NULL, '1396448963', false, NULL, NULL, 'bacardi', '', NULL),
+    ('Captain Morgan', 'Popular spiced rum brand, known for its smooth taste.', 'Jamaica', FALSE, '{}', NULL, '-1018979690', false, NULL, NULL, 'captainmorgan', '', NULL),
+    ('Don Julio', 'Premium tequila brand, known for its smooth and high-quality tequila.', 'Mexico', FALSE, '{}', NULL, '2038084859', false, NULL, NULL, 'donjulio', '', NULL),
+    ('Patrón', 'A high-end tequila brand, famous for its handcrafted production process.', 'Mexico', FALSE, '{}', NULL, '462830215', false, NULL, NULL, 'patron', '', NULL),
+    ('Jose Cuervo', 'One of the oldest and most famous tequila brands in the world.', 'Mexico', FALSE, '{}', NULL, '-2090820217', false, NULL, NULL, 'josecuervo', '', NULL),
+    ('Tanqueray', 'One of the world’s most popular gin brands, known for its London Dry Gin.', 'United Kingdom', FALSE, '{}', NULL, '1792363181', false, NULL, NULL, 'tanqueray', '', NULL),
+    ('Hendrick''s', 'Scottish gin brand, famous for its cucumber and rose-infused flavors.', 'Scotland', FALSE, '{}', NULL, '1458970391', false, NULL, NULL, 'hendricks', '', NULL),
+    ('Bombay Sapphire', 'A premium gin brand known for its smooth taste and botanicals.', 'United Kingdom', FALSE, '{}', NULL, '-938116355', false, NULL, NULL, 'bombaysapphire', '', NULL),
+    ('Suntory', 'Japanese whisky and spirits brand, known for Hibiki and Yamazaki.', 'Japan', FALSE, '{}', NULL, '-345359732', false, NULL, NULL, 'suntory', '', NULL),
+    ('Nikka', 'Japanese whisky brand, known for its high-quality single malts and blends.', 'Japan', FALSE, '{}', NULL, '505268853', false, NULL, NULL, 'nikka', '', NULL),
+    ('Tito''s Handmade Vodka', 'An American vodka brand made from corn and distilled in Texas.', 'United States', FALSE, '{}', NULL, '2016735326', false, NULL, NULL, 'titosvodka', '', NULL),
+    ('Grey Goose', 'A premium French vodka brand, made with high-quality wheat.', 'France', FALSE, '{}', NULL, '-1636822077', false, NULL, NULL, 'greygoose', '', NULL),
+    ('Absolut', 'One of the most famous vodka brands, known for its pure Swedish vodka.', 'Sweden', FALSE, '{}', NULL, '-1030449104', false, NULL, NULL, 'absolut', '', NULL),
+    ('Tiger Beer', 'A popular Asian beer brand, brewed in Singapore.', 'Singapore', FALSE, '{}', NULL, '165298405', false, NULL, NULL, 'tigerbeer', '', NULL),
+    ('Foursquare Distillery', 'Foursquare Rum Distillery is located on a former sugar plantation that dates back to approximately 1720, within the tiny Caribbean island of Barbados. The distillery was re-opened by the Seale family in 1996, distilling operations and blending are currently directed by Richard Seale, 4th Generation Trader/Distiller of R.L. Seale & Co. Exceptional Cask Selections represent the unique, and rare offerings of Foursquare Rum Distillery that Richard has hand selected – his personal projects only released when he feels they are of exceptional quality. These are one of a kind expressions, available only for a limited time, and showcasing truly unique approaches to both Rum blending and maturation.', 'Barbados', FALSE, '{}', NULL, '-2099862240', false, NULL, NULL, 'foursquare', '', NULL),
+    ('Young Spirits (YoSp)', 'Young Spirits is a small, independent bottler based in the Netherlands. They focus on bottling single cask whiskies, rums, and other spirits, with a particular emphasis on unique and interesting casks. They have released a number of whiskies from distilleries such as Glenrothes, Glen Moray, and Glen Garioch, as well as rums from Jamaica and Barbados.', 'Netherlands', FALSE, '{}', NULL, '1918297408', false, NULL, NULL, 'youngspirits', '', NULL);
 
 INSERT INTO "venues" (
     "venueName", 
@@ -2795,16 +2830,16 @@ INSERT INTO "usersFollowLists" (
     VALUES (1, '{}', '{}', '{}'), (2, '{}', '{}', '{}'), (3, '{}', '{}', '{}'), (4, '{}', '{}', '{}');
 
 INSERT INTO "usersDrinkLists" (
-    "userId", "listName", "drinks")
+    "userId", "listName")
     VALUES 
-    (1, 'Drinks I Have Tried', '{}'), 
-    (1, 'Drinks I Want To Try', '{}'), 
-    (2, 'Drinks I Have Tried', '{}'), 
-    (2, 'Drinks I Want To Try', '{}'), 
-    (3, 'Drinks I Have Tried', '{}'), 
-    (3, 'Drinks I Want To Try', '{}'), 
-    (4, 'Drinks I Have Tried', '{}'), 
-    (4, 'Drinks I Want To Try', '{}');
+    (1, 'Drinks I Have Tried'), 
+    (1, 'Drinks I Want To Try'), 
+    (2, 'Drinks I Have Tried'), 
+    (2, 'Drinks I Want To Try'), 
+    (3, 'Drinks I Have Tried'), 
+    (3, 'Drinks I Want To Try'), 
+    (4, 'Drinks I Have Tried'), 
+    (4, 'Drinks I Want To Try');
 
 INSERT INTO "venuesMenu" (
     "sectionName", "sectionOrder","venueId")
@@ -2833,38 +2868,38 @@ INSERT INTO "badges" ("badgeName", "badgePhoto", "badgeDesc") VALUES
 ('Popular Reviewer', 'https://tf-drinkx-prod-fe-static.s3.ap-southeast-1.amazonaws.com/drink-x.com/popular_reviewer_badge.jpg', 'Awarded for receiving a high number of upvotes on reviews.');
 
 INSERT INTO "clubs"(
-    "clubName", "clubDesc", "isInviteOnly", "clubLink", "clubBanner", "dateCreated")
+    "clubName", "clubDesc", "isInviteOnly", "clubLink", "clubBanner", "dateCreated", "totalMembers")
 VALUES
-    ('Beer Enthusiasts', 'A club for fans of craft beers and brewing techniques', false, 'www.beerclub.com', '', '2024-10-29 19:00:31.403'),
-    ('Wine Connoisseurs', 'Explore the world of fine wines, tastings, and pairings', true, 'www.wineclub.com', '', '2024-10-30 20:10:31.403'),
-    ('Scotch Aficionados', 'Scotch lovers unite! Share and learn about premium scotches', false, 'www.scotchclub.com', '', '2024-11-01 15:25:31.403'),
-    ('Rum Admirers', 'A community for those who enjoy classic and modern rums', false, 'www.rumclub.com', '', '2024-11-03 17:35:31.403'),
-    ('Whisky Women', 'Empowering women to explore and enjoy whisky', true, 'www.whiskywomen.com', '', '2024-11-05 14:40:31.403'),
-    ('Tequila Tribe', 'Dive into the rich flavors and traditions of tequila', false, 'www.tequilatribe.com', '', '2024-11-07 16:20:31.403'),
-    ('Cocktail Creators', 'For mixologists and cocktail enthusiasts of all levels', true, 'www.cocktailclub.com', '', '2024-11-10 13:15:31.403'),
-    ('Brandy Lovers', 'Discover and celebrate the elegance of brandy', false, 'www.brandyclub.com', '', '2024-11-12 12:30:31.403'),
-    ('Gin Explorers', 'A group for gin enthusiasts and curious tasters', false, 'www.ginclub.com', '', '2024-11-15 14:50:31.403'),
-    ('Bourbon Fans', 'Bourbon lovers, join us for tastings and discussions', false, 'www.bourbonclub.com', '', '2024-11-17 18:45:31.403'),
-    ('Cognac Circle', 'Share your passion for cognac with fellow enthusiasts', true, 'www.cognacclub.com', '', '2024-11-20 19:30:31.403'),
-    ('Whisky Journeys', 'Explore whiskies from around the world', false, 'www.whiskyjourneys.com', '', '2024-11-23 20:00:31.403'),
-    ('Sake Society', 'Dive into the art and tradition of sake', false, 'www.sakesociety.com', '', '2024-11-25 11:20:31.403'),
-    ('Craft Beer Co-op', 'Discover unique craft beers from local brewers', true, 'www.craftbeercoop.com', '', '2024-11-28 16:30:31.403'),
-    ('Homebrewers Hub', 'A space for homebrewers to exchange tips and ideas', false, 'www.homebrewclub.com', '', '2024-12-01 18:25:31.403'),
-    ('Liquor Legends', 'Discuss and appreciate rare and legendary liquors', false, 'www.liquorlegends.com', '', '2024-12-03 14:50:31.403'),
-    ('Distillery Discoverers', 'For those who love touring distilleries and tasting', true, 'www.distilleryclub.com', '', '2024-12-05 15:30:31.403'),
-    ('Vintage Spirits', 'A club dedicated to collecting and tasting vintage spirits', true, 'www.vintagespiritsclub.com', '', '2024-12-07 17:45:31.403'),
-    ('Amaro Aficionados', 'For fans of bitters, aperitifs, and amaro culture', false, 'www.amaroaficionados.com', '', '2024-12-10 19:15:31.403'),
-    ('Spirit Collectors', 'A community for collectors of unique and rare spirits', true, 'www.spiritcollectors.com', '', '2024-12-13 18:10:31.403'),
-    ('Highball Society', 'The perfect club for highball cocktail lovers', false, 'www.highballsociety.com', '', '2024-12-15 15:25:31.403'),
-    ('Port & Sherry Lovers', 'Explore the depths of port and sherry flavors', true, 'www.portsherryclub.com', '', '2024-12-17 12:35:31.403'),
-    ('Absinthe Advocates', 'A mysterious journey into absinthe culture and history', false, 'www.absintheclub.com', '', '2024-12-20 11:45:31.403'),
-    ('Malt Masters', 'Dive deep into the intricacies of malt beverages', false, 'www.maltmasters.com', '', '2024-12-22 10:20:31.403'),
-    ('Mocktail Makers', 'For those who enjoy crafting and drinking mocktails', false, 'www.mocktailclub.com', '', '2024-12-23 16:50:31.403'),
-    ('Prosecco Pals', 'A bubbly club for prosecco lovers', false, 'www.proseccopals.com', '', '2024-12-24 15:15:31.403'),
-    ('Sparkling Spirits', 'A vibrant community for lovers of sparkling beverages', true, 'www.sparklingspirits.com', '', '2024-12-25 14:10:31.403'),
-    ('Whisky 101', 'Begin your whisky journey with us!', false, 'www.whisky101club.com', '', '2024-12-26 14:30:31.403'),
-    ('Rum Rebels', 'Discover the rebellious side of rum culture', false, 'www.rumrebels.com', '', '2024-12-27 18:45:31.403'),
-    ('Barrel Aged Fans', 'Uncover the flavors of barrel-aged drinks', true, 'www.barrelagedfans.com', '', '2024-12-28 19:20:31.403');
+    ('Beer Enthusiasts', 'A club for fans of craft beers and brewing techniques', false, 'www.beerclub.com', '', '2024-10-29 19:00:31.403', 12),
+    ('Wine Connoisseurs', 'Explore the world of fine wines, tastings, and pairings', true, 'www.wineclub.com', '', '2024-10-30 20:10:31.403', 2),
+    ('Scotch Aficionados', 'Scotch lovers unite! Share and learn about premium scotches', false, 'www.scotchclub.com', '', '2024-11-01 15:25:31.403', 0),
+    ('Rum Admirers', 'A community for those who enjoy classic and modern rums', false, 'www.rumclub.com', '', '2024-11-03 17:35:31.403', 0),
+    ('Whisky Women', 'Empowering women to explore and enjoy whisky', true, 'www.whiskywomen.com', '', '2024-11-05 14:40:31.403', 0),
+    ('Tequila Tribe', 'Dive into the rich flavors and traditions of tequila', false, 'www.tequilatribe.com', '', '2024-11-07 16:20:31.403', 0),
+    ('Cocktail Creators', 'For mixologists and cocktail enthusiasts of all levels', true, 'www.cocktailclub.com', '', '2024-11-10 13:15:31.403', 0),
+    ('Brandy Lovers', 'Discover and celebrate the elegance of brandy', false, 'www.brandyclub.com', '', '2024-11-12 12:30:31.403', 0),
+    ('Gin Explorers', 'A group for gin enthusiasts and curious tasters', false, 'www.ginclub.com', '', '2024-11-15 14:50:31.403', 0),
+    ('Bourbon Fans', 'Bourbon lovers, join us for tastings and discussions', false, 'www.bourbonclub.com', '', '2024-11-17 18:45:31.403', 0),
+    ('Cognac Circle', 'Share your passion for cognac with fellow enthusiasts', true, 'www.cognacclub.com', '', '2024-11-20 19:30:31.403', 0),
+    ('Whisky Journeys', 'Explore whiskies from around the world', false, 'www.whiskyjourneys.com', '', '2024-11-23 20:00:31.403', 0),
+    ('Sake Society', 'Dive into the art and tradition of sake', false, 'www.sakesociety.com', '', '2024-11-25 11:20:31.403', 0),
+    ('Craft Beer Co-op', 'Discover unique craft beers from local brewers', true, 'www.craftbeercoop.com', '', '2024-11-28 16:30:31.403', 0),
+    ('Homebrewers Hub', 'A space for homebrewers to exchange tips and ideas', false, 'www.homebrewclub.com', '', '2024-12-01 18:25:31.403', 0),
+    ('Liquor Legends', 'Discuss and appreciate rare and legendary liquors', false, 'www.liquorlegends.com', '', '2024-12-03 14:50:31.403', 0),
+    ('Distillery Discoverers', 'For those who love touring distilleries and tasting', true, 'www.distilleryclub.com', '', '2024-12-05 15:30:31.403', 0),
+    ('Vintage Spirits', 'A club dedicated to collecting and tasting vintage spirits', true, 'www.vintagespiritsclub.com', '', '2024-12-07 17:45:31.403', 0),
+    ('Amaro Aficionados', 'For fans of bitters, aperitifs, and amaro culture', false, 'www.amaroaficionados.com', '', '2024-12-10 19:15:31.403', 0),
+    ('Spirit Collectors', 'A community for collectors of unique and rare spirits', true, 'www.spiritcollectors.com', '', '2024-12-13 18:10:31.403', 0),
+    ('Highball Society', 'The perfect club for highball cocktail lovers', false, 'www.highballsociety.com', '', '2024-12-15 15:25:31.403', 0),
+    ('Port & Sherry Lovers', 'Explore the depths of port and sherry flavors', true, 'www.portsherryclub.com', '', '2024-12-17 12:35:31.403', 0),
+    ('Absinthe Advocates', 'A mysterious journey into absinthe culture and history', false, 'www.absintheclub.com', '', '2024-12-20 11:45:31.403', 0),
+    ('Malt Masters', 'Dive deep into the intricacies of malt beverages', false, 'www.maltmasters.com', '', '2024-12-22 10:20:31.403', 0),
+    ('Mocktail Makers', 'For those who enjoy crafting and drinking mocktails', false, 'www.mocktailclub.com', '', '2024-12-23 16:50:31.403', 0),
+    ('Prosecco Pals', 'A bubbly club for prosecco lovers', false, 'www.proseccopals.com', '', '2024-12-24 15:15:31.403', 0),
+    ('Sparkling Spirits', 'A vibrant community for lovers of sparkling beverages', true, 'www.sparklingspirits.com', '', '2024-12-25 14:10:31.403', 0),
+    ('Whisky 101', 'Begin your whisky journey with us!', false, 'www.whisky101club.com', '', '2024-12-26 14:30:31.403', 0),
+    ('Rum Rebels', 'Discover the rebellious side of rum culture', false, 'www.rumrebels.com', '', '2024-12-27 18:45:31.403', 0),
+    ('Barrel Aged Fans', 'Uncover the flavors of barrel-aged drinks', true, 'www.barrelagedfans.com', '', '2024-12-28 19:20:31.403', 0);
 
 
 INSERT INTO "clubMembers"(

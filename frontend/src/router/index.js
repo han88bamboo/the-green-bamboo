@@ -83,7 +83,7 @@ const routes = [
     // path: '/Users/Profile-Page/:id',
     // name: 'userprofilepage',
 
-    component: () => import('../views/Users/UserProfile.vue')
+    component: () => import('../views/Users/UserProfileRefactor.vue')
   },
   {
     path: '/profile/producer/:producerID?',
