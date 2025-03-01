@@ -495,16 +495,7 @@
                                         </li>
                                     </ul>
                                 </div>
-                                
                             </div>
-                            <div>
-                                <button>
-                                    <span class="mobile-view-show" style="margin-left: 5px;"> Refresh {{
-                                        sortSelection.category != '' ? sortSelection.category : 'Category' }}
-                                    </span>
-                                </button>
-                            </div>
-
                         </div>
 
                         <!-- listings  TZH removed class scrollable-listings--->
