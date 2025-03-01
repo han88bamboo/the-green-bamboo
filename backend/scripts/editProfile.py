@@ -36,9 +36,9 @@ def editDetails():
         drinkChoice = data['drinkChoice']
         cursor.execute("UPDATE users SET \"choiceDrinks\" = %s WHERE id = %s", (drinkChoice, userID))
         # retrieve the updated flavour tags from frontend
-        flavourTags = data['flavourTags']
+        flavourTag = data['flavourTag']
         # update the database with the new flavour tags
-        cursor.execute("UPDATE users SET \"choiceFlavours\" = %s WHERE id = %s", (flavourTags, userID))
+        cursor.execute("UPDATE users SET \"choiceFlavours\" = %s WHERE id = %s", (flavourTag, userID))
         
         # retrieve the updated obeservation tags from frontend
         observationTags = data['observationTags']
@@ -52,7 +52,7 @@ def editDetails():
                 "data": {
                     "userID": userID,
                     "drinkChoice": drinkChoice,
-                    "flavourTags": flavourTags,
+                    "flavourTag": flavourTag,
                     "observationTags": observationTags
                 }
             }
@@ -67,7 +67,7 @@ def editDetails():
                 "data": {
                     "userID": userID,
                     "drinkChoice": data["drinkChoice"],
-                    "flavourTags": data["flavourTags"],
+                    "flavourTag": data["flavourTag"],
                     "observationTags": data["observationTags"]
                 },
                 "message": "An error occurred updating the image or drink choice."

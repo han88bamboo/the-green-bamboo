@@ -247,6 +247,26 @@ def getListingsName():
     listing_names = [listing['listingName'] for listing in listingsName_data]
 
     return jsonify(listing_names)
+
+# [POST] Listings by IDs
+@blueprint.route("/getListingsByIDs", methods=['POST'])
+def getListingsByIDs():
+    conn = g.db
+
+    listing_ids = request.json.get('listingIDs', [])
+
+    if not listing_ids:
+        return jsonify([]), 404
+
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "listings" WHERE "id" IN %s', (tuple(listing_ids),))
+        listings_data = cursor.fetchall()
+    
+    if not listings_data:
+        return jsonify([])
+
+    return jsonify(listings_data)
+
 # -----------------------------------------------------------------------------------------
 # [GET] Get Listings from a randomly selected date
 @blueprint.route("/getRandomListings")
@@ -622,11 +642,52 @@ def getProducers():
 
     try:
         # Query to get producers and related data
+        # query = """
+        #     SELECT 
+        #         p.id, p."producerName", p."producerDesc", p."originCountry", p."mainDrinks", p.photo, 
+        #         p."hashedPassword", p."claimStatus", p."statusOB", p.username, p."producerLink", 
+        #         p."stripeCustomerId", p."claimStatusCheckDate", p."isIndependentBottler",
+        #         COALESCE((
+        #             SELECT json_agg(json_build_object(
+        #                 'id', qa.id,
+        #                 'question', qa.question,
+        #                 'answer', qa.answer,
+        #                 'date', qa.date,
+        #                 'userId', qa."userId",
+        #                 'producerId', qa."producerId"
+        #             ))
+        #             FROM "producersQuestionAnswers" qa
+        #             WHERE qa."producerId" = p.id
+        #         ), '[]') AS "questionsAnswers",
+        #         COALESCE((
+        #             SELECT row_to_json(oh)
+        #             FROM "producersOpeningHours" oh
+        #             WHERE oh."producerId" = p.id
+        #         ), '{}'::json) AS "openingHours",
+        #         COALESCE((
+        #             SELECT json_agg(json_build_object(
+        #                 'id', u.id,
+        #                 'date', u.date,
+        #                 'text', u.text,
+        #                 'photo', u.photo,
+        #                 'producerId', u."producerId",
+        #                 'likes', COALESCE((
+        #                     SELECT json_agg(json_build_object('userId', l."userId", 'userType', l."userType"))
+        #                     FROM "producerUpdateLikes" l
+        #                     WHERE l."updateId" = u.id
+        #                 ), '[]')
+        #             ) ORDER BY u.id)
+        #             FROM "producersUpdates" u
+        #             WHERE u."producerId" = p.id
+        #         ), '[]') AS updates
+        #     FROM producers p
+        #     ORDER BY p.id
+        # """
         query = """
             SELECT 
                 p.id, p."producerName", p."producerDesc", p."originCountry", p."mainDrinks", p.photo, 
                 p."hashedPassword", p."claimStatus", p."statusOB", p.username, p."producerLink", 
-                p."stripeCustomerId", p."claimStatusCheckDate", p."isIndependentBottler",
+                p."stripeCustomerId", p."claimStatusCheckDate",
                 COALESCE((
                     SELECT json_agg(json_build_object(
                         'id', qa.id,
@@ -639,11 +700,6 @@ def getProducers():
                     FROM "producersQuestionAnswers" qa
                     WHERE qa."producerId" = p.id
                 ), '[]') AS "questionsAnswers",
-                COALESCE((
-                    SELECT row_to_json(oh)
-                    FROM "producersOpeningHours" oh
-                    WHERE oh."producerId" = p.id
-                ), '{}'::json) AS "openingHours",
                 COALESCE((
                     SELECT json_agg(json_build_object(
                         'id', u.id,

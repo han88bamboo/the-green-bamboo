@@ -75,6 +75,30 @@
                                     <span v-else>{{ displayUserDrinkChoice }}</span>
                                 </div>
                             </div>
+                            <!-- Display Chosen Flavour Tags Start -->
+                            <div class="row">
+                                <div class="col-5">
+                                <b>Flavour Choice</b>
+                                </div>
+                                <div class="col-7 text-end">
+                                <span v-if="selectedFlavours.length == 0"><i>None</i></span>
+                                <span v-else>{{ selectedFlavours.join(", ") }}</span>
+                                </div>
+                            </div>
+                            <!-- Display Chosen Flavour Tag End -->
+                            <!-- Display Chosen Observation Tag Start -->
+                            <div class="row">
+                                <div class="col-5">
+                                <b>Observation Tags</b>
+                                </div>
+                                <div class="col-7 text-end">
+                                <span v-if="selectedObservationTags.length == 0"
+                                    ><i>None</i></span
+                                >
+                                <span v-else>{{ selectedObservationTags.join(", ") }}</span>
+                                </div>
+                            </div>
+                            <!-- Display Chosen Observation Tag End -->
                             <div class="row">
                                 <div class="col-5">
                                     <b> Points Earned </b>
@@ -147,6 +171,97 @@
                                             </div>
                                         </div>
                                     </div>
+
+                                    <!-- Edit Flavour Tags Start -->
+                                    <div class="row pt-5">
+                                        <div class="col-4 text-start ps-5" style="margin: auto">
+                                        Flavour Choice
+                                        </div>
+                                        <div class="col-8 text-start">
+                                        <div
+                                            v-for="(tag, index) in flavourTag"
+                                            :key="tag.familyTag + index"
+                                            class="m-1"
+                                            style="display: inline-block"
+                                        >
+                                            <input
+                                            type="checkbox"
+                                            class="btn-check"
+                                            :id="'flavour-' + index"
+                                            autocomplete="off"
+                                            v-model="selectedFlavours"
+                                            :value="tag.familyTag"
+                                            />
+                                            <label
+                                            v-if="selectedFlavours.includes(tag.familyTag)"
+                                            class="btn primary-btn-less-round"
+                                            :for="'flavour-' + index"
+                                            style="
+                                                color: whitesmoke;
+                                                background-color: #535c72;
+                                                border: 4px solid #535c72;
+                                            "
+                                            >
+                                            {{ tag.familyTag }}
+                                            </label>
+                                            <label
+                                            v-else
+                                            :for="'flavour-' + index"
+                                            class="btn primary-btn-outline-less-round"
+                                            >
+                                            {{ tag.familyTag }}
+                                            </label>
+                                        </div>
+                                        </div>
+                                    </div>
+                                    <!-- Edit Flavour Tag End -->
+                                    <!-- Edit Observation Tag Start -->
+                                    <div class="row pt-5">
+                                        <div class="col-4 text-start ps-5" style="margin: auto">
+                                        Observation Tags
+                                        </div>
+                                        <div class="col-8 text-start">
+                                        <div
+                                            v-for="(tag, index) in observationTags"
+                                            :key="'tag-' + index"
+                                            class="m-1"
+                                            style="display: inline-block"
+                                        >
+                                            <input
+                                            type="checkbox"
+                                            class="btn-check"
+                                            :id="'tag-' + index"
+                                            autocomplete="off"
+                                            v-model="selectedObservationTags"
+                                            :value="tag.observationTag"
+                                            />
+                                            <label
+                                            v-if="
+                                                selectedObservationTags.includes(
+                                                tag.observationTag
+                                                )
+                                            "
+                                            class="btn primary-btn-less-round"
+                                            :for="'tag-' + index"
+                                            style="
+                                                color: whitesmoke;
+                                                background-color: #535c72;
+                                                border: 4px solid #535c72;
+                                            "
+                                            >
+                                            {{ tag.observationTag }}
+                                            </label>
+                                            <label
+                                            v-else
+                                            :for="'tag-' + index"
+                                            class="btn primary-btn-outline-less-round"
+                                            >
+                                            {{ tag.observationTag }}
+                                            </label>
+                                        </div>
+                                        </div>
+                                    </div>
+                                    <!-- Edit Observaiton Tag End -->
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="cancelChanges">Close</button>
@@ -1202,6 +1317,12 @@ export default {
             drinkSearch: '',
             drinkSearchResults: [],
 
+            // Added by Group 3
+            selectedFlavours: [],
+            selectedObservationTags: [],
+            flavourTag: [],
+            observationTags: [],
+
 
         };
     },
@@ -1264,7 +1385,7 @@ export default {
                         this.user = this.displayUser;
                     } else {
                         try {
-                            const response  = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUser/${this.userID}`);
+                            const response  = await this.$axios.get(`http://127.0.0.1:5000/getData/getUser/${this.userID}`);
                             this.user = response.data;
                         }
                         catch (error) {
@@ -1290,6 +1411,8 @@ export default {
                     this.getBadges(),
                     this.getFlavorTags(),
                     this.getSubTags(),
+                    this.getFlavourTag(), // added by group 3 edit profile
+                    this.getObservationTags(), // added by group 3 for the edit profile
                 ]);
 
                 await this.getReviewsSummary();
@@ -1310,7 +1433,7 @@ export default {
         // get Display User Profile
         async getDisplayUserProfile() {
             try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUser/${this.displayUserID}`);
+                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getUser/${this.displayUserID}`);
                 this.displayUser = response.data;
                 this.displayUserDataLoaded = true;
 
@@ -1319,6 +1442,10 @@ export default {
                 
                 // get display user drink choice
                 this.displayUserDrinkChoice = this.displayUser.choiceDrinks.join(", ");
+
+                // added by group 3 to display flavour and observation tag
+                this.selectedFlavours = this.displayUser.choiceFlavours;
+                this.selectedObservationTags = this.displayUser.preferences;
 
                 // get display user bookmark lists
                 this.displayUserBookmarks = this.displayUser.drinkLists; 
@@ -1347,7 +1474,7 @@ export default {
         // Reviews
         async getReviews() {
             try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getRecentListingReviews/${this.displayUserID}`);
+                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getRecentListingReviews/${this.displayUserID}`);
                 this.top5Listings = response.data.topListings;
                 this.recentReviews = response.data.recentReview;
 
@@ -1385,7 +1512,7 @@ export default {
         // Summary of all user reviews 
         async getReviewsSummary() {
             try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUserReviewSummary/${this.displayUserID}`);
+                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getUserReviewSummary/${this.displayUserID}`);
                 this.reviewsSummary = response.data.data;
 
                 // ==== for badges ====
@@ -1402,7 +1529,7 @@ export default {
         // Listings (get only listings that are in the recent reviews, top 5 listings, and bookmark lists)
         async getListing() {
             try {
-                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/getData/getListingsByIDs`, { 'listingIDs': this.listingIDs });
+                const response = await this.$axios.post(`http://127.0.0.1:5000/getData/getListingsByIDs`, { 'listingIDs': this.listingIDs });
                 this.listings = response.data;
 
                 this.listingDataLoaded = true;
@@ -1424,7 +1551,7 @@ export default {
         // Listings Names
         async getAllListingNames() {
             try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getAllListingsNames`);
+                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getAllListingsNames`);
                 
                 // Format the listingNames and listingNamesDictionary
                 for (const listing of response.data) {
@@ -1450,7 +1577,7 @@ export default {
             }
 
             try {
-                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/getData/getBookmarkListings`, { 'listingIDs': listing_ids });
+                const response = await this.$axios.post(`http://127.0.0.1:5000/getData/getBookmarkListings`, { 'listingIDs': listing_ids });
                 this.bookedMarkedListings = response.data;
                 this.bookedMarkedListingsLoaded = true;
             } 
@@ -1473,7 +1600,7 @@ export default {
         async getBadges() {
             // for Badges
             try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getBadges`);
+                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getBadges`);
                 this.badges = response.data;
                 this.badgesDataLoaded = true;
             } 
@@ -1491,7 +1618,7 @@ export default {
         async getModRequest() {
             // mod requests
             try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getModRequests`);
+                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getModRequests`);
                 this.modRequests = response.data;
                 this.modRequestsType = this.modRequests
                     .filter(request => request.userID === this.userID && request.reviewStatus === true)
@@ -1506,7 +1633,7 @@ export default {
         async getDrinkTypes() {
             // drinkCategories
             try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getDrinkTypes`);
+                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getDrinkTypes`);
                 this.drinkTypes = response.data;
 
                 // retrieve the drink type and put them into an array
@@ -1541,7 +1668,7 @@ export default {
             // flavourTags
             // _id, hexcode, familyTag, subtag, showbox
             try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getFlavourTags`);
+                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getFlavourTags`);
                 this.flavourTags = response.data.map(item => {
                     return { ...item, showBox: false };
                 })
@@ -1554,12 +1681,43 @@ export default {
             }
         },
 
+        // Group 3 Flavour Tags
+        async getFlavourTag() {
+            try {
+                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getFlavourTags`);
+                // const response = await this.$axios.get(
+                //   `${process.env.VUE_APP_API_URL}/getData/getFlavourTags`
+                // );
+                this.flavourTag = response.data.map((item) => {
+                return { ...item, showBox: false };
+                });
+            } catch (error) {
+                console.error(error);
+                this.dataLoaded = null;
+            }
+        },
+
+        // Group 3 Observation Tags
+        async getObservationTags() {
+            try {
+                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getObservationTags`);
+                // const response = await this.$axios.get(
+                //   `${process.env.VUE_APP_API_URL}/getData/getObservationTags`
+                // );
+                this.observationTags = response.data;
+                console.log(this.observationTags);
+            } catch (error) {
+                console.error(error);
+                this.dataLoaded = null;
+            }
+        },
+
         // Sub Tags
         async getSubTags() {
             // subTags
             // _id, familyTagId, subtag
             try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getSubTags`);
+                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getSubTags`);
                 this.subTags = response.data
                 this.flavourTags.forEach(flavourTag => {
                     // Filter subtags belonging to the current flavor tag
@@ -1706,7 +1864,7 @@ export default {
         // ------------------- Apply Moderator -------------------
         async submitModeratorApplication() {
             try {
-                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editModRequests/submitModRequest`, 
+                const response = await this.$axios.post(`http://127.0.0.1:5000/editModRequests/submitModRequest`, 
                     {
                         userID: this.userID,
                         drinkType: this.modCat,
@@ -1769,14 +1927,14 @@ export default {
                 let submitURL = ''
                 let submitData = {}
                 if(this.chooseMod=='remove'){
-                    submitURL = `${process.env.VUE_APP_API_URL}/editProfile/removeModType`
+                    submitURL = `http://127.0.0.1:5000/editProfile/removeModType`
                     submitData={
                         userID: this.displayUser.id,
                         removeModType: this.selectedRemoveType.drinkType,
                     }
                 }
                 if(this.chooseMod=='add'){
-                    submitURL = `${process.env.VUE_APP_API_URL}/editProfile/updateModType`
+                    submitURL = `http://127.0.0.1:5000/editProfile/updateModType`
                     submitData = {
                         userID: this.displayUser.id,
                         newModType: this.selectedPromotedType.drinkType,
@@ -1852,11 +2010,13 @@ export default {
             }
             
             try {
-                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/editDetails`, 
+                const response = await this.$axios.post(`http://127.0.0.1:5000/editProfile/editDetails`, 
                     {
                         userID: this.userID,
                         image64: this.image64,
                         drinkChoice: this.selectedDrinks,
+                        flavourTag: this.selectedFlavours,
+                        observationTags: this.selectedObservationTags,
                     }, {
                     headers: {
                         'Content-Type': 'application/json'
@@ -1881,6 +2041,8 @@ export default {
             this.selectedDrinks = this.user.choiceDrinks;
             this.selectedImage = null;
             this.$refs.fileInput.value = '';
+            this.selectedFlavours = this.displayUser.choiceFlavours;
+            this.selectedObservationTags = this.displayUser.preferences;
         }, 
 
         // ------------------- Change Password -------------------
@@ -1940,7 +2102,7 @@ export default {
         async confirmUpdatePassword(){
             let oldHash = this.hashPassword(this.user.username, this.oldPassword)
             let newHash = this.hashPassword(this.user.username, this.newPassword)
-            let submitURL = `${process.env.VUE_APP_API_URL}/authcheck/editPassword/` + this.user.id 
+            let submitURL = `http://127.0.0.1:5000/authcheck/editPassword/` + this.user.id 
             let submitData = {
                 oldHash: oldHash.toString(),
                 newHash: newHash.toString(),
@@ -1980,7 +2142,7 @@ export default {
                 setTimeout(() => {
                     this.isButtonDisabled = false;
                 }, 60000);
-            let submitURL = `${process.env.VUE_APP_API_URL}/authcheck/sendResetPin/` + this.user.id
+            let submitURL = `http://127.0.0.1:5000/authcheck/sendResetPin/` + this.user.id
             let submitData = {
                 userType: "user",
             }
@@ -2014,7 +2176,7 @@ export default {
             sendPinSuccess.innerHTML = ""
 
             // call api to verify the pin
-            let submitURL = `${process.env.VUE_APP_API_URL}/authcheck/verifyPin/` + this.user.id
+            let submitURL = `http://127.0.0.1:5000/authcheck/verifyPin/` + this.user.id
             let submitData ={
                 userType:"user",
                 pin:this.resetPin
@@ -2043,7 +2205,7 @@ export default {
         // Function to reset password
         async resetPassword(){
             this.resettingPassword=true
-            let submitURL = `${process.env.VUE_APP_API_URL}/authcheck/resetPassword/` + this.user.id
+            let submitURL = `http://127.0.0.1:5000/authcheck/resetPassword/` + this.user.id
             let submitData = {
                 userType:"user",
                 pin:this.resetPin
@@ -2199,7 +2361,7 @@ export default {
                 this.following = true
             }
             try {
-                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/updateFollowLists`, 
+                const response = await this.$axios.post(`http://127.0.0.1:5000/editProfile/updateFollowLists`, 
                     {
                         userID: this.userID,
                         action: action,
@@ -2279,7 +2441,7 @@ export default {
             this.userBookmarks[this.newListName].listItems = [];
 
             try {
-                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/updateBookmark`, 
+                const response = await this.$axios.post(`http://127.0.0.1:5000/editProfile/updateBookmark`, 
                     {
                         userID: this.userID,
                         bookmark: this.userBookmarks
@@ -2328,7 +2490,7 @@ export default {
             this.userBookmarks[this.editListName].listDesc = this.editListDesc;
 
             try {
-                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/updateBookmark`, 
+                const response = await this.$axios.post(`http://127.0.0.1:5000/editProfile/updateBookmark`, 
                     {
                         userID: this.userID,
                         bookmark: this.userBookmarks,
@@ -2357,7 +2519,7 @@ export default {
             }
 
             try {
-                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/updateBookmark`, 
+                const response = await this.$axios.post(`http://127.0.0.1:5000/editProfile/updateBookmark`, 
                     {
                         userID: this.userID,
                         bookmark: this.userBookmarks,
@@ -2382,7 +2544,7 @@ export default {
             this.userBookmarks[listName].listItems.splice(index, 1);
 
             try {
-                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/updateBookmark`, 
+                const response = await this.$axios.post(`http://127.0.0.1:5000/editProfile/updateBookmark`, 
                     {
                         userID: this.userID,
                         bookmark: this.userBookmarks,
@@ -2403,7 +2565,7 @@ export default {
             delete this.userBookmarks[listName];
 
             try {
-                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/updateBookmark`, 
+                const response = await this.$axios.post(`http://127.0.0.1:5000/editProfile/updateBookmark`, 
                     {
                         userID: this.userID,
                         bookmark: this.userBookmarks,
