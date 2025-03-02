@@ -39,7 +39,13 @@
             @click="onShowImage"
           />
         </div>
-        <button @click="onSubmitImage" class="submit-button">
+
+        <div>
+            <input type="checkbox" v-model="isHumanChecked" class="check"/>
+            I confirm I am not a robot
+        </div>
+
+        <button @click="onSubmitImage" :disabled="!isHumanChecked" class="submit-button">
           Submit for Reverse Image Search
         </button>
       </div>
@@ -65,7 +71,7 @@
 
   <!-- Popup Notification -->
   <div v-if="showPopup" class="popup">
-    <p>Image Uploaded Successfully!</p>
+    <p>{{ popupMessage }}</p>
   </div>
 </template>
 
@@ -82,35 +88,99 @@ export default {
       isDragging: false,
       imagePreview: false, // Controls image visibility
       showPopup: false, // Controls popup display
+      isHumanChecked: false, // New property to track checkbox state
     };
   },
   methods: {
     onFileChange(event) {
       const file = event.target.files[0];
-      if (file) {
+      if (file && this.isValidImageType(file)) {
         const reader = new FileReader();
         reader.onload = () => {
           this.uploadedImage = reader.result;
           this.imagePreview = true;
-          this.triggerPopup();
+          this.triggerPopup("Image Uploaded Successfully!");
         };
         reader.readAsDataURL(file);
       } else {
-        console.error("No file selected");
+        this.triggerPopup(
+          "Invalid file type. Please upload a JPG or PNG image!"
+        );
       }
     },
-    onShowImage() {
+
+    onDrop(event) {
+      event.preventDefault();
+      this.isDragging = false;
+
+      const file = event.dataTransfer.files[0];
+      if (file && this.isValidImageType(file)) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          this.uploadedImage = reader.result;
+          this.triggerPopup("Image Uploaded Successfully!");
+        };
+        reader.readAsDataURL(file);
+      } else {
+        this.triggerPopup(
+          "Invalid file type. Please upload a JPG or PNG image!"
+        );
+      }
+    },
+
+    isValidImageType(file) {
+      const allowedExtensions = ["jpg", "jpeg", "png"];
+      const fileExtension = file.name.split(".").pop().toLowerCase();
+      return allowedExtensions.includes(fileExtension);
+    },
+
+    async onShowImage() {
       if (this.imageLink.trim()) {
+        if (!this.isValidUrl(this.imageLink)) {
+          this.triggerPopup(
+            "Invalid URL format. Please enter a valid image link!"
+          );
+          return;
+        }
+
+        const isValidImage = await this.isImageUrl(this.imageLink);
+        if (!isValidImage) {
+          this.triggerPopup(
+            "URL is not a valid image. Please enter an image URL!"
+          );
+          return;
+        }
+
         this.uploadedImage = this.imageLink;
         this.imagePreview = true;
-        this.triggerPopup();
+        this.triggerPopup("Image link successfully loaded!");
       } else {
         console.error("Invalid image link");
       }
     },
+
     toggleImage() {
       this.imagePreview = !this.imagePreview;
     },
+    isValidUrl(string) {
+      try {
+        new URL(string);
+        return true;
+      } catch (error) {
+        return false;
+      }
+    },
+
+    async isImageUrl(url) {
+      try {
+        const response = await fetch(url, { method: "HEAD" });
+        const contentType = response.headers.get("content-type");
+        return contentType && contentType.startsWith("image/");
+      } catch (error) {
+        return false;
+      }
+    },
+
     onSubmitImage() {
       if (this.uploadedImage || this.imageLink.trim()) {
         const imageToSend = this.uploadedImage || this.imageLink;
@@ -130,23 +200,9 @@ export default {
     onDragLeave() {
       this.isDragging = false;
     },
-    onDrop(event) {
-      event.preventDefault();
-      this.isDragging = false;
 
-      const file = event.dataTransfer.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = () => {
-          this.uploadedImage = reader.result;
-          this.triggerPopup();
-        };
-        reader.readAsDataURL(file);
-      } else {
-        console.error("No file dropped");
-      }
-    },
-    triggerPopup() {
+    triggerPopup(message) {
+      this.popupMessage = message;
       this.showPopup = true;
       setTimeout(() => {
         this.showPopup = false;
@@ -171,6 +227,7 @@ export default {
   text-align: center;
   border: 5px solid #027562;
   padding: 50px 10px;
+  /* max-width: 500px; */
 }
 
 .upload-section,
@@ -182,14 +239,6 @@ export default {
 .image-search h1,
 .image-search p {
   color: #027562;
-}
-
-.custom-file-upload {
-  display: inline-block;
-  padding: 10px 20px;
-  cursor: pointer;
-  background-color: #f4f4f4;
-  border: 2px dashed #ccc;
 }
 
 .uploaded-image {
@@ -279,7 +328,7 @@ export default {
 
 /* Popup Style */
 .popup {
-  position: fixed;
+  position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -288,7 +337,6 @@ export default {
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0);
-  display: flex;
   align-items: center;
   justify-content: center;
   min-width: 200px;
@@ -347,5 +395,10 @@ export default {
 .toggle-button:active {
   background-color: #02473c;
   transform: scale(0.98);
+}
+
+
+.check{
+  margin-top: 30px;
 }
 </style>
