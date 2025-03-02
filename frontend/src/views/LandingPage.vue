@@ -60,7 +60,7 @@
             <!-- Feature 3 -->
             <div class="col-lg-3 col-md-6 col-6">
                 <div class="d-flex flex-lg-column flex-row align-items-center h-100">
-                    <router-link :to="'/'">
+                    <router-link :to="'/explore'">
                         <button class="btn border-0 fw-bold tilt-hover" type="button">
                             <div class="mb-lg-3 me-3 me-lg-0 icon-container">
                                 <img src="../../Images/Landing Page/Layer3.png" alt="Discover Drinks"

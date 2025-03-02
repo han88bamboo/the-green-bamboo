@@ -65,7 +65,7 @@
                         <li v-if="isAdmin"><router-link :to="'/admin/importListings'" class="dropdown-item">Import Listings</router-link></li>
                         
                         <div class="mobile-view-show">
-                            <li><router-link :to="'/'" class="dropdown-item">Explore</router-link></li>
+                            <li><router-link :to="'/explore'" class="dropdown-item">Explore</router-link></li>
                             <li><router-link :to="'/foryou'" class="dropdown-item">For You</router-link></li>
                             <li><router-link :to="'/'" class="dropdown-item">Best Of</router-link></li>
                             <li><router-link :to="dashboardURL" class="dropdown-item">{{ dashboardWord }} Dashboard</router-link></li>
@@ -94,7 +94,7 @@
             
             <div class="mobile-view-hide container-fluid align-items-center col-xxl-8 col-xl-9 col-lg-10 col-md-11 col-sm-12">
 
-                <router-link :to="'/'">
+                <router-link :to="'/explore'">
                     <button class="btn primary-btn border-0 fw-bold" type="button">
                         Explore
                     </button>

@@ -662,6 +662,7 @@
                             />
                                 <div>
                                     <p style="font-size: 18px; margin-bottom: 8px;">Review your first drink.</p>
+                                    <router-link :to="'/explore'">
                                     <button
                                     style="
                                         padding: 8px 16px;
@@ -676,6 +677,7 @@
                                     >
                                     Find A Drink
                                     </button>
+                                    </router-link>
                                 </div>
                             </div>
 
@@ -752,6 +754,7 @@
                                 />
                                 <div>
                                     <p style="font-size: 18px; margin-bottom: 8px;">Explore and join a club!</p>
+                                    <router-link :to="'/clubs/view'">
                                     <button
                                     style="
                                         padding: 8px 16px;
@@ -766,6 +769,7 @@
                                     >
                                     Find A Club
                                     </button>
+                                    </router-link>
                                 </div>
                             </div>
                         </div>
