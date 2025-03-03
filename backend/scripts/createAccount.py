@@ -12,6 +12,8 @@ from bson import json_util
 from flask import Blueprint, g, request, jsonify
 from bson.objectid import ObjectId
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
+import psycopg2
 
 import secrets
 
@@ -80,25 +82,41 @@ def createAccount():
 
         # Insert into 'usersDrinkLists' table for "Drinks I Want To Try"
         with db_conn.cursor() as cursor:
+            # cursor.execute("""
+            #     INSERT INTO "usersDrinkLists" ("userId", "listName", "drinks")
+            #     VALUES (%s, %s, %s)
+            # """, (
+            #     user_id,
+            #     "Drinks I Want To Try",
+            #     rawAccount['drinkLists']['Drinks I Want To Try']['listItems']
+            # ))
+            # db_conn.commit()
             cursor.execute("""
-                INSERT INTO "usersDrinkLists" ("userId", "listName", "drinks")
-                VALUES (%s, %s, %s)
+                INSERT INTO "usersDrinkLists" ("userId", "listName")
+                VALUES (%s, %s)
             """, (
                 user_id,
-                "Drinks I Want To Try",
-                rawAccount['drinkLists']['Drinks I Want To Try']['listItems']
+                "Drinks I Want To Try"
             ))
             db_conn.commit()
 
         # Insert into 'usersDrinkLists' table for "Drinks I Have Tried"
         with db_conn.cursor() as cursor:
+            # cursor.execute("""
+            #     INSERT INTO "usersDrinkLists" ("userId", "listName", "drinks")
+            #     VALUES (%s, %s, %s)
+            # """, (
+            #     user_id,
+            #     "Drinks I Have Tried",
+            #     rawAccount['drinkLists']['Drinks I Have Tried']['listItems']
+            # ))
+            # db_conn.commit()
             cursor.execute("""
-                INSERT INTO "usersDrinkLists" ("userId", "listName", "drinks")
-                VALUES (%s, %s, %s)
+                INSERT INTO "usersDrinkLists" ("userId", "listName")
+                VALUES (%s, %s)
             """, (
                 user_id,
-                "Drinks I Have Tried",
-                rawAccount['drinkLists']['Drinks I Have Tried']['listItems']
+                "Drinks I Have Tried"
             ))
             db_conn.commit()
 
@@ -138,6 +156,38 @@ def createAccount():
             }
         ), 500
     
+# -----------------------------------------------------------------------------------------
+# [POST] Updates User Preferences from Onboarding Form
+@blueprint.route("/addPreferences/<username>", methods = ['POST'])
+def add_preferences(username):
+    load_dotenv
+    # conn = psycopg2.connect(
+    #     dbname=os.getenv("POSTGRES_DB"),
+    #     user=os.getenv("POSTGRES_USER"),
+    #     password=os.getenv("POSTGRES_PASSWORD"),
+    #     host=os.getenv("POSTGRES_HOST"),
+    #     port=os.getenv("POSTGRES_PORT")
+    # )
+    conn = g.db
+    cur = conn.cursor()
+    rawAccount = request.get_json()
+    cur.execute("""
+                UPDATE "users"
+                SET "choiceDrinks" = %s,
+                "choiceFlavours" = %s,
+                "preferences" = %s
+                WHERE "username" = %s
+            """, (
+                rawAccount['choiceDrinks'],
+                rawAccount['choiceFlavours'],
+                rawAccount['preferences'],
+                username
+            ))
+    conn.commit()
+    # cur.close()
+    # conn.close()
+
+
 # -----------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------
 # [POST] Creates a Business Account Request
@@ -282,14 +332,14 @@ def createProducerAccount():
         cur.execute("""
             INSERT INTO producers (
                 "producerName", "producerDesc", "originCountry", "mainDrinks", "photo", "hashedPassword", 
-                "claimStatus", "statusOB", "username", "producerLink", "stripeCustomerId"
+                "claimStatus", "statusOB", "username", "producerLink", "stripeCustomerId", "isIndependentBottler"
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
         """, (
             newBusinessData['producerName'], newBusinessData['producerDesc'], newBusinessData['originCountry'],
             newBusinessData['mainDrinks'], newBusinessData['photo'], newBusinessData['hashedPassword'],
             newBusinessData['claimStatus'], newBusinessData['statusOB'], newBusinessData.get('username', None),
-            newBusinessData.get('producerLink', None), newBusinessData.get('stripeCustomerId', None)
+            newBusinessData.get('producerLink', None), newBusinessData.get('stripeCustomerId', None), newBusinessData.get('isIndependentBottler', False)
         ))
 
         # Extract the new producer ID

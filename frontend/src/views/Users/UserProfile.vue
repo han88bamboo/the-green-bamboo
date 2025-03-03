@@ -97,8 +97,8 @@
                   <b>Flavour Choice</b>
                 </div>
                 <div class="col-7 text-end">
-                  <span v-if="selectedFlavours.length == 0"><i>None</i></span>
-                  <span v-else>{{ selectedFlavours.join(", ") }}</span>
+                  <span v-if="selectedFlavours?.length == 0"><i>None</i></span>
+                  <span v-else>{{ selectedFlavours?.join(", ") }}</span>
                 </div>
               </div>
               <div class="row">
@@ -106,10 +106,10 @@
                   <b>Observation Tags</b>
                 </div>
                 <div class="col-7 text-end">
-                  <span v-if="selectedObservationTags.length == 0"
+                  <span v-if="selectedObservationTags?.length == 0"
                     ><i>None</i></span
                   >
-                  <span v-else>{{ selectedObservationTags.join(", ") }}</span>
+                  <span v-else>{{ selectedObservationTags?.join(", ") }}</span>
                 </div>
               </div>
               <div class="row">
@@ -765,6 +765,7 @@
                               v-model="selectedFlavours"
                               :value="tag.familyTag"
                             />
+                            {{ console.log("abc", selectedFlavours) }}
                             <label
                               v-if="selectedFlavours.includes(tag.familyTag)"
                               class="btn primary-btn-less-round"
@@ -1658,7 +1659,7 @@
                         <p
                           class="fs-4 mobile-fs-5 fw-bold rating-text mobile-mb-1"
                         >
-                          {{ review.rating.toFixed(1) }}★
+                          {{ parseFloat(review.rating).toFixed(1) }}★
                           <!--<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-star-fill " viewBox="0 0 16 16">
                                                         <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
                                                     </svg>-->
@@ -2660,8 +2661,8 @@ export default {
     if (localStorage.getItem("88B_accID") != null) {
       this.accType = localStorage.getItem("88B_accType");
       let accID = localStorage.getItem("88B_accID");
-      // let url = `http://127.0.0.1:5000/getData/get`;
-      let url = `${process.env.VUE_APP_API_URL}/getData/get`;
+      let url = `http://127.0.0.1:5000/getData/get`;
+      // let url = `${process.env.VUE_APP_API_URL}/getData/get`;
 
       if (this.accType == "user") {
         url = url + "User/" + accID;
@@ -2769,10 +2770,10 @@ export default {
 
       // Listings
       try {
-        // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getListings`);
-        const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getListings`
-        );
+        const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getListings`);
+        // const response = await this.$axios.get(
+        //   `${process.env.VUE_APP_API_URL}/getData/getListings`
+        // );
         this.listings = response.data;
         // originally, make filteredListings the entire collection of listings
         this.filteredListings = this.listings;
@@ -2782,10 +2783,10 @@ export default {
       }
       // Reviews
       try {
-        // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getReviews`);
-        const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getReviews`
-        );
+        const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getReviews`);
+        // const response = await this.$axios.get(
+        //   `${process.env.VUE_APP_API_URL}/getData/getReviews`
+        // );
         this.reviews = response.data;
         this.reversedReviews = this.reviews.reverse();
         this.recentReviews = this.reversedReviews.filter(
@@ -2799,10 +2800,10 @@ export default {
       }
       // Producers
       try {
-        // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getProducers`);
-        const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getProducers`
-        );
+        const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getProducers`);
+        // const response = await this.$axios.get(
+        //   `${process.env.VUE_APP_API_URL}/getData/getProducers`
+        // );
         this.producers = response.data;
         this.dataLoaded = true;
       } catch (error) {
@@ -2811,10 +2812,10 @@ export default {
       }
       // Venues
       try {
-        // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getVenues`);
-        const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getVenues`
-        );
+        const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getVenues`);
+        // const response = await this.$axios.get(
+        //   `${process.env.VUE_APP_API_URL}/getData/getVenues`
+        // );
         this.venues = response.data;
         this.dataLoaded = true;
       } catch (error) {
@@ -2823,10 +2824,10 @@ export default {
       }
       // for Badges
       try {
-        // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getBadges`);
-        const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}getData/getBadges`
-        );
+        const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getBadges`);
+        // const response = await this.$axios.get(
+        //   `${process.env.VUE_APP_API_URL}getData/getBadges`
+        // );
         this.badges = response.data;
         this.dataLoaded = true;
       } catch (error) {
@@ -2835,10 +2836,10 @@ export default {
       }
       // Users
       try {
-        // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getUsers`);
-        const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}getData/getUsers`
-        );
+        const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getUsers`);
+        // const response = await this.$axios.get(
+        //   `${process.env.VUE_APP_API_URL}getData/getUsers`
+        // );
         this.users = response.data;
         this.user = this.getUser(this.userID);
         this.displayUser = this.getUser(this.displayUserID);
@@ -2861,8 +2862,8 @@ export default {
           });
           this.joinDate = `${month} ${year}`;
           this.selectedDrinks = this.user.choiceDrinks;
-          this.selectedFlavours = this.user.choiceFlavours;
-          this.selectedObservationTags = this.user.preferences;
+          this.selectedFlavours = this.user.choiceFlavours || [];
+          this.selectedObservationTags = this.user.preferences || [];
           this.userBookmarks = this.user.drinkLists;
           this.following = JSON.stringify(this.user.followLists.users).includes(
             JSON.stringify(this.displayUserID)
@@ -2909,10 +2910,10 @@ export default {
       }
       // mod requests
       try {
-        // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getModRequests`);
-        const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getModRequests`
-        );
+        const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getModRequests`);
+        // const response = await this.$axios.get(
+        //   `${process.env.VUE_APP_API_URL}/getData/getModRequests`
+        // );
         this.modRequests = response.data;
         this.modRequestsType = this.modRequests
           .filter(
@@ -2926,10 +2927,10 @@ export default {
       }
       // drinkCategories
       try {
-        // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getDrinkTypes`);
-        const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getDrinkTypes`
-        );
+        const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getDrinkTypes`);
+        // const response = await this.$axios.get(
+        //   `${process.env.VUE_APP_API_URL}/getData/getDrinkTypes`
+        // );
         this.drinkTypes = response.data;
         // retrieve the drink type and put them into an array
         this.drinkType = this.drinkTypes.map((category) => category.drinkType);
@@ -2964,10 +2965,10 @@ export default {
       // flavourTags
       // _id, hexcode, familyTag, subtag, showbox
       try {
-        // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getFlavourTags`);
-        const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getFlavourTags`
-        );
+        const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getFlavourTags`);
+        // const response = await this.$axios.get(
+        //   `${process.env.VUE_APP_API_URL}/getData/getFlavourTags`
+        // );
         this.flavourTags = response.data.map((item) => {
           return { ...item, showBox: false };
         });
@@ -2977,10 +2978,10 @@ export default {
       }
       // observationTags
       try {
-        // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getObservationTags`);
-        const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getObservationTags`
-        );
+        const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getObservationTags`);
+        // const response = await this.$axios.get(
+        //   `${process.env.VUE_APP_API_URL}/getData/getObservationTags`
+        // );
         this.observationTags = response.data;
         console.log(this.observationTags);
       } catch (error) {
@@ -2990,10 +2991,10 @@ export default {
       // subTags
       // _id, familyTagId, subtag
       try {
-        // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getSubTags`);
-        const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getSubTags`
-        );
+        const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getSubTags`);
+        // const response = await this.$axios.get(
+        //   `${process.env.VUE_APP_API_URL}/getData/getSubTags`
+        // );
         this.subTags = response.data;
         this.flavourTags.forEach((flavourTag) => {
           // Filter subtags belonging to the current flavor tag

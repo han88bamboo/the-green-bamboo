@@ -495,16 +495,7 @@
                                         </li>
                                     </ul>
                                 </div>
-                                
                             </div>
-                            <div>
-                                <button>
-                                    <span class="mobile-view-show" style="margin-left: 5px;"> Refresh {{
-                                        sortSelection.category != '' ? sortSelection.category : 'Category' }}
-                                    </span>
-                                </button>
-                            </div>
-
                         </div>
 
                         <!-- listings  TZH removed class scrollable-listings--->
@@ -1094,7 +1085,7 @@ export default {
             // users
             // _id, username, displayName, choiceDrinks, drinkLists, modType, photo
             try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUser/${this.userID}`);
+                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getUser/${this.userID}`);
                 this.user = response.data;
                 if (this.user) {
                     // Get the list of users that the current user is following
@@ -1928,8 +1919,8 @@ export default {
                 // if not, meaning listings are not filtered, retrieve next 30 listings in DB
                 else {
                     let lastId = this.listings[this.listings.length - 1].id
-                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getNext30` + '/' + lastId);
-                    // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getNext30` + '/' + lastId);
+                    // const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getNext30` + '/' + lastId);
+                    const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getNext30` + '/' + lastId);
                     this.listings.push(...response.data);
                     if (response.data.length == 0) {
                         this.moreListings = false

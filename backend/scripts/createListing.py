@@ -145,6 +145,7 @@ def createListings():
     rawBottle['addedDate'] = datetime.now(pytz.timezone('Etc/GMT-8'))
     rawBottle["allowMod"] = True
     rawBottle['producerID'] = int(rawBottle['producerID'])
+    rawBottle['bottlerID'] = int(rawBottle['bottlerID']) if rawBottle['bottlerID'] is not "" else None
     rawBottleName = rawBottle["listingName"]
 
     try:
