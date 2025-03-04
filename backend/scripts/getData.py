@@ -2750,3 +2750,52 @@ def getLatestNews():
         return jsonify(rss_json)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Top 8 Trending Observation Tags
+@blueprint.route("/getTop8")
+def getTop8():
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        query = """
+            SELECT tag_name, COUNT(*) AS tag_count
+            FROM (
+                SELECT unnest(
+                    string_to_array(
+                        replace(replace("observationTag"::TEXT, '{', ''), '}', ''), '", "'
+                    )
+                ) AS tag_name
+                FROM "reviews"
+                WHERE "observationTag" IS NOT NULL
+            ) sub
+            GROUP BY tag_name
+            ORDER BY tag_count DESC
+            LIMIT 8;
+        """
+        cursor.execute(query)
+        top8_data = cursor.fetchall()  # Returns list of tuples
+        columns = [desc[0] for desc in cursor.description]  
+
+        print("Columns:", columns)  
+        print("Listings:", top8_data)  
+
+        listing_dicts = []
+        for row in top8_data:
+            raw_tags = row["tag_name"].strip('{}')  
+            tag_names = [tag.strip('"') for tag in raw_tags.split(',')]  
+            
+            for tag in tag_names:
+                listing_dicts.append({"tag_name": tag, "tag_count": row["tag_count"]})
+        final_listings = []
+
+        for tag_entry in listing_dicts:
+            if len(final_listings) < 7:  
+                final_listings.append(tag_entry["tag_name"])
+            else:
+                break
+
+        print("Final Processed Tags:", final_listings)  
+
+    return jsonify(final_listings) 
