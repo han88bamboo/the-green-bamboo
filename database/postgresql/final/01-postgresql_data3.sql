@@ -247,6 +247,19 @@ CREATE TABLE "producersProfileViews" (
     -- "views" INTEGER REFERENCES "producersProfileViewsViews"("id") ON DELETE SET NULL  -- [!] reference "producersProfileViewsViews" FK
 );
 
+-- ========= "producersOpeningHours" =========
+CREATE TABLE "producersOpeningHours" (
+    "id" SERIAL PRIMARY KEY,
+    "Monday" TEXT[],
+    "Tuesday" TEXT[],
+    "Wednesday" TEXT[],
+    "Thursday" TEXT[],
+    "Friday" TEXT[],
+    "Saturday" TEXT[],
+    "Sunday" TEXT[],
+    "producerId" INTEGER REFERENCES "producers"("id") ON DELETE SET NULL -- [!] reference "producers" FK
+);
+
 -- -- ========= [NEW!] "producersProfileViewsViews" =========
 -- CREATE TABLE "producersProfileViewsViews" (
 --     "id" SERIAL PRIMARY KEY,
