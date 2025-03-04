@@ -11,7 +11,7 @@ const routes = [
     // name: 'usersbottlelistings',
 
     // route level code-splitting: this generates a separate chunk (about.[hash].js) for this route which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/Users/BottleListings.vue')
+    component: () => import(/* webpackChunkName: "about" */ '../views/LandingPage.vue')
   },
   {
     path: '/login',
@@ -26,11 +26,11 @@ const routes = [
         /* webpackChunkName: "about" */ "../views/Users/BottleListings.vue"
       ),
   },
-  {
-    path: "/landing",
-    name: "landing",
-    component: () => import("../views/LandingPage.vue"),
-  },
+  // {
+  //   path: "/landing",
+  //   name: "landing",
+  //   component: () => import("../views/LandingPage.vue"),
+  // },
   {
     path: '/signup',
     name: 'signup',
@@ -266,6 +266,29 @@ const routes = [
     path: '/club/view/:clubID',
     name: 'clubview',
     component: () => import('../views/Users/ClubView.vue')
+  },
+
+  // -------------------------------------------------------------------------------------
+  // ----------------- Events -----------------
+  {
+    path: "/event/:eventID",
+    name: "eventview",
+    component: () => import("../views/SpecificEventPage.vue"),
+  },
+
+  {
+    path: "/events/view",
+    name: "eventspage",
+    component: () => import("../views/Users/Events.vue"),
+  },
+
+  // -------------------------------------------------------------------------------------
+  // ----------------- Best Of (Latest News)-----------------
+
+  {
+    path: "/Latest-News",
+    name: "latestnews",
+    component: () => import("../views/Users/LatestNews.vue"),
   },
 
   // -------------------------------------------------------------------------------------
