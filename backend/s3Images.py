@@ -4,6 +4,7 @@ from botocore.exceptions import NoCredentialsError
 from botocore.exceptions import ClientError
 import uuid
 import requests
+import io
 
 import os
 
@@ -66,10 +67,22 @@ def uploadBase64ImageToS3(base64_string):
 def uploadURLtoS3(url):
     try:
         response = requests.get(url, stream=True)
+        if response.status_code != 200:
+            print(f"Failed to download the image: {response.status_code}")
+            return url
         
+        content_type = response.headers.get("Content-Type", "image/jpeg")
+        img_data = io.BytesIO(response.content)
+
         s3 = boto3.client('s3')
         object_key = f'{uuid.uuid4()}.jpg'
-        s3.upload_fileobj(response.raw, Bucket=bucket_name, Key=object_key, ExtraArgs={"ContentType": response.headers["Content-Type"]})
+        
+        s3.upload_fileobj(
+            img_data,
+            Bucket=bucket_name,
+            Key=object_key,
+            ExtraArgs={"ContentType": content_type}
+        )
         s3_url = f"https://{bucket_name}.s3.{region}.amazonaws.com/{object_key}"
         return s3_url
     except requests.exceptions.RequestException as e:

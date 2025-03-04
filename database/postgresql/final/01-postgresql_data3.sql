@@ -43,6 +43,7 @@ DROP TABLE IF EXISTS "subTags" CASCADE;
 DROP TABLE IF EXISTS "tokens" CASCADE;
 DROP TABLE IF EXISTS "users" CASCADE;
 DROP TABLE IF EXISTS "usersDrinkLists" CASCADE;
+DROP TABLE IF EXISTS "usersDrinkListItems" CASCADE;
 DROP TABLE IF EXISTS "usersFollowLists" CASCADE;
 DROP TABLE IF EXISTS "venueUpdateLikes" CASCADE;
 DROP TABLE IF EXISTS "venues" CASCADE;
@@ -353,8 +354,8 @@ CREATE TABLE "reviews" (
 -- ========= [NEW!] "reviewsUserVotes" =========
 CREATE TABLE "reviewsUserVotes" (
     "id" SERIAL PRIMARY KEY,
-    "upvotes" TEXT[], -- Contain "users"("id")s
-    "downvotes" TEXT[], -- Contain "users"("id")s
+    "upvotes" JSONB DEFAULT '[]', -- Contains "users"("id")s and date
+    "downvotes" JSONB DEFAULT '[]', -- Contains "users"("id")s and date
     "reviewId" INTEGER REFERENCES "reviews"("id") on DELETE SET NULL -- [!] reference "reviews" FK
 );
 
@@ -365,8 +366,9 @@ CREATE TABLE "producerReviews" (
     "rating" DECIMAL(3,1),
     "reviewDesc" TEXT,
     "createdDate" TIMESTAMP,
-    "photo" TEXT
+    -- "photo" TEXT
     -- "userVotes" SERIAL, -- [!] reference "producerReviewsUserVotes" FK
+    "photos" TEXT[]
 );
 
 CREATE TABLE "producerReviewsUserVotes" (

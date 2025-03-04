@@ -375,8 +375,9 @@
         methods:{
             async loadData(){
                 try {
-                    const response =  `${process.env.VUE_APP_API_URL}/getData/getCountries`  // comment out for local
+                    // const response =  `${process.env.VUE_APP_API_URL}/getData/getCountries`  // comment out for local
                     // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getCountries`); // comment out for deployment
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getCountries`); // use await
                     this.countries = response.data.sort((a,b)=>{
                             return a.originCountry.localeCompare(b.originCountry)
                             })
@@ -388,8 +389,9 @@
                     }
                 // get the flavourTags from database
                 try {
-                    const response =  `${process.env.VUE_APP_API_URL}/getData/getFlavourTags`  // comment out for local
+                    // const response =  `${process.env.VUE_APP_API_URL}/getData/getFlavourTags`  // comment out for local
                     // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getFlavourTags`); // comment out for deployment
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getFlavourTags`); // use await
                     // Set flavourTags dynamically based on the API response
                     this.flavourTags = response.data.map(item => item.familyTag);
                     
@@ -402,8 +404,9 @@
                 }
                 // get the observationTags from database
                 try {
-                    const response =  `${process.env.VUE_APP_API_URL}/getData/getObservationTags`  // comment out for local
+                    // const response =  `${process.env.VUE_APP_API_URL}/getData/getObservationTags`  // comment out for local
                     // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getObservationTags`);  // comment out for deployment
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getObservationTags`); // use await
                     // Set flavourTags dynamically based on the API response
                     this.observationTags = response.data.map(item => item.observationTag);
                     
