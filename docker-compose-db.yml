@@ -27,7 +27,7 @@ services:
         - "-p"
         - "5432"
         - "-U"
-        # - "drinkx"
+        - "drinkx"
         - "postgres"
         - "-d"
         - "postgres"
