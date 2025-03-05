@@ -13,14 +13,18 @@
 
     <!-- Display when data fails to load-->
     <div class="text-danger fst-italic fw-bold fs-3 pt-5" v-if="dataLoaded == null">
-        <span>An error occurred while loading this page, please try again!</span>
+        <span>Create an account to get drink recommendations!</span>
         <br>
-        <button class="btn primary-btn btn-sm" @click="this.$router.go(-1)">
-            <span class="fs-5 fst-italic"> Return to previous page </span>
-        </button>
-        <button class="btn primary-btn btn-sm mx-1" @click="this.$router.go(0)">
-            <span class="fs-5 fst-italic"> Go to Home page </span>
-        </button>
+        <router-link :to="'/'" class="mx-1">
+            <button class="btn primary-btn btn-sm">
+                <span class="fs-5 fst-italic"> Landing Page </span>
+            </button>
+        </router-link>
+        <router-link :to="'/signup'" class="mx-1">
+            <button class="btn primary-btn btn-sm">
+                <span class="fs-5 fst-italic"> Signup Page </span>
+            </button>
+        </router-link>
     </div>
 
     <!-- [if] no search input -->
