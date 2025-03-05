@@ -100,49 +100,52 @@ def deleteReview(id):
 # [DELETE] Deletes a producer review
 # - Delete entry with specified id from the "producerReviews" collection.
 # - Possible return codes: 201 (Deleted), 400 (Review doesn't exist), 500 (Error during deletion)
-@blueprint.route("/deleteProducerReview/<id>", methods=['DELETE'])
+@blueprint.route("/deleteProducerReview/<id>", methods= ['DELETE'])
 def deleteProducerReview(id):
     conn = g.db
     cur = conn.cursor()
 
-    cur.execute("""SELECT EXISTS(SELECT 1 FROM "producerReviews" WHERE id = %s)""", (id,))
-    exists = cur.fetchone()['exists']
+    cur.execute("""SELECT * FROM "producerReviews" WHERE id = %s""", (id,))
+    existingReview = cur.fetchone()
 
-    if not exists:
+    if existingReview is None:
         return jsonify(
             {   
                 "code": 400,
-                "data": {"id": id},
+                "data": {
+                    "id": id
+                },
                 "message": "Review doesn't exist."
             }
         ), 400
-
+    
     try:
-        # Fetch only the photos instead of the entire review
-        cur.execute("""SELECT photos FROM "producerReviews" WHERE id = %s""", (id,))
-        photos = cur.fetchone()['photos']
+        if(existingReview['photo']):
+            s3Images.deleteImageFromS3(existingReview['photo'])
 
-        if photos:
-            from threading import Thread
-            def async_delete_images(photo_list):
-                for photo in photo_list:
-                    s3Images.deleteImageFromS3(photo)
-
-            Thread(target=async_delete_images, args=(photos,)).start()
-
+        # Delete associated votes
         cur.execute("DELETE FROM \"producerReviewsUserVotes\" WHERE \"reviewId\" = %s", (id,))
-        cur.execute("DELETE FROM \"producerReviews\" WHERE id = %s RETURNING id", (id,))
+
+        # Delete the review
+        cur.execute("DELETE FROM \"producerReviews\" WHERE id = %s", (id,))
         
         conn.commit()
-
-        return jsonify({"code": 200, "data": id}), 200
-
+        
+        return jsonify(
+            {   
+                "code": 200,
+                "data": id
+            }
+        ), 200
+    
     except Exception as e:
         print(str(e))
         return jsonify(
             {
                 "code": 500,
-                "data": {"id": id},
+                "data": {
+                    "id": id
+                },
                 "message": "An error occurred deleting the listing."
             }
         ), 500

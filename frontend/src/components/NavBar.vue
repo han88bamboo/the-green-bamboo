@@ -26,10 +26,10 @@
                     
                     <!-- camera button -->
                     <div class="col mobile-view-hide">
-                        <button class="btn primary-btn-less-round-green d-flex align-items-center" style="height: 50px; margin-left: 10px; padding: 0px 15px;" v-on:click="imageSearch">
-                            <span>Scan bottle</span>
-                            <img src="../../Images/Others/camera-white.png" style="width: 30px; height: 30px; margin-left: 10px;">
-                        </button>
+                            <button class="btn primary-btn-less-round-green d-flex align-items-center" style="height: 50px; margin-left: 10px; padding: 0px 15px;" v-on:click="imageSearch">
+                                <span>Scan bottle</span>
+                                <img src="../../Images/Others/camera-white.png" style="width: 30px; height: 30px; margin-left: 10px;">
+                            </button>
                     </div>
                 </div>
 
@@ -77,7 +77,7 @@
                         <li v-if="onRequest && accType == 'user'"><span class="dropdown-item" @click="forceLoad('/request/new')">Request New Listing</span></li>
                         <li v-if="!onRequest && accType == 'user'"><router-link :to="'/request/new'" class="dropdown-item">Request New Listing</router-link></li>
 
-                        <li v-if="isAdmin || isModerator || accType == 'producer'"><router-link :to="'/request/view'" class="dropdown-item">View Requests</router-link></li>
+                        <li v-if="accType == 'user' || accType == 'producer'"><router-link :to="'/request/view'" class="dropdown-item">View Requests</router-link></li>
 
                         <li v-if="isAdmin"><router-link :to="'/admin/dashboard'" class="dropdown-item">Admin Dashboard</router-link></li>
                         <li v-if="isAdmin"><router-link :to="'/admin/importListings'" class="dropdown-item">Import Listings</router-link></li>
@@ -92,8 +92,6 @@
                             <li v-if="!onRequest && accType == 'user'"><router-link  :to="'/request/new'" class="text-decoration-none" ><span class="dropdown-item " >Submit A Drink</span></router-link></li>
                             <li v-if="onCreate && (accType == 'producer' || isAdmin || isModerator)" ><span  class="dropdown-item" @click="forceLoad('/listing/create')">Add A New Drink</span></li>
                             <li v-if="!onCreate && (accType == 'producer' || isAdmin || isModerator)" :to="'/listing/create'" ><span class="dropdown-item">Add A New Drink</span></li>
-                            <li><router-link :to="'/clubs/view'" class="dropdown-item">Find Club</router-link></li>
-                            <li><router-link :to="'/events/view'"  class="dropdown-item">Find Events</router-link></li>
                         </div>
 
                         <li><hr class="dropdown-divider"></li>
@@ -144,16 +142,13 @@
                     </button>
                 </router-link>
 
-                <router-link :to="'/Latest-News'">
-                    <button class="btn primary-btn border-0 fw-bold" type="button" @click="forceLoad('/Latest-News')">
-                        Latest News
-                    </button>
-                </router-link>
+                <button class="btn primary-btn border-0 fw-bold" type="button" @click="externalURL('https://88bamboo.co/')">
+                    Latest Drink News
+                </button>
 
                 <button @click="forceLoad('/request/new')" v-if="onRequest && accType == 'user'" class="btn primary-btn border-0 fw-bold " type="button" >  <!-- class="text-warning" style="color:#D58D2D !important;" -->
                     Submit A Drink
                 </button>
-                
                 <router-link v-if="!onRequest && accType == 'user'" :to="'/request/new'">
                     <button class="btn primary-btn border-0 fw-bold " type="button"  > <!-- class="text-warning" style="color:#D58D2D !important;" -->
                         Submit A Drink
@@ -173,12 +168,6 @@
                 <router-link :to="'/clubs/view'">
                     <button class="btn primary-btn border-0 fw-bold" type="button">
                         Find A Club
-                    </button>
-                </router-link>
-
-                <router-link :to="'/events/view'">
-                    <button class="btn primary-btn border-0 fw-bold" type="button">
-                        Find Events
                     </button>
                 </router-link>
             </div>

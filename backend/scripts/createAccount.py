@@ -80,6 +80,7 @@ def createAccount():
             user_id = cursor.fetchone()['id']
             db_conn.commit()
 
+        # Insert into 'usersDrinkLists' table for "Drinks I Want To Try"
         with db_conn.cursor() as cursor:
             # cursor.execute("""
             #     INSERT INTO "usersDrinkLists" ("userId", "listName", "drinks")
@@ -93,30 +94,44 @@ def createAccount():
             cursor.execute("""
                 INSERT INTO "usersDrinkLists" ("userId", "listName")
                 VALUES (%s, %s)
-                RETURNING "id"
-            """, (user_id, "Drinks I Want To Try"))
-            want_to_try_list_id = cursor.fetchone()["id"]
+            """, (
+                user_id,
+                "Drinks I Want To Try"
+            ))
+            db_conn.commit()
 
+        # Insert into 'usersDrinkLists' table for "Drinks I Have Tried"
+        with db_conn.cursor() as cursor:
+            # cursor.execute("""
+            #     INSERT INTO "usersDrinkLists" ("userId", "listName", "drinks")
+            #     VALUES (%s, %s, %s)
+            # """, (
+            #     user_id,
+            #     "Drinks I Have Tried",
+            #     rawAccount['drinkLists']['Drinks I Have Tried']['listItems']
+            # ))
+            # db_conn.commit()
             cursor.execute("""
                 INSERT INTO "usersDrinkLists" ("userId", "listName")
                 VALUES (%s, %s)
-                RETURNING "id"
-            """, (user_id, "Drinks I Have Tried"))
-            have_tried_list_id = cursor.fetchone()["id"]
+            """, (
+                user_id,
+                "Drinks I Have Tried"
+            ))
+            db_conn.commit()
 
-        for drink in rawAccount['drinkLists']['Drinks I Want To Try']['listItems']:
+        # Insert into 'usersFollowLists' table
+        with db_conn.cursor() as cursor:
             cursor.execute("""
-                INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate")
-                VALUES (%s, %s, NOW())
-            """, (want_to_try_list_id, drink["drinkId"]))
-
-        for drink in rawAccount['drinkLists']['Drinks I Have Tried']['listItems']:
-            cursor.execute("""
-                INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate")
-                VALUES (%s, %s, NOW())
-            """, (have_tried_list_id, drink["drinkId"]))
-
-        db_conn.commit()
+                INSERT INTO "usersFollowLists" ("userId", "users", "producers", "venues")
+                VALUES (%s, %s, %s, %s)
+            """, (
+                user_id,
+                rawAccount['followLists']['users'],
+                rawAccount['followLists']['producers'],
+                rawAccount['followLists']['venues']
+            ))
+            db_conn.commit()
         
         return jsonify(
             {   

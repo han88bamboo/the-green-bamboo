@@ -892,7 +892,7 @@
                                     <div class="col-3 mobile-col-4 mobile-pe-0" >
                                         <!-- <img :src=" 'data:image/png;base64,' + ( getListingFromID(bookmarkList.listItems[0]).photo || defaultDrinkImage )" alt="" class="bottle-img me-3"> xyz -->
                                         <img :src="( bookmarkList.listItems.length > 0 
-                                                    ? (bookedMarkedListings[bookmarkList.listItems[0]?.drinkId]?.photo || defaultDrinkImage)
+                                                    ? (bookedMarkedListings[bookmarkList.listItems[0]]?.photo || defaultDrinkImage)
                                                     : defaultDrinkImage )"  alt="" class="bottle-img me-3">
                                     </div>
                                     <div  class="col-9 mobile-col-8 mobile-ps-1" > <!-- style="height: 150px; display: flex; flex-direction: column;" -->
@@ -1085,16 +1085,16 @@
                                 </div>
 
                                 <!-- list details -->
-                                <div class="row mb-3" v-for="(listing, index) in displayUser.drinkLists[currentList].listItems" :key="index">
+                                <div class="row mb-3" v-for="(listingID, index) in displayUser.drinkLists[currentList].listItems" :key="index">
                                     
                                     <div class="col-10 pe-0" style="display: flex">
                                         <!-- <img :src=" 'data:image/png;base64,' + ( getListingFromID(listingID[1]).photo || defaultDrinkImage )" alt="" style="width:130px; height:130px;" class="bottle-img me-3"> -->
-                                        <img :src=" ( bookedMarkedListings[listing?.drinkId]?.photo || defaultDrinkImage )" alt="" style="width:130px; height:130px;" class="bottle-img me-3">
+                                        <img :src=" ( bookedMarkedListings[listingID]?.photo || defaultDrinkImage )" alt="" style="width:130px; height:130px;" class="bottle-img me-3">
                                         <div style="min-height: 150px; display: flex; flex-direction: column;">
-                                            <a :href="'/listing/view/' + listing?.drinkId" style="text-decoration: none; color: inherit;">
-                                                <h4>{{ bookedMarkedListings[listing?.drinkId]?.listingName }}</h4>
+                                            <a :href="'/listing/view/' + listingID" style="text-decoration: none; color: inherit;">
+                                                <h4>{{ bookedMarkedListings[listingID]?.listingName }}</h4>
                                             </a>
-                                            <p style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;"> {{ bookedMarkedListings[listing?.drinkId]?.officialDesc }} </p>
+                                            <p style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;"> {{ bookedMarkedListings[listingID]?.officialDesc }} </p>
                                             <div v-if="ownProfile" style="display: flex; margin-top: auto" class="mb-0">
                                                 <a href="#" style="text-decoration: none; color: #535C72;" data-bs-toggle="modal" :data-bs-target="`#deleteFromListModal${index}`">
                                                     <!-- cross icon -->
@@ -1111,8 +1111,8 @@
                                     <div class="col-2 text-center ps-0">
                                         <h2>
                                             {{ 
-                                            bookedMarkedListings[listing?.drinkId]?.avgRating !== null && bookedMarkedListings[listing?.drinkId]?.avgRating !== undefined 
-                                                ? parseFloat(bookedMarkedListings[listing?.drinkId]?.avgRating).toFixed(2) 
+                                            bookedMarkedListings[listingID].avgRating !== null && bookedMarkedListings[listingID].avgRating !== undefined 
+                                                ? parseFloat(bookedMarkedListings[listingID].avgRating).toFixed(2) 
                                                 : '-' 
                                             }}
                                             <svg class="mb-2" xmlns="http://www.w3.org/2000/svg" height="18" width="20.25" viewBox="0 0 576 512">
@@ -1134,11 +1134,11 @@
                                                     <img src="../../../Images/Others/cancel.png" alt="" class="rounded-circle border border-dark text-center" style="width: 100px; height: 100px;">
                                                     <h3>Are you sure?</h3>
                                                     <br>
-                                                    <p>Do you really want to delete <b><i>{{ bookedMarkedListings[listing?.drinkId]?.listingName }}</i></b> from <b><i>{{ currentList }}</i></b>? </p>
+                                                    <p>Do you really want to delete <b><i>{{ bookedMarkedListings[listingID]?.listingName }}</i></b> from <b><i>{{ currentList }}</i></b>? </p>
                                                 </div>
                                                 <div style="display: inline" class="text-center mb-4">
                                                     <button type="button" class="btn btn-secondary me-3" data-bs-dismiss="modal">Cancel</button>
-                                                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" @click="deleteFromList(currentList, listing?.drinkId)">Delete</button>
+                                                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" @click="deleteFromList(currentList, listingID)">Delete</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -2514,12 +2514,11 @@ export default {
 
         // ------------------ Add Drink to List Functions ------------------
         async addDrinkToList(listName) {
-            console.log("listName: ", listName);
             for (const drink of this.drinksToAdd) {
                 let addListingId = this.listingNamesDictionary[drink];
                 let itemExist = this.userBookmarks[listName].listItems.find(item => item === addListingId);
                 if (!itemExist) {
-                    this.userBookmarks[listName].listItems.push({ date: new Date(), drinkId: addListingId });
+                    this.userBookmarks[listName].listItems.push(addListingId);
                 }
             }
 
@@ -2545,7 +2544,7 @@ export default {
         // ------------------ Delete Drink from List Functions ------------------
         async deleteFromList(listName, listingID) {
             // param: objectId
-            const index = this.userBookmarks[listName].listItems.findIndex(item => item.drinkId === listingID);
+            const index = this.userBookmarks[listName].listItems.indexOf(listingID);
             this.userBookmarks[listName].listItems.splice(index, 1);
 
             try {

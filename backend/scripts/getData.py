@@ -895,7 +895,7 @@ def getAllListingsNames():
 @blueprint.route("/getBookmarkListings", methods=['POST'])
 def getBookmarkListings():
     conn = g.db
-    listing_ids = [listing["drinkId"] for listing in request.json.get('listingIDs', [])]
+    listing_ids = request.json.get('listingIDs', None)
 
     if not listing_ids:
         return jsonify({
@@ -932,9 +932,9 @@ def getUserReviewSummary(id):
         # Step 1: Get all listings reviewed by the user
         cursor.execute('''
             SELECT "reviewTarget", "address", "taggedUsers"
-            FROM "reviews"
-            WHERE "userID" = %s
-        ''', (id,))
+                FROM "reviews"
+                WHERE "userID" = %s
+            ''', (id,))
         reviewed_listings = cursor.fetchall()
 
         if not reviewed_listings:
@@ -943,7 +943,8 @@ def getUserReviewSummary(id):
                 "message": "No reviews found for the specified user."
             }), 404
         
-        # Use a set for distinct reviewTargets and addresses, but allow duplicates for taggedUsers
+        # Use a set for distinct reviewTargets and addresses,
+        # but allow duplicates for taggedUsers
         unique_listing_id = []
         locations_tagged = set()
         tagged_users = []
@@ -966,29 +967,22 @@ def getUserReviewSummary(id):
         # Step 2: Get the number of unique drinkType and typeCategory based on the listings reviewed
         categories_reviewed_dict = {}  # {drinkType: {typeCategory: count, ...}, ...}
         for listing_id in unique_listing_id:
-            cursor.execute('SELECT "drinkType", "typeCategory" FROM "listings" WHERE "id" = %s', (listing_id,))
+            cursor.execute('SELECT "drinkType", "typeCategory" FROM "listings" WHERE "id" = %s', (listing_id,),)
             drink_data = cursor.fetchone()
-            if drink_data:
-                drink_type = drink_data["drinkType"]
-                drink_category = drink_data["typeCategory"]
+            drink_type = drink_data["drinkType"]
+            drink_category = drink_data["typeCategory"]
 
-                if drink_type not in categories_reviewed_dict:
-                    categories_reviewed_dict[drink_type] = {}
+            if drink_type not in categories_reviewed_dict:
+                categories_reviewed_dict[drink_type] = {}
 
-                # Increment the count for the drink_category within the given drink_type.
-                if drink_category in categories_reviewed_dict[drink_type]:
-                    categories_reviewed_dict[drink_type][drink_category] += 1
-                else:
-                    categories_reviewed_dict[drink_type][drink_category] = 1
+            # Increment the count for the drink_category within the given drink_type.
+            if drink_category in categories_reviewed_dict[drink_type]:
+                categories_reviewed_dict[drink_type][drink_category] += 1
+            else:
+                categories_reviewed_dict[drink_type][drink_category] = 1
 
-        # Step 3: Get the number of upvotes for the user's reviews (new schema)
-        cursor.execute('''
-            SELECT COUNT(*) FROM "reviewsUserVotes"
-            WHERE EXISTS (
-                SELECT 1 FROM jsonb_array_elements("upvotes") AS upvote
-                WHERE (upvote->>'userId')::TEXT = %s
-            )
-        ''', (id,))
+        # Step 3: Get the number of upvotes for the user's reviews
+        cursor.execute('SELECT COUNT(*) FROM "reviewsUserVotes" WHERE %s = ANY("upvotes")', (id,))
         upvotes_count = cursor.fetchone()['count']
 
     return jsonify({
@@ -2907,52 +2901,3 @@ def getLatestNews():
         return jsonify(rss_json)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
-# -----------------------------------------------------------------------------------------
-# [GET] Top 8 Trending Observation Tags
-@blueprint.route("/getTop8")
-def getTop8():
-    conn = g.db
-
-    with conn.cursor() as cursor:
-        query = """
-            SELECT tag_name, COUNT(*) AS tag_count
-            FROM (
-                SELECT unnest(
-                    string_to_array(
-                        replace(replace("observationTag"::TEXT, '{', ''), '}', ''), '", "'
-                    )
-                ) AS tag_name
-                FROM "reviews"
-                WHERE "observationTag" IS NOT NULL
-            ) sub
-            GROUP BY tag_name
-            ORDER BY tag_count DESC
-            LIMIT 8;
-        """
-        cursor.execute(query)
-        top8_data = cursor.fetchall()  # Returns list of tuples
-        columns = [desc[0] for desc in cursor.description]  
-
-        print("Columns:", columns)  
-        print("Listings:", top8_data)  
-
-        listing_dicts = []
-        for row in top8_data:
-            raw_tags = row["tag_name"].strip('{}')  
-            tag_names = [tag.strip('"') for tag in raw_tags.split(',')]  
-            
-            for tag in tag_names:
-                listing_dicts.append({"tag_name": tag, "tag_count": row["tag_count"]})
-        final_listings = []
-
-        for tag_entry in listing_dicts:
-            if len(final_listings) < 7:  
-                final_listings.append(tag_entry["tag_name"])
-            else:
-                break
-
-        print("Final Processed Tags:", final_listings)  
-
-    return jsonify(final_listings) 

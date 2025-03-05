@@ -1190,14 +1190,14 @@
                                     </div>
                                     <div style="display: inline;" class="text-start">
                                         <!-- voting -->
-                                        <svg v-if="!review.userVotes.upvotes.some(vote => parseInt(vote?.userId) === parseInt(userID))" @click="voteReview(review, 'upvote')" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-caret-up" viewBox="0 0 16 16">
+                                        <svg v-if="!JSON.stringify(review.userVotes.upvotes).includes(JSON.stringify(userID))" @click="voteReview(review, 'upvote')" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-caret-up" viewBox="0 0 16 16">
                                             <path d="M3.204 11h9.592L8 5.519zm-.753-.659 4.796-5.48a1 1 0 0 1 1.506 0l4.796 5.48c.566.647.106 1.659-.753 1.659H3.204a1 1 0 0 1-.753-1.659"/>
                                         </svg>
                                         <svg v-else @click="voteReview(review, 'unupvote')" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-caret-up-fill" viewBox="0 0 16 16">
                                             <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z"/>
                                         </svg>
                                         <span class="mx-2">{{ review.userVotes.upvotes.length - review.userVotes.downvotes.length }}</span>
-                                        <svg v-if="!review.userVotes.downvotes.some(vote => parseInt(vote?.userId) === parseInt(userID))" @click="voteReview(review, 'downvote')" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-caret-down me-3" viewBox="0 0 16 16">
+                                        <svg v-if="!JSON.stringify(review.userVotes.downvotes).includes(JSON.stringify(userID))" @click="voteReview(review, 'downvote')" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-caret-down me-3" viewBox="0 0 16 16">
                                             <path d="M3.204 5h9.592L8 10.481zm-.753.659 4.796 5.48a1 1 0 0 0 1.506 0l4.796-5.48c.566-.647.106-1.659-.753-1.659H3.204a1 1 0 0 0-.753 1.659"/>
                                         </svg>
                                         <svg v-else @click="voteReview(review, 'undownvote')" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-caret-down-fill me-3" viewBox="0 0 16 16">
@@ -2005,20 +2005,16 @@
                                 });
                             }
                             if (this.user.drinkLists && Object.keys(this.user.drinkLists).length > 0) {
-                                if (this.user.drinkLists["Drinks I Have Tried"]) {
-                                    for (let drink of this.user.drinkLists["Drinks I Have Tried"]["listItems"]) {
-                                        let triedDrinkName = this.listings.find(listing => listing.id === parseInt(drink?.drinkId))?.listingName;
-                                        if (triedDrinkName) {
-                                            triedDrinks.push(triedDrinkName)
-                                        }
+                                for (let drink of this.user.drinkLists["Drinks I Have Tried"]["listItems"]) {
+                                    let triedDrink = this.listings.find(listing => listing.id === parseInt(drink?.drinkId))?.listingName;
+                                    if (triedDrink) {
+                                        triedDrinks.push(triedDrink)
                                     }
                                 }
-                                if (this.user.drinkLists["Drinks I Want To Try"]) {
-                                    for (let drink of this.user.drinkLists["Drinks I Want To Try"]["listItems"]) {
-                                        let wantDrinkName = this.listings.find(listing => listing.id === parseInt(drink?.drinkId))?.listingName;   
-                                        if (wantDrinkName) {
-                                            wantToTryDrinks.push(wantDrinkName)
-                                        }
+                                for (let drink of this.user.drinkLists["Drinks I Want To Try"]["listItems"]) {
+                                    let wantDrinkName = this.listings.find(listing => listing.id === parseInt(drink?.drinkId))?.listingName;   
+                                    if (wantDrinkName) {
+                                        wantToTryDrinks.push(wantDrinkName)
                                     }
                                 }
                             }
@@ -2718,28 +2714,25 @@
                 this.updateID = review.id
             },
 
-            async voteReview(review, vote) {
-                const currentTime = new Date().toISOString(); // Get current timestamp
-
-                if (vote === "upvote") {
-                    review.userVotes.upvotes.push({ userId: this.userID, date: currentTime });
-                    review.userVotes.downvotes = review.userVotes.downvotes.filter(vote => vote.userId !== this.userID);
-                } else if (vote === "downvote") {
-                    review.userVotes.downvotes.push({ userId: this.userID, date: currentTime });
-                    review.userVotes.upvotes = review.userVotes.upvotes.filter(vote => vote.userId !== this.userID);
-                } else if (vote === "unupvote") {
-                    review.userVotes.upvotes = review.userVotes.upvotes.filter(vote => vote.userId !== this.userID);
-                } else if (vote === "undownvote") {
-                    review.userVotes.downvotes = review.userVotes.downvotes.filter(vote => vote.userId !== this.userID);
+            async voteReview(review, vote){
+                if (vote == "upvote") {
+                    review.userVotes.upvotes.push(this.userID);
+                    review.userVotes.downvotes = review.userVotes.downvotes.filter(vote => vote !== this.userID);
+                } else if (vote == "downvote") {
+                    review.userVotes.downvotes.push(this.userID);
+                    review.userVotes.upvotes = review.userVotes.upvotes.filter(vote => vote !== this.userID);
+                } else if (vote == "unupvote") {
+                    review.userVotes.upvotes = review.userVotes.upvotes.filter(vote => vote !== this.userID);
+                } else if (vote == "undownvote") {
+                    review.userVotes.downvotes = review.userVotes.downvotes.filter(vote => vote !== this.userID);
                 }
 
                 try {
                     await this.$axios.post(`${process.env.VUE_APP_API_URL}/editReview/voteReview`, 
                         {
                             reviewID: review.id,
-                            userID: this.userID,
-                            action: vote,
-                            voteDate: currentTime
+                            userVotes: review.userVotes,
+                            action: vote
                         }, {
                         headers: {
                             'Content-Type': 'application/json'

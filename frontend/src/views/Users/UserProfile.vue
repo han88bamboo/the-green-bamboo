@@ -2312,7 +2312,7 @@
                 <!-- list details -->
                 <div
                   class="row mb-3"
-                  v-for="(listing, index) in displayUser.drinkLists[
+                  v-for="(listingID, index) in displayUser.drinkLists[
                     currentList
                   ].listItems"
                   :key="index"
@@ -2321,7 +2321,7 @@
                     <!-- <img :src=" 'data:image/png;base64,' + ( getListingFromID(listingID[1]).photo || defaultDrinkImage )" alt="" style="width:130px; height:130px;" class="bottle-img me-3"> -->
                     <img
                       :src="
-                        getListingFromID(listing?.drinkId)?.photo || defaultDrinkImage
+                        getListingFromID(listingID)?.photo || defaultDrinkImage
                       "
                       alt=""
                       style="width: 130px; height: 130px"
@@ -2335,10 +2335,10 @@
                       "
                     >
                       <a
-                        :href="'/listing/view/' + listing?.drinkId"
+                        :href="'/listing/view/' + listingID"
                         style="text-decoration: none; color: inherit"
                       >
-                        <h4>{{ getListingFromID(listing?.drinkId)?.listingName }}</h4>
+                        <h4>{{ getListingFromID(listingID)?.listingName }}</h4>
                       </a>
                       <p
                         style="
@@ -2348,7 +2348,7 @@
                           overflow: hidden;
                         "
                       >
-                        {{ getListingFromID(listing?.drinkId)?.officialDesc }}
+                        {{ getListingFromID(listingID)?.officialDesc }}
                       </p>
                       <div
                         v-if="ownProfile"
@@ -2381,7 +2381,7 @@
                   </div>
                   <div class="col-2 text-center ps-0">
                     <h2>
-                      {{ getAverageReview(listing?.drinkId) }}
+                      {{ getAverageReview(listingID) }}
                       <svg
                         class="mb-2"
                         xmlns="http://www.w3.org/2000/svg"
@@ -2429,7 +2429,7 @@
                             Do you really want to delete
                             <b
                               ><i>{{
-                                getListingFromID(listing?.drinkId)?.listingName
+                                getListingFromID(listingID)?.listingName
                               }}</i></b
                             >
                             from
@@ -2450,7 +2450,7 @@
                             type="button"
                             class="btn btn-danger"
                             data-bs-dismiss="modal"
-                            @click="deleteFromList(currentList, listing?.drinkId)"
+                            @click="deleteFromList(currentList, listingID)"
                           >
                             Delete
                           </button>

@@ -71,3 +71,4 @@ def fetchRSS():
         # Append category-wise articles to news_data
         news_data.append({category: articles})
     return jsonify(news_data)
+

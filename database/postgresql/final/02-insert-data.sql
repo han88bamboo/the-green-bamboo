@@ -2850,56 +2850,16 @@ INSERT INTO "menuItems"(
 VALUES(0, 12.00, true, 544777, 1, 1);
 
 INSERT INTO "reviewsUserVotes" ("upvotes", "downvotes", "reviewId") VALUES
-(
-    '[{"userId": 2, "date": "2025-03-03T12:00:00Z"}, {"userId": 1, "date": "2025-03-02T14:30:00Z"}, {"userId": 4, "date": "2025-03-01T18:45:00Z"}]'::jsonb,
-    '[{"userId": 5, "date": "2025-03-02T10:15:00Z"}]'::jsonb,
-    1
-),
-(
-    '[{"userId": 1, "date": "2025-03-03T15:20:00Z"}, {"userId": 4, "date": "2025-03-01T08:10:00Z"}]'::jsonb,
-    '[{"userId": 2, "date": "2025-03-03T16:45:00Z"}, {"userId": 5, "date": "2025-03-02T12:30:00Z"}]'::jsonb,
-    2
-),
-(
-    '[{"userId": 2, "date": "2025-03-02T20:05:00Z"}, {"userId": 5, "date": "2025-03-01T19:00:00Z"}]'::jsonb,
-    '[{"userId": 1, "date": "2025-03-03T18:30:00Z"}]'::jsonb,
-    3
-),
-(
-    '[{"userId": 4, "date": "2025-03-02T09:50:00Z"}]'::jsonb,
-    '[{"userId": 2, "date": "2025-03-03T14:15:00Z"}, {"userId": 1, "date": "2025-03-01T11:20:00Z"}, {"userId": 5, "date": "2025-03-01T13:40:00Z"}]'::jsonb,
-    4
-),
-(
-    '[{"userId": 1, "date": "2025-03-01T22:00:00Z"}, {"userId": 5, "date": "2025-03-02T08:15:00Z"}]'::jsonb,
-    '[{"userId": 2, "date": "2025-03-03T11:25:00Z"}, {"userId": 4, "date": "2025-03-02T18:30:00Z"}]'::jsonb,
-    5
-),
-(
-    '[{"userId": 2, "date": "2025-03-03T10:45:00Z"}, {"userId": 4, "date": "2025-03-02T17:20:00Z"}, {"userId": 5, "date": "2025-03-01T15:30:00Z"}]'::jsonb,
-    '[{"userId": 1, "date": "2025-03-03T20:10:00Z"}]'::jsonb,
-    6
-),
-(
-    '[{"userId": 1, "date": "2025-03-02T19:40:00Z"}, {"userId": 5, "date": "2025-03-03T09:15:00Z"}]'::jsonb,
-    '[{"userId": 2, "date": "2025-03-01T10:30:00Z"}, {"userId": 4, "date": "2025-03-02T14:45:00Z"}]'::jsonb,
-    7
-),
-(
-    '[{"userId": 2, "date": "2025-03-03T12:30:00Z"}, {"userId": 1, "date": "2025-03-01T16:10:00Z"}]'::jsonb,
-    '[{"userId": 4, "date": "2025-03-02T08:00:00Z"}, {"userId": 5, "date": "2025-03-03T17:25:00Z"}]'::jsonb,
-    8
-),
-(
-    '[{"userId": 4, "date": "2025-03-01T14:05:00Z"}, {"userId": 5, "date": "2025-03-02T21:20:00Z"}]'::jsonb,
-    '[{"userId": 2, "date": "2025-03-03T13:40:00Z"}, {"userId": 1, "date": "2025-03-02T10:55:00Z"}]'::jsonb,
-    9
-),
-(
-    '[{"userId": 2, "date": "2025-03-03T08:20:00Z"}, {"userId": 1, "date": "2025-03-02T11:50:00Z"}, {"userId": 4, "date": "2025-03-01T22:35:00Z"}]'::jsonb,
-    '[{"userId": 5, "date": "2025-03-03T15:55:00Z"}]'::jsonb,
-    10
-);
+(ARRAY[2,1,4], ARRAY[5], 21),
+(ARRAY[1,4], ARRAY[2,5], 17),
+(ARRAY[2,5], ARRAY[1], 22),
+(ARRAY[4], ARRAY[2,1,5], 23),
+(ARRAY[1,5], ARRAY[2,4], 24),
+(ARRAY[2,4,5], ARRAY[1], 25),
+(ARRAY[1,5], ARRAY[2,4], 26),
+(ARRAY[2,1], ARRAY[4,5], 27),
+(ARRAY[4,5], ARRAY[2,1], 28),
+(ARRAY[2,1,4], ARRAY[5], 29);
 
 INSERT INTO "badges" ("badgeName", "badgePhoto", "badgeDesc") VALUES
 ('User Tagger', 'https://tf-drinkx-prod-fe-static.s3.ap-southeast-1.amazonaws.com/drink-x.com/tagging_master_badge.jpg', 'Awarded for tagging users in reviews.'),

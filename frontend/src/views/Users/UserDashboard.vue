@@ -222,7 +222,101 @@
                         </div>
                     </div>
 
-                    <!-- row 4: your recent activity on mobile -->
+                    <!-- row 4: recent activity on reviews mobile -->
+                    <div class="row pt-3 mobile-view-show ps-2 pe-2">
+                        <button v-if="showReviewActivity"
+                        type="button" 
+                        class="active-toggle-producer-QnA tertiary-text pt-2 pb-2 " 
+                        data-bs-toggle="collapse" 
+                        data-bs-target="#collapseReviewActivity" 
+                        aria-expanded="false" 
+                        aria-controls="collapseReviewActivity" 
+                        style="font-weight:bold;"
+                        @click="checkToShowReviewActivity()">Activity On Your Reviews ↑</button>
+                        <button v-else
+                        type="button" 
+                        class="primary-btn-less-round-green tertiary-text pt-2 pb-2 border" 
+                        data-bs-toggle="collapse" 
+                        data-bs-target="#collapseReviewActivity" 
+                        aria-expanded="false" 
+                        aria-controls="collapseReviewActivity" 
+                        style="font-weight:bold;"
+                        @click="checkToShowReviewActivity()">Activity On Your Reviews ↓</button>
+                        
+                        <div class="mt-3 collapse square primary-square-green rounded p-3 mb-3 text-start" style="height: 325px;" id="collapseReviewActivity">
+                            <div class="square-inline pb-2">
+                                <h4 class="square-inline text-start mr-auto"> Recent Activity on Your Reviews </h4>
+                            </div>
+                            <!-- body -->
+                            <div style="height: 85%;">
+                                <div class="overflow-auto" style="max-height: 100%;">
+                                    <!-- v-for loop here-->
+                                    <div v-for="activity in recentReviewActivity" v-bind:key="activity.id" class="py-2">
+                                        <div v-if="activity.type === 'upvote' || activity.type === 'downvote'">
+                                            <svg v-if="activity.type == 'upvote'" fill="#ffffff" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="m4 14h2 2v3 4c0 .553.447 1 1 1h6c.553 0 1-.447 1-1v-5-2h1 3c.385 0 .734-.221.901-.566.166-.347.12-.758-.12-1.059l-8-10c-.381-.475-1.181-.475-1.562 0l-8 10c-.24.301-.286.712-.12 1.059.167.345.516.566.901.566z"/></svg>
+                                            <svg v-if="activity.type == 'downvote'" fill="#ffffff" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="m20.901 10.566c-.167-.345-.516-.566-.901-.566h-2-2v-3-4c0-.553-.447-1-1-1h-6c-.553 0-1 .447-1 1v5 2h-1-3c-.385 0-.734.221-.901.566-.166.347-.12.758.12 1.059l8 10c.19.237.477.375.781.375s.591-.138.781-.375l8-10c.24-.301.286-.712.12-1.059z"/></svg>
+                                            <i> 
+                                                Someone <span :style="{ color: activity.type === 'upvote' ? '#90ee90' : '#ff7f7f' }">{{ activity.type }}d</span> your review on 
+                                                <router-link :to="{ path: '/listing/view/' + activity.reviewTarget }" class="reverse-clickable-text">
+                                                    <u> {{ getListingFromID(activity.reviewTarget).listingName }} </u>
+                                                </router-link>
+                                                {{ getTimeDifference(activity.date) }}
+                                            </i>
+                                        </div>
+                                        <div v-else-if="activity.type === 'follow'">
+                                            <i> 
+                                                <router-link :to="{ path: '/profile/user/' + activity.userID }" class="reverse-clickable-text">
+                                                    @<b> {{ activity.username }} </b>
+                                                </router-link> 
+                                                started following you
+                                                {{ getTimeDifference(activity.date) }}
+                                            </i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- row 4: recent activity on reviews desktop -->
+                    <div class="row pt-3 mobile-view-hide">
+                        <div class="square primary-square-green rounded p-3 mb-3 text-start">
+                            <!-- header text -->
+                            <div class="square-inline pb-2">
+                                <h4 class="square-inline text-start mr-auto"> Recent Activity on Your Reviews </h4>
+                            </div>
+                            <!-- body -->
+                            <div style="height: 85%;">
+                                <div class="overflow-auto" style="max-height: 100%;">
+                                    <!-- v-for loop here-->
+                                    <div v-for="activity in recentReviewActivity" v-bind:key="activity.id" class="py-2">
+                                        <div v-if="activity.type === 'upvote' || activity.type === 'downvote'">
+                                            <svg v-if="activity.type == 'upvote'" fill="#ffffff" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="m4 14h2 2v3 4c0 .553.447 1 1 1h6c.553 0 1-.447 1-1v-5-2h1 3c.385 0 .734-.221.901-.566.166-.347.12-.758-.12-1.059l-8-10c-.381-.475-1.181-.475-1.562 0l-8 10c-.24.301-.286.712-.12 1.059.167.345.516.566.901.566z"/></svg>
+                                            <svg v-if="activity.type == 'downvote'" fill="#ffffff" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="m20.901 10.566c-.167-.345-.516-.566-.901-.566h-2-2v-3-4c0-.553-.447-1-1-1h-6c-.553 0-1 .447-1 1v5 2h-1-3c-.385 0-.734.221-.901.566-.166.347-.12.758.12 1.059l8 10c.19.237.477.375.781.375s.591-.138.781-.375l8-10c.24-.301.286-.712.12-1.059z"/></svg>
+                                            <i> 
+                                                Someone <span :style="{ color: activity.type === 'upvote' ? '#90ee90' : '#ff7f7f' }">{{ activity.type }}d</span> your review on 
+                                                <router-link :to="{ path: '/listing/view/' + activity.reviewTarget }" class="reverse-clickable-text">
+                                                    <u> {{ getListingFromID(activity.reviewTarget).listingName }} </u>
+                                                </router-link>
+                                                {{ getTimeDifference(activity.date) }}
+                                            </i>
+                                        </div>
+                                        <div v-else-if="activity.type === 'follow'">
+                                            <i> 
+                                                <router-link :to="{ path: '/profile/user/' + activity.userID }" class="reverse-clickable-text">
+                                                    @<b> {{ activity.username }} </b>
+                                                </router-link> 
+                                                started following you
+                                                {{ getTimeDifference(activity.date) }}
+                                            </i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- row 5: your recent activity on mobile -->
                     <div class="row pt-3 mobile-view-show ps-2 pe-2">
                         <button v-if="showRecentActivity"
                         type="button" 
@@ -285,7 +379,7 @@
                         </div>
                     </div>
 
-                    <!-- row 4: your recent activity on desktop -->
+                    <!-- row 5: your recent activity on desktop -->
                     <div class="row pt-3 mobile-view-hide">
                         <div class="square primary-square-green rounded p-3 mb-3 text-start">
                             <!-- header text -->
@@ -323,100 +417,6 @@
                                                     </router-link>
                                                 </b>
                                                 <br />{{ getTimeDifference(activity.date) }}
-                                            </i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- row 5: recent activity on reviews mobile -->
-                    <div class="row pt-3 mobile-view-show ps-2 pe-2">
-                        <button v-if="showReviewActivity"
-                        type="button" 
-                        class="active-toggle-producer-QnA tertiary-text pt-2 pb-2 " 
-                        data-bs-toggle="collapse" 
-                        data-bs-target="#collapseReviewActivity" 
-                        aria-expanded="false" 
-                        aria-controls="collapseReviewActivity" 
-                        style="font-weight:bold;"
-                        @click="checkToShowReviewActivity()">Activity On Your Reviews ↑</button>
-                        <button v-else
-                        type="button" 
-                        class="primary-btn-less-round-green tertiary-text pt-2 pb-2 border" 
-                        data-bs-toggle="collapse" 
-                        data-bs-target="#collapseReviewActivity" 
-                        aria-expanded="false" 
-                        aria-controls="collapseReviewActivity" 
-                        style="font-weight:bold;"
-                        @click="checkToShowReviewActivity()">Activity On Your Reviews ↓</button>
-                        
-                        <div class="mt-3 collapse square primary-square-green rounded p-3 mb-3 text-start" style="height: 325px;" id="collapseReviewActivity">
-                            <div class="square-inline pb-2">
-                                <h4 class="square-inline text-start mr-auto"> Recent Activity on Your Reviews </h4>
-                            </div>
-                            <!-- body -->
-                            <div style="height: 85%;">
-                                <div class="overflow-auto" style="max-height: 100%;">
-                                    <!-- v-for loop here-->
-                                    <div v-for="activity in recentReviewActivity" v-bind:key="activity.id" class="py-2">
-                                        <div v-if="activity.type === 'upvote' || activity.type === 'downvote'">
-                                            <svg v-if="activity.type == 'upvote'" fill="#ffffff" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="m4 14h2 2v3 4c0 .553.447 1 1 1h6c.553 0 1-.447 1-1v-5-2h1 3c.385 0 .734-.221.901-.566.166-.347.12-.758-.12-1.059l-8-10c-.381-.475-1.181-.475-1.562 0l-8 10c-.24.301-.286.712-.12 1.059.167.345.516.566.901.566z"/></svg>
-                                            <svg v-if="activity.type == 'downvote'" fill="#ffffff" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="m20.901 10.566c-.167-.345-.516-.566-.901-.566h-2-2v-3-4c0-.553-.447-1-1-1h-6c-.553 0-1 .447-1 1v5 2h-1-3c-.385 0-.734.221-.901.566-.166.347-.12.758.12 1.059l8 10c.19.237.477.375.781.375s.591-.138.781-.375l8-10c.24-.301.286-.712.12-1.059z"/></svg>
-                                            <i> 
-                                                Someone <span :style="{ color: activity.type === 'upvote' ? '#90ee90' : '#ff7f7f' }">{{ activity.type }}d</span> your review on 
-                                                <router-link :to="{ path: '/listing/view/' + activity.reviewTarget }" class="reverse-clickable-text">
-                                                    <u> {{ getListingFromID(activity.reviewTarget).listingName }} </u>
-                                                </router-link>
-                                                {{ getTimeDifference(activity.date) }}
-                                            </i>
-                                        </div>
-                                        <div v-else-if="activity.type === 'follow'">
-                                            <i> 
-                                                <router-link :to="{ path: '/profile/user/' + activity.userID }" class="reverse-clickable-text">
-                                                    @<b> {{ activity.username }} </b>
-                                                </router-link> 
-                                                started following you
-                                                {{ getTimeDifference(activity.date) }}
-                                            </i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- row 5: recent activity on reviews desktop -->
-                    <div class="row pt-3 mobile-view-hide">
-                        <div class="square primary-square-green rounded p-3 mb-3 text-start">
-                            <!-- header text -->
-                            <div class="square-inline pb-2">
-                                <h4 class="square-inline text-start mr-auto"> Recent Activity on Your Reviews </h4>
-                            </div>
-                            <!-- body -->
-                            <div style="height: 85%;">
-                                <div class="overflow-auto" style="max-height: 100%;">
-                                    <!-- v-for loop here-->
-                                    <div v-for="activity in recentReviewActivity" v-bind:key="activity.id" class="py-2">
-                                        <div v-if="activity.type === 'upvote' || activity.type === 'downvote'">
-                                            <svg v-if="activity.type == 'upvote'" fill="#ffffff" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="m4 14h2 2v3 4c0 .553.447 1 1 1h6c.553 0 1-.447 1-1v-5-2h1 3c.385 0 .734-.221.901-.566.166-.347.12-.758-.12-1.059l-8-10c-.381-.475-1.181-.475-1.562 0l-8 10c-.24.301-.286.712-.12 1.059.167.345.516.566.901.566z"/></svg>
-                                            <svg v-if="activity.type == 'downvote'" fill="#ffffff" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="m20.901 10.566c-.167-.345-.516-.566-.901-.566h-2-2v-3-4c0-.553-.447-1-1-1h-6c-.553 0-1 .447-1 1v5 2h-1-3c-.385 0-.734.221-.901.566-.166.347-.12.758.12 1.059l8 10c.19.237.477.375.781.375s.591-.138.781-.375l8-10c.24-.301.286-.712.12-1.059z"/></svg>
-                                            <i> 
-                                                Someone <span :style="{ color: activity.type === 'upvote' ? '#90ee90' : '#ff7f7f' }">{{ activity.type }}d</span> your review on 
-                                                <router-link :to="{ path: '/listing/view/' + activity.reviewTarget }" class="reverse-clickable-text">
-                                                    <u> {{ getListingFromID(activity.reviewTarget).listingName }} </u>
-                                                </router-link>
-                                                {{ getTimeDifference(activity.date) }}
-                                            </i>
-                                        </div>
-                                        <div v-else-if="activity.type === 'follow'">
-                                            <i> 
-                                                <router-link :to="{ path: '/profile/user/' + activity.userID }" class="reverse-clickable-text">
-                                                    @<b> {{ activity.username }} </b>
-                                                </router-link> 
-                                                started following you
-                                                {{ getTimeDifference(activity.date) }}
                                             </i>
                                         </div>
                                     </div>
@@ -777,6 +777,7 @@
                 const venueReviewCounts = this.userReviews
                     .filter(review => review.location)
                     .reduce((acc, review) => {
+                        console.log(review)
                         acc[review.location] = (acc[review.location] || 0) + 1;
                         return acc;
                     }, {});
@@ -865,25 +866,27 @@
 
             },
             recentReviewActivity() {
-                console.log("this.userReviews", this.userReviews);
+                // upvotes and downvotes
 
                 const upvotes = this.userReviews
-                    .flatMap(review => review.userVotes.upvotes.map(upvote => ({
-                        ...upvote,
-                        reviewTarget: review.reviewTarget,
-                        type: 'upvote'
-                    })));
-
+                    .map(review => review.userVotes.upvotes
+                        .map(upvote => ({ ...upvote, reviewTarget: review.reviewTarget, date: review.createdDate }))
+                    )
+                    .filter(upvote => upvote.length > 0)
+                    .flat();
                 const downvotes = this.userReviews
-                    .flatMap(review => review.userVotes.downvotes.map(downvote => ({
-                        ...downvote,
-                        reviewTarget: review.reviewTarget,
-                        type: 'downvote'
-                    })));
+                    .map(review => review.userVotes.downvotes
+                        .map(downvote => ({ ...downvote, reviewTarget: review.reviewTarget, date: review.createdDate }))
+                    )
+                    .filter(downvote => downvote.length > 0)
+                    .flat();
 
-                const activities = [...upvotes, ...downvotes]
-                    .sort((a, b) => new Date(b.date) - new Date(a.date));
-
+                const activities = [
+                    ...upvotes.map(upvote => ({ ...upvote, type: 'upvote' })),
+                    ...downvotes.map(downvote => ({ ...downvote, type: 'downvote' })),
+                ];
+                activities.sort((a, b) => new Date(b.date) - new Date(a.date));
+                
                 return activities;
             },
             recentUserActivity() {
@@ -1255,6 +1258,7 @@
             }, 
 
             getListingFromID(listingID) {
+                console.log("listingID", listingID)
                 return this.listings.find(listing => listing.id == listingID);
             },
 

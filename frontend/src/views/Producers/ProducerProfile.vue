@@ -326,25 +326,18 @@
                             <div class="modal-body px-4">
                                 <div class="row " >
                                     <div class="col-3 mobile-col-4">
-                                        <input class="form-control mb-2" @change="onFilesChange" type="file" id="reviewPhotos" style="display: none;" multiple>
-                                        <label for="reviewPhotos" >
+                                        <input class="form-control mb-2" @change="onFileChange" type="file" id="reviewPhoto" style="display: none;">
+                                        <label for="reviewPhoto" >
                                             <div class="mobile-review-svg-button">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="M20.4 14.5L16 10 4 20"></path> <circle cx="19" cy="19" r="3" fill="black"></circle><line x1="18" y1="19" x2="20" y2="19" stroke="white" stroke-width="1"></line><line x1="19" y1="18" x2="19" y2="20" stroke="white" stroke-width="1"></line></svg>
                                             </div>
                                         </label>
-                                        <div v-if="selectedImagesForReview.length > 0" class = "row">
-                                            <div v-for="(image, index) in selectedImagesForReview" :key="index" class="col-4">
-                                                <img :src="image" alt="" id="output" class="py-2 review-preview-photo" style="max-width: 300px;">
-                                            </div>
-                                        </div>
-                                        <div v-else-if="reviewImages64.length > 0" class = "row">
-                                            <div v-for="(image, index) in reviewImages64" :key="index" class="col-4">
-                                                <img :src="image" alt="" id="output" class="py-2 review-preview-photo" style="max-width: 300px;">
-                                            </div>
+                                        <div class = "row">
+                                            <img :src="selectedImageForReview || (reviewImage64 )" alt="" id="output" class="py-2 review-preview-photo">
                                         </div>
                                         <div class="row justify-content-start mb-2">
                                             <div class="col-md-4 text-start">
-                                                <button v-if="reviewImages64.length>0" class="btn tertiary-square-btn mb-1" @click="clearPhoto">Clear Photos</button>
+                                                <button v-if="reviewImage64!==null" class="btn tertiary-square-btn mb-1" @click="clearPhoto">Clear Photo</button>
                                             </div>
                                         </div>
                                     </div>
@@ -1320,8 +1313,8 @@
                                         </div>
                                     </div>
                                     <!-- (2) to (6) other photos -->
-                                    <div v-for="reviewImage in filteredTourReviewsWithImages.slice(0,5)" v-bind:key="reviewImage" class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 mobile-px-1">
-                                        <img :src=" (reviewImage || defaultPhoto)" alt="" class="review-image" >
+                                    <div v-for="review in filteredTourReviewsWithImages.slice(0,5)" v-bind:key="review" class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 mobile-px-1">
+                                        <img :src=" (review['photo'] || defaultPhoto)" alt="" class="review-image" >
                                     </div>
                                 </div>
                                 <div v-else-if="user_id == 'defaultUser'" class="row">
@@ -1334,8 +1327,8 @@
                                         </div>
                                     </div>
                                     <!-- (2) to (6) other photos -->
-                                    <div v-for="reviewImage in filteredTourReviewsWithImages.slice(0,5)" v-bind:key="reviewImage" class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 mobile-px-1">
-                                        <img :src=" (reviewImage || defaultPhoto)" alt="" class="review-image" >
+                                    <div v-for="review in filteredTourReviewsWithImages.slice(0,5)" v-bind:key="review" class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 mobile-px-1">
+                                        <img :src=" (review['photo'] || defaultPhoto)" alt="" class="review-image" >
                                     </div>
                                 </div>
                                 <div v-else class="row">
@@ -1348,8 +1341,8 @@
                                         </div>
                                     </div>           -->                           
                                     <!-- (2) to (6) other photos-->
-                                    <div v-for="reviewImage in filteredTourReviewsWithImages" v-bind:key="reviewImage" class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 p-0 mobile-px-1">
-                                        <img :src="(reviewImage || defaultPhoto)" alt="" class="review-image" >
+                                    <div v-for="review in filteredTourReviewsWithImages" v-bind:key="review" class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 p-0 mobile-px-1">
+                                        <img :src="(review['photo'] || defaultPhoto)" alt="" class="review-image" >
                                     </div>
                                 </div>
                             </div>
@@ -1465,20 +1458,20 @@
                         <div class="col-2 xcol-lg-3 text-end mobile-view-hide">
                             <!-- review photo -->
                             <div data-bs-toggle="modal" :data-bs-target="`#reviewImageModal${getUsernameFromReview(review)}`" style=" cursor: pointer;"> 
-                                <img :src="(review['photos'][0] || defaultPhoto)" alt="" class="review-image" style="width: 125px; height: 125px"> 
+                                <img :src="(review['photo'] || defaultPhoto)" alt="" class="review-image" style="width: 125px; height: 125px"> 
                             </div>
                         </div>
                         <div class="col-3 xcol-lg-3 text-start mobile-view-show px-0">
                             <!-- review photo -->
                             <div data-bs-toggle="modal" :data-bs-target="`#reviewImageModal${getUsernameFromReview(review)}`" style=" cursor: pointer;"> 
-                                <img :src="(review['photos'][0] || defaultPhoto)" alt="" class="review-image" style="width: 100%; height: 100%"> <!--for mobile tzh replaced 125px with 100% -->
+                                <img :src="(review['photo'] || defaultPhoto)" alt="" class="review-image" style="width: 100%; height: 100%"> <!--for mobile tzh replaced 125px with 100% -->
                             </div>
                         </div>
                         <div  class="modal fade" :id="`reviewImageModal${getUsernameFromReview(review)}`" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
                             <div class="modal-dialog modal-lg d-flex align-items-center" style="height: 100vh;">
                                 <div class="modal-content">
                                     <div class="modal-body p-4">
-                                        <img :src="(review['photos'][0] || defaultPhoto)" alt="" style="width:100%; height:auto;" >
+                                        <img :src="(review['photo'] || defaultPhoto)" alt="" style="width:100%; height:auto;" >
                                     </div>    
                                 </div>
                             </div>
@@ -2009,8 +2002,8 @@
                 selectedImage: '', // changed image
                 image64: null, // original image
 
-                selectedImagesForReview: [], // changed image
-                reviewImages64: [], // original image
+                selectedImageForReview: '', // changed image
+                reviewImage64: null, // original image
                 photo: null,
 
                 // edit other fields
@@ -2247,6 +2240,7 @@
                         this.specified_producer = response.data
                         this.specified_producer_original_photo = this.specified_producer['photo']
                         this.newAddress = this.specified_producer['location']
+                        console.log("abc", this.specified_producer)
                         this.openingHours = this.specified_producer['openingHours']
                         const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
                         if (!this.openingHours) {
@@ -2622,7 +2616,7 @@
                     this.inEdit=true
                     this.reviewDesc= specificReview[0].reviewDesc
                     this.rating= specificReview[0].rating
-                    this.reviewImages64= specificReview[0].photos || []
+                    this.reviewImage64= specificReview[0].photo
                 }
 
                 return specificReview
@@ -2648,24 +2642,16 @@
                 }
             },
 
-            onFilesChange(event) {
-                const files = event.target.files;
-                if (files.length > 3) {
-                    alert("You can only upload up to 3 images.");
-                    return;
-                }
-                for (let i = 0; i < files.length; i++) {
-                    const file = files[i];
-                    const reader = new FileReader();
-                    this.selectedImagesForReview = [];
-                    this.reviewImages64 = [];
-                    reader.onloadend = () => {
-                        this.selectedImagesForReview.push(reader.result);
-                        const base64String = reader.result.replace('data:', '').replace(/^.+,/, '');
-                        this.reviewImages64.push(base64String);
-                    };
-                    reader.readAsDataURL(file);
-                }
+            onFileChange(event){
+                const file = event.target.files[0];
+                const reader = new FileReader();
+
+                reader.onloadend = async () => {
+                    this.selectedImageForReview = reader.result
+                    const base64String = reader.result.replace('data:', '').replace(/^.+,/, '');
+                    this.reviewImage64 = base64String;
+                };
+                reader.readAsDataURL(file);
             },
 
             addTourReview(){
@@ -2688,14 +2674,14 @@
                     'producerID': this.producer_id,
                     'rating': this.rating,
                     'reviewDesc': this.reviewDesc,
-                    'photos': this.reviewImages64,
+                    'photo': this.reviewImage64,
                     'createdDate': createdDate,
                     'userVotes': {
                         "downvotes": [],
                         "upvotes": []
                     }
                 }
-                this.writeReview(submitAPI, submitData);
+                this.writeReview(submitAPI, submitData)
             },
 
             editTourReview(){
@@ -2714,7 +2700,7 @@
                     'producerID': this.producer_id,
                     'rating': this.rating,
                     'reviewDesc': this.reviewDesc,
-                    'photos': this.reviewImages64,
+                    'photo': this.reviewImage64,
                     'createdDate': this.specificReview[0].createdDate
                 }
                 this.updateReview(submitAPI, submitData)
@@ -2769,9 +2755,9 @@
             },
 
             clearPhoto(){
-                this.reviewImages64 = []
-                this.selectedImagesForReview = []
-                document.getElementById('reviewPhotos').value = '';
+                this.reviewImage64 = null
+                this.selectedImageForReview = ""
+                document.getElementById('reviewPhoto').value = '';
             },
 
             async deleteReview(){
@@ -2879,19 +2865,14 @@
             },
 
             getFilteredReviewsWithImages() {
-                let allReviews = this.getProducerTourReviews();
-
-                let reviewsWithImages = allReviews
-                    .filter(review => review.photos && review.photos.length > 0)
-                    .sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
-
-                this.filteredTourReviewsWithImages = [];
-
-                reviewsWithImages.forEach(review => {
-                    review.photos.forEach(photo => {
-                        this.filteredTourReviewsWithImages.push(photo);
-                    });
-                });
+                let allReviews = this.filteredTourReviews
+                let reviewsWithImages = allReviews.filter(review => review.photo !== null)
+                // if reviewsWithImages more than 6, get the first 6
+                if (reviewsWithImages.length > 6) {
+                    this.filteredTourReviewsWithImages = reviewsWithImages.slice(0, 6)
+                } else {
+                    this.filteredTourReviewsWithImages = reviewsWithImages
+                }
             },
 
             // get producer tour ratings average
