@@ -1,5 +1,4 @@
-<!-- Component for Navigation Bar. Used in landing page on the application. -->
-
+<!-- Component for landing page Navigation Bar. Used in most pages on the application. -->
 
 <template>
     <div class="navbar-container">
@@ -59,21 +58,23 @@
                         <li v-if="onRequest && accType == 'user'"><span class="dropdown-item" @click="forceLoad('/request/new')">Request New Listing</span></li>
                         <li v-if="!onRequest && accType == 'user'"><router-link :to="'/request/new'" class="dropdown-item">Request New Listing</router-link></li>
 
-                        <li v-if="accType == 'user' || accType == 'producer'"><router-link :to="'/request/view'" class="dropdown-item">View Requests</router-link></li>
+                        <li v-if="isAdmin || isModerator || accType == 'producer'"><router-link :to="'/request/view'" class="dropdown-item">View Requests</router-link></li>
 
                         <li v-if="isAdmin"><router-link :to="'/admin/dashboard'" class="dropdown-item">Admin Dashboard</router-link></li>
                         <li v-if="isAdmin"><router-link :to="'/admin/importListings'" class="dropdown-item">Import Listings</router-link></li>
                         
                         <div class="mobile-view-show">
-                            <li><router-link :to="'/'" class="dropdown-item">Explore</router-link></li>
+                            <li><router-link :to="'/explore'" class="dropdown-item">Explore</router-link></li>
                             <li><router-link :to="'/foryou'" class="dropdown-item">For You</router-link></li>
-                            <li><router-link :to="'/'" class="dropdown-item">Best Of</router-link></li>
+                            <li><router-link :to="'/explore'" class="dropdown-item">Best Of</router-link></li>
                             <li><router-link :to="dashboardURL" class="dropdown-item">{{ dashboardWord }} Dashboard</router-link></li>
                             <li><span  @click="externalURL('https://88bamboo.co/')" class="dropdown-item">Latest News</span></li>
                             <li v-if="onRequest && accType == 'user'"><span  @click="forceLoad('/request/new')" class="dropdown-item text-decoration-none">Submit A Drink</span></li>
                             <li v-if="!onRequest && accType == 'user'"><router-link  :to="'/request/new'" class="text-decoration-none" ><span class="dropdown-item " >Submit A Drink</span></router-link></li>
                             <li v-if="onCreate && (accType == 'producer' || isAdmin || isModerator)" ><span  class="dropdown-item" @click="forceLoad('/listing/create')">Add A New Drink</span></li>
                             <li v-if="!onCreate && (accType == 'producer' || isAdmin || isModerator)" :to="'/listing/create'" ><span class="dropdown-item">Add A New Drink</span></li>
+                            <li><router-link :to="'/clubs/view'" class="dropdown-item">Find Club</router-link></li>
+                            <li><router-link :to="'/events/view'"  class="dropdown-item">Find Events</router-link></li>
                         </div>
 
                         <li><hr class="dropdown-divider"></li>
@@ -91,10 +92,9 @@
 
         <!-- secondary nav bar -tzh added mobile-view-hide -->
         <div class="col-12 primary-square mt-2 py-1 ">
-            
             <div class="mobile-view-hide container-fluid align-items-center col-xxl-8 col-xl-9 col-lg-10 col-md-11 col-sm-12">
 
-                <router-link :to="'/'">
+                <router-link :to="'/explore'">
                     <button class="btn primary-btn border-0 fw-bold" type="button">
                         Explore
                     </button>
@@ -106,8 +106,7 @@
                     </button>
                 </router-link>
 
-
-                <router-link :to="'/'">
+                <router-link :to="'/explore'">
                     <button class="btn primary-btn border-0 fw-bold" type="button">
                         Best Of
                     </button>
@@ -119,13 +118,16 @@
                     </button>
                 </router-link>
 
-                <button class="btn primary-btn border-0 fw-bold" type="button" @click="externalURL('https://88bamboo.co/')">
-                    Latest Drink News
-                </button>
+                <router-link :to="'/Latest-News'">
+                    <button class="btn primary-btn border-0 fw-bold" type="button" @click="forceLoad('/Latest-News')">
+                        Latest News
+                    </button>
+                </router-link>
 
                 <button @click="forceLoad('/request/new')" v-if="onRequest && accType == 'user'" class="btn primary-btn border-0 fw-bold " type="button" >  <!-- class="text-warning" style="color:#D58D2D !important;" -->
                     Submit A Drink
                 </button>
+                
                 <router-link v-if="!onRequest && accType == 'user'" :to="'/request/new'">
                     <button class="btn primary-btn border-0 fw-bold " type="button"  > <!-- class="text-warning" style="color:#D58D2D !important;" -->
                         Submit A Drink
@@ -145,6 +147,12 @@
                 <router-link :to="'/clubs/view'">
                     <button class="btn primary-btn border-0 fw-bold" type="button">
                         Find A Club
+                    </button>
+                </router-link>
+
+                <router-link :to="'/events/view'">
+                    <button class="btn primary-btn border-0 fw-bold" type="button">
+                        Find Events
                     </button>
                 </router-link>
             </div>

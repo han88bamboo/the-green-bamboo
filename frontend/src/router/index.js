@@ -46,36 +46,32 @@ const routes = [
     name: 'billingsecurity',
     component: () => import('../views/BillingSecurity.vue')
   },
-  // {
-  //   path: '/getListingsByObservationTag/:tag?',
-  //   name: 'getlistingsbyobservationtag',
-  //   component: () => import('../views/ListingsByTag.vue'),
-  //   props: true
-  // },
   {
-    path: "/search/:input?",
-    name: "search",
-    component: () => import("../views/SearchView.vue"),
+    path: '/search/:input?',
+    name: 'search',
+    component: () => import('../views/SearchView.vue'),
+    props: true
   },
   {
-    path: "/imageSearch",
-    name: "imagesearch",
-    component: () => import("../views/ImageSearchView.vue"),
+    path: '/getListingsByObservationTag/:tag?',
+    name: 'getlistingsbyobservationtag',
+    component: () => import('../views/ListingsByTag.vue'),
+    props: true
   },
   {
-    path: "/successfulOnboarding",
-    name: "successfulonboarding",
-    component: () => import("../views/SuccessfulOnboarding.vue"),
+    path: '/imageSearch',
+    name: 'imagesearch',
+    component: () => import('../views/ImageSearchView.vue')
   },
   {
-    path: "/imageSearch",
-    name: "imagesearch",
-    component: () => import("../views/ImageSearchView.vue"),
+    path: '/successfulOnboarding',
+    name: 'successfulonboarding',
+    component: () => import('../views/SuccessfulOnboarding.vue')
   },
   {
-    path: "/successfulOnboarding",
-    name: "successfulonboarding",
-    component: () => import("../views/SuccessfulOnboarding.vue"),
+    path: '/explore',
+    name: 'explore',
+    component: () => import('../views/RandomExplorePage.vue')
   },
   {
     path: '/foryou',
@@ -155,6 +151,7 @@ const routes = [
 
     component: () => import('../views/Producers/EditListing.vue')
   },
+
   // -------------------------------------------------------------------------------------
   
   // ----------------- REQUEST PAGES -----------------

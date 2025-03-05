@@ -24,10 +24,6 @@ from bson.objectid import ObjectId
 from psycopg2.extras import RealDictCursor
 import random
 
-import feedparser
-import re
-import requests
-from bs4 import BeautifulSoup
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -251,6 +247,26 @@ def getListingsName():
     listing_names = [listing['listingName'] for listing in listingsName_data]
 
     return jsonify(listing_names)
+
+# [POST] Listings by IDs
+@blueprint.route("/getListingsByIDs", methods=['POST'])
+def getListingsByIDs():
+    conn = g.db
+
+    listing_ids = request.json.get('listingIDs', [])
+
+    if not listing_ids:
+        return jsonify([]), 404
+
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "listings" WHERE "id" IN %s', (tuple(listing_ids),))
+        listings_data = cursor.fetchall()
+    
+    if not listings_data:
+        return jsonify([])
+
+    return jsonify(listings_data)
+
 # -----------------------------------------------------------------------------------------
 # [GET] Get Listings from a randomly selected date
 @blueprint.route("/getRandomListings")
@@ -283,29 +299,11 @@ def getRandomListings():
             return jsonify({"error": f"Random selection failed: {str(e)}"}), 500
 
         # Fetch listings from the selected random date
-        cursor.execute('SELECT * FROM "listings" WHERE "addedDate"::DATE = %s ORDER BY RANDOM() LIMIT 20', (random_date,))
+        cursor.execute('SELECT * FROM "listings" WHERE "addedDate"::DATE = %s ORDER BY RANDOM() LIMIT 30', (random_date,))
         listings_data = cursor.fetchall()
 
     if not listings_data:
         return jsonify({"error": "No listings found for selected date"}), 400
-
-# -----------------------------------------------------------------------------------------
-# [POST] Listings by IDs
-@blueprint.route("/getListingsByIDs", methods=['POST'])
-def getListingsByIDs():
-    conn = g.db
-
-    listing_ids = request.json.get('listingIDs', [])
-
-    if not listing_ids:
-        return jsonify([]), 404
-
-    with conn.cursor() as cursor:
-        cursor.execute('SELECT * FROM "listings" WHERE "id" IN %s', (tuple(listing_ids),))
-        listings_data = cursor.fetchall()
-    
-    if not listings_data:
-        return jsonify([])
 
     return jsonify(listings_data)
 
@@ -323,6 +321,36 @@ def getNext30(id):
         return jsonify([])
 
     return jsonify(listings_data)
+
+# Testing Next 30 randomised
+# @blueprint.route("/getNext30random/<int:id>")
+# def getNext30random(id):
+#     conn = g.db
+
+#     with conn.cursor() as cursor:
+#         # 1️⃣ Get the date of the given listing ID
+#         cursor.execute('SELECT "addedDate" FROM "listings" WHERE "id" = %s', (id,))
+#         date_result = cursor.fetchone()
+
+#         if not date_result:
+#             return jsonify({"error": "Listing not found"}), 404
+
+#         listing_date = date_result[0]  # Extract the date
+
+#         # 2️⃣ Get the next 30 listings from the same date
+#         cursor.execute('''
+#             SELECT * FROM "listings" 
+#             WHERE "addedDate"::DATE = %s AND "id" > %s 
+#             ORDER BY "id" ASC 
+#             LIMIT 30
+#         ''', (listing_date, id))
+
+#         listings_data = cursor.fetchall()
+
+#     if not listings_data:
+#         return jsonify([])  # Return an empty list if no more listings are found
+
+#     return jsonify(listings_data)
 
 # -----------------------------------------------------------------------------------------
 # [GET] Listings from db when filter is applied for next 30 in discovery tab
@@ -655,6 +683,42 @@ def getProducers():
             FROM producers p
             ORDER BY p.id
         """
+        # query = """
+        #     SELECT 
+        #         p.id, p."producerName", p."producerDesc", p."originCountry", p."mainDrinks", p.photo, 
+        #         p."hashedPassword", p."claimStatus", p."statusOB", p.username, p."producerLink", 
+        #         p."stripeCustomerId", p."claimStatusCheckDate",
+        #         COALESCE((
+        #             SELECT json_agg(json_build_object(
+        #                 'id', qa.id,
+        #                 'question', qa.question,
+        #                 'answer', qa.answer,
+        #                 'date', qa.date,
+        #                 'userId', qa."userId",
+        #                 'producerId', qa."producerId"
+        #             ))
+        #             FROM "producersQuestionAnswers" qa
+        #             WHERE qa."producerId" = p.id
+        #         ), '[]') AS "questionsAnswers",
+        #         COALESCE((
+        #             SELECT json_agg(json_build_object(
+        #                 'id', u.id,
+        #                 'date', u.date,
+        #                 'text', u.text,
+        #                 'photo', u.photo,
+        #                 'producerId', u."producerId",
+        #                 'likes', COALESCE((
+        #                     SELECT json_agg(json_build_object('userId', l."userId", 'userType', l."userType"))
+        #                     FROM "producerUpdateLikes" l
+        #                     WHERE l."updateId" = u.id
+        #                 ), '[]')
+        #             ) ORDER BY u.id)
+        #             FROM "producersUpdates" u
+        #             WHERE u."producerId" = p.id
+        #         ), '[]') AS updates
+        #     FROM producers p
+        #     ORDER BY p.id
+        # """
 
         cur.execute(query)
         producers_data = cur.fetchall()
@@ -2019,6 +2083,93 @@ def getObservationTags():
 
     return jsonify(observation_tags_data)
 
+@blueprint.route("/getListingsByObservationTag/<tag>")
+def get_listings_by_observation_tag(tag):
+    selected_tag = tag  
+
+    if not selected_tag:
+        return jsonify({"error": "Tag is required"}), 400
+
+    conn = g.db  
+
+    try:
+        with conn.cursor() as cursor:
+            query = """
+            SELECT DISTINCT l.*
+            FROM "listings" l
+            JOIN "reviews" r ON l."id" = r."reviewTarget"
+            WHERE %s = ANY(r."observationTag");
+            """
+            cursor.execute(query, (selected_tag,))
+
+            listings = cursor.fetchall()
+            columns = [col[0] for col in cursor.description]  
+
+            print("Columns:", columns)  
+            print("Listings:", listings)  
+
+            listing_dicts = [tuple(row.values()) for row in listings]
+
+            # Print the result
+            print("Listings as Tuples:", listing_dicts)
+
+        # Return the result as JSON
+        return jsonify(listing_dicts)
+
+    except Exception as e:
+        # If an error occurs, print the error message and return an error response
+        print(f"Error fetching listings: {e}")
+        return jsonify({"error": "A server error occurred."}), 500
+
+# -----------------------------------------------------------------------------------------
+# [GET] Top 8 Trending Observation Tags
+@blueprint.route("/getTop8")
+def getTop8():
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        query = """
+            SELECT tag_name, COUNT(*) AS tag_count
+            FROM (
+                SELECT unnest(
+                    string_to_array(
+                        replace(replace("observationTag"::TEXT, '{', ''), '}', ''), '", "'
+                    )
+                ) AS tag_name
+                FROM "reviews"
+                WHERE "observationTag" IS NOT NULL
+            ) sub
+            GROUP BY tag_name
+            ORDER BY tag_count DESC
+            LIMIT 8;
+        """
+        cursor.execute(query)
+        top8_data = cursor.fetchall()  # Returns list of tuples
+        columns = [desc[0] for desc in cursor.description]  
+
+        print("Columns:", columns)  
+        print("Listings:", top8_data)  
+
+        listing_dicts = []
+        for row in top8_data:
+            raw_tags = row["tag_name"].strip('{}')  
+            tag_names = [tag.strip('"') for tag in raw_tags.split(',')]  
+            
+            for tag in tag_names:
+                listing_dicts.append({"tag_name": tag, "tag_count": row["tag_count"]})
+        final_listings = []
+
+        for tag_entry in listing_dicts:
+            if len(final_listings) < 7:  
+                final_listings.append(tag_entry["tag_name"])
+            else:
+                break
+
+        print("Final Processed Tags:", final_listings)  
+
+    return jsonify(final_listings) 
+
+
 # -----------------------------------------------------------------------------------------
 # [GET] colours
 @blueprint.route("/getColours")
@@ -2758,50 +2909,4 @@ def getLatestNews():
         return jsonify({"error": str(e)}), 500
 
 
-# -----------------------------------------------------------------------------------------
-# [GET] Top 8 Trending Observation Tags
-@blueprint.route("/getTop8")
-def getTop8():
-    conn = g.db
-
-    with conn.cursor() as cursor:
-        query = """
-            SELECT tag_name, COUNT(*) AS tag_count
-            FROM (
-                SELECT unnest(
-                    string_to_array(
-                        replace(replace("observationTag"::TEXT, '{', ''), '}', ''), '", "'
-                    )
-                ) AS tag_name
-                FROM "reviews"
-                WHERE "observationTag" IS NOT NULL
-            ) sub
-            GROUP BY tag_name
-            ORDER BY tag_count DESC
-            LIMIT 8;
-        """
-        cursor.execute(query)
-        top8_data = cursor.fetchall()  # Returns list of tuples
-        columns = [desc[0] for desc in cursor.description]  
-
-        print("Columns:", columns)  
-        print("Listings:", top8_data)  
-
-        listing_dicts = []
-        for row in top8_data:
-            raw_tags = row["tag_name"].strip('{}')  
-            tag_names = [tag.strip('"') for tag in raw_tags.split(',')]  
-            
-            for tag in tag_names:
-                listing_dicts.append({"tag_name": tag, "tag_count": row["tag_count"]})
-        final_listings = []
-
-        for tag_entry in listing_dicts:
-            if len(final_listings) < 7:  
-                final_listings.append(tag_entry["tag_name"])
-            else:
-                break
-
-        print("Final Processed Tags:", final_listings)  
-
-    return jsonify(final_listings) 
+# ------------------------------------------------------------------------------------------
