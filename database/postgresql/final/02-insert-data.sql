@@ -3161,65 +3161,6 @@ VALUES
     (4, '2025-03-10', '18:30:00', 4, 'user', true);
 
 
-INSERT INTO "pointSystemRules"("ruleName", "ruleDesc", "ruleCategory", "proofPoints")
-VALUES
-  ('Simple Review (Text Only)', 
-   'The bare minimum review. This is the base upon which more points can be earned for the same primary action', 
-   'Primary', 
-   5),
-  ('Extensive Review', 
-   'Fills up extended review component +Points on top of Simple Review (Text Only)', 
-   'Secondary', 
-   3),
-  ('Image Attached To Review', 
-   'Adds image to post +Points on top of Simple Review (Text Only)', 
-   'Secondary', 
-   2),
-  ('Tags Location', 
-   'Tags location to post +Points on top of Simple Review (Text Only)', 
-   'Secondary', 
-   2),
-  ('Tags Friends', 
-   'Tags friends to Review +Points on top of Simple Review (Text Only); Same points awarded regardless of how many friends tagged', 
-   'Secondary', 
-   2),
-  ('Posts In Clubs', 
-   'Creates a post in Clubs. Points awarded independent of any other event', 
-   'Primary', 
-   1),
-  ('Upvote', 
-   'When a review/comment/club post gets an upvote; awarded for each Upvote given', 
-   'Secondary', 
-   1),
-  ('Downvote', 
-   'When a review/comment/club post gets a downvote; deducted for each Downvote given', 
-   'Secondary', 
-   -1),
-  ('Comment', 
-   'Makes a comment on a Review of Club Post; independent of any other event', 
-   'Primary', 
-   1),
-  ('Invites Friends', 
-   'Invites Friends to join Drink-x; awarded for each invite sent', 
-   'Primary', 
-   3),
-  ('Adds New Drink Listing', 
-   'Adds New Drink Listing, that has been successfully approved; awarded for each new drink listing approved', 
-   'Primary', 
-   3),
-  ('Suggest Edit Drink Listing', 
-   'For each Edit successfully approved', 
-   'Primary', 
-   2),
-  ('Create Public Lists', 
-   'For each public list created', 
-   'Primary', 
-   2),
-  ('Submits Qns For Producers/Venues', 
-   'For each question posted to a Producer/Venue', 
-   'Primary', 
-   1);
-
 INSERT INTO "associations"( "subTag1", "subTag2")
 VALUES
     ('Fruit Flowers', 'Tinned Fruit'),
@@ -3259,3 +3200,46 @@ VALUES
     ('Vines', 'Yellow Fruits'),
     ('Dried Fruits', 'Vines'),
     ('Sweet Wine', 'Vines');
+
+
+INSERT INTO "pointSystemRules" ("ruleName", "ruleDesc", "ruleCategory", "proofPoints")
+VALUES
+    ('Max Points', 'Max Points', 'Others', 200),
+    ('Simple Review (Text Only)', 'The bare minimum review. This is the base upon which more points can be earned for the same primary action', 'Primary', 5),
+    ('Extensive Review', 'Fills up extended review component +Points on top of Simple Review (Text Only)', 'Secondary', 3),
+    ('Image Attached To Review', 'Adds image to post +Points on top of Simple Review (Text Only)', 'Secondary', 2),
+    ('Tags Location', 'Tags location to post +Points on top of Simple Review (Text Only)', 'Secondary', 2),
+    ('Tags Friends', 'Tags friends to Review +Points on top of Simple Review (Text Only); Same points awarded regardless of how many friends tagged', 'Secondary', 2),
+    ('Posts In Clubs', 'Creates a post in Clubs. Points awarded independent of any other event', 'Primary', 1),
+    ('Upvote', 'When a review/comment/club post gets an upvote; awarded for each Upvote given', 'Secondary', 1),
+    ('Downvote', 'When a review/comment/club post gets a downvote; deducted for each Downvote given', 'Secondary', -1),
+    ('Comment', 'Makes a comment on a Review of Club Post; independent of any other event', 'Primary', 1),
+    ('Invites Friends', 'Invites Friends to join Drink-x; awarded for each invite sent', 'Primary', 3),
+    ('Adds New Drink Listing', 'Adds New Drink Listing, that has been successfully approved; awarded for each new drink listing approved', 'Primary', 3),
+    ('Suggest Edit Drink Listing', 'For each Edit successfully approved', 'Primary', 2),
+    ('Create Public Lists', 'For each public list created', 'Primary', 2),
+    ('Submits Qns For Producers/Venues', 'For each question posted to a Producer/Venue', 'Primary', 1);
+
+
+INSERT INTO "pointsRecorder"("userID", "userType", "currentPoints")
+VALUES
+    (1, 'user', 0),
+    (2, 'user', 0),
+    (3, 'user', 0),
+    (4, 'user', 0),
+    (5, 'user', 100),
+    (6, 'user', 0),
+    (7, 'user', 0),
+    (8, 'user', 0),
+    (9, 'user', 0),
+    (10, 'user', 0),
+    (11, 'user', 0),
+    (12, 'user', 0),
+    (13, 'user', 0),
+    (14, 'user', 0),
+    (15, 'user', 0),
+    (16, 'user', 0),
+    (17, 'user', 0),
+    (18, 'user', 0),
+    (19, 'user', 0),
+    (20, 'user', 0);

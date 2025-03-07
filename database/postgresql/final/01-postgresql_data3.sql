@@ -579,6 +579,14 @@ CREATE TABLE "clubPostsLikes" (
     "memberID" INTEGER REFERENCES "clubMembers"("id") ON DELETE SET NULL -- [!] References clubMembers FK
 );
 
+-- ========= "clubPostsDislikes" =========
+CREATE TABLE "clubPostsDislikes" (
+    "id" SERIAL PRIMARY KEY,
+    "clubID" INTEGER REFERENCES "clubs"("id") ON DELETE SET NULL, -- [!] References clubs FK
+    "postID" INTEGER REFERENCES "clubPosts"("id") ON DELETE SET NULL, -- [!] References clubPOsts FK
+    "memberID" INTEGER REFERENCES "clubMembers"("id") ON DELETE SET NULL -- [!] References clubMembers FK
+);
+
 -- ========= "clubPostComments" =========
 CREATE TABLE "clubPostComments" (
     "id" SERIAL PRIMARY KEY,
@@ -590,6 +598,14 @@ CREATE TABLE "clubPostComments" (
 
 -- ========= "clubPostCommentsLikes" =========
 CREATE TABLE "clubPostCommentsLikes" (
+    "id" SERIAL PRIMARY KEY,
+    "postID" INTEGER REFERENCES "clubPosts"("id") ON DELETE SET NULL, -- [!] References clubPosts FK
+    "commentID" INTEGER REFERENCES "clubPostComments"("id") ON DELETE SET NULL, -- [!] References clubPostComments FK
+    "memberID" INTEGER REFERENCES "clubMembers"("id") ON DELETE SET NULL -- [!] References clubMembers FK
+);
+
+-- ========= "clubPostCommentsDislikes" =========
+CREATE TABLE "clubPostCommentsDislikes" (
     "id" SERIAL PRIMARY KEY,
     "postID" INTEGER REFERENCES "clubPosts"("id") ON DELETE SET NULL, -- [!] References clubPosts FK
     "commentID" INTEGER REFERENCES "clubPostComments"("id") ON DELETE SET NULL, -- [!] References clubPostComments FK

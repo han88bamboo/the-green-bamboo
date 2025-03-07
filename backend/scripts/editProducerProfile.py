@@ -168,10 +168,22 @@ def sendQuestions():
         )
         conn.commit()
 
+        # Award points to user for asking a question
+
+        # get points for asking a question
+        cur.execute('SELECT "proofPoints", "ruleName" FROM "pointSystemRules" WHERE id = %s', (15,))
+        points = cur.fetchone()
+
+        # Update user's points
+        cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s', (points['proofPoints'], userID))
+        conn.commit()
+
         return jsonify(
             {
                 "code": 201,
-                "message": "Question sent successfully!"
+                "message": "Question sent successfully!",
+                "pointsEarned": points['proofPoints'],
+                "ruleName": points['ruleName']
             }
         ), 201
     
@@ -786,13 +798,29 @@ def deleteQA():
     questionsAnswersID = int(data['questionsAnswersID'])
 
     try:
-        cur.execute('DELETE FROM "producersQuestionAnswers" WHERE "producerId" = %s AND id = %s', (producerID, questionsAnswersID))
+        # Get user id from the question
+        cur.execute('SELECT "userId" FROM "producersQuestionAnswers" WHERE "producerId" = %s AND id = %s', (producerID, questionsAnswersID,))
+        userID = cur.fetchone()
+
+        cur.execute('DELETE FROM "producersQuestionAnswers" WHERE "producerId" = %s AND id = %s', (producerID, questionsAnswersID,))
+        conn.commit()
+
+        # Deduct points from user for deleting a question
+        
+        # get points for asking a question
+        cur.execute('SELECT "proofPoints", "ruleName" FROM "pointSystemRules" WHERE id = %s', (15,))
+        points = cur.fetchone()
+
+        # Update user's points
+        cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" - %s WHERE "userID" = %s', (points['proofPoints'], userID['userId'],))
         conn.commit()
 
         return jsonify(
             {   
                 "code": 201,
-                "message": "Deleted producer's Q&A!"
+                "message": "Deleted producer's Q&A!",
+                "pointsDeducted": points['proofPoints'],
+                "rule": points['ruleName']
             }
         ), 201
     
