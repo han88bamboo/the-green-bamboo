@@ -17,13 +17,13 @@
 
 import os
 import json
-import random
+import feedparser
+import re
+import requests
+from bs4 import BeautifulSoup
 from bson import json_util, ObjectId
 from flask import Blueprint, g, jsonify, request
 from bson.objectid import ObjectId
-from psycopg2.extras import RealDictCursor
-import random
-
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
