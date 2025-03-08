@@ -525,9 +525,9 @@
                                             <div class="col-5 "> <!-- tzh changed col-xl-5 col-12 to col-5 -->
                                                 <div class="image-container mb-3 homepage">
                                                     <img v-if="listing['photo']" :src="listing['photo']"
-                                                        class="img-border homepage">
+                                                        class="img-border object-fit-contain homepage">
                                                     <img v-else src="../../Images/Drinks/Placeholder.png"
-                                                        class="img-border homepage">
+                                                        class="img-border object-fit-contain homepage">
                                                     <div class="mobile-view-hide">
                                                         <BookmarkIcon v-if="user" :user="user" :listing="listing"
                                                             :overlay="true" size="30" @icon-clicked="handleIconClick" />
@@ -1039,7 +1039,7 @@ export default {
             // FYP listings
             // _id, listingName, producerID, bottler, originCountry, drinkType, typeCategory, age, abv, reviewLink, officialDesc, sourceLink, photo
             try {
-                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getRecommendedListings/${this.userID}`, {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getRecommendedListings/${this.userID}`, {
                     headers: {
                         'Content-Type': 'application/json'
                     },
@@ -1089,7 +1089,7 @@ export default {
             // users
             // _id, username, displayName, choiceDrinks, drinkLists, modType, photo
             try {
-                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getUser/${this.userID}`);
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUser/${this.userID}`);
                 this.user = response.data;
                 if (this.user) {
                     // Get the list of users that the current user is following
@@ -1737,7 +1737,8 @@ export default {
             let user_ids = this.user.followLists.users.join(",");
 
             try {
-                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getReviewsByUserIds?user_ids=${user_ids}`);
+                // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getReviewsByUserIds?user_ids=${user_ids}`); [Comment out for deployed site]
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getReviewsByUserIds?user_ids=${user_ids}`);
                 this.latestReviews = response.data.data;
             }
             catch (error) {
@@ -1924,7 +1925,7 @@ export default {
                 else {
                     let lastId = this.listings[this.listings.length - 1].id
                     // const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getNext30` + '/' + lastId);
-                    const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getNext30` + '/' + lastId);
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getNext30` + '/' + lastId);
                     this.listings.push(...response.data);
                     if (response.data.length == 0) {
                         this.moreListings = false
