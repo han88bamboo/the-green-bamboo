@@ -429,8 +429,8 @@
                                             <!-- image -->
                                             <div class="col-5 "> <!-- tzh changed col-xl-5 col-12 to col-5 -->
                                                 <div class="image-container mb-3 homepage" >
-                                                    <img v-if="listing['photo']" :src="listing['photo']" class="img-border homepage">
-                                                    <img v-else src="../../Images/Drinks/Placeholder.png"  class="img-border homepage">
+                                                    <img v-if="listing['photo']" :src="listing['photo']" class="img-border object-fit-contain homepage">
+                                                    <img v-else src="../../Images/Drinks/Placeholder.png"  class="img-border object-fit-contain homepage">
                                                     <div class="mobile-view-hide">
                                                     <BookmarkIcon 
                                                         v-if="user" 
@@ -889,8 +889,8 @@
                 // _id, listingName, producerID, bottler, originCountry, drinkType, typeCategory, age, abv, reviewLink, officialDesc, sourceLink, photo
                     try {
                         // const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListings`);
-                        const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getRandomListings`);
-                        // const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getRandomListings`);
+                        // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getRandomListings`);
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getRandomListings`);
                         this.listings = response.data;
                         // originally, make filteredListings the entire collection of listings
                         this.filteredListings = this.listings;
@@ -903,7 +903,7 @@
                 // _id, producerName, producerDesc, originCountry, statusOB, mainDrinks
                 // TODO: make retrieved producers only for listings that are retrieved initially
                     try {
-                        const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getProducers`);
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducers`);
                         this.producers = response.data;
                     } 
                     catch (error) {
@@ -936,7 +936,7 @@
                 // users
                 // _id, username, displayName, choiceDrinks, drinkLists, modType, photo
                 try {
-                    const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getUser/${this.userID}`);
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUser/${this.userID}`);
                     this.user = response.data;
                     if (this.user) {
                         // Get the list of users that the current user is following
@@ -1768,7 +1768,7 @@
                     // if not, meaning listings are not filtered, retrieve next 30 listings in DB
                     else{
                         let lastId = this.listings[this.listings.length-1].id
-                        const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getNext30` + '/' + lastId);
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getNext30` + '/' + lastId);
                         this.listings.push(...response.data);
                         if(response.data.length == 0){
                             this.moreListings = false
