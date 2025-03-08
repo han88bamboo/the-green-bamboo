@@ -26,7 +26,7 @@ export default {
       if (!tag) return;
       
       try {
-        const response = await axios.get(`http://127.0.0.1:5000/getData/getListingsByObservationTag/${tag}`);
+        const response = await axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingsByObservationTag/${tag}`);
         this.tags = response.data;
       } catch (error) {
         console.error('Error fetching user data:', error);
