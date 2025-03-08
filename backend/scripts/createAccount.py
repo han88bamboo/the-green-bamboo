@@ -143,34 +143,74 @@ def createAccount():
     
 # -----------------------------------------------------------------------------------------
 # [POST] Updates User Preferences from Onboarding Form
-@blueprint.route("/addPreferences/<username>", methods = ['POST'])
+@blueprint.route("/addPreferences/<username>", methods=['POST'])
 def add_preferences(username):
-    load_dotenv
-    # conn = psycopg2.connect(
-    #     dbname=os.getenv("POSTGRES_DB"),
-    #     user=os.getenv("POSTGRES_USER"),
-    #     password=os.getenv("POSTGRES_PASSWORD"),
-    #     host=os.getenv("POSTGRES_HOST"),
-    #     port=os.getenv("POSTGRES_PORT")
-    # )
     conn = g.db
     cur = conn.cursor()
     rawAccount = request.get_json()
-    cur.execute("""
-                UPDATE "users"
-                SET "choiceDrinks" = %s,
-                "choiceFlavours" = %s,
-                "preferences" = %s
-                WHERE "username" = %s
-            """, (
-                rawAccount['choiceDrinks'],
-                rawAccount['choiceFlavours'],
-                rawAccount['preferences'],
-                username
-            ))
-    conn.commit()
-    # cur.close()
-    # conn.close()
+
+    try:
+        # Print the incoming request data for debugging
+        print(f"Received data to update preferences for user: {username}")
+        print(f"Request data: {rawAccount}")
+
+        # Update user preferences in the database
+        cur.execute("""
+                    UPDATE "users"
+                    SET "choiceDrinks" = %s,
+                    "choiceFlavours" = %s,
+                    "preferences" = %s
+                    WHERE "username" = %s
+                """, (
+                    rawAccount['choiceDrinks'],
+                    rawAccount['choiceFlavours'],
+                    rawAccount['preferences'],
+                    username
+                ))
+
+        conn.commit()
+
+        # Print success message
+        print(f"Preferences updated successfully for user: {username}")
+
+        return jsonify(
+            {
+                "code": 201,
+                "message": "Preferences updated successfully",
+                "data": {
+                    "username": username,
+                    "choiceDrinks": rawAccount['choiceDrinks'],
+                    "choiceFlavours": rawAccount['choiceFlavours'],
+                    "preferences": rawAccount['preferences']
+                }
+            }
+        ), 201
+
+    except Exception as e:
+        # Print error message and details
+        print(f"Error occurred while updating preferences for user: {username}")
+        print(f"Error details: {str(e)}")
+
+        # Rollback in case of error
+        conn.rollback()
+
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred while updating the user preferences.",
+                "error": str(e),
+                "data": {
+                    "username": username,
+                    "choiceDrinks": rawAccount.get('choiceDrinks', 'N/A'),
+                    "choiceFlavours": rawAccount.get('choiceFlavours', 'N/A'),
+                    "preferences": rawAccount.get('preferences', 'N/A')
+                }
+            }
+        ), 500
+
+    finally:
+        # Clean up database cursor
+        cur.close()
 
 
 # -----------------------------------------------------------------------------------------
