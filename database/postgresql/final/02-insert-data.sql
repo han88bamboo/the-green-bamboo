@@ -2859,7 +2859,7 @@ values
 (3, 101246, 5, 'Great for a one-time experience, very unique.', 'Listing', '2025-01-05 19:38:50.782', 'English', 'Medium, balanced', true, false, '{}', '{22, 45, 73}', '', '', '', null, '', '{Try Once}', ''),
 (1, 100744, 4, 'Surprisingly fresh, makes me feel healthy drinking it.', 'Listing', '2025-01-04 08:22:16.543', 'English', 'Crisp and refreshing', true, true, '{}', '{5, 56, 62}', '', '', '', null, '', '{Healthy, Recommended for Enthusiasts}', ''),
 (1, 100224, 5, 'This was absolutely fantastic!', 'Listing', '2025-01-13 18:27:38.498', 'English', 'Long, alittle more oaky now', true, false, '{}', '{}', '', '', '', null, '', '{Beginner Friendly, OverHyped!}', ''),
-(2, 101472, 4, 'gooooooood goooooooodgooooooood', 'Listing', '2025-01-08 04:52:10.957', 'English', '', false, false, '{2}', '{Common, Fruits}', '', '', '', null, '', '{Beginner Friendly, Good for Gifts}', ''),
+(2, 101472, 4, 'gooooooood goooooooodgooooooood', 'Listing', '2025-01-08 04:52:10.957', 'English', '', false, false, '{2}', '{3, 66}', '', '', '', null, '', '{Beginner Friendly, Good for Gifts}', ''),
 (3, 100061, 5, 'An absolute masterpiece. Smooth and well-balanced.', 'Listing', '2025-01-15 12:34:56.789', 'English', 'Rich, lingering with subtle spice', true, true, '{}', '{4, 56}', '', '', '', null, '', '{Cool Packaging}', ''),
 (4, 101490, 3, 'It was okay, but I expected more depth.', 'Listing', '2025-01-14 09:18:32.112', 'English', 'Short, slightly bitter', false, false, '{}', '{3, 87}', '', '', '', null, '', '{What Just Hit Me, OverHyped!}', ''),
 (1, 100028, 4, 'Really enjoyable with friends. Would buy again!', 'Listing', '2025-01-12 20:45:22.674', 'English', 'Mellow and warm', true, true, '{}', '{4, 56}', '', '', '', null, '', '{Social Drink, OverHyped!}', ''),
