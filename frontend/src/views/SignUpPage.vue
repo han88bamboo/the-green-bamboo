@@ -685,7 +685,7 @@ export default {
             }
             // get the drink types from database
             try {
-                const response = await this.axios.get (`${process.env.VUE_APP_API_URL}/getData/getDrinkTypes`);  // comment out for local
+                const response = await this.$axios.get (`${process.env.VUE_APP_API_URL}/getData/getDrinkTypes`);  // comment out for local
                 // const response = await this.$axios.get(
                 //     `http://127.0.0.1:5000/getData/getDrinkTypes`
                 // ); // comment out for deployment
