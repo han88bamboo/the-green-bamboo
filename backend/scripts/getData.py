@@ -601,6 +601,10 @@ def getRecommendedListings(userID):
     random.shuffle(recommended)
     return jsonify(recommended)
 
+@blueprint.route("testRecommender/<userID>")
+def testRecommender(userID):
+    return advanced_algo_reviews(userID)       
+
 # -----------------------------------------------------------------------------------------
 # [GET] Specific Listing
 @blueprint.route("/getListing/<id>")

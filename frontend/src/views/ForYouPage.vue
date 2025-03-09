@@ -510,9 +510,17 @@
                                 <!-- Display error message when no results for filter-->
 
                                 <!-- Displays Message if there are no listing available  -->
-                                <h5 v-if="listings == '' || (selectedDrinkType != '' && filteredListings == '')"
-                                    style="display: inline-block;" class="pt-5"> There is no listing available for the
-                                    selected filter </h5>
+                                <h5 v-if="listings.length === 0 || (selectedDrinkType !== '' && filteredListings.length === 0)" 
+                                    style="display: inline-block;" class="pt-5 text-muted">
+                                    <div>Sorry, we don’t have enough info to recommend listings.</div>
+                                    <div>Head to your profile to update your preferences!</div>
+                                </h5>
+                                <div v-if="listings.length === 0 || (selectedDrinkType !== '' && filteredListings.length === 0)" 
+                                    class="pt-3">
+                                    <button class="btn secondary-btn btn-md ms-2 fw-bold" @click="goToProfile">
+                                        Update Preferences
+                                    </button>
+                                </div>
                                 <!-- v-loop for each listing -->
                                 <div class="container text-start mobile-ps-0 mobile-pe-0">
                                     <!-- Displays listings from all general listings or from filtered listings from drinkCategory/drinkType depending if filter is selected-->
@@ -886,7 +894,7 @@
                             </div>
 
                             <div class="d-grid justify-content-center align-content-center">
-                                <button v-if="moreListings" class="btn secondary-btn btn-md" style="font-weight: bold;"
+                                <button v-if="moreListings && listings.length > 0" class="btn secondary-btn btn-md" style="font-weight: bold;"
                                     @click="retrieveListings"> Click to load more! </button>
                             </div>
 
@@ -1959,6 +1967,12 @@ export default {
 
                 this.followCount++;
             }
+        },
+        goToProfile() {
+            this.$router.push({
+                name: "profileuser",
+                params: { userID: this.user.id } // Ensure `this.user.id` is available
+            });
         }
 
     }
