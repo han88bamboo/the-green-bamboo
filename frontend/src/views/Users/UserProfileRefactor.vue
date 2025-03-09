@@ -735,9 +735,45 @@
                                     "
                                     @mouseover="hoverButton($event)"
                                     @mouseleave="leaveButton($event)"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#createNewListModal"
                                     >
                                     Create A List
                                     </button>
+                                    <!-- create new list modal -->
+                                    <div class="modal fade" id="createNewListModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h1 class="modal-title fs-5" id="exampleModalLabel">Create New List</h1>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="mb-3">
+                                                    <label for="basic-url" class="form-label">List Name</label>
+                                                    <div class="input-group mb-3">
+                                                        <input v-model="newListName" type="text" class="form-control" placeholder="List Name" aria-label="Username" aria-describedby="basic-addon1">
+                                                    </div>
+                                                    <div v-if="newListNameError" class="text-danger text-sm">
+                                                        *{{ newListNameError }}
+                                                    </div>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <label for="basic-url" class="form-label">List Description</label>
+                                                    <div class="input-group mb-3">
+                                                        <textarea v-model="newListDesc" type="text" class="form-control" placeholder="List Description (Optional)" aria-label="Username" aria-describedby="basic-addon1" rows="5"></textarea>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                <button type="button" class="btn btn-primary" @click="addNewList">Save changes</button>
+                                            </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -1389,7 +1425,8 @@ export default {
                         this.user = this.displayUser;
                     } else {
                         try {
-                            const response  = await this.$axios.get(`http://127.0.0.1:5000/getData/getUser/${this.userID}`);
+                            const response  = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUser/${this.userID}`);
+                            // const response  = await this.$axios.get(`http://127.0.0.1:5000/getData/getUser/${this.userID}`);
                             this.user = response.data;
                         }
                         catch (error) {
@@ -1437,7 +1474,8 @@ export default {
         // get Display User Profile
         async getDisplayUserProfile() {
             try {
-                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getUser/${this.displayUserID}`);
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUser/${this.displayUserID}`);
+                // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getUser/${this.displayUserID}`);
                 this.displayUser = response.data;
                 this.displayUserDataLoaded = true;
 
@@ -1478,7 +1516,8 @@ export default {
         // Reviews
         async getReviews() {
             try {
-                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getRecentListingReviews/${this.displayUserID}`);
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getRecentListingReviews/${this.displayUserID}`);
+                // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getRecentListingReviews/${this.displayUserID}`);
                 this.top5Listings = response.data.topListings;
                 this.recentReviews = response.data.recentReview;
 
@@ -1516,7 +1555,8 @@ export default {
         // Summary of all user reviews 
         async getReviewsSummary() {
             try {
-                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getUserReviewSummary/${this.displayUserID}`);
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUserReviewSummary/${this.displayUserID}`);
+                // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getUserReviewSummary/${this.displayUserID}`);
                 this.reviewsSummary = response.data.data;
 
                 // ==== for badges ====
@@ -1533,7 +1573,8 @@ export default {
         // Listings (get only listings that are in the recent reviews, top 5 listings, and bookmark lists)
         async getListing() {
             try {
-                const response = await this.$axios.post(`http://127.0.0.1:5000/getData/getListingsByIDs`, { 'listingIDs': this.listingIDs });
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/getData/getListingsByIDs`, { 'listingIDs': this.listingIDs });
+                // const response = await this.$axios.post(`http://127.0.0.1:5000/getData/getListingsByIDs`, { 'listingIDs': this.listingIDs });
                 this.listings = response.data;
 
                 this.listingDataLoaded = true;
@@ -1555,7 +1596,8 @@ export default {
         // Listings Names
         async getAllListingNames() {
             try {
-                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getAllListingsNames`);
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getAllListingsNames`);
+                // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getAllListingsNames`);
                 
                 // Format the listingNames and listingNamesDictionary
                 for (const listing of response.data) {
@@ -1581,7 +1623,8 @@ export default {
             }
 
             try {
-                const response = await this.$axios.post(`http://127.0.0.1:5000/getData/getBookmarkListings`, { 'listingIDs': listing_ids });
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/getData/getBookmarkListings`, { 'listingIDs': listing_ids });
+                // const response = await this.$axios.post(`http://127.0.0.1:5000/getData/getBookmarkListings`, { 'listingIDs': listing_ids });
                 this.bookedMarkedListings = response.data;
                 this.bookedMarkedListingsLoaded = true;
             } 
@@ -1604,7 +1647,8 @@ export default {
         async getBadges() {
             // for Badges
             try {
-                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getBadges`);
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getBadges`);
+                // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getBadges`);
                 this.badges = response.data;
                 this.badgesDataLoaded = true;
             } 
@@ -1622,7 +1666,8 @@ export default {
         async getModRequest() {
             // mod requests
             try {
-                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getModRequests`);
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getModRequests`);
+                // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getModRequests`);
                 this.modRequests = response.data;
                 this.modRequestsType = this.modRequests
                     .filter(request => request.userID === this.userID && request.reviewStatus === true)
@@ -1637,7 +1682,8 @@ export default {
         async getDrinkTypes() {
             // drinkCategories
             try {
-                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getDrinkTypes`);
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getDrinkTypes`);
+                // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getDrinkTypes`);
                 this.drinkTypes = response.data;
 
                 // retrieve the drink type and put them into an array
@@ -1672,7 +1718,8 @@ export default {
             // flavourTags
             // _id, hexcode, familyTag, subtag, showbox
             try {
-                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getFlavourTags`);
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getFlavourTags`);
+                // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getFlavourTags`);
                 this.flavourTags = response.data.map(item => {
                     return { ...item, showBox: false };
                 })
@@ -1688,10 +1735,8 @@ export default {
         // Group 3 Flavour Tags
         async getFlavourTag() {
             try {
-                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getFlavourTags`);
-                // const response = await this.$axios.get(
-                //   `${process.env.VUE_APP_API_URL}/getData/getFlavourTags`
-                // );
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getFlavourTags`);
+                // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getFlavourTags`);
                 this.flavourTag = response.data.map((item) => {
                 return { ...item, showBox: false };
                 });
@@ -1704,10 +1749,8 @@ export default {
         // Group 3 Observation Tags
         async getObservationTags() {
             try {
-                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getObservationTags`);
-                // const response = await this.$axios.get(
-                //   `${process.env.VUE_APP_API_URL}/getData/getObservationTags`
-                // );
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getObservationTags`);
+                // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getObservationTags`);
                 this.observationTags = response.data;
                 console.log(this.observationTags);
             } catch (error) {
@@ -1721,7 +1764,8 @@ export default {
             // subTags
             // _id, familyTagId, subtag
             try {
-                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getSubTags`);
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getSubTags`);
+                // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getSubTags`);
                 this.subTags = response.data
                 this.flavourTags.forEach(flavourTag => {
                     // Filter subtags belonging to the current flavor tag
@@ -1868,7 +1912,8 @@ export default {
         // ------------------- Apply Moderator -------------------
         async submitModeratorApplication() {
             try {
-                const response = await this.$axios.post(`http://127.0.0.1:5000/editModRequests/submitModRequest`, 
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editModRequests/submitModRequest`, 
+                // const response = await this.$axios.post(`http://127.0.0.1:5000/editModRequests/submitModRequest`, 
                     {
                         userID: this.userID,
                         drinkType: this.modCat,
@@ -1931,14 +1976,16 @@ export default {
                 let submitURL = ''
                 let submitData = {}
                 if(this.chooseMod=='remove'){
-                    submitURL = `http://127.0.0.1:5000/editProfile/removeModType`
+                    submitURL = `${process.env.VUE_APP_API_URL}/editProfile/removeModType`
+                    // submitURL = `http://127.0.0.1:5000/editProfile/removeModType`
                     submitData={
                         userID: this.displayUser.id,
                         removeModType: this.selectedRemoveType.drinkType,
                     }
                 }
                 if(this.chooseMod=='add'){
-                    submitURL = `http://127.0.0.1:5000/editProfile/updateModType`
+                    submitURL = `${process.env.VUE_APP_API_URL}/editProfile/updateModType`
+                    // submitURL = `http://127.0.0.1:5000/editProfile/updateModType`
                     submitData = {
                         userID: this.displayUser.id,
                         newModType: this.selectedPromotedType.drinkType,
@@ -2014,7 +2061,8 @@ export default {
             }
             
             try {
-                const response = await this.$axios.post(`http://127.0.0.1:5000/editProfile/editDetails`, 
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/editDetails`, 
+                // const response = await this.$axios.post(`http://127.0.0.1:5000/editProfile/editDetails`, 
                     {
                         userID: this.userID,
                         image64: this.image64,
@@ -2106,7 +2154,8 @@ export default {
         async confirmUpdatePassword(){
             let oldHash = this.hashPassword(this.user.username, this.oldPassword)
             let newHash = this.hashPassword(this.user.username, this.newPassword)
-            let submitURL = `http://127.0.0.1:5000/authcheck/editPassword/` + this.user.id 
+            let submitURL = `${process.env.VUE_APP_API_URL}/authcheck/editPassword/` + this.user.id 
+            // let submitURL = `http://127.0.0.1:5000/authcheck/editPassword/` + this.user.id 
             let submitData = {
                 oldHash: oldHash.toString(),
                 newHash: newHash.toString(),
@@ -2146,7 +2195,8 @@ export default {
                 setTimeout(() => {
                     this.isButtonDisabled = false;
                 }, 60000);
-            let submitURL = `http://127.0.0.1:5000/authcheck/sendResetPin/` + this.user.id
+            let submitURL = `${process.env.VUE_APP_API_URL}/authcheck/sendResetPin/` + this.user.id
+            // let submitURL = `http://127.0.0.1:5000/authcheck/sendResetPin/` + this.user.id
             let submitData = {
                 userType: "user",
             }
@@ -2180,7 +2230,8 @@ export default {
             sendPinSuccess.innerHTML = ""
 
             // call api to verify the pin
-            let submitURL = `http://127.0.0.1:5000/authcheck/verifyPin/` + this.user.id
+            let submitURL = `${process.env.VUE_APP_API_URL}/authcheck/verifyPin/` + this.user.id
+            // let submitURL = `http://127.0.0.1:5000/authcheck/verifyPin/` + this.user.id
             let submitData ={
                 userType:"user",
                 pin:this.resetPin
@@ -2209,7 +2260,8 @@ export default {
         // Function to reset password
         async resetPassword(){
             this.resettingPassword=true
-            let submitURL = `http://127.0.0.1:5000/authcheck/resetPassword/` + this.user.id
+            let submitURL = `${process.env.VUE_APP_API_URL}/authcheck/resetPassword/` + this.user.id
+            // let submitURL = `http://127.0.0.1:5000/authcheck/resetPassword/` + this.user.id
             let submitData = {
                 userType:"user",
                 pin:this.resetPin
@@ -2365,7 +2417,8 @@ export default {
                 this.following = true
             }
             try {
-                const response = await this.$axios.post(`http://127.0.0.1:5000/editProfile/updateFollowLists`, 
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/updateFollowLists`, 
+                // const response = await this.$axios.post(`http://127.0.0.1:5000/editProfile/updateFollowLists`, 
                     {
                         userID: this.userID,
                         action: action,
@@ -2445,7 +2498,8 @@ export default {
             this.userBookmarks[this.newListName].listItems = [];
 
             try {
-                const response = await this.$axios.post(`http://127.0.0.1:5000/editProfile/updateBookmark`, 
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/updateBookmark`, 
+                // const response = await this.$axios.post(`http://127.0.0.1:5000/editProfile/updateBookmark`, 
                     {
                         userID: this.userID,
                         bookmark: this.userBookmarks
@@ -2494,7 +2548,8 @@ export default {
             this.userBookmarks[this.editListName].listDesc = this.editListDesc;
 
             try {
-                const response = await this.$axios.post(`http://127.0.0.1:5000/editProfile/updateBookmark`, 
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/updateBookmark`, 
+                // const response = await this.$axios.post(`http://127.0.0.1:5000/editProfile/updateBookmark`, 
                     {
                         userID: this.userID,
                         bookmark: this.userBookmarks,
@@ -2524,7 +2579,8 @@ export default {
             }
 
             try {
-                const response = await this.$axios.post(`http://127.0.0.1:5000/editProfile/updateBookmark`, 
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/updateBookmark`, 
+                // const response = await this.$axios.post(`http://127.0.0.1:5000/editProfile/updateBookmark`, 
                     {
                         userID: this.userID,
                         bookmark: this.userBookmarks,
@@ -2549,7 +2605,8 @@ export default {
             this.userBookmarks[listName].listItems.splice(index, 1);
 
             try {
-                const response = await this.$axios.post(`http://127.0.0.1:5000/editProfile/updateBookmark`, 
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/updateBookmark`, 
+                // const response = await this.$axios.post(`http://127.0.0.1:5000/editProfile/updateBookmark`, 
                     {
                         userID: this.userID,
                         bookmark: this.userBookmarks,
@@ -2570,7 +2627,8 @@ export default {
             delete this.userBookmarks[listName];
 
             try {
-                const response = await this.$axios.post(`http://127.0.0.1:5000/editProfile/updateBookmark`, 
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/updateBookmark`, 
+                // const response = await this.$axios.post(`http://127.0.0.1:5000/editProfile/updateBookmark`, 
                     {
                         userID: this.userID,
                         bookmark: this.userBookmarks,

@@ -592,7 +592,8 @@ export default {
 
         async fetchTop8() {
             try {
-                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getTop8`);
+                // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getTop8`); //comment out for deployed
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getTop8`);
                 this.tags = response.data;
                 // this.tags = response.data.map(item => item.tags);
                 console.log("tags:", this.tags);
@@ -616,7 +617,8 @@ export default {
         async fetchRSS() {
             this.loading = true; // Show loading spinner
             try {
-                const response = await this.$axios.get(`http://127.0.0.1:5000/rssFeed/rssfeed`);
+                // const response = await this.$axios.get(`http://127.0.0.1:5000/rssFeed/rssfeed`); [Comment out for deployed site]
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/rssFeed/rssfeed`);
                 this.articles = response.data;
             } catch (error) {
                 console.error(error);

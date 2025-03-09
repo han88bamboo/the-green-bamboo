@@ -23,6 +23,10 @@ from flask import Blueprint, g, jsonify, request
 from bson.objectid import ObjectId
 from psycopg2.extras import RealDictCursor
 import random
+import feedparser
+import re
+import requests
+from bs4 import BeautifulSoup
 
 
 file_name = os.path.basename(__file__)
@@ -2102,16 +2106,13 @@ def get_listings_by_observation_tag(tag):
             """
             cursor.execute(query, (selected_tag,))
 
-            listings = cursor.fetchall()
-            columns = [col[0] for col in cursor.description]  
+            listings = cursor.fetchall()  # Fetch results as dictionaries
 
-            print("Columns:", columns)  
-            print("Listings:", listings)  
+            # Convert the dictionary rows into a list of dictionaries
+            listing_dicts = [dict(row) for row in listings]
 
-            listing_dicts = [tuple(row.values()) for row in listings]
-
-            # Print the result
-            print("Listings as Tuples:", listing_dicts)
+            # Debugging output
+            print("Listings as Dicts:", listing_dicts)
 
         # Return the result as JSON
         return jsonify(listing_dicts)
@@ -2129,22 +2130,23 @@ def getTop8():
 
     with conn.cursor() as cursor:
         query = """
-            SELECT tag_name, COUNT(*) AS tag_count
+            SELECT TRIM(BOTH '"' FROM tag_name_clean) AS tag_name, SUM(tag_count) AS tag_count
             FROM (
-                SELECT unnest(
-                    string_to_array(
-                        replace(replace("observationTag"::TEXT, '{', ''), '}', ''), '", "'
-                    )
-                ) AS tag_name
-                FROM "reviews"
-                WHERE "observationTag" IS NOT NULL
-            ) sub
-            GROUP BY tag_name
+                SELECT unnest(string_to_array(tag_name, ',')) AS tag_name_clean, tag_count
+                FROM (
+                    SELECT trim(both '"' FROM unnest(string_to_array(
+                        replace(trim(both '{}' FROM "observationTag"::TEXT), '","', '|||'), '|||'
+                    ))) AS tag_name, 1 AS tag_count
+                    FROM "reviews"
+                    WHERE "observationTag" IS NOT NULL
+                ) sub
+            ) final_sub
+            GROUP BY TRIM(BOTH '"' FROM tag_name_clean)
             ORDER BY tag_count DESC
             LIMIT 8;
         """
         cursor.execute(query)
-        top8_data = cursor.fetchall()  # Returns list of tuples
+        top8_data = cursor.fetchall() 
         columns = [desc[0] for desc in cursor.description]  
 
         print("Columns:", columns)  
@@ -2167,8 +2169,7 @@ def getTop8():
 
         print("Final Processed Tags:", final_listings)  
 
-    return jsonify(final_listings) 
-
+    return jsonify(final_listings)
 
 # -----------------------------------------------------------------------------------------
 # [GET] colours

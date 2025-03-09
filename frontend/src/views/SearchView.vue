@@ -273,9 +273,9 @@
                                 class="col-lg-3 col-12 image-container mb-3 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
                                 <router-link :to="{ path: '/listing/view/' + resultListing.id }">
                                     <img v-if="resultListing['photo']" :src="resultListing['photo']"
-                                        class="img-border img-fluid object-fit-cover" style="width:256px; height:256px">
+                                        class="img-border img-fluid object-fit-contain" style="width:256px; height:256px">
                                     <img v-else src="../../Images/Drinks/Placeholder.png"
-                                        class=" img-border img-fluid object-fit-cover"
+                                        class=" img-border img-fluid object-fit-contain"
                                         style="/*width:256px; height:256px*/">
                                 </router-link>
                                 <!--<BookmarkIcon 
@@ -771,33 +771,10 @@ export default {
                     console.log("Tag passed to runSearch:", routeTag);
 
                     try {
-                        const observationTagPromise = await this.$axios.get(`http://127.0.0.1:5000/getData/getListingsByObservationTag/${encodeURIComponent(routeTag)}`);
+                        const observationTagPromise = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingsByObservationTag/${encodeURIComponent(routeTag)}`);
 
                         this.resultListings = observationTagPromise.data || [];
                         console.log("Observation Tags:", this.resultListings);
-
-                        this.resultListings = this.resultListings.map(listing => ({
-                            id: listing[0],
-                            listingName: listing[1],
-                            producerID: listing[2],
-                            bottler: listing[3] || "",
-                            originCountry: listing[4] || "",
-                            drinkType: listing[5] || "",
-                            abv: listing[6] || null,
-                            officialDesc: listing[7] || "",
-                            allowMod: listing[8] || false,
-                            addedDate: listing[9] ? new Date(listing[9]).toUTCString() : "",
-                            drinkStyle: listing[10] || null,
-                            age: listing[11] || "",
-                            photo: listing[12] || "",
-                            producerName: listing[13] || "",
-                            reviewLink: listing[14] || "",
-                            sourceLink: listing[15] || "",
-                            typeCategory: listing[16] || ""
-                        }));
-
-                        console.log("Formatted Listings:", this.resultListings);
-
                         this.observationTags = this.resultListings.filter((listing) => {
                             return listing["listingName"]?.toLowerCase().includes(this.searchTerm) ||
                                 listing["originCountry"]?.toLowerCase().includes(this.searchTerm) ||
@@ -1282,7 +1259,7 @@ export default {
 
         async fetchListingsByTag(tag) {
             try {
-                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getListingsByObservationTag/${encodeURIComponent(tag)}`);
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingsByObservationTag/${encodeURIComponent(tag)}`);
                 this.tags = response.data;
             } catch (error) {
                 console.error(error);
