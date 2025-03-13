@@ -176,6 +176,15 @@
                                     </div>
                                 </div>
 
+                                <!-- Independent Bottler -->
+                                <div class="col-12 d-flex align-items-center mb-3">
+                                    <label class="me-3 mb-0">Independent Bottler:</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="independentBottlerSwitch" v-model="edit_independentBottler" :true-value="true" :false-value="false">
+                                        <label class="form-check-label" for="independentBottlerSwitch">{{ edit_independentBottler === true ? 'Yes' : 'No' }}</label>
+                                    </div>
+                                </div>
+
                                 <!-- Open for Tours -->
                                 <div class="col-12 d-flex align-items-center mb-3">
                                     <label class="me-3 mb-0">Open for Tours:</label>
@@ -2003,6 +2012,7 @@
                 edit_originCountry: '',
                 edit_yearFounded: null,
                 edit_status: '',
+                edit_independentBottler: '',
                 edit_owner: '',
                 edit_location: '',
                 edit_openForTours: '',
@@ -2960,6 +2970,7 @@
                 this.edit_originCountry = this.specified_producer["originCountry"];
                 this.edit_yearFounded = this.specified_producer["yearFounded"];
                 this.edit_status = this.specified_producer["activeStatus"];
+                this.edit_independentBottler = this.specified_producer["isIndependentBottler"];
                 this.edit_owner = this.specified_producer["owner"];
                 this.edit_location = this.specified_producer["location"];
                 this.edit_openForTours = this.specified_producer["openForTours"];
@@ -3011,6 +3022,7 @@
                             originCountry: this.edit_originCountry,
                             yearFounded: this.edit_yearFounded === '' ? null : this.edit_yearFounded,
                             activeStatus: this.edit_status,
+                            isIndependentBottler: this.edit_independentBottler,
                             owner: this.edit_owner,
                             location: this.edit_location,
                             openForTours: this.edit_openForTours,

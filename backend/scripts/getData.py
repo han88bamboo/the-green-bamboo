@@ -105,21 +105,42 @@ def fetch_user_data(cursor, user_id):
 
 # Helper function to fetch drink lists for a user
 def fetch_drink_lists(cursor, user_id):
-
+    # First, get all drink lists for the user
     cursor.execute("""
-        SELECT "listName", "drinks"
+        SELECT "id", "listName"
         FROM "usersDrinkLists"
         WHERE "userId" = %s
     """, (user_id,))
+    
     drink_lists_data = cursor.fetchall()
     result = {}
+
     for row in drink_lists_data:
-            list_name = row["listName"]
-            drinks = row["drinks"]
-            result[list_name] = {
-                "listDesc": "",  # You can customize or fetch descriptions for each list if needed
-                "listItems": drinks if drinks else []
-            }
+        list_id = row["id"]
+        list_name = row["listName"]
+
+        # Initialize the list in the result dictionary
+        result[list_name] = {
+            "listDesc": "",  # Customize or fetch descriptions if needed
+            "listItems": [],
+        }
+
+        # Fetch the drinks for this list, along with their addedDate
+        cursor.execute("""
+            SELECT "drinkId", "addedDate"
+            FROM "usersDrinkListItems"
+            WHERE "listId" = %s
+            ORDER BY "addedDate" DESC
+        """, (list_id,))
+        
+        drinks_data = cursor.fetchall()
+
+        # Add drinks to the list
+        result[list_name]["listItems"] = [
+            {"drinkId": row["drinkId"], "addedDate": row["addedDate"]}
+            for row in drinks_data
+        ]
+
     return result
 
 # Helper function to fetch follow lists for a user
@@ -370,7 +391,7 @@ def getProducers():
                 p.id, p."producerName", p."producerDesc", p."originCountry", p."mainDrinks", p.photo, 
                 p."hashedPassword", p."claimStatus", p."statusOB", p.username, p."producerLink", 
                 p."yearFounded", p."activeStatus", p.owner, p.location, p."openForTours", p.website,
-                p."stripeCustomerId", p."claimStatusCheckDate",
+                p."stripeCustomerId", p."claimStatusCheckDate", p."isIndependentBottler",
                 COALESCE((
                     SELECT json_agg(json_build_object(
                         'id', qa.id,
@@ -449,7 +470,7 @@ def getProducer(id):
                 p.id, p."producerName", p."producerDesc", p."originCountry", p."mainDrinks", p.photo, 
                 p."hashedPassword", p."claimStatus", p."statusOB", p.username, p."producerLink", 
                 p."yearFounded", p."activeStatus", p.owner, p.location, p."openForTours", p.website,
-                p."stripeCustomerId", p."claimStatusCheckDate",
+                p."stripeCustomerId", p."claimStatusCheckDate", p."isIndependentBottler",
                 COALESCE((
                     SELECT json_agg(json_build_object(
                         'id', qa.id,
@@ -524,7 +545,7 @@ def getProducerByRequestId(id):
                 p.id, p."producerName", p."producerDesc", p."originCountry", p."mainDrinks", p.photo, 
                 p."hashedPassword", p."claimStatus", p."statusOB", p.username, p."producerLink", 
                 p."yearFounded", p."activeStatus", p.owner, p.location, p."openForTours", p.website,
-                p."stripeCustomerId", p."claimStatusCheckDate",
+                p."stripeCustomerId", p."claimStatusCheckDate", p."isIndependentBottler",
                 COALESCE((
                     SELECT json_agg(json_build_object(
                         'id', qa.id,
@@ -592,7 +613,7 @@ def getProducerByRequestId(id):
 def getUniqueProducersNamesID():
     conn = g.db
     with conn.cursor() as cursor:
-        cursor.execute('SELECT DISTINCT "producerName", "id" FROM "producers"')
+        cursor.execute('SELECT DISTINCT "producerName", "isIndependentBottler", "id" FROM "producers"')
         producers_data = cursor.fetchall()
 
     if not producers_data:
@@ -609,6 +630,7 @@ def getUniqueProducersNamesID():
             continue
         producer_dict = {
             "producerName": producer["producerName"],
+            "isIndependentBottler": producer["isIndependentBottler"],
             "id": producer["id"]
         }
         producers_list.append(producer_dict)

@@ -94,6 +94,22 @@
                                 <span v-if="missingBusinessType" class="text-danger">Please choose your business type.</span>                                      
                             </div>
 
+                        <!-- Input: Independent Bottler -->
+                            <div v-if="businessType=='producer'" class="row justify-content-start mb-3 text-start">
+                                <p class="text-start mb-1">Is your business an Independent Bottler? <span style="color: red;">*</span></p>
+                                <div class="col-md-12 justify-content-between">
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" id="inlineCheckbox1" v-model="isIndependentBottler" :value="true" name="Yes">
+                                        <label class="form-check-label text-start fw-bold" for="inlineCheckbox1">Yes</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" id="inlineCheckbox3" v-model="isIndependentBottler" :value="false" name="No">
+                                        <label class="form-check-label text-start fw-bold" for="inlineCheckbox3">No</label>
+                                    </div>                                                                                                   
+                                </div> 
+                                <span v-if="missingIndependentBottler" class="text-danger">Please choose if you are an independent bottler.</span>
+                            </div>
+
                         <!-- Input: Username -->
                             <div class="form-group mb-3">
                                 <p class="text-start mb-1">Business Name <span style="color: red;">*</span></p>
@@ -307,6 +323,7 @@
                 missingBusinessDesc:false,
                 missingBusinessName:false,
                 missingBusinessType:false,
+                missingIndependentBottler:false,
                 missingEmail:false,
                 invalidEmail:false,
                 missingContact:false,
@@ -322,6 +339,7 @@
                 // form variables
                 businessType:'',
                 businessName:'',
+                isIndependentBottler:null,
                 businessDesc:'',
                 businessLink:'',
                 firstName:'',
@@ -446,6 +464,10 @@
                     this.missingBusinessType = true
                     errorCount++
                 }
+                if (this.businessType == 'producer' && this.isIndependentBottler == null){
+                    this.missingIndependentBottler = true
+                    errorCount++
+                }
                 // Select country check
                 if(this.selectedCountry==''){
                     this.missingSelectedCountry = true
@@ -519,12 +541,16 @@
                 if(this.businessLink!=''){
                     businessId = this.businessLink.split("/").pop()
                 }
+                if (this.businessType == 'venue'){
+                    this.isIndependentBottler = false
+                }
                 let joinDate = new Date().toISOString();
                 let submitAPI =  `${process.env.VUE_APP_API_URL}/createAccount/createAccountRequest`
                 let submitData = {
                     "businessId" : businessId,
                     "businessName": this.businessName,
                     "businessType": this.businessType,
+                    "isIndependentBottler": this.isIndependentBottler,
                     "businessDesc": this.businessDesc,
                     "country": this.selectedCountry,
                     "pricing": this.selectedPricing,
@@ -594,6 +620,7 @@
                 this.missingBusinessDesc=false
                 this.missingBusinessName=false
                 this.missingBusinessType=false
+                this.missingIndependentBottler=false
                 this.missingEmail=false
                 this.invalidEmail=false
                 this.missingContact=false

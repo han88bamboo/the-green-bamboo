@@ -314,7 +314,12 @@
                         <!-- (ONLY IF above toggled to "Yes") Input Text for Independent Bottler -->
                         <div class="form-group mb-3" v-if="indOperator">
                             <p class="text-start mb-1">If yes, who is the independent bottler? <span class="text-danger">*</span></p>
-                            <input type="text" class="form-control" v-model="form['bottler']" :disabled="!indOperator" id="bottlerName" placeholder="Enter Bottler Name">
+                            <input type="text" list="bottler-names" class="form-control" v-model="form['bottler']" :disabled="!indOperator" id="bottlerName" placeholder="Enter Bottler Name" @input="getBottlerID">
+                            <datalist id="bottler-names">
+                                <option v-for="bottler in bottlersList" :key="bottler.producerName" :value="bottler.producerName">
+                                    {{ bottler.producerName }}
+                                </option>
+                            </datalist>
                         </div>
 
                         <!-- Input: Alcohol Strength (% ABV) + Alcohol Age / Vintage (years old / Year Bottled) -->
@@ -450,6 +455,7 @@
                 drinkCategoriesList: [],
                 tempTypeCategoryList: [],
                 producerList: [],
+                bottlersList: [],
                 countries: [],
                 selectedImage:"",
                 drinkStyles:[],
@@ -472,6 +478,7 @@
 
                     "userID": "",
                     "producerID": "", // mutually exclusive with producerNew (exactly one of them will be blank)
+                    "bottlerID": "",
                     "listingID": "",
                     "photo": "",
                 },
@@ -601,6 +608,7 @@
                         this.producerList.sort((a,b)=>{
                             return a.producerName.localeCompare(b.producerName)
                         })
+                        this.bottlersList = this.producerList.filter(producer => producer.isIndependentBottler == true);
                         // Check if user is a producer
                         if (localStorage.getItem('88B_accType') == "producer") {
                             this.isProducer = this.producerList.find(producer => producer.id == this.form['userID']).producerName;
@@ -864,6 +872,16 @@
                 }
             },
 
+            getBottlerID() {
+                let bottler = this.producerList.find(producer => producer.isIndependentBottler == true && producer.producerName == this.form['bottler'])
+                if (bottler) {
+                    this.form['bottlerID'] = bottler.id;
+                }
+                else {
+                    this.form['bottlerID'] = ""
+                }
+            },
+
             // Function to submit form
             async submitFunction(){
                 this.errors = [];
@@ -944,6 +962,11 @@
                             this.errors.push("Producer ID is required: Create new producer first!");
                         }
 
+                        // Validate bottler ID
+                        if (this.indOperator && !this.form["bottlerID"]) {
+                            this.errors.push("Bottler ID is required: Create new bottler first!");
+                        }
+
                         // Validate Country of Origin
                         if (!this.form["originCountry"].trim()) {
                             this.errors.push("Country of Origin is required.");
@@ -992,6 +1015,7 @@
 
                                 "userID": this.form["userID"],
                                 "producerID": this.form["producerID"],
+                                "bottlerID": this.form["bottlerID"],
                                 "photo": this.form["photo"],
 
                                 "drinkType": (this.tempDrinkType || "").trim(),
@@ -1052,6 +1076,7 @@
                             "age": this.form["age"].toString().trim(),
                             
                             "producerID": this.form["producerID"],
+                            "bottlerID": this.form["bottlerID"],
                             "photo": this.form["photo"],
 
                             "drinkType": this.tempDrinkType.trim(),

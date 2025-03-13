@@ -26,42 +26,51 @@ def parse_json(data):
 def addToTried():
     conn = g.db
     addedListing = request.get_json()
-    listingID = str(addedListing["listingID"])
+    listingID = int(addedListing["listingID"])
     userID = int(addedListing["userID"])
+    addedDate = addedListing["date"]  # Date when the drink was added
     listNameTried = "Drinks I Have Tried"
     listNameWant = "Drinks I Want To Try"
 
     try:
         with conn.cursor() as cur:
-            # Begin transaction
             conn.autocommit = False
 
-            # Remove listingID from "Drinks I Want To Try" list
+            # Get or create "Drinks I Have Tried" list ID
             cur.execute("""
-                UPDATE "usersDrinkLists"
-                SET "drinks" = array_remove("drinks", %s)
-                WHERE "userId" = %s AND "listName" = %s;
-            """, (listingID, userID, listNameWant))
+                INSERT INTO "usersDrinkLists" ("userId", "listName")
+                VALUES (%s, %s)
+                ON CONFLICT ("userId", "listName") DO NOTHING
+                RETURNING "id";
+            """, (userID, listNameTried))
+            tried_list_id = cur.fetchone()
 
-            # Add listingID to "Drinks I Have Tried" list if not already present
+            if tried_list_id is None:  
+                cur.execute("""
+                    SELECT "id" FROM "usersDrinkLists"
+                    WHERE "userId" = %s AND "listName" = %s;
+                """, (userID, listNameTried))
+                tried_list_id = cur.fetchone()['id']
+            else:
+                tried_list_id = tried_list_id['id']
+
+            # Remove listing from "Drinks I Want To Try"
             cur.execute("""
-                UPDATE "usersDrinkLists"
-                SET "drinks" = "drinks" || %s
-                WHERE "userId" = %s AND "listName" = %s AND NOT (%s = ANY("drinks"));
-            """, ([listingID], userID, listNameTried, listingID))
+                DELETE FROM "usersDrinkListItems"
+                WHERE "listId" = (
+                    SELECT "id" FROM "usersDrinkLists"
+                    WHERE "userId" = %s AND "listName" = %s
+                ) AND "drinkId" = %s;
+            """, (userID, listNameWant, listingID))
 
-            # Ensure the list exists
-            if cur.rowcount == 0:
-                conn.rollback()
-                return jsonify(
-                    {
-                        "code": 442,
-                        "data": userID,
-                        "message": "User or list not found, or item already exists."
-                    }
-                ), 442
+            # Add listing to "Drinks I Have Tried" with addedDate
+            cur.execute("""
+                INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate")
+                VALUES (%s, %s, %s)
+                ON CONFLICT ("listId", "drinkId") DO UPDATE
+                SET "addedDate" = EXCLUDED."addedDate";
+            """, (tried_list_id, listingID, addedDate))
 
-            # Commit transaction
             conn.commit()
             conn.autocommit = True
 
@@ -69,18 +78,19 @@ def addToTried():
             {
                 "code": 200,
                 "data": listingID,
-                "message": "Listing was added to 'Drinks I Have Tried' list."
+                "message": "Listing was added to 'Drinks I Have Tried'."
             }
         ), 200
 
     except Exception as e:
+        print(e)
         conn.rollback()
         conn.autocommit = True
         return jsonify(
             {
                 "code": 440,
                 "data": str(e),
-                "message": "Listing was not added to the list."
+                "message": "Listing was not added."
             }
         ), 440
 
@@ -93,42 +103,51 @@ def addToTried():
 def addToWant():
     conn = g.db
     addedListing = request.get_json()
-    listingID = str(addedListing["listingID"])
+    listingID = int(addedListing["listingID"])
     userID = int(addedListing["userID"])
+    addedDate = addedListing["date"]
     listNameTried = "Drinks I Have Tried"
     listNameWant = "Drinks I Want To Try"
 
     try:
         with conn.cursor() as cur:
-            # Begin transaction
             conn.autocommit = False
 
-            # Remove listingID from "Drinks I Have Tried" list
+            # Get or create "Drinks I Want To Try" list ID
             cur.execute("""
-                UPDATE "usersDrinkLists"
-                SET "drinks" = array_remove("drinks", %s)
-                WHERE "userId" = %s AND "listName" = %s;
-            """, (listingID, userID, listNameTried))
+                INSERT INTO "usersDrinkLists" ("userId", "listName")
+                VALUES (%s, %s)
+                ON CONFLICT ("userId", "listName") DO NOTHING
+                RETURNING "id";
+            """, (userID, listNameWant))
+            want_list_id = cur.fetchone()
 
-            # Add listingID to "Drinks I Want To Try" list if not already present
+            if want_list_id is None:
+                cur.execute("""
+                    SELECT "id" FROM "usersDrinkLists"
+                    WHERE "userId" = %s AND "listName" = %s;
+                """, (userID, listNameWant))
+                want_list_id = cur.fetchone()['id']
+            else:
+                want_list_id = want_list_id['id']
+
+            # Remove listing from "Drinks I Have Tried"
             cur.execute("""
-                UPDATE "usersDrinkLists"
-                SET "drinks" = "drinks" || %s
-                WHERE "userId" = %s AND "listName" = %s AND NOT (%s = ANY("drinks"));
-            """, ([listingID], userID, listNameWant, listingID))
+                DELETE FROM "usersDrinkListItems"
+                WHERE "listId" = (
+                    SELECT "id" FROM "usersDrinkLists"
+                    WHERE "userId" = %s AND "listName" = %s
+                ) AND "drinkId" = %s;
+            """, (userID, listNameTried, listingID))
 
-            # Ensure the list exists
-            if cur.rowcount == 0:
-                conn.rollback()
-                return jsonify(
-                    {
-                        "code": 452,
-                        "data": userID,
-                        "message": "User or list not found, or item already exists."
-                    }
-                ), 452
+            # Add listing to "Drinks I Want To Try" with addedDate
+            cur.execute("""
+                INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate")
+                VALUES (%s, %s, %s)
+                ON CONFLICT ("listId", "drinkId") DO UPDATE
+                SET "addedDate" = EXCLUDED."addedDate";
+            """, (want_list_id, listingID, addedDate))
 
-            # Commit transaction
             conn.commit()
             conn.autocommit = True
 
@@ -136,17 +155,18 @@ def addToWant():
             {
                 "code": 210,
                 "data": listingID,
-                "message": "Listing was added to 'Drinks I Want To Try' list."
+                "message": "Listing was added to 'Drinks I Want To Try'."
             }
         ), 210
 
     except Exception as e:
+        print(e)
         conn.rollback()
         conn.autocommit = True
         return jsonify(
             {
                 "code": 450,
                 "data": str(e),
-                "message": "Listing was not added to the list."
+                "message": "Listing was not added."
             }
         ), 450
