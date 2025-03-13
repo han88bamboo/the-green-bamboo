@@ -510,6 +510,7 @@ def getProducer(id):
 
         cur.execute(query, (id,))
         producer_data = cur.fetchone()
+        print("This is producer data", producer_data)
 
         if producer_data is None:
             return jsonify({"message": "Producer not found"}), 404

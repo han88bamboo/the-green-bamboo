@@ -2243,7 +2243,7 @@
                 // _id, producerName, producerDesc, originCountry, statusOB, mainDrinks
                 try {
                         const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducer/${this.producer_id}`);
-                        console.log(response.data)
+                        console.log("producerData", response.data)
                         this.specified_producer = response.data
                         this.specified_producer_original_photo = this.specified_producer['photo']
                         this.newAddress = this.specified_producer['location']

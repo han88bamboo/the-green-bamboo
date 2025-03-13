@@ -28,11 +28,11 @@ def editDetails():
     isIndependentBottler = data['isIndependentBottler']
     originCountry = data['originCountry']
     yearFounded = data.get('yearFounded', None)
-    activeStatus = data['activeStatus']
-    owner = data['owner']
+    activeStatus = data.get('activeStatus', None)
+    owner = data.get('owner', None)
     location = data['location']
-    openForTours = data['openForTours']
-    website = data['website']
+    openForTours = data.get('openForTours', False)
+    website = data.get('website', None)
 
     try:
         cur.execute('SELECT * FROM producers WHERE id = %s', (producerID,))

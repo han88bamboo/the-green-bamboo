@@ -358,7 +358,7 @@ CREATE TABLE "reviews" (
     -- "userVotes" SERIAL, -- [!] reference "reviewsUserVotes" FK
     "taggedUsers" TEXT[], -- Contains "users"("id")s
     "flavourTag" TEXT[], -- Contains "flavourTags"("id")s
-    "photos" TEXT[],
+    "photo" TEXT,
     "colour" VARCHAR(7),
     "aroma" VARCHAR(255),
     "location" INTEGER REFERENCES "venues"("id") ON DELETE SET NULL, -- [!] references "venues" FK
@@ -382,7 +382,7 @@ CREATE TABLE "producerReviews" (
     "rating" DECIMAL(3,1),
     "reviewDesc" TEXT,
     "createdDate" TIMESTAMP,
-    "photo" TEXT
+    "photos" TEXT[]
     -- "userVotes" SERIAL, -- [!] reference "producerReviewsUserVotes" FK
 );
 
