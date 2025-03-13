@@ -40,6 +40,7 @@ DROP TABLE IF EXISTS "subTags" CASCADE;
 DROP TABLE IF EXISTS "tokens" CASCADE;
 DROP TABLE IF EXISTS "users" CASCADE;
 DROP TABLE IF EXISTS "usersDrinkLists" CASCADE;
+DROP TABLE IF EXISTS "usersDrinkListItems" CASCADE;
 DROP TABLE IF EXISTS "usersFollowLists" CASCADE;
 DROP TABLE IF EXISTS "venueUpdateLikes" CASCADE;
 DROP TABLE IF EXISTS "venues" CASCADE;
@@ -357,7 +358,7 @@ CREATE TABLE "reviews" (
     -- "userVotes" SERIAL, -- [!] reference "reviewsUserVotes" FK
     "taggedUsers" TEXT[], -- Contains "users"("id")s
     "flavourTag" TEXT[], -- Contains "flavourTags"("id")s
-    "photo" TEXT,
+    "photos" TEXT[],
     "colour" VARCHAR(7),
     "aroma" VARCHAR(255),
     "location" INTEGER REFERENCES "venues"("id") ON DELETE SET NULL, -- [!] references "venues" FK

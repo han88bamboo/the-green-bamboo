@@ -801,7 +801,7 @@ def getAllListingsNames():
 @blueprint.route("/getBookmarkListings", methods=['POST'])
 def getBookmarkListings():
     conn = g.db
-    listing_ids = request.json.get('listingIDs', None)
+    listing_ids = [listing["drinkId"] for listing in request.json.get('listingIDs', [])]
 
     if not listing_ids:
         return jsonify({
@@ -826,7 +826,7 @@ def getBookmarkListings():
             # Add to listing data
             return_data[listing["id"]] = listing
             return_data[listing["id"]]["avgRating"] = avg_rating["avg"]
-        print(return_data)
+
     return jsonify(return_data), 200
 
 # [GET] Get user's review summary
@@ -838,9 +838,9 @@ def getUserReviewSummary(id):
         # Step 1: Get all listings reviewed by the user
         cursor.execute('''
             SELECT "reviewTarget", "address", "taggedUsers"
-                FROM "reviews"
-                WHERE "userID" = %s
-            ''', (id,))
+            FROM "reviews"
+            WHERE "userID" = %s
+        ''', (id,))
         reviewed_listings = cursor.fetchall()
 
         if not reviewed_listings:
@@ -849,9 +849,7 @@ def getUserReviewSummary(id):
                 "message": "No reviews found for the specified user."
             }), 404
         
-        print(reviewed_listings)
-        # Use a set for distinct reviewTargets and addresses,
-        # but allow duplicates for taggedUsers
+        # Use a set for distinct reviewTargets and addresses, but allow duplicates for taggedUsers
         unique_listing_id = []
         locations_tagged = set()
         tagged_users = []
@@ -871,26 +869,32 @@ def getUserReviewSummary(id):
         locations_tagged = list(locations_tagged)
         tagged_users_count = len(tagged_users)
 
-        print(locations_tagged)
         # Step 2: Get the number of unique drinkType and typeCategory based on the listings reviewed
         categories_reviewed_dict = {}  # {drinkType: {typeCategory: count, ...}, ...}
         for listing_id in unique_listing_id:
-            cursor.execute('SELECT "drinkType", "typeCategory" FROM "listings" WHERE "id" = %s', (listing_id,),)
+            cursor.execute('SELECT "drinkType", "typeCategory" FROM "listings" WHERE "id" = %s', (listing_id,))
             drink_data = cursor.fetchone()
-            drink_type = drink_data["drinkType"]
-            drink_category = drink_data["typeCategory"]
+            if drink_data:
+                drink_type = drink_data["drinkType"]
+                drink_category = drink_data["typeCategory"]
 
-            if drink_type not in categories_reviewed_dict:
-                categories_reviewed_dict[drink_type] = {}
+                if drink_type not in categories_reviewed_dict:
+                    categories_reviewed_dict[drink_type] = {}
 
-            # Increment the count for the drink_category within the given drink_type.
-            if drink_category in categories_reviewed_dict[drink_type]:
-                categories_reviewed_dict[drink_type][drink_category] += 1
-            else:
-                categories_reviewed_dict[drink_type][drink_category] = 1
+                # Increment the count for the drink_category within the given drink_type.
+                if drink_category in categories_reviewed_dict[drink_type]:
+                    categories_reviewed_dict[drink_type][drink_category] += 1
+                else:
+                    categories_reviewed_dict[drink_type][drink_category] = 1
 
-        # Step 3: Get the number of upvotes for the user's reviews
-        cursor.execute('SELECT COUNT(*) FROM "reviewsUserVotes" WHERE %s = ANY("upvotes")', (id,))
+        # Step 3: Get the number of upvotes for the user's reviews (new schema)
+        cursor.execute('''
+            SELECT COUNT(*) FROM "reviewsUserVotes"
+            WHERE EXISTS (
+                SELECT 1 FROM jsonb_array_elements("upvotes") AS upvote
+                WHERE (upvote->>'userId')::TEXT = %s
+            )
+        ''', (id,))
         upvotes_count = cursor.fetchone()['count']
 
     return jsonify({

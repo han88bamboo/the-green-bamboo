@@ -773,7 +773,7 @@
                                     <div class="col-3 mobile-col-4 mobile-pe-0" >
                                         <!-- <img :src=" 'data:image/png;base64,' + ( getListingFromID(bookmarkList.listItems[0]).photo || defaultDrinkImage )" alt="" class="bottle-img me-3"> xyz -->
                                         <img :src="( bookmarkList.listItems.length > 0 
-                                                    ? (bookedMarkedListings[bookmarkList.listItems[0]]?.photo || defaultDrinkImage)
+                                                    ? (bookedMarkedListings[bookmarkList.listItems[0]?.drinkId]?.photo || defaultDrinkImage)
                                                     : defaultDrinkImage )"  alt="" class="bottle-img me-3">
                                     </div>
                                     <div  class="col-9 mobile-col-8 mobile-ps-1" > <!-- style="height: 150px; display: flex; flex-direction: column;" -->
@@ -2353,7 +2353,7 @@ export default {
                 let addListingId = this.listingNamesDictionary[drink];
                 let itemExist = this.userBookmarks[listName].listItems.find(item => item?.drinkId === addListingId);
                 if (!itemExist) {
-                    this.userBookmarks[listName].listItems.push({drinkId: addListingId});
+                    this.userBookmarks[listName].listItems.push({ date: new Date(), drinkId: addListingId });
                 }
             }
 
