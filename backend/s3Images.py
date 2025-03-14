@@ -92,7 +92,7 @@ def uploadURLtoS3(url):
         print("AWS credentials not found.")
     except Exception as e:
         print(f"An error occurred: {e}")
-    return ''
+    return url
 
 def deleteImageFromS3(url):
     credentials = None # Initialize credentials to avoid reference error

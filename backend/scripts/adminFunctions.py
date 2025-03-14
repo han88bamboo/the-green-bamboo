@@ -657,7 +657,7 @@ def importListings():
         producer_id = producer_name_id_dict.get(producer_name)
 
         bottler_name = converted_row[2]
-        if bottler_name == "OB":
+        if bottler_name == "OB" or bottler_name == 'Original Bottling':
             bottler_id = None
             bottler_name = "OB"
         else:
