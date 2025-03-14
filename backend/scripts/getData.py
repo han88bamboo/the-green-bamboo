@@ -105,21 +105,42 @@ def fetch_user_data(cursor, user_id):
 
 # Helper function to fetch drink lists for a user
 def fetch_drink_lists(cursor, user_id):
-
+    # First, get all drink lists for the user
     cursor.execute("""
-        SELECT "listName", "drinks"
+        SELECT "id", "listName"
         FROM "usersDrinkLists"
         WHERE "userId" = %s
     """, (user_id,))
+    
     drink_lists_data = cursor.fetchall()
     result = {}
+
     for row in drink_lists_data:
-            list_name = row["listName"]
-            drinks = row["drinks"]
-            result[list_name] = {
-                "listDesc": "",  # You can customize or fetch descriptions for each list if needed
-                "listItems": drinks if drinks else []
-            }
+        list_id = row["id"]
+        list_name = row["listName"]
+
+        # Initialize the list in the result dictionary
+        result[list_name] = {
+            "listDesc": "",  # Customize or fetch descriptions if needed
+            "listItems": [],
+        }
+
+        # Fetch the drinks for this list, along with their addedDate
+        cursor.execute("""
+            SELECT "drinkId", "addedDate"
+            FROM "usersDrinkListItems"
+            WHERE "listId" = %s
+            ORDER BY "addedDate" DESC
+        """, (list_id,))
+        
+        drinks_data = cursor.fetchall()
+
+        # Add drinks to the list
+        result[list_name]["listItems"] = [
+            {"drinkId": row["drinkId"], "addedDate": row["addedDate"]}
+            for row in drinks_data
+        ]
+
     return result
 
 # Helper function to fetch follow lists for a user
@@ -370,7 +391,7 @@ def getProducers():
                 p.id, p."producerName", p."producerDesc", p."originCountry", p."mainDrinks", p.photo, 
                 p."hashedPassword", p."claimStatus", p."statusOB", p.username, p."producerLink", 
                 p."yearFounded", p."activeStatus", p.owner, p.location, p."openForTours", p.website,
-                p."stripeCustomerId", p."claimStatusCheckDate",
+                p."stripeCustomerId", p."claimStatusCheckDate", p."isIndependentBottler",
                 COALESCE((
                     SELECT json_agg(json_build_object(
                         'id', qa.id,
@@ -449,7 +470,7 @@ def getProducer(id):
                 p.id, p."producerName", p."producerDesc", p."originCountry", p."mainDrinks", p.photo, 
                 p."hashedPassword", p."claimStatus", p."statusOB", p.username, p."producerLink", 
                 p."yearFounded", p."activeStatus", p.owner, p.location, p."openForTours", p.website,
-                p."stripeCustomerId", p."claimStatusCheckDate",
+                p."stripeCustomerId", p."claimStatusCheckDate", p."isIndependentBottler",
                 COALESCE((
                     SELECT json_agg(json_build_object(
                         'id', qa.id,
@@ -489,6 +510,7 @@ def getProducer(id):
 
         cur.execute(query, (id,))
         producer_data = cur.fetchone()
+        print("This is producer data", producer_data)
 
         if producer_data is None:
             return jsonify({"message": "Producer not found"}), 404
@@ -524,7 +546,7 @@ def getProducerByRequestId(id):
                 p.id, p."producerName", p."producerDesc", p."originCountry", p."mainDrinks", p.photo, 
                 p."hashedPassword", p."claimStatus", p."statusOB", p.username, p."producerLink", 
                 p."yearFounded", p."activeStatus", p.owner, p.location, p."openForTours", p.website,
-                p."stripeCustomerId", p."claimStatusCheckDate",
+                p."stripeCustomerId", p."claimStatusCheckDate", p."isIndependentBottler",
                 COALESCE((
                     SELECT json_agg(json_build_object(
                         'id', qa.id,
@@ -592,7 +614,7 @@ def getProducerByRequestId(id):
 def getUniqueProducersNamesID():
     conn = g.db
     with conn.cursor() as cursor:
-        cursor.execute('SELECT DISTINCT "producerName", "id" FROM "producers"')
+        cursor.execute('SELECT DISTINCT "producerName", "isIndependentBottler", "id" FROM "producers"')
         producers_data = cursor.fetchall()
 
     if not producers_data:
@@ -609,6 +631,7 @@ def getUniqueProducersNamesID():
             continue
         producer_dict = {
             "producerName": producer["producerName"],
+            "isIndependentBottler": producer["isIndependentBottler"],
             "id": producer["id"]
         }
         producers_list.append(producer_dict)
@@ -779,7 +802,7 @@ def getAllListingsNames():
 @blueprint.route("/getBookmarkListings", methods=['POST'])
 def getBookmarkListings():
     conn = g.db
-    listing_ids = request.json.get('listingIDs', None)
+    listing_ids = [listing["drinkId"] for listing in request.json.get('listingIDs', [])]
 
     if not listing_ids:
         return jsonify({
@@ -804,7 +827,7 @@ def getBookmarkListings():
             # Add to listing data
             return_data[listing["id"]] = listing
             return_data[listing["id"]]["avgRating"] = avg_rating["avg"]
-        print(return_data)
+
     return jsonify(return_data), 200
 
 # [GET] Get user's review summary
@@ -816,9 +839,9 @@ def getUserReviewSummary(id):
         # Step 1: Get all listings reviewed by the user
         cursor.execute('''
             SELECT "reviewTarget", "address", "taggedUsers"
-                FROM "reviews"
-                WHERE "userID" = %s
-            ''', (id,))
+            FROM "reviews"
+            WHERE "userID" = %s
+        ''', (id,))
         reviewed_listings = cursor.fetchall()
 
         if not reviewed_listings:
@@ -827,9 +850,7 @@ def getUserReviewSummary(id):
                 "message": "No reviews found for the specified user."
             }), 404
         
-        print(reviewed_listings)
-        # Use a set for distinct reviewTargets and addresses,
-        # but allow duplicates for taggedUsers
+        # Use a set for distinct reviewTargets and addresses, but allow duplicates for taggedUsers
         unique_listing_id = []
         locations_tagged = set()
         tagged_users = []
@@ -849,26 +870,32 @@ def getUserReviewSummary(id):
         locations_tagged = list(locations_tagged)
         tagged_users_count = len(tagged_users)
 
-        print(locations_tagged)
         # Step 2: Get the number of unique drinkType and typeCategory based on the listings reviewed
         categories_reviewed_dict = {}  # {drinkType: {typeCategory: count, ...}, ...}
         for listing_id in unique_listing_id:
-            cursor.execute('SELECT "drinkType", "typeCategory" FROM "listings" WHERE "id" = %s', (listing_id,),)
+            cursor.execute('SELECT "drinkType", "typeCategory" FROM "listings" WHERE "id" = %s', (listing_id,))
             drink_data = cursor.fetchone()
-            drink_type = drink_data["drinkType"]
-            drink_category = drink_data["typeCategory"]
+            if drink_data:
+                drink_type = drink_data["drinkType"]
+                drink_category = drink_data["typeCategory"]
 
-            if drink_type not in categories_reviewed_dict:
-                categories_reviewed_dict[drink_type] = {}
+                if drink_type not in categories_reviewed_dict:
+                    categories_reviewed_dict[drink_type] = {}
 
-            # Increment the count for the drink_category within the given drink_type.
-            if drink_category in categories_reviewed_dict[drink_type]:
-                categories_reviewed_dict[drink_type][drink_category] += 1
-            else:
-                categories_reviewed_dict[drink_type][drink_category] = 1
+                # Increment the count for the drink_category within the given drink_type.
+                if drink_category in categories_reviewed_dict[drink_type]:
+                    categories_reviewed_dict[drink_type][drink_category] += 1
+                else:
+                    categories_reviewed_dict[drink_type][drink_category] = 1
 
-        # Step 3: Get the number of upvotes for the user's reviews
-        cursor.execute('SELECT COUNT(*) FROM "reviewsUserVotes" WHERE %s = ANY("upvotes")', (id,))
+        # Step 3: Get the number of upvotes for the user's reviews (new schema)
+        cursor.execute('''
+            SELECT COUNT(*) FROM "reviewsUserVotes"
+            WHERE EXISTS (
+                SELECT 1 FROM jsonb_array_elements("upvotes") AS upvote
+                WHERE (upvote->>'userId')::TEXT = %s
+            )
+        ''', (id,))
         upvotes_count = cursor.fetchone()['count']
 
     return jsonify({

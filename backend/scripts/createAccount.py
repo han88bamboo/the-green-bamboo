@@ -78,42 +78,34 @@ def createAccount():
             user_id = cursor.fetchone()['id']
             db_conn.commit()
 
-        # Insert into 'usersDrinkLists' table for "Drinks I Want To Try"
         with db_conn.cursor() as cursor:
             cursor.execute("""
-                INSERT INTO "usersDrinkLists" ("userId", "listName", "drinks")
-                VALUES (%s, %s, %s)
-            """, (
-                user_id,
-                "Drinks I Want To Try",
-                rawAccount['drinkLists']['Drinks I Want To Try']['listItems']
-            ))
-            db_conn.commit()
+                INSERT INTO "usersDrinkLists" ("userId", "listName")
+                VALUES (%s, %s)
+                RETURNING "id"
+            """, (user_id, "Drinks I Want To Try"))
+            want_to_try_list_id = cursor.fetchone()["id"]
 
-        # Insert into 'usersDrinkLists' table for "Drinks I Have Tried"
-        with db_conn.cursor() as cursor:
             cursor.execute("""
-                INSERT INTO "usersDrinkLists" ("userId", "listName", "drinks")
-                VALUES (%s, %s, %s)
-            """, (
-                user_id,
-                "Drinks I Have Tried",
-                rawAccount['drinkLists']['Drinks I Have Tried']['listItems']
-            ))
-            db_conn.commit()
+                INSERT INTO "usersDrinkLists" ("userId", "listName")
+                VALUES (%s, %s)
+                RETURNING "id"
+            """, (user_id, "Drinks I Have Tried"))
+            have_tried_list_id = cursor.fetchone()["id"]
 
-        # Insert into 'usersFollowLists' table
-        with db_conn.cursor() as cursor:
+        for drink in rawAccount['drinkLists']['Drinks I Want To Try']['listItems']:
             cursor.execute("""
-                INSERT INTO "usersFollowLists" ("userId", "users", "producers", "venues")
-                VALUES (%s, %s, %s, %s)
-            """, (
-                user_id,
-                rawAccount['followLists']['users'],
-                rawAccount['followLists']['producers'],
-                rawAccount['followLists']['venues']
-            ))
-            db_conn.commit()
+                INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate")
+                VALUES (%s, %s, NOW())
+            """, (want_to_try_list_id, drink["drinkId"]))
+
+        for drink in rawAccount['drinkLists']['Drinks I Have Tried']['listItems']:
+            cursor.execute("""
+                INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate")
+                VALUES (%s, %s, NOW())
+            """, (have_tried_list_id, drink["drinkId"]))
+
+        db_conn.commit()
         
         return jsonify(
             {   
@@ -282,14 +274,14 @@ def createProducerAccount():
         cur.execute("""
             INSERT INTO producers (
                 "producerName", "producerDesc", "originCountry", "mainDrinks", "photo", "hashedPassword", 
-                "claimStatus", "statusOB", "username", "producerLink", "stripeCustomerId"
+                "claimStatus", "statusOB", "username", "producerLink", "stripeCustomerId", "isIndependentBottler"
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
         """, (
             newBusinessData['producerName'], newBusinessData['producerDesc'], newBusinessData['originCountry'],
             newBusinessData['mainDrinks'], newBusinessData['photo'], newBusinessData['hashedPassword'],
             newBusinessData['claimStatus'], newBusinessData['statusOB'], newBusinessData.get('username', None),
-            newBusinessData.get('producerLink', None), newBusinessData.get('stripeCustomerId', None)
+            newBusinessData.get('producerLink', None), newBusinessData.get('stripeCustomerId', None), newBusinessData.get('isIndependentBottler', False)
         ))
 
         # Extract the new producer ID

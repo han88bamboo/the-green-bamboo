@@ -909,11 +909,10 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                 }
                 // else there are ratings
                 const averageRating = allProducerReviews.reduce((total, review) => {
-                    return total + review.rating;
+                    return total + parseFloat(review.rating);
                 }, 0) / allProducerReviews.length;
                 // round to 1 decimal place
-                const roundedRating = Math.round(averageRating * 10) / 10;
-                return roundedRating;
+                return averageRating.toFixed(1);
             },
 
             // get average rating for producer --> return 0 if no ratings
@@ -929,11 +928,10 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                 }
                 // else there are ratings
                 const averageRating = allProducerReviews.reduce((total, review) => {
-                    return total + review.rating;
+                    return total + parseFloat(review.rating);
                 }, 0) / allProducerReviews.length;
                 // round to 1 decimal place
-                const roundedRating = Math.round(averageRating * 10) / 10;
-                return roundedRating;
+                return averageRating.toFixed(1);
             },
 
             // get all drinks that a venue has
@@ -966,11 +964,10 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                 }
                 // else there are ratings
                 const averageRating = allVenueReviews.reduce((total, review) => {
-                    return total + review.rating;
+                    return total + parseFloat(review.rating);
                 }, 0) / allVenueReviews.length;
                 // round to 1 decimal place
-                const roundedRating = Math.round(averageRating * 10) / 10;
-                return roundedRating;
+                return averageRating.toFixed(1);
             },
 
             // get average rating for venue --> return 0 if no ratings
@@ -986,11 +983,10 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                 }
                 // else there are ratings
                 const averageRating = allVenueReviews.reduce((total, review) => {
-                    return total + review.rating;
+                    return total + parseFloat(review.rating);
                 }, 0) / allVenueReviews.length;
                 // round to 1 decimal place
-                const roundedRating = Math.round(averageRating * 10) / 10;
-                return roundedRating;
+                return averageRating.toFixed(1);
             },
 
             // for bookmark component

@@ -78,27 +78,47 @@ def updateBookmark():
     try:
         cursor = conn.cursor()
 
-        cursor.execute('SELECT "listName" FROM "usersDrinkLists" WHERE "userId" = %s', (userID,))
-        existing_lists = cursor.fetchall()
-        existing_list_names = set([row['listName'] for row in existing_lists])
+        # Fetch existing drink lists for the user
+        cursor.execute('SELECT "id", "listName" FROM "usersDrinkLists" WHERE "userId" = %s', (userID,))
+        existing_lists = {row['listName']: row['id'] for row in cursor.fetchall()}
 
         bookmark_list_names = set(bookmark.keys())
+        existing_list_names = set(existing_lists.keys())
 
+        # Identify lists to delete (if not in new bookmark)
         lists_to_delete = existing_list_names - bookmark_list_names
-
         for listName in lists_to_delete:
             cursor.execute('DELETE FROM "usersDrinkLists" WHERE "userId" = %s AND "listName" = %s', (userID, listName))
 
-        for listName in bookmark:
-            listItems = bookmark[listName]["listItems"]
+        for listName, listData in bookmark.items():
+            listItems = listData["listItems"]
 
-            query = """
-                INSERT INTO "usersDrinkLists" ("userId", "listName", "drinks")
-                VALUES (%s, %s, %s)
-                ON CONFLICT ("userId", "listName") DO UPDATE
-                SET "drinks" = EXCLUDED."drinks";
-            """
-            cursor.execute(query, (userID, listName, listItems))
+            # If list exists, use its ID; otherwise, create a new one
+            if listName in existing_lists:
+                list_id = existing_lists[listName]
+            else:
+                cursor.execute(
+                    'INSERT INTO "usersDrinkLists" ("userId", "listName") VALUES (%s, %s) RETURNING "id"',
+                    (userID, listName)
+                )
+                list_id = cursor.fetchone()["id"]
+
+            # Delete existing items in the list (to avoid duplicates)
+            cursor.execute('DELETE FROM "usersDrinkListItems" WHERE "listId" = %s', (list_id,))
+
+            # Insert new drinks with their addedDate, using NOW() if missing
+            for item in listItems:
+                added_date = item.get("addedDate", None)  # Get addedDate, default to None
+                if added_date:
+                    cursor.execute(
+                        'INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate") VALUES (%s, %s, %s)',
+                        (list_id, item["drinkId"], added_date)
+                    )
+                else:
+                    cursor.execute(
+                        'INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate") VALUES (%s, %s, NOW())',
+                        (list_id, item["drinkId"])
+                    )
 
         conn.commit()
         cursor.close()
@@ -114,7 +134,7 @@ def updateBookmark():
         ), 201
 
     except Exception as e:
-        print(str(e))
+        print("Update bookmark error:", str(e))
         return jsonify(
             {
                 "code": 500,

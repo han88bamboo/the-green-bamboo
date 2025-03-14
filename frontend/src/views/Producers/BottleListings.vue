@@ -120,12 +120,14 @@
                                         </div>
                                         <!-- bottler -->
                                         <div class="col-12 col-lg-6">
-                                            <h6 v-if="specified_listing['bottler'] != 'OB'" class="text-body-secondary producer-page"> Bottler: <u> {{ specified_listing["bottler"] }} </u>  </h6>
-                                                <h6 v-else class="text-body-secondary producer-page"> Bottler:
-                                                    <router-link :to="{ path: '/profile/producer/' + this.producer_id }" class="default-text-no-background"> 
-                                                        <u style="color:black;"> {{ getProducerName(specified_listing["producerID"]) }} </u>  
-                                                    </router-link>
-                                                </h6>
+                                            <h6 v-if="specified_listing['bottler'] == 'OB' || !specified_listing['bottlerID']" class="text-body-secondary producer-page">
+                                                Bottler: <u>Original Bottling</u>
+                                            </h6>
+                                            <h6 v-else class="text-body-secondary producer-page"> Bottler:
+                                                <router-link :to="{ path: '/profile/producer/' + this.bottler_id }" class="default-text-no-background"> 
+                                                    <u style="color:black;"> {{ getBottlerName(specified_listing["bottlerID"]) }} </u>  
+                                                </router-link>
+                                            </h6>
                                         </div>
                                     </div>
                                 </div>
@@ -1188,14 +1190,14 @@
                                     </div>
                                     <div style="display: inline;" class="text-start">
                                         <!-- voting -->
-                                        <svg v-if="!JSON.stringify(review.userVotes.upvotes).includes(JSON.stringify(userID))" @click="voteReview(review, 'upvote')" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-caret-up" viewBox="0 0 16 16">
+                                        <svg v-if="!review.userVotes.upvotes.some(vote => parseInt(vote?.userId) === parseInt(userID))" @click="voteReview(review, 'upvote')" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-caret-up" viewBox="0 0 16 16">
                                             <path d="M3.204 11h9.592L8 5.519zm-.753-.659 4.796-5.48a1 1 0 0 1 1.506 0l4.796 5.48c.566.647.106 1.659-.753 1.659H3.204a1 1 0 0 1-.753-1.659"/>
                                         </svg>
                                         <svg v-else @click="voteReview(review, 'unupvote')" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-caret-up-fill" viewBox="0 0 16 16">
                                             <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z"/>
                                         </svg>
                                         <span class="mx-2">{{ review.userVotes.upvotes.length - review.userVotes.downvotes.length }}</span>
-                                        <svg v-if="!JSON.stringify(review.userVotes.downvotes).includes(JSON.stringify(userID))" @click="voteReview(review, 'downvote')" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-caret-down me-3" viewBox="0 0 16 16">
+                                        <svg v-if="!review.userVotes.downvotes.some(vote => parseInt(vote?.userId) === parseInt(userID))" @click="voteReview(review, 'downvote')" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-caret-down me-3" viewBox="0 0 16 16">
                                             <path d="M3.204 5h9.592L8 10.481zm-.753.659 4.796 5.48a1 1 0 0 0 1.506 0l4.796-5.48c.566-.647.106-1.659-.753-1.659H3.204a1 1 0 0 0-.753 1.659"/>
                                         </svg>
                                         <svg v-else @click="voteReview(review, 'undownvote')" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-caret-down-fill me-3" viewBox="0 0 16 16">
@@ -1650,6 +1652,7 @@
 
                 // specified producer
                 producer_id: null,
+                bottler_id: null,
                 correctProducer: false,
 
                 // check whether user is moderator, whether correct type and whether listing allows mod
@@ -1938,6 +1941,7 @@
                         this.filteredListings = this.listings; // originally, make filtered listings the entire collection of listings
                         this.specified_listing = this.listings.find(listing => listing.id == this.listing_id); // find specified listing
                         this.producer_id = this.specified_listing.producerID // find specified producer
+                        this.bottler_id = this.specified_listing.bottlerID // find specified bottler
                         this.whereToBuy(); // find where to buy specified listing
                         this.whereToTry(); // find where to try specified listing [RE-ENABLE WHEN VENUES HAVE MENU ATTRIBUTE]
                         this.filteredReviews = this.getReviewsForListing(this.specified_listing);
@@ -2001,16 +2005,20 @@
                                 });
                             }
                             if (this.user.drinkLists && Object.keys(this.user.drinkLists).length > 0) {
-                                for (let drink of this.user.drinkLists["Drinks I Have Tried"]["listItems"]) {
-                                    let triedDrink = this.listings.find(listing => listing.id === parseInt(drink))?.listingName;
-                                    if (triedDrink) {
-                                        triedDrinks.push(triedDrink)
+                                if (this.user.drinkLists["Drinks I Have Tried"]) {
+                                    for (let drink of this.user.drinkLists["Drinks I Have Tried"]["listItems"]) {
+                                        let triedDrinkName = this.listings.find(listing => listing.id === parseInt(drink?.drinkId))?.listingName;
+                                        if (triedDrinkName) {
+                                            triedDrinks.push(triedDrinkName)
+                                        }
                                     }
                                 }
-                                for (let drink of this.user.drinkLists["Drinks I Want To Try"]["listItems"]) {
-                                    let wantDrinkName = this.listings.find(listing => listing.id === parseInt(drink))?.listingName;   
-                                    if (wantDrinkName) {
-                                        wantToTryDrinks.push(wantDrinkName)
+                                if (this.user.drinkLists["Drinks I Want To Try"]) {
+                                    for (let drink of this.user.drinkLists["Drinks I Want To Try"]["listItems"]) {
+                                        let wantDrinkName = this.listings.find(listing => listing.id === parseInt(drink?.drinkId))?.listingName;   
+                                        if (wantDrinkName) {
+                                            wantToTryDrinks.push(wantDrinkName)
+                                        }
                                     }
                                 }
                             }
@@ -2203,6 +2211,21 @@
                 if (producer) {
                     const producerName = producer["producerName"];
                     return producerName;
+                }
+                else {
+                    return null;
+                }
+            },
+
+            // get BottlerName for a listing based on producerID
+            getBottlerName(bottlerID) {
+                const bottlers = this.producers.filter(producer => producer?.isIndependentBottler == true);
+                const bottler = bottlers.find((bottler) => {
+                    return bottler["id"] == bottlerID;
+                });
+                if (bottler) {
+                    const bottlerName = bottler["producerName"];
+                    return bottlerName;
                 }
                 else {
                     return null;
@@ -2695,25 +2718,28 @@
                 this.updateID = review.id
             },
 
-            async voteReview(review, vote){
-                if (vote == "upvote") {
-                    review.userVotes.upvotes.push(this.userID);
-                    review.userVotes.downvotes = review.userVotes.downvotes.filter(vote => vote !== this.userID);
-                } else if (vote == "downvote") {
-                    review.userVotes.downvotes.push(this.userID);
-                    review.userVotes.upvotes = review.userVotes.upvotes.filter(vote => vote !== this.userID);
-                } else if (vote == "unupvote") {
-                    review.userVotes.upvotes = review.userVotes.upvotes.filter(vote => vote !== this.userID);
-                } else if (vote == "undownvote") {
-                    review.userVotes.downvotes = review.userVotes.downvotes.filter(vote => vote !== this.userID);
+            async voteReview(review, vote) {
+                const currentTime = new Date().toISOString(); // Get current timestamp
+
+                if (vote === "upvote") {
+                    review.userVotes.upvotes.push({ userId: this.userID, date: currentTime });
+                    review.userVotes.downvotes = review.userVotes.downvotes.filter(vote => vote.userId !== this.userID);
+                } else if (vote === "downvote") {
+                    review.userVotes.downvotes.push({ userId: this.userID, date: currentTime });
+                    review.userVotes.upvotes = review.userVotes.upvotes.filter(vote => vote.userId !== this.userID);
+                } else if (vote === "unupvote") {
+                    review.userVotes.upvotes = review.userVotes.upvotes.filter(vote => vote.userId !== this.userID);
+                } else if (vote === "undownvote") {
+                    review.userVotes.downvotes = review.userVotes.downvotes.filter(vote => vote.userId !== this.userID);
                 }
 
                 try {
                     await this.$axios.post(`${process.env.VUE_APP_API_URL}/editReview/voteReview`, 
                         {
                             reviewID: review.id,
-                            userVotes: review.userVotes,
-                            action: vote
+                            userID: this.userID,
+                            action: vote,
+                            voteDate: currentTime
                         }, {
                         headers: {
                             'Content-Type': 'application/json'

@@ -7,6 +7,7 @@ import s3Images
 from flask import Blueprint, g, request, jsonify
 from bson.objectid import ObjectId
 from datetime import datetime
+import json
 
 from scripts.adminFunctions import hash_password
 from scripts.createReview import create_username
@@ -24,34 +25,55 @@ def voteReview():
     data = request.get_json()
 
     review_id = data['reviewID']
-    user_votes = data['userVotes']
+    user_id = data['userID']
     action = data['action']
+    current_time = data.get('voteDate', datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     with conn.cursor() as cur:
         try:
             cur.execute("SELECT id, upvotes, downvotes FROM \"reviewsUserVotes\" WHERE \"reviewId\" = %s", (review_id,))
             result = cur.fetchone()
-            print("Result: ", result)
+
+            upvotes = result['upvotes'] if result else []
+            downvotes = result['downvotes'] if result else []
+
+            # Convert JSONB to Python lists
+            upvotes = json.loads(upvotes) if isinstance(upvotes, str) else upvotes
+            downvotes = json.loads(downvotes) if isinstance(downvotes, str) else downvotes
+
+            if action == "upvote":
+                upvotes.append({"userId": user_id, "date": current_time})
+                downvotes = [vote for vote in downvotes if vote['userId'] != user_id]
+
+            elif action == "downvote":
+                downvotes.append({"userId": user_id, "date": current_time})
+                upvotes = [vote for vote in upvotes if vote['userId'] != user_id]
+
+            elif action == "unupvote":
+                upvotes = [vote for vote in upvotes if vote['userId'] != user_id]
+
+            elif action == "undownvote":
+                downvotes = [vote for vote in downvotes if vote['userId'] != user_id]
 
             if result:
                 cur.execute("""
                     UPDATE "reviewsUserVotes"
                     SET upvotes = %s, downvotes = %s
                     WHERE id = %s;
-                """, (user_votes['upvotes'], user_votes['downvotes'], result['id']))
+                """, (json.dumps(upvotes), json.dumps(downvotes), result['id']))
             else:
                 cur.execute("""
                     INSERT INTO "reviewsUserVotes" ("reviewId", upvotes, downvotes)
                     VALUES (%s, %s, %s);
-                """, (review_id, user_votes['upvotes'], user_votes['downvotes']))
+                """, (review_id, json.dumps(upvotes), json.dumps(downvotes)))
 
             conn.commit()
 
             return jsonify({
                 "code": 201,
                 "data": {
-                    "upvotes": current_upvotes if 'current_upvotes' in locals() else user_votes['upvotes'],
-                    "downvotes": current_downvotes if 'current_downvotes' in locals() else user_votes['downvotes']
+                    "upvotes": upvotes,
+                    "downvotes": downvotes
                 }
             }), 201
 
@@ -108,20 +130,18 @@ def updateReview(id):
         cur.execute("""
             SELECT "id" FROM "venues" WHERE "venueName" = %s AND "address" = %s
         """, (location_name, address))
-        venue = cur.fetchone()
+        venue_id = cur.fetchone()['id'] if cur.rowcount > 0 else None
 
-        if not venue:
-            # Insert new venue
-            cur.execute("""
-                INSERT INTO "venues" ("venueName", "address", "venueType", "originLocation", "venueDesc", "menu", 
-                                      "hashedPassword", "claimStatus", "photo", "reservationDetails", "username")
-                VALUES (%s, %s, '', '', '', NULL, 'hashed_password', FALSE, '', '', %s)
-                RETURNING "id"
-            """, (location_name, address, create_username(location_name)))
-            venue_id = cur.fetchone()[0]
+        if not venue_id:
+            username = create_username(location_name)
+            insert_venue_sql = """INSERT INTO venues ("venueName", "address", "venueType", "originLocation", "venueDesc",
+                                  "hashedPassword", "claimStatus", photo, "reservationDetails", username)
+                                  VALUES (%s, %s, '', '', '', %s, FALSE, '', '', %s) RETURNING id"""
+            hashed_password = 'hashed_password'  # Replace with actual password hashing logic
+            cur.execute(insert_venue_sql, (location_name, address, hashed_password, username))
+            venue_id = cur.fetchone()['id'] if cur.rowcount > 0 else None
+            print("Venue ID: ", venue_id)
             conn.commit()
-        else:
-            venue_id = venue[0]
 
     # Update review photo
     if existing_review['photo']:
@@ -140,7 +160,7 @@ def updateReview(id):
             "photo" = %s, "colour" = %s, "aroma" = %s, "taste" = %s, "observationTag" = %s, "location" = %s, "address" = %s
         WHERE "id" = %s
     """
-    
+
     review_values = (
         data.get('userID'), data.get('reviewTarget'), float(data.get('rating', 0.0)), data.get('reviewDesc'),
         data.get('reviewType'), created_date,
@@ -231,63 +251,46 @@ def updateProducerReview(id):
     cur = conn.cursor()
     data = request.get_json()
 
-    # Parse the date from the request body
     try:
         created_date = datetime.strptime(data.get('createdDate', ''), "%a, %d %b %Y %H:%M:%S %Z")
     except ValueError:
-        return jsonify({
-            "code": 400,
-            "message": "Invalid date format."
-        }), 400
-    
-    # Check if review exists
-    cur.execute("""
-        SELECT * FROM "producerReviews" WHERE "id" = %s
-    """, (id,))
-    existing_review = cur.fetchone()
+        return jsonify({"code": 400, "message": "Invalid date format."}), 400
 
-    if existing_review is None:
-        return jsonify({
-            "code": 400,
-            "data": {
-                "reviewDesc": data.get('reviewDesc', '')
-            },
-            "message": "Review does not exist."
-        }), 400
+    # Check if review exists
+    cur.execute("""SELECT EXISTS(SELECT 1 FROM "producerReviews" WHERE id = %s)""", (id,))
+
+    if not cur.fetchone()['exists']:
+        return jsonify({"code": 400, "message": "Review does not exist."}), 400
     
-    # Update review photo
-    if existing_review['photo']:
-        s3Images.deleteImageFromS3(existing_review['photo'])
-    if data['photo']:
-        data['photo'] = s3Images.uploadBase64ImageToS3(data['photo'])
+    cur.execute("""SELECT photos FROM "producerReviews" WHERE id = %s""", (id,))
+    old_photos = cur.fetchone()['photos'] or []
+    
+    from threading import Thread
+    def async_delete_images(photo_list):
+        for photo in photo_list:
+            s3Images.deleteImageFromS3(photo)
+
+    Thread(target=async_delete_images, args=(old_photos,)).start()
+
+
+    new_photos = [s3Images.uploadBase64ImageToS3(photo) for photo in data.get('photos', []) if photo]
 
     update_review_sql = """
         UPDATE "producerReviews"
-        SET "userID" = %s, "producerID" = %s, "rating" = %s, "reviewDesc" = %s,
-            "createdDate" = %s, "photo" = %s
+        SET "userID" = %s, "producerID" = %s, "rating" = %s, "reviewDesc" = %s, "createdDate" = %s, "photos" = %s
         WHERE "id" = %s
     """
-
+    
     review_values = (
         data.get('userID'), data.get('producerID'), float(data.get('rating', 0.0)), data.get('reviewDesc'),
-        created_date, data.get('photo'), id
+        created_date, new_photos, id
     )
 
     try:
         cur.execute(update_review_sql, review_values)
         conn.commit()
+        return jsonify({"code": 200, "data": data.get('reviewDesc', '')}), 200
 
-        return jsonify({
-            "code": 200,
-            "data": data.get('reviewDesc', '')
-        }), 200
-    
     except Exception as e:
         print(str(e))
-        return jsonify({
-            "code": 500,
-            "data": {
-                "reviewDesc": data.get('reviewDesc', '')
-            },
-            "message": "An error occurred updating the review."
-        }), 500
+        return jsonify({"code": 500, "message": "An error occurred updating the review."}), 500

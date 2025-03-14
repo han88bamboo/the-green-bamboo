@@ -86,7 +86,7 @@
             checkBookmarkStatus(listingID) {
                 for (const category of Object.values(this.userBookmarks)) {
                     if (category.listItems) {
-                        if (category.listItems.some(item => item[1].id === listingID)) {
+                        if (category.listItems.some(item => parseInt(item?.drinkId) === listingID)) {
                             return true;
                         }
                     }
@@ -102,7 +102,7 @@
                     if (Object.hasOwnProperty.call(this.userBookmarks, listName)) {
                         const bookmarkItems = this.userBookmarks[listName].listItems;
                         if (bookmarkItems) {
-                            if (bookmarkItems.some(item => parseInt(item) === listingID)) {
+                            if (bookmarkItems.some(item => parseInt(item?.drinkId) === listingID)) {
                                 if (!this.selectedBookmarkList.includes(listName)) {
                                     this.selectedBookmarkList.push(listName);
                                 }
@@ -118,14 +118,14 @@
                 for (const listName in this.userBookmarks) {
                     if (Object.hasOwnProperty.call(this.userBookmarks, listName)) {
                         const bookmarkItems = this.userBookmarks[listName].listItems;
-                        let itemExist = bookmarkItems.some(item => parseInt(item) === addListingId);
+                        let itemExist = bookmarkItems.some(item => parseInt(item?.drinkId) === addListingId);
                         if (this.selectedBookmarkList.includes(listName)) {
                             if (!itemExist) {
-                                bookmarkItems.push(addListingId);
+                                bookmarkItems.push({drinkId: addListingId});
                             }
                         } else {
                             if (itemExist) {
-                                const index = bookmarkItems.findIndex(item => parseInt(item) === addListingId);
+                                const index = bookmarkItems.findIndex(item => parseInt(item?.drinkId) === addListingId);
                                 bookmarkItems.splice(index, 1);
                             }
                         }
@@ -143,7 +143,7 @@
                         this.othersListNameError = "";
                         this.userBookmarks[this.othersListName] = {
                             listDesc: "",
-                            listItems: [addListingId],
+                            listItems: [{drinkId: addListingId}],
                         };
                     }
                 }

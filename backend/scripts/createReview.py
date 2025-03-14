@@ -238,15 +238,15 @@ def createReviews():
         location_name = raw_review['location']
         address = raw_review['address']
         cur.execute("""SELECT id FROM venues WHERE "venueName" = %s AND "address" = %s""", (location_name, address))
-        venue = cur.fetchone()
-        if not venue:
+        venue_id = cur.fetchone()['id'] if cur.rowcount > 0 else None
+        if not venue_id:
             username = create_username(location_name)
             insert_venue_sql = """INSERT INTO venues ("venueName", "address", "venueType", "originLocation", "venueDesc",
                                   "hashedPassword", "claimStatus", photo, "reservationDetails", username)
                                   VALUES (%s, %s, '', '', '', %s, FALSE, '', '', %s) RETURNING id"""
-            hashed_password = 'hashed_password'  # Replace with actual password hashing logic
+            hashed_password = 'hashed_password'
             cur.execute(insert_venue_sql, (location_name, address, hashed_password, username))
-            venue_id = cur.fetchone()['id']
+            venue_id = cur.fetchone()['id'] if cur.rowcount > 0 else None
             print(venue_id)
             conn.commit()
 
@@ -285,7 +285,7 @@ def createReviews():
 # ======================================================
 
 # [POST] Creates a producer tour review
-@blueprint.route("/createProducerReview", methods= ['POST'])
+@blueprint.route("/createProducerReview", methods=['POST'])
 def createProducerReviews():
     raw_review = request.get_json()
     conn = g.db
@@ -295,42 +295,26 @@ def createProducerReviews():
     user_id = int(raw_review['userID'])
     created_date = datetime.strptime(raw_review['createdDate'], "%Y-%m-%dT%H:%M:%S.%fZ")
 
-    # Checking for duplicate review
-    cur.execute("""
-        SELECT * FROM "producerReviews" WHERE "producerID" = %s AND "userID" = %s
-    """, (producer_id, user_id))
+    # Check for duplicate review using EXISTS
+    cur.execute("""SELECT EXISTS(SELECT 1 FROM "producerReviews" WHERE "producerID" = %s AND "userID" = %s)""",
+                (producer_id, user_id))
+    if cur.fetchone()['exists']:
+        return jsonify({"code": 400, "message": "Review already exists."}), 400
 
-    if cur.fetchone() is not None:
-        return jsonify({
-            "code": 400,
-            "data": {
-                "review": None
-            },
-            "message": "Review already exists."
-        }), 400
-    
-    # Upload image into S3
-    if raw_review['photo']:
-        raw_review['photo'] = s3Images.uploadBase64ImageToS3(raw_review['photo'])
+    # Upload images & store their returned URLs
+    photos = [s3Images.uploadBase64ImageToS3(photo) for photo in raw_review.get('photos', []) if photo]
 
-    # Prepare the insert SQL for reviews
-    insert_review_sql = """INSERT INTO "producerReviews" ("userID", "producerID", "rating", "reviewDesc", "createdDate", "photo") 
-                           VALUES (%s, %s, %s, %s, %s, %s)"""
-    review_values = (user_id, producer_id, float(raw_review['rating']), raw_review['reviewDesc'], created_date, raw_review['photo'])
+    insert_review_sql = """
+        INSERT INTO "producerReviews" ("userID", "producerID", "rating", "reviewDesc", "createdDate", "photos") 
+        VALUES (%s, %s, %s, %s, %s, %s)
+    """
+    review_values = (user_id, producer_id, float(raw_review['rating']), raw_review['reviewDesc'], created_date, photos)
 
     try:
         cur.execute(insert_review_sql, review_values)
         conn.commit()
-        return jsonify({
-            "code": 201,
-            "data": raw_review['reviewDesc']
-        }), 201
+        return jsonify({"code": 201, "data": raw_review['reviewDesc']}), 201
+
     except Exception as e:
         print(str(e))
-        return jsonify({
-            "code": 500,
-            "data": {
-                "review": None
-            },
-            "message": "An error occurred creating the listing."
-        }), 500
+        return jsonify({"code": 500, "message": "An error occurred creating the review."}), 500

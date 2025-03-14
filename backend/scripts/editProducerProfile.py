@@ -25,13 +25,14 @@ def editDetails():
     producerID = int(data['producerID'])
     producerName = data['producerName']
     producerDesc = data['producerDesc']
+    isIndependentBottler = data['isIndependentBottler']
     originCountry = data['originCountry']
     yearFounded = data.get('yearFounded', None)
-    activeStatus = data['activeStatus']
-    owner = data['owner']
+    activeStatus = data.get('activeStatus', None)
+    owner = data.get('owner', None)
     location = data['location']
-    openForTours = data['openForTours']
-    website = data['website']
+    openForTours = data.get('openForTours', False)
+    website = data.get('website', None)
 
     try:
         cur.execute('SELECT * FROM producers WHERE id = %s', (producerID,))
@@ -51,6 +52,7 @@ def editDetails():
                     "photo" = %s,
                     "producerName" = %s,
                     "producerDesc" = %s,
+                    "isIndependentBottler" = %s,
                     "originCountry" = %s,
                     "yearFounded" = %s,
                     "activeStatus" = %s,
@@ -60,7 +62,7 @@ def editDetails():
                     "website" = %s
                 WHERE id = %s
                 """,
-                (image64, producerName, producerDesc, originCountry, yearFounded, activeStatus, owner, location, openForTours, website, producerID)
+                (image64, producerName, producerDesc, isIndependentBottler, originCountry, yearFounded, activeStatus, owner, location, openForTours, website, producerID)
             )
             conn.commit()
 
