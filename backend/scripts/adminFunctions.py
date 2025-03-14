@@ -586,9 +586,10 @@ def importListings():
         rows = list(csv_data)
 
     # Fetch existing producers
-    cur.execute('SELECT "producerName", "id" FROM "producers"')
+    cur.execute('SELECT "producerName", "id", "isIndependentBottler" FROM "producers"')
     producers = cur.fetchall()
     producer_name_id_dict = {row['producerName']: row['id'] for row in producers}
+    bottler_name_id_dict = {row['producerName']: row['id'] for row in producers if row['isIndependentBottler']}
 
     # Collect producer names from CSV
     csv_producers = set(row[1] for row in rows if row[1])
@@ -655,23 +656,30 @@ def importListings():
         producer_name = converted_row[1]
         producer_id = producer_name_id_dict.get(producer_name)
 
-        # Collect image URL for parallel upload
+        bottler_name = converted_row[2]
+        if bottler_name == "OB":
+            bottler_id = None
+            bottler_name = "OB"
+        else:
+            bottler_id = bottler_name_id_dict.get(bottler_name)
+
         image_urls.append(converted_row[12])
 
         listings_to_insert.append({
             'listingName': converted_row[0],
             'producerID': producer_id,
-            'bottler': converted_row[2],
+            'bottler': bottler_name,
+            'bottlerID': bottler_id,
             'originCountry': converted_row[3],
             'drinkType': converted_row[4],
             'typeCategory': converted_row[5],
-            'drinkStyle':converted_row[6], 
+            'drinkStyle': converted_row[6],
             'age': converted_row[7],
             'abv': converted_row[8],
             'reviewLink': converted_row[9],
             'officialDesc': converted_row[10],
             'sourceLink': converted_row[11],
-            'photo': None,  # Placeholder for S3 URL
+            'photo': None,
             'allowMod': True,
             'addedDate': datetime.now()
         })
@@ -689,7 +697,7 @@ def importListings():
         listing['photo'] = s3_url
 
     print(f"Total rows in CSV: {len(rows)}")
-    print(f"Total listings perpared for insertion: {len(listings_to_insert)}")
+    print(f"Total listings prepared for insertion: {len(listings_to_insert)}")
 
     # Bulk insert listings
     if listings_to_insert:
@@ -701,7 +709,7 @@ def importListings():
         execute_values(cur, listing_query, listing_values)
         conn.commit()
 
-        print(f"Succesfully inserted {len(listings_to_insert)} listings")
+        print(f"Successfully inserted {len(listings_to_insert)} listings")
 
     return jsonify({
         "code": 201,
