@@ -589,13 +589,19 @@ def importListings():
     cur.execute('SELECT "producerName", "id", "isIndependentBottler" FROM "producers"')
     producers = cur.fetchall()
     producer_name_id_dict = {row['producerName']: row['id'] for row in producers}
-    bottler_name_id_dict = {row['producerName']: row['id'] for row in producers if row['isIndependentBottler']}
-
-    # Collect producer names from CSV
+    
     csv_producers = set(row[1] for row in rows if row[1])
-
+    
+    # Collect bottler names from CSV (column 2) that are not "OB" or "Original Bottling"
+    csv_bottlers = set(row[2] for row in rows if row[2] and row[2] not in ["OB", "Original Bottling"])
+    
     # Determine new producers to insert
     new_producers = csv_producers - set(producer_name_id_dict.keys())
+    
+    # Determine new bottlers to insert (excluding any already in producers table)
+    new_bottlers = csv_bottlers - set(producer_name_id_dict.keys())
+    
+    # Prepare data for new producers
     new_producer_data = [
         {
             "producerName": name,
@@ -609,33 +615,58 @@ def importListings():
             "username": None,
             "producerLink": "",
             "stripeCustomerId": None,
-            "claimStatusCheckDate": None
+            "claimStatusCheckDate": None,
+            "isIndependentBottler": False
         }
         for name in new_producers
     ]
+    
+    # Prepare data for new bottlers (mark them as independent bottlers)
+    new_bottler_data = [
+        {
+            "producerName": name,
+            "producerDesc": "",
+            "originCountry": "",
+            "mainDrinks": [],
+            "photo": "",
+            "hashedPassword": hash_password(name, "admin1234"),
+            "claimStatus": False,
+            "statusOB": "",
+            "username": None,
+            "producerLink": "",
+            "stripeCustomerId": None,
+            "claimStatusCheckDate": None,
+            "isIndependentBottler": True
+        }
+        for name in new_bottlers
+    ]
+    
+    # Combine new producers and bottlers for bulk insert
+    all_new_profiles = new_producer_data + new_bottler_data
 
-    # Bulk insert new producers and fetch their IDs
-    if new_producer_data:
+    # Bulk insert new producers and bottlers and fetch their IDs
+    if all_new_profiles:
         insert_query = """
             INSERT INTO producers (
                 "producerName", "producerDesc", "originCountry", "mainDrinks", "photo", "hashedPassword",
-                "claimStatus", "statusOB", "username", "producerLink", "stripeCustomerId", "claimStatusCheckDate"
+                "claimStatus", "statusOB", "username", "producerLink", "stripeCustomerId", "claimStatusCheckDate",
+                "isIndependentBottler"
             ) VALUES %s RETURNING "producerName", "id"
         """
         execute_values(cur, insert_query, [
             (
-                producer["producerName"], producer["producerDesc"], producer["originCountry"],
-                producer["mainDrinks"], producer["photo"], producer["hashedPassword"],
-                producer["claimStatus"], producer["statusOB"], producer["username"],
-                producer["producerLink"], producer["stripeCustomerId"], producer["claimStatusCheckDate"]
+                profile["producerName"], profile["producerDesc"], profile["originCountry"],
+                profile["mainDrinks"], profile["photo"], profile["hashedPassword"],
+                profile["claimStatus"], profile["statusOB"], profile["username"],
+                profile["producerLink"], profile["stripeCustomerId"], profile["claimStatusCheckDate"],
+                profile["isIndependentBottler"]
             )
-            for producer in new_producer_data
+            for profile in all_new_profiles
         ])
         conn.commit()
-        new_producers_with_ids = cur.fetchall()
-        producer_name_id_dict.update({row["producerName"]: row["id"] for row in new_producers_with_ids})
+        new_profiles_with_ids = cur.fetchall()
+        producer_name_id_dict.update({row["producerName"]: row["id"] for row in new_profiles_with_ids})
 
-    # Process listings and prepare for bulk insert
     listings_to_insert = []
     image_urls = []
 
@@ -656,12 +687,18 @@ def importListings():
         producer_name = converted_row[1]
         producer_id = producer_name_id_dict.get(producer_name)
 
+        # Handle bottler scenarios
         bottler_name = converted_row[2]
-        if bottler_name == "OB" or bottler_name == 'Original Bottling':
+        
+        # Scenario A: Bottler is "OB" or "Original Bottling"
+        if bottler_name in ["OB", "Original Bottling"]:
             bottler_id = None
             bottler_name = "OB"
+        # Scenario B: Any other bottler
         else:
-            bottler_id = bottler_name_id_dict.get(bottler_name)
+            # Get the bottler ID from the producers dictionary (it will be there now 
+            # whether it was pre-existing or newly created)
+            bottler_id = producer_name_id_dict.get(bottler_name) if bottler_name else None
 
         image_urls.append(converted_row[12])
 

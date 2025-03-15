@@ -2219,8 +2219,7 @@
 
             // get BottlerName for a listing based on producerID
             getBottlerName(bottlerID) {
-                const bottlers = this.producers.filter(producer => producer?.isIndependentBottler == true);
-                const bottler = bottlers.find((bottler) => {
+                const bottler = this.producers.find((bottler) => {
                     return bottler["id"] == bottlerID;
                 });
                 if (bottler) {

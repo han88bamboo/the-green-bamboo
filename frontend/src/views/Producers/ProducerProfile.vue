@@ -325,13 +325,15 @@
 
                             <div class="modal-body px-4">
                                 <div class="row " >
-                                    <div class="col-3 mobile-col-4">
-                                        <input class="form-control mb-2" @change="onFilesChange" type="file" id="reviewPhotos" style="display: none;" multiple>
-                                        <label for="reviewPhotos" >
-                                            <div class="mobile-review-svg-button">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="M20.4 14.5L16 10 4 20"></path> <circle cx="19" cy="19" r="3" fill="black"></circle><line x1="18" y1="19" x2="20" y2="19" stroke="white" stroke-width="1"></line><line x1="19" y1="18" x2="19" y2="20" stroke="white" stroke-width="1"></line></svg>
-                                            </div>
-                                        </label>
+                                    <div class="col-7 mobile-col-8">
+                                        <div class="col-4 mobile-col-5">
+                                            <input class="form-control mb-2" @change="onFilesChange" type="file" id="reviewPhotos" style="display: none;" multiple>
+                                            <label for="reviewPhotos" >
+                                                <div class="mobile-review-svg-button">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="M20.4 14.5L16 10 4 20"></path> <circle cx="19" cy="19" r="3" fill="black"></circle><line x1="18" y1="19" x2="20" y2="19" stroke="white" stroke-width="1"></line><line x1="19" y1="18" x2="19" y2="20" stroke="white" stroke-width="1"></line></svg>
+                                                </div>
+                                            </label>
+                                        </div>
                                         <div v-if="selectedImagesForReview.length > 0" class = "row">
                                             <div v-for="(image, index) in selectedImagesForReview" :key="index" class="col-4">
                                                 <img :src="image" alt="" id="output" class="py-2 review-preview-photo" style="max-width: 300px;">
@@ -2650,20 +2652,21 @@
 
             onFilesChange(event) {
                 const files = event.target.files;
-                if (files.length > 3) {
+                if (files.length + this.selectedImagesForReview.length > 3) {
                     alert("You can only upload up to 3 images.");
                     return;
                 }
+
                 for (let i = 0; i < files.length; i++) {
                     const file = files[i];
                     const reader = new FileReader();
-                    this.selectedImagesForReview = [];
-                    this.reviewImages64 = [];
+
                     reader.onloadend = () => {
                         this.selectedImagesForReview.push(reader.result);
                         const base64String = reader.result.replace('data:', '').replace(/^.+,/, '');
                         this.reviewImages64.push(base64String);
                     };
+
                     reader.readAsDataURL(file);
                 }
             },
