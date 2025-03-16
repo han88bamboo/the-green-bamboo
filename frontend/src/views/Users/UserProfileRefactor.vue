@@ -1507,7 +1507,7 @@ export default {
         async getDrinkTypes() {
             // drinkCategories
             try {
-                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getDrinkTypes`);
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getDrinkTypes`);
                 this.drinkTypes = response.data;
 
                 // retrieve the drink type and put them into an array
