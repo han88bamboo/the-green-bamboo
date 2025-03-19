@@ -196,6 +196,7 @@
                   >Explore</router-link
                 >
               </li>
+              <li><router-link :to="'/foryou'" class="dropdown-item">For You</router-link></li>
               <li>
                 <router-link :to="'/explore'" class="dropdown-item"
                   >Best Of</router-link
@@ -319,7 +320,11 @@
             Explore
           </button>
         </router-link>
-
+        <router-link :to="'/foryou'">
+          <button class="btn primary-btn border-0 fw-bold" type="button">
+              For You
+          </button>
+      </router-link>
         <router-link :to="'/explore'">
           <button class="btn primary-btn border-0 fw-bold" type="button">
             Best Of
