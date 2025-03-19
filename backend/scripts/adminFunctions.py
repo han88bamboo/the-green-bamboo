@@ -567,191 +567,211 @@ def hash_password(id, password):
 # - Possible return codes: 201 (Updated), 400(Observation tag not found), 500 (Error during update)
 @blueprint.route('/importListings', methods=['POST'])
 def importListings():
-    conn = g.db
-    cur = conn.cursor()
-    file = request.files['file']
+    try:
+        conn = g.db
+        cur = conn.cursor()
+        file = request.files['file']
 
-    # Detect encoding of CSV file
-    file_encoding = detect_encoding(file)
+        # Detect encoding of CSV file
+        file_encoding = detect_encoding(file)
 
-    # Define column data types
-    column_data_types = [str, str, str, str, str, str, str, str, float, str, str, str, str]
+        # Define column data types
+        column_data_types = [str, str, str, str, str, str, str, str, float, str, str, str, str]
 
-    # Read all rows from CSV
-    with io.TextIOWrapper(file, encoding=file_encoding, errors='replace') as csv_file:
-        csv_data = csv.reader(csv_file)
-        for _ in range(4):  # Skip header rows
-            next(csv_data)
+        # Read all rows from CSV
+        with io.TextIOWrapper(file, encoding=file_encoding, errors='replace') as csv_file:
+            csv_data = csv.reader(csv_file)
+            for _ in range(4):  # Skip header rows
+                next(csv_data)
+            
+            rows = list(csv_data)
+
+        # Fetch existing producers
+        cur.execute('SELECT "producerName", "id", "isIndependentBottler" FROM "producers"')
+        producers = cur.fetchall()
+        producer_name_id_dict = {row['producerName']: row['id'] for row in producers}
         
-        rows = list(csv_data)
-
-    # Fetch existing producers
-    cur.execute('SELECT "producerName", "id", "isIndependentBottler" FROM "producers"')
-    producers = cur.fetchall()
-    producer_name_id_dict = {row['producerName']: row['id'] for row in producers}
-    
-    csv_producers = set(row[1] for row in rows if row[1])
-    
-    # Collect bottler names from CSV (column 2) that are not "OB" or "Original Bottling"
-    csv_bottlers = set(row[2] for row in rows if row[2] and row[2] not in ["OB", "Original Bottling"])
-    
-    # Determine new producers to insert
-    new_producers = csv_producers - set(producer_name_id_dict.keys())
-    
-    # Determine new bottlers to insert (excluding any already in producers table)
-    new_bottlers = csv_bottlers - set(producer_name_id_dict.keys())
-    
-    # Prepare data for new producers
-    new_producer_data = [
-        {
-            "producerName": name,
-            "producerDesc": "",
-            "originCountry": "",
-            "mainDrinks": [],
-            "photo": "",
-            "hashedPassword": hash_password(name, "admin1234"),
-            "claimStatus": False,
-            "statusOB": "",
-            "username": None,
-            "producerLink": "",
-            "stripeCustomerId": None,
-            "claimStatusCheckDate": None,
-            "isIndependentBottler": False
-        }
-        for name in new_producers
-    ]
-    
-    # Prepare data for new bottlers (mark them as independent bottlers)
-    new_bottler_data = [
-        {
-            "producerName": name,
-            "producerDesc": "",
-            "originCountry": "",
-            "mainDrinks": [],
-            "photo": "",
-            "hashedPassword": hash_password(name, "admin1234"),
-            "claimStatus": False,
-            "statusOB": "",
-            "username": None,
-            "producerLink": "",
-            "stripeCustomerId": None,
-            "claimStatusCheckDate": None,
-            "isIndependentBottler": True
-        }
-        for name in new_bottlers
-    ]
-    
-    # Combine new producers and bottlers for bulk insert
-    all_new_profiles = new_producer_data + new_bottler_data
-
-    # Bulk insert new producers and bottlers and fetch their IDs
-    if all_new_profiles:
-        insert_query = """
-            INSERT INTO producers (
-                "producerName", "producerDesc", "originCountry", "mainDrinks", "photo", "hashedPassword",
-                "claimStatus", "statusOB", "username", "producerLink", "stripeCustomerId", "claimStatusCheckDate",
-                "isIndependentBottler"
-            ) VALUES %s RETURNING "producerName", "id"
-        """
-        execute_values(cur, insert_query, [
-            (
-                profile["producerName"], profile["producerDesc"], profile["originCountry"],
-                profile["mainDrinks"], profile["photo"], profile["hashedPassword"],
-                profile["claimStatus"], profile["statusOB"], profile["username"],
-                profile["producerLink"], profile["stripeCustomerId"], profile["claimStatusCheckDate"],
-                profile["isIndependentBottler"]
-            )
-            for profile in all_new_profiles
-        ])
-        conn.commit()
-        new_profiles_with_ids = cur.fetchall()
-        producer_name_id_dict.update({row["producerName"]: row["id"] for row in new_profiles_with_ids})
-
-    listings_to_insert = []
-    image_urls = []
-
-    for row in rows:
-        if len(row) < len(column_data_types):
-            print(f"Skipping row with missing columns: {row}")
-            continue
+        csv_producers = set(row[1] for row in rows if row[1])
         
-        converted_row = []
-        for data_type, value in zip(column_data_types, row):
-            if data_type is float:
-                value = value.replace('%', '').strip()
-                converted_value = float(value) if value and value.lower() != 'n/a' else None
+        # Collect bottler names from CSV (column 2) that are not "OB" or "Original Bottling"
+        csv_bottlers = set(row[2] for row in rows if row[2] and row[2] not in ["OB", "Original Bottling"])
+        
+        # Determine new producers to insert
+        new_producers = csv_producers - set(producer_name_id_dict.keys())
+        
+        # Determine new bottlers to insert (excluding any already in producers table)
+        new_bottlers = csv_bottlers - set(producer_name_id_dict.keys())
+        
+        # Prepare data for new producers
+        new_producer_data = [
+            {
+                "producerName": name,
+                "producerDesc": "",
+                "originCountry": "",
+                "mainDrinks": [],
+                "photo": "",
+                "hashedPassword": hash_password(name, "admin1234"),
+                "claimStatus": False,
+                "statusOB": "",
+                "username": None,
+                "producerLink": "",
+                "stripeCustomerId": None,
+                "claimStatusCheckDate": None,
+                "isIndependentBottler": False
+            }
+            for name in new_producers
+        ]
+        
+        # Prepare data for new bottlers (mark them as independent bottlers)
+        new_bottler_data = [
+            {
+                "producerName": name,
+                "producerDesc": "",
+                "originCountry": "",
+                "mainDrinks": [],
+                "photo": "",
+                "hashedPassword": hash_password(name, "admin1234"),
+                "claimStatus": False,
+                "statusOB": "",
+                "username": None,
+                "producerLink": "",
+                "stripeCustomerId": None,
+                "claimStatusCheckDate": None,
+                "isIndependentBottler": True
+            }
+            for name in new_bottlers
+        ]
+        
+        # Combine new producers and bottlers for bulk insert
+        all_new_profiles = new_producer_data + new_bottler_data
+
+        # Bulk insert new producers and bottlers and fetch their IDs
+        if all_new_profiles:
+            insert_query = """
+                INSERT INTO producers (
+                    "producerName", "producerDesc", "originCountry", "mainDrinks", "photo", "hashedPassword",
+                    "claimStatus", "statusOB", "username", "producerLink", "stripeCustomerId", "claimStatusCheckDate",
+                    "isIndependentBottler"
+                ) VALUES %s RETURNING "producerName", "id"
+            """
+            execute_values(cur, insert_query, [
+                (
+                    profile["producerName"], profile["producerDesc"], profile["originCountry"],
+                    profile["mainDrinks"], profile["photo"], profile["hashedPassword"],
+                    profile["claimStatus"], profile["statusOB"], profile["username"],
+                    profile["producerLink"], profile["stripeCustomerId"], profile["claimStatusCheckDate"],
+                    profile["isIndependentBottler"]
+                )
+                for profile in all_new_profiles
+            ])
+            conn.commit()
+            new_profiles_with_ids = cur.fetchall()
+            producer_name_id_dict.update({row["producerName"]: row["id"] for row in new_profiles_with_ids})
+
+        # Fetch existing listings to avoid duplicates
+        cur.execute('SELECT "listingName", "producerID" FROM "listings"')
+        existing_listings = {(row['listingName'], row['producerID']) for row in cur.fetchall()}
+
+        listings_to_insert = []
+        image_urls = []
+
+        for row in rows:
+            if len(row) < len(column_data_types):
+                print(f"Skipping row with missing columns: {row}")
+                continue
+            
+            converted_row = []
+            for data_type, value in zip(column_data_types, row):
+                if data_type is float:
+                    value = value.replace('%', '').strip()
+                    converted_value = float(value) if value and value.lower() != 'n/a' else None
+                else:
+                    converted_value = data_type(value) if value else None
+                converted_row.append(converted_value)
+
+            producer_name = converted_row[1]
+            producer_id = producer_name_id_dict.get(producer_name)
+            listing_name = converted_row[0]
+
+            if (listing_name, producer_id) in existing_listings:
+                print(f"Skipping duplicate listing: {listing_name} from {producer_name}")
+                image_urls.append(None)  # Add None to maintain alignment with listings
+                continue
+
+            # Handle bottler scenarios
+            bottler_name = converted_row[2]
+            
+            # Scenario A: Bottler is "OB" or "Original Bottling"
+            if bottler_name in ["OB", "Original Bottling"]:
+                bottler_id = None
+                bottler_name = "OB"
+            # Scenario B: Any other bottler
             else:
-                converted_value = data_type(value) if value else None
-            converted_row.append(converted_value)
+                # Get the bottler ID from the producers dictionary (it will be there now 
+                # whether it was pre-existing or newly created)
+                bottler_id = producer_name_id_dict.get(bottler_name) if bottler_name else None
 
-        producer_name = converted_row[1]
-        producer_id = producer_name_id_dict.get(producer_name)
+            image_urls.append(converted_row[12])
 
-        # Handle bottler scenarios
-        bottler_name = converted_row[2]
-        
-        # Scenario A: Bottler is "OB" or "Original Bottling"
-        if bottler_name in ["OB", "Original Bottling"]:
-            bottler_id = None
-            bottler_name = "OB"
-        # Scenario B: Any other bottler
-        else:
-            # Get the bottler ID from the producers dictionary (it will be there now 
-            # whether it was pre-existing or newly created)
-            bottler_id = producer_name_id_dict.get(bottler_name) if bottler_name else None
+            listings_to_insert.append({
+                'listingName': converted_row[0],
+                'producerID': producer_id,
+                'bottler': bottler_name,
+                'bottlerID': bottler_id,
+                'originCountry': converted_row[3],
+                'drinkType': converted_row[4],
+                'typeCategory': converted_row[5],
+                'drinkStyle': converted_row[6],
+                'age': converted_row[7],
+                'abv': converted_row[8],
+                'reviewLink': converted_row[9],
+                'officialDesc': converted_row[10],
+                'sourceLink': converted_row[11],
+                'photo': None,
+                'allowMod': True,
+                'addedDate': datetime.now()
+            })
 
-        image_urls.append(converted_row[12])
+        # Parallelize S3 image uploads
+        def upload_image(image_url):
+            return s3Images.uploadURLtoS3(image_url) if image_url else None
 
-        listings_to_insert.append({
-            'listingName': converted_row[0],
-            'producerID': producer_id,
-            'bottler': bottler_name,
-            'bottlerID': bottler_id,
-            'originCountry': converted_row[3],
-            'drinkType': converted_row[4],
-            'typeCategory': converted_row[5],
-            'drinkStyle': converted_row[6],
-            'age': converted_row[7],
-            'abv': converted_row[8],
-            'reviewLink': converted_row[9],
-            'officialDesc': converted_row[10],
-            'sourceLink': converted_row[11],
-            'photo': None,
-            'allowMod': True,
-            'addedDate': datetime.now()
-        })
+        with ThreadPoolExecutor() as executor:
+            s3_urls = list(executor.map(upload_image, image_urls))
+            print("S3 URLs:", s3_urls)
 
-    # Parallelize S3 image uploads
-    def upload_image(image_url):
-        return s3Images.uploadURLtoS3(image_url) if image_url else None
+        # Update photo URLs in listings
+        for listing, s3_url in zip(listings_to_insert, s3_urls):
+            listing['photo'] = s3_url
 
-    with ThreadPoolExecutor() as executor:
-        s3_urls = list(executor.map(upload_image, image_urls))
-        print("S3 URLs:", s3_urls)
+        print(f"Total rows in CSV: {len(rows)}")
+        print(f"Total listings prepared for insertion: {len(listings_to_insert)}")
+        print(f"Skipped duplicate listings: {len(rows) - len(listings_to_insert)}")
 
-    # Update photo URLs in listings
-    for listing, s3_url in zip(listings_to_insert, s3_urls):
-        listing['photo'] = s3_url
+        # Bulk insert listings
+        if listings_to_insert:
+            listing_columns = listings_to_insert[0].keys()
+            listing_query = "INSERT INTO listings ({}) VALUES %s".format(
+                ', '.join(f'"{col}"' for col in listing_columns)
+            )
+            listing_values = [tuple(listing.values()) for listing in listings_to_insert]
+            execute_values(cur, listing_query, listing_values)
+            conn.commit()
 
-    print(f"Total rows in CSV: {len(rows)}")
-    print(f"Total listings prepared for insertion: {len(listings_to_insert)}")
+            print(f"Successfully inserted {len(listings_to_insert)} listings")
 
-    # Bulk insert listings
-    if listings_to_insert:
-        listing_columns = listings_to_insert[0].keys()
-        listing_query = "INSERT INTO listings ({}) VALUES %s".format(
-            ', '.join(f'"{col}"' for col in listing_columns)
-        )
-        listing_values = [tuple(listing.values()) for listing in listings_to_insert]
-        execute_values(cur, listing_query, listing_values)
-        conn.commit()
-
-        print(f"Successfully inserted {len(listings_to_insert)} listings")
-
-    return jsonify({
-        "code": 201,
-        "message": f"{file.filename} has been fully uploaded!"
-    }), 201
+        return jsonify({
+            "code": 201,
+            "message": f"{file.filename} has been fully uploaded!"
+        }), 201
+    
+    except Exception as e:
+        print(f"Error in importListings: {str(e)}")
+        conn.rollback()
+        return jsonify({
+            "code": 500,
+            "message": f"Error uploading file: {str(e)}"
+        }), 500
 
 
     # # for loop for each observation tag and update

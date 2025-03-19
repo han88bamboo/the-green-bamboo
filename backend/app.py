@@ -5,6 +5,7 @@ import urllib
 import stripe
 from flask import Flask, g
 from flask_pymongo import PyMongo
+from flask import jsonify
 from flask_cors import CORS
 from flask_mail import Mail
 import psycopg2
@@ -27,6 +28,13 @@ logger = logging.getLogger(__name__)
 # Allow all requests
 app = Flask(__name__)
 CORS(app)
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    response = jsonify({"error": str(e)})
+    response.status_code = 500
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
 
 load_dotenv()
 
