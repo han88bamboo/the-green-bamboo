@@ -19,7 +19,7 @@ const routes = [
     name: "explore",
     component: () =>
       import(
-        /* webpackChunkName: "about" */ "../views/Users/BottleListings.vue"
+        /* webpackChunkName: "about" */ "../views/RandomExplorePage.vue"
       ),
   },
   {
