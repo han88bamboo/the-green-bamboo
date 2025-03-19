@@ -82,10 +82,42 @@ Purpose of the changes:
         - New nav bar for the landing page. Centered the logo and removed the search bar.
     (2) New Component - Autocomplete Search Bar (SearchBar.vue)
         - New autocomplete search bar for the landing page.
-    (3) Updated the UI for landing page (LandingPage.vue)
+    (3) Updated Page - Landing page (LandingPage.vue)
         - New UI design for the landing page
         - Implemented the trending tags and drink
         - Implemented the articles from 88bamboo.co
+
+Nature of the changes (frontend / backend / database):
+    frontend
+
+Coder: Dycia
+
+Purpose of the changes: 
+    (1) add_preferences(username): update the database with the user's preferences (createAccount.py)
+    (2) editDetails(): updated the edit detail function to include the updating of database when user changes flavour tag and observation tags preferences (editProfile.py)
+
+Nature of the changes (frontend / backend / database):
+    backend
+
+Coder: Dycia
+
+Purpose of the changes: 
+    (1) Updated Component - OnboardPopup (OnboardPopup.vue)
+        - Fixed the routing of search bar and exit button.
+    (2) Updated Component - ReusablePopup (ReusablePopup.vue)
+        - Dynamic retrieval of drink type, flavour tags and observation tag from database to be displayed in the popup form to record user preference.
+    (3) Updated Page - SignUpPage (SignUpPage.vue)
+        - Implemented the reusuable popups to collect the user preferences
+    (4) New Page - RandomExplorePage (RandomExplorePage.vue)
+        - Replaces the current explore page. It randomises the listing for each reload.
+    (5) Updated Component - Nav Bar (NavBar.vue)
+        - Added in the routing for future for you page as well as routed explore to "RandomExplorePage.vue"
+    (6) Updated Page - Profie Page (UserProfileRefactor.vue)
+        - Implemented the feature to update flavour tag and observation tag preference.
+        - Dynamic display of updated choices.
+        - Routed the buttons in the "Welcome" section.
+    (7) Updated Routing (index.js)
+        - Updated the routing for /explore to route it to "RandomExplorePage.vue"
 
 Nature of the changes (frontend / backend / database):
     frontend
