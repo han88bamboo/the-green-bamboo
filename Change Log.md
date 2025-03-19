@@ -45,5 +45,17 @@ Purpose of the changes:
 Nature of the changes (frontend / backend / database):
     Frontend, Backend
 
+# Update as of 19 March
+Coder: Dycia
+
+Purpose of the changes: 
+    (1) Added new tables (associations, pointsRecorder, pointSystemRules) -- 01-postgressql_data3.sql
+    (2) Updated new columns into "users" tables -- 01-postgressql_data3.sql
+    (3) Added new values for the newly created table (associations) -- 02-insert-data.sql
+    (4) Updated the users table value -- 02-insert-data.sql
+    (5) Changed the port number in docker-compose-db.yml
+
+Nature of the changes (frontend / backend / database):
+    database
 
 
