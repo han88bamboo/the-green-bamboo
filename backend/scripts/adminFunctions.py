@@ -569,6 +569,7 @@ def hash_password(id, password):
 def importListings():
     try:
         conn = g.db
+        conn.autocommit = False  # Ensure we're in transaction mode
         cur = conn.cursor()
         file = request.files['file']
 
@@ -748,16 +749,26 @@ def importListings():
         print(f"Total listings prepared for insertion: {len(listings_to_insert)}")
         print(f"Skipped duplicate listings: {len(rows) - len(listings_to_insert)}")
 
-        # Bulk insert listings
+        # Bulk insert listings - now excluding the 'id' column and using RETURNING
         if listings_to_insert:
+            # Make sure we're not trying to specify the 'id' field
+            for listing in listings_to_insert:
+                if 'id' in listing:
+                    del listing['id']
+            
             listing_columns = listings_to_insert[0].keys()
-            listing_query = "INSERT INTO listings ({}) VALUES %s".format(
+            listing_query = "INSERT INTO listings ({}) VALUES %s RETURNING id".format(
                 ', '.join(f'"{col}"' for col in listing_columns)
             )
             listing_values = [tuple(listing.values()) for listing in listings_to_insert]
             execute_values(cur, listing_query, listing_values)
+            inserted_ids = cur.fetchall()  # Get all returned IDs
+            print(f"Inserted IDs: {inserted_ids}")
+            
+            # Update the sequence to ensure future inserts don't conflict
+            cur.execute("SELECT setval('listings_id_seq', COALESCE((SELECT MAX(id) FROM listings), 1), true)")
+            
             conn.commit()
-
             print(f"Successfully inserted {len(listings_to_insert)} listings")
 
         return jsonify({
@@ -767,7 +778,8 @@ def importListings():
     
     except Exception as e:
         print(f"Error in importListings: {str(e)}")
-        conn.rollback()
+        if 'conn' in locals():
+            conn.rollback()
         return jsonify({
             "code": 500,
             "message": f"Error uploading file: {str(e)}"
