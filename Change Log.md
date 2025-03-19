@@ -49,8 +49,8 @@ Nature of the changes (frontend / backend / database):
 Coder: Dycia
 
 Purpose of the changes: 
-    (1) Added new tables (associations, pointsRecorder, pointSystemRules) -- 01-postgressql_data3.sql
-    (2) Updated new columns into "users" tables -- 01-postgressql_data3.sql
+    (1) Added new tables (associations, pointsRecorder, pointSystemRules) -- 01-postgresql_data3.sql
+    (2) Updated new columns into "users" tables -- 01-postgresql_data3.sql
     (3) Added new values for the newly created table (associations) -- 02-insert-data.sql
     (4) Updated the users table value -- 02-insert-data.sql
     (5) Changed the port number in docker-compose-db.yml
@@ -58,4 +58,34 @@ Purpose of the changes:
 Nature of the changes (frontend / backend / database):
     database
 
+Coder: Dycia
 
+Purpose of the changes: 
+    (1) Added in a new file (rssFeed.py)
+        - Backend API to fetch articles from 88bamboo.co. Returns a dictionary of articles
+    (2) Added new functions (getData.py)
+        - (a) get_listings_by_observation_tag(tag): get the listings from listing table that matches the observation tag
+        - (b) getTop8(): get the top 8 trending tags
+        - (c) getTopListings(): get the top trending bottles
+        - (d) getListingsName(): get all the listing names from listing table
+        - (e) getRandomListings(): randomiser for the explore page
+    (3) Updated the packages (getData.py)
+        - Added the neccessary packages to for the functions work in getData.py
+
+Nature of the changes (frontend / backend / database):
+    backend
+
+Coder: Dycia
+
+Purpose of the changes: 
+    (1) New Component - Landing Page Nav Bar (LandingPageNavBar.vue)
+        - New nav bar for the landing page. Centered the logo and removed the search bar.
+    (2) New Component - Autocomplete Search Bar (SearchBar.vue)
+        - New autocomplete search bar for the landing page.
+    (3) Updated the UI for landing page (LandingPage.vue)
+        - New UI design for the landing page
+        - Implemented the trending tags and drink
+        - Implemented the articles from 88bamboo.co
+
+Nature of the changes (frontend / backend / database):
+    frontend
