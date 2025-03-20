@@ -22,8 +22,16 @@
     <!-- Icon Section -->
     <div class="container py-4">
         <div class="row g-4">
+            <!-- Desktop View -->
+            <div class="d-none d-md-flex align-items-start gap-3 mb-3">
+                <h2 class="h5 fw-bold mb-0">Our Features</h2>
+            </div>
+            <!-- Mobile View -->
+            <div class="d-md-none">
+                <h2 class="fw-bold mb-2 text-start">Our Features</h2>
+            </div>
             <!-- Feature 1 -->
-            <!-- <div class="col-lg-3 col-md-6 col-6">
+            <div class="col-lg-3 col-md-6 col-6">
                 <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                     <router-link :to="'/login'">
                         <button class="btn border-0 fw-bold tilt-hover" type="button">
@@ -32,15 +40,17 @@
                             </div>
                         </button>
                     </router-link>
-                    <h6
-                        class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
-                        Log Your Drink Reviews and Share Your Favorites
-                    </h6>
+                    <router-link :to="'/login'" class="text-link">
+                        <h6
+                            class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
+                            Log Your Drink Reviews and Share Your Favorites
+                        </h6>
+                    </router-link>
                 </div>
-            </div> -->
+            </div>
 
             <!-- Feature 2 -->
-            <!-- <div class="col-lg-3 col-md-6 col-6">
+            <div class="col-lg-3 col-md-6 col-6">
                 <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                     <router-link :to="'/clubs/view'">
                         <button class="btn border-0 fw-bold tilt-hover" type="button">
@@ -50,15 +60,17 @@
                             </div>
                         </button>
                     </router-link>
-                    <h6
-                        class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
-                        Find Your Communities and Join Events
-                    </h6>
+                    <router-link :to="'/clubs/view'" class="text-link">
+                        <h6
+                            class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
+                            Find Your Communities and Join Events
+                        </h6>
+                    </router-link>
                 </div>
-            </div> -->
+            </div>
 
             <!-- Feature 3 -->
-            <!-- <div class="col-lg-3 col-md-6 col-6">
+            <div class="col-lg-3 col-md-6 col-6">
                 <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                     <router-link :to="'/explore'">
                         <button class="btn border-0 fw-bold tilt-hover" type="button">
@@ -68,15 +80,17 @@
                             </div>
                         </button>
                     </router-link>
-                    <h6
-                        class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
-                        Discover New Drinks and Expand Your Taste Palette
-                    </h6>
+                    <router-link :to="'/explore'" class="text-link">
+                        <h6
+                            class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
+                            Discover New Drinks and Expand Your Taste Palette
+                        </h6>
+                    </router-link>
                 </div>
-            </div> -->
+            </div>
 
             <!-- Feature 4 -->
-            <!-- <div class="col-lg-3 col-md-6 col-6">
+            <div class="col-lg-3 col-md-6 col-6">
                 <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                     <router-link :to="'/clubs/view'">
                         <button class="btn border-0 fw-bold tilt-hover" type="button">
@@ -85,100 +99,14 @@
                             </div>
                         </button>
                     </router-link>
-                    <h6
-                        class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
-                        Connect With Your Favorite Drink Makers
-                    </h6>
-                </div>
-            </div> -->
-
-            <div class="row g-4">
-                <div class="d-flex align-items-start gap-3 mb-1">
-                    <h2 class="h5 fw-bold mb-0">Our Features</h2>
-                </div>
-                <!-- Feature 1 -->
-                <div class="col-6 col-lg-3">
-                    <div class="card section1-card h-100 p-3 p-lg-4 shadow-sm bg-light">
-                        <div class="text-start mb-3 mb-lg-4">
-                            <img src="../../Images/Landing Page/Layer1.png" alt="Log Reviews" class="img-fluid"
-                                style="max-height: max(50px, min(60px, 6vw));">
-                        </div>
-                        <p class="fw-bold mb-2 mb-lg-3 text-start">Log Your Reviews</p>
-                        <p class="text-muted text-start mb-8 small fs-lg-6">Log Your Drink Reviews and Share Your
-                            Favorites</p>
-                        <div class="mt-auto text-start">
-                            <router-link :to="'/login'" class="text-decoration-none">
-                                <button class="btn btn-link border-0 fw-bold p-0 small fs-lg-6 text-decoration-none"
-                                    type="button">
-                                    Learn More <span>&rarr;</span>
-                                </button>
-                            </router-link>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Feature 2 -->
-                <div class="col-6 col-lg-3">
-                    <div class="card section1-card h-100 p-3 p-lg-4 shadow-sm bg-light">
-                        <div class="text-start mb-3 mb-lg-4">
-                            <img src="../../Images/Landing Page/Layer2.png" alt="Find Communities" class="img-fluid"
-                                style="max-height: max(50px, min(60px, 6vw));">
-                        </div>
-                        <p class="fw-bold mb-2 mb-lg-3 text-start">Find Communities</p>
-                        <p class="text-muted text-start small fs-lg-6">Find Your Communities and Join Events</p>
-                        <div class="mt-auto text-start">
-                            <router-link :to="'/clubs/view'" class="text-decoration-none">
-                                <button class="btn btn-link border-0 fw-bold p-0 small fs-lg-6 text-decoration-none"
-                                    type="button">
-                                    Learn More <span>&rarr;</span>
-                                </button>
-                            </router-link>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Feature 3 -->
-                <div class="col-6 col-lg-3">
-                    <div class="card section1-card h-100 p-3 p-lg-4 shadow-sm bg-light">
-                        <div class="text-start mb-3 mb-lg-4">
-                            <img src="../../Images/Landing Page/Layer3.png" alt="Discover Drinks" class="img-fluid"
-                                style="max-height: max(50px, min(60px, 6vw));">
-                        </div>
-                        <p class="fw-bold mb-2 mb-lg-3 text-start">Discover Drinks</p>
-                        <p class="text-muted text-start small fs-lg-6">Discover New Drinks and Expand Your Taste Palette
-                        </p>
-                        <div class="mt-auto text-start">
-                            <router-link :to="'/'" class="text-decoration-none">
-                                <button class="btn btn-link border-0 fw-bold p-0 small fs-lg-6 text-decoration-none"
-                                    type="button">
-                                    Learn More <span>&rarr;</span>
-                                </button>
-                            </router-link>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Feature 4 -->
-                <div class="col-6 col-lg-3">
-                    <div class="card section1-card h-100 p-3 p-lg-4 shadow-sm bg-light">
-                        <div class="text-start mb-3 mb-lg-4">
-                            <img src="../../Images/Landing Page/Layer4.png" alt="Connect" class="img-fluid"
-                                style="max-height: max(50px, min(60px, 6vw));">
-                        </div>
-                        <p class="fw-bold mb-2 mb-lg-3 text-start">Connect</p>
-                        <p class="text-muted text-start small fs-lg-6">Connect With Your Favorite Drink Makers</p>
-                        <div class="mt-auto text-start">
-                            <router-link :to="'/clubs/view'" class="text-decoration-none">
-                                <button class="btn btn-link border-0 fw-bold p-0 small fs-lg-6 text-decoration-none"
-                                    type="button">
-                                    Learn More <span>&rarr;</span>
-                                </button>
-                            </router-link>
-                        </div>
-                    </div>
+                    <router-link :to="'/clubs/view'" class="text-link">
+                        <h6
+                            class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
+                            Connect With Your Favorite Drink Makers
+                        </h6>
+                    </router-link>
                 </div>
             </div>
-
         </div>
     </div>
     <!-- Icon End -->
@@ -527,17 +455,19 @@
                 <div class="col-lg-3 col-md-6 col-6">
                     <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                         <router-link :to="'/login'">
-                            <button class="btn border-0 fw-bold" type="button">
-                                <div class="mb-lg-3 me-3 me-lg-0 icon-container tilt-hover">
-                                    <img src="../../Images/Landing Page/footer1.png" alt="Log Reviews"
+                            <button class="btn border-0 fw-bold tilt-hover" type="button">
+                                <div class="mb-lg-3 me-3 me-lg-0 icon-container">
+                                    <img src="../../Images/Landing Page/Layer1.png" alt="Log Reviews"
                                         class="img-fluid" />
                                 </div>
                             </button>
                         </router-link>
-                        <h6
-                            class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height text-black">
-                            Log Your Drink Reviews and Share Your Favorites
-                        </h6>
+                        <router-link :to="'/login'" class="text-link">
+                            <h6
+                                class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
+                                Log Your Drink Reviews and Share Your Favorites
+                            </h6>
+                        </router-link>
                     </div>
                 </div>
 
@@ -545,35 +475,39 @@
                 <div class="col-lg-3 col-md-6 col-6">
                     <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                         <router-link :to="'/clubs/view'">
-                            <button class="btn border-0 fw-bold" type="button">
-                                <div class="mb-lg-3 me-3 me-lg-0 icon-container tilt-hover">
-                                    <img src="../../Images/Landing Page/footer2.png" alt="Find Communities"
+                            <button class="btn border-0 fw-bold tilt-hover" type="button">
+                                <div class="mb-lg-3 me-3 me-lg-0 icon-container">
+                                    <img src="../../Images/Landing Page/Layer2.png" alt="Find Communities"
                                         class="img-fluid" />
                                 </div>
                             </button>
                         </router-link>
-                        <h6
-                            class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height text-black">
-                            Find Your Communities and Join Events
-                        </h6>
+                        <router-link :to="'/clubs/view'" class="text-link">
+                            <h6
+                                class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
+                                Find Your Communities and Join Events
+                            </h6>
+                        </router-link>
                     </div>
                 </div>
 
                 <!-- Feature 3 -->
                 <div class="col-lg-3 col-md-6 col-6">
                     <div class="d-flex flex-lg-column flex-row align-items-center h-100">
-                        <router-link :to="'/'">
-                            <button class="btn border-0 fw-bold" type="button">
-                                <div class="mb-lg-3 me-3 me-lg-0 icon-container tilt-hover">
-                                    <img src="../../Images/Landing Page/footer3.png" alt="Discover Drinks"
+                        <router-link :to="'/explore'">
+                            <button class="btn border-0 fw-bold tilt-hover" type="button">
+                                <div class="mb-lg-3 me-3 me-lg-0 icon-container">
+                                    <img src="../../Images/Landing Page/Layer3.png" alt="Discover Drinks"
                                         class="img-fluid" />
                                 </div>
                             </button>
                         </router-link>
-                        <h6
-                            class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height text-black">
-                            Discover New Drinks and Expand Your Taste Palette
-                        </h6>
+                        <router-link :to="'/explore'" class="text-link">
+                            <h6
+                                class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
+                                Discover New Drinks and Expand Your Taste Palette
+                            </h6>
+                        </router-link>
                     </div>
                 </div>
 
@@ -581,16 +515,18 @@
                 <div class="col-lg-3 col-md-6 col-6">
                     <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                         <router-link :to="'/clubs/view'">
-                            <button class="btn border-0 fw-bold" type="button">
-                                <div class="mb-lg-3 me-3 me-lg-0 icon-container tilt-hover">
-                                    <img src="../../Images/Landing Page/footer4.png" alt="Connect" class="img-fluid" />
+                            <button class="btn border-0 fw-bold tilt-hover" type="button">
+                                <div class="mb-lg-3 me-3 me-lg-0 icon-container">
+                                    <img src="../../Images/Landing Page/Layer4.png" alt="Connect" class="img-fluid" />
                                 </div>
                             </button>
                         </router-link>
-                        <h6
-                            class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height text-black">
-                            Connect With Your Favorite Drink Makers
-                        </h6>
+                        <router-link :to="'/clubs/view'" class="text-link">
+                            <h6
+                                class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
+                                Connect With Your Favorite Drink Makers
+                            </h6>
+                        </router-link>
                     </div>
                 </div>
             </div>
@@ -622,6 +558,7 @@ export default {
             isModerator: false,
             searchInput: "",
             tags: [],
+            fallbackTags: ["For My Worst Enemy!", "Good for Gifts", "Beginner Friendly", "Is This Water?", "Overhyped!", "Broke the Bank", "Holy Grails"], // Fallback tags if there are insufficient reviews 
             tag: "",
             selectedTag: "",
             listings: [],
@@ -722,14 +659,18 @@ export default {
 
         async fetchTop8() {
             try {
-                // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getTop8`); //comment out for deployed
                 const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getTop8`);
-                this.tags = response.data;
-                // this.tags = response.data.map(item => item.tags);
-                console.log("tags:", this.tags);
+                
+                if (response.data.length >= 7) {
+                    this.tags = response.data; 
+                } else {
+                    this.tags = this.fallbackTags; 
+                }
             } catch (error) {
-                console.error("Error fetching tag counts:", error);
+                console.error("Error fetching tags:", error);
+                this.tags = this.fallbackTags; 
             }
+
         },
 
         // Route to image search page
@@ -813,10 +754,24 @@ h4 {
     transform: rotate(5deg) scale(1.15);
 }
 
-.section1-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.15);
-    border-color: #83a9e8;
+.img-hover {
+    transform: scale(1.03);
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.5);
+    transition: box-shadow 0.3s ease-in-out;
+}
+
+.img-hover:hover {
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.7);
+}
+
+.text-link {
+    text-decoration: none;
+    color: black;
+    transition: color 0.3s ease-in-out;
+}
+
+.text-link:hover {
+    color: #027562;
 }
 
 /* For latest news */
@@ -862,7 +817,6 @@ button.btn.selected {
     opacity: 0.9;
 }
 
-
 .listing-image {
     width: 100%;
     height: 100%;
@@ -874,7 +828,6 @@ button.btn.selected {
 .listing-image-container:hover .listing-image {
     animation: spinY 0.6s ease-in-out forwards;
 }
-
 
 .overlay-content {
     position: absolute;
@@ -889,6 +842,7 @@ button.btn.selected {
     from {
         transform: rotateY(0deg);
     }
+
     to {
         transform: rotateY(360deg);
     }
