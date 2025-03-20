@@ -17,6 +17,7 @@
 
 import os
 import json
+import random # ADDED BY SMU GROUP 3
 import feedparser
 import re
 import requests
@@ -24,6 +25,7 @@ from bs4 import BeautifulSoup
 from bson import json_util, ObjectId
 from flask import Blueprint, g, jsonify, request
 from bson.objectid import ObjectId
+from psycopg2.extras import RealDictCursor # ADDED BY SMU GROUP 3
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -2558,4 +2560,211 @@ def getLatestNews():
         return jsonify({"error": str(e)}), 500
 
 
-   
+# -----------------------------------------------------------------------------------------
+# [GET] get listings by observation tags -- ADDED BY SMU GROUP 3
+@blueprint.route("/getListingsByObservationTag/<tag>")
+def get_listings_by_observation_tag(tag):
+    selected_tag = tag  
+
+    if not selected_tag:
+        return jsonify({"error": "Tag is required"}), 400
+
+    conn = g.db  
+
+    try:
+        with conn.cursor() as cursor:
+            query = """
+            SELECT DISTINCT l.*
+            FROM "listings" l
+            JOIN "reviews" r ON l."id" = r."reviewTarget"
+            WHERE %s = ANY(r."observationTag");
+            """
+            cursor.execute(query, (selected_tag,))
+
+            listings = cursor.fetchall()  # Fetch results as dictionaries
+
+            # Convert the dictionary rows into a list of dictionaries
+            listing_dicts = [dict(row) for row in listings]
+
+            # Debugging output
+            print("Listings as Dicts:", listing_dicts)
+
+        # Return the result as JSON
+        return jsonify(listing_dicts)
+
+    except Exception as e:
+        # If an error occurs, print the error message and return an error response
+        print(f"Error fetching listings: {e}")
+        return jsonify({"error": "A server error occurred."}), 500
+
+# -----------------------------------------------------------------------------------------
+# [GET] Top 8 Trending Observation Tags -- ADDED BY SMU GROUP 3
+@blueprint.route("/getTop8")
+def getTop8():
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        query = """
+            SELECT TRIM(BOTH '"' FROM tag_name_clean) AS tag_name, SUM(tag_count) AS tag_count
+            FROM (
+                SELECT unnest(string_to_array(tag_name, ',')) AS tag_name_clean, tag_count
+                FROM (
+                    SELECT trim(both '"' FROM unnest(string_to_array(
+                        replace(trim(both '{}' FROM "observationTag"::TEXT), '","', '|||'), '|||'
+                    ))) AS tag_name, 1 AS tag_count
+                    FROM "reviews"
+                    WHERE "observationTag" IS NOT NULL
+                ) sub
+            ) final_sub
+            GROUP BY TRIM(BOTH '"' FROM tag_name_clean)
+            ORDER BY tag_count DESC
+            LIMIT 8;
+        """
+        cursor.execute(query)
+        top8_data = cursor.fetchall() 
+        columns = [desc[0] for desc in cursor.description]  
+
+        print("Columns:", columns)  
+        print("Listings:", top8_data)  
+
+        listing_dicts = []
+        for row in top8_data:
+            raw_tags = row["tag_name"].strip('{}')  
+            tag_names = [tag.strip('"') for tag in raw_tags.split(',')]  
+            
+            for tag in tag_names:
+                listing_dicts.append({"tag_name": tag, "tag_count": row["tag_count"]})
+        final_listings = []
+
+        for tag_entry in listing_dicts:
+            if len(final_listings) < 7:  
+                final_listings.append(tag_entry["tag_name"])
+            else:
+                break
+
+        print("Final Processed Tags:", final_listings)  
+
+    return jsonify(final_listings)
+
+# -----------------------------------------------------------------------------------------
+# [GET] Top Trending Bottle Listings -- ADDED BY SMU GROUP 3
+# getTopListings, retrieves the top 6 bottle listings from a database, prioritizing listings with the highest number of reviews. 
+# If fewer than 6 listings have reviews, additional listings are fetched based on the most recently added ones. 
+# The function ensures that listings with reviews are prioritized while filling the remaining slots with newly added listings.
+@blueprint.route("/getTopListings")
+def getTopListings():
+    conn = g.db  # Get database connection from Flask's global object
+    
+    with conn.cursor() as cursor:
+        # Query to get listings that have reviews, ordered by review count (most reviewed first)
+        query = """
+            SELECT l.*, COUNT(r."reviewTarget") AS review_count
+            FROM "reviews" r
+            JOIN "listings" l ON r."reviewTarget" = l."id"
+            GROUP BY l."id", l."listingName", l."bottler", l."bottlerID",
+                    l."originCountry", l."drinkType", l."abv", l."officialDesc", l."allowMod",
+                    l."addedDate", l."typeCategory", l."age", l."reviewLink", l."sourceLink",
+                    l."photo", l."drinkStyle"
+            ORDER BY review_count DESC, l."addedDate" DESC
+            LIMIT 6;  -- Limit the results to 6 top listings
+        """
+        
+        cursor.execute(query)
+        top_listings = cursor.fetchall()  # Fetch the top-reviewed listings
+        
+        # If fewer than 6 listings were found, fetch additional recent listings
+        if len(top_listings) < 6:
+            remaining_count = 6 - len(top_listings)  # Determine how many more are needed
+            
+            # Extract the IDs of listings already retrieved to avoid duplicates
+            existing_ids = [listing["id"] for listing in top_listings]
+            
+            # Construct the fallback query to fetch additional listings
+            if existing_ids:
+                # Exclude the already retrieved listings from the results
+                fallback_query = f"""
+                    SELECT l.*, 0 AS review_count  -- No reviews for these additional listings
+                    FROM "listings" l
+                    WHERE l."id" NOT IN ({','.join(str(id) for id in existing_ids)})  -- Exclude already retrieved listings
+                    ORDER BY l."addedDate" DESC  -- Order by most recently added
+                    LIMIT {remaining_count};  -- Fetch only the required number of listings
+                """
+            else:
+                # If no listings were retrieved initially, just fetch the most recent ones
+                fallback_query = f"""
+                    SELECT l.*, 0 AS review_count
+                    FROM "listings" l
+                    ORDER BY l."addedDate" DESC
+                    LIMIT {remaining_count};
+                """
+            
+            cursor.execute(fallback_query)
+            additional_listings = cursor.fetchall()  # Fetch additional listings
+            
+            # Merge the two result sets
+            top_listings.extend(additional_listings)
+        
+        # Debugging output to verify results
+        print("Top Listings:", top_listings)
+    
+    return jsonify(top_listings)  # Return the final list of listings as JSON response
+
+
+# -----------------------------------------------------------------------------------------
+#  [GET] ALL Listing Names in Listing Table -- ADDED BY SMU GROUP 3
+@blueprint.route("/getListingsName")
+def getListingsName():
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "listings"')
+        listingsName_data = cursor.fetchall()
+    
+    if not listingsName_data:
+        return jsonify([])
+    
+    # Extract listingName from each record
+    listing_names = [listing['listingName'] for listing in listingsName_data]
+
+    return jsonify(listing_names)
+
+# -----------------------------------------------------------------------------------------
+# [GET] Get Listings from a randomly selected date -- ADDED BY SMU GROUP 3
+@blueprint.route("/getRandomListings")
+def getRandomListings():
+    conn = g.db
+
+    with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        # Fetch distinct dates by converting timestamps to dates
+        cursor.execute('SELECT DISTINCT "addedDate"::DATE FROM "listings"')
+        date_results = cursor.fetchall()
+
+        if not date_results:
+            return jsonify({"error": "No dates found in listings"}), 400
+
+        # Log the fetched dates
+        print("Fetched date_results:", date_results)
+
+        try:
+            # Extract 'addedDate' values properly from RealDictRow
+            date_list = [row['addedDate'] for row in date_results if 'addedDate' in row]
+            
+            # Log the extracted date list
+            print("Extracted date_list:", date_list)
+
+            if not date_list:
+                return jsonify({"error": "Date extraction failed (empty list)"}), 400
+
+            random_date = random.choice(date_list)  # Select a random date
+        except Exception as e:
+            return jsonify({"error": f"Random selection failed: {str(e)}"}), 500
+
+        # Fetch listings from the selected random date
+        cursor.execute('SELECT * FROM "listings" WHERE "addedDate"::DATE = %s ORDER BY RANDOM() LIMIT 30', (random_date,))
+        listings_data = cursor.fetchall()
+
+    if not listings_data:
+        return jsonify({"error": "No listings found for selected date"}), 400
+
+    return jsonify(listings_data)
+

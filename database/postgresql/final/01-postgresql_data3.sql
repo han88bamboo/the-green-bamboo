@@ -51,6 +51,9 @@ DROP TABLE IF EXISTS "venuesProfileViewsViews" CASCADE;
 DROP TABLE IF EXISTS "venuesQuestionAnswers" CASCADE;
 DROP TABLE IF EXISTS "venuesUpdates" CASCADE;
 DROP TABLE IF EXISTS "typeCategories" CASCADE;
+DROP TABLE IF EXISTS "associations" CASCADE; -- ADDED BY SMU GROUP 3
+DROP TABLE IF EXISTS "pointsRecorder" CASCADE; -- ADDED BY SMU GROUP 3
+DROP TABLE IF EXISTS "pointSystemRules" CASCADE; -- ADDED BY SMU GROUP 3
 
 -- CREATE TABLES -- 
 -- ========= "accountRequests" =========
@@ -101,7 +104,7 @@ CREATE TABLE "flavourTags" (
 CREATE TABLE "subTags" (
     "id" SERIAL PRIMARY KEY,
     "familyTagId" INTEGER REFERENCES "flavourTags"("id") ON DELETE SET NULL, -- [!] reference "flavourTags" as FK
-    "subTag" VARCHAR(255)
+    "subTag" VARCHAR(255) UNIQUE
 );
 
 -- ========= "badges" =========
@@ -223,7 +226,9 @@ CREATE TABLE "users" (
     "email" VARCHAR(255),
     "isAdmin" BOOLEAN,
     "birthday" TIMESTAMP,
-    "pin" VARCHAR(255)
+    "pin" VARCHAR(255),
+    "choiceFlavours" TEXT[], -- SMU Group 3 added in "choiceFlavours"
+    "preferences" TEXT[] -- SMU Group 3 added in "preferences"
 );
 
 -- ========= [NEW!] "producersQuestionAnswers" =========
@@ -641,4 +646,28 @@ CREATE TABLE "eventAttendees" (
     "userID" INTEGER,
     "attendeeType" VARCHAR(255),
     "attendeeStatus" BOOLEAN
+);
+
+-- ========= [NEW!] "associations" - by SMU GROUP 3 =========
+CREATE TABLE "associations" (
+    "id" SERIAL PRIMARY KEY,
+    "subTag1" VARCHAR(255) REFERENCES "subTags"("subTag") ON DELETE SET NULL, -- [!] References subTags FK
+    "subTag2" VARCHAR(255) REFERENCES "subTags"("subTag") ON DELETE SET NULL -- [!] References subTags FK
+);
+
+-- ======== [NEW!] "pointsRecorder" - by SMU GROUP 3 =========
+CREATE TABLE "pointsRecorder" (
+    "id" SERIAL PRIMARY KEY,
+    "userID" INTEGER,
+    "userType" VARCHAR(255),
+    "currentPoints" INTEGER
+);
+
+-- ========= [NEW!] "pointSystemRules" - by SMU GROUP 3 =========
+CREATE TABLE "pointSystemRules" (
+    "id" SERIAL PRIMARY KEY,
+    "ruleName" VARCHAR(255),
+    "ruleDesc" TEXT,
+    "ruleCategory" VARCHAR(255),
+    "proofPoints" INTEGER
 );

@@ -12,6 +12,8 @@ from bson import json_util
 from flask import Blueprint, g, request, jsonify
 from bson.objectid import ObjectId
 from datetime import datetime, timedelta
+from dotenv import load_dotenv # ADDED BY SMU GROUP 3
+import psycopg2 # ADDED BY SMU GROUP 3
 
 import secrets
 
@@ -693,6 +695,76 @@ def sendEmail():
     )
     return jsonify({'message': 'Email sent successfully!'}), 200
 
+# -----------------------------------------------------------------------------------------
+# [POST] Updates User Preferences from Onboarding Form -- ADDED BY SMU GROUP 3
+@blueprint.route("/addPreferences/<username>", methods=['POST'])
+def add_preferences(username):
+    conn = g.db
+    cur = conn.cursor()
+    rawAccount = request.get_json()
+
+    try:
+        # Print the incoming request data for debugging
+        print(f"Received data to update preferences for user: {username}")
+        print(f"Request data: {rawAccount}")
+
+        # Update user preferences in the database
+        cur.execute("""
+                    UPDATE "users"
+                    SET "choiceDrinks" = %s,
+                    "choiceFlavours" = %s,
+                    "preferences" = %s
+                    WHERE "username" = %s
+                """, (
+                    rawAccount['choiceDrinks'],
+                    rawAccount['choiceFlavours'],
+                    rawAccount['preferences'],
+                    username
+                ))
+
+        conn.commit()
+
+        # Print success message
+        print(f"Preferences updated successfully for user: {username}")
+
+        return jsonify(
+            {
+                "code": 201,
+                "message": "Preferences updated successfully",
+                "data": {
+                    "username": username,
+                    "choiceDrinks": rawAccount['choiceDrinks'],
+                    "choiceFlavours": rawAccount['choiceFlavours'],
+                    "preferences": rawAccount['preferences']
+                }
+            }
+        ), 201
+
+    except Exception as e:
+        # Print error message and details
+        print(f"Error occurred while updating preferences for user: {username}")
+        print(f"Error details: {str(e)}")
+
+        # Rollback in case of error
+        conn.rollback()
+
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred while updating the user preferences.",
+                "error": str(e),
+                "data": {
+                    "username": username,
+                    "choiceDrinks": rawAccount.get('choiceDrinks', 'N/A'),
+                    "choiceFlavours": rawAccount.get('choiceFlavours', 'N/A'),
+                    "preferences": rawAccount.get('preferences', 'N/A')
+                }
+            }
+        ), 500
+
+    finally:
+        # Clean up database cursor
+        cur.close()
 
 ##### POSTGRESQL migration code
 # # ======================================================
