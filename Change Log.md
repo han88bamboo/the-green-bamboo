@@ -121,3 +121,36 @@ Purpose of the changes:
 
 Nature of the changes (frontend / backend / database):
     frontend
+
+
+# Update as of 20 March
+Coder: Carissa
+
+Purpose of the changes: 
+    (1) Updated Page - LandingPage (LandingPage.vue) 
+        - changed card layout of icon buttons back to the original, routed text on icon buttons, colour of text changes when hovered over 
+    (2) Updated Logic (LandingPage.vue) 
+        - included a list called fallbackTags in case there is insufficient review to obtain the trending tags or API call failed, updated function fetchTop8() to do the switch between fallbackTags when there are sufficient reviews
+
+Nature of the changes (frontend / backend / database): 
+    frontend
+
+Coder: Dycia
+
+Purpose of the changes: 
+    (1) Updated Backend API (getData.py)
+        - Updated getTopListings() such that when there is no reviews there is a fallback algorithm that retrieve the trending drinks based on addedDate.
+
+Nature of the changes (frontend / backend / database):
+    backend
+
+Coder: Dycia
+
+Purpose of the changes: 
+    (1) Updated Database (02-insert-data.sql)
+        - Removed all the insert query from "reviews" table
+        - Removed all the insert query from "reviewsUserVotes" table because it is linked to the reviews in the "reviews" table. Thus, if there is no reviews in the "reviews" table
+        there cannot be any insert query for "reviewsUserVotes"
+
+Nature of the changes (frontend / backend / database):
+    database
