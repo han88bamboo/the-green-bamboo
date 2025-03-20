@@ -2653,23 +2653,58 @@ def getTop8():
 def getTopListings():
     conn = g.db
     with conn.cursor() as cursor:
+        # First query to get bottles with reviews, ordered by review count
         query = """
             SELECT l.*, COUNT(r."reviewTarget") AS review_count
             FROM "reviews" r
             JOIN "listings" l ON r."reviewTarget" = l."id"
-            GROUP BY l."id", l."listingName"
-            ORDER BY review_count DESC
-            LIMIT 4;
+            GROUP BY l."id", l."listingName", l."bottler", l."bottlerID",
+                    l."originCountry", l."drinkType", l."abv", l."officialDesc", l."allowMod",
+                    l."addedDate", l."typeCategory", l."age", l."reviewLink", l."sourceLink",
+                    l."photo", l."drinkStyle"
+            ORDER BY review_count DESC, l."addedDate" DESC
+            LIMIT 6;
         """
+        
         cursor.execute(query)
         top_listings = cursor.fetchall()
         
+        # Check if we have fewer than 6 results
+        if len(top_listings) < 6:
+            # Calculate how many more listings we need
+            remaining_count = 6 - len(top_listings)
+            
+            # Get the IDs of listings we already have
+            existing_ids = [listing["id"] for listing in top_listings]
+            
+            # Build the fallback query
+            if existing_ids:
+                # If we have existing IDs, exclude them
+                fallback_query = f"""
+                    SELECT l.*, 0 AS review_count
+                    FROM "listings" l
+                    WHERE l."id" NOT IN ({','.join(str(id) for id in existing_ids)})
+                    ORDER BY l."addedDate" DESC
+                    LIMIT {remaining_count};
+                """
+            else:
+                # If no existing IDs, don't use the NOT IN clause
+                fallback_query = f"""
+                    SELECT l.*, 0 AS review_count
+                    FROM "listings" l
+                    ORDER BY l."addedDate" DESC
+                    LIMIT {remaining_count};
+                """
+            
+            cursor.execute(fallback_query)
+            additional_listings = cursor.fetchall()
+            
+            # Combine the results
+            top_listings.extend(additional_listings)
+        
         # For debugging
         print("Top Listings:", top_listings)
-        
-        # Extract just the listing names for the response
-        # listing_names = [listing["listing_name"] for listing in top_listings]
-        
+    
     return jsonify(top_listings)
 
 # -----------------------------------------------------------------------------------------
