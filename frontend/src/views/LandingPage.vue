@@ -661,6 +661,8 @@ export default {
             try {
                 const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getTop8`);
                 
+                // If there are at least 7 tags from the reviews, use them, otherwise use the fallback tags 
+                // fallback tags are used if there are not enough reviews to generate tags, they are non dynamic 
                 if (response.data.length >= 7) {
                     this.tags = response.data; 
                 } else {
