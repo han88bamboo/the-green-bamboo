@@ -2648,12 +2648,15 @@ def getTop8():
 
 # -----------------------------------------------------------------------------------------
 # [GET] Top Trending Bottle Listings -- ADDED BY SMU GROUP 3
-
+# getTopListings, retrieves the top 6 bottle listings from a database, prioritizing listings with the highest number of reviews. 
+# If fewer than 6 listings have reviews, additional listings are fetched based on the most recently added ones. 
+# The function ensures that listings with reviews are prioritized while filling the remaining slots with newly added listings.
 @blueprint.route("/getTopListings")
 def getTopListings():
-    conn = g.db
+    conn = g.db  # Get database connection from Flask's global object
+    
     with conn.cursor() as cursor:
-        # First query to get bottles with reviews, ordered by review count
+        # Query to get listings that have reviews, ordered by review count (most reviewed first)
         query = """
             SELECT l.*, COUNT(r."reviewTarget") AS review_count
             FROM "reviews" r
@@ -2663,32 +2666,31 @@ def getTopListings():
                     l."addedDate", l."typeCategory", l."age", l."reviewLink", l."sourceLink",
                     l."photo", l."drinkStyle"
             ORDER BY review_count DESC, l."addedDate" DESC
-            LIMIT 6;
+            LIMIT 6;  -- Limit the results to 6 top listings
         """
         
         cursor.execute(query)
-        top_listings = cursor.fetchall()
+        top_listings = cursor.fetchall()  # Fetch the top-reviewed listings
         
-        # Check if we have fewer than 6 results
+        # If fewer than 6 listings were found, fetch additional recent listings
         if len(top_listings) < 6:
-            # Calculate how many more listings we need
-            remaining_count = 6 - len(top_listings)
+            remaining_count = 6 - len(top_listings)  # Determine how many more are needed
             
-            # Get the IDs of listings we already have
+            # Extract the IDs of listings already retrieved to avoid duplicates
             existing_ids = [listing["id"] for listing in top_listings]
             
-            # Build the fallback query
+            # Construct the fallback query to fetch additional listings
             if existing_ids:
-                # If we have existing IDs, exclude them
+                # Exclude the already retrieved listings from the results
                 fallback_query = f"""
-                    SELECT l.*, 0 AS review_count
+                    SELECT l.*, 0 AS review_count  -- No reviews for these additional listings
                     FROM "listings" l
-                    WHERE l."id" NOT IN ({','.join(str(id) for id in existing_ids)})
-                    ORDER BY l."addedDate" DESC
-                    LIMIT {remaining_count};
+                    WHERE l."id" NOT IN ({','.join(str(id) for id in existing_ids)})  -- Exclude already retrieved listings
+                    ORDER BY l."addedDate" DESC  -- Order by most recently added
+                    LIMIT {remaining_count};  -- Fetch only the required number of listings
                 """
             else:
-                # If no existing IDs, don't use the NOT IN clause
+                # If no listings were retrieved initially, just fetch the most recent ones
                 fallback_query = f"""
                     SELECT l.*, 0 AS review_count
                     FROM "listings" l
@@ -2697,15 +2699,16 @@ def getTopListings():
                 """
             
             cursor.execute(fallback_query)
-            additional_listings = cursor.fetchall()
+            additional_listings = cursor.fetchall()  # Fetch additional listings
             
-            # Combine the results
+            # Merge the two result sets
             top_listings.extend(additional_listings)
         
-        # For debugging
+        # Debugging output to verify results
         print("Top Listings:", top_listings)
     
-    return jsonify(top_listings)
+    return jsonify(top_listings)  # Return the final list of listings as JSON response
+
 
 # -----------------------------------------------------------------------------------------
 #  [GET] ALL Listing Names in Listing Table -- ADDED BY SMU GROUP 3
