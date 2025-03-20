@@ -140,6 +140,9 @@ Coder: Dycia
 Purpose of the changes: 
     (1) Updated Backend API (getData.py)
         - Updated getTopListings() such that when there is no reviews there is a fallback algorithm that retrieve the trending drinks based on addedDate.
+        - Code summary: getTopListings, retrieves the top 6 bottle listings from a database, prioritizing listings with the highest number of reviews. 
+        If fewer than 6 listings have reviews, additional listings are fetched based on the most recently added ones. The function ensures that listings with reviews are prioritized while filling 
+        the remaining slots with newly added listings.
 
 Nature of the changes (frontend / backend / database):
     backend
