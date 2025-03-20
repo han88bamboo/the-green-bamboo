@@ -157,3 +157,14 @@ Purpose of the changes:
 
 Nature of the changes (frontend / backend / database):
     database
+
+Coder: Dycia
+
+Purpose of the changes: 
+    (1) Updated Component - LandingPageNavBar (LandingPageNavBar.vue) 
+        - Removed the routing for "For You" page
+    (2) Updated Component - NavBar (NavBar.vue) 
+        - Removed the routing for "For You" page
+
+Nature of the changes (frontend / backend / database): 
+    frontend
