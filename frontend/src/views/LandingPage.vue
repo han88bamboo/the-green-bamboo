@@ -645,7 +645,7 @@ export default {
         // Get top drink listings based on number of reviews 
         async goSearchListing(listing) {
             try {
-                const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getTopListings`);
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getTopListings`);
                 this.listings = response.data;
                 console.log("listings:", this.listings);
 
