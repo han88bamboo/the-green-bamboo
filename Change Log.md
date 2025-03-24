@@ -180,6 +180,7 @@ Purpose of the changes:
             --> Implemented fetchTopListings() function to dynamically retrieve the trending listings
             --> Refined goSearchListing() function to ensure consistent execution on every page reload
             --> Standardized the UI for trending listings
+    Previously, the code for the trending tag was missing. because of the trending tags code missing, when a user presses the trending tags an error pops out. now we added in the trending tag code to resolve the error
     (3) Added Page - Listing By Tag (ListingByTag.vue)
         - Implemented this page to display related listings when users click on a trending tag on the landing page
     (4) Updated Page - Search View (SearchView.vue)
