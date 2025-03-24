@@ -56,7 +56,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                         <div class="col-2"></div>
 
                         <div class="col-10">
-                            <p class="fs-3 m-0 text-start" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">"{{ this.$route.params.input }}"</p>
+                            <p class="fs-3 m-0 text-start" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">"{{ effectiveSearchTerm }}"</p>
                         </div>
                     </div>
 
@@ -582,6 +582,11 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                 tabActive: 'listings',
             }
         },
+        computed: {
+            effectiveSearchTerm() {
+                return this.searchTerm || this.$route.params.tag;
+            }
+        },
         mounted() {
             // Load local storage variables
             const accID = localStorage.getItem("88B_accID");
@@ -646,6 +651,31 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                         return listing["listingName"]?.toLowerCase().includes(this.searchTerm) || listing["originCountry"]?.toLowerCase().includes(this.searchTerm) || listing["drinkType"]?.toLowerCase().includes(this.searchTerm) || listing["typeCategory"]?.toLowerCase().includes(this.searchTerm);
                     });
                     this.originalResults = this.resultListings;
+                    // Observation Tags
+                    if (this.resultListings.length === 0) {
+                        console.log("No results found, trying observation tag search...");
+
+                        const routeTag = this.$route.params.tag;
+                        console.log("Tag passed to runSearch:", routeTag);
+
+                        try {
+                            const observationTagPromise = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingsByObservationTag/${encodeURIComponent(routeTag)}`);
+
+                            this.resultListings = observationTagPromise.data || [];
+                            console.log("Observation Tags:", this.resultListings);
+                            this.observationTags = this.resultListings.filter((listing) => {
+                                return listing["listingName"]?.toLowerCase().includes(this.searchTerm) ||
+                                    listing["originCountry"]?.toLowerCase().includes(this.searchTerm) ||
+                                    listing["drinkType"]?.toLowerCase().includes(this.searchTerm) ||
+                                    listing["typeCategory"]?.toLowerCase().includes(this.searchTerm);
+                            });
+
+                        } catch (error) {
+                            console.error("Error fetching observation tags:", error);
+                            this.resultListings = [];
+                            this.observationTags = [];
+                        }
+                    }
                 }
                 catch (error) {
                     console.error(error);

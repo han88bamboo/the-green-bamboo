@@ -182,11 +182,11 @@
                             @click="goSearchListing(listing)">
                             <div class="listing-image-container">
                                 <img v-if="listing['photo']" :src="listing['photo']"
-                                    class="img-fluid listing-image rounded">
+                                    class="listing-image rounded">
                                 <img v-else src="../../Images/Drinks/Placeholder.png"
-                                    class="img-fluid listing-image rounded">
+                                    class="listing-image rounded">
                                 <div class="overlay-content">
-                                    <span class="text-white fw-medium small">{{ listing['listingName'] }}</span>
+                                    <span class="listing-name text-white fw-medium small">{{ listing['listingName'] }}</span>
                                 </div>
                             </div>
                         </div>
@@ -198,10 +198,10 @@
                 <div v-for="listing in listings" :key="listing.id" class="position-relative m-2"
                     :class="{ 'selected-image': listing === selectedListing }" @click="goSearchListing(listing)">
                     <div class="listing-image-container">
-                        <img v-if="listing['photo']" :src="listing['photo']" class="img-fluid listing-image">
-                        <img v-else src="../../Images/Drinks/Placeholder.png" class="img-fluid listing-image">
+                        <img v-if="listing['photo']" :src="listing['photo']" class="listing-image">
+                        <img v-else src="../../Images/Drinks/Placeholder.png" class="listing-image">
                         <div class="overlay-content">
-                            <span class="text-white fw-medium small">{{ listing['listingName'] }}</span>
+                            <span class="listing-name text-white fw-medium small">{{ listing['listingName'] }}</span>
                         </div>
                     </div>
                 </div>
@@ -577,7 +577,7 @@ export default {
         this.tag = this.$route.params.tag;
         this.fetchRSS(); // Fetch RSS when the component loads
         this.fetchTop8();
-        this.goSearchListing();
+        this.fetchTopListings();
     },
     methods: {
         // Load data from the database (e.g., profile picture)
@@ -642,21 +642,6 @@ export default {
             }
         },
 
-        // Get top drink listings based on number of reviews 
-        async goSearchListing(listing) {
-            try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getTopListings`);
-                this.listings = response.data;
-                console.log("listings:", this.listings);
-
-                this.selectedListing = listing;
-                console.log("listing:", listing);
-                this.$router.push({ path: `/listing/view/${listing.id}` });
-            } catch (error) {
-                console.error("Error fetching tag counts:", error);
-            }
-        },
-
         async fetchTop8() {
             try {
                 const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getTop8`);
@@ -673,6 +658,33 @@ export default {
                 this.tags = this.fallbackTags; 
             }
 
+        },
+
+        // Get top drink listings based on number of reviews
+        // MODIFIED BY SMU GROUP 3 (Previously, the function was executed before it was called resulting in errors.)
+        async goSearchListing(listing) {
+            if (!listing || !listing.id) {
+                console.warn("No valid listing provided to goSearchListing");
+                return; // Early return if listing is invalid
+            }
+            
+            try {
+                this.selectedListing = listing;
+                console.log("listing:", listing);
+                this.$router.push({ path: `/listing/view/${listing.id}` });
+            } catch (error) {
+                console.error("Error navigating to listing:", error);
+            }
+        },
+
+        async fetchTopListings() {
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getTopListings`);
+                this.listings = response.data;
+                console.log("listings:", this.listings);
+            } catch (error) {
+                console.error("Error fetching top listings:", error);
+            }
         },
 
         // Route to image search page
@@ -802,17 +814,18 @@ button.btn.selected {
 
 /* For trending bottle listings */
 
+/* Mobile view styles */
 .listing-image-container {
     width: 70%;
-    height: 180px;
-    object-fit: cover;
-    padding: 10px;
+    height: 140px; 
+    padding: 8px; 
     position: relative;
     overflow: hidden;
     border-radius: 0.375rem;
     cursor: pointer;
     transition: all 0.2s;
     perspective: 1000px;
+    margin: 0 auto; 
 }
 
 .listing-image-container:hover {
@@ -831,12 +844,22 @@ button.btn.selected {
     animation: spinY 0.6s ease-in-out forwards;
 }
 
+/* Add color transition for the text */
+.listing-name {
+    transition: color 0.6s ease-in-out;
+}
+
+/* Change text color on hover */
+.listing-image-container:hover .listing-name {
+    color: #027562 !important;
+}
+
 .overlay-content {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 0.5rem;
+    padding: 0.4rem; 
     background-color: rgba(0, 0, 0, 0.4);
 }
 
@@ -849,4 +872,28 @@ button.btn.selected {
         transform: rotateY(360deg);
     }
 }
+
+/* Desktop specific styles */
+@media (min-width: 768px) {
+    .d-md-flex .listing-image-container {
+        width: 120px; 
+        height: 160px; 
+        margin: 0.4rem; 
+    }
+    
+    /* Ensure all desktop items have the same dimensions */
+    .d-md-flex .position-relative {
+        width: 120px; 
+        margin: 0.4rem;
+    }
+}
+
+/* Mobile specific adjustments - keeping original dimensions */
+@media (max-width: 767.98px) {
+    .col .listing-image-container {
+        width: 100%; 
+        height: 180px; 
+    }
+}
+
 </style>
