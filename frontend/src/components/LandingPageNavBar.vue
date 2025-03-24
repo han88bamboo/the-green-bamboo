@@ -291,3 +291,14 @@
         }
     }
 </script>
+<style>
+    @media (max-width: 576px) {
+        .form-check-inline {
+            margin-right: 10px;
+        }
+
+        .d-flex {
+            flex-direction: unset;
+        }
+    }
+</style>
