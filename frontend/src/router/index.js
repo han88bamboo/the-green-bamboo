@@ -18,9 +18,7 @@ const routes = [
     path: "/explore",
     name: "explore",
     component: () =>
-      import(
-        /* webpackChunkName: "about" */ "../views/RandomExplorePage.vue"
-      ),
+      import(/* webpackChunkName: "about" */ "../views/RandomExplorePage.vue"),
   },
   {
     path: "/login",
@@ -58,10 +56,10 @@ const routes = [
     component: () => import("../views/SearchView.vue"),
   },
   {
-    path: '/getListingsByObservationTag/:tag?',
-    name: 'getlistingsbyobservationtag',
-    component: () => import('../views/ListingsByTag.vue'),
-    props: true
+    path: "/getListingsByObservationTag/:tag?",
+    name: "getlistingsbyobservationtag",
+    component: () => import("../views/ListingsByTag.vue"),
+    props: true,
   },
   {
     path: "/imageSearch",
@@ -87,7 +85,7 @@ const routes = [
 
   // ----------------- PROFILE PAGES -----------------
   {
-    path: "/profile/user/:userID?/:listName?",
+    path: "/profile/user/:userID/:username/:listName?",
     name: "profileuser",
 
     // OLD LINK FOR REFERENECE
@@ -343,7 +341,7 @@ const router = createRouter({
     if (savedPosition) {
       return savedPosition; // Keeps the previous scroll position when navigating back
     } else {
-      return { top: 0, left: 0, behavior: 'smooth' }; // Scrolls to the top for new pages
+      return { top: 0, left: 0, behavior: "smooth" }; // Scrolls to the top for new pages
     }
   },
 });
