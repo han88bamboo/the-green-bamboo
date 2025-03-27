@@ -58,6 +58,12 @@ const routes = [
     component: () => import("../views/SearchView.vue"),
   },
   {
+    path: '/getListingsByObservationTag/:tag?',
+    name: 'getlistingsbyobservationtag',
+    component: () => import('../views/ListingsByTag.vue'),
+    props: true
+  },
+  {
     path: "/imageSearch",
     name: "imagesearch",
     component: () => import("../views/ImageSearchView.vue"),
@@ -332,6 +338,14 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes,
+  // ADDED BY SMU GROUP 3 (This ensure that the user is brought to the top of the page when they navigate from one page to another)
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition; // Keeps the previous scroll position when navigating back
+    } else {
+      return { top: 0, left: 0, behavior: 'smooth' }; // Scrolls to the top for new pages
+    }
+  },
 });
 
 export default router;

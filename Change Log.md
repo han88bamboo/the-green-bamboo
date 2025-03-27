@@ -168,3 +168,37 @@ Purpose of the changes:
 
 Nature of the changes (frontend / backend / database): 
     frontend
+
+# Update as of 22 March
+Coder: Dycia
+
+Purpose of the changes: 
+    (1) Updated Component - LandingPageNavBar (LandingPageNavBar.vue) 
+        - Resolved the responsiveness issue when in mobile view
+    (2) Updated Page - Landing Page (LandingPage.vue) 
+        - Resolved the wonky code in landing page
+            --> Implemented fetchTopListings() function to dynamically retrieve the trending listings
+            --> Refined goSearchListing() function to ensure consistent execution on every page reload
+            --> Standardized the UI for trending listings
+    Previously, the code for the trending tag was missing. because of the trending tags code missing, when a user presses the trending tags an error pops out. now we added in the trending tag code to resolve the error
+    (3) Added Page - Listing By Tag (ListingByTag.vue)
+        - Implemented this page to display related listings when users click on a trending tag on the landing page
+    (4) Updated Page - Search View (SearchView.vue)
+        - Expanded search functionality to allow searching bottles by tags
+    (5) Updated Router (index.js)
+        - Added routing for ListingByTag.vue
+        - Implemented UX improvements to ensure users are automatically scrolled to the top when navigating between pages
+    (6) Updated Component - NavBar (NavBar.vue) 
+        - Resolved the responsiveness issue when in mobile view 
+Nature of the changes (frontend / backend / database): 
+    frontend
+
+
+# Update as of 26 Mar 2025
+Coder: Zhe Han
+
+Purpose of the changes: Bugfix for Latest News page. 
+Latest news page images not showing up. found it was due to  https://via.placeholder.com/600x400 not working in getData.py 
+replaced it with https://placehold.co/600x400 and deployed
+
+Nature of the changes (frontend / backend / database): Backend
