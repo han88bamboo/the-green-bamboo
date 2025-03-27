@@ -202,3 +202,31 @@ Latest news page images not showing up. found it was due to  https://via.placeho
 replaced it with https://placehold.co/600x400 and deployed
 
 Nature of the changes (frontend / backend / database): Backend
+
+Coder: Carissa
+
+Purpose of the changes: 
+    (1) Updated Component - LandingPageNavBar (LandingPageNavBar.vue) 
+        - To include the tab for "For You" page
+    (2) Added Page - For You Page (ForYouPage.vue)
+        - Implemented this page to display related listings and clubs recommended for users
+    (3) Updated component - Nav Bar (NavBar.vue)
+        - To include the tab for "For You" page
+    (4) Updated Router (index.js)
+        - Added routing for ForYouPage.vue
+    
+Nature of the changes (frontend / backend / database): 
+    frontend
+
+Coder: Dycia
+
+Purpose of the changes: 
+    (1) Updated Backend API (getData.py)
+        - Added getRecommendedListings(userID) backend api to fetch recommended listings
+        - Added get_recommended_clubs(userID) backend api to fetch recommended clubs
+        - Added basic_algo(userID) for basic algo for drinks recommendation
+        - Added advanced_algo_reviews(userID) for advanced algo for drinks recommendations via flavourTags
+        - Added testRecommender(userID) for the testing of recommender backend api
+    
+Nature of the changes (frontend / backend / database): 
+    Backend
