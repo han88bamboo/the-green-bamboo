@@ -230,3 +230,73 @@ Purpose of the changes:
     
 Nature of the changes (frontend / backend / database): 
     Backend
+
+Coder: Carissa
+
+Purpose of the changes: 
+    (1) Updated Page - Dashboard Page (UserDashboard.vue) 
+        - updated frontend to look like figma (added columns for Grails, GOATS, and Ride or Dies), 
+        added addDrink() function to retrieve drinks from the database to be added into the list, 
+        added openPopup(), and closePopup() for pop up, added styling for pop up
+    (2) Added Page - Best Of Page (BestOf.vue)
+        - Implemented this page to display Top 5 listings for each category
+    (3) Updated Router (index.js)
+        - Editted routing for best of to BestOf.vue
+    (4) Updated Component - LandingPageNavBar (LandingPageNavBar.vue) 
+        - To editted the tab for "Best Of" page to route it to the correct page
+    (5) Updated component - Nav Bar (NavBar.vue)
+        - To editted the tab for "Best Of" page to route it to the correct page
+
+Nature of the changes (frontend / backend / database): 
+    frontend
+
+Coder: Carissa
+
+Purpose of the changes: 
+    (1) Added backend code in getData.py 
+        - Added backend api (/getTopCategoryListings) for Best Of to retrieve top 5 listings per category (Grails, GOATS, and Ride or Dies), 
+        accounted for fallback algo where it will randomly have 5 listings if there are insufficient people using the feature in the Dashboard page
+    
+Nature of the changes (frontend / backend / database): 
+    backend
+
+Coder: Dycia
+
+Purpose of the changes: 
+    (1) Updated Backend API (getData.py)
+        - Added getListingByName(listing_name) backend api to fetch listing details by listing name
+    
+Nature of the changes (frontend / backend / database): 
+    Backend
+
+Coder: Dycia
+
+Purpose of the changes: 
+    (1) Updated 01-postgresql_data3.sql
+        - Added new columns into "users" tables for dashboard
+            - "grails", "rideOrDies", "goats"
+    (3) Updated 02-insert-data.sql
+        - Updated the users table value
+
+Nature of the changes (frontend / backend / database):
+    database
+
+Coder: Dycia
+
+Purpose of the changes: 
+    (1) Updated Page - Dashboard Page (UserDashboard.vue) 
+        - Updated the popup to display the drink listing within the popup modal
+        - Added in function to remove drink listing in popup modal
+        - Updated popup modal to limit selection for "rideOrDies" and "goats" to 3 selection
+
+Nature of the changes (frontend / backend / database): 
+    frontend
+
+Coder: Dycia
+
+Purpose of the changes: 
+    (1) Added new backend file - editDashboard.py 
+        - editDetails() to update the top 3 categories
+    
+Nature of the changes (frontend / backend / database): 
+    backend
