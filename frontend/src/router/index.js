@@ -22,6 +22,13 @@ const routes = [
         /* webpackChunkName: "about" */ "../views/RandomExplorePage.vue"
       ),
   },
+  // Added by SMU GROUP 3
+  {
+    path: '/foryou',
+    name: 'foryou',
+    component: () => import('../views/ForYouPage.vue'),
+    props: true
+  },
   {
     path: "/login",
     name: "login",
