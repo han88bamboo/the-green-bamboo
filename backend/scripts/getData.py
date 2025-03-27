@@ -2553,7 +2553,7 @@ def getLatestNews():
          # Add Open Graph images to each news entry
         for entry in rss_json.get("entries", []):
             og_image = get_og_image(entry["link"])
-            entry["image"] = og_image if og_image else "https://via.placeholder.com/600x400"  # Place your own placeholder image
+            entry["image"] = og_image if og_image else "https://placehold.co/600x400"  # Place your own placeholder image
 
         return jsonify(rss_json)
     except Exception as e:

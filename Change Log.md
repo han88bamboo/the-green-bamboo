@@ -192,3 +192,13 @@ Purpose of the changes:
         - Resolved the responsiveness issue when in mobile view 
 Nature of the changes (frontend / backend / database): 
     frontend
+
+
+# Update as of 26 Mar 2025
+Coder: Zhe Han
+
+Purpose of the changes: Bugfix for Latest News page. 
+Latest news page images not showing up. found it was due to  https://via.placeholder.com/600x400 not working in getData.py 
+replaced it with https://placehold.co/600x400 and deployed
+
+Nature of the changes (frontend / backend / database): Backend
