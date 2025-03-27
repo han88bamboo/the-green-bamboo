@@ -24,6 +24,12 @@ const routes = [
   },
   // Added by SMU GROUP 3
   {
+    path: '/bestof',
+    name: 'bestof',
+    component: () => import('../views/BestOf.vue'),
+    props: true
+  },
+  {
     path: '/foryou',
     name: 'foryou',
     component: () => import('../views/ForYouPage.vue'),
