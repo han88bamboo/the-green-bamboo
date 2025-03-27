@@ -300,3 +300,20 @@ Purpose of the changes:
     
 Nature of the changes (frontend / backend / database): 
     backend
+
+
+# Update as of 27 Mar 2025
+Coder: TeckXuan
+
+Purpose of the changes: 
+    (1) Added new frontend file - ImageSearchResults.vue 
+        - To show the results of the reverse Image Search
+    (2) Updated new Reverse Image Search frontend
+        - To enable user to uplaod the photos and send for reverse image search
+    (3) Updated index.js to include new frontend file 
+    (4) Added new backend API
+        - Getimagesearchresults to retrieve listings based on Google Vision API
+        - Added 2 new imports
+    
+Nature of the changes (frontend / backend / database): 
+    backend / frontend
