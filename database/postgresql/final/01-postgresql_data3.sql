@@ -228,7 +228,7 @@ CREATE TABLE "users" (
     "birthday" TIMESTAMP,
     "pin" VARCHAR(255),
     "choiceFlavours" TEXT[], -- SMU Group 3 added in "choiceFlavours"
-    "preferences" TEXT[] -- SMU Group 3 added in "preferences"
+    "preferences" TEXT[], -- SMU Group 3 added in "preferences"
     "grails" TEXT[], -- SMU Group 3 added in "grails"
     "rideOrDies" TEXT[], -- SMU Group 3 added in "rideOrDies"
     "goats" TEXT[] -- SMU Group 3 added in "goats"
