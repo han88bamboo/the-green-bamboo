@@ -1,4 +1,5 @@
 -- Create the database only if it doesn't exist
+CREATE EXTENSION IF NOT EXISTS dblink;
 DO $$
 BEGIN
     IF NOT EXISTS (

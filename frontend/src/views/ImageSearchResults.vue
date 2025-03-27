@@ -103,7 +103,7 @@
                                             <div class="text-start mb-2" v-for="listing in drinkShelf" v-bind:key="listing.id">
                                                 <div class="d-flex align-items-start">
                                                     <router-link :to="{ path: '/listing/view/' +listing.id}" class="reverse-clickable-text">
-                                                        <img :src="(listing.photo || defaultProfilePhoto)" style="width: 20px; height: 0px;">
+                                                        <img :src="(listing.photo || defaultProfilePhoto)" style="width: 20px; height: 20px;">
                                                     </router-link>
                                                     <span class="ms-3 reverse-clickable-text"> 
                                                         <router-link :to="{ path: '/listing/view/' +listing.id}" class="reverse-clickable-text">
@@ -302,118 +302,12 @@
                                     <button class="btn btn-sm mobile-ps-0 text-center" 
                                         :class="{ 'primary-btn-green mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0 mobile-pe-0': discovery, 'primary-btn-green-outline mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0': !discovery }"
                                         v-on:click="changeDiscoveryStatus()"> <!--tzh added -green and green-outline, changed mt-1 to mb-0_5 mt-0_5 -->
-                                        <p class="mb-0_5 mt-0_5 discover-and-following mobile-mb-0"> Discover </p>
+                                        <p class="mb-0_5 mt-0_5 discover-and-following mobile-mb-0"> Search Results </p>
                                     </button>
                                 </div>
                             </div>
                             <!-- following tzh changed col-12 to col-4-->
-                            <div class="col-xl-6 col-lg-4 col-4 mb-3 mobile-view-no-padding">
-                                <div class="d-grid gap-2 mx-1">
-                                    <button class="btn btn-sm mobile-ps-0 text-center"
-                                        :class="{ 'primary-btn-green mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0': following, 'primary-btn-green-outline mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0': !following }"
-                                        v-on:click="changeFollowingStatus()">
-                                        <p class="mb-0_5 mt-0_5 discover-and-following mobile-mb-0"> Following </p>
-                                    </button>
-                                </div>
-                            </div>
                         </div>
-                        <div class="row col-12">
-                            <!-- filter by drink type / category tzh changed col-12 to col-4 -->
-                            <div class="dropdown col-xl-6 col-lg-4 col-4 mb-3 mobile-col-2 mobile-pe-0">
-                                <div class="d-grid gap-2">
-                                    <!-- tzh added -homepage and some changes for mobile-->
-                                    <div v-if="selectedDrinkType != ''" style="position:absolute; width:100%; font-size:0.8em; transform: translate3d(-20px, -20px, 0px);" class="cross-icon mobile-view-hide ps-4" @click="clearSelection">&#10005; Clear Selection</div>
-                                    <button class="btn primary-light-dropdown-homepage btn-lg dropdown-toggle mobile-view-remove-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="white-space: nowrap; overflow:hidden; text-overflow: ellipsis;">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-funnel funnel-svg-dimensions" viewBox="0 0 16 16">
-                                            <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2z"/>
-                                        </svg>
-                                        <span class="mobile-view-hide" style="margin-left: 5px;">{{ selectedDrinkType ? selectedDrinkType['drinkType'] : 'Filter: Drink Type' }}</span>
-                                        
-                                    </button>
-                                    <!-- tzh - above to be replaced for mobile-->
-                                    <div  class="dropdown-menu pt-0" aria-labelledby="dropdownMenuButton"   @click.stop>
-                                        
-                                        <div class="d-flex filter-div" >
-                                            <div class="dropdown-column ms-2 pt-3" :class="{ 'greyed-out': selectedDrinkType }">
-                                                <h6 class="ms-3"> Filter by <span class="" :class="{ 'text-decoration-underline': !selectedDrinkType }">Drink Type</span> </h6>
-                                                <hr >
-                                                <div v-for="drinkType in drinkTypes" v-bind:key="drinkType.id">
-                                                    <!-- Filter button for drink type -->
-                                                    <a class="dropdown-item" :class="{ 'active': selectedDrinkType === drinkType }" @click="selectDrinkType(drinkType)"> 
-                                                        <span>{{ drinkType['drinkType'] }}</span>
-                                                    </a>   
-                                                </div>
-                                            </div>
-                                            <div v-show="selectedDrinkType" class="dropdown-column drink-category-column me-2 pt-3" :class="{ 'greyed-out': !selectedDrinkType }" >
-                                                <h6 class="ms-3"> Filter by <span class="" :class="{ 'text-decoration-underline': selectedDrinkType }">Drink Category</span> </h6>
-                                                <hr style="min-width:500px;">
-                                                <div v-if="selectedTypeCategory != ''">
-                                                    <div v-for="category in selectedTypeCategory" v-bind:key="category">
-                                                        <a class="dropdown-item" :class="{ 'active': selectedCategory === category }" @click="selectDrinkCategory(category)">
-                                                            <span>{{ category }}</span>
-                                                        </a> 
-                                                    </div>
-                                                </div>
-                                                <div v-else>
-                                                    <a class="dropdown-item-disabled default-clickable-text"> 
-                                                        <span> Select Drink Type first. </span>
-                                                    </a>   
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <!-- Filter button for drink type 
-                                        <div class="d-flex  mobile-view-show">
-                                            <div class="dropdown-column ms-2 mt-2" >
-                                                <h6 class="ms-3"> Filter by Drink Type </h6>
-                                                <p class="ms-3" style="font-size: 12px;">(Scroll down to filter by Sub-Category)</p>
-                                                <hr>
-                                                <div v-for="drinkType in drinkTypes" v-bind:key="drinkType.id">
-                                                    
-                                                    <a class="dropdown-item" :class="{ 'active': selectedDrinkType === drinkType }" @click="selectDrinkType(drinkType)"> 
-                                                        <span>{{ drinkType['drinkType'] }}</span>
-                                                    </a>   
-                                                </div>
-                                                <hr>
-                                                <h6> Filter by Drink Category </h6>
-                                                <hr>
-                                                <div v-if="selectedTypeCategory != ''">
-                                                    <div v-for="category in selectedTypeCategory" v-bind:key="category">
-                                                        <a class="dropdown-item" :class="{ 'active': selectedCategory === category }" @click="selectDrinkCategory(category)">
-                                                            <span>{{ category }}</span>
-                                                        </a> 
-                                                    </div>
-                                                </div>
-                                                <div v-else>
-                                                    <a class="dropdown-item-disabled default-clickable-text"> 
-                                                        <span> There is no category for this </span>
-                                                    </a>   
-                                                </div>
-                                            </div>
-                                        </div>
-                                        -->
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- sort by drink type - tzh changed col-12 to col-4 -->
-                            <div class="dropdown col-xl-6 col-lg-4 col-6 mb-3 mobile-col-2 mobile-ps-0">
-                                <div class="d-grid gap-2">
-                                    <button class="btn primary-light-dropdown-homepage btn-lg dropdown-toggle mobile-view-remove-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="white-space: nowrap; overflow:hidden; text-overflow: ellipsis;">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-sort-down funnel-svg-dimensions" viewBox="0 0 16 16">
-                                            <path d="M3.5 2.5a.5.5 0 0 0-1 0v8.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L3.5 11.293zm3.5 1a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5M7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1z"/>
-                                        </svg>
-                                        <span class="mobile-view-hide" style="margin-left: 5px;"> Sort: {{ sortSelection.category != '' ? sortSelection.category : 'Category' }} </span>
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        <li><span class="dropdown-item" @click="sortByCategory('')"> Clear Sort </span></li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li v-for="category in sortCategoryList" :key="category">
-                                            <span class="dropdown-item" :class="{ 'active': sortSelection.category === category }" @click="sortByCategory(category)"> {{ category }} </span>
-                                        </li>
-                                    </ul>
-                                </div>
-                                
-                            </div> 
-                            </div>
                         </div>
                         
                         <!-- listings  TZH removed class scrollable-listings--->
@@ -435,83 +329,74 @@
 
 
                              <div v-for="listing in (selectedDrinkType == '' ? listings : filteredListings)" v-bind:key="listing.id" class="">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card  mb-4  d-flex flex-row  " 
-     style="background-color:white !important; border-radius: 10px; box-shadow: 4px 4px 4px #827C75; overflow: hidden;">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="card  mb-4  d-flex flex-row  " 
+                                style="background-color:white !important; border-radius: 10px; box-shadow: 4px 4px 4px #827C75; overflow: hidden;">
 
-    <!-- Image Section -->
-    <div class="text-center text-md-start">
-        <div class="image-wrapper position-relative d-inline-block">
-            <img v-if="listing['photo']" 
-                 :src="listing['photo']" 
-                 class="listing-image"
-                 style=" border-top-left-radius: 10px; border-bottom-left-radius: 10px;">
-                 
-            <img v-else 
-                 src="../../Images/Drinks/Placeholder.png" 
-                 class="listing-image"
-                 style=" border-top-left-radius: 10px; border-bottom-left-radius: 10px;">
-        </div>
-    </div>
-<div class="detials-rating d-flex flex-column flex-md-row justify-content-between w-100">
+                                <!-- Image Section -->
+                                <div class="text-center text-md-start">
+                                    <div class="image-wrapper position-relative d-inline-block">
+                                        <img v-if="listing['photo']" 
+                                            :src="listing['photo']" 
+                                            class="listing-image"
+                                            style=" border-top-left-radius: 10px; border-bottom-left-radius: 10px;">
+                                            
+                                        <img v-else 
+                                            src="../../Images/Drinks/Placeholder.png" 
+                                            class="listing-image"
+                                            style=" border-top-left-radius: 10px; border-bottom-left-radius: 10px;">
+                                    </div>
+                                </div>
+                            <div class="detials-rating d-flex flex-column flex-md-row justify-content-between w-100">
 
-    <!-- Details Section -->
-    <div class="flex-grow-1 py-md-3 py-1 w-100 d-flex flex-column justify-content-between md-px-3 px-1">
-        <!-- Name & Producer -->
-        <div class="name-producer">
-            <router-link :to="{ path: '/listing/view/' + listing.id }" class="primary-clickable-text text-decoration-none" style="color:#027562;">
-                <h5 class="d-none d-md-block"><b>{{ listing["listingName"] }}</b></h5>
-                <h6 class="d-block d-md-none"><b>{{ listing["listingName"] }}</b></h6>
-            </router-link>
-            
-            <!-- Producer -->
-            <router-link :to="{ path: '/profile/producer/' + listing.producerID }" class="primary-clickable-text">
-                <h6 class="mobile-rating-smaller-text"><b>{{ getProducerName(listing) }}</b></h6>
-            </router-link>
-        </div>
+                                <!-- Details Section -->
+                                <div class="flex-grow-1 py-md-3 py-1 w-100 d-flex flex-column justify-content-between md-px-3 px-1">
+                                    <!-- Name & Producer -->
+                                    <div class="name-producer">
+                                        <router-link :to="{ path: '/listing/view/' + listing.id }" class="primary-clickable-text text-decoration-none" style="color:#027562;">
+                                            <h5 class="d-none d-md-block"><b>{{ listing["listingName"] }}</b></h5>
+                                            <h6 class="d-block d-md-none"><b>{{ listing["listingName"] }}</b></h6>
+                                        </router-link>
+                                        
+                                        <!-- Producer -->
+                                        <router-link :to="{ path: '/profile/producer/' + listing.producerID }" class="primary-clickable-text">
+                                            <h6 class="mobile-rating-smaller-text"><b>{{ getProducerName(listing) }}</b></h6>
+                                        </router-link>
+                                    </div>
 
-        <!-- Description -->
-        <router-link :to="{ path: '/listing/view/' + listing.id }" class="default-clickable-text fst-italic">
-            <p class="homepage-bottle-listing-description">
-                {{ listing.officialDesc?.length > 300 ? listing.officialDesc.slice(0, 300) + '...' : listing.officialDesc }}
-            </p>
-        </router-link>
-    </div>
+                                    <!-- Description -->
+                                    <router-link :to="{ path: '/listing/view/' + listing.id }" class="default-clickable-text fst-italic">
+                                        <p class="homepage-bottle-listing-description">
+                                            {{ listing.officialDesc?.length > 300 ? listing.officialDesc.slice(0, 300) + '...' : listing.officialDesc }}
+                                        </p>
+                                    </router-link>
+                                </div>
 
-    <!-- Rating & Read More Button -->
-    <div class="text-center text-md-end d-flex flex-row flex-md-col justify-content-between d-md-block mt-0 mt-md-3 px-3">
-    <h1 class="fw-bold text-warning">
-        {{ getRatings(listing) }} ★
-    </h1>
-    <div class="d-grid">
-        <router-link :to="{ path: '/listing/view/' + listing.id }" class="primary-clickable-text">
-            <button class="btn btn-warning btn-sm fw-bold shadow-lg rounded-pill px-2 py-0 px-md-4 py-md-2" 
-                    style="font-size: 16px; background-color: #F0B358; transition: background-color 0.3s;" 
-                    onmouseover="this.style.backgroundColor='#FDD497'" 
-                    onmouseout="this.style.backgroundColor='#F0B358'">
-                Read More
-            </button>
-        </router-link>
-    </div>
-</div>
+                                <!-- Rating & Read More Button -->
+                                <div class="text-center text-md-end d-flex flex-row flex-md-col justify-content-between d-md-block mt-0 mt-md-3 px-3">
+                                <h1 class="fw-bold text-warning">
+                                    {{ getRatings(listing) }} ★
+                                </h1>
+                                <div class="d-grid">
+                                    <router-link :to="{ path: '/listing/view/' + listing.id }" class="primary-clickable-text">
+                                        <button class="btn btn-warning btn-sm fw-bold shadow-lg rounded-pill px-2 py-0 px-md-4 py-md-2" 
+                                                style="font-size: 16px; background-color: #F0B358; transition: background-color 0.3s;" 
+                                                onmouseover="this.style.backgroundColor='#FDD497'" 
+                                                onmouseout="this.style.backgroundColor='#F0B358'">
+                                            Read More
+                                        </button>
+                                    </router-link>
+                                </div>
+                            </div>
 
-</div>
+                            </div>
 
-</div>
+                            </div>
 
-        </div>
-    </div>
-</div>
-
-
-
-
-
-
-
-
-                                    
+                                    </div>
+                                </div>
+                            </div>
                                 </div>
                             </div> <!-- end of listings -->
 
@@ -869,28 +754,48 @@
         methods: {
             // load data from database
             async loadData() {
-                // countries
-                // _id, originCountry
-                    // try {
-                    //     const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getCountries`);
-                    //     this.countries = response.data;
-                    // } 
-                    // catch (error) {
-                    //     console.error(error);
-                    // }
-                // listings
-                // _id, listingName, producerID, bottler, originCountry, drinkType, typeCategory, age, abv, reviewLink, officialDesc, sourceLink, photo
-                    try {
-                        // const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListings`);
-                        // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getRandomListings`);
-                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getRandomListings`);
-                        this.listings = response.data;
-                        // originally, make filteredListings the entire collection of listings
+                try {
+                    const logo = this.$route.query.logo; // Get the logo from URL parameters
+                    const labels = this.$route.query.labels
+                        ? this.$route.query.labels.split(",")
+                        : []; // Get the labels from URL, assuming it's a comma-separated list
+                    const detectedText = this.$route.query.detectedText
+                        ? this.$route.query.detectedText.split(",")
+                        : []; // Get the detected text from URL, assuming it's a comma-separated list
+
+                    if (!logo && labels.length === 0 && detectedText.length === 0) {
+                        console.warn("No logo, labels, or text parameters found in query.");
+                        return;
+                    }
+
+                    const requestData = {
+                        logo: logo,
+                        labels: labels,
+                        detectedText: detectedText,
+                    };
+
+                    const response = await this.$axios.post(
+                        `${process.env.VUE_APP_API_URL}/getData/getImageSearchResults`,
+                        requestData, // Pass the entire request body
+                        { headers: { "Content-Type": "application/json" } }
+                    );
+
+                    if (response.status === 200 && response.data.length > 0) {
+                        this.listings = response.data; // Store API results
                         this.filteredListings = this.listings;
-                    } 
-                    catch (error) {
-                        console.error(error);
-                        this.dataLoaded = null;
+                        this.dataLoaded = true;
+                    } else {
+                        console.warn("No listings found for the given parameters.");
+                        this.listings = [];
+                        this.filteredListings = [];
+                        this.dataLoaded = false;
+                    }
+                } 
+                catch (error) {
+                    console.error("Error fetching listings:", error);
+                    this.listings = [];
+                    this.filteredListings = [];
+                    this.dataLoaded = false;
                 }
                 // producers
                 // _id, producerName, producerDesc, originCountry, statusOB, mainDrinks
