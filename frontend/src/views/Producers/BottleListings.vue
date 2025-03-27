@@ -48,16 +48,20 @@
                 <!-- header -->
                 <div class="row container">
                     <!-- image -->
-                    <div class="col-12 col-lg-4 col-xl-3 image-container text-start mobile-col-5">
-                        <img :src="( specified_listing['photo'] || defaultPhoto )" class="producer-bottle-listing-page-image" >
-                    </div>
+                    <div class="col-5 col-md-5 col-lg-4 col-xl-3 d-flex justify-content-center">
+  <div class="shadow-sm rounded overflow-hidden" style="width: 100%; max-width: 300px; aspect-ratio: 1 / 1;">
+    <img :src="( specified_listing['photo'] || defaultPhoto )" 
+         class="img-fluid w-100 h-100 object-fit-cover">
+  </div>
+</div>
+
                     <!-- details -->
                     <div class="col-12 col-lg-8 col-xl-9 text-start mobile-col-7 mobile-ps-0 mobile-pe-0">
                         <div class="container text-start mobile-ps-0 mobile-pe-0">
                             <!-- drink category -->
                             <div class="row">
                                 <div class="col-9 mobile-view-hide">
-                                    <h5 class="text-body-secondary fst-italic"> {{ specified_listing["drinkType"] }} </h5>
+                                    <h5 class="text-body-secondary fst-italic"> {{ specified_listing["drinkType"] }} | {{specified_listing["originCountry"]}}</h5>
                                 </div>
                                 <div v-if="correctProducer" class="col-3">
                                     <div class="text-end mb-3 m-1">
@@ -103,11 +107,69 @@
                             <div class="row">
                                 <div class="col-12 col-lg-8">
                                     <div class="row">
+                                        <div class="col-12 row">
+    <div class="col-6 mobile-view-show">
+                                            <div v-if="userType == 'user' && userID !== 'defaultUser'" class="padding-for-addyourreviewbutton-large-screen mobile-view-show">
+                                                <div v-if="!inEdit" class="d-grid gap-2">
+                                                    <button class="btn primary-btn-less-round-blue btn-lg" data-bs-toggle="modal" data-bs-target="#reviewModal" style="font-weight:bold;">  <!--tzh added -blue -->
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 16">
+                                                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                                <div v-else class="d-grid gap-2">
+                                                    <button class="btn primary-btn-less-round-blue btn-lg mobile-rating-smaller-text-2">   <!--tzh added -blue -->
+                                                        Reviewed 
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div v-else-if="userType == 'user'" class="col-5 padding-for-addyourreviewbutton-large-screen mobile-view-hide">
+                                                <div class="d-grid gap-2">
+                                                    <router-link :to="{ path: '/login' }" class="reverse-clickable-text">
+                                                        <button class="btn primary-btn-less-round-blue btn-lg mobile-rating-smaller-text-2" style="font-weight:bold;">   <!--tzh added -blue -->
+                                                             Add Your Review
+                                                        </button>
+
+                                                    </router-link>
+                                                </div>
+                                            </div>
+                                    
+                            </div>
+                                        <div class="col-2 d-flex flex-row justify-content-center make-bookmark-bigger mobile-view-show" >
+                        <BookmarkIcon 
+                            v-if="user" 
+                            :user="user" 
+                            :listing="specified_listing" 
+                            :overlay="false"
+                            size="35"
+                            @icon-clicked="handleIconClick" />
+                </div>
+                                        <div class="col-3 mobile-view-show px-1 " style="
+margin-left:10px">
+<svg width="35" height="35" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" data-bs-toggle="modal" data-bs-target="#whereToBuyModal">
+    <!-- Checkbox border -->
+    <rect x="5" y="5" width="90" height="90" stroke="#006A50" stroke-width="8" fill="none" rx="10"/>
+    
+    <!-- Checkmark -->
+    <polyline points="25,50 45,75 80,30" stroke="#006A50" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+
+                                            <!-- <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" data-bs-toggle="modal" data-bs-target="#whereToBuyModal" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="arcs"><path d="M3.8 3.8l16.4 16.4M20.2 3.8L3.8 20.2M15 3h6v6M9 3H3v6M15 21h6v-6M9 21H3v-6"/></svg> -->
+                                        </div>
+</div>
+
+                                        
                                         <h3 class="text-body-secondary mb-0 mobile-view-hide"> <b> {{ specified_listing["listingName"] }} </b> </h3>
                                         <h4 class="text-body-secondary mb-0 mobile-view-show col-10 pe-1"> <b> {{ specified_listing["listingName"] }} </b> </h4>
-                                        <div class="col-2 mobile-view-show px-1">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="29" height="29" data-bs-toggle="modal" data-bs-target="#whereToBuyModal" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="arcs"><path d="M3.8 3.8l16.4 16.4M20.2 3.8L3.8 20.2M15 3h6v6M9 3H3v6M15 21h6v-6M9 21H3v-6"/></svg>
-                                        </div>
+
+                                        
+                                        
+                                        
+                                        
+                    
+
+
+
                                     </div>
                                     <div class="row pt-1">
                                         <!-- producer -->
@@ -373,7 +435,7 @@
                                                         <span  class="text-decoration-none">{{ specified_listing["abv"] }}% | </span>
                                                         <span class="text-decoration-none">{{ specified_listing["originCountry"] }}</span>
                 </p>
-                <div class="col-2 d-flex justify-content-end make-bookmark-bigger" >
+                <div class="col-2 d-flex justify-content-end make-bookmark-bigger mobile-view-hide" >
                         <BookmarkIcon 
                             v-if="user" 
                             :user="user" 
@@ -385,73 +447,67 @@
                 </div>                                    
                 <!-- more information (category, age, country of origin, abv, list buttons & bookmark) -->
                 <div class="row pt-4 container mobile-view-hide">
-                    <div class="col-7 col-lg-7">
-                        <div class="row">
-                            <!-- category -->
-                            <div class="col-6 col-lg-3 pe-1 text-start mobile-view-hide text-color-black">
-                                <h5 class="text-body-secondary" style="margin-bottom:0;"> <b> {{ specified_listing["typeCategory"] }} </b> </h5>
-                                <p class="mb-2"> <u> Category </u> </p>
-                                
-                            </div>
+                    <div class="col-9 col-lg-9">
+    <div class="row listing-details">
+        <!-- category -->
+        <div class="col-6 col-lg-3 pe-1 text-start mobile-view-hide text-color-black">
+            <h5 class="text-body-secondary mb-1"> <b> {{ specified_listing["typeCategory"] }} </b> </h5>
+            <p class="mb-3"> <u> Category </u> </p>
+        </div>
 
-                            <!-- drink styles - added by tzh -->
-                            <div class="col-6 col-lg-2 px-1 text-start mobile-view-hide text-color-black">
-                                <h5 class="text-body-secondary" style="margin-bottom:0;"> <b v-if="specified_listing['drinkStyle']"  > {{ specified_listing["drinkStyle"] }} </b> <b v-else> N/A </b></h5>
-                                <p class="mb-2"> <u> Drink Style </u> </p>
-                                
-                            </div>
-                            <!-- age --> 
-                            <div class="col-6 col-lg-2 px-1 text-start mobile-view-hide text-color-black">
-                                <!-- for wine listings -->
-                                <div v-if="specified_listing['drinkType'] == 'Wine'">
-                                    <h5 class="text-body-secondary" style="margin-bottom:0;"> <b>  {{ specified_listing["age"] }} </b> </h5>
-                                    <p class="mb-2"> <u> Vintage (Year)</u> </p> <!-- to change this to calculate the age -->
-                                    
-                                </div>
-                                <!-- for all other listings  -->
-                                <div v-else>
-                                    <h5 class="text-body-secondary" style="margin-bottom:0;"> <b>  {{ specified_listing["age"] }} </b> </h5>
-                                    <p class="mb-2"> <u> Age (Years)</u> </p> 
-                                    
-                                </div>
-                            </div>
-                            <!-- country of origin -->
-                            <div class="col-6 col-lg-3 px-1 text-start mobile-view-hide text-color-black">
-                                <h5 class="text-body-secondary" style="margin-bottom:0;"> <b> {{ specified_listing["originCountry"] }} </b> </h5>
-                                <p class="mb-2"> <u> Country of Origin </u> </p>
-                                
-                            </div>
-                            <!-- abv -->
-                            <div class="col-6 col-lg-1 px-1 text-start mobile-view-hide text-color-black">
-                                <h5 class="text-body-secondary" style="margin-bottom:0;"> <b> {{ specified_listing["abv"] }}% </b> </h5>
-                                <p class="mb-1"> <u> ABV </u> </p>
-                                
-                            </div>
-                        </div>
-                    </div>
-                    
+        <!-- drink styles -->
+        <div class="col-6 col-lg-2 px-1 text-start mobile-view-hide text-color-black">
+            <h5 class="text-body-secondary mb-1"> <b v-if="specified_listing['drinkStyle']"> {{ specified_listing["drinkStyle"] }} </b> <b v-else> N/A </b></h5>
+            <p class="mb-3"> <u> Drink Style </u> </p>
+        </div>
+
+        <!-- age --> 
+        <div class="col-6 col-lg-2 px-1 text-start mobile-view-hide text-color-black">
+            <div v-if="specified_listing['drinkType'] == 'Wine'">
+                <h5 class="text-body-secondary mb-1"> <b>  {{ specified_listing["age"] }} </b> </h5>
+                <p class="mb-3"> <u> Vintage (Year)</u> </p>
+            </div>
+            <div v-else>
+                <h5 class="text-body-secondary mb-1"> <b>  {{ specified_listing["age"] }} </b> </h5>
+                <p class="mb-3"> <u> Age (Years)</u> </p>
+            </div>
+        </div>
+
+        <!-- country of origin -->
+        <div class="col-6 col-lg-3 px-1 text-start mobile-view-hide text-color-black">
+            <h5 class="text-body-secondary mb-1"> <b> {{ specified_listing["originCountry"] }} </b> </h5>
+            <p class="mb-3"> <u> Country of Origin </u> </p>
+        </div>
+
+        <!-- abv -->
+        <div class="col-6 col-lg-1 px-1 text-start mobile-view-hide text-color-black">
+            <h5 class="text-body-secondary mb-1"> <b> {{ specified_listing["abv"] }}% </b> </h5>
+            <p class="mb-3"> <u> ABV </u> </p>
+        </div>
+    </div>
+</div>
+
+<div class="col-3 row">
+
                     <!-- have tried button -->
-                    <div class="col-2 col-lg-2 p-0">
+                    <div class="col-1 col-lg-5 p-0">
                         <!-- <div v-if="user && Object.keys(user.drinkLists).length > 0" v-html="checkDrinkLists(specified_listing).buttons.haveTried" class="d-grid" @click="addToTriedList"> </div> -->
                         <!-- CP edits: Removed the if logic so public users can also view and click -->
                         <div v-html="checkDrinkLists(specified_listing).buttons.haveTried" class="d-grid" @click="addToTriedList"> </div>
                     </div>
                     <!-- want to try button -->
-                    <div class="col-2 col-lg-2 p-0">
-                        <!-- <div v-if="user && Object.keys(user.drinkLists).length > 0" v-html="checkDrinkLists(specified_listing).buttons.wantToTry" class="d-grid" @click="addToWantList"> </div> -->
-                        <!-- CP edits: Removed the if logic so public users can also view and click -->
-                        <div v-html="checkDrinkLists(specified_listing).buttons.wantToTry" class="d-grid" @click="addToWantList"> </div>
-                    </div>
+                
                     <!-- bookmark button -->
-                    <div class="col-1 col-lg-1 text-center d-flex justify-content-start make-bookmark-bigger" >
+                    <div class="col-1 col-lg-5 text-center d-flex justify-content-start make-bookmark-bigger" >
                         <!-- CP edits: removed v-if logic for public users to view and click -->
                         <BookmarkIcon 
                             :user="user" 
                             :listing="specified_listing" 
                             :overlay="false"
-                            size="30"
+                            size="40"
                             @icon-clicked="handleIconClick" />
 
+                    </div>
                     </div>
                     
                 </div>
@@ -485,33 +541,7 @@
                                     <p class="mb-2 mobile-rating-smaller-text-2"> <u> Would Drink Again </u> </p>
                                     
                             </div>
-                            <div class="mobile-col-3 mobile-view-show">
-                                            <div v-if="userType == 'user' && userID !== 'defaultUser'" class="padding-for-addyourreviewbutton-large-screen mobile-view-show">
-                                                <div v-if="!inEdit" class="d-grid gap-2">
-                                                    <button class="btn primary-btn-less-round-blue btn-lg" data-bs-toggle="modal" data-bs-target="#reviewModal" style="font-weight:bold;">  <!--tzh added -blue -->
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 16">
-                                                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
-                                                        </svg>
-                                                    </button>
-                                                </div>
-                                                <div v-else class="d-grid gap-2">
-                                                    <button class="btn primary-btn-less-round-blue btn-lg mobile-rating-smaller-text-2">   <!--tzh added -blue -->
-                                                        Review added
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <div v-else-if="userType == 'user'" class="col-5 padding-for-addyourreviewbutton-large-screen mobile-view-hide">
-                                                <div class="d-grid gap-2">
-                                                    <router-link :to="{ path: '/login' }" class="reverse-clickable-text">
-                                                        <button class="btn primary-btn-less-round-blue btn-lg mobile-rating-smaller-text-2" style="font-weight:bold;">   <!--tzh added -blue -->
-                                                            + Add Your Review
-                                                        </button>
-
-                                                    </router-link>
-                                                </div>
-                                            </div>
-                                    
-                            </div>
+                         
                         </div>
                     </div>
 
@@ -572,7 +602,7 @@
                                 <!---<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 16">
                                     <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
                                 </svg>-->
-                                + Add Your Review
+                                Add Your Review
                             </button>
                         </div>
                         <div v-else class="d-grid gap-2">
@@ -585,7 +615,7 @@
                     <div v-if="userID == 'defaultUser'" class="col-5 padding-for-addyourreviewbutton-large-screen mobile-view-hide">
                         <div class="d-grid gap-2">
                                 <button class="btn primary-btn-less-round-blue btn-lg" @click="$router.push('/login')" style="font-weight:bold;"> 
-                                    + Add Your Review
+                                    Add Your Review
                                 </button>
                                 
                         </div>
@@ -1063,53 +1093,46 @@
                     <h5 class="text-start" style="font-weight:bold; color:black;">In Photos</h5>
                     <div class="row text-start" style="padding-left:1.5em;">
                         <div class="col">
-                            <div class="justify-content-start row">
-                                <!-- [if] user has not added a review yet, or hasn't logged in yet add new photo -->
-                                <div v-if="userType == 'user' && userID !== 'defaultUser' && !inEdit" class="row">
-                                    <!-- (1) add button -->
-                                    <div class="mobile-col-3 col-sm-6 col-md-4 col-lg-2 mobile-px-1">
-                                        <div data-bs-toggle="modal" data-bs-target="#reviewModal">
-                                            <svg xmlns="http://www.w3.org/2000/svg"  fill="#83A9E8" class="bi bi-plus-lg review-image" viewBox="0 0 16 16" style="cursor: pointer;"  > <!--tzh changed currentColor to 83A9E8-->
-                                                <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
-                                            </svg>
-                                        </div>
-                                    </div>
-                                    <!-- (2) to (6) other photos -->
-                                    <div v-for="review in filteredReviewsWithImages.slice(0,5)" v-bind:key="review" class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 mobile-px-1">
-                                        <img :src=" (review['photo'] || defaultPhoto)" alt="" class="review-image" >
-                                    </div>
-                                </div>
-                                <div v-else-if="userID == 'defaultUser'" class="row">
-                                    <!-- (1) add button -->
-                                    <div class="mobile-col-3 col-sm-6 col-md-4 col-lg-2 mobile-px-1">
-                                        <div >
-                                            <svg xmlns="http://www.w3.org/2000/svg"  fill="#83A9E8" class="bi bi-plus-lg review-image" viewBox="0 0 16 16" @click="$router.push('/login')" style="cursor: pointer; "  > <!--tzh changed currentColor to 83A9E8-->
-                                                <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
-                                            </svg>
-                                        </div>
-                                    </div>
-                                    <!-- (2) to (6) other photos -->
-                                    <div v-for="review in filteredReviewsWithImages.slice(0,5)" v-bind:key="review" class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 mobile-px-1">
-                                        <img :src=" (review['photo'] || defaultPhoto)" alt="" class="review-image" >
-                                    </div>
-                                </div>
-                                <!-- [else] user has added a review -->
-                                <!-- (1) to (6) display all photos -->
-                                <div v-else class="row">
-                                    <!-- (1) add button 
-                                    <div class="mobile-col-3 col-sm-6 col-md-4 col-lg-2 mobile-px-1">
-                                        <div >
-                                            <svg xmlns="http://www.w3.org/2000/svg"  fill="#83A9E8" class="bi bi-plus-lg review-image" viewBox="0 0 16 16"   @click="$router.push('/login')" style="cursor: pointer;"  > tzh changed currentColor to 83A9E8
-                                                <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
-                                            </svg>
-                                        </div>
-                                    </div>           -->                           
-                                    <!-- (2) to (6) other photos-->
-                                    <div v-for="review in filteredReviewsWithImages" v-bind:key="review" class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 p-0 mobile-px-1">
-                                        <img :src="(review['photo'] || defaultPhoto)" alt="" class="review-image" >
-                                    </div>
-                                </div>
-                            </div>
+                            <div class="row justify-content-start align-items-start">
+    <!-- If user can add a review -->
+    <div v-if="userType == 'user' && userID !== 'defaultUser' && !inEdit" class="row">
+        <!-- Add button -->
+        <div class="mobile-col-3 col-sm-6 col-md-4 col-lg-2 mobile-px-1">
+            <div data-bs-toggle="modal" data-bs-target="#reviewModal">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="#83A9E8" class="bi bi-plus-lg review-image" viewBox="0 0 16 16" style="cursor: pointer;">
+                    <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
+                </svg>
+            </div>
+        </div>
+        <!-- Display up to 5 photos -->
+        <div v-for="review in filteredReviewsWithImages.slice(0,5)" :key="review" class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 mobile-px-1">
+            <img :src="(review['photo'] || defaultPhoto)" alt="" class="review-image shadow-effect">
+        </div>
+    </div>
+
+    <!-- If user is not logged in -->
+    <div v-else-if="userID == 'defaultUser'" class="row">
+        <div class="mobile-col-3 col-sm-6 col-md-4 col-lg-2 mobile-px-1">
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="#83A9E8" class="bi bi-plus-lg review-image" viewBox="0 0 16 16" @click="$router.push('/login')" style="cursor: pointer;">
+                    <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
+                </svg>
+            </div>
+        </div>
+        <!-- Display up to 5 photos -->
+        <div v-for="review in filteredReviewsWithImages.slice(0,5)" :key="review" class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 mobile-px-1">
+            <img :src="(review['photo'] || defaultPhoto)" alt="" class="review-image shadow-effect">
+        </div>
+    </div>
+
+    <!-- If user has already added a review -->
+    <div v-else class="row">
+        <div v-for="review in filteredReviewsWithImages.slice(0,5)" :key="review" class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 p-0 mobile-px-1">
+            <img :src="(review['photo'] || defaultPhoto)" alt="" class="review-image shadow-effect">
+        </div>
+    </div>
+</div>
+
                         </div>
                     </div>
 
@@ -1122,138 +1145,118 @@
                         
                             <div class="col-9 xcol-lg-8">
                                 <div class="row">
-                                    <div class="text-start mb-2 ">
-                                    <div class="row">    
-                                        <!-- profile photo -->
-                                        <div class="col-12 col-lg-1 mobile-col-2" style="text-align: left;">
-                                            <router-link :to="`/profile/user/${review.userID}`">
-                                                <img :src="(getPhotoFromReview(review) || defaultProfilePhoto)" alt="" class="profile-image">
-                                            </router-link>
-                                        </div>
-                                        <div class="col-10 pe-0 mobile-fs-7 mobile-ps-4">
-                                            <!-- username -->
-                                            <router-link :to="`/profile/user/${review.userID}`" style="color: inherit">
-                                                <b>
-                                                    @{{ getUsernameFromReview(review) }}
-                                                </b>
-                                            </router-link>
+    <div class="text-start mb-3">
+        <div class="row align-items-center">
+            <!-- Profile Photo -->
+            <div class="col-12 col-lg-1 mobile-col-2 text-start">
+                <router-link :to="`/profile/user/${review.userID}`">
+                    <img :src="(getPhotoFromReview(review) || defaultProfilePhoto)" alt="" class="profile-image">
+                </router-link>
+            </div>
 
-                                            <!-- rating -->
-                                            &nbsp;rated <span style="color:#F0B358;">★</span> <span style="font-weight:bold;">{{ review['rating'] }}</span> Stars
-                                            
-                                            <!-- star icon 
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-star-fill me-1" viewBox="0 0 16 16">
-                                                <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                            </svg>-->
-                                            
-                                            <!-- location -->
-                                            
-                                            <span v-if="review.location !== '' && checkVenue(review.address)">
-                                                <a style="color: inherit" > 
-                                                    at
-                                                    <router-link :to="'/profile/venue/' + checkVenue(review.address)" style="color: inherit">
-                                                        <b>{{ getVenueNameFromID(review.location) }}</b>
-                                                    </router-link>
-                                                </a>
-                                            </span>
+            <!-- Username and Rating -->
+            <div class="col-10 pe-0 mobile-fs-7 mobile-ps-4">
+                <router-link :to="`/profile/user/${review.userID}`" class="text-decoration-none text-dark">
+                    <b>@{{ getUsernameFromReview(review) }}</b>
+                </router-link>
+                &nbsp;rated <span style="color:#F0B358;">★</span> 
+                <b>{{ review['rating'] }}</b> Stars
+                
+                <!-- Location -->
+                <span v-if="review.location !== '' && checkVenue(review.address)">
+                    at 
+                    <router-link :to="'/profile/venue/' + checkVenue(review.address)" class="text-decoration-none text-dark">
+                        <b>{{ getVenueNameFromID(review.location) }}</b>
+                    </router-link>
+                </span>
 
-                                            <span v-else-if="review.location">
-                                                at 
-                                                <a :href="'https://www.google.com/maps/search/' + review.location" style="color: inherit" target="_blank"> 
-                                                    <b>{{ review.location }}</b>
-                                                </a>
-                                            </span>
+                <span v-else-if="review.location">
+                    at 
+                    <a :href="'https://www.google.com/maps/search/' + review.location" class="text-decoration-none text-dark" target="_blank">
+                        <b>{{ review.location }}</b>
+                    </a>
+                </span>
 
-                                            <!-- tagged friends -->
-                                            <span v-if="review.taggedUsers != null && review.taggedUsers.length > 0"> drank with {{ review.taggedUsers.length }} others </span>
+                <!-- Tagged Friends -->
+                <span v-if="review.taggedUsers && review.taggedUsers.length > 0">
+                    drank with {{ review.taggedUsers.length }} others
+                </span>
 
-                                            <!-- user title -->
-                                            <span v-if="checkModFromUserID(review.userID)" class="badge rounded-pill ms-3 mobile-ms-0 mobile mt-1" style="color: black; background-color: #F0B358;">Moderator</span>
-                                            
-                                            <!-- Insert Edit modal here -->
-                                            <div class="mt-2 mobile-mt-1">
-                                                <button v-if="review.userID === parseInt(userID)"  class="btn btn-warning me-1 py-1  mobile-fs-7" @click="setUpdateID(review)" data-bs-toggle="modal" data-bs-target="#reviewModal">Edit</button>
-                                                <button v-if="review.userID === correctModerator" class="btn btn-danger py-1  mobile-fs-7" @click="setDeleteID(review)" data-bs-toggle="modal" data-bs-target="#deleteReview">Delete</button> <!--tzh removed option to delete for ordinary users "parseInt(userID) || ")-->
-                                            </div>
-                                        </div>    
-                                    </div>
-                                    </div>
-                                    <div class="text-start mb-2">
-                                        {{ review['reviewDesc'] }}
-                                    </div>
-                                    
-                                    <!-- flavour tag tzh changed mb-2 to mb-3-->
-                                    <div class="text-start mb-3">
-                                        <!-- flavor tag -->
-                                            <span v-for="(tag, index) in review.flavourTag" :key="index" class="badge rounded-pill me-2 mb-1" :style="{ backgroundColor: getTagColor(parseInt(tag)) }">{{ getTagName(parseInt(tag)) }}</span>
-                                            <span v-for="(tag, index) in review.observationTag" :key="index" class="badge rounded-pill me-2 mb-1" style="background-color: #F0B358; color:black;">{{ tag }}</span> <!--tzh changed grey to #F0B358-->
-                                    </div>
-                                    <div style="display: inline;" class="text-start">
-                                        <!-- voting -->
-                                        <svg v-if="!review.userVotes.upvotes.some(vote => parseInt(vote?.userId) === parseInt(userID))" @click="voteReview(review, 'upvote')" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-caret-up" viewBox="0 0 16 16">
-                                            <path d="M3.204 11h9.592L8 5.519zm-.753-.659 4.796-5.48a1 1 0 0 1 1.506 0l4.796 5.48c.566.647.106 1.659-.753 1.659H3.204a1 1 0 0 1-.753-1.659"/>
-                                        </svg>
-                                        <svg v-else @click="voteReview(review, 'unupvote')" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-caret-up-fill" viewBox="0 0 16 16">
-                                            <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z"/>
-                                        </svg>
-                                        <span class="mx-2">{{ review.userVotes.upvotes.length - review.userVotes.downvotes.length }}</span>
-                                        <svg v-if="!review.userVotes.downvotes.some(vote => parseInt(vote?.userId) === parseInt(userID))" @click="voteReview(review, 'downvote')" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-caret-down me-3" viewBox="0 0 16 16">
-                                            <path d="M3.204 5h9.592L8 10.481zm-.753.659 4.796 5.48a1 1 0 0 0 1.506 0l4.796-5.48c.566-.647.106-1.659-.753-1.659H3.204a1 1 0 0 0-.753 1.659"/>
-                                        </svg>
-                                        <svg v-else @click="voteReview(review, 'undownvote')" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-caret-down-fill me-3" viewBox="0 0 16 16">
-                                            <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
-                                        </svg>
-                                        <a href="#" class="text-decoration-underline text-secondary" data-bs-toggle="modal" data-bs-target="#detailedReviewModal" @click="updateDetailedReview(review)">Detailed Review ></a>
-                                    </div>
+                <!-- User Title -->
+                <span v-if="checkModFromUserID(review.userID)" class="badge rounded-pill ms-2" 
+                      style="background-color: #F0B358; color: black;">
+                    Moderator
+                </span>
+            </div>
 
-                                    <!-- Delete review modal -->
-                                    <div class="modal fade" id="deleteReview" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                        <div class="modal-dialog">
-                                            
-                                            <!-- DELETE SUCCESS -->
-                                            <div class="text-success fst-italic fw-bold fs-3 modal-content" v-if='successDelete'>
-                                                <span>Your review has successfully been deleted!</span>
-                                                <div class="modal-footer">
-                                                    <button type="button" @click="reloadRoute" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                                </div>
-                                            </div>
-                                            <!-- DELETE ERROR -->
-                                            <div class="text-danger fst-italic fw-bold fs-3 modal-content" v-if="errorDelete"> 
-                                                <div v-if="errorDeleteMessage" class="row"> 
-                                                    <span >An error occurred while attempting to delete, please try again!</span>
-                                                    <br>
-                                                    <button class="btn primary-btn btn-sm" @click="reset">
-                                                        <span class="fs-5 fst-italic"> Retry your delete request here! </span>
-                                                    </button>
-                                                </div>
-                                                
-                                                <span v-if="notExist">There is no review by you for this bottle listing!</span>
-                                                <br>
+            <!-- Edit & Delete Buttons -->
+            <div class="mt-2">
+                <button v-if="review.userID === parseInt(userID)" class="btn btn-warning me-1 py-1 mobile-fs-7" 
+                        @click="setUpdateID(review)" data-bs-toggle="modal" data-bs-target="#reviewModal">
+                    Edit
+                </button>
+                <button v-if="review.userID === correctModerator" class="btn btn-danger py-1 mobile-fs-7" 
+                        @click="setDeleteID(review)" data-bs-toggle="modal" data-bs-target="#deleteReview">
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
 
-                                            
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                                </div>
-                                            </div>
+    <!-- User's Review -->
+    <div class="text-start mb-3">
+        {{ review['reviewDesc'] }}
+    </div>
 
-                                            <!-- DELETE IN PROGRESS MODAL -->
-                                            <div v-if="deletingReview" class="modal-content">
-                                                <div class="modal-header" >
-                                                    <h5 class="modal-title" id="deleteReview" >Delete Review</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    Are you sure you want to delete your review?
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                                    <button type="button" class="btn btn-danger" @click="deleteReview">Delete Review</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!-- END of delete review modal -->
-                                </div>
+    <!-- Flavour Tags -->
+    <div class="text-start mb-3">
+        <span v-for="(tag, index) in review.flavourTag" :key="index" 
+              class="badge rounded-pill me-2 mb-1" 
+              :style="{ backgroundColor: getTagColor(parseInt(tag)) }">
+            {{ getTagName(parseInt(tag)) }}
+        </span>
+        <span v-for="(tag, index) in review.observationTag" :key="index" 
+              class="badge rounded-pill me-2 mb-1" 
+              style="background-color: #F0B358; color: black;">
+            {{ tag }}
+        </span>
+    </div>
+
+    <!-- Voting and Detailed Review -->
+    <div class="text-start " style="display: flex !important;">
+        <div class="div">
+
+       
+        <svg v-if="!review.userVotes.upvotes.some(vote => parseInt(vote?.userId) === parseInt(userID))" 
+             @click="voteReview(review, 'upvote')" xmlns="http://www.w3.org/2000/svg" 
+             width="20" height="20" fill="currentColor" class="bi bi-caret-up">
+            <path d="M3.204 11h9.592L8 5.519zm-.753-.659 4.796-5.48a1 1 0 0 1 1.506 0l4.796 5.48c.566.647.106 1.659-.753 1.659H3.204a1 1 0 0 1-.753-1.659"/>
+        </svg>
+    
+        <svg v-else @click="voteReview(review, 'unupvote')" xmlns="http://www.w3.org/2000/svg" 
+             width="20" height="20" fill="currentColor" class="bi bi-caret-up-fill">
+            <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z"/>
+        </svg>
+    </div>
+        <span class="mx-2">{{ review.userVotes.upvotes.length - review.userVotes.downvotes.length }}</span><div class=""
+>      <svg v-if="!review.userVotes.downvotes.some(vote => parseInt(vote?.userId) === parseInt(userID))" 
+             @click="voteReview(review, 'downvote')" xmlns="http://www.w3.org/2000/svg" 
+             width="20" height="20" fill="currentColor" class="bi bi-caret-down me-3">
+            <path d="M3.204 5h9.592L8 10.481zm-.753.659 4.796 5.48a1 1 0 0 0 1.506 0l4.796 5.48c.566-.647.106-1.659-.753-1.659H3.204a1 1 0 0 0-.753 1.659"/>
+        </svg>
+        <svg v-else @click="voteReview(review, 'undownvote')" xmlns="http://www.w3.org/2000/svg" 
+             width="20" height="20" fill="currentColor" class="bi bi-caret-down-fill me-3">
+            <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
+        </svg>
+</div>
+        <a href="#" class="text-decoration-underline text-secondary ms-3" 
+           data-bs-toggle="modal" data-bs-target="#detailedReviewModal" 
+           @click="updateDetailedReview(review)">
+            Detailed Review >
+        </a>
+    </div>
+</div>
+
                                 <!-- detailed review modal start -->
                                 <div class="modal fade" id="detailedReviewModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                                     <div class="modal-dialog">
@@ -1459,7 +1462,7 @@
                             </div>
                         </div>
 
-                    <hr>
+                    <hr class="mt-2 mb-2">
                     </div>
                 
             </div> <!-- end of producer information -->
@@ -1470,107 +1473,115 @@
             <div class="col-sm-12 col-md-9 col-lg-3 mobile-view-hide">
                 <!-- where to buy -->
                 <div class="row">
-                    <div class="square primary-square-green rounded p-3 mb-3 text-start" style="height: 250px;">
-                        <!-- header text -->
-                        <div class="square-inline text-start">
-                            <h4 class="mr-auto"> Where to Buy </h4>
-                        </div>
-                        <!-- body -->
-                        <div style="height: 85%;">
-                            <div class="text-start pt-2 overflow-auto" style="max-height: 100%;">
-                                <!-- [function] where to buy -->
-                                <div v-for="producer in producerListings" v-bind:key="producer">
-                                    <router-link :to="{ path: '/profile/producer/' + producer }" class="reverse-clickable-text">
-                                        <p> {{ getProducerName(producer) }} </p>
-                                    </router-link>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+    <div class="square primary-square-green rounded p-3 mb-3 text-start" 
+         style="height: 250px; border-radius: 10px; box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.2);">
+        <!-- header text -->
+        <div class="square-inline text-start">
+            <h4 class="mr-auto"> Where to Buy </h4>
+        </div>
+        <!-- body -->
+        <div style="height: 85%;">
+            <div class="text-start pt-2 overflow-auto" style="max-height: 100%;">
+                <!-- [function] where to buy -->
+                <div v-for="producer in producerListings" v-bind:key="producer">
+                    <router-link :to="{ path: '/profile/producer/' + producer }" class="reverse-clickable-text">
+                        <p> {{ getProducerName(producer) }} </p>
+                    </router-link>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 
                 <!-- not sure what this line supposed to do -->
                 <!-- {{ drinkList }} -->
             
                 <!-- where to try -->
                 <div class="row">
-                    <div class="square primary-square-green rounded p-3 mb-3 text-start" style="height: 250px;">
-                        <!-- header text -->
-                        <div class="square-inline text-start">
-                            <h4 class="mr-auto"> Where to Try </h4>
-                        </div>
-                        <!-- body -->
-                        <div style="height: 85%;">
-                            <div class="text-start pt-2 overflow-auto" style="max-height: 100%;">
-                                <!-- [function] where to try -->
-                                <!-- [if] user does not allow location -->
-                                <div v-if="nearestBars.length == 0" >
-                                    <div v-for="venue in venueListings" v-bind:key="venue.id">
-                                        <router-link :to="{ path: '/profile/venue/' + venue.id }" class="reverse-clickable-text">
-                                            <p class="mb-1"> {{ venue.venueName }} </p>
-                                        </router-link>
-                                    </div>
-                                </div>
-                                <!-- [else] user allows location -->
-                                <div v-else>
-                                    <div v-for="(distance, venueID) in nearestBars" v-bind:key="venueID">
-                                        <router-link :to="{ path: '/profile/venue/' + venueID }" class="reverse-clickable-text">
-                                            <p class="mb-4"> 
-                                                <u> {{ getVenueNameFromID(venueID) }}  </u>
-                                                <br>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-geo-alt-fill" viewBox="0 0 16 16">
-                                                    <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
-                                                </svg>
-                                                Distance: {{ venueDetails[venueID]["distance"] }}
-                                                <br>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-clock" viewBox="0 0 16 16">
-                                                    <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z"/>
-                                                    <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0"/>
-                                                </svg>
-                                                Duration: {{ venueDetails[venueID]["duration"] }}
-                                            </p>
-                                        </router-link>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+    <div class="square primary-square-green rounded p-3 mb-3 text-start" 
+         style="height: 250px; border-radius: 10px; box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.2);">
+        <!-- header text -->
+        <div class="square-inline text-start">
+            <h4 class="mr-auto"> Where to Try </h4>
+        </div>
+        <!-- body -->
+        <div style="height: 85%;">
+            <div class="text-start pt-2 overflow-auto" style="max-height: 100%;">
+                <!-- [function] where to try -->
+                <!-- [if] user does not allow location -->
+                <div v-if="nearestBars.length == 0">
+                    <div v-for="venue in venueListings" v-bind:key="venue.id">
+                        <router-link :to="{ path: '/profile/venue/' + venue.id }" class="reverse-clickable-text">
+                            <p class="mb-1"> {{ venue.venueName }} </p>
+                        </router-link>
                     </div>
                 </div>
+                <!-- [else] user allows location -->
+                <div v-else>
+                    <div v-for="(distance, venueID) in nearestBars" v-bind:key="venueID">
+                        <router-link :to="{ path: '/profile/venue/' + venueID }" class="reverse-clickable-text">
+                            <p class="mb-4"> 
+                                <u> {{ getVenueNameFromID(venueID) }} </u>
+                                <br>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-geo-alt-fill" viewBox="0 0 16 16">
+                                    <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
+                                </svg>
+                                Distance: {{ venueDetails[venueID]["distance"] }}
+                                <br>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-clock" viewBox="0 0 16 16">
+                                    <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z"/>
+                                    <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0"/>
+                                </svg>
+                                Duration: {{ venueDetails[venueID]["duration"] }}
+                            </p>
+                        </router-link>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
                 
                 <!-- 88 bamboo's review -->
                 <div class="row">
-                    <div class="square primary-square-green-outline xsecondary-square rounded p-3 mb-3">
-                        <!-- header text -->
-                        <div class="py-2 text-start">
-                            <h4> 88 Bamboo's Review </h4>
-                            <a v-if="isHttpValid(specified_listing['reviewLink'])" :href="specified_listing['reviewLink']" class="text-left default-text-no-background row">
-                                <div class="row">
-                                    <div class="col-lg-4 col-md-6 col-sm-12">
-                                        {{ getOGImage(specified_listing['reviewLink']) }}
-                                        <!-- [if] there is a cover image for the post-->
-                                        <img v-if="ogImage != null" :src="ogImage[specified_listing.reviewLink]" alt="OG Image" style="width: 80px; height: 80px;">
-                                        <!-- [else] there is no cover image for the post (put 88 bamboo's logo) -->                    
-                                        <img v-else src="https://88bamboo.co/cdn/shop/files/88B_New_Logo_-_white_face_transparent_background_180x.png?v=1655894111" style="width: 80px; height: 80px;">                                   
-                                    </div>
-                                    <div class="col-lg-8 col-md-12">
-                                        {{ deepDiveLinkFormatted }}
-                                    </div>
-                                </div>
-                            </a>
-                            <div v-else>
-                                <div class="text-body-secondary">
-                                    <div class="fst-italic">
-                                        No reviews available for this listing.
-                                        For other 88 Bamboo reviews, 
-                                        <a href="https://88bamboo.co/blogs/news" class="default-text-no-background">click here</a>.
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-                        <div class="py-2"></div>
+    <div class="square primary-square-green-outline xsecondary-square rounded p-3 mb-3"
+         style="border-radius: 10px; box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.2);">
+        <!-- header text -->
+        <div class="py-2 text-start">
+            <h4> 88 Bamboo's Review </h4>
+            <a v-if="isHttpValid(specified_listing['reviewLink'])" :href="specified_listing['reviewLink']" 
+               class="text-left default-text-no-background row">
+                <div class="row">
+                    <div class="col-lg-4 col-md-6 col-sm-12">
+                        {{ getOGImage(specified_listing['reviewLink']) }}
+                        <!-- [if] there is a cover image for the post-->
+                        <img v-if="ogImage != null" :src="ogImage[specified_listing.reviewLink]" alt="OG Image" 
+                             style="width: 80px; height: 80px;">
+                        <!-- [else] there is no cover image for the post (put 88 Bamboo's logo) -->                    
+                        <img v-else src="https://88bamboo.co/cdn/shop/files/88B_New_Logo_-_white_face_transparent_background_180x.png?v=1655894111" 
+                             style="width: 80px; height: 80px;">                                   
+                    </div>
+                    <div class="col-lg-8 col-md-12">
+                        {{ deepDiveLinkFormatted }}
                     </div>
                 </div>
+            </a>
+            <div v-else>
+                <div class="text-body-secondary">
+                    <div class="fst-italic">
+                        No reviews available for this listing.
+                        For other 88 Bamboo reviews, 
+                        <a href="https://88bamboo.co/blogs/news" class="default-text-no-background">click here</a>.
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="py-2"></div>
+    </div>
+</div>
+
             </div>
         </div>
         <BookmarkModal 
@@ -2261,13 +2272,21 @@
                 const wantToTry = this.drinkList.wantToTry.includes(listing.listingName);
 
                 const haveTriedButton = `
-                <button type="button" class="btn custom-drink-list-btn rounded-0 ${haveTried ? 'disabled' : ''}">
-                    Have tried
-                </button>
+               <div type="button" class=" ${haveTried ? 'disabled' : ''}">
+    <svg width="40" height="40" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <!-- Checkbox border -->
+    <rect x="5" y="5" width="90" height="90" stroke="#006A50" stroke-width="8" fill="none" rx="10"/>
+    
+    <!-- Checkmark -->
+    <polyline points="25,50 45,75 80,30" stroke="#006A50" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+
+</d>
+
                 `;
 
                 const wantToTryButton = `
-                <button type="button" class="btn custom-drink-list-btn rounded-0 ${wantToTry ? 'disabled' : ''}">
+                <button type="button" class="btn btn-hide-now custom-drink-list-btn rounded-0 ${wantToTry ? 'disabled' : ''}">
                     Want to try
                 </button>
                 `;

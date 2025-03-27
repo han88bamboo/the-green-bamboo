@@ -3,23 +3,25 @@
     <NavBar />
 
     <div class="body-login">
+        <img src="../../Images/Drinks/login-bg.png" width="100%" height="250px">
+
         <!-- select buttons -->
         <!-- <div class="container row" style="width: 50%"> -->
-        <div class="container">
+        <div class="container-xl">
             <div class="row">
                 <div class="col-12 col-sm-10 col-md-8 m-auto mobile-ps-0 mobile-pe-0">
                     <div class="pt-5 mobile-pt-0">
-                        <form id="login" v-if="!showResetPWForm" v-on:submit.prevent="checkLogin" style="background-color:#DDC8A9;" class="rounded">
+                        <form id="login" v-if="!showResetPWForm" v-on:submit.prevent="checkLogin" style="" class="rounded">
                             <!-- login header text -->
                             <p class="fw-bold fs-1 pt-4 mx-3 mobile-fs-4 mobile-mb-1" style="font-style: italic; ">
-                                Join a community of drink lovers.
+                                Log In To Drink-X
                             </p>
                             <p class="fw-bold  mx-4 mobile-fs-6 mobile-view-show" style="font-style: italic; ">
                                 Discover new juice and log your tasting notes!
                             </p>
                             <!-- username -->
-                            <div class="row pt-5 mobile-pt-2">
-                                <div class="d-grid gap-2 col-xl-5 col-md-7 col-9 mx-auto">
+                            <div class="row pt-1 mobile-pt-2">
+                                <div class="d-grid gap-2 col-xl-7 col-md-7 col-9 mx-auto">
                                     <div class="form-floating">
                                         <input type="text" class="form-control form-box-outline" id="id" placeholder="Username" v-model="ID">
                                         <label for="username"> Username </label>
@@ -28,7 +30,7 @@
                             </div>
                             <!-- password -->
                             <div class="row pt-2">
-                                <div class="d-grid gap-2 col-xl-5 col-md-7 col-9 mx-auto">
+                                <div class="d-grid gap-2 col-xl-7 col-md-7 col-9 mx-auto">
                                     <div class="form-floating">
                                         <input type="password" class="form-control form-box-outline" id="password" placeholder="Password" v-model="password">
                                         <label for="password"> Password </label>
@@ -37,7 +39,7 @@
                             </div>
                             <!-- checkbox -->
                             <div class="row pt-1 pb-3">
-                                <div class="d-grid gap-2 col-xl-5 col-md-7 col-9 mx-auto">
+                                <div class="d-grid gap-2 col-xl-7 col-md-7 col-9 mx-auto">
                                     <!-- Use Bootstrap grid classes for layout -->
                                     <div class="row g-2">
                                         <!-- Column for the checkbox -->
@@ -89,27 +91,23 @@
                             <p class="mt-2 fw-bold fs-3" style="font-style: italic; ">
                                 Don't have an account?
                             </p>
-                            <div class="row">
-                                <div class="col">
-                                    <router-link :to="{ path: '/signup' }" class="default-text-no-background">
-                                        <button class="btn secondary-btn-border-thick btn-lg px-5"> Sign Up </button>
-                                    </router-link>
-                                </div>
-                            </div>
+                            <div class="row text-center mt-4">
+    <div class="col">
+        <router-link :to="{ path: '/signup' }" class="default-text-no-background">
+            <button class="btn btn-lg px-4" 
+                style="background-color: #F0B358; color: black; font-weight: bold; border-radius: 50px; border: none; 
+                transition: background-color 0.3s ease; font-size: 16px; padding: 12px 16px;"
+                onmouseover="this.style.backgroundColor='#FDD497'" 
+                onmouseout="this.style.backgroundColor='#F0B358'">
+                Sign Up
+            </button>
+        </router-link>
+    </div>
+</div>
+
 
                             <!-- Business sign up -->
-                            <div class="row pt-5 pb-3 mx-3">
-                                <div class="col">
-                                    <p>
-                                        <b>
-                                            <i>
-                                                If you are a drinks brand, bottler or venue owner trying to create an account, 
-                                                <router-link :to="{ path: '/businessSignup' }"  class="default-body-text-no-background">click here</router-link>.
-                                            </i>
-                                        </b>
-                                    </p>
-                                </div>
-                            </div>
+                          
                         </form>
 
                         <!-- forgot password form-->
@@ -118,6 +116,99 @@
                 </div>
             </div>
         </div>
+
+        <footer class="text-white py-5 mt-5" style="background-color: #83a9e8">
+        <div class="container py-4">
+            <h1 class="text-white mb-4">Are you a business owner?</h1>
+            <div class="row g-4">
+                <!-- Feature 1 -->
+                <div class="col-lg-3 col-md-6 col-6">
+                    <div class="d-flex flex-lg-column flex-row align-items-center h-100">
+                        <router-link :to="'/login'">
+                            <button class="btn border-0 fw-bold tilt-hover" type="button">
+                                <div class="mb-lg-3 me-3 me-lg-0 icon-container">
+                                    <img src="../../Images/Landing Page/Layer1.png" alt="Log Reviews"
+                                        class="img-fluid" />
+                                </div>
+                            </button>
+                        </router-link>
+                        <router-link :to="'/login'" class="text-link">
+                            <h6
+                                class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
+                                Log Your Drink Reviews and Share Your Favorites
+                            </h6>
+                        </router-link>
+                    </div>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="col-lg-3 col-md-6 col-6">
+                    <div class="d-flex flex-lg-column flex-row align-items-center h-100">
+                        <router-link :to="'/clubs/view'">
+                            <button class="btn border-0 fw-bold tilt-hover" type="button">
+                                <div class="mb-lg-3 me-3 me-lg-0 icon-container">
+                                    <img src="../../Images/Landing Page/Layer2.png" alt="Find Communities"
+                                        class="img-fluid" />
+                                </div>
+                            </button>
+                        </router-link>
+                        <router-link :to="'/clubs/view'" class="text-link">
+                            <h6
+                                class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
+                                Find Your Communities and Join Events
+                            </h6>
+                        </router-link>
+                    </div>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="col-lg-3 col-md-6 col-6">
+                    <div class="d-flex flex-lg-column flex-row align-items-center h-100">
+                        <router-link :to="'/explore'">
+                            <button class="btn border-0 fw-bold tilt-hover" type="button">
+                                <div class="mb-lg-3 me-3 me-lg-0 icon-container">
+                                    <img src="../../Images/Landing Page/Layer3.png" alt="Discover Drinks"
+                                        class="img-fluid" />
+                                </div>
+                            </button>
+                        </router-link>
+                        <router-link :to="'/explore'" class="text-link">
+                            <h6
+                                class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
+                                Discover New Drinks and Expand Your Taste Palette
+                            </h6>
+                        </router-link>
+                    </div>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="col-lg-3 col-md-6 col-6">
+                    <div class="d-flex flex-lg-column flex-row align-items-center h-100">
+                        <router-link :to="'/clubs/view'">
+                            <button class="btn border-0 fw-bold tilt-hover" type="button">
+                                <div class="mb-lg-3 me-3 me-lg-0 icon-container">
+                                    <img src="../../Images/Landing Page/Layer4.png" alt="Connect" class="img-fluid" />
+                                </div>
+                            </button>
+                        </router-link>
+                        <router-link :to="'/clubs/view'" class="text-link">
+                            <h6
+                                class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
+                                Connect With Your Favorite Drink Makers
+                            </h6>
+                        </router-link>
+                    </div>
+                </div>
+            </div>
+            <router-link :to="'/businessSignup'">
+                <button class="btn btn-warning text-white" style="background-color: #83a9e8; margin-top: 20px"
+                    aria-label="Try Out Your Drink-X Business Account">
+                    Try Out Your Drink-X Business Account
+                </button>
+            </router-link>
+        </div>
+    </footer>
+
         <FooterBar />
     </div>
 

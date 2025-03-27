@@ -26,16 +26,16 @@
     <!-- [if] no search input -->
     <div v-if="search == false && dataLoaded == true">
         <!-- header -->
-        <div class="container pt-5 mobile-view-hide">
-            <div class="row">
+        <!-- <div class="container pt-6 mobile-view-hide">
+            <div class="row"> -->
                 <!-- tagline -->
-                <div class="col-8">
-                    <h1 class="text-start" v-if="userID == ''"> What's Pouring? </h1>
-                    <h1 class="text-start" v-else-if="userType == 'user'"> Hello, {{ displayName }}! What's Pouring? </h1>
-                    <h1 class="text-start" v-else> Hello, {{ username }}! What's Pouring? </h1>
-                </div>
+                <!-- <div class="col-8">
+                    <h4 class="text-start" v-if="userID == ''"> What's Pouring? </h4>
+                    <h4 class="text-start" v-else-if="userType == 'user'"> Hello, {{ displayName }}! What's Pouring? </h4>
+                    <h4 class="text-start" v-else> Hello, {{ username }}! What's Pouring? </h4>
+                </div> -->
                 <!-- button -->
-                <div v-if="!userID" class="col-4 text-end"  style="padding-right:40px;" >
+                <!-- <div v-if="!userID" class="col-4 text-end"  style="padding-right:40px;" >
                     <div class="d-grid gap-2">
                         <router-link :to="{ path: '/signUp' }">
                             <button class="btn secondary-btn-border-thick btn-lg" style="font-weight: bold;"> 
@@ -46,15 +46,15 @@
                             </button>
                         </router-link>
                     </div>
-                </div>
-            </div>
-        </div>
+                </div> -->
+            <!-- </div>
+        </div> -->
 
         <!-- main content -->
-        <div class="container pt-3">
+        <div class="container-xl pt-3 px-0 px-md-5">
             <div class="row">
                 <!-- left pane -->
-                <div class="col-lg-3 col-md-4 col-12 mobile-view-hide">
+                <div class="col-lg-3 col-md-3 col-12 mobile-view-hide">
                     <div class="container p-lg-0 p-md-0 p-4">
                         <!-- [user] your drinks shelf & brands you follow -->
                         <div v-if="userType == 'user' || userType == ''" class="row">
@@ -89,7 +89,7 @@
                             </div>
                             <!-- your drinks shelf -->
                             <div class="col-12">
-                                <div class="square primary-square-green rounded p-3 mb-3 text-start" style="height: 325px;">
+                                <div class="square primary-square-green rounded p-3 mb-3 text-start" style="height: 300px; border-radius: 10px; box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.1);">
                                     <!-- header text -->
                                     <div class="square-inline">
                                         <router-link :to="{ path: '/profile/user/'+userID }" class="reverse-clickable-text">
@@ -120,9 +120,10 @@
                                         <div v-if="userID && drinkShelf.length == 0" style="display: flex; align-items: center; justify-content: center; height: 100%;">
                                             <h6 class="fst-italic"> No drinks added yet. </h6>
                                         </div>
-                                        <div v-else-if="!userID" style="display: flex; align-items: center; justify-content: center; height: 100%;">
+                                        <div v-else-if="!userID" style="display: flex;  align-items: center; justify-content: center; height: 100%; flex-direction: column;">
+                                            <p class="text-white"> Log in to add a drink to shelf</p>
                                             <router-link :to="{ path: '/login' }">
-                                                <button class="btn secondary-btn-border-thick py-2 px-3" style="font-weight: bold;"> Log in to add a drink to shelf </button>
+                                                <button class="btn secondary-btn-border-thick  py-2 px-3" style="font-weight: bold;"> Login</button>
                                             </router-link>
                                         </div>
                                     </div>
@@ -130,7 +131,7 @@
                             </div>
                             <!-- brands you follow -->
                             <div class="col-12">
-                                <div class="square primary-square-green rounded p-3 mb-3 text-start" style="height: 325px;">
+                                <div class="square primary-square-green rounded p-3 mb-3 text-start" style="height: 300px; border-radius: 10px; box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.1);">
                                     <!-- header text -->
                                     <div class="square-inline">
                                         <h4 class="square-inline text-start mr-auto"> Brands You Follow </h4>
@@ -162,9 +163,10 @@
                                         <div v-else-if="userID" style="display: flex; align-items: center; justify-content: center; height: 100%;">
                                             <h6 class="fst-italic"> No brands added yet. </h6>
                                         </div>
-                                        <div v-else style="display: flex; align-items: center; justify-content: center; height: 100%;">
+                                        <div v-else-if="!userID" style="display: flex;  align-items: center; justify-content: center; height: 100%; flex-direction: column;">
+                                            <p class="text-white">Log in to follow your favourite brands</p>
                                             <router-link :to="{ path: '/login' }">
-                                                <button class="btn secondary-btn-border-thick btn-sm py-2 px-3" style="font-weight: bold;"> Log in to follow your favourite brands</button>
+                                                <button class="btn secondary-btn-border-thick  py-2 px-3" style="font-weight: bold;"> Login</button>
                                             </router-link>
                                         </div>
                                     </div>
@@ -290,11 +292,12 @@
                     </div>
                 </div>
                 <!-- discover, following & filter by drink type -->
-                <div class="col-lg-9 col-md-8 col-12">
-                    <div class="container">
-                        <div class="row ps-lg-4 pe-lg-4 mobile-ps-3 mobile-pe-3">
+                <div class="col-lg-9 col-md-9 col-12">
+                    <div class="container ">
+                        <div class="row d-flex justify-content-between ps-lg-4 pe-lg-4 mobile-ps-3 mobile-pe-3 flex-row">
                             <!-- discover  tzh changed col-12 to col-4-->
-                            <div class="col-xl-3 col-lg-4 col-4 mb-3 mobile-pe-0 mobile-ps-0">
+                             <div class="row col-12">
+                            <div class="col-xl-6 col-lg-4 col-4 mb-3 mobile-pe-0 mobile-ps-0">
                                 <div class="d-grid gap-2  mx-1">
                                     <button class="btn btn-sm mobile-ps-0 text-center" 
                                         :class="{ 'primary-btn-green mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0 mobile-pe-0': discovery, 'primary-btn-green-outline mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0': !discovery }"
@@ -304,7 +307,7 @@
                                 </div>
                             </div>
                             <!-- following tzh changed col-12 to col-4-->
-                            <div class="col-xl-3 col-lg-4 col-4 mb-3 mobile-view-no-padding">
+                            <div class="col-xl-6 col-lg-4 col-4 mb-3 mobile-view-no-padding">
                                 <div class="d-grid gap-2 mx-1">
                                     <button class="btn btn-sm mobile-ps-0 text-center"
                                         :class="{ 'primary-btn-green mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0': following, 'primary-btn-green-outline mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0': !following }"
@@ -313,8 +316,10 @@
                                     </button>
                                 </div>
                             </div>
+                        </div>
+                        <div class="row col-12">
                             <!-- filter by drink type / category tzh changed col-12 to col-4 -->
-                            <div class="dropdown col-xl-3 col-lg-4 col-4 mb-3 mobile-col-2 mobile-pe-0">
+                            <div class="dropdown col-xl-6 col-lg-4 col-4 mb-3 mobile-col-2 mobile-pe-0">
                                 <div class="d-grid gap-2">
                                     <!-- tzh added -homepage and some changes for mobile-->
                                     <div v-if="selectedDrinkType != ''" style="position:absolute; width:100%; font-size:0.8em; transform: translate3d(-20px, -20px, 0px);" class="cross-icon mobile-view-hide ps-4" @click="clearSelection">&#10005; Clear Selection</div>
@@ -390,7 +395,7 @@
                                 </div>
                             </div>
                             <!-- sort by drink type - tzh changed col-12 to col-4 -->
-                            <div class="dropdown col-xl-3 col-lg-4 col-4 mb-3 mobile-col-2 mobile-ps-0">
+                            <div class="dropdown col-xl-6 col-lg-4 col-6 mb-3 mobile-col-2 mobile-ps-0">
                                 <div class="d-grid gap-2">
                                     <button class="btn primary-light-dropdown-homepage btn-lg dropdown-toggle mobile-view-remove-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="white-space: nowrap; overflow:hidden; text-overflow: ellipsis;">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-sort-down funnel-svg-dimensions" viewBox="0 0 16 16">
@@ -408,9 +413,12 @@
                                 </div>
                                 
                             </div> 
+                            </div>
                         </div>
                         
                         <!-- listings  TZH removed class scrollable-listings--->
+                         <div class="container">
+
                         <div class="row">
 
                             <!-- [if] discovery mode-->
@@ -420,111 +428,90 @@
                                  <!-- Displays Message if there are no listing available  -->
                                 <h5 v-if="listings == '' || (selectedDrinkType!='' && filteredListings=='')" style="display: inline-block;" class="pt-5"> There is no listing available for the selected filter </h5>
                                 <!-- v-loop for each listing -->
-                                <div class="container text-start mobile-ps-0 mobile-pe-0">
+                                <div class="containers text-start">
                                     <!-- Displays listings from all general listings or from filtered listings from drinkCategory/drinkType depending if filter is selected-->
                                     <!-- <div v-for="listing in filteredListings" v-bind:key="listing.id" class="p-3 mobile-pt-0"> -->
-                                    <div v-for="listing in (selectedDrinkType == '' ? listings : filteredListings)" v-bind:key="listing.id" class="p-3 mobile-pt-0">
 
-                                        <div class="row">
-                                            <!-- image -->
-                                            <div class="col-5 "> <!-- tzh changed col-xl-5 col-12 to col-5 -->
-                                                <div class="image-container mb-3 homepage" >
-                                                    <img v-if="listing['photo']" :src="listing['photo']" class="img-border object-fit-contain homepage">
-                                                    <img v-else src="../../Images/Drinks/Placeholder.png"  class="img-border object-fit-contain homepage">
-                                                    <div class="mobile-view-hide">
-                                                    <BookmarkIcon 
-                                                        v-if="user" 
-                                                        :user="user" 
-                                                        :listing="listing" 
-                                                        :overlay="true"
-                                                        size="30"
-                                                        @icon-clicked="handleIconClick" />
-                                                    </div>    
-                                                </div>
-                                            </div>
-                                            <!-- details -->
-                                            <div class="col-7 mobile-p-0"> <!-- tzh changed col-xl-5 col-12 ps-lg-0 to col-7 mobile-p-0 -->
-                                                <!-- expression name -->
-                                                <div class="row pt-1">
-                                                    <router-link :to="{ path: '/listing/view/' +listing.id }" class="primary-clickable-text mobile-col-12"> <!--tzh changed mobile-col-10 to mobile-col-12 -->
-                                                        <h4 class="mobile-mb-0 mobile-view-hide"> <b> {{ listing["listingName"] }} </b> </h4> <!-- tzh added mobile-mb-0-->
-                                                        <h6 class="mobile-mb-0 mobile-view-show"> <b> {{ listing["listingName"] }} </b> </h6> <!-- tzh added mobile-mb-0-->
-                                                    </router-link>
-                                                    <!--<div class="mobile-col-2 mobile-view-show"> 
-                                                        <BookmarkIcon 
-                                                        v-if="user" 
-                                                        :user="user" 
-                                                        :listing="listing" 
-                                                        :overlay="true"
-                                                        size="30"
-                                                        @icon-clicked="handleIconClick" />
-                                                    </div>-->
-                                                </div>
-                                                <!-- producer -->
-                                                <div class="row mobile-view-hide"> <!-- tzh added mobile-view-hide -->
-                                                    <router-link :to="{ path: '/profile/producer/' + listing.producerID }" class="primary-clickable-text">
-                                                        <h5 class="mobile-rating-smaller-text"> <b> {{ getProducerName(listing) }} </b> </h5>
-                                                    </router-link>
-                                                </div>
-                                                <!-- review tzh shortened description if above 270 characters  -->
-                                                <div class="row pt-3">
-                                                    <div class="mobile-col-11 mobile-pe-0"> <!-- tzh changed mobile-col-9 to mobile-col-11 -->
-                                                    <router-link :to="{ path: '/listing/view/' +listing.id }" class="default-clickable-text fst-italic scrollable-user-bottle-listings-description-box">
-                                                        <span class="mobile-view-hide"> <!-- tzh added this section below -->
-                                                            <div v-if="listing.officialDesc?.length > 300">  
-                                                                <p class="homepage-bottle-listing-description"> {{ listing["officialDesc"].slice(0, 300) + (listing["officialDesc"].length > 300 ? '...' : '') }} </p>
-                                                            </div>
-                                                            <div v-else>  
-                                                                <p class="homepage-bottle-listing-description"> {{ listing["officialDesc"] }}. </p>
-                                                            </div>
-                                                        </span>
-                                                        <span class="mobile-view-show"> <!-- tzh added this section below -->
-                                                            <div v-if="listing.officialDesc?.length > 80">  
-                                                                <p class="homepage-bottle-listing-description"> {{ listing["officialDesc"].slice(0, 300) + (listing["officialDesc"].length > 300 ? '...' : '') }} </p>
-                                                            </div>
-                                                            <div v-else>  
-                                                                <p class="homepage-bottle-listing-description"> {{ listing["officialDesc"] }}. </p>
-                                                            </div>
-                                                        </span>
-                                                    </router-link>
-                                                    </div>
-                                                    <!-- tzh commented out rating -->
-                                                   <!--<div class="mobile-col-3 mobile-view-show mobile-ps-0">
-                                                        <h2 class="rating-text text-end d-flex align-items-center">
-                                                            {{ getRatings(listing) }} ★
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
-                                                                <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                                            </svg>
-                                                        </h2>   
-                                                    </div>-->    
-                                                </div>
-                                                <!-- rating -->
-                                                <div class="row pt-4 mobile-pt-0"> <!--tzh removed mobile-view-hide and added mobile-pt-0 -->
-                                                    <div class="col-6 d-flex align-items-center">
-                                                        <h1 class="rating-text text-end d-flex align-items-center mobile-view-hide">
-                                                            {{ getRatings(listing) }} ★
-                                                            <!--<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
-                                                                <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                                            </svg>-->
-                                                        </h1>
-                                                        <h5 class="rating-text text-end d-flex align-items-center mobile-view-show">
-                                                            {{ getRatings(listing) }} ★
-                                                            <!--<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
-                                                                <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                                            </svg>-->
-                                                        </h5>
-                                                    </div>
-                                                    <div class="col-6 text-end mobile-view-hide"> <!--tzh added mobile-view-hide -->
-                                                        <div class="d-grid gap-5">
-                                                            <router-link :to="{ path: '/listing/view/' +listing.id }" class="primary-clickable-text">
-                                                                <a class="btn secondary-btn btn-md" style="font-weight: bold;"> Read More </a>
-                                                            </router-link>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+
+
+                             <div v-for="listing in (selectedDrinkType == '' ? listings : filteredListings)" v-bind:key="listing.id" class="">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card  mb-4  d-flex flex-row  " 
+     style="background-color:white !important; border-radius: 10px; box-shadow: 4px 4px 4px #827C75; overflow: hidden;">
+
+    <!-- Image Section -->
+    <div class="text-center text-md-start">
+        <div class="image-wrapper position-relative d-inline-block">
+            <img v-if="listing['photo']" 
+                 :src="listing['photo']" 
+                 class="listing-image"
+                 style=" border-top-left-radius: 10px; border-bottom-left-radius: 10px;">
+                 
+            <img v-else 
+                 src="../../Images/Drinks/Placeholder.png" 
+                 class="listing-image"
+                 style=" border-top-left-radius: 10px; border-bottom-left-radius: 10px;">
+        </div>
+    </div>
+<div class="detials-rating d-flex flex-column flex-md-row justify-content-between w-100">
+
+    <!-- Details Section -->
+    <div class="flex-grow-1 py-md-3 py-1 w-100 d-flex flex-column justify-content-between md-px-3 px-1">
+        <!-- Name & Producer -->
+        <div class="name-producer">
+            <router-link :to="{ path: '/listing/view/' + listing.id }" class="primary-clickable-text text-decoration-none" style="color:#027562;">
+                <h5 class="d-none d-md-block"><b>{{ listing["listingName"] }}</b></h5>
+                <h6 class="d-block d-md-none"><b>{{ listing["listingName"] }}</b></h6>
+            </router-link>
+            
+            <!-- Producer -->
+            <router-link :to="{ path: '/profile/producer/' + listing.producerID }" class="primary-clickable-text">
+                <h6 class="mobile-rating-smaller-text"><b>{{ getProducerName(listing) }}</b></h6>
+            </router-link>
+        </div>
+
+        <!-- Description -->
+        <router-link :to="{ path: '/listing/view/' + listing.id }" class="default-clickable-text fst-italic">
+            <p class="homepage-bottle-listing-description">
+                {{ listing.officialDesc?.length > 300 ? listing.officialDesc.slice(0, 300) + '...' : listing.officialDesc }}
+            </p>
+        </router-link>
+    </div>
+
+    <!-- Rating & Read More Button -->
+    <div class="text-center text-md-end d-flex flex-row flex-md-col justify-content-between d-md-block mt-0 mt-md-3 px-3">
+    <h1 class="fw-bold text-warning">
+        {{ getRatings(listing) }} ★
+    </h1>
+    <div class="d-grid">
+        <router-link :to="{ path: '/listing/view/' + listing.id }" class="primary-clickable-text">
+            <button class="btn btn-warning btn-sm fw-bold shadow-lg rounded-pill px-2 py-0 px-md-4 py-md-2" 
+                    style="font-size: 16px; background-color: #F0B358; transition: background-color 0.3s;" 
+                    onmouseover="this.style.backgroundColor='#FDD497'" 
+                    onmouseout="this.style.backgroundColor='#F0B358'">
+                Read More
+            </button>
+        </router-link>
+    </div>
+</div>
+
+</div>
+
+</div>
+
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+                                    
                                 </div>
                             </div> <!-- end of listings -->
 
@@ -654,7 +641,8 @@
                                                         v-if="user" 
                                                         :user="user" 
                                                         :listing="listing" 
-                                                        :overlay="true"
+                                                        :overlay="true"Hello, cp! What's Pouring?
+
                                                         size="30"
                                                         @icon-clicked="handleIconClick" />
                                                     </div>-->  
@@ -727,9 +715,14 @@
                             </div>
 
                         </div> <!-- end of scrollable section -->
+                    </div>
 
                     </div> <!-- end of container -->
-                </div> <!--  end of discover, following & filter by drink type -->
+                </div> 
+                
+                
+                
+                <!--  end of discover, following & filter by drink type -->
             </div> <!-- end of row -->
         </div>
     </div>

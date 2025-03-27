@@ -5,15 +5,16 @@
 body {
   color: black;
   background-color: white !important; /* tzh changed F2F2F2 to white */
-  overflow: overlay;
+  overflow-x:hidden ;
+
 }
 
 .body-login {
-  background-image: url("../../Images/Background/SignupLogin.png");
+  /* background-image: url("../../Images/Background/SignupLogin.png");
   background-size: cover;
   background-repeat: no-repeat;
   background-attachment: fixed !important;
-  height: calc(100vh - 90px);
+  height: calc(100vh - 90px); */
   /* height: 100vh; */
   width: 100vw;
   overflow-x: hidden;
@@ -68,6 +69,9 @@ body {
   color: black; /* TZH changed 535C72 to black*/
   text-decoration: none;
 }
+.primary-clickable-texts:hover {
+  text-decoration: underline;
+}
 
 .false-clickable-text {
   color: lightgrey;
@@ -105,7 +109,7 @@ body {
 .primary-btn-green-outline:hover {
   color: white;
   background-color: #027562; /*TZH added for Discovery and Following buttons on homepage */
-  border-radius: 30px;
+  border-radius: 10px;
   border: 4px solid #027562; /*TZH changed 535C72 to F0B258 */
   font-weight: bold;
 }
@@ -113,7 +117,7 @@ body {
 .primary-btn-green:hover {
   color: white;
   background-color: #026453;
-  border-radius: 30px;
+  border-radius: 10px;
   border: 4px solid #026453;
   font-weight: bold;
 }
@@ -121,7 +125,7 @@ body {
 .primary-btn-green-outline {
   color: #027562;
   background-color: white;
-  border-radius: 30px;
+  border-radius: 10px;
   border: 4px solid #027562;
   font-weight: bold;
 }
@@ -129,14 +133,14 @@ body {
 .primary-btn-green-thin-outline {
   color: #027562;
   background-color: white; /*TZH added for Reviews and Drinks List buttons on user profile */
-  border-radius: 30px;
+  border-radius: 10px;
   border: 2px solid #027562;
 }
 
 .primary-btn-green-thin-outline:hover {
   color: white;
   background-color: #027562;
-  border-radius: 30px;
+  border-radius: 10px;
   border: 2px solid #027562;
 }
 
@@ -168,12 +172,12 @@ body {
 
 .primary-btn-less-round-blue {
   color: white;
-  background-color: #83a9e8;
+  background-color: #FF3E31;
   border-radius: 10px;
 }
 .primary-btn-less-round-blue:hover {
   color: white;
-  background-color: #6183ba;
+  background-color: #e7291c;
   border-radius: 10px;
 }
 
@@ -674,7 +678,20 @@ body {
   height: 95%;
   overflow-y: auto;
 }
+/* Default size for desktop (191px) */
+.listing-image {
+    width: 191px;
+    height: 191px;
+    object-fit: cover;
+}
 
+/* Responsive size for mobile screens (max-width: 768px) */
+@media (max-width: 768px) {
+    .listing-image {
+        width: 93px;
+        height: 109px !important;
+    }
+}
 .scrollable-expressions-none {
   height: 600px;
   max-height: 600px;
@@ -751,7 +768,8 @@ body {
 }
 
 .form-box-outline {
-  border: 3px solid black; /*tzh changed 535C72 to black*/
+  border: 1px solid black; /*tzh changed 535C72 to black*/
+  font-size:16px;
 }
 
 .review-preview-photo {
@@ -1162,8 +1180,8 @@ button.primary-square:hover {
 }
 
 .discover-and-following {
-  font-size: 20px;
-  font-weight: bold;
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .funnel-svg-dimensions {
@@ -1184,7 +1202,7 @@ button.primary-square:hover {
 }
 
 .homepage-bottle-listing-description {
-  font-size: 1.25rem;
+  font-size: 16px;
   font-weight: 500;
   line-height: 1.2;
   margin-top: 0;
@@ -1211,14 +1229,21 @@ button.primary-square:hover {
 @media (max-width: 991px) {
   .homepage-bottle-listing-description {
     font-size: 0.8rem;
+    display: none;
   }
 }
+.shadow-effect {
+  box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.2);
+}
+
 .primary-light-dropdown-homepage {
   color: whitesmoke;
   background-color: #83a9e8; /* TZH changed 747D92 to 83A9E8 */
   border-radius: 10px;
 }
-
+.btn-hide-now{
+  display:none;
+}
 .primary-light-dropdown-homepage:hover,
 .primary-light-dropdown-homepage:focus,
 .primary-light-dropdown-homepage:active {
@@ -1370,7 +1395,7 @@ button.primary-square:hover {
 @media (max-width: 991px) {
   .discover-and-following {
     font-size: 16px;
-    font-weight: 800;
+    font-weight: 500;
   }
 }
 

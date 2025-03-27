@@ -2,7 +2,7 @@
 
 <template>
     
-      <footer style="background-color:#ffeccd;" class="row row-cols-1 row-cols-sm-4 py-5 mt-5 px-5 border-top justify-content-center">
+      <footer style="background-color:#ffeccd;" class="row row-cols-1 row-cols-sm-4 py-5  px-5 border-top justify-content-center">
         <div class="col footer-col">
           <!--<a href="/" class="d-flex align-items-center mb-3 link-dark text-decoration-none">
             <svg class="bi me-2" width="40" height="32"><use xlink:href="#bootstrap"></use></svg>

@@ -89,6 +89,10 @@
     </div>
 
     <div class="body-login" v-if="fillForm && dataLoaded">
+        <div class="image">
+    <img src="../../Images/Drinks/login-bg.png" width="100%" height="250px">
+
+</div>
         <div class="container rounded mobile-ps-0 mobile-pe-0">
             <div class="row">
                 <div class="col-12 col-sm-10 col-md-8 m-auto">
@@ -96,7 +100,7 @@
                         <div>
                             <div
                                 class="container rounded pt-3 pb-5"
-                                style="background-color: #ddc8a9"
+                                
                             >
                                 <div
                                     class="d-grid gap-2"
@@ -153,7 +157,7 @@
                                     <!-- Input: Username -->
                                     <div class="row pt-4">
                                         <div
-                                            class="d-grid gap-2 col-xl-5 col-md-7 col-9 mx-auto"
+                                            class="d-grid gap-2 col-xl-9 col-md-7 col-9 mx-auto"
                                         >
                                             <div class="form-floating">
                                                 <input
@@ -185,7 +189,7 @@
                                     <!-- Input: Display Name -->
                                     <div class="row pt-2">
                                         <div
-                                            class="d-grid gap-2 col-xl-5 col-md-7 col-9 mx-auto"
+                                            class="d-grid gap-2 col-xl-9 col-md-7 col-9 mx-auto"
                                         >
                                             <div class="form-floating">
                                                 <input
@@ -211,7 +215,7 @@
                                     <!-- Input: First Name -->
                                     <div class="row pt-2">
                                         <div
-                                            class="d-grid gap-2 col-xl-5 col-md-7 col-9 mx-auto"
+                                            class="d-grid gap-2 col-xl-9 col-md-7 col-9 mx-auto"
                                         >
                                             <div class="form-floating">
                                                 <div class="row">
@@ -285,7 +289,7 @@
                                     <!-- Input: Email -->
                                     <div class="row pt-2">
                                         <div
-                                            class="d-grid gap-2 col-xl-5 col-md-7 col-9 mx-auto"
+                                            class="d-grid gap-2 col-xl-9 col-md-7 col-9 mx-auto"
                                         >
                                             <div class="form-floating">
                                                 <input
@@ -316,7 +320,7 @@
                                     <!-- Input: Password -->
                                     <div class="row pt-2">
                                         <div
-                                            class="d-grid gap-2 col-xl-5 col-md-7 col-9 mx-auto"
+                                            class="d-grid gap-2 col-xl-9 col-md-7 col-9 mx-auto"
                                         >
                                             <div class="form-floating">
                                                 <input
@@ -341,7 +345,7 @@
                                     <!-- Input: Repeat Password -->
                                     <div class="row pt-2">
                                         <div
-                                            class="d-grid gap-2 col-xl-5 col-md-7 col-9 mx-auto"
+                                            class="d-grid gap-2 col-xl-9 col-md-7 col-9 mx-auto"
                                         >
                                             <div class="form-floating">
                                                 <input
@@ -378,13 +382,13 @@
                                     <!-- Input: Country -->
                                     <div class="row pt-2">
                                         <div
-                                            class="d-grid gap-2 col-xl-5 col-md-7 col-9 mx-auto"
+                                            class="d-grid gap-2 col-xl-9 col-md-7 col-9 mx-auto"
                                         >
                                             <div class="form-floating">
                                                 <div class="input-group mb-0">
                                                     <span
-                                                        class="input-group-text"
-                                                        id="basic-addon1"
+                                                        class="input-group-text px-xl-5"
+                                                        id="basic-addon1" style="background-color: #D9D9D9;"
                                                         >Country</span
                                                     >
                                                     <select
@@ -411,7 +415,7 @@
                                                 </div>
                                                 <span
                                                     v-if="missingCountry"
-                                                    class="text-danger mt-0 mb-3"
+                                                    class="text-danger mt-0 mb-3 px-3" 
                                                     >Please select your
                                                     country.</span
                                                 >
@@ -421,13 +425,13 @@
                                     <!-- Input: Birthday -->
                                     <div class="row pt-2">
                                         <div
-                                            class="d-grid gap-2 col-xl-5 col-md-7 col-9 mx-auto"
+                                            class="d-grid gap-2 col-xl-9 col-md-7 col-9 mx-auto"
                                         >
                                             <div class="form-floating">
                                                 <div class="input-group mb-0">
                                                     <span
-                                                        class="input-group-text"
-                                                        id="basic-addon1"
+                                                        class="input-group-text px-xl-5"
+                                                        id="basic-addon1" style="background-color: #D9D9D9;"
                                                         >Birthday</span
                                                     >
                                                     <input
