@@ -21,11 +21,14 @@ import random # ADDED BY SMU GROUP 3
 import feedparser
 import re
 import requests
+import psycopg2.extras # ADDED BY SMU GROUP 3
 from bs4 import BeautifulSoup
 from bson import json_util, ObjectId
 from flask import Blueprint, g, jsonify, request
 from bson.objectid import ObjectId
 from psycopg2.extras import RealDictCursor # ADDED BY SMU GROUP 3
+from urllib.parse import unquote # ADDED BY SMU GROUP 3
+
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -2767,7 +2770,160 @@ def getRandomListings():
         return jsonify({"error": "No listings found for selected date"}), 400
 
     return jsonify(listings_data)
+# -----------------------------------------------------------------------------------------
+# [GET] Get Listings from reverse image search -- ADDED BY SMU GROUP 3
+@blueprint.route("/getImageSearchResults", methods=["POST"])
+def get_listings_by_logo():
+    data = request.json
+    detected_logo = data.get("logo")
+    detected_labels = data.get("labels", [])  
+    detected_texts = data.get("detectedText", [])  
 
+    if not detected_logo and not detected_labels and not detected_texts:
+        return jsonify({"error": "No logo, labels, or text detected"}), 400
+
+    conn = g.db  
+    scored_listings = {}
+
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+        
+        # **CASE 1: Logo Detected**
+        if detected_logo:
+            print("\n[CASE 1] Processing Logo Matching...")
+            cursor.execute(
+                'SELECT "id" FROM "producers" WHERE LOWER(TRIM("producerName")) ILIKE %s LIMIT 1',
+                (f"%{detected_logo.lower()}%",)
+            )
+            producer = cursor.fetchone()
+
+            if producer:
+                producer_id = producer["id"]
+                cursor.execute('SELECT * FROM "listings" WHERE "producerID" = %s LIMIT 30', (producer_id,))
+                listings = cursor.fetchall()
+
+                for listing in listings:
+                    listing_dict = dict(listing)
+                    listing_dict["score"] = 50  # Assign 50 points for logo match
+                    scored_listings[listing_dict["id"]] = listing_dict
+                    print(f"✅ Logo Match: Listing {listing_dict['id']} assigned 50 points")
+
+        # **CASE 1 & 2: Label Matching (20 pts)**
+        if detected_labels:
+            print("\nProcessing Label Matching...")
+
+            # Decode if URL-encoded
+            if isinstance(detected_labels, list) and len(detected_labels) == 1:
+                decoded_labels = unquote(detected_labels[0])
+                try:
+                    detected_labels = json.loads(decoded_labels)  # Convert JSON to list
+                except json.JSONDecodeError:
+                    pass  # If fails, use original
+
+            print("🔍 Cleaned Detected Labels:", detected_labels)
+
+            # Extract meaningful words
+            label_keywords = set(label.lower() for label in detected_labels if label.strip())  # Remove empty labels
+
+            # 🚨 Handle empty list case before querying 🚨
+            if not label_keywords:
+                print("⚠️ No valid keywords found, skipping SQL execution.")
+            else:
+                print("📝 Searching for Drink Types with Keywords:", label_keywords)
+
+                # First, try full phrases
+                query = '''
+                    SELECT * FROM "listings"
+                    WHERE 
+                        LOWER("drinkType") ILIKE ANY (ARRAY[{}])
+                    LIMIT 30
+                '''.format(",".join(["%s"] * len(detected_labels)))
+
+                params = tuple(f"%{phrase}%" for phrase in detected_labels)
+
+                print("📝 Executing SQL Query:", query)
+                print("📌 Query Parameters:", params)
+
+                cursor.execute(query, params)
+                matched_listings = cursor.fetchall()
+
+                # If no full matches, try individual words
+                if not matched_listings:
+                    print("🔄 No full phrase matches, searching by individual words...")
+
+                    query = '''
+                        SELECT * FROM "listings"
+                        WHERE 
+                            ''' + " OR ".join([ 'LOWER("drinkType") ILIKE %s' for _ in label_keywords]) + '''
+                        LIMIT 30
+                    '''
+                    params = tuple(f"%{word}%" for word in label_keywords)
+
+                    print("📝 Executing SQL Query:", query)
+                    print("📌 Query Parameters:", params)
+
+                    cursor.execute(query, params)
+                    matched_listings = cursor.fetchall()
+
+                print(f"🔄 Matched Listings Count: {len(matched_listings)}")
+
+                for listing in matched_listings:
+                    listing_dict = dict(listing)
+                    listing_id = listing_dict["id"]
+
+                    if listing_id in scored_listings:
+                        scored_listings[listing_id]["score"] += 20
+                    else:
+                        listing_dict["score"] = 20
+                        scored_listings[listing_id] = listing_dict
+
+                    print(f"✅ Label Match: Listing {listing_id} assigned 20 points")
+
+        # **CASE 1, 2 & 3: Text Matching (Up to 30 pts)**
+        if detected_texts:
+            print("\nProcessing Text Matching...")
+            
+            # If no listings matched before, fetch all for text search (CASE 3)
+            if not scored_listings:
+                cursor.execute('SELECT * FROM "listings"')
+                all_listings = cursor.fetchall()
+
+                for listing in all_listings:
+                    listing_dict = dict(listing)
+                    listing_dict["score"] = 0
+                    scored_listings[listing_dict["id"]] = listing_dict
+            
+            for listing_id, listing_dict in scored_listings.items():
+                listing_name = listing_dict.get("listingName", "").strip().lower()
+                listing_words = set(listing_name.split())
+
+                detected_words = set()
+                for text in detected_texts:
+                    text_lower = text.lower()
+                    for word in listing_words:
+                        if word in text_lower:
+                            detected_words.add(word)
+
+                match_percentage = len(detected_words) / len(listing_words) if listing_words else 0
+                text_score = round(match_percentage * 30)
+
+                scored_listings[listing_id]["score"] += text_score
+                print(f"✅ Text Match: Listing {listing_id} assigned {text_score} points")
+
+        # **Ensure total score does not exceed 100**
+        for listing_dict in scored_listings.values():
+            listing_dict["score"] = min(listing_dict["score"], 100)
+
+        print("\nFinal Scores:")
+        for listing_id, listing_dict in scored_listings.items():
+            print(f"🏆 Listing {listing_id}: {listing_dict['score']} points")
+
+    if not scored_listings:
+        return jsonify({"error": "No matching listings found"}), 404
+
+    sorted_listings = sorted(scored_listings.values(), key=lambda x: x["score"], reverse=True)
+    top_30_listings = sorted_listings[:30]
+    
+    return jsonify(top_30_listings), 200
 # -----------------------------------------------------------------------------------------
 # [GET] Get Recommended Clubs -- ADDED BY SMU GROUP 3
 @blueprint.route("/getRecommendedClubs/<int:userID>")
