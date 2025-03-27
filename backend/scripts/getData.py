@@ -2768,3 +2768,252 @@ def getRandomListings():
 
     return jsonify(listings_data)
 
+# -----------------------------------------------------------------------------------------
+# [GET] Get Recommended Clubs -- ADDED BY SMU GROUP 3
+@blueprint.route("/getRecommendedClubs/<int:userID>")
+def get_recommended_clubs(userID):
+    conn = g.db
+    with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        # Fetch user's drink choices
+        cursor.execute('SELECT "choiceDrinks" FROM users WHERE id = %s', (userID,))
+        user_data = cursor.fetchone()
+
+        if not user_data:
+            return jsonify({"error": "User not found"}), 404
+
+        choiceDrinks = user_data["choiceDrinks"]
+        
+        print("choiceDrinks:", choiceDrinks)  # Debug
+        
+        if not choiceDrinks:
+            return jsonify({"message": "No drink preferences found"}), 200
+
+        # Process drink variations (handle slashes, parentheses)
+        expanded_drinks = []
+        for drink in choiceDrinks:
+            # Add the original drink
+            expanded_drinks.append(drink.lower())
+            
+            # Handle variations with slashes (whiskey/whisky, rum/rhum)
+            if '/' in drink:
+                variations = [var.strip().lower() for var in drink.split('/')]
+                expanded_drinks.extend(variations)
+            
+            # Handle parentheses like "wine (grape fruit)"
+            if '(' in drink and ')' in drink:
+                main_part = drink.split('(')[0].strip().lower()
+                expanded_drinks.append(main_part)
+                
+                # Extract content inside parentheses
+                inside_part = drink.split('(')[1].split(')')[0].strip().lower()
+                expanded_drinks.append(inside_part)
+                
+                # Also add words from inside parentheses
+                for word in inside_part.split():
+                    expanded_drinks.append(word)
+        
+        # Remove duplicates and empty strings
+        expanded_drinks = [drink for drink in expanded_drinks if drink]
+        expanded_drinks = list(set(expanded_drinks))
+        
+        print("Expanded drinks list:", expanded_drinks)  # Debug
+
+        recommended_clubs = {}
+
+        # Fetch clubs and match descriptions with expanded_drinks
+        cursor.execute('SELECT * FROM clubs')
+        clubs = cursor.fetchall()
+
+        for club in clubs:
+            club_desc = club["clubDesc"].lower()  # Convert description to lowercase
+            
+            for drink in expanded_drinks:
+                # Simple substring matching
+                if drink in club_desc:
+                    recommended_clubs[club["id"]] = club
+                    break
+                
+                # Simple plural/singular check
+                if drink.endswith('s') and drink[:-1] in club_desc:
+                    recommended_clubs[club["id"]] = club
+                    break
+                elif drink + 's' in club_desc:
+                    recommended_clubs[club["id"]] = club
+                    break
+
+    return jsonify(list(recommended_clubs.values()))
+
+# -----------------------------------------------------------------------------------------
+# [GET] Get Recommended Listings -- ADDED BY SMU GROUP 3
+# helper function for basic algo
+def basic_algo(userID):
+    conn = g.db
+    with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        # Fetch user's drink choice, flavour choice, and preferences
+        cursor.execute(
+            'SELECT "choiceDrinks", "choiceFlavours", "preferences" FROM users WHERE id = %s',
+            (userID,)
+        )
+        user_data = cursor.fetchone()
+
+        if not user_data:
+            return jsonify({"error": "User not found"}), 404
+
+        choiceDrink = user_data["choiceDrinks"] or []
+        choiceFlavour = user_data["choiceFlavours"] or []
+        preferences = user_data["preferences"] or []
+        print("User Data:", user_data)
+
+        recommended = {}
+
+        # Get listings with the same drink type
+        if choiceDrink:
+            drink_query = '''
+                SELECT * FROM listings 
+                WHERE "drinkType" = ANY(%s)
+            '''
+            cursor.execute(drink_query, (choiceDrink,))
+            drink_listings = cursor.fetchall()
+
+            for listing in drink_listings:
+                if listing["id"] not in recommended:
+                    recommended[listing["id"]] = listing 
+
+        # Get listings with the same flavour tags
+        if choiceFlavour:
+            cursor.execute('SELECT id FROM "subTags" WHERE "subTag" = ANY(%s)', (choiceFlavour,))
+            flavour_ids = [row["id"] for row in cursor.fetchall()]
+
+            if flavour_ids:
+                flavour_query = '''
+                    SELECT DISTINCT l.*
+                    FROM "listings" l
+                    JOIN "reviews" r ON l."id" = r."reviewTarget"
+                    WHERE r."flavourTag" && %s::text[]
+                '''
+                cursor.execute(flavour_query, (flavour_ids,))
+                flavour_listings = cursor.fetchall()
+
+                for listing in flavour_listings:
+                    if listing["id"] not in recommended:
+                        recommended[listing["id"]] = listing
+
+        # Get listings with the same observation tags
+        if preferences:
+            observation_query = '''
+                SELECT DISTINCT l.*
+                FROM "listings" l
+                JOIN "reviews" r ON l."id" = r."reviewTarget"
+                WHERE r."observationTag" && %s::text[]
+            '''
+            cursor.execute(observation_query, (preferences,))
+            observation_listings = cursor.fetchall()
+
+            for listing in observation_listings:
+                    if listing["id"] not in recommended:
+                        recommended[listing["id"]] = listing
+
+        query = """
+        SELECT DISTINCT l.*
+        FROM "listings" l
+        LEFT JOIN "reviews" r ON l."id" = r."reviewTarget"
+        LEFT JOIN "subTags" st ON r."flavourTag" && ARRAY[st.id]::text[]
+        WHERE 
+            l."drinkType" = ANY(%s) OR 
+            r."flavourTag" && %s::text[] OR 
+            r."observationTag" && %s::text[]
+        """
+        cursor.execute(query, (choiceDrink, choiceFlavour, preferences))
+        results = cursor.fetchall()
+
+        # Store results in a dictionary
+        for listing in results:
+            recommended[listing["id"]] = listing
+
+    print("Recommended Listings:", list(recommended.values()))
+
+    if not recommended:
+        # return jsonify({"error": "No recommended listings found"}), 400
+        return {}
+
+    # return jsonify(list(recommended.values()))
+    return recommended
+
+# helper function for advanced algo (reviews)
+def advanced_algo_reviews(userID):
+    conn = g.db
+    with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        # Fetch user's reviews
+        cursor.execute('SELECT "flavourTag" FROM "reviews" WHERE "userID" = %s', (userID,))
+        user_reviews_tags = cursor.fetchall()
+        if not user_reviews_tags:
+            return jsonify([])
+        cursor.execute('''SELECT s1."id" as "id1", s2."id" as "id2" FROM "associations" a, "subTags" s1, "subTags" s2 
+                        WHERE s1."subTag" = a."subTag1" AND s2."subTag" = a."subTag2"''')     
+        associations = cursor.fetchall()
+        tag1 = [assoc['id1'] for assoc in associations]
+        tag2 = [assoc['id2'] for assoc in associations]
+        associations_dict = {}
+        for i in range(len(tag1)):
+            if tag1[i] not in associations_dict:
+                associations_dict[tag1[i]] = []
+            associations_dict[tag1[i]].append(tag2[i])
+            if tag2[i] not in associations_dict:
+                associations_dict[tag2[i]] = []
+            associations_dict[tag2[i]].append(tag1[i])
+        # print(associations_dict)
+        # return jsonify(associations_dict)
+        tags_used = {}
+        for tag in user_reviews_tags:
+            for num in tag["flavourTag"]:
+                if num not in tags_used:
+                    tags_used[num] = 1
+                else:
+                    tags_used[num] += 1
+        top_tags = sorted(tags_used, key=tags_used.get, reverse=True)[:5]
+        print(top_tags)
+        close_tags = []
+        for tag in top_tags:
+            if int(tag) in associations_dict:
+                close_tags += associations_dict[int(tag)]
+        close_tags = list(set(close_tags))
+        print(close_tags)
+        recommended = {}
+        flavour_query = '''
+            SELECT DISTINCT l.*
+            FROM "listings" l
+            JOIN "reviews" r ON l."id" = r."reviewTarget"
+            WHERE r."flavourTag" && %s::text[]
+        '''
+        cursor.execute(flavour_query, (close_tags,))
+        flavour_listings = cursor.fetchall()
+
+        for listing in flavour_listings:
+            if listing["id"] not in recommended:
+                recommended[listing["id"]] = listing
+
+        if not recommended:
+            return {}
+        return recommended
+        
+# helper function for advanced algo (drink lists) [TO DO]
+# def advanced_algo_list(userID):
+
+@blueprint.route("/getRecommendedListings/<userID>")
+def getRecommendedListings(userID):
+    print(userID)
+    conn = g.db
+    recommended = basic_algo(userID)
+    with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        cursor.execute('SELECT COUNT(*) from "reviews" where "userID" = %s', (userID,))
+        review_count = cursor.fetchone()
+        if review_count["count"] >= 5:
+            advanced_algo_review_recc = advanced_algo_reviews(userID)
+            recommended = {**recommended, **advanced_algo_review_recc}
+    recommended = list(recommended.values())
+    random.shuffle(recommended)
+    return jsonify(recommended)
+
+@blueprint.route("testRecommender/<userID>")
+def testRecommender(userID):
+    return advanced_algo_reviews(userID)  
