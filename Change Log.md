@@ -203,6 +203,8 @@ replaced it with https://placehold.co/600x400 and deployed
 
 Nature of the changes (frontend / backend / database): Backend
 
+
+# Update as of 27 Mar 2025
 Coder: Carissa
 
 Purpose of the changes: 
@@ -284,17 +286,6 @@ Nature of the changes (frontend / backend / database):
 Coder: Dycia
 
 Purpose of the changes: 
-    (1) Updated Page - Dashboard Page (UserDashboard.vue) 
-        - Updated the popup to display the drink listing within the popup modal
-        - Added in function to remove drink listing in popup modal
-        - Updated popup modal to limit selection for "rideOrDies" and "goats" to 3 selection
-
-Nature of the changes (frontend / backend / database): 
-    frontend
-
-Coder: Dycia
-
-Purpose of the changes: 
     (1) Added new backend file - editDashboard.py 
         - editDetails() to update the top 3 categories
     
@@ -326,3 +317,18 @@ Purpose of the changes:
                 - Edited backend api (/getTopCategoryListings) for Best Of to account for when there are no listings at all in grails, goats, and ride or dies 
                 
 Nature of the changes (frontend / backend / database): backend
+
+Coder: Dycia
+
+Purpose of the changes: 
+    (1) Updated Page - Dashboard Page (UserDashboard.vue) 
+        - Updated the popup to display the drink listing retrieved from the "user" table
+        - Fixed the UI of the cards
+        - Updated the popup to display the drink listing within the popup modal
+        - Added in function to remove drink listing in popup modal
+        - Updated popup modal to limit selection for "rideOrDies" and "goats" to 3 selection
+        - Toast to notify the user when they reached the selection limit
+        - Toast to notify the user when dashboard is updated sucessfully
+
+Nature of the changes (frontend / backend / database): 
+    frontend
