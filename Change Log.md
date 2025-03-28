@@ -317,3 +317,12 @@ Purpose of the changes:
     
 Nature of the changes (frontend / backend / database): 
     backend / frontend
+
+
+# Update as of 28 Mar 2025
+Coder: Carissa
+Purpose of the changes: 
+    (1) Edited backend code in getData.py 
+                - Edited backend api (/getTopCategoryListings) for Best Of to account for when there are no listings at all in grails, goats, and ride or dies 
+                
+Nature of the changes (frontend / backend / database): backend
