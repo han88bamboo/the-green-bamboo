@@ -3201,6 +3201,9 @@ def getListingByName(listing_name):
 # [GET] Top 5 listings per category -- Added by SMU Group 3
 from collections import Counter
 import random
+# [GET] Top 5 listings per category (Added by Group 3)
+from collections import Counter
+import random
 @blueprint.route("/getTopCategoryListings")
 def getTopCategoryListings():
     conn = g.db
@@ -3212,12 +3215,8 @@ def getTopCategoryListings():
 
         print("User categories (raw):", user_categories)  # Debug print
 
-        if not user_categories:
-            print("No user categories found.")
-            return jsonify([])
-
         # Extract and flatten all drink names into a frequency counter
-        category_counters = { "grails": Counter(), "rideOrDies": Counter(), "goats": Counter() }
+        category_counters = {"grails": Counter(), "rideOrDies": Counter(), "goats": Counter()}
 
         for user in user_categories:
             for category in category_counters.keys():
@@ -3235,53 +3234,48 @@ def getTopCategoryListings():
         print("Drink name counts:", category_counters)  # Debug print
 
         # Get the top 5 listings per category based on frequency
-        top_5_per_category = { 
-            category: [item[0] for item in counter.most_common(5)] 
+        top_5_per_category = {
+            category: [item[0] for item in counter.most_common(5)]
             for category, counter in category_counters.items()
         }
 
         print("Top 5 listing names per category:", top_5_per_category)  # Debug print
 
-        # Fetch all listings data
+        # Get all unique top drinks across categories
         all_top_drinks = set().union(*top_5_per_category.values())
-        if not all_top_drinks:
-            print("No matching top drinks found.")
-            return jsonify([])
 
-        query = f'''
-            SELECT * FROM "listings"
-            WHERE "listingName" IN ({','.join(['%s'] * len(all_top_drinks))})
-        '''
-        print("Executing query:", query)  # Debug print
-        cursor.execute(query, tuple(all_top_drinks))
-        listings_data = cursor.fetchall()
+        listings_data = []
+        if all_top_drinks:
+            query = f'''
+                SELECT * FROM "listings"
+                WHERE "listingName" IN ({','.join(['%s'] * len(all_top_drinks))})
+            '''
+            print("Executing query:", query)  # Debug print
+            cursor.execute(query, tuple(all_top_drinks))
+            listings_data = cursor.fetchall()
 
         print("Fetched listings data:", listings_data)  # Debug print
 
-        # Organize results into final output structure with fallback logic
-        final_result = { category: [] for category in top_5_per_category.keys() }
+        # Fetch all listings for fallback purposes
+        cursor.execute('SELECT * FROM "listings"')
+        all_listings = cursor.fetchall()
+
+        # Organize results into final output structure
+        final_result = {category: [] for category in top_5_per_category.keys()}
 
         for category, top_drinks in top_5_per_category.items():
             # Filter listings matching the top drinks for the category
             matching_listings = [listing for listing in listings_data if listing["listingName"] in top_drinks]
-            # If not enough listings, fallback to random selection from the entire listings table
-            if len(matching_listings) < 5:
-                # Get the remaining number of listings to select
-                remaining_count = 5 - len(matching_listings)
-                
-                # Fetch all listings from the "listings" table to pick random entries
-                cursor.execute('SELECT * FROM "listings"')
-                all_listings = cursor.fetchall()
 
-                # Filter out the already matched listings
-                remaining_listings = [listing for listing in all_listings if listing["listingName"] not in top_drinks]
-                
-                # Ensure the sample doesn't exceed the available population
-                remaining_selection_count = min(remaining_count, len(remaining_listings))
-                random_selection = random.sample(remaining_listings, remaining_selection_count) if remaining_listings else []
-                matching_listings.extend(random_selection)
+            # If not enough listings, fallback to random selection from all listings
+            remaining_count = 5 - len(matching_listings)
+            remaining_listings = [listing for listing in all_listings if listing not in matching_listings]
 
-            final_result[category] = matching_listings[:5]  # Ensure we return only top 5
+            # Ensure the sample doesn't exceed the available population
+            random_selection = random.sample(remaining_listings, min(remaining_count, len(remaining_listings))) if remaining_listings else []
+            matching_listings.extend(random_selection)
+
+            final_result[category] = matching_listings[:5]  # Ensure we return exactly 5
 
         print("Final category map:", final_result)  # Debug print
 
