@@ -202,3 +202,8 @@ Latest news page images not showing up. found it was due to  https://via.placeho
 replaced it with https://placehold.co/600x400 and deployed
 
 Nature of the changes (frontend / backend / database): Backend
+
+
+# update as of 27 Mar 2025
+Coder: Shahzaib Saeed
+Purpose of the changes: Ui UI inhnaces 

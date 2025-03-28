@@ -49,7 +49,8 @@
                 <div class="row container">
                     <!-- image -->
                     <div class="col-5 col-md-5 col-lg-4 col-xl-3 d-flex justify-content-center">
-  <div class="shadow-sm rounded overflow-hidden" style="width: 100%; max-width: 300px; aspect-ratio: 1 / 1;">
+  <div class=" rounded overflow-hidden" style="width: 100%; max-width: 300px; aspect-ratio: 1 / 1;         box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.4);
+">
     <img :src="( specified_listing['photo'] || defaultPhoto )" 
          class="img-fluid w-100 h-100 object-fit-cover">
   </div>
@@ -108,13 +109,14 @@
                                 <div class="col-12 col-lg-8">
                                     <div class="row">
                                         <div class="col-12 row">
-    <div class="col-6 mobile-view-show">
+    <div class="col-9 mobile-view-show px-1 py-0">
                                             <div v-if="userType == 'user' && userID !== 'defaultUser'" class="padding-for-addyourreviewbutton-large-screen mobile-view-show">
                                                 <div v-if="!inEdit" class="d-grid gap-2">
-                                                    <button class="btn primary-btn-less-round-blue btn-lg" data-bs-toggle="modal" data-bs-target="#reviewModal" style="font-weight:bold;">  <!--tzh added -blue -->
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 16">
+                                                    <button class="btn primary-btn-less-round-blue btn-lg" data-bs-toggle="modal" data-bs-target="#reviewModal" style="font-weight:500; padding:2px;">  <!--tzh added -blue -->
+                                                        <!-- <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 16">
                                                             <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
-                                                        </svg>
+                                                        </svg> -->
+                                                        Add Review
                                                     </button>
                                                 </div>
                                                 <div v-else class="d-grid gap-2">
@@ -123,7 +125,7 @@
                                                     </button>
                                                 </div>
                                             </div>
-                                            <div v-else-if="userType == 'user'" class="col-5 padding-for-addyourreviewbutton-large-screen mobile-view-hide">
+                                            <div v-else-if="userType == 'user'" class="col-5 padding-for-addyourreviewbutton-large-screen mobile-view-hide justify-content-end">
                                                 <div class="d-grid gap-2">
                                                     <router-link :to="{ path: '/login' }" class="reverse-clickable-text">
                                                         <button class="btn primary-btn-less-round-blue btn-lg mobile-rating-smaller-text-2" style="font-weight:bold;">   <!--tzh added -blue -->
@@ -135,7 +137,7 @@
                                             </div>
                                     
                             </div>
-                                        <div class="col-2 d-flex flex-row justify-content-center make-bookmark-bigger mobile-view-show" >
+                                        <div class="col-1 d-flex flex-row justify-content-center make-bookmark-bigger mobile-view-show" >
                         <BookmarkIcon 
                             v-if="user" 
                             :user="user" 
@@ -144,8 +146,7 @@
                             size="35"
                             @icon-clicked="handleIconClick" />
                 </div>
-                                        <div class="col-3 mobile-view-show px-1 " style="
-margin-left:10px">
+                                        <div class="col-1 mobile-view-show  " >
 <svg width="35" height="35" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" data-bs-toggle="modal" data-bs-target="#whereToBuyModal">
     <!-- Checkbox border -->
     <rect x="5" y="5" width="90" height="90" stroke="#006A50" stroke-width="8" fill="none" rx="10"/>
@@ -237,7 +238,8 @@ margin-left:10px">
                                             <div class="col-sm-12 col-md-9 col-lg-3 ">
                                                 <!-- where to buy -->
                                                 <div class="row">
-                                                    <div class="square primary-square-green rounded p-3 mb-3 text-start" style="height: 250px;"> <!-- TZH added '-green'-->
+                                                    <div class="square primary-square-green rounded p-3 mb-3 text-start"          style="height: 250px; border-radius: 10px; box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.4);">
+                                                        <!-- TZH added '-green'-->
                                                         <!-- header text -->
                                                         <div class="square-inline text-start">
                                                             <h4 class="mr-auto"> Where to Buy </h4>
@@ -261,7 +263,8 @@ margin-left:10px">
                                             
                                                 <!-- where to try -->
                                                 <div class="row">
-                                                    <div class="square primary-square-green rounded p-3 mb-3 text-start" style="height: 250px;">  <!-- TZH added '-green'-->
+                                                    <div class="square primary-square-green rounded p-3 mb-3 text-start"       style="height: 250px; border-radius: 10px; box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.4);">
+                                                        <!-- TZH added '-green'-->
                                                         <!-- header text -->
                                                         <div class="square-inline text-start">
                                                             <h4 class="mr-auto"> Where to Try </h4>
@@ -446,8 +449,8 @@ margin-left:10px">
                 </div>
                 </div>                                    
                 <!-- more information (category, age, country of origin, abv, list buttons & bookmark) -->
-                <div class="row pt-4 container mobile-view-hide">
-                    <div class="col-9 col-lg-9">
+                <div class="row pt-4  mobile-view-hide">
+                    <div class="col-9 col-lg-10">
     <div class="row listing-details">
         <!-- category -->
         <div class="col-6 col-lg-3 pe-1 text-start mobile-view-hide text-color-black">
@@ -487,7 +490,7 @@ margin-left:10px">
     </div>
 </div>
 
-<div class="col-3 row">
+<div class="col-2 row">
 
                     <!-- have tried button -->
                     <div class="col-1 col-lg-5 p-0">
@@ -498,7 +501,7 @@ margin-left:10px">
                     <!-- want to try button -->
                 
                     <!-- bookmark button -->
-                    <div class="col-1 col-lg-5 text-center d-flex justify-content-start make-bookmark-bigger" >
+                    <div class="col-1 col-lg-5 text-center d-flex justify-content-end make-bookmark-bigger" >
                         <!-- CP edits: removed v-if logic for public users to view and click -->
                         <BookmarkIcon 
                             :user="user" 
@@ -596,7 +599,7 @@ margin-left:10px">
 
                     <!-- add your review -->
                     <!-- Display Add review or Review already added accordingly to whether user already left review -->
-                    <div v-if="userType == 'user' && userID !== 'defaultUser'" class="col-5 padding-for-addyourreviewbutton-large-screen mobile-view-hide">
+                    <div v-if="userType == 'user' && userID !== 'defaultUser'" class="col-5 padding-for-addyourreviewbutton-large-screen mobile-view-hide justify-content-end">
                         <div v-if="!inEdit" class="d-grid gap-2">
                             <button class="btn primary-btn-less-round-blue btn-lg" data-bs-toggle="modal" data-bs-target="#reviewModal" style="font-weight:bold;"> 
                                 <!---<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 16">
@@ -612,7 +615,7 @@ margin-left:10px">
                         </div>
 
                     </div>
-                    <div v-if="userID == 'defaultUser'" class="col-5 padding-for-addyourreviewbutton-large-screen mobile-view-hide">
+                    <div v-if="userID == 'defaultUser'" class="col-5 padding-for-addyourreviewbutton-large-screen mobile-view-hide justify-content-end">
                         <div class="d-grid gap-2">
                                 <button class="btn primary-btn-less-round-blue btn-lg" @click="$router.push('/login')" style="font-weight:bold;"> 
                                     Add Your Review
@@ -1474,7 +1477,7 @@ margin-left:10px">
                 <!-- where to buy -->
                 <div class="row">
     <div class="square primary-square-green rounded p-3 mb-3 text-start" 
-         style="height: 250px; border-radius: 10px; box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.2);">
+         style="height: 250px; border-radius: 10px; box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.4);">
         <!-- header text -->
         <div class="square-inline text-start">
             <h4 class="mr-auto"> Where to Buy </h4>
@@ -1500,7 +1503,7 @@ margin-left:10px">
                 <!-- where to try -->
                 <div class="row">
     <div class="square primary-square-green rounded p-3 mb-3 text-start" 
-         style="height: 250px; border-radius: 10px; box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.2);">
+         style="height: 250px; border-radius: 10px; box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.4);">
         <!-- header text -->
         <div class="square-inline text-start">
             <h4 class="mr-auto"> Where to Try </h4>
