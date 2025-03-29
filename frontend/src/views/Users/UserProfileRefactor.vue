@@ -648,168 +648,132 @@
                            Welcome to Drink-X. Let's get started!
                        </h2>
 
-                       <div>
-                           <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px;">
-                           <img
-                               src="/Layer3.png"
-                               style="
-                               width: 64px;
-                               height: 64px;
-                               object-fit: contain;
-                               border-radius: 4px;
-                               "
-                               alt="Review your first drink"
-                           />
-                               <div>
-                                   <p style="font-size: 18px; margin-bottom: 8px;">Review your first drink.</p>
-                                   <router-link :to="'/explore'">
-                                   <button
-                                   style="
-                                       padding: 8px 16px;
-                                       background-color: #F0B358;
-                                       border: none;
-                                       color: black;
-                                       border-radius: 4px;
-                                       cursor: pointer;
-                                   "
-                                   @mouseover="hoverButton($event)"
-                                   @mouseleave="leaveButton($event)"
-                                   >
-                                   Find A Drink
-                                   </button>
-                                   </router-link>
-                               </div>
-                           </div>
+                        <div>
+                            <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px;">
+                            <img
+                                src="/Layer3.png"
+                                style="
+                                width: 64px;
+                                height: 64px;
+                                object-fit: contain;
+                                border-radius: 4px;
+                                "
+                                alt="Review your first drink"
+                            />
+                                <div>
+                                    <p style="font-size: 18px; margin-bottom: 8px;">Review your first drink.</p>
+                                    <router-link :to="'/explore'">
+                                    <button
+                                    style="
+                                        padding: 8px 16px;
+                                        background-color: #F0B358;
+                                        border: none;
+                                        color: black;
+                                        border-radius: 4px;
+                                        cursor: pointer;
+                                    "
+                                    @mouseover="hoverButton($event)"
+                                    @mouseleave="leaveButton($event)"
+                                    >
+                                    Find A Drink
+                                    </button>
+                                    </router-link>
+                                </div>
+                            </div>
 
-                           <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px;">
-                               <img
-                                   src="/address-book.png"
-                                   style="
-                                   width: 64px;
-                                   height: 64px;
-                                   object-fit: contain;
-                                   border-radius: 4px;
-                                   "
-                                   alt="Invite two friends"
-                               />
-                               <div>
-                                   <p style="font-size: 18px; margin-bottom: 8px;">Invite two friends.</p>
-                                   <button
-                                   style="
-                                       padding: 8px 16px;
-                                       background-color: #F0B358;
-                                       border: none;
-                                       color: black;
-                                       border-radius: 4px;
-                                       cursor: pointer;
-                                   "
-                                   @mouseover="hoverButton($event)"
-                                   @mouseleave="leaveButton($event)"
-                                   >
-                                   Add A Friend
-                                   </button>
-                               </div>
-                           </div>
+                            <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px;">
+                                <img
+                                    src="/address-book.png"
+                                    style="
+                                    width: 64px;
+                                    height: 64px;
+                                    object-fit: contain;
+                                    border-radius: 4px;
+                                    "
+                                    alt="Invite two friends"
+                                />
+                                <div>
+                                    <p style="font-size: 18px; margin-bottom: 8px;">Invite two friends.</p>
+                                    <button
+                                    style="
+                                        padding: 8px 16px;
+                                        background-color: #F0B358;
+                                        border: none;
+                                        color: black;
+                                        border-radius: 4px;
+                                        cursor: pointer;
+                                    "
+                                    @mouseover="hoverButton($event)"
+                                    @mouseleave="leaveButton($event)"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#createNewListModal"
+                                    >
+                                    Add A Friend
+                                    </button>
+                                </div>
+                            </div>
 
-                           <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px;">
-                               <img
-                                   src="/Layer1.png"
-                                   style="
-                                   width: 64px;
-                                   height: 64px;
-                                   object-fit: contain;
-                                   border-radius: 4px;
-                                   "
-                                   alt="Curate a list to share"
-                               />
-                               <div>
-                                   <p style="font-size: 18px; margin-bottom: 8px;">Curate a list to share.</p>
-                                   <button
-                                   style="
-                                       padding: 8px 16px;
-                                       background-color: #F0B358;
-                                       border: none;
-                                       color: black;
-                                       border-radius: 4px;
-                                       cursor: pointer;
-                                   "
-                                   @mouseover="hoverButton($event)"
-                                   @mouseleave="leaveButton($event)"
-                                   data-bs-toggle="modal"
-                                   data-bs-target="#createNewListModal"
-                                   >
-                                   Create A List
-                                   </button>
-                                   <!-- create new list modal -->
-                                   <div class="modal fade" id="createNewListModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                       <div class="modal-dialog modal-dialog-centered">
-                                           <div class="modal-content">
-                                           <div class="modal-header">
-                                               <h1 class="modal-title fs-5" id="exampleModalLabel">Create New List</h1>
-                                               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                           </div>
-                                           <div class="modal-body">
-                                               <div class="mb-3">
-                                                   <label for="basic-url" class="form-label">List Name</label>
-                                                   <div class="input-group mb-3">
-                                                       <input v-model="newListName" type="text" class="form-control" placeholder="List Name" aria-label="Username" aria-describedby="basic-addon1">
-                                                   </div>
-                                                   <div v-if="newListNameError" class="text-danger text-sm">
-                                                       *{{ newListNameError }}
-                                                   </div>
-                                               </div>
+                            <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px;">
+                                <img
+                                    src="/Layer1.png"
+                                    style="
+                                    width: 64px;
+                                    height: 64px;
+                                    object-fit: contain;
+                                    border-radius: 4px;
+                                    "
+                                    alt="Curate a list to share"
+                                />
+                                <div>
+                                    <p style="font-size: 18px; margin-bottom: 8px;">Curate a list to share.</p>
+                                    <button
+                                    style="
+                                        padding: 8px 16px;
+                                        background-color: #F0B358;
+                                        border: none;
+                                        color: black;
+                                        border-radius: 4px;
+                                        cursor: pointer;
+                                    "
+                                    @mouseover="hoverButton($event)"
+                                    @mouseleave="leaveButton($event)"
+                                    >
+                                    Create A List
+                                    </button>
+                                </div>
+                            </div>
 
-                                               <div class="mb-3">
-                                                   <label for="basic-url" class="form-label">List Description</label>
-                                                   <div class="input-group mb-3">
-                                                       <textarea v-model="newListDesc" type="text" class="form-control" placeholder="List Description (Optional)" aria-label="Username" aria-describedby="basic-addon1" rows="5"></textarea>
-                                                   </div>
-                                               </div>
-
-                                           </div>
-                                           <div class="modal-footer">
-                                               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                               <button type="button" class="btn btn-primary" @click="addNewList">Save changes</button>
-                                           </div>
-                                           </div>
-                                       </div>
-                                   </div>
-                               </div>
-                           </div>
-
-                           <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px;">
-                               <img
-                                   src="/Layer2.png"
-                                   style="
-                                   width: 64px;
-                                   height: 64px;
-                                   object-fit: contain;
-                                   border-radius: 4px;
-                                   "
-                                   alt="Explore and join a club!"
-                               />
-                               <div>
-                                   <p style="font-size: 18px; margin-bottom: 8px;">Explore and join a club!</p>
-                                   <router-link :to="'/clubs/view'">
-                                   <button
-                                   style="
-                                       padding: 8px 16px;
-                                       background-color: #F0B358;
-                                       border: none;
-                                       color: black;
-                                       border-radius: 4px;
-                                       cursor: pointer;
-                                   "
-                                   @mouseover="hoverButton($event)"
-                                   @mouseleave="leaveButton($event)"
-                                   >
-                                   Find A Club
-                                   </button>
-                                   </router-link>
-                               </div>
-                           </div>
-                       </div>
-                   </div>
+                            <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px;">
+                                <img
+                                    src="/Layer2.png"
+                                    style="
+                                    width: 64px;
+                                    height: 64px;
+                                    object-fit: contain;
+                                    border-radius: 4px;
+                                    "
+                                    alt="Explore and join a club!"
+                                />
+                                <div>
+                                    <p style="font-size: 18px; margin-bottom: 8px;">Explore and join a club!</p>
+                                    <button
+                                    style="
+                                        padding: 8px 16px;
+                                        background-color: #F0B358;
+                                        border: none;
+                                        color: black;
+                                        border-radius: 4px;
+                                        cursor: pointer;
+                                    "
+                                    @mouseover="hoverButton($event)"
+                                    @mouseleave="leaveButton($event)"
+                                    >
+                                    Find A Club
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                    <!-- reviews and lists -->
                    <div class="mt-4">
@@ -884,70 +848,70 @@
                                    columnWidth="165px"/>
                            </div>
 
-                           <!-- lists tab -->
-                           <div v-if="activeTab == 'lists'" id="lists">
-                               <button v-if="ownProfile" type="button" class="btn fw-bold primary-btn-less-round-blue xprimary-btn-outline-less-round mb-3" data-bs-toggle="modal" data-bs-target="#createNewListModal" >Create New List</button>
+                           <!-- create new list modal -->
+                           <div class="modal fade" id="createNewListModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h1 class="modal-title fs-5" id="exampleModalLabel">Create New List</h1>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label for="basic-url" class="form-label">List Name</label>
+                                                <div class="input-group mb-3">
+                                                    <input v-model="newListName" type="text" class="form-control" placeholder="List Name" aria-label="Username" aria-describedby="basic-addon1">
+                                                </div>
+                                                <div v-if="newListNameError" class="text-danger text-sm">
+                                                    *{{ newListNameError }}
+                                                </div>
+                                            </div>
 
-                               <!-- create new list modal -->
-                               <div class="modal fade" id="createNewListModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                   <div class="modal-dialog modal-dialog-centered">
-                                       <div class="modal-content">
-                                       <div class="modal-header">
-                                           <h1 class="modal-title fs-5" id="exampleModalLabel">Create New List</h1>
-                                           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                       </div>
-                                       <div class="modal-body">
-                                           <div class="mb-3">
-                                               <label for="basic-url" class="form-label">List Name</label>
-                                               <div class="input-group mb-3">
-                                                   <input v-model="newListName" type="text" class="form-control" placeholder="List Name" aria-label="Username" aria-describedby="basic-addon1">
-                                               </div>
-                                               <div v-if="newListNameError" class="text-danger text-sm">
-                                                   *{{ newListNameError }}
-                                               </div>
-                                           </div>
+                                            <div class="mb-3">
+                                                <label for="basic-url" class="form-label">List Description</label>
+                                                <div class="input-group mb-3">
+                                                    <textarea v-model="newListDesc" type="text" class="form-control" placeholder="List Description (Optional)" aria-label="Username" aria-describedby="basic-addon1" rows="5"></textarea>
+                                                </div>
+                                            </div>
 
-                                           <div class="mb-3">
-                                               <label for="basic-url" class="form-label">List Description</label>
-                                               <div class="input-group mb-3">
-                                                   <textarea v-model="newListDesc" type="text" class="form-control" placeholder="List Description (Optional)" aria-label="Username" aria-describedby="basic-addon1" rows="5"></textarea>
-                                               </div>
-                                           </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <button type="button" class="btn btn-primary" @click="addNewList">Save changes</button>
+                                        </div>
+                                        </div>
+                                    </div>
+                                </div>
 
-                                       </div>
-                                       <div class="modal-footer">
-                                           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                           <button type="button" class="btn btn-primary" @click="addNewList">Save changes</button>
-                                       </div>
-                                       </div>
-                                   </div>
-                               </div>
-                               
-                               <!-- display all lists -->
-                               <div v-for="(bookmarkList, name, index) in displayUserBookmarks" :key="name" style="display: flex" class="row mb-3">
-                                   <div class="col-3 mobile-col-4 mobile-pe-0" >
-                                       <!-- <img :src=" 'data:image/png;base64,' + ( getListingFromID(bookmarkList.listItems[0]).photo || defaultDrinkImage )" alt="" class="bottle-img me-3"> xyz -->
-                                       <img :src="( bookmarkList.listItems.length > 0 
-                                                   ? (bookedMarkedListings[bookmarkList.listItems[0]?.drinkId]?.photo || defaultDrinkImage)
-                                                   : defaultDrinkImage )"  alt="" class="bottle-img me-3">
-                                   </div>
-                                   <div  class="col-9 mobile-col-8 mobile-ps-1" > <!-- style="height: 150px; display: flex; flex-direction: column;" -->
-                                       <h5 class="mt-1" @click="viewList(name)" style="cursor: pointer"> {{ name }} </h5>
-                                       <span v-if="bookmarkList.listItems.length > 1"> {{ bookmarkList.listItems.length }} items in list </span>
-                                       <span v-else> {{ bookmarkList.listItems.length }} item in list </span>
-                                       <div style="max-height: 48px; overflow-y: auto; font-style: italic;">
-                                           {{ bookmarkList.listDesc }}
-                                       </div>
-                                       <div style="display: flex; margin-top: auto;" class="mb-1">
-                                           <b><a class="me-4 mobile-view-hide" @click="viewList(name)" href="#" >View List</a></b>
-                                           <b><a class="me-4 mobile-view-show" @click="viewList(name)" href="#" >View</a></b>
-                                           <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')" class="mobile-view-hide me-2" href="#"  data-bs-toggle="modal" :data-bs-target="`#editListModal${index}`" @click="resetEditList(name, bookmarkList.listDesc)">Edit List</a></b>
-                                           <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')"  class="mobile-view-hide " href="#"  data-bs-toggle="modal" :data-bs-target="`#deleteListModal${index}`">Delete List</a></b>
-                                           <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')" class="mobile-view-show me-2" href="#"  data-bs-toggle="modal" :data-bs-target="`#editListModal${index}`" @click="resetEditList(name, bookmarkList.listDesc)">Edit</a></b>
-                                           <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')" class="mobile-view-show" href="#"  data-bs-toggle="modal" :data-bs-target="`#deleteListModal${index}`">Delete</a></b>
-                                           
-                                       </div>
-                                   </div>
+                            <!-- lists tab -->
+                            <div v-if="activeTab == 'lists'" id="lists">
+                                <button v-if="ownProfile" type="button" class="btn fw-bold primary-btn-less-round-blue xprimary-btn-outline-less-round mb-3" data-bs-toggle="modal" data-bs-target="#createNewListModal" >Create New List</button>
+                                
+                                <!-- display all lists -->
+                                <div v-for="(bookmarkList, name, index) in displayUserBookmarks" :key="name" style="display: flex" class="row mb-3">
+                                    <div class="col-3 mobile-col-4 mobile-pe-0" >
+                                        <!-- <img :src=" 'data:image/png;base64,' + ( getListingFromID(bookmarkList.listItems[0]).photo || defaultDrinkImage )" alt="" class="bottle-img me-3"> xyz -->
+                                        <img :src="( bookmarkList.listItems.length > 0 
+                                                    ? (bookedMarkedListings[bookmarkList.listItems[0]?.drinkId]?.photo || defaultDrinkImage)
+                                                    : defaultDrinkImage )"  alt="" class="bottle-img me-3">
+                                    </div>
+                                    <div  class="col-9 mobile-col-8 mobile-ps-1" > <!-- style="height: 150px; display: flex; flex-direction: column;" -->
+                                        <h5 class="mt-1" @click="viewList(name)" style="cursor: pointer"> {{ name }} </h5>
+                                        <span v-if="bookmarkList.listItems.length > 1"> {{ bookmarkList.listItems.length }} items in list </span>
+                                        <span v-else> {{ bookmarkList.listItems.length }} item in list </span>
+                                        <div style="max-height: 48px; overflow-y: auto; font-style: italic;">
+                                            {{ bookmarkList.listDesc }}
+                                        </div>
+                                        <div style="display: flex; margin-top: auto;" class="mb-1">
+                                            <b><a class="me-4 mobile-view-hide" @click="viewList(name)" href="#" >View List</a></b>
+                                            <b><a class="me-4 mobile-view-show" @click="viewList(name)" href="#" >View</a></b>
+                                            <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')" class="mobile-view-hide me-2" href="#"  data-bs-toggle="modal" :data-bs-target="`#editListModal${index}`" @click="resetEditList(name, bookmarkList.listDesc)">Edit List</a></b>
+                                            <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')"  class="mobile-view-hide " href="#"  data-bs-toggle="modal" :data-bs-target="`#deleteListModal${index}`">Delete List</a></b>
+                                            <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')" class="mobile-view-show me-2" href="#"  data-bs-toggle="modal" :data-bs-target="`#editListModal${index}`" @click="resetEditList(name, bookmarkList.listDesc)">Edit</a></b>
+                                            <b><a v-if="ownProfile && !(name == 'Drinks I Have Tried' || name == 'Drinks I Want To Try')" class="mobile-view-show" href="#"  data-bs-toggle="modal" :data-bs-target="`#deleteListModal${index}`">Delete</a></b>
+                                            
+                                        </div>
+                                    </div>
 
                                    <!-- edit list modal start -->
                                    <div class="modal fade" :id="`editListModal${index}`" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -1200,8 +1164,8 @@
            </div>
        </div>
 
-       <FooterBar />
-   </div>
+        <FooterBar />
+    </div>
 
 </template>
 
