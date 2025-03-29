@@ -213,3 +213,5 @@ UI/UX enhancements on the Explore Page, Login, Signup, and Bottle Listings.
 Updated the UI to align with the Figma design.
 
 Ensured responsiveness across all screen sizes.
+
+Test
