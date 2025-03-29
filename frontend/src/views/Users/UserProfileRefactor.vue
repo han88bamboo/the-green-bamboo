@@ -2446,7 +2446,6 @@ export default {
        // ------------------- Switch Tabs  between Reviews and Drink Lists -------------------
        switchTab(tab) {
            this.activeTab = tab;
-           this.$router.push('/profile/user/' + this.displayUserID);
        },
 
        // ------------------- Reviews -------------------
