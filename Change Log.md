@@ -194,7 +194,7 @@ Nature of the changes (frontend / backend / database):
     frontend
 
 
-# Update as of 26 Mar 2025
+# Update as of 26 Mar 2025 - code is ok as of this date
 Coder: Zhe Han
 
 Purpose of the changes: Bugfix for Latest News page. 
