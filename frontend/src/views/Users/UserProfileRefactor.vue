@@ -662,7 +662,7 @@
                             />
                                 <div>
                                     <p style="font-size: 18px; margin-bottom: 8px;">Review your first drink.</p>
-                                    <router-link :to="'/explore'">
+                                    <router-link :to="'/'">
                                     <button
                                     style="
                                         padding: 8px 16px;
@@ -706,7 +706,7 @@
                                     @mouseover="hoverButton($event)"
                                     @mouseleave="leaveButton($event)"
                                     data-bs-toggle="modal"
-                                    data-bs-target="#createNewListModal"
+                                    data-bs-target="#addFriendModal"
                                     >
                                     Add A Friend
                                     </button>
@@ -737,6 +737,8 @@
                                     "
                                     @mouseover="hoverButton($event)"
                                     @mouseleave="leaveButton($event)"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#createNewListModal"
                                     >
                                     Create A List
                                     </button>
@@ -756,6 +758,7 @@
                                 />
                                 <div>
                                     <p style="font-size: 18px; margin-bottom: 8px;">Explore and join a club!</p>
+                                    <router-link :to="'/clubs/view'">
                                     <button
                                     style="
                                         padding: 8px 16px;
@@ -770,6 +773,7 @@
                                     >
                                     Find A Club
                                     </button>
+                                    </router-link>
                                 </div>
                             </div>
                         </div>
@@ -797,7 +801,6 @@
 
                        <!-- Tab Section -->
                        <div class="tab-content container mt-2 mobile-px-0" >
-
                            <!-- reviews tab -->
                            <div v-if="activeTab == 'reviews'" id="reviews">
                                <h3 class="text-body-secondary text-start pt-4"> 
@@ -842,46 +845,126 @@
                                    displayName="Favourite Listings" 
                                    columnWidth="165px"/>
 
-                               <ListingRowDisplayUserProfile 
-                                   :listingArr="recentActivity" 
-                                   displayName="Recent Activity"  
-                                   columnWidth="165px"/>
-                           </div>
+                                <ListingRowDisplayUserProfile 
+                                    :listingArr="recentActivity" 
+                                    displayName="Recent Activity"  
+                                    columnWidth="165px"/>
+                            </div>
 
-                           <!-- create new list modal -->
-                           <div class="modal fade" id="createNewListModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                    <div class="modal-dialog modal-dialog-centered">
-                                        <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h1 class="modal-title fs-5" id="exampleModalLabel">Create New List</h1>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <div class="mb-3">
-                                                <label for="basic-url" class="form-label">List Name</label>
-                                                <div class="input-group mb-3">
-                                                    <input v-model="newListName" type="text" class="form-control" placeholder="List Name" aria-label="Username" aria-describedby="basic-addon1">
-                                                </div>
-                                                <div v-if="newListNameError" class="text-danger text-sm">
-                                                    *{{ newListNameError }}
-                                                </div>
-                                            </div>
+                            <!-- add a friend modal -->
+                            <div class="modal fade" id="addFriendModal" tabindex="-1" aria-labelledby="addFriendModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered modal-lg">
+                                <div class="modal-content">
+                                <!-- Modal Header -->
+                                <div class="modal-header bg-primary text-white position-relative" style="background-color: #6c9bff !important; border-radius: 0;">
+                                <div class="w-100 pe-4">
+                                    <h1 class="modal-title fs-5 mb-0" id="addFriendModalLabel">
+                                    <span class="d-none d-md-inline">Don't Drink Alone! Find your friends on Drink-X!</span>
+                                    <span class="d-md-none">Don't Drink Alone!<br>Find your friends on Drink-X!</span>
+                                    </h1>
+                                </div>
+                                <button type="button" class="btn-close btn-close-white position-absolute" style="right: 15px; top: 50%; transform: translateY(-50%);" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
 
-                                            <div class="mb-3">
-                                                <label for="basic-url" class="form-label">List Description</label>
-                                                <div class="input-group mb-3">
-                                                    <textarea v-model="newListDesc" type="text" class="form-control" placeholder="List Description (Optional)" aria-label="Username" aria-describedby="basic-addon1" rows="5"></textarea>
-                                                </div>
-                                            </div>
-
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                            <button type="button" class="btn btn-primary" @click="addNewList">Save changes</button>
-                                        </div>
-                                        </div>
+                                <div class="modal-body p-0">
+                                <!-- Search bar section -->
+                                <div class="p-3" style="background-color: #6c9bff;">
+                                    <div class="mx-4">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control rounded-pill" placeholder="Search for friends on Drink-X" aria-label="Search for friends">
+                                        <span class="input-group-text bg-white border-0 rounded-pill" style="margin-left: -40px; z-index: 10;">
+                                       
+                                        </span>
+                                    </div>
                                     </div>
                                 </div>
+                                
+                                <!-- Invite section -->
+                                <div class="p-4" style="background-color: #f5f5f5;">
+                                    <h4>Invite Your Friends to Drink-X</h4>
+                                    <p>Don't drink alone! See which of your friends are already pouring it up on Drink-X, and invite other friends to join you!</p>
+                                    <div class="row mt-4">
+
+                                    <!-- Facebook -->
+                                    <div class="col-6 text-center mb-4">
+                                        <div class="d-flex flex-column align-items-center">
+                                        <div class="rounded-circle bg-white d-flex align-items-center justify-content-center mb-2" style="width: 80px; height: 80px;">
+                                            <img src="/facebook.png" alt="Facebook" style="width: 40px; height: 40px; object-fit: contain;">
+                                        </div>
+                                        <button class="btn btn-info rounded-pill px-4 text-white">Invite via Facebook</button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Email -->
+                                    <div class="col-6 text-center mb-4">
+                                        <div class="d-flex flex-column align-items-center">
+                                        <div class="rounded-circle bg-white border d-flex align-items-center justify-content-center mb-2" style="width: 80px; height: 80px;">
+                                            <img src="/mail.png" alt="Email" style="width: 40px; height: 40px; object-fit: contain;">
+                                        </div>
+                                        <button class="btn btn-info rounded-pill px-4 text-white">Send Email</button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Telegram -->
+                                    <div class="col-6 text-center">
+                                        <div class="d-flex flex-column align-items-center">
+                                        <div class="rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 80px; height: 80px; background-color: white;">
+                                            <img src="/telegram.png" alt="Telegram" style="width: 40px; height: 40px; object-fit: contain;">
+                                        </div>
+                                        <button class="btn btn-info rounded-pill px-4 text-white">Invite via Telegram</button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- WhatsApp -->
+                                    <div class="col-6 text-center">
+                                        <div class="d-flex flex-column align-items-center">
+                                        <div class="rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 80px; height: 80px; background-color: white;">
+                                            <img src="/social.png" alt="WhatsApp" style="width: 40px; height: 40px; object-fit: contain;">
+                                        </div>
+                                        <button class="btn btn-info rounded-pill px-4 text-white">Invite via Whatsapp</button>
+                                        </div>
+                                    </div>
+                                    </div>
+                                </div>
+                                </div>
+                            </div>
+                            </div>
+                            </div>
+
+                            <!-- create new list modal -->
+                            <div class="modal fade" id="createNewListModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="exampleModalLabel">Create New List</h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label for="basic-url" class="form-label">List Name</label>
+                                            <div class="input-group mb-3">
+                                                <input v-model="newListName" type="text" class="form-control" placeholder="List Name" aria-label="Username" aria-describedby="basic-addon1">
+                                            </div>
+                                            <div v-if="newListNameError" class="text-danger text-sm">
+                                                *{{ newListNameError }}
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="basic-url" class="form-label">List Description</label>
+                                            <div class="input-group mb-3">
+                                                <textarea v-model="newListDesc" type="text" class="form-control" placeholder="List Description (Optional)" aria-label="Username" aria-describedby="basic-addon1" rows="5"></textarea>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        <button type="button" class="btn btn-primary" @click="addNewList">Save changes</button>
+                                    </div>
+                                    </div>
+                                </div>
+                            </div>
 
                             <!-- lists tab -->
                             <div v-if="activeTab == 'lists'" id="lists">
@@ -971,6 +1054,7 @@
                                        </div>
                                    </div>
                                    <!-- modal end -->
+                                    
                                </div>
                            </div>
 
