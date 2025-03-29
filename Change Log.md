@@ -204,6 +204,12 @@ replaced it with https://placehold.co/600x400 and deployed
 Nature of the changes (frontend / backend / database): Backend
 
 
-# update as of 27 Mar 2025
+# Update as of 29 Mar 2025
 Coder: Shahzaib Saeed
-Purpose of the changes: Ui UI inhnaces 
+Changes Implemented:
+
+UI/UX enhancements on the Explore Page, Login, Signup, and Bottle Listings.
+
+Updated the UI to align with the Figma design.
+
+Ensured responsiveness across all screen sizes.
