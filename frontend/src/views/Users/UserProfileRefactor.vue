@@ -891,7 +891,7 @@
                                         <div class="rounded-circle bg-white d-flex align-items-center justify-content-center mb-2" style="width: 80px; height: 80px;">
                                             <img src="/facebook.png" alt="Facebook" style="width: 40px; height: 40px; object-fit: contain;">
                                         </div>
-                                        <button class="btn btn-info rounded-pill px-4 text-white">Invite via Facebook</button>
+                                        <button class="btn btn-info rounded-pill px-4 text-white" @click="shareOnFacebook">Invite via Facebook</button>
                                         </div>
                                     </div>
                                     
@@ -901,7 +901,7 @@
                                         <div class="rounded-circle bg-white border d-flex align-items-center justify-content-center mb-2" style="width: 80px; height: 80px;">
                                             <img src="/mail.png" alt="Email" style="width: 40px; height: 40px; object-fit: contain;">
                                         </div>
-                                        <button class="btn btn-info rounded-pill px-4 text-white">Send Email</button>
+                                        <button class="btn btn-info rounded-pill px-4 text-white" @click="shareViaEmail">Send Email</button>
                                         </div>
                                     </div>
                                     
@@ -911,7 +911,7 @@
                                         <div class="rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 80px; height: 80px; background-color: white;">
                                             <img src="/telegram.png" alt="Telegram" style="width: 40px; height: 40px; object-fit: contain;">
                                         </div>
-                                        <button class="btn btn-info rounded-pill px-4 text-white">Invite via Telegram</button>
+                                        <button class="btn btn-info rounded-pill px-4 text-white" @click="shareOnTelegram">Invite via Telegram</button>
                                         </div>
                                     </div>
                                     
@@ -921,7 +921,7 @@
                                         <div class="rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 80px; height: 80px; background-color: white;">
                                             <img src="/social.png" alt="WhatsApp" style="width: 40px; height: 40px; object-fit: contain;">
                                         </div>
-                                        <button class="btn btn-info rounded-pill px-4 text-white">Invite via Whatsapp</button>
+                                        <button class="btn btn-info rounded-pill px-4 text-white" @click="shareOnWhatsApp">Invite via Whatsapp</button>
                                         </div>
                                     </div>
                                     </div>
@@ -2711,6 +2711,28 @@ export default {
                console.error('Failed to copy text: ', err);
            });
        },
+
+       // ------------------ Add Friend Functions ------------------
+        shareOnFacebook() {
+        const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://www.drink-x.com')}&quote=${encodeURIComponent('Come join me on Drink-X!')}`;
+        window.open(url, '_blank', 'width=600,height=400');
+        },
+
+        shareViaEmail() {
+        const subject = 'Join me on Drink-X!';
+        const body = 'Come join me on Drink-X! https://www.drink-x.com';
+        window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        },
+
+        shareOnTelegram() {
+        const text = 'Come join me on Drink-X!';
+        window.open(`https://t.me/share/url?url=${encodeURIComponent('https://www.drink-x.com')}&text=${encodeURIComponent(text)}`, '_blank');
+        },
+
+        shareOnWhatsApp() {
+        const text = 'Come join me on Drink-X! https://www.drink-x.com';
+        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        },
    }
 };
 </script>
