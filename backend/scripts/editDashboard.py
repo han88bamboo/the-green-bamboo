@@ -20,8 +20,8 @@ def editDetails():
     try:
         selectedGrails = data['selectedGrails']
         cursor.execute("UPDATE users SET \"grails\" = %s WHERE id = %s", (selectedGrails, userID))
-        selectedRideOrDies = data['selectedRideOrDies']
-        cursor.execute("UPDATE users SET \"rideOrDies\" = %s WHERE id = %s", (selectedRideOrDies, userID))
+        selectedUpAndComing = data['selectedUpAndComing']
+        cursor.execute("UPDATE users SET \"upAndComing\" = %s WHERE id = %s", (selectedUpAndComing, userID))
         selectedGOATs = data['selectedGOATs']
         cursor.execute("UPDATE users SET \"goats\" = %s WHERE id = %s", (selectedGOATs, userID))
         
@@ -32,7 +32,7 @@ def editDetails():
                 "data": {
                     "userID": userID,
                     "grails": selectedGrails,
-                    "rideOrDies": selectedRideOrDies,
+                    "upAndComing": selectedUpAndComing,
                     "goats": selectedGOATs
                 }
             }
@@ -47,7 +47,7 @@ def editDetails():
                 "data": {
                     "userID": userID,
                     "grails": data['selectedGrails'],
-                    "rideOrDies": data['selectedRideOrDies'],
+                    "upAndComing": data['selectedUpAndComing'],
                     "goats": data['selectedGOATs']
                 },
                 "message": "An error occurred updating the image or drink choice."
