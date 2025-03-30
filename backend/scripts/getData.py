@@ -3210,13 +3210,13 @@ def getTopCategoryListings():
 
     with conn.cursor() as cursor:
         # Get user preferences from the 'users' table
-        cursor.execute('SELECT "grails", "rideOrDies", "goats" FROM "users"')
+        cursor.execute('SELECT "grails", "upAndComing", "goats" FROM "users"')
         user_categories = cursor.fetchall()
 
         print("User categories (raw):", user_categories)  # Debug print
 
         # Extract and flatten all drink names into a frequency counter
-        category_counters = {"grails": Counter(), "rideOrDies": Counter(), "goats": Counter()}
+        category_counters = {"grails": Counter(), "upAndComing": Counter(), "goats": Counter()}
 
         for user in user_categories:
             for category in category_counters.keys():
