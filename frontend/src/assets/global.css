@@ -680,16 +680,19 @@ body {
 }
 /* Default size for desktop (191px) */
 .listing-image {
-    width: 191px;
-    height: 191px;
+    width: 191px !important;
+    height: 191px !important;
     object-fit: cover;
 }
 
 /* Responsive size for mobile screens (max-width: 768px) */
 @media (max-width: 768px) {
     .listing-image {
-        width: 93px;
-        height: 109px !important;
+        width: 100px !important;
+        padding: 0;
+        margin: 0;
+        height: 100% !important;
+        object-fit: cover;
     }
 }
 .scrollable-expressions-none {
@@ -800,9 +803,7 @@ body {
   background-color: #035f50;
 }
 
-.card {
-  background-color: #d9d9d9;
-}
+
 
 .dropdown-toggle {
   height: 47.25px;
@@ -1091,6 +1092,10 @@ button.primary-square:hover {
   flex: 0 0 auto;
   max-width: 37.5%;
   box-sizing: border-box;
+}
+
+.drop-shadow-cutom{
+  box-shadow: rgba(0, 0, 0, 0.4) 0px 4px 4px;
 }
 
 @media (min-width: 992px) {
@@ -1498,8 +1503,8 @@ button.primary-square:hover {
 
 @media (max-width: 991px) {
   .funnel-svg-dimensions {
-    width: 35px;
-    height: 35px;
+    /* width: 50px; */
+    /* height: 50px; */
   }
 }
 
@@ -1689,6 +1694,8 @@ button.primary-square:hover {
   height: 150px;
   aspect-ratio: 1 / 1; /* Ensures the image remains a square */
   object-fit: cover; /* Ensures the image covers the entire area without stretching */
+  box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.4);
+  border-radius: 4px;
 }
 @media (max-width: 991px) {
   .review-image {

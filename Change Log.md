@@ -194,7 +194,7 @@ Nature of the changes (frontend / backend / database):
     frontend
 
 
-# Update as of 26 Mar 2025
+# Update as of 26 Mar 2025 - code is ok as of this date
 Coder: Zhe Han
 
 Purpose of the changes: Bugfix for Latest News page. 
@@ -332,3 +332,14 @@ Purpose of the changes:
 
 Nature of the changes (frontend / backend / database): 
     frontend
+# Update as of 29 Mar 2025
+Coder: Shahzaib Saeed
+Changes Implemented:
+
+UI/UX enhancements on the Explore Page, Login, Signup, and Bottle Listings.
+
+Updated the UI to align with the Figma design.
+
+Ensured responsiveness across all screen sizes.
+
+Test
