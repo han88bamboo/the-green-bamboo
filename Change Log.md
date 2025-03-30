@@ -197,3 +197,14 @@ Updated Router - UserProfileRefactor.vue
 Updated Router - ProducerProfile.vue - Added username to router link for Producer and Users profile page when logged in
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 30 March
+
+Coder: Candy
+
+Purpose of the changes:
+Updated URL link to producer page and user profile My Drink List
+(1) Updated Router - Producers/Bottlelisting.vue
+(2) Updated Router - UserProfileRefactor.vue
+Nature of the changes (frontend / backend / database):
+frontend
