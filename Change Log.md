@@ -332,6 +332,7 @@ Purpose of the changes:
 
 Nature of the changes (frontend / backend / database): 
     frontend
+
 # Update as of 29 Mar 2025
 Coder: Shahzaib Saeed
 Changes Implemented:
@@ -343,3 +344,30 @@ Updated the UI to align with the Figma design.
 Ensured responsiveness across all screen sizes.
 
 Test
+
+# Update as of 30 Mar 2025
+Coder: Carissa
+Purpose of the changes: 
+    (1) Edited backend code in getData.py 
+                - Edited backend api (/getTopCategoryListings) to change to select from upAndComing instead of rideOrDies
+    (2) Edited backend code in editDashboard.py 
+                - Edited backend api (/editTop3) to change to select from upAndComing instead of rideOrDies
+                
+Nature of the changes (frontend / backend / database): backend
+
+Coder: Coder: Carissa
+
+Purpose of the changes: 
+    (1) Updated Page - Dashboard Page (UserDashboard.vue) 
+        - Updated naming of Ride or Dies to Up & Coming
+
+Nature of the changes (frontend / backend / database): 
+    frontend
+
+Coder: Coder: Carissa
+
+Purpose of the changes: 
+    (1) Updated users table "rideOrDies" to "upAndComing"
+
+Nature of the changes (frontend / backend / database): 
+    database
