@@ -3878,7 +3878,9 @@ export default {
     // ------------------- Switch Tabs  between Reviews and Drink Lists -------------------
     switchTab(tab) {
       this.activeTab = tab;
-      this.$router.push("/profile/user/" + this.displayUserID);
+      this.$router.push(
+        "/profile/user/" + this.displayUserID + "/" + this.displayUser.username
+      );
     },
 
     // ------------------- Reviews -------------------
@@ -3937,11 +3939,22 @@ export default {
     viewList(name) {
       if (name == "lists") {
         this.activeTab = "lists";
-        this.$router.push("/profile/user/" + this.displayUserID);
+        this.$router.push(
+          "/profile/user/" +
+            this.displayUserID +
+            "/" +
+            this.displayUser.username
+        );
       } else {
         this.activeTab = "list";
         this.currentList = name;
-        this.$router.push("/profile/user/" + this.displayUserID + "/" + name);
+        this.$router.push(
+          "/profile/user/" +
+            this.displayUserID +
+            "/" +
+            this.displayUser.username +
+            name
+        );
 
         if (this.ownProfile) {
           this.removeExistingListingInList();
