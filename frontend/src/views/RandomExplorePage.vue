@@ -1,3 +1,40 @@
+<style>
+     .card {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            border: 1px solid #827C75;
+
+        }
+       
+        .rating {
+            font-size: 1.5rem;
+            color: #e6b800;
+        }
+        .btn-read-more {
+            background-color: #F0B358;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 12px;
+            box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.4) !important;
+
+            color: black;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .btn-read-more:hover {
+            background-color: #FDD497;
+        }
+
+        .shelf{
+            border-radius: 10px;
+            box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.4);
+          
+        }
+        </style>
+
 <!-- HTML -->
 <template>
     <NavBar />
@@ -59,8 +96,8 @@
                         <!-- [user] your drinks shelf & brands you follow -->
                         <div v-if="userType == 'user' || userType == ''" class="row">
                             <!-- [moderator] listing requests -->
-                            <div v-if="isAdmin || isModerator" class="col-12">
-                                <div class="square primary-square-green-outline rounded p-3 mb-3">
+                            <div v-if="isAdmin || isModerator" class="col-12 ">
+                                <div class="square primary-square-green-outline   mb-3">
                                     <!-- header text -->
                                     <div class="square-inline text-start">
                                         <span v-if="totalRequests != 0" class="square-inline text-start mr-auto">
@@ -88,8 +125,8 @@
                                 </div>
                             </div>
                             <!-- your drinks shelf -->
-                            <div class="col-12">
-                                <div class="square primary-square-green rounded p-3 mb-3 text-start" style="height: 300px; border-radius: 10px; box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.1);">
+                            <div class="col-12 shelf mb-5 primary-square-green">
+                                <div class="square   p-3 mb-3 text-start" style="height: 300px; ">
                                     <!-- header text -->
                                     <div class="square-inline">
                                         <router-link :to="{ path: '/profile/user/'+userID }" class="reverse-clickable-text">
@@ -130,8 +167,8 @@
                                 </div>
                             </div>
                             <!-- brands you follow -->
-                            <div class="col-12">
-                                <div class="square primary-square-green rounded p-3 mb-3 text-start" style="height: 300px; border-radius: 10px; box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.1);">
+                            <div class="col-12 shelf primary-square-green ">
+                                <div class="square   p-3 mb-3 text-start" style="height: 300px; ">
                                     <!-- header text -->
                                     <div class="square-inline">
                                         <h4 class="square-inline text-start mr-auto"> Brands You Follow </h4>
@@ -177,7 +214,7 @@
                         <!-- [producer] listing requests / fan questions / activity -->
                         <div v-else-if="userType == 'producer'" class="row">
                             <!-- listing requests -->
-                            <div class="col-12"> 
+                            <div class="col-12 mb-5 shelf"> 
                                 <div class="square primary-square-green-outline rounded p-3 mb-3"> <!--tzh changed to green outline -->
                                     <!-- header text -->
                                     <div class="square-inline text-start">
@@ -296,8 +333,8 @@
                     <div class="container ">
                         <div class="row d-flex justify-content-between ps-lg-4 pe-lg-4 mobile-ps-3 mobile-pe-3 flex-row">
                             <!-- discover  tzh changed col-12 to col-4-->
-                             <div class="row col-12">
-                            <div class="col-xl-6 col-lg-4 col-4 mb-3 mobile-pe-0 mobile-ps-0">
+                             <div class="row col-8">
+                            <div class="col-xl-6 col-lg-4 col-6 mb-3 mobile-pe-0 mobile-ps-0">
                                 <div class="d-grid gap-2  mx-1">
                                     <button class="btn btn-sm mobile-ps-0 text-center" 
                                         :class="{ 'primary-btn-green mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0 mobile-pe-0': discovery, 'primary-btn-green-outline mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0': !discovery }"
@@ -317,9 +354,9 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row col-12">
+                        <div class="row col-4">
                             <!-- filter by drink type / category tzh changed col-12 to col-4 -->
-                            <div class="dropdown col-xl-6 col-lg-4 col-4 mb-3 mobile-col-2 mobile-pe-0">
+                            <div class="dropdown col-xl-6 col-lg-4 col-6 mb-3 col-6 mobile-pe-0">
                                 <div class="d-grid gap-2">
                                     <!-- tzh added -homepage and some changes for mobile-->
                                     <div v-if="selectedDrinkType != ''" style="position:absolute; width:100%; font-size:0.8em; transform: translate3d(-20px, -20px, 0px);" class="cross-icon mobile-view-hide ps-4" @click="clearSelection">&#10005; Clear Selection</div>
@@ -395,7 +432,7 @@
                                 </div>
                             </div>
                             <!-- sort by drink type - tzh changed col-12 to col-4 -->
-                            <div class="dropdown col-xl-6 col-lg-4 col-6 mb-3 mobile-col-2 mobile-ps-0">
+                            <div class="dropdown col-xl-6 col-lg-4 col-6 mb-3 col-6 mobile-ps-0">
                                 <div class="d-grid gap-2">
                                     <button class="btn primary-light-dropdown-homepage btn-lg dropdown-toggle mobile-view-remove-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="white-space: nowrap; overflow:hidden; text-overflow: ellipsis;">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-sort-down funnel-svg-dimensions" viewBox="0 0 16 16">
@@ -437,68 +474,56 @@
                              <div v-for="listing in (selectedDrinkType == '' ? listings : filteredListings)" v-bind:key="listing.id" class="">
     <div class="row">
         <div class="col-md-12">
-            <div class="card  mb-4  d-flex flex-row  " 
-     style="background-color:white !important; border-radius: 10px; box-shadow: 4px 4px 4px #827C75; overflow: hidden;">
-
-    <!-- Image Section -->
-    <div class="text-center text-md-start">
-        <div class="image-wrapper position-relative d-inline-block">
-            <img v-if="listing['photo']" 
-                 :src="listing['photo']" 
-                 class="listing-image"
-                 style=" border-top-left-radius: 10px; border-bottom-left-radius: 10px;">
-                 
-            <img v-else 
-                 src="../../Images/Drinks/Placeholder.png" 
-                 class="listing-image"
-                 style=" border-top-left-radius: 10px; border-bottom-left-radius: 10px;">
-        </div>
-    </div>
-<div class="detials-rating d-flex flex-column flex-md-row justify-content-between w-100">
-
-    <!-- Details Section -->
-    <div class="flex-grow-1 py-md-3 py-1 w-100 d-flex flex-column justify-content-between md-px-3 px-1">
-        <!-- Name & Producer -->
-        <div class="name-producer">
-            <router-link :to="{ path: '/listing/view/' + listing.id }" class="primary-clickable-text text-decoration-none" style="color:#027562;">
-                <h5 class="d-none d-md-block"><b>{{ listing["listingName"] }}</b></h5>
-                <h6 class="d-block d-md-none"><b>{{ listing["listingName"] }}</b></h6>
-            </router-link>
+            <div class="container mt-4">
+        <div class="card d-flex flex-row">
+            <!-- Image Section -->
+            <div class="text-center text-md-start">
+                <div class="image-wrapper position-relative d-inline-block">
+                    <img v-if="listing['photo']" 
+                         :src="listing['photo']" 
+                         class="listing-image">
+                    <img v-else 
+                         src="../../Images/Drinks/Placeholder.png" 
+                         class="listing-image ">
+                </div>
+            </div>
             
-            <!-- Producer -->
-            <router-link :to="{ path: '/profile/producer/' + listing.producerID }" class="primary-clickable-text">
-                <h6 class="mobile-rating-smaller-text"><b>{{ getProducerName(listing) }}</b></h6>
-            </router-link>
+            <div class="detials-rating d-flex flex-column flex-md-row justify-content-between w-100">
+                <!-- Details Section -->
+                <div class="flex-grow-1 py-md-3 py-1 w-100 w-md-50  d-flex flex-column justify-content-between md-px-3 px-3">
+                    <div class="name-producer">
+                        <router-link :to="{ path: '/listing/view/' + listing.id }" class="primary-clickable-text text-decoration-none" style="color:#027562;">
+                            <h5 class="d-none d-md-block"><b>{{ listing["listingName"] }}</b></h5>
+                            <h6 class="d-block d-md-none"><b>{{ listing["listingName"] }}</b></h6>
+                        </router-link>
+                        <router-link :to="{ path: '/profile/producer/' + listing.producerID }" class="primary-clickable-text">
+                            <h6 class="mobile-rating-smaller-text"><b>{{ getProducerName(listing) }}</b></h6>
+                        </router-link>
+                    </div>
+                    <router-link :to="{ path: '/listing/view/' + listing.id }" class="default-clickable-text fst-italic">
+                        <p class="homepage-bottle-listing-description">
+                            {{ listing.officialDesc?.length > 300 ? listing.officialDesc.slice(0, 300) + '...' : listing.officialDesc }}
+                        </p>
+                    </router-link>
+                </div>
+                
+                <!-- Rating & Read More Button -->
+                <div class="text-center text-md-end  w-100 w-md-50  d-flex flex-row flex-md-col justify-content-between d-md-block mt-0 mt-md-3 px-3">
+                    <h1 class="fw-bold text-warning">
+                        {{ getRatings(listing) }} ★
+                    </h1>
+                    <div class="d-grid">
+                        <router-link :to="{ path: '/listing/view/' + listing.id }" class="primary-clickable-text">
+                            <button class="btn btn-read-more btn-sm fw-bold  rounded-pill ">
+                                Read More
+                            </button>
+                        </router-link>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <!-- Description -->
-        <router-link :to="{ path: '/listing/view/' + listing.id }" class="default-clickable-text fst-italic">
-            <p class="homepage-bottle-listing-description">
-                {{ listing.officialDesc?.length > 300 ? listing.officialDesc.slice(0, 300) + '...' : listing.officialDesc }}
-            </p>
-        </router-link>
     </div>
 
-    <!-- Rating & Read More Button -->
-    <div class="text-center text-md-end d-flex flex-row flex-md-col justify-content-between d-md-block mt-0 mt-md-3 px-3">
-    <h1 class="fw-bold text-warning">
-        {{ getRatings(listing) }} ★
-    </h1>
-    <div class="d-grid">
-        <router-link :to="{ path: '/listing/view/' + listing.id }" class="primary-clickable-text">
-            <button class="btn btn-warning btn-sm fw-bold shadow-lg rounded-pill px-2 py-0 px-md-4 py-md-2" 
-                    style="font-size: 16px; background-color: #F0B358; transition: background-color 0.3s;" 
-                    onmouseover="this.style.backgroundColor='#FDD497'" 
-                    onmouseout="this.style.backgroundColor='#F0B358'">
-                Read More
-            </button>
-        </router-link>
-    </div>
-</div>
-
-</div>
-
-</div>
 
         </div>
     </div>
@@ -710,7 +735,7 @@
                                 </div>
                             </div>
 
-                            <div class="d-grid justify-content-center align-content-center">
+                            <div class="d-grid justify-content-center align-content-center mt-5">
                                 <button v-if="moreListings" class="btn secondary-btn btn-md" style="font-weight: bold;" @click = "retrieveListings"> Click to load more! </button>
                             </div>
 

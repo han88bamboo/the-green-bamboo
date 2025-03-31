@@ -230,7 +230,7 @@ CREATE TABLE "users" (
     "choiceFlavours" TEXT[], -- SMU Group 3 added in "choiceFlavours"
     "preferences" TEXT[], -- SMU Group 3 added in "preferences"
     "grails" TEXT[], -- SMU Group 3 added in "grails"
-    "rideOrDies" TEXT[], -- SMU Group 3 added in "rideOrDies"
+    "upAndComing" TEXT[], -- SMU Group 3 added in "upAndComing"
     "goats" TEXT[] -- SMU Group 3 added in "goats"
 );
 

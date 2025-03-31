@@ -3037,7 +3037,8 @@ def basic_algo(userID):
 
         # Get listings with the same flavour tags
         if choiceFlavour:
-            cursor.execute('SELECT id FROM "subTags" WHERE "subTag" = ANY(%s)', (choiceFlavour,))
+            cursor.execute('''SELECT s."id" FROM "subTags" s, "flavourTags" ft 
+                           WHERE s."familyTagId" = ft."id" AND ft."familyTag" = ANY(%s)''', (choiceFlavour,))
             flavour_ids = [row["id"] for row in cursor.fetchall()]
 
             if flavour_ids:
@@ -3068,24 +3069,6 @@ def basic_algo(userID):
             for listing in observation_listings:
                     if listing["id"] not in recommended:
                         recommended[listing["id"]] = listing
-
-        query = """
-        SELECT DISTINCT l.*
-        FROM "listings" l
-        LEFT JOIN "reviews" r ON l."id" = r."reviewTarget"
-        LEFT JOIN "subTags" st ON r."flavourTag" && ARRAY[st.id]::text[]
-        WHERE 
-            l."drinkType" = ANY(%s) OR 
-            r."flavourTag" && %s::text[] OR 
-            r."observationTag" && %s::text[]
-        """
-        cursor.execute(query, (choiceDrink, choiceFlavour, preferences))
-        results = cursor.fetchall()
-
-        # Store results in a dictionary
-        for listing in results:
-            recommended[listing["id"]] = listing
-
     print("Recommended Listings:", list(recommended.values()))
 
     if not recommended:
@@ -3095,15 +3078,13 @@ def basic_algo(userID):
     # return jsonify(list(recommended.values()))
     return recommended
 
-# helper function for advanced algo (reviews)
-def advanced_algo_reviews(userID):
+
+# helper function to fetch association rules
+def association_rules():
     conn = g.db
     with conn.cursor(cursor_factory=RealDictCursor) as cursor:
         # Fetch user's reviews
-        cursor.execute('SELECT "flavourTag" FROM "reviews" WHERE "userID" = %s', (userID,))
-        user_reviews_tags = cursor.fetchall()
-        if not user_reviews_tags:
-            return jsonify([])
+        # Fetch associations
         cursor.execute('''SELECT s1."id" as "id1", s2."id" as "id2" FROM "associations" a, "subTags" s1, "subTags" s2 
                         WHERE s1."subTag" = a."subTag1" AND s2."subTag" = a."subTag2"''')     
         associations = cursor.fetchall()
@@ -3117,9 +3098,19 @@ def advanced_algo_reviews(userID):
             if tag2[i] not in associations_dict:
                 associations_dict[tag2[i]] = []
             associations_dict[tag2[i]].append(tag1[i])
-        # print(associations_dict)
-        # return jsonify(associations_dict)
+        return associations_dict
+    
+# helper function for advanced algo (reviews)
+def advanced_algo_reviews(userID):
+    conn = g.db
+    with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        # Fetch user's reviews
+        cursor.execute('SELECT "flavourTag" FROM "reviews" WHERE "userID" = %s AND "rating" >= 3', (userID,))
+        user_reviews_tags = cursor.fetchall()
+        if not user_reviews_tags:
+            return jsonify([])
         tags_used = {}
+        associations_dict = association_rules()
         for tag in user_reviews_tags:
             for num in tag["flavourTag"]:
                 if num not in tags_used:
@@ -3151,28 +3142,113 @@ def advanced_algo_reviews(userID):
         if not recommended:
             return {}
         return recommended
-        
-# helper function for advanced algo (drink lists) [TO DO]
-# def advanced_algo_list(userID):
 
+@blueprint.route("testRecommender/<userID>")
+def testRecommender(userID):
+    return advanced_algo_reviews(userID)       
+
+# helper function for advanced algo (drink lists) 
+def advanced_algo_list(userID):
+    conn = g.db
+    recommended = {}
+    with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        cursor.execute('SELECT "id" FROM "usersDrinkLists" WHERE "userId" = %s', (userID,))
+        drink_list_ids = cursor.fetchall()
+        drink_list_ids = [drink_list["id"] for drink_list in drink_list_ids]
+        # get all drink_ids in drink lists
+        cursor.execute('SELECT "drinkId" FROM "usersDrinkListItems" WHERE "listId" = ANY(%s)', (drink_list_ids,))
+        drink_ids = cursor.fetchall()
+        drink_ids = [drink["drinkId"] for drink in drink_ids]
+        print(drink_ids)
+        # get drink type that appears the most in drink list
+        cursor.execute('SELECT "drinkType" FROM "listings" WHERE "id" = ANY(%s)', (drink_ids,))
+        drink_types = cursor.fetchall()
+        drink_type_count = {}
+        for drink in drink_types:
+            if drink["drinkType"] in drink_type_count:
+                drink_type_count[drink["drinkType"]] += 1
+            else:
+                drink_type_count[drink["drinkType"]] = 1
+        drink_type = sorted(drink_type_count, key=drink_type_count.get, reverse=True)[:1]
+        print(drink_type)
+
+        # get producer that appears the most in drink list
+        cursor.execute('SELECT "producerID" FROM "listings" WHERE "id" = ANY(%s)', (drink_ids,))
+        producer_ids = cursor.fetchall()
+        producer_id_count = {}
+        for producer in producer_ids:
+            if producer["producerID"] in producer_id_count:
+                producer_id_count[producer["producerID"]] += 1
+            else:
+                producer_id_count[producer["producerID"]] = 1
+        producer_id = sorted(producer_id_count, key=producer_id_count.get, reverse=True)[:1]
+        print(producer_id)
+
+        # add listings with drinkType or producer to recommended list
+        cursor.execute('SELECT * FROM "listings" WHERE "drinkType" = %s OR "producerID" = %s', (drink_type[0], producer_id[0]))
+        listings_data = cursor.fetchall()
+        for listing in listings_data:
+            if listing["id"] not in recommended:
+                recommended[listing["id"]] = listing
+
+        # get top 5 flavour tags that appear the most in drink list
+        cursor.execute('SELECT "flavourTag" FROM "reviews" WHERE "reviewTarget" = ANY(%s)', (drink_ids,))
+        flavour_tags = cursor.fetchall()
+        tags_used = {}
+        for tag in flavour_tags:
+            for num in tag["flavourTag"]:
+                if num not in tags_used:
+                    tags_used[num] = 1
+                else:
+                    tags_used[num] += 1
+        top_tags = sorted(tags_used, key=tags_used.get, reverse=True)[:5]
+        association_dict = association_rules()
+        close_tags = []
+        for tag in top_tags:
+            if int(tag) in association_dict:
+                close_tags += association_dict[int(tag)]
+        close_tags = list(set(close_tags))
+        print(close_tags)
+        flavour_query = '''
+            SELECT DISTINCT l.*
+            FROM "listings" l
+            JOIN "reviews" r ON l."id" = r."reviewTarget"
+            WHERE r."flavourTag" && %s::text[]
+        '''
+        cursor.execute(flavour_query, (close_tags,))
+        flavour_listings = cursor.fetchall()
+
+        for listing in flavour_listings:
+            if listing["id"] not in recommended:
+                recommended[listing["id"]] = listing
+
+        if not recommended:
+            return {}
+        return recommended
+        
+# [GET] Get Recommended Listings 
 @blueprint.route("/getRecommendedListings/<userID>")
 def getRecommendedListings(userID):
     print(userID)
     conn = g.db
     recommended = basic_algo(userID)
     with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-        cursor.execute('SELECT COUNT(*) from "reviews" where "userID" = %s', (userID,))
+        # Implement advanced algo if user has >= 5 reviews
+        cursor.execute('SELECT COUNT(*) FROM "reviews" WHERE "userID" = %s', (userID,))
         review_count = cursor.fetchone()
         if review_count["count"] >= 5:
             advanced_algo_review_recc = advanced_algo_reviews(userID)
             recommended = {**recommended, **advanced_algo_review_recc}
+        # Implement advanced algo if user has >= 5 drinks in their drink lists
+        cursor.execute('''SELECT COUNT(*) FROM "usersDrinkLists" udl , "usersDrinkListItems" udli 
+                        WHERE udl.id = udli."listId" AND udl."userId" = %s''', (userID,))
+        drink_count = cursor.fetchone()
+        if drink_count["count"] >= 5:
+            advanced_algo_list_recc = advanced_algo_list(userID)
+            recommended = {**recommended, **advanced_algo_list_recc}
     recommended = list(recommended.values())
     random.shuffle(recommended)
     return jsonify(recommended)
-
-@blueprint.route("testRecommender/<userID>")
-def testRecommender(userID):
-    return advanced_algo_reviews(userID)  
 
 # -----------------------------------------------------------------------------------------
 # [GET] Get Listings details by listing name -- ADDED BY SMU GROUP 3
@@ -3210,13 +3286,13 @@ def getTopCategoryListings():
 
     with conn.cursor() as cursor:
         # Get user preferences from the 'users' table
-        cursor.execute('SELECT "grails", "rideOrDies", "goats" FROM "users"')
+        cursor.execute('SELECT "grails", "upAndComing", "goats" FROM "users"')
         user_categories = cursor.fetchall()
 
         print("User categories (raw):", user_categories)  # Debug print
 
         # Extract and flatten all drink names into a frequency counter
-        category_counters = {"grails": Counter(), "rideOrDies": Counter(), "goats": Counter()}
+        category_counters = {"grails": Counter(), "upAndComing": Counter(), "goats": Counter()}
 
         for user in user_categories:
             for category in category_counters.keys():

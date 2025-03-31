@@ -480,7 +480,7 @@
 
                 <!-- right pane -->
                 <div class="col-lg-8 col-md-12 col-sm-12 ps-lg-5">
-                    <!-- Start: Added by SMU Group 3: Grails, Ride or Dies, GOATS -->
+                    <!-- Start: Added by SMU Group 3: Grails, Up & Coming, GOATS -->
                     <div class="row">
                         <!-- Grail Card -->
                         <div class="col-12 col-md-4 mb-2 mt-2">
@@ -524,25 +524,25 @@
                             </div>
                         </div>
 
-                        <!-- Ride or Dies Card -->
+                        <!-- Up & Coming Card -->
                         <div class="col-12 col-md-4 mb-2 mt-2">
                             <div class="card rounded p-4 text-white position-relative d-flex flex-column"
                                 style="background: #F0B358; height: 260px; border-radius: 16px !important;">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <h5 class="mb-0">Ride or Dies 🍷</h5>
+                                    <h5 class="mb-0">Up & Coming 🍷</h5>
                                     <button
                                         class="btn btn-light rounded-circle d-flex align-items-center justify-content-center"
                                         style="width: 36px; height: 36px; font-size: 1.5rem; font-weight: 300; border: none;"
-                                        @click="openPopup('Ride or Dies')">
+                                        @click="openPopup('Up & Coming')">
                                         +
                                     </button>
                                 </div>
-                                <div v-if="selectedRideOrDies.length === 0" class="text-center mt-2 font-italic"
+                                <div v-if="selectedUpAndComing.length === 0" class="text-center mt-2 font-italic"
                                     style="font-size: 16px; font-style: italic;">
                                     the ones that i drink over and over again...
                                 </div>
                                 <div v-else class="d-flex flex-column flex-grow-1 overflow-auto">
-                                    <div v-for="(item, index) in displayRideOrDiesDetails" :key="index"
+                                    <div v-for="(item, index) in displayUpAndComingDetails" :key="index"
                                         class="d-flex align-items-center mb-2">
                                         <div class="drink-img me-2">
                                             <img v-if="item.image" :src="item.image" alt="Drink image"
@@ -693,7 +693,7 @@
                             </div>
                         </div>
                     </div>
-                    <!-- End: Added by SMU Group 3: Grails, Ride or Dies, GOATS -->
+                    <!-- End: Added by SMU Group 3: Grails, Up & Coming, GOATS -->
 
                     <!--mobile toggle buttons for graph tzh -->
                     <hr>
@@ -1266,11 +1266,11 @@ export default {
     },
     data() {
         return {
-            // Start: Add by Group 3  - Grails, Ride or Dies, GOATS
+            // Start: Add by Group 3  - Grails, Up & Coming, GOATS
             showPopup: false,
             selectedCategory: '',
             selectedGrails: [],
-            selectedRideOrDies: [],
+            selectedUpAndComing: [],
             selectedGOATs: [],
             searchInput: "",
             suggestions: [],
@@ -1281,10 +1281,10 @@ export default {
             currentSelectedDrinkDetails: [], // editted
             isLoading: false,
             displayGrailsDetails: [],
-            displayRideOrDiesDetails: [],
+            displayUpAndComingDetails: [],
             displayGOATsDetails: [],
 
-            // End: Add by Group 3  - Grails, Ride or Dies, GOATS
+            // End: Add by Group 3  - Grails, Up & Coming, GOATS
 
             dataLoaded: false,
             // user details
@@ -1852,8 +1852,8 @@ export default {
             // to calculate total points, take value[0] = points | value[1] = count, and sum up all points * count
             this.totalPoints = Object.values(this.pointSystem).reduce((sum, value) => sum + (value[0] * value[1]), 0);
         },
-        // ------------------- Grails, Ride or Dies, GOATS -------------------
-        // Start: Added by Group 3: Adding drinks to Grails, Ride or Dies, GOATS
+        // ------------------- Grails, Up & Coming, GOATS -------------------
+        // Start: Added by Group 3: Adding drinks to Grails, Up & Coming, GOATS
         async fetchUserSelections() {
             try {
                 // Replace with your actual API endpoint
@@ -1864,8 +1864,8 @@ export default {
                     // Update the selections from database
                     this.selectedGrails = this.userData.grails || [];
                     console.log("From Database:", this.userData.grails)
-                    this.selectedRideOrDies = this.userData.rideOrDies || [];
-                    console.log("From Database:", this.userData.rideOrDies)
+                    this.selectedUpAndComing = this.userData.upAndComing || [];
+                    console.log("From Database:", this.userData.upAndComing)
                     this.selectedGOATs = this.userData.goats || [];
                     console.log("From Database:", this.userData.goats)
                 }
@@ -1882,8 +1882,8 @@ export default {
             let selectedDrinksArray = [];
             if (category === 'Grail') {
                 selectedDrinksArray = this.selectedGrails;
-            } else if (category === 'Ride or Dies') {
-                selectedDrinksArray = this.selectedRideOrDies;
+            } else if (category === 'Up & Coming') {
+                selectedDrinksArray = this.selectedUpAndComing;
             } else if (category === 'GOATs') {
                 selectedDrinksArray = this.selectedGOATs;
             }
@@ -1908,14 +1908,14 @@ export default {
         },
         getCategoryEmoji() {
             if (this.selectedCategory === "Grail") return "🌱";
-            if (this.selectedCategory === "Ride or Dies") return "🍷";
+            if (this.selectedCategory === "Up & Coming") return "🍷";
             if (this.selectedCategory === "GOATs") return "🙌";
             return "";
         },
         getCategorySubtitle() {
             if (this.selectedCategory === "Grail")
                 return "the one that you covet and wish to try...";
-            if (this.selectedCategory === "Ride or Dies")
+            if (this.selectedCategory === "Up & Coming")
                 return "the ones that you drink over and over again...";
             if (this.selectedCategory === "GOATs")
                 return "the ones that you still think about...";
@@ -1957,8 +1957,8 @@ export default {
         },
         // Select a suggestion
         async selectSuggestion(suggestion) {
-            // Check if max number of drinks (3) has been reached, but only for Ride or Dies and GOATs
-            if ((this.selectedCategory === 'Ride or Dies' && this.selectedRideOrDies.length >= 3) ||
+            // Check if max number of drinks (3) has been reached, but only for Up & Coming and GOATs
+            if ((this.selectedCategory === 'Up & Coming' && this.selectedUpAndComing.length >= 3) ||
                 (this.selectedCategory === 'GOATs' && this.selectedGOATs.length >= 3)) {
                 const toast = useToast();
                 toast.error(`You can only select up to 3 drinks for ${this.selectedCategory}`);
@@ -2060,10 +2060,10 @@ export default {
             }
         },
         async confirmSelection() {
-            // Limit to 3 drinks only for Ride or Dies and GOATs
-            if (this.selectedCategory === 'Ride or Dies' && this.selectedDrinks.length > 3) {
+            // Limit to 3 drinks only for Up & Coming and GOATs
+            if (this.selectedCategory === 'Up & Coming' && this.selectedDrinks.length > 3) {
                 const toast = useToast();
-                toast.error("You can only select up to 3 Ride or Die drinks");
+                toast.error("You can only select up to 3 Up & Coming drinks");
                 return;
             }
 
@@ -2083,8 +2083,8 @@ export default {
             if (this.selectedCategory === 'Grail') {
                 // No limit for Grail
                 this.selectedGrails = [...this.selectedDrinks];
-            } else if (this.selectedCategory === 'Ride or Dies') {
-                this.selectedRideOrDies = [...this.selectedDrinks].slice(0, 3);
+            } else if (this.selectedCategory === 'Up & Coming') {
+                this.selectedUpAndComing = [...this.selectedDrinks].slice(0, 3);
             } else if (this.selectedCategory === 'GOATs') {
                 this.selectedGOATs = [...this.selectedDrinks].slice(0, 3);
             }
@@ -2098,8 +2098,8 @@ export default {
         removeDrink(drinkToRemove) {
             if (this.selectedCategory === 'Grail') {
                 this.selectedGrails = this.selectedGrails.filter(drink => drink !== drinkToRemove);
-            } else if (this.selectedCategory === 'Ride or Dies') {
-                this.selectedRideOrDies = this.selectedRideOrDies.filter(drink => drink !== drinkToRemove);
+            } else if (this.selectedCategory === 'Up & Coming') {
+                this.selectedUpAndComing = this.selectedUpAndComing.filter(drink => drink !== drinkToRemove);
             } else if (this.selectedCategory === 'GOATs') {
                 this.selectedGOATs = this.selectedGOATs.filter(drink => drink !== drinkToRemove);
             }
@@ -2119,7 +2119,7 @@ export default {
                     {
                         userID: this.userID,
                         selectedGrails: this.selectedGrails,
-                        selectedRideOrDies: this.selectedRideOrDies,
+                        selectedUpAndComing: this.selectedUpAndComing,
                         selectedGOATs: this.selectedGOATs
                     }, {
                     headers: {
@@ -2163,12 +2163,12 @@ export default {
                 this.displayGrailsDetails = [];
             }
         },
-        async fetchRideOrDiesDetails() {
-            if (this.selectedRideOrDies.length > 0) {
+        async fetchUpAndComingDetails() {
+            if (this.selectedUpAndComing.length > 0) {
                 try {
                     // Fetch details for each selected drink
                     const detailsList = await Promise.all(
-                        this.selectedRideOrDies.map(async (drink) => {
+                        this.selectedUpAndComing.map(async (drink) => {
                             const details = await this.fetchListingDetails(drink);
                             return {
                                 name: details?.listingName || drink,
@@ -2180,13 +2180,13 @@ export default {
                     );
 
                     // Store the details in an array
-                    this.displayRideOrDiesDetails = detailsList;
-                    console.log("here", this.displayRideOrDiesDetails)
+                    this.displayUpAndComingDetails = detailsList;
+                    console.log("here", this.displayUpAndComingDetails)
                 } catch (error) {
                     console.error("Error fetching drink details:", error);
                 }
             } else {
-                this.displayRideOrDiesDetails = [];
+                this.displayUpAndComingDetails = [];
             }
         },
         async fetchGOATsDetails() {
@@ -2215,7 +2215,7 @@ export default {
                 this.displayGOATsDetails = [];
             }
         },
-        // End: Added by Group 3: Adding drinks to Grails, Ride or Dies, GOATS
+        // End: Added by Group 3: Adding drinks to Grails, Up & Coming, GOATS
     },
     watch: {
         selectedGrails: {
@@ -2224,10 +2224,10 @@ export default {
                 this.fetchGrailDetails()
             }
         },
-        selectedRideOrDies: {
+        selectedUpAndComing: {
             immediate: true,
             handler() {
-                this.fetchRideOrDiesDetails()
+                this.fetchUpAndComingDetails()
             }
         },
         selectedGOATs: {
@@ -2240,7 +2240,7 @@ export default {
 }
 </script>
 
-<!-- Added by Group 3 styling for pop up (Grails, Ride or Dies, GOATS) -->
+<!-- Added by Group 3 styling for pop up (Grails, Up & Coming, GOATS) -->
 <style scoped>
 .popup-overlay {
     position: fixed;
