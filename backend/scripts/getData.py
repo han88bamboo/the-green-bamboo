@@ -29,6 +29,7 @@ from bson.objectid import ObjectId
 from psycopg2.extras import RealDictCursor # ADDED BY SMU GROUP 3
 from urllib.parse import unquote # ADDED BY SMU GROUP 3
 
+from decimal import Decimal
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -957,66 +958,144 @@ def getReviewByTarget(id):
 
 
 # [GET] Latest 10 Specific Reviews by usr(s) - using one or more user IDs (retrieve latest reviews for the specified user(s) as well as the review target(s) data)
+# @blueprint.route("/getReviewsByUserIds")
+# def getReviewsByUserIds():
+
+#     user_ids_str = request.args.get('user_ids')
+#     user_ids = user_ids_str.split(',')
+#     conn = g.db
+    
+#     with conn.cursor() as cursor:
+#         # Fetch latest reviews for the specified user(s)
+        
+#         cursor.execute('''
+#             WITH latest_reviews AS (
+#                 SELECT "reviewDesc", "rating", "reviewTarget", "createdDate", "userID"
+#                 FROM "reviews"
+#                 WHERE "userID" IN %s
+#                 ORDER BY "createdDate" DESC
+#                 LIMIT 10
+#             )
+#             SELECT "reviewDesc", "rating", "reviewTarget", "createdDate", "userID"
+#             FROM latest_reviews
+#             ORDER BY "createdDate" DESC;
+#         ''', (tuple(user_ids),))
+#         latest_reviews = cursor.fetchall()
+
+#         # Retrieve the display name(s) for each user
+#         cursor.execute('SELECT "id", "displayName", "photo" FROM "users" WHERE "id" IN %s', (tuple(user_ids),))
+#         user_display_names = cursor.fetchall()
+
+#         # Convert the user display names to dictionary format where the key is the user ID
+#         user_display_names = {user['id']: user for user in user_display_names}
+
+#         # Retrieve the review target(s) for each review
+#         review_target_list = []
+#         for review in latest_reviews:
+#             review = dict(review)
+#             if (review['reviewTarget'] not in review_target_list):
+#                 review_target_list.append(review['reviewTarget'])
+        
+#         # Fetch the review target(s) data
+#         cursor.execute('SELECT "id", "listingName", "photo" FROM "listings" WHERE "id" IN %s', (tuple(review_target_list),))
+#         review_targets_data = cursor.fetchall()
+
+#         # Map the review target data to the reviews
+#         for review in latest_reviews:
+#             review['userInfo'] = user_display_names[review['userID']]
+#             review['reviewTarget'] = next((item for item in review_targets_data if item["id"] == review['reviewTarget']), None)
+        
+#         # Convert the reviews to JSON format
+#         latest_reviews = parse_json(latest_reviews)
+    
+#     if not latest_reviews:
+#         return jsonify({
+#             'code': 404,
+#             'message': 'No reviews found for the specified user(s).'
+#         })
+
+#     return jsonify({
+#         'code': 200,
+#         'message': 'Latest reviews fetched successfully.',
+#         'data': latest_reviews
+#     })
+
+# Updated blueprint route
 @blueprint.route("/getReviewsByUserIds")
 def getReviewsByUserIds():
-
     user_ids_str = request.args.get('user_ids')
+    if not user_ids_str:
+        return jsonify({
+            'code': 400,
+            'message': 'Missing user_ids query parameter.'
+        })
+
     user_ids = user_ids_str.split(',')
+    user_ids = [int(uid) for uid in user_ids]  # Ensure integers
     conn = g.db
-    
+
     with conn.cursor() as cursor:
-        # Fetch latest reviews for the specified user(s)
-        cursor.execute('''
+        # Build dynamic placeholders for user_ids
+        placeholders = ','.join(['%s'] * len(user_ids))
+
+        # --- Fetch latest reviews ---
+        cursor.execute(f'''
             WITH latest_reviews AS (
                 SELECT "reviewDesc", "rating", "reviewTarget", "createdDate", "userID"
                 FROM "reviews"
-                WHERE "userID" IN %s
+                WHERE "userID" IN ({placeholders})
                 ORDER BY "createdDate" DESC
                 LIMIT 10
             )
             SELECT "reviewDesc", "rating", "reviewTarget", "createdDate", "userID"
             FROM latest_reviews
             ORDER BY "createdDate" DESC;
-        ''', (tuple(user_ids),))
+        ''', tuple(user_ids))
         latest_reviews = cursor.fetchall()
 
-        # Retrieve the display name(s) for each user
-        cursor.execute('SELECT "id", "displayName", "photo" FROM "users" WHERE "id" IN %s', (tuple(user_ids),))
-        user_display_names = cursor.fetchall()
+        if not latest_reviews:
+            return jsonify({
+                'code': 404,
+                'message': 'No reviews found for the specified user(s).'
+            })
 
-        # Convert the user display names to dictionary format where the key is the user ID
-        user_display_names = {user['id']: user for user in user_display_names}
+        # Convert to dicts early
+        latest_reviews = [dict(r) for r in latest_reviews]
 
-        # Retrieve the review target(s) for each review
-        review_target_list = []
-        for review in latest_reviews:
-            review = dict(review)
-            if (review['reviewTarget'] not in review_target_list):
-                review_target_list.append(review['reviewTarget'])
-        
-        # Fetch the review target(s) data
-        cursor.execute('SELECT "id", "listingName", "photo" FROM "listings" WHERE "id" IN %s', (tuple(review_target_list),))
-        review_targets_data = cursor.fetchall()
+        # --- Fetch user display info ---
+        cursor.execute(f'''
+            SELECT "id", "displayName", "photo"
+            FROM "users"
+            WHERE "id" IN ({placeholders})
+        ''', tuple(user_ids))
+        user_display_names = {u['id']: dict(u) for u in cursor.fetchall()}
 
-        # Map the review target data to the reviews
-        for review in latest_reviews:
-            review['userInfo'] = user_display_names[review['userID']]
-            review['reviewTarget'] = next((item for item in review_targets_data if item["id"] == review['reviewTarget']), None)
-        
-        # Convert the reviews to JSON format
-        latest_reviews = parse_json(latest_reviews)
-    
-    if not latest_reviews:
+        # --- Prepare listing IDs from reviewTarget ---
+        review_target_ids = list(set([r['reviewTarget'] for r in latest_reviews]))
+        if review_target_ids:
+            target_placeholders = ','.join(['%s'] * len(review_target_ids))
+            cursor.execute(f'''
+                SELECT "id", "listingName", "photo"
+                FROM "listings"
+                WHERE "id" IN ({target_placeholders})
+            ''', tuple(review_target_ids))
+            review_targets_data = {l['id']: dict(l) for l in cursor.fetchall()}
+        else:
+            review_targets_data = {}
+
+        # --- Enrich reviews with user and listing info ---
+        for r in latest_reviews:
+            r['userInfo'] = user_display_names.get(r['userID'], {})
+            r['reviewTarget'] = review_targets_data.get(r['reviewTarget'], {})
+            for k, v in r.items():
+                if isinstance(v, Decimal):
+                    r[k] = float(v)
+
         return jsonify({
-            'code': 404,
-            'message': 'No reviews found for the specified user(s).'
+            'code': 200,
+            'message': 'Latest reviews fetched successfully.',
+            'data': parse_json(latest_reviews)
         })
-
-    return jsonify({
-        'code': 200,
-        'message': 'Latest reviews fetched successfully.',
-        'data': latest_reviews
-    })
 
 # [GET] Producer Tour Reviews
 @blueprint.route("/getProducerTourReviews")
