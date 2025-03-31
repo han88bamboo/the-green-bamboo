@@ -433,20 +433,21 @@ export default {
     if (localStorage.getItem("88B_accID") != null) {
       this.accType = localStorage.getItem("88B_accType");
       let accID = localStorage.getItem("88B_accID");
+      let accUsername = localStorage.getItem("88B_accUsername");
       let url = `${process.env.VUE_APP_API_URL}/getData/get`;
 
       if (this.accType == "user") {
         url = url + "User/" + accID;
         this.loadData(url);
 
-        this.profileURL = "/profile/user/" + accID;
+        this.profileURL = "/profile/user/" + accID + "/" + accUsername;
         this.dashboardURL = "/dashboard/user";
         this.dashboardWord = "Drink";
       } else if (this.accType == "producer") {
         url = url + "Producer/" + accID;
         this.loadData(url);
 
-        this.profileURL = "/profile/producer/" + accID;
+        this.profileURL = "/profile/producer/" + accID + "/" + accUsername;
         this.dashboardURL = "/Producers/ProducersDashboard/" + accID;
         this.dashboardWord = "Brand";
       } else if (this.accType == "venue") {
@@ -530,6 +531,8 @@ export default {
     logout() {
       localStorage.removeItem("88B_accID");
       localStorage.removeItem("88B_accType");
+      localStorage.removeItem("88B_accUsername");
+
       this.$router.push({ path: "/login" });
     },
 
@@ -546,13 +549,13 @@ export default {
 };
 </script>
 <style>
-    @media (max-width: 576px) {
-        .form-check-inline {
-            margin-right: 10px;
-        }
+@media (max-width: 576px) {
+  .form-check-inline {
+    margin-right: 10px;
+  }
 
-        .d-flex {
-            flex-direction: unset;
-        }
-    }
+  .d-flex {
+    flex-direction: unset;
+  }
+}
 </style>
