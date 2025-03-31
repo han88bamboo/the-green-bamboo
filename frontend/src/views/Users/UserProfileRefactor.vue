@@ -662,7 +662,7 @@
                             />
                                 <div>
                                     <p style="font-size: 18px; margin-bottom: 8px;">Review your first drink.</p>
-                                    <router-link :to="'/'">
+                                    <router-link :to="'/explore'">
                                     <button
                                     style="
                                         padding: 8px 16px;
