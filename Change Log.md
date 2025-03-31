@@ -217,5 +217,16 @@ Purpose of the changes:
 Updated URL link to producer page on RandomExplorePage.Vue
 (1) Updated Router - RandomExplorePage.Vue
 (2) Updated Router - users/BottleListing.Vue
+(3) Updated Router - ClubView.vue - Fixed profile URL for users
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 31 March
+
+Coder: Candy
+
+Purpose of the changes:
+Updated Backend getReviewsByUserIds code to accommodate tuple userIds
+(1) Updated backend/getData.py
+Nature of the changes (frontend / backend / database):
+backend

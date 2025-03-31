@@ -2253,7 +2253,7 @@ export default {
         const response = await this.$axios.get(
           `${process.env.VUE_APP_API_URL}/getData/getReviewsByUserIds?user_ids=${user_ids}`
         );
-        this.latestReviews = response.data.data;
+        this.latestReviews = response.data.data || [];
       } catch (error) {
         console.error(error);
         this.latestReviews = [];
