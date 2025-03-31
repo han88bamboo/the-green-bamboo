@@ -371,3 +371,23 @@ Purpose of the changes:
 
 Nature of the changes (frontend / backend / database): 
     database
+
+# Update as of 31 Mar 2025
+Coder: Jovinne
+Purpose of the changes: 
+    (1) Edited backend code in getData.py 
+                - Updated getRecommendedListings and all related helper functions
+                - Fixed basic algo to correctly retrieve and use flavour tags
+                - Added helper function advanced_algo_list to recommend listings to users if they have at least 5 drinks total in their drink lists
+
+Nature of the changes (frontend / backend / database): backend
+
+Coder: Jovinne
+
+Purpose of the changes: 
+    (1) Updated 'drinkType' col in"listings" table to maintain consistency across all tables
+                - Changed 'Whiskey' to Whiskey / Whisky'
+                - Changed 'Rum' to 'Rum / Rhum'
+
+Nature of the changes (frontend / backend / database): 
+    database
