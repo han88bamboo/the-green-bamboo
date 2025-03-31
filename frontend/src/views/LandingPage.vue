@@ -833,8 +833,8 @@ button.btn.selected {
 }
 
 .listing-image {
-    width: 100%;
-    height: 100%;
+    width: 100% !important;
+    height: 100% !important;
     object-fit: cover;
     mix-blend-mode: multiply;
     transition: transform 0.6s ease-in-out;
