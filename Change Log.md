@@ -208,3 +208,14 @@ Updated URL link to producer page and user profile My Drink List
 (2) Updated Router - UserProfileRefactor.vue
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 31 March
+
+Coder: Candy
+
+Purpose of the changes:
+Updated URL link to producer page on RandomExplorePage.Vue
+(1) Updated Router - RandomExplorePage.Vue
+(2) Updated Router - users/BottleListing.Vue
+Nature of the changes (frontend / backend / database):
+frontend
