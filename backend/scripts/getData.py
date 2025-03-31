@@ -3020,8 +3020,8 @@ def get_recommended_clubs(userID):
         
         print("choiceDrinks:", choiceDrinks)  # Debug
         
-        if not choiceDrinks:
-            return jsonify({"message": "No drink preferences found"}), 200
+        # if not choiceDrinks:
+        #     return jsonify({"message": "No drink preferences found"}), 200
 
         # Process drink variations (handle slashes, parentheses)
         expanded_drinks = []
