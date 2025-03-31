@@ -535,3 +535,30 @@ Updated Backend getReviewsByUserIds code to accommodate tuple userIds
 (1) Updated backend/getData.py
 Nature of the changes (frontend / backend / database):
 backend
+
+Coder: Dycia
+
+Purpose of the changes: 
+    (1) Updated Page - Landing Page (LandingPage.vue) 
+        - Fixed the UI of the cards because the new coded pulled from refactor in globalcss
+        affected the image displayed
+    (2) Updated Page - For You Page (ForYouPage.vue) 
+        - Added in error handling message when there is no preferences stored in database
+        leading to recommender not being able to recommend clubs and drinks
+        - Added in the code to add in username into the params
+    (3) Updated Page - User Profile (UserProfileRefactor.vue)
+        - Added in the code for the buttons in Add Friend so that is it able to call the various
+        methods to invite a friend
+
+Nature of the changes (frontend / backend / database): 
+    frontend
+
+Coder: Dycia
+
+Purpose of the changes: 
+    (1) Updated Backend API (getData.py) 
+        - Updated get_recommended_clubs(userID) error handling when there is no preference hence not being able to recommend 
+        any clubs or drinks
+
+Nature of the changes (frontend / backend / database): 
+    backend
