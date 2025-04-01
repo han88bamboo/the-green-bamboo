@@ -269,9 +269,43 @@ def createReviews():
     try:
         cur.execute(insert_review_sql, review_values)
         conn.commit()
+
+        # Calculate proof points earned 
+        rule_fulfiled_id = []
+
+        # Basic review: Simple text 
+        if (raw_review['reviewDesc'] != None):
+            rule_fulfiled_id.append(2)
+        
+        # Extended review: color, aroma, taste, finish
+        if (raw_review['finish'] != None or raw_review['colour'] != None or raw_review['aroma'] != None or raw_review['taste'] != None):
+            rule_fulfiled_id.append(3)
+
+        # Attach image
+        if (raw_review['photo'] != None):
+            rule_fulfiled_id.append(4)
+
+        # Tag location
+        if (venue_id != None):
+            rule_fulfiled_id.append(5)
+
+        # Tag friends
+        if (tagged_users != []):
+            rule_fulfiled_id.append(6)
+
+        # Get total proof points earned 
+        cur.execute('SELECT SUM("proofPoints") FROM "pointSystemRules" WHERE id IN %s', (tuple(rule_fulfiled_id),))
+        total_points = cur.fetchone()['sum']
+
+        # Update user points
+        if total_points:
+            cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE id = %s AND "userType" = %s', (total_points, user_id, 'user',))
+            conn.commit()
+
         return jsonify({
             "code": 201,
-            "data": raw_review['reviewDesc']
+            "data": raw_review['reviewDesc'],
+            "proofPointsEarned": total_points
         }), 201
     except Exception as e:
         print(str(e))
@@ -313,6 +347,22 @@ def createProducerReviews():
     try:
         cur.execute(insert_review_sql, review_values)
         conn.commit()
+
+        total_points = 0
+        # Get the proof points for simple text review
+        if raw_review['reviewDesc']:
+            cur.execute("""SELECT "proofPoints" FROM "pointSystemRules" WHERE id = 2""")
+            total_points += cur.fetchone()['proofPoints']
+
+        # Check if photo was provided
+        if photos:
+            cur.execute("""SELECT "proofPoints" FROM "pointSystemRules" WHERE id = 4""")
+            total_points += cur.fetchone()['proofPoints']
+
+        # Update user points
+        cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE id = %s AND "userType" = %s', (total_points, user_id, 'user',))
+        conn.commit()
+
         return jsonify({"code": 201, "data": raw_review['reviewDesc']}), 201
 
     except Exception as e:

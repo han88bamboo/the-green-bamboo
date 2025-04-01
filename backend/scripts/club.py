@@ -7,7 +7,8 @@
 #         /createClubs (POST), /addClubMembers (POST), /joinClub (POST), 
 #         /addPost (POST), /addComment (POST), /requestToJoinClub (POST),
 #         /acceptClubRequest (POST), /acceptClubInvite (POST),
-#         /editPost (PUT), /editComment (PUT)
+#         /editPost (PUT), /editComment (PUT),
+#         /dislikePost (PUT), /dislikeComment (PUT),
 #         /likeUnlikePost (PUT), /likeUnlikeComment (PUT), /makeAdmin (PUT), 
 #         /revokeAdmin (PUT), /updateClubInfo (PUT),
 #         /removeMembers (DELETE), /removePost (DELETE), /removeComment (DELETE),
@@ -1350,9 +1351,26 @@ def addPost():
         post_id = cur.fetchone()['id']
         conn.commit()
 
+        # Step 4: Add proofPoints to the user for adding a post
+        
+        # get the user id and user type from the poster id
+        cur.execute('SELECT "userID", "userType" FROM "clubMembers" WHERE id = %s', (poster_id,))
+        user = cur.fetchone()
+
+        if (user['userType'] == 'user'):
+
+            # Get the current points for posting
+            cur.execute('SELECT "proofPoints", "ruleName" FROM "pointSystemRules" WHERE id = %s', (7,))
+            points = cur.fetchone()['proofPoints']
+
+            cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s AND "userType" = %s', (points['proofPoints'], user['userID'], 'user',))
+            conn.commit()
+
         return jsonify({
             'message': 'Post added successfully',
-            'postID': post_id
+            'postID': post_id,
+            'pointsEarned': points['proofPoints'],
+            'rule': points['ruleName']
         }), 201
 
     except Exception as e:
@@ -1419,6 +1437,20 @@ def addComment():
         # Step 4: Get the commenter's information
         commenter_info = getUserInfo(cur, commenter_id)
 
+        # Step 5: Award points to the user for adding a comment
+        # get the user id and user type from the commenter id
+        cur.execute('SELECT "userID", "userType" FROM "clubMembers" WHERE id = %s', (commenter_id,))
+        user = cur.fetchone()
+
+        if (user['userType'] == 'user'):
+            # Get the current points for commenting
+            cur.execute('SELECT "proofPoints", "ruleName" FROM "pointSystemRules" WHERE id = %s', (10,))
+            points = cur.fetchone()['proofPoints']
+
+            cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s AND "userType" = %s', (points['proofPoints'], user['userID'], 'user',))
+            conn.commit()
+
+
         return jsonify({
             'message': 'Comment added successfully',
             'comment_obj': {
@@ -1428,7 +1460,9 @@ def addComment():
                 "commenterInfo": commenter_info,
                 "id": comment_id,
                 "likedMembers": [],
-                "postID": post_id
+                "postID": post_id,
+                "pointsEarned": points['proofPoints'],
+                "rule": points['ruleName']
             }
         }), 201
 
@@ -1860,6 +1894,174 @@ def editComment():
             {
                 "code": 500,
                 "message": "An error occurred editing the comment."
+            }
+        ), 500
+    
+    finally:
+        cur.close()
+
+
+# -----------------------------------------------------------------------------------------
+# [PUT] dislikePost
+# Purpose: Dislike a post or un-dislike a post
+# Used:
+#   1. ClubView.vue [views folder inside Users folder]
+# Input:
+#   1. Member ID
+#   2. Post ID
+#   3. Club ID
+# Output: Possible return codes [200 - Post disliked/un-disliked successfully, 400 - Missing required data, 404 - No such user/post exist, 500 - An error occurred disliking the post]
+@blueprint.route('/dislikePost', methods=['PUT'])
+def dislikePost():
+    conn = g.db
+    cur = conn.cursor()
+
+    try:
+        data = request.get_json()
+
+        # Get all the required data
+        member_id = data['memberID']
+        post_id = data['postID']
+        club_id = data['clubID']
+
+        # Check if all the required data is provided
+        if not member_id or not post_id or not club_id:
+            return jsonify({
+                'error': 'Missing required data'
+            }), 400
+
+        # Step 1: Check if the member exist
+        cur.execute('SELECT * FROM "clubMembers" WHERE id = %s', (member_id,))
+        member = cur.fetchone()
+
+        if not member:
+            return jsonify({
+                'error': 'No such member exist'
+            }), 404
+
+        # Step 2: Check if the post exist
+        cur.execute('SELECT * FROM "clubPosts" WHERE id = %s', (post_id,))
+        post = cur.fetchone()
+
+        if not post:
+            return jsonify({
+                'error': 'No such post exist'
+            }), 404
+        
+        # Step 3: Check if the member has already disliked the post
+        cur.execute('SELECT * FROM "clubPostsDislikes" WHERE "clubID" = %s AND "memberID" = %s AND "postID" = %s', (club_id, member_id, post_id,))
+        disliked = cur.fetchone()
+
+        if disliked:
+            # Un-dislike the post
+            cur.execute('DELETE FROM "clubPostsDislikes" WHERE "clubID" = %s AND "memberID" = %s AND "postID" = %s', (club_id, member_id, post_id,))
+            conn.commit()
+
+            return jsonify({
+                'message': 'Post un-disliked successfully',
+                "disliked": False
+            }), 200
+
+        # Step 4: Insert the dislike into the clubPostsDislikes table
+        cur.execute('INSERT INTO "clubPostsDislikes" ("clubID", "memberID", "postID") VALUES (%s, %s, %s)', (club_id, member_id, post_id,))
+        conn.commit()
+    
+        return jsonify({
+            'message': 'Post disliked successfully',
+            "disliked": True
+        }), 200
+    
+    except Exception as e:
+        print(str(e))
+        # Rollback the transaction if an error occurred
+        conn.rollback()
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred disliking the post."
+            }
+        ), 500
+    
+    finally:
+        cur.close()
+
+
+# -----------------------------------------------------------------------------------------
+# [PUT] dislikeComment
+# Purpose: Dislike a comment or un-dislike a comment
+# Used:
+# Input:
+#   1. Post ID
+#   2. Comment ID
+#   3. Member ID
+# Output: Possible return codes [200 - Comment disliked/un-disliked successfully, 400 - Missing required data, 404 - No such user/comment exist, 500 - An error occurred disliking the comment]
+@blueprint.route('/dislikeComment', methods=['PUT'])
+def dislikeComment():
+    conn = g.db
+    cur = conn.cursor()
+
+    try:
+        # Get all the required data
+        data = request.get_json()
+        post_id = data['postID']
+        comment_id = data['commentID']
+        member_id = data['memberID']
+
+        # Check if all the required data is provided
+        if not post_id or not comment_id or not member_id:
+            return jsonify({
+                'error': 'Missing required data'
+            }), 400
+
+        # Step 1: Check if the member exist
+        cur.execute('SELECT * FROM "clubMembers" WHERE id = %s', (member_id,))
+        member = cur.fetchone()
+
+        if not member:
+            return jsonify({
+                'error': 'No such member exist'
+            }), 404
+
+        # Step 2: Check if the comment exist
+        cur.execute('SELECT * FROM "clubPostComments" WHERE id = %s', (comment_id,))
+        comment = cur.fetchone()
+
+        if not comment:
+            return jsonify({
+                'error': 'No such comment exist'
+            }), 404
+        
+        # Step 3: Check if the member has already disliked the comment
+        cur.execute('SELECT * FROM "clubPostCommentsDislikes" WHERE "postID" = %s AND "memberID" = %s AND "commentID" = %s', (post_id, member_id, comment_id,))
+        disliked = cur.fetchone()
+
+        if disliked:
+            # Un-dislike the comment
+            cur.execute('DELETE FROM "clubPostCommentsDislikes" WHERE "postID" = %s AND "memberID" = %s AND "commentID" = %s', (post_id, member_id, comment_id,))
+            conn.commit()
+
+            return jsonify({
+                'message': 'Comment un-disliked successfully',
+                'disliked': False
+            }), 200
+
+        # Step 4: Insert the dislike into the clubPostCommentsDislikes table
+        cur.execute('INSERT INTO "clubPostCommentsDislikes" ("postID", "memberID", "commentID") VALUES (%s, %s, %s)', (post_id, member_id, comment_id,))
+        conn.commit()
+
+        return jsonify({
+            'message': 'Comment disliked successfully',
+            'disliked': True
+        }), 200
+    
+    except Exception as e:
+        print(str(e))
+        # Rollback the transaction if an error occurred
+        conn.rollback()
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred disliking the comment."
             }
         ), 500
     
@@ -2421,8 +2623,25 @@ def removePost():
         cur.execute('DELETE FROM "clubPosts" WHERE id = %s', (post_id,))
         conn.commit()
 
+        # Step 8: Deduct points for removing the post
+
+        # get user id and user type from the remover id
+        cur.execute('SELECT "userID", "userType" FROM "clubMembers" WHERE id = %s', (remover_id,))
+        user = cur.fetchone()
+
+        if user['userType'] == 'user':
+            # get current points for creating a post
+            cur.execute('SELECT "proofPoints", "ruleName" FROM "pointSystemRules" WHERE id = %s', (7,))
+            points = cur.fetchone()
+
+            # deduct points from the user
+            cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" - %s WHERE id = %s', (points['proofPoints'], user['userID'],))
+            conn.commit()
+
         return jsonify({
-            'message': 'Post removed successfully'
+            'message': 'Post removed successfully',
+            'pointsDeducted': points['proofPoints'],
+            'rule': points['ruleName']
         }), 200
     
     except Exception as e:
@@ -2496,8 +2715,24 @@ def removeComment():
         cur.execute('DELETE FROM "clubPostComments" WHERE id = %s', (comment_id,))
         conn.commit()
 
+        # Step 6: Deduct points for removing the comment
+        # get user id and user type from the remover id
+        cur.execute('SELECT "userID", "userType" FROM "clubMembers" WHERE id = %s', (remover_id,))
+        user = cur.fetchone()
+
+        if user['userType'] == 'user':
+            # get current points for creating a comment
+            cur.execute('SELECT "proofPoints", "ruleName" FROM "pointSystemRules" WHERE id = %s', (10,))
+            points = cur.fetchone()
+
+            # deduct points from the user
+            cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" - %s WHERE id = %s', (points['proofPoints'], user['userID'],))
+            conn.commit()
+
         return jsonify({
-            'message': 'Comment removed successfully'
+            'message': 'Comment removed successfully',
+            'pointsDeducted': points['proofPoints'],
+            'rule': points['ruleName']
         }), 200
     
     except Exception as e:

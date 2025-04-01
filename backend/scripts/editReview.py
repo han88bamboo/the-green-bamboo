@@ -120,6 +120,43 @@ def updateReview(id):
             },
             "message": "Review does not exist."
         }), 400
+    
+    # Get proof points from pointSystemRules (id 2 to 6)
+    cur.execute("""SELECT * FROM "pointSystemRules" WHERE "id" BETWEEN 2 AND 6""")
+    point_system_rules = cur.fetchall()
+
+    # Check the difference between the new review and the existing review
+    remove_component = []
+    added_component = []
+    # [1] Check if text review was removed
+    if not data.get('reviewDesc') and existing_review['reviewDesc']:
+        remove_component.append(2)
+    elif data.get('reviewDesc') and not existing_review['reviewDesc']:
+        added_component.append(2)
+
+    # [2] Check if extensive review was removed or added
+    if not data.get('reviewType') and existing_review['reviewType']:
+        remove_component.append(3)
+    elif data.get('reviewType') and not existing_review['reviewType']:
+        added_component.append(3)
+
+    # [3] Check if photo was removed or added
+    if not data.get('photo') and existing_review['photo']:
+        remove_component.append(4)
+    elif data.get('photo') and not existing_review['photo']:
+        added_component.append(4)
+
+    # [4] Check if location was removed or added
+    if not data.get('location') and existing_review['location']:
+        remove_component.append(5)
+    elif data.get('location') and not existing_review['location']:
+        added_component.append(5)
+
+    # [5] Check if tagged users were removed or added
+    if not data.get('taggedUsers') and existing_review['taggedUsers']:
+        remove_component.append(6)
+    elif data.get('taggedUsers') and not existing_review['taggedUsers']:
+        added_component.append(6)
 
     # Insert or find the venue
     venue_id = None
@@ -172,6 +209,22 @@ def updateReview(id):
     try:
         cur.execute(update_review_sql, review_values)
         conn.commit()
+
+        # Update user points 
+        modify_point = 0
+        if remove_component or added_component:
+            for rule in point_system_rules:
+                if rule['id'] in remove_component:
+                    modify_point -= rule['points']
+                elif rule['id'] in added_component:
+                    modify_point += rule['points']
+
+            cur.execute("""
+                UPDATE "pointsRecorder"
+                SET "currentPoints" = "currentPoints" + %s
+                WHERE "id" = %s
+            """, (modify_point, data.get('userID')))
+            conn.commit()
 
         return jsonify({
             "code": 200,
@@ -286,9 +339,50 @@ def updateProducerReview(id):
         created_date, new_photos, id
     )
 
+    # Get the existing review 
+    cur.execute("""SELECT * FROM "producerReviews" WHERE id = %s""", (id,))
+    existing_review = cur.fetchone()
+
+    # Get proof points from pointSystemRules (id 2 and 4)
+    cur.execute("""SELECT * FROM "pointSystemRules" WHERE "id" IN (2, 4)""")
+    point_system_rules = cur.fetchall()
+
+    # Check the difference between the new review and the existing review
+    remove_component = []
+    added_component = []
+
+    # [1] Check if text review was removed
+    if not data.get('reviewDesc') and existing_review['reviewDesc']:
+        remove_component.append(2)
+    elif data.get('reviewDesc') and not existing_review['reviewDesc']:
+        added_component.append(2)
+
+    # [2] Check if photo was removed or added  
+    if not data.get('photos') and existing_review['photos']:
+        remove_component.append(4)
+    elif data.get('photos') and not existing_review['photos']:
+        added_component.append(4)
+
     try:
         cur.execute(update_review_sql, review_values)
         conn.commit()
+
+        # Update user points
+        modify_point = 0
+        if remove_component or added_component:
+            for rule in point_system_rules:
+                if rule['id'] in remove_component:
+                    modify_point -= rule['points']
+                elif rule['id'] in added_component:
+                    modify_point += rule['points']
+
+            cur.execute("""
+                UPDATE "pointsRecorder"
+                SET "currentPoints" = "currentPoints" + %s
+                WHERE "id" = %s
+            """, (modify_point, data.get('userID')))
+            conn.commit()
+
         return jsonify({"code": 200, "data": data.get('reviewDesc', '')}), 200
 
     except Exception as e:
