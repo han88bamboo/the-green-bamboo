@@ -195,6 +195,8 @@ def sendQuestions():
         cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s', (points['proofPoints'], userID))
         conn.commit()
 
+        print("Points awarded to user: ", points['proofPoints'])
+
         return jsonify(
             {
                 "code": 201,
@@ -990,6 +992,8 @@ def deleteQA():
         # Update user's points
         cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" - %s WHERE "userID" = %s', (points['proofPoints'], userId,))
         conn.commit()
+
+        print("Points deducted from user: ", points['proofPoints'])
         
         return jsonify(
             {

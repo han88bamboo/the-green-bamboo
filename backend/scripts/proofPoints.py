@@ -158,7 +158,7 @@ def getPointsForUser(id, userType):
     cursor = conn.cursor()
     
     # Get points for user
-    cursor.execute('SELECT * FROM "userPoints" WHERE "userID" = %s AND "userType" = %s', (id, userType,))
+    cursor.execute('SELECT * FROM "pointsRecorder" WHERE "userID" = %s AND "userType" = %s', (id, userType,))
     user_points = cursor.fetchone()
 
     if not user_points:
@@ -168,29 +168,37 @@ def getPointsForUser(id, userType):
     cursor.execute('SELECT id FROM "reviews" WHERE "userID" = %s', (id,))
     review_ids = cursor.fetchall()
 
+    
     # Loop through each review id and compile number of upvotes and downvotes for each review
     total_review_upvotes = 0
     total_review_downvotes = 0
-    for review_id in review_ids:
-        cursor.execute('SELECT "upvotes", "downvotes" FROM "reviewsUserVotes" WHERE "reviewId" = %s', (review_id,))
-        votes = cursor.fetchone()
 
-        total_review_upvotes += len(votes['upvotes'])
-        total_review_downvotes += len(votes['downvotes'])
+    if not review_ids:
+        for review_id in review_ids:
+            id = review_id['id']
+            cursor.execute('SELECT "upvotes", "downvotes" FROM "reviewsUserVotes" WHERE "reviewId" = %s', (id,))
+            votes = cursor.fetchone()
 
+            total_review_upvotes += len(votes['upvotes'])
+            total_review_downvotes += len(votes['downvotes'])
+    
     # Get the producer review id for producer reviews made by user
     cursor.execute('SELECT id FROM "producerReviews" WHERE "userID" = %s', (id,))
     producer_review_ids = cursor.fetchall()
 
+    
     # Loop through each producer review id and compile number of upvotes and downvotes for each producer review
     total_producer_review_upvotes = 0
     total_producer_review_downvotes = 0
-    for producer_review_id in producer_review_ids:
-        cursor.execute('SELECT "upvotes", "downvotes" FROM "producerReviewsUserVotes" WHERE "reviewId" = %s', (producer_review_id,))
-        votes = cursor.fetchone()
 
-        total_producer_review_upvotes += len(votes['upvotes'])
-        total_producer_review_downvotes += len(votes['downvotes'])
+    if not producer_review_ids:
+        for producer_review_id in producer_review_ids:
+            pr_id = producer_review_id['id']
+            cursor.execute('SELECT "upvotes", "downvotes" FROM "producerReviewsUserVotes" WHERE "reviewId" = %s', (pr_id,))
+            votes = cursor.fetchone()
+
+            total_producer_review_upvotes += len(votes['upvotes'])
+            total_producer_review_downvotes += len(votes['downvotes'])
 
     # Get the member ids of the user 
     cursor.execute('SELECT id FROM "clubMembers" WHERE "userID" = %s', (id,))
@@ -200,24 +208,28 @@ def getPointsForUser(id, userType):
     total_member_likes = 0
     total_member_dislikes = 0
 
-    for member_id in member_ids:
+    if member_ids:
+        for member_id in member_ids:
 
-        # Get total likes for club posts
-        cursor.execute('SELECT COUNT(id) FROM "clubPostsLikes" WHERE "memberID" = %s', (member_id,))
-        total_member_likes += cursor.fetchone()['count']
+            m_id = member_id['id']
 
-        # Get total dislikes for club posts
-        cursor.execute('SELECT COUNT(id) FROM "clubPostsDislikes" WHERE "memberID" = %s', (member_id,))
-        total_member_dislikes += cursor.fetchone()['count']
+            # Get total likes for club posts
+            cursor.execute('SELECT COUNT(id) FROM "clubPostsLikes" WHERE "memberID" = %s', (m_id,))
+            total_member_likes += cursor.fetchone()['count']
 
-        # Get total likes for club comments
-        cursor.execute('SELECT COUNT(id) FROM "clubCommentsLikes" WHERE "memberID" = %s', (member_id,))
-        total_member_likes += cursor.fetchone()['count']
+            # Get total dislikes for club posts
+            cursor.execute('SELECT COUNT(id) FROM "clubPostsDislikes" WHERE "memberID" = %s', (m_id,))
+            total_member_dislikes += cursor.fetchone()['count']
 
-        # Get total dislikes for club comments
-        cursor.execute('SELECT COUNT(id) FROM "clubCommentsDislikes" WHERE "memberID" = %s', (member_id,))
-        total_member_dislikes += cursor.fetchone()['count']
-    
+            # Get total likes for club comments
+            cursor.execute('SELECT COUNT(id) FROM "clubPostCommentsLikes" WHERE "memberID" = %s', (m_id,))
+            total_member_likes += cursor.fetchone()['count']
+
+            # Get total dislikes for club comments
+            cursor.execute('SELECT COUNT(id) FROM "clubPostCommentsDislikes" WHERE "memberID" = %s', (m_id,))
+            total_member_dislikes += cursor.fetchone()['count']
+        
+
     # Get the proofPoints for upvotes and downvotes
     cursor.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = 8')
     upvote_points = cursor.fetchone()['proofPoints']
@@ -225,11 +237,12 @@ def getPointsForUser(id, userType):
     cursor.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = 9')
     downvote_points = cursor.fetchone()['proofPoints']
 
+
     overall_total_upvotes = total_review_upvotes + total_producer_review_upvotes + total_member_likes
     overall_total_downvotes = total_review_downvotes + total_producer_review_downvotes + total_member_dislikes
 
     # Calculate total points
-    total_points = user_points['currentPoints'] + (overall_total_upvotes * upvote_points) - (overall_total_downvotes * downvote_points)
+    total_points = user_points['currentPoints'] + (overall_total_upvotes * upvote_points) + (overall_total_downvotes * downvote_points)
 
     cursor.close()
 

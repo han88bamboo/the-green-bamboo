@@ -69,19 +69,20 @@ def deleteReview(id):
     rule_points_id = []
 
     # Review text
-    if (existingReview['reviewDesc'] != None):
+    if (existingReview['reviewDesc'] != None or existingReview['reviewDesc'] != ''):
         rule_points_id.append(2)
 
     # Extended review: color, aroma, taste, finish
-    if (existingReview['finish'] != None or existingReview['colour'] != None or raw_review['aroma'] != None or raw_review['taste'] != None):
+    if (existingReview['finish'] != None or existingReview['colour'] != None or existingReview['aroma'] != None or existingReview['taste'] != None) and \
+        (existingReview['finish'] != '' or existingReview['colour'] != '' or existingReview['aroma'] != '' or existingReview['taste'] != ''):
         rule_points_id.append(3)
 
     # Attach image
-    if (existingReview['photo'] != None):
+    if (existingReview['photo'] != None and existingReview['photo'] != ''):
         rule_points_id.append(4)
 
     # Tag location
-    if (existingReview['location'] != None):
+    if (existingReview['location'] != None and existingReview['location'] != ''):
         rule_points_id.append(5)
 
     # Tag friends
@@ -182,6 +183,8 @@ def deleteProducerReview(id):
         # Update user points
         cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" - %s WHERE id = %s AND "userType" = %s', (points, userID, 'user',))
         conn.commit()
+
+        print(f"Deducted {points} points from user {userID} for deleting review {id}.")
 
         return jsonify({"code": 200, "data": id}), 200
 

@@ -278,7 +278,8 @@ def createReviews():
             rule_fulfiled_id.append(2)
         
         # Extended review: color, aroma, taste, finish
-        if (raw_review['finish'] != None or raw_review['colour'] != None or raw_review['aroma'] != None or raw_review['taste'] != None):
+        if (raw_review['finish'] != None or raw_review['colour'] != None or raw_review['aroma'] != None or raw_review['taste'] != None) and \
+            (raw_review['finish'] != '' or raw_review['colour'] != '' or raw_review['aroma'] != '' or raw_review['taste'] != ''):
             rule_fulfiled_id.append(3)
 
         # Attach image
@@ -296,6 +297,7 @@ def createReviews():
         # Get total proof points earned 
         cur.execute('SELECT SUM("proofPoints") FROM "pointSystemRules" WHERE id IN %s', (tuple(rule_fulfiled_id),))
         total_points = cur.fetchone()['sum']
+
 
         # Update user points
         if total_points:
@@ -363,7 +365,9 @@ def createProducerReviews():
         cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE id = %s AND "userType" = %s', (total_points, user_id, 'user',))
         conn.commit()
 
-        return jsonify({"code": 201, "data": raw_review['reviewDesc']}), 201
+        print(f"Points awarded: {total_points}")
+
+        return jsonify({"code": 201, "data": raw_review['reviewDesc'], "pointsEarned": total_points}), 201
 
     except Exception as e:
         print(str(e))

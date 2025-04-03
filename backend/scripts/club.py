@@ -1,6 +1,6 @@
 # Routes: /getClubs (GET), /getClubwSearch (GET), /getSpecificClubInfo (GET),
 #         /getClubPosts (GET), /getClubPostDetails (GET), /checkUserMembership (GET),
-#         /getUserLikesPost (GET), /getUserLikesComments (GET), /getUserClubs (GET),
+#         /getUserLikesDislikesPost (GET), /getUserLikesDislikesComments (GET), /getUserClubs (GET),
 #         /getClubMembers (GET), /getFirstFewClubMembers (GET), /getAllClubMembers (GET),
 #         /getClubRequests (GET), /getUserClubRequests (GET),
 #         /getUserInvitedClubs (GET), /getRecentActivity (GET),
@@ -8,7 +8,7 @@
 #         /addPost (POST), /addComment (POST), /requestToJoinClub (POST),
 #         /acceptClubRequest (POST), /acceptClubInvite (POST),
 #         /editPost (PUT), /editComment (PUT),
-#         /dislikePost (PUT), /dislikeComment (PUT),
+#         /dislikeUndislikePost (PUT), /dislikeUndislikeComment (PUT),
 #         /likeUnlikePost (PUT), /likeUnlikeComment (PUT), /makeAdmin (PUT), 
 #         /revokeAdmin (PUT), /updateClubInfo (PUT),
 #         /removeMembers (DELETE), /removePost (DELETE), /removeComment (DELETE),
@@ -266,7 +266,7 @@ def getClubPosts(clubID, last_seen_id):
                 'error': 'No post yet'
             }), 404
         
-        # Step 2: Get the number of likes and number of comments for each post and the poster's id, displayName, photo
+        # Step 2: Get the number of likes/dislikes and number of comments for each post and the poster's id, displayName, photo
         for post in post_info:
             posterID = post['posterID'] # This is the club member's ID
             postID = post['id']
@@ -296,6 +296,13 @@ def getClubPosts(clubID, last_seen_id):
 
             # Add total likes into post
             post['totalLikes'] = total_likes['totalLikes']
+
+            # Get the total number of dislikes for each post
+            cur.execute('SELECT COUNT(*) AS "totalDislikes" FROM "clubPostsDislikes" WHERE "postID" = %s', (postID,))
+            total_dislikes = cur.fetchone()
+
+            # Add total dislikes into post
+            post['totalDislikes'] = total_dislikes['totalDislikes']
 
             # Get the total number of comments for each post
             cur.execute('SELECT COUNT(*) AS "totalComments" FROM "clubPostComments" WHERE "postID" = %s', (postID,))
@@ -508,12 +515,12 @@ def checkUserMembership(userID, userType, clubID):
 
 
 # -----------------------------------------------------------------------------------------
-# [GET] getUserLikesPost
-# Purpose: Get the posts that a specific user has liked in a specific club
+# [GET] getUserLikesDislikesPost
+# Purpose: Get the posts that a specific user has liked and disliked in a specific club
 # Used: ClubView.vue [views folder inside Users folder]
 # Output: Possible return codes [200 - Retrieval success, 404 - No liked posts found, 500 - An error occurred retrieving the request]
-@blueprint.route('/getUserLikesPost/<memberID>/<clubID>', methods=['GET'])
-def getUserLikesPost(memberID, clubID):
+@blueprint.route('/getUserLikesDislikesPost/<memberID>/<clubID>', methods=['GET'])
+def getUserLikesDislikesPost(memberID, clubID):
     conn = g.db
     cur = conn.cursor()
 
@@ -521,16 +528,21 @@ def getUserLikesPost(memberID, clubID):
         cur.execute('SELECT "postID" FROM "clubPostsLikes" WHERE "memberID" = %s AND "clubID" = %s' , (memberID, clubID,))
         liked_posts = cur.fetchall()
 
-        if not liked_posts:
-            return jsonify({
-                'error': 'No liked posts found'
-            }), 404
+        cur.execute('SELECT "postID" FROM "clubPostsDislikes" WHERE "memberID" = %s AND "clubID" = %s' , (memberID, clubID,))
+        disliked_posts = cur.fetchall()
+
         
         # Format the liked_posts into a list of postID
-        liked_posts = [post['postID'] for post in liked_posts]
+        if liked_posts:
+            liked_posts = [post['postID'] for post in liked_posts]
+
+        # Format the disliked_posts into a list of postID
+        if disliked_posts:
+            disliked_posts = [post['postID'] for post in disliked_posts]
     
         return jsonify({
-            'liked_posts': liked_posts
+            'liked_posts': liked_posts,
+            'disliked_posts': disliked_posts
         }), 200
 
     except Exception as e:
@@ -547,12 +559,12 @@ def getUserLikesPost(memberID, clubID):
 
 
 # -----------------------------------------------------------------------------------------
-# [GET] getUserLikesComments
+# [GET] getUserLikesDislikesComments
 # Purpose: Get the comments that a specific user has liked in a specific post
 # Used: SpecificClubPost.vue [components folder]
 # Output: Possible return codes [200 - Retrieval success, 404 - No liked comments found, 500 - An error occurred retrieving the request]
-@blueprint.route('/getUserLikesComments/<memberID>/<postID>', methods=['GET'])
-def getUserLikesComments(memberID, postID):
+@blueprint.route('/getUserLikesDislikesComments/<memberID>/<postID>', methods=['GET'])
+def getUserLikesDislikesComments(memberID, postID):
     conn = g.db
     cur = conn.cursor()
 
@@ -560,16 +572,20 @@ def getUserLikesComments(memberID, postID):
         cur.execute('SELECT "commentID" FROM "clubPostCommentsLikes" WHERE "memberID" = %s AND "postID" = %s', (memberID, postID,))
         liked_comments = cur.fetchall()
 
-        if not liked_comments:
-            return jsonify({
-                'error': 'No liked comments found'
-            }), 404
-        
+        cur.execute('SELECT "commentID" FROM "clubPostCommentsDislikes" WHERE "memberID" = %s AND "postID" = %s', (memberID, postID,))
+        disliked_comments = cur.fetchall()
+       
         # Format the liked_comments into a list of commentID
-        liked_comments_list = [comment['commentID'] for comment in liked_comments]
+        if liked_comments:
+            liked_comments_list = [comment['commentID'] for comment in liked_comments]
+
+        # Format the disliked_comments into a list of commentID
+        if disliked_comments:
+            disliked_comments_list = [comment['commentID'] for comment in disliked_comments]
 
         return jsonify({
-            'liked_comments': liked_comments_list
+            'liked_comments': liked_comments_list,
+            'disliked_comments': disliked_comments_list
         }), 200
 
     except Exception as e:
@@ -1352,16 +1368,15 @@ def addPost():
         conn.commit()
 
         # Step 4: Add proofPoints to the user for adding a post
-        
+    
         # get the user id and user type from the poster id
         cur.execute('SELECT "userID", "userType" FROM "clubMembers" WHERE id = %s', (poster_id,))
         user = cur.fetchone()
 
         if (user['userType'] == 'user'):
-
             # Get the current points for posting
             cur.execute('SELECT "proofPoints", "ruleName" FROM "pointSystemRules" WHERE id = %s', (7,))
-            points = cur.fetchone()['proofPoints']
+            points = cur.fetchone()
 
             cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s AND "userType" = %s', (points['proofPoints'], user['userID'], 'user',))
             conn.commit()
@@ -1369,8 +1384,7 @@ def addPost():
         return jsonify({
             'message': 'Post added successfully',
             'postID': post_id,
-            'pointsEarned': points['proofPoints'],
-            'rule': points['ruleName']
+            'pointsEarned': points['proofPoints']
         }), 201
 
     except Exception as e:
@@ -1445,11 +1459,12 @@ def addComment():
         if (user['userType'] == 'user'):
             # Get the current points for commenting
             cur.execute('SELECT "proofPoints", "ruleName" FROM "pointSystemRules" WHERE id = %s', (10,))
-            points = cur.fetchone()['proofPoints']
+            points = cur.fetchone()
 
             cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s AND "userType" = %s', (points['proofPoints'], user['userID'], 'user',))
             conn.commit()
 
+            print(f"Points added to user {user['userID']} for commenting: {points['proofPoints']} points")
 
         return jsonify({
             'message': 'Comment added successfully',
@@ -1902,7 +1917,7 @@ def editComment():
 
 
 # -----------------------------------------------------------------------------------------
-# [PUT] dislikePost
+# [PUT] dislikeUndislikePost
 # Purpose: Dislike a post or un-dislike a post
 # Used:
 #   1. ClubView.vue [views folder inside Users folder]
@@ -1911,8 +1926,8 @@ def editComment():
 #   2. Post ID
 #   3. Club ID
 # Output: Possible return codes [200 - Post disliked/un-disliked successfully, 400 - Missing required data, 404 - No such user/post exist, 500 - An error occurred disliking the post]
-@blueprint.route('/dislikePost', methods=['PUT'])
-def dislikePost():
+@blueprint.route('/dislikeUndislikePost', methods=['PUT'])
+def dislikeUndislikePost():
     conn = g.db
     cur = conn.cursor()
 
@@ -1961,7 +1976,7 @@ def dislikePost():
                 'message': 'Post un-disliked successfully',
                 "disliked": False
             }), 200
-
+        
         # Step 4: Insert the dislike into the clubPostsDislikes table
         cur.execute('INSERT INTO "clubPostsDislikes" ("clubID", "memberID", "postID") VALUES (%s, %s, %s)', (club_id, member_id, post_id,))
         conn.commit()
@@ -1987,7 +2002,7 @@ def dislikePost():
 
 
 # -----------------------------------------------------------------------------------------
-# [PUT] dislikeComment
+# [PUT] dislikeUndislikeComment
 # Purpose: Dislike a comment or un-dislike a comment
 # Used:
 # Input:
@@ -1995,8 +2010,8 @@ def dislikePost():
 #   2. Comment ID
 #   3. Member ID
 # Output: Possible return codes [200 - Comment disliked/un-disliked successfully, 400 - Missing required data, 404 - No such user/comment exist, 500 - An error occurred disliking the comment]
-@blueprint.route('/dislikeComment', methods=['PUT'])
-def dislikeComment():
+@blueprint.route('/dislikeUndislikeComment', methods=['PUT'])
+def dislikeUndislikeComment():
     conn = g.db
     cur = conn.cursor()
 
@@ -2728,6 +2743,8 @@ def removeComment():
             # deduct points from the user
             cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" - %s WHERE id = %s', (points['proofPoints'], user['userID'],))
             conn.commit()
+
+            print(f"Points deducted: {points['proofPoints']}")
 
         return jsonify({
             'message': 'Comment removed successfully',

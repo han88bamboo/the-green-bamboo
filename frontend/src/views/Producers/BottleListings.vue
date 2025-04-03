@@ -1127,7 +1127,7 @@
               </div>
             </div>
           </div>
-          <!-- END of delete review modal -->
+          <!-- END of delete listing modal -->
 
           <!-- add your review -->
           <!-- Display Add review or Review already added accordingly to whether user already left review -->
@@ -2403,6 +2403,53 @@
                     Detailed Review >
                   </a>
                 </div>
+                <!-- Delete review modal -->
+                <div class="modal fade" id="deleteReview" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                  <div class="modal-dialog">
+                      
+                      <!-- DELETE SUCCESS -->
+                      <div class="text-success fst-italic fw-bold fs-3 modal-content" v-if='successDelete'>
+                          <span>Your review has successfully been deleted!</span>
+                          <div class="modal-footer">
+                              <button type="button" @click="reloadRoute" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                          </div>
+                      </div>
+                      <!-- DELETE ERROR -->
+                      <div class="text-danger fst-italic fw-bold fs-3 modal-content" v-if="errorDelete"> 
+                          <div v-if="errorDeleteMessage" class="row"> 
+                              <span >An error occurred while attempting to delete, please try again!</span>
+                              <br>
+                              <button class="btn primary-btn btn-sm" @click="reset">
+                                  <span class="fs-5 fst-italic"> Retry your delete request here! </span>
+                              </button>
+                          </div>
+                          
+                          <span v-if="notExist">There is no review by you for this bottle listing!</span>
+                          <br>
+
+                      
+                          <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                          </div>
+                      </div>
+
+                      <!-- DELETE IN PROGRESS MODAL -->
+                      <div v-if="deletingReview" class="modal-content">
+                          <div class="modal-header" style="background-color: #535C72">
+                              <h5 class="modal-title" id="deleteReview" style="color: white;">Delete Review</h5>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body">
+                              Are you sure you want to delete your review?
+                          </div>
+                          <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                              <button type="button" class="btn btn-danger" @click="deleteReview">Delete Review</button>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+              <!-- END of delete review modal -->
               </div>
 
               <!-- detailed review modal start -->
