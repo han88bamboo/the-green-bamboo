@@ -500,13 +500,13 @@
                                 <!-- Displays Message if there are no listing available  -->
                                 <h5 v-if="listings.length === 0 || (selectedDrinkType !== '' && filteredListings.length === 0)"
                                     style="display: inline-block;" class="pt-5 text-muted">
-                                    <div>Sorry, we don’t have enough info to recommend listings.</div>
-                                    <div>Head to your profile to update your preferences!</div>
+                                    <div>Sorry, we are unable to find a similar listing as the one provided.</div>
+                                    <div>Head to the Reverse Image Search to scan a new bottle!</div>
                                 </h5>
                                 <div v-if="listings.length === 0 || (selectedDrinkType !== '' && filteredListings.length === 0)"
                                     class="pt-3">
-                                    <button class="btn secondary-btn btn-md ms-2 fw-bold" @click="goToProfile">
-                                        Update Preferences
+                                    <button class="btn secondary-btn btn-md ms-2 fw-bold" @click="goToReverseImageSearch">
+                                        Scan Another Bottle!
                                     </button>
                                 </div>
                                 <!-- v-loop for each listing -->
@@ -1716,10 +1716,9 @@ export default {
                 this.followCount++;
             }
         },
-        goToProfile() {
+        goToReverseImageSearch() {
             this.$router.push({
-                name: "profileuser",
-                params: { userID: this.userID, username: this.username} // Added By SMU GROUP 3 --> username 
+                name: "imagesearch"
             });
         }
 
