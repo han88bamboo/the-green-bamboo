@@ -170,263 +170,202 @@ Latest news page images not showing up. found it was due to https://via.placehol
 replaced it with https://placehold.co/600x400 and deployed
 
 Nature of the changes (frontend / backend / database): Backend
+
 # Update as of 27 Mar 2025
-Coder: Carissa
-
-Purpose of the changes: 
-    (1) Updated Component - LandingPageNavBar (LandingPageNavBar.vue) 
-        - To include the tab for "For You" page
-    (2) Added Page - For You Page (ForYouPage.vue)
-        - Implemented this page to display related listings and clubs recommended for users
-    (3) Updated component - Nav Bar (NavBar.vue)
-        - To include the tab for "For You" page
-    (4) Updated Router (index.js)
-        - Added routing for ForYouPage.vue
-    
-Nature of the changes (frontend / backend / database): 
-    frontend
-
-Coder: Dycia
-
-Purpose of the changes: 
-    (1) Updated Backend API (getData.py)
-        - Added getRecommendedListings(userID) backend api to fetch recommended listings
-        - Added get_recommended_clubs(userID) backend api to fetch recommended clubs
-        - Added basic_algo(userID) for basic algo for drinks recommendation
-        - Added advanced_algo_reviews(userID) for advanced algo for drinks recommendations via flavourTags
-        - Added testRecommender(userID) for the testing of recommender backend api
-    
-Nature of the changes (frontend / backend / database): 
-    Backend
 
 Coder: Carissa
 
-Purpose of the changes: 
-    (1) Updated Page - Dashboard Page (UserDashboard.vue) 
-        - updated frontend to look like figma (added columns for Grails, GOATS, and Ride or Dies), 
-        added addDrink() function to retrieve drinks from the database to be added into the list, 
-        added openPopup(), and closePopup() for pop up, added styling for pop up
-    (2) Added Page - Best Of Page (BestOf.vue)
-        - Implemented this page to display Top 5 listings for each category
-    (3) Updated Router (index.js)
-        - Editted routing for best of to BestOf.vue
-    (4) Updated Component - LandingPageNavBar (LandingPageNavBar.vue) 
-        - To editted the tab for "Best Of" page to route it to the correct page
-    (5) Updated component - Nav Bar (NavBar.vue)
-        - To editted the tab for "Best Of" page to route it to the correct page
-
-Nature of the changes (frontend / backend / database): 
-    frontend
-
-Coder: Carissa
-
-Purpose of the changes: 
-    (1) Added backend code in getData.py 
-        - Added backend api (/getTopCategoryListings) for Best Of to retrieve top 5 listings per category (Grails, GOATS, and Ride or Dies), 
-        accounted for fallback algo where it will randomly have 5 listings if there are insufficient people using the feature in the Dashboard page
-    
-Nature of the changes (frontend / backend / database): 
-    backend
-
-Coder: Dycia
-
-Purpose of the changes: 
-    (1) Updated Backend API (getData.py)
-        - Added getListingByName(listing_name) backend api to fetch listing details by listing name
-    
-Nature of the changes (frontend / backend / database): 
-    Backend
-
-Coder: Dycia
-
-Purpose of the changes: 
-    (1) Updated 01-postgresql_data3.sql
-        - Added new columns into "users" tables for dashboard
-            - "grails", "rideOrDies", "goats"
-    (3) Updated 02-insert-data.sql
-        - Updated the users table value
+Purpose of the changes:
+(1) Updated Component - LandingPageNavBar (LandingPageNavBar.vue) - To include the tab for "For You" page
+(2) Added Page - For You Page (ForYouPage.vue) - Implemented this page to display related listings and clubs recommended for users
+(3) Updated component - Nav Bar (NavBar.vue) - To include the tab for "For You" page
+(4) Updated Router (index.js) - Added routing for ForYouPage.vue
 
 Nature of the changes (frontend / backend / database):
-    database
+frontend
 
 Coder: Dycia
 
-Purpose of the changes: 
-    (1) Added new backend file - editDashboard.py 
-        - editDetails() to update the top 3 categories
-    
-Nature of the changes (frontend / backend / database): 
-    backend
+Purpose of the changes:
+(1) Updated Backend API (getData.py) - Added getRecommendedListings(userID) backend api to fetch recommended listings - Added get_recommended_clubs(userID) backend api to fetch recommended clubs - Added basic_algo(userID) for basic algo for drinks recommendation - Added advanced_algo_reviews(userID) for advanced algo for drinks recommendations via flavourTags - Added testRecommender(userID) for the testing of recommender backend api
 
+Nature of the changes (frontend / backend / database):
+Backend
+
+Coder: Carissa
+
+Purpose of the changes:
+(1) Updated Page - Dashboard Page (UserDashboard.vue) - updated frontend to look like figma (added columns for Grails, GOATS, and Ride or Dies),
+added addDrink() function to retrieve drinks from the database to be added into the list,
+added openPopup(), and closePopup() for pop up, added styling for pop up
+(2) Added Page - Best Of Page (BestOf.vue) - Implemented this page to display Top 5 listings for each category
+(3) Updated Router (index.js) - Editted routing for best of to BestOf.vue
+(4) Updated Component - LandingPageNavBar (LandingPageNavBar.vue) - To editted the tab for "Best Of" page to route it to the correct page
+(5) Updated component - Nav Bar (NavBar.vue) - To editted the tab for "Best Of" page to route it to the correct page
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+Coder: Carissa
+
+Purpose of the changes:
+(1) Added backend code in getData.py - Added backend api (/getTopCategoryListings) for Best Of to retrieve top 5 listings per category (Grails, GOATS, and Ride or Dies),
+accounted for fallback algo where it will randomly have 5 listings if there are insufficient people using the feature in the Dashboard page
+
+Nature of the changes (frontend / backend / database):
+backend
+
+Coder: Dycia
+
+Purpose of the changes:
+(1) Updated Backend API (getData.py) - Added getListingByName(listing_name) backend api to fetch listing details by listing name
+
+Nature of the changes (frontend / backend / database):
+Backend
+
+Coder: Dycia
+
+Purpose of the changes:
+(1) Updated 01-postgresql_data3.sql - Added new columns into "users" tables for dashboard - "grails", "rideOrDies", "goats"
+(3) Updated 02-insert-data.sql - Updated the users table value
+
+Nature of the changes (frontend / backend / database):
+database
+
+Coder: Dycia
+
+Purpose of the changes:
+(1) Added new backend file - editDashboard.py - editDetails() to update the top 3 categories
+
+Nature of the changes (frontend / backend / database):
+backend
 
 # Update as of 27 Mar 2025
+
 Coder: TeckXuan
 
-Purpose of the changes: 
-    (1) Added new frontend file - ImageSearchResults.vue 
-        - To show the results of the reverse Image Search
-    (2) Updated new Reverse Image Search frontend
-        - To enable user to uplaod the photos and send for reverse image search
-    (3) Updated index.js to include new frontend file 
-    (4) Added new backend API
-        - Getimagesearchresults to retrieve listings based on Google Vision API
-        - Added 2 new imports
-    
-Nature of the changes (frontend / backend / database): 
-    backend / frontend
+Purpose of the changes:
+(1) Added new frontend file - ImageSearchResults.vue - To show the results of the reverse Image Search
+(2) Updated new Reverse Image Search frontend - To enable user to uplaod the photos and send for reverse image search
+(3) Updated index.js to include new frontend file
+(4) Added new backend API - Getimagesearchresults to retrieve listings based on Google Vision API - Added 2 new imports
 
+Nature of the changes (frontend / backend / database):
+backend / frontend
 
 # Update as of 28 Mar 2025
+
 Coder: Carissa
-Purpose of the changes: 
-    (1) Edited backend code in getData.py 
-                - Edited backend api (/getTopCategoryListings) for Best Of to account for when there are no listings at all in grails, goats, and ride or dies 
-                
+Purpose of the changes:
+(1) Edited backend code in getData.py - Edited backend api (/getTopCategoryListings) for Best Of to account for when there are no listings at all in grails, goats, and ride or dies
+
 Nature of the changes (frontend / backend / database): backend
 
 Coder: Dycia
 
-Purpose of the changes: 
-    (1) Updated Page - Dashboard Page (UserDashboard.vue) 
-        - Updated the popup to display the drink listing retrieved from the "user" table
-        - Fixed the UI of the cards
-        - Updated the popup to display the drink listing within the popup modal
-        - Added in function to remove drink listing in popup modal
-        - Updated popup modal to limit selection for "rideOrDies" and "goats" to 3 selection
-        - Toast to notify the user when they reached the selection limit
-        - Toast to notify the user when dashboard is updated sucessfully
-
-Nature of the changes (frontend / backend / database): 
-    frontend
-
-# Update as of 27 Mar 2025
-Coder: Carissa
-
-Purpose of the changes: 
-    (1) Updated Component - LandingPageNavBar (LandingPageNavBar.vue) 
-        - To include the tab for "For You" page
-    (2) Added Page - For You Page (ForYouPage.vue)
-        - Implemented this page to display related listings and clubs recommended for users
-    (3) Updated component - Nav Bar (NavBar.vue)
-        - To include the tab for "For You" page
-    (4) Updated Router (index.js)
-        - Added routing for ForYouPage.vue
-    
-Nature of the changes (frontend / backend / database): 
-    frontend
-
-Coder: Dycia
-
-Purpose of the changes: 
-    (1) Updated Backend API (getData.py)
-        - Added getRecommendedListings(userID) backend api to fetch recommended listings
-        - Added get_recommended_clubs(userID) backend api to fetch recommended clubs
-        - Added basic_algo(userID) for basic algo for drinks recommendation
-        - Added advanced_algo_reviews(userID) for advanced algo for drinks recommendations via flavourTags
-        - Added testRecommender(userID) for the testing of recommender backend api
-    
-Nature of the changes (frontend / backend / database): 
-    Backend
-
-Coder: Carissa
-
-Purpose of the changes: 
-    (1) Updated Page - Dashboard Page (UserDashboard.vue) 
-        - updated frontend to look like figma (added columns for Grails, GOATS, and Ride or Dies), 
-        added addDrink() function to retrieve drinks from the database to be added into the list, 
-        added openPopup(), and closePopup() for pop up, added styling for pop up
-    (2) Added Page - Best Of Page (BestOf.vue)
-        - Implemented this page to display Top 5 listings for each category
-    (3) Updated Router (index.js)
-        - Editted routing for best of to BestOf.vue
-    (4) Updated Component - LandingPageNavBar (LandingPageNavBar.vue) 
-        - To editted the tab for "Best Of" page to route it to the correct page
-    (5) Updated component - Nav Bar (NavBar.vue)
-        - To editted the tab for "Best Of" page to route it to the correct page
-
-Nature of the changes (frontend / backend / database): 
-    frontend
-
-Coder: Carissa
-
-Purpose of the changes: 
-    (1) Added backend code in getData.py 
-        - Added backend api (/getTopCategoryListings) for Best Of to retrieve top 5 listings per category (Grails, GOATS, and Ride or Dies), 
-        accounted for fallback algo where it will randomly have 5 listings if there are insufficient people using the feature in the Dashboard page
-    
-Nature of the changes (frontend / backend / database): 
-    backend
-
-Coder: Dycia
-
-Purpose of the changes: 
-    (1) Updated Backend API (getData.py)
-        - Added getListingByName(listing_name) backend api to fetch listing details by listing name
-    
-Nature of the changes (frontend / backend / database): 
-    Backend
-
-Coder: Dycia
-
-Purpose of the changes: 
-    (1) Updated 01-postgresql_data3.sql
-        - Added new columns into "users" tables for dashboard
-            - "grails", "rideOrDies", "goats"
-    (3) Updated 02-insert-data.sql
-        - Updated the users table value
+Purpose of the changes:
+(1) Updated Page - Dashboard Page (UserDashboard.vue) - Updated the popup to display the drink listing retrieved from the "user" table - Fixed the UI of the cards - Updated the popup to display the drink listing within the popup modal - Added in function to remove drink listing in popup modal - Updated popup modal to limit selection for "rideOrDies" and "goats" to 3 selection - Toast to notify the user when they reached the selection limit - Toast to notify the user when dashboard is updated sucessfully
 
 Nature of the changes (frontend / backend / database):
-    database
+frontend
+
+# Update as of 27 Mar 2025
+
+Coder: Carissa
+
+Purpose of the changes:
+(1) Updated Component - LandingPageNavBar (LandingPageNavBar.vue) - To include the tab for "For You" page
+(2) Added Page - For You Page (ForYouPage.vue) - Implemented this page to display related listings and clubs recommended for users
+(3) Updated component - Nav Bar (NavBar.vue) - To include the tab for "For You" page
+(4) Updated Router (index.js) - Added routing for ForYouPage.vue
+
+Nature of the changes (frontend / backend / database):
+frontend
 
 Coder: Dycia
 
-Purpose of the changes: 
-    (1) Added new backend file - editDashboard.py 
-        - editDetails() to update the top 3 categories
-    
-Nature of the changes (frontend / backend / database): 
-    backend
+Purpose of the changes:
+(1) Updated Backend API (getData.py) - Added getRecommendedListings(userID) backend api to fetch recommended listings - Added get_recommended_clubs(userID) backend api to fetch recommended clubs - Added basic_algo(userID) for basic algo for drinks recommendation - Added advanced_algo_reviews(userID) for advanced algo for drinks recommendations via flavourTags - Added testRecommender(userID) for the testing of recommender backend api
 
+Nature of the changes (frontend / backend / database):
+Backend
+
+Coder: Carissa
+
+Purpose of the changes:
+(1) Updated Page - Dashboard Page (UserDashboard.vue) - updated frontend to look like figma (added columns for Grails, GOATS, and Ride or Dies),
+added addDrink() function to retrieve drinks from the database to be added into the list,
+added openPopup(), and closePopup() for pop up, added styling for pop up
+(2) Added Page - Best Of Page (BestOf.vue) - Implemented this page to display Top 5 listings for each category
+(3) Updated Router (index.js) - Editted routing for best of to BestOf.vue
+(4) Updated Component - LandingPageNavBar (LandingPageNavBar.vue) - To editted the tab for "Best Of" page to route it to the correct page
+(5) Updated component - Nav Bar (NavBar.vue) - To editted the tab for "Best Of" page to route it to the correct page
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+Coder: Carissa
+
+Purpose of the changes:
+(1) Added backend code in getData.py - Added backend api (/getTopCategoryListings) for Best Of to retrieve top 5 listings per category (Grails, GOATS, and Ride or Dies),
+accounted for fallback algo where it will randomly have 5 listings if there are insufficient people using the feature in the Dashboard page
+
+Nature of the changes (frontend / backend / database):
+backend
+
+Coder: Dycia
+
+Purpose of the changes:
+(1) Updated Backend API (getData.py) - Added getListingByName(listing_name) backend api to fetch listing details by listing name
+
+Nature of the changes (frontend / backend / database):
+Backend
+
+Coder: Dycia
+
+Purpose of the changes:
+(1) Updated 01-postgresql_data3.sql - Added new columns into "users" tables for dashboard - "grails", "rideOrDies", "goats"
+(3) Updated 02-insert-data.sql - Updated the users table value
+
+Nature of the changes (frontend / backend / database):
+database
+
+Coder: Dycia
+
+Purpose of the changes:
+(1) Added new backend file - editDashboard.py - editDetails() to update the top 3 categories
+
+Nature of the changes (frontend / backend / database):
+backend
 
 # Update as of 27 Mar 2025
+
 Coder: TeckXuan
 
-Purpose of the changes: 
-    (1) Added new frontend file - ImageSearchResults.vue 
-        - To show the results of the reverse Image Search
-    (2) Updated new Reverse Image Search frontend
-        - To enable user to uplaod the photos and send for reverse image search
-    (3) Updated index.js to include new frontend file 
-    (4) Added new backend API
-        - Getimagesearchresults to retrieve listings based on Google Vision API
-        - Added 2 new imports
-    
-Nature of the changes (frontend / backend / database): 
-    backend / frontend
+Purpose of the changes:
+(1) Added new frontend file - ImageSearchResults.vue - To show the results of the reverse Image Search
+(2) Updated new Reverse Image Search frontend - To enable user to uplaod the photos and send for reverse image search
+(3) Updated index.js to include new frontend file
+(4) Added new backend API - Getimagesearchresults to retrieve listings based on Google Vision API - Added 2 new imports
 
+Nature of the changes (frontend / backend / database):
+backend / frontend
 
 # Update as of 28 Mar 2025
+
 Coder: Carissa
-Purpose of the changes: 
-    (1) Edited backend code in getData.py 
-                - Edited backend api (/getTopCategoryListings) for Best Of to account for when there are no listings at all in grails, goats, and ride or dies 
-                
+Purpose of the changes:
+(1) Edited backend code in getData.py - Edited backend api (/getTopCategoryListings) for Best Of to account for when there are no listings at all in grails, goats, and ride or dies
+
 Nature of the changes (frontend / backend / database): backend
 
 Coder: Dycia
 
-Purpose of the changes: 
-    (1) Updated Page - Dashboard Page (UserDashboard.vue) 
-        - Updated the popup to display the drink listing retrieved from the "user" table
-        - Fixed the UI of the cards
-        - Updated the popup to display the drink listing within the popup modal
-        - Added in function to remove drink listing in popup modal
-        - Updated popup modal to limit selection for "rideOrDies" and "goats" to 3 selection
-        - Toast to notify the user when they reached the selection limit
-        - Toast to notify the user when dashboard is updated sucessfully
+Purpose of the changes:
+(1) Updated Page - Dashboard Page (UserDashboard.vue) - Updated the popup to display the drink listing retrieved from the "user" table - Fixed the UI of the cards - Updated the popup to display the drink listing within the popup modal - Added in function to remove drink listing in popup modal - Updated popup modal to limit selection for "rideOrDies" and "goats" to 3 selection - Toast to notify the user when they reached the selection limit - Toast to notify the user when dashboard is updated sucessfully
 
-Nature of the changes (frontend / backend / database): 
-    frontend
+Nature of the changes (frontend / backend / database):
+frontend
 
 # Update as of 29 Mar 2025
 
@@ -458,51 +397,46 @@ frontend
 Test
 
 # Update as of 30 Mar 2025
+
 Coder: Carissa
-Purpose of the changes: 
-    (1) Edited backend code in getData.py 
-                - Edited backend api (/getTopCategoryListings) to change to select from upAndComing instead of rideOrDies
-    (2) Edited backend code in editDashboard.py 
-                - Edited backend api (/editTop3) to change to select from upAndComing instead of rideOrDies
-                
+Purpose of the changes:
+(1) Edited backend code in getData.py - Edited backend api (/getTopCategoryListings) to change to select from upAndComing instead of rideOrDies
+(2) Edited backend code in editDashboard.py - Edited backend api (/editTop3) to change to select from upAndComing instead of rideOrDies
+
 Nature of the changes (frontend / backend / database): backend
 
 Coder: Coder: Carissa
 
-Purpose of the changes: 
-    (1) Updated Page - Dashboard Page (UserDashboard.vue) 
-        - Updated naming of Ride or Dies to Up & Coming
+Purpose of the changes:
+(1) Updated Page - Dashboard Page (UserDashboard.vue) - Updated naming of Ride or Dies to Up & Coming
 
-Nature of the changes (frontend / backend / database): 
-    frontend
+Nature of the changes (frontend / backend / database):
+frontend
 
 Coder: Coder: Carissa
 
-Purpose of the changes: 
-    (1) Updated users table "rideOrDies" to "upAndComing"
+Purpose of the changes:
+(1) Updated users table "rideOrDies" to "upAndComing"
 
-Nature of the changes (frontend / backend / database): 
-    database
+Nature of the changes (frontend / backend / database):
+database
 
 # Update as of 31 Mar 2025
+
 Coder: Jovinne
-Purpose of the changes: 
-    (1) Edited backend code in getData.py 
-                - Updated getRecommendedListings and all related helper functions
-                - Fixed basic algo to correctly retrieve and use flavour tags
-                - Added helper function advanced_algo_list to recommend listings to users if they have at least 5 drinks total in their drink lists
+Purpose of the changes:
+(1) Edited backend code in getData.py - Updated getRecommendedListings and all related helper functions - Fixed basic algo to correctly retrieve and use flavour tags - Added helper function advanced_algo_list to recommend listings to users if they have at least 5 drinks total in their drink lists
 
 Nature of the changes (frontend / backend / database): backend
 
 Coder: Jovinne
 
-Purpose of the changes: 
-    (1) Updated 'drinkType' col in"listings" table to maintain consistency across all tables
-                - Changed 'Whiskey' to Whiskey / Whisky'
-                - Changed 'Rum' to 'Rum / Rhum'
+Purpose of the changes:
+(1) Updated 'drinkType' col in"listings" table to maintain consistency across all tables - Changed 'Whiskey' to Whiskey / Whisky' - Changed 'Rum' to 'Rum / Rhum'
 
-Nature of the changes (frontend / backend / database): 
-    database
+Nature of the changes (frontend / backend / database):
+database
+
 # Update as of 30 March
 
 Coder: Candy
@@ -538,27 +472,30 @@ backend
 
 Coder: Dycia
 
-Purpose of the changes: 
-    (1) Updated Page - Landing Page (LandingPage.vue) 
-        - Fixed the UI of the cards because the new coded pulled from refactor in globalcss
-        affected the image displayed
-    (2) Updated Page - For You Page (ForYouPage.vue) 
-        - Added in error handling message when there is no preferences stored in database
-        leading to recommender not being able to recommend clubs and drinks
-        - Added in the code to add in username into the params
-    (3) Updated Page - User Profile (UserProfileRefactor.vue)
-        - Added in the code for the buttons in Add Friend so that is it able to call the various
-        methods to invite a friend
+Purpose of the changes:
+(1) Updated Page - Landing Page (LandingPage.vue) - Fixed the UI of the cards because the new coded pulled from refactor in globalcss
+affected the image displayed
+(2) Updated Page - For You Page (ForYouPage.vue) - Added in error handling message when there is no preferences stored in database
+leading to recommender not being able to recommend clubs and drinks - Added in the code to add in username into the params
+(3) Updated Page - User Profile (UserProfileRefactor.vue) - Added in the code for the buttons in Add Friend so that is it able to call the various
+methods to invite a friend
 
-Nature of the changes (frontend / backend / database): 
-    frontend
+Nature of the changes (frontend / backend / database):
+frontend
 
 Coder: Dycia
 
-Purpose of the changes: 
-    (1) Updated Backend API (getData.py) 
-        - Updated get_recommended_clubs(userID) error handling when there is no preference hence not being able to recommend 
-        any clubs or drinks
+Purpose of the changes:
+(1) Updated Backend API (getData.py) - Updated get_recommended_clubs(userID) error handling when there is no preference hence not being able to recommend
+any clubs or drinks
 
-Nature of the changes (frontend / backend / database): 
-    backend
+Nature of the changes (frontend / backend / database):
+backend
+
+Coder: TeckXuan
+
+Purpose of the changes:
+(1) Updated Frontend (ImageSearchResults) - Updated the layout of the search results to be more concise and simialr to FYP page
+
+Nature of the changes (frontend / backend / database):
+frontend
