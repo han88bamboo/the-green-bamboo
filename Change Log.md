@@ -495,7 +495,8 @@ backend
 Coder: TeckXuan
 
 Purpose of the changes:
-(1) Updated Frontend (ImageSearchResults) - Updated the layout of the search results to be more concise and simialr to FYP page
+(1) Updated Frontend (ImageSearchResults) - Updated the layout of the search results to be more concise and simialr to FYP page, updated message if no lsitings are returned
+(2) Updated Backend API (getData.py) - Updated getImageSearchResults to return only listings with scores > 0
 
 Nature of the changes (frontend / backend / database):
-frontend
+frontend/backend
