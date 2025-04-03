@@ -373,13 +373,21 @@ def getClubPostDetails(postID, last_seen_id):
                 'error': 'No such user for the given poster ID'
             }), 404
 
-        # Step 2: Get a list of members who liked the post
+        # Step 2: Get a list of members who liked and disliked the post
         cur.execute('SELECT "memberID" FROM "clubPostsLikes" WHERE "postID" = %s', (postID,))
         liked_members = cur.fetchall()
 
         # Format the liked_members into a list of memberID
         liked_members_list = [member['memberID'] for member in liked_members]
         post['likedMembers'] = liked_members_list
+
+        # Get a list of members who disliked the post
+        cur.execute('SELECT "memberID" FROM "clubPostsDislikes" WHERE "postID" = %s', (postID,))
+        disliked_members = cur.fetchall()
+
+        # Format the disliked_members into a list of memberID
+        disliked_members_list = [member['memberID'] for member in disliked_members]
+        post['dislikedMembers'] = disliked_members_list
 
         # Step 4: Get the latest 20 comments for the specific post
         # Step the limit here 

@@ -1871,13 +1871,6 @@ export default {
     },
   },
 
-  computed: {
-    // Show the correct button UI
-    likesDislikesLoaded() {
-      return this.postLikes != [] && this.postDislikes != [];
-    },
-  },
-
   mounted() {
     // Get club id from the URL
     this.clubId = this.$route.params.clubID;
