@@ -1472,8 +1472,6 @@ def addComment():
             cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s AND "userType" = %s', (points['proofPoints'], user['userID'], 'user',))
             conn.commit()
 
-            print(f"Points added to user {user['userID']} for commenting: {points['proofPoints']} points")
-
         return jsonify({
             'message': 'Comment added successfully',
             'comment_obj': {
@@ -2751,8 +2749,6 @@ def removeComment():
             # deduct points from the user
             cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" - %s WHERE id = %s', (points['proofPoints'], user['userID'],))
             conn.commit()
-
-            print(f"Points deducted: {points['proofPoints']}")
 
         return jsonify({
             'message': 'Comment removed successfully',

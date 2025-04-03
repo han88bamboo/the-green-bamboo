@@ -108,6 +108,15 @@ def createAccount():
             """, (have_tried_list_id, drink["drinkId"]))
 
         db_conn.commit()
+
+        # Create proof point record for the new user
+        cursor.execute("""
+            INSERT INTO "pointsRecorder" ("userID", "userType", "currentPoints")
+            VALUES (%s, %s, %s)""",
+            (user_id, "user", 0))
+        
+        db_conn.commit()
+
         
         return jsonify(
             {   

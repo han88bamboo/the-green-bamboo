@@ -173,8 +173,9 @@ def getPointsForUser(id, userType):
     total_review_upvotes = 0
     total_review_downvotes = 0
 
-    if not review_ids:
+    if review_ids:
         for review_id in review_ids:
+
             id = review_id['id']
             cursor.execute('SELECT "upvotes", "downvotes" FROM "reviewsUserVotes" WHERE "reviewId" = %s', (id,))
             votes = cursor.fetchone()
@@ -191,7 +192,7 @@ def getPointsForUser(id, userType):
     total_producer_review_upvotes = 0
     total_producer_review_downvotes = 0
 
-    if not producer_review_ids:
+    if producer_review_ids:
         for producer_review_id in producer_review_ids:
             pr_id = producer_review_id['id']
             cursor.execute('SELECT "upvotes", "downvotes" FROM "producerReviewsUserVotes" WHERE "reviewId" = %s', (pr_id,))
