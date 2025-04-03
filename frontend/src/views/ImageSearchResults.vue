@@ -12,49 +12,56 @@
     </div>
 
     <!-- Display when data fails to load-->
-    <div class="text-danger fst-italic fw-bold fs-3 pt-5" v-if="dataLoaded == null"> 
-        <span>An error occurred while loading this page, please try again!</span>
+    <div class="text-danger fst-italic fw-bold fs-3 pt-5" v-if="dataLoaded == null">
+        <span>Create an account to get drink recommendations!</span>
         <br>
-        <button class="btn primary-btn btn-sm" @click="this.$router.go(-1)">
-            <span class="fs-5 fst-italic"> Return to previous page </span>
-        </button>
-        <button class="btn primary-btn btn-sm mx-1" @click="this.$router.go(0)">
-            <span class="fs-5 fst-italic"> Go to Home page </span>
-        </button>
+        <router-link :to="'/'" class="mx-1">
+            <button class="btn primary-btn btn-sm">
+                <span class="fs-5 fst-italic"> Landing Page </span>
+            </button>
+        </router-link>
+        <router-link :to="'/signup'" class="mx-1">
+            <button class="btn primary-btn btn-sm">
+                <span class="fs-5 fst-italic"> Signup Page </span>
+            </button>
+        </router-link>
     </div>
 
     <!-- [if] no search input -->
     <div v-if="search == false && dataLoaded == true">
         <!-- header -->
-        <!-- <div class="container pt-6 mobile-view-hide">
-            <div class="row"> -->
+        <div class="container pt-5 mobile-view-hide">
+            <div class="row">
                 <!-- tagline -->
-                <!-- <div class="col-8">
-                    <h4 class="text-start" v-if="userID == ''"> What's Pouring? </h4>
-                    <h4 class="text-start" v-else-if="userType == 'user'"> Hello, {{ displayName }}! What's Pouring? </h4>
-                    <h4 class="text-start" v-else> Hello, {{ username }}! What's Pouring? </h4>
-                </div> -->
+                <div class="col-8">
+                    <h1 class="text-start" v-if="userID == ''"> Here are the search results! </h1>
+                    <h1 class="text-start" v-else-if="userType == 'user'"> Hello, {{ displayName }}! Here are the search results!
+                    </h1>
+                    <h1 class="text-start" v-else> Hello, {{ username }}! Here are the search results! </h1>
+                </div>
                 <!-- button -->
-                <!-- <div v-if="!userID" class="col-4 text-end"  style="padding-right:40px;" >
+                <div v-if="!userID" class="col-4 text-end" style="padding-right:40px;">
                     <div class="d-grid gap-2">
                         <router-link :to="{ path: '/signUp' }">
-                            <button class="btn secondary-btn-border-thick btn-lg" style="font-weight: bold;"> 
-                                Sign Up to Start Pouring 
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
-                                    <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/>
+                            <button class="btn secondary-btn-border-thick btn-lg" style="font-weight: bold;">
+                                Sign Up to Start Pouring
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                    class="bi bi-arrow-right" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd"
+                                        d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8" />
                                 </svg>
                             </button>
                         </router-link>
                     </div>
-                </div> -->
-            <!-- </div>
-        </div> -->
+                </div>
+            </div>
+        </div>
 
         <!-- main content -->
-        <div class="container-xl pt-3 px-0 px-md-5">
+        <div class="container pt-3">
             <div class="row">
                 <!-- left pane -->
-                <div class="col-lg-3 col-md-3 col-12 mobile-view-hide">
+                <div class="col-lg-3 col-md-4 col-12 mobile-view-hide">
                     <div class="container p-lg-0 p-md-0 p-4">
                         <!-- [user] your drinks shelf & brands you follow -->
                         <div v-if="userType == 'user' || userType == ''" class="row">
@@ -65,65 +72,85 @@
                                     <div class="square-inline text-start">
                                         <span v-if="totalRequests != 0" class="square-inline text-start mr-auto">
                                             <h4>
-                                                <span class="title-card-text"> {{ totalRequests }} </span> Pending Listing Requests 
+                                                <span class="title-card-text"> {{ totalRequests }} </span> Pending
+                                                Listing Requests
                                             </h4>
                                         </span>
-                                        <h4 v-else class="square-inline text-start mr-auto">  No New Pending Listing Requests! </h4>
+                                        <h4 v-else class="square-inline text-start mr-auto"> No New Pending Listing
+                                            Requests! </h4>
                                     </div>
                                     <!-- body -->
                                     <div v-if="totalRequests != 0">
                                         <div style="align-items: center; justify-content: center;">
                                             <p>
-                                                <span class="title-card-text"> {{ requestListings.length}} </span> New Listing Requests
+                                                <span class="title-card-text"> {{ requestListings.length }} </span> New
+                                                Listing Requests
                                                 <br>
-                                                <span class="title-card-text"> {{requestEdits.length}} </span> Edit Listing Requests
+                                                <span class="title-card-text"> {{ requestEdits.length }} </span> Edit
+                                                Listing Requests
                                                 <br>
-                                                <span class="title-card-text"> {{requestDupes.length}} </span> Duplicate Reports
+                                                <span class="title-card-text"> {{ requestDupes.length }} </span>
+                                                Duplicate
+                                                Reports
                                             </p>
                                             <router-link :to="{ path: '/request/view' }">
-                                                <button class="btn secondary-btn-blue btn-sm py-2 px-3" style="font-weight: bold;"> View all requests </button>
-                                            </router-link> <!-- TZH changed secondary-btn-border to secondary-btn-blue -->
+                                                <button class="btn secondary-btn-blue btn-sm py-2 px-3"
+                                                    style="font-weight: bold;"> View all requests </button>
+                                            </router-link>
+                                            <!-- TZH changed secondary-btn-border to secondary-btn-blue -->
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <!-- your drinks shelf -->
                             <div class="col-12">
-                                <div class="square primary-square-green rounded p-3 mb-3 text-start" style="height: 300px; border-radius: 10px; box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.1);">
+                                <div class="square primary-square-green rounded p-3 mb-3 text-start"
+                                    style="height: 325px; box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3);">
                                     <!-- header text -->
                                     <div class="square-inline">
-                                        <router-link :to="{ path: '/profile/user/'+userID }" class="reverse-clickable-text">
-                                            <h4 class="square-inline text-start mr-auto reverse-clickable-text"> Your Drinks Shelf </h4>
+                                        <router-link :to="{ path: '/profile/user/' + userID }"
+                                            class="reverse-clickable-text">
+                                            <h4 class="square-inline text-start mr-auto reverse-clickable-text"> Your
+                                                Drinks Shelf </h4>
                                         </router-link>
                                     </div>
                                     <!-- body -->
                                     <div style="height: 85%;">
                                         <!-- [if] drinks in drink shelf -->
-                                        <div v-if="drinkShelf.length != 0" class="overflow-auto" style="max-height: 100%;">
-                                            <div class="text-start mb-2" v-for="listing in drinkShelf" v-bind:key="listing.id">
+                                        <div v-if="drinkShelf.length != 0" class="overflow-auto"
+                                            style="max-height: 100%;">
+                                            <div class="text-start mb-2" v-for="listing in drinkShelf"
+                                                v-bind:key="listing.id">
                                                 <div class="d-flex align-items-start">
-                                                    <router-link :to="{ path: '/listing/view/' +listing.id}" class="reverse-clickable-text">
-                                                        <img :src="(listing.photo || defaultProfilePhoto)" style="width: 20px; height: 20px;">
+                                                    <router-link :to="{ path: '/listing/view/' + listing.id }"
+                                                        class="reverse-clickable-text">
+                                                        <img :src="(listing.photo || defaultProfilePhoto)"
+                                                            style="width: 70px; height: 70px;">
                                                     </router-link>
-                                                    <span class="ms-3 reverse-clickable-text"> 
-                                                        <router-link :to="{ path: '/listing/view/' +listing.id}" class="reverse-clickable-text">
-                                                            <b> {{ listing.listingName }} </b> 
+                                                    <span class="ms-3 reverse-clickable-text">
+                                                        <router-link :to="{ path: '/listing/view/' + listing.id }"
+                                                            class="reverse-clickable-text">
+                                                            <b> {{ listing.listingName }} </b>
                                                         </router-link>
                                                         <br>
-                                                        <router-link :to="{ path: '/profile/producer/' +listing.producerID}" class="reverse-clickable-text">
-                                                        {{ getProducerName(listing) }}
+                                                        <router-link
+                                                            :to="{ path: '/profile/producer/' + listing.producerID }"
+                                                            class="reverse-clickable-text">
+                                                            {{ getProducerName(listing) }}
                                                         </router-link>
                                                     </span>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div v-if="userID && drinkShelf.length == 0" style="display: flex; align-items: center; justify-content: center; height: 100%;">
+                                        <div v-if="userID && drinkShelf.length == 0"
+                                            style="display: flex; align-items: center; justify-content: center; height: 100%;">
                                             <h6 class="fst-italic"> No drinks added yet. </h6>
                                         </div>
-                                        <div v-else-if="!userID" style="display: flex;  align-items: center; justify-content: center; height: 100%; flex-direction: column;">
-                                            <p class="text-white"> Log in to add a drink to shelf</p>
+                                        <div v-else-if="!userID"
+                                            style="display: flex; align-items: center; justify-content: center; height: 100%;">
                                             <router-link :to="{ path: '/login' }">
-                                                <button class="btn secondary-btn-border-thick  py-2 px-3" style="font-weight: bold;"> Login</button>
+                                                <button class="btn secondary-btn-border-thick py-2 px-3"
+                                                    style="font-weight: bold;"> Log in to add a drink to shelf </button>
                                             </router-link>
                                         </div>
                                     </div>
@@ -131,26 +158,34 @@
                             </div>
                             <!-- brands you follow -->
                             <div class="col-12">
-                                <div class="square primary-square-green rounded p-3 mb-3 text-start" style="height: 300px; border-radius: 10px; box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.1);">
+                                <div class="square primary-square-green rounded p-3 mb-3 text-start"
+                                    style="height: 325px; box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3);">
                                     <!-- header text -->
                                     <div class="square-inline">
                                         <h4 class="square-inline text-start mr-auto"> Brands You Follow </h4>
                                     </div>
                                     <!-- body -->
                                     <div style="height: 85%;">
-                                        <div v-if="questionsUpdates.length > 0" class="overflow-auto" style="max-height: 100%;">
+                                        <div v-if="questionsUpdates.length > 0" class="overflow-auto"
+                                            style="max-height: 100%;">
                                             <div v-for="(update, index) in questionsUpdates" :key="index">
                                                 <!--Show if it's either producer or venue update-->
-                                                <span v-if="update.type == 'producerUpdate' || update.type == 'venueUpdate'">
-                                                        <router-link v-if="update.type == 'producerUpdate'" :to="{ path: '/profile/producer/' + update.id }" class="reverse-text">
-                                                            <img :src="(update.photo || defaultProfilePhoto)" style="width: 35px; height: 35px;" class="img-border">
-                                                            <b class="ps-2"> {{ update.name }} </b>
-                                                        </router-link>
-                                                        <router-link v-else :to="{ path: '/profile/venue/' + update.id }" class="reverse-text">
-                                                            <img :src="(update.photo || defaultProfilePhoto)" style="width: 35px; height: 35px;" class="img-border">
-                                                            <b class="ps-2"> {{ update.name }} </b>
-                                                        </router-link>
-                                                    <br/>
+                                                <span
+                                                    v-if="update.type == 'producerUpdate' || update.type == 'venueUpdate'">
+                                                    <router-link v-if="update.type == 'producerUpdate'"
+                                                        :to="{ path: '/profile/producer/' + update.id }"
+                                                        class="reverse-text">
+                                                        <img :src="(update.photo || defaultProfilePhoto)"
+                                                            style="width: 35px; height: 35px;" class="img-border">
+                                                        <b class="ps-2"> {{ update.name }} </b>
+                                                    </router-link>
+                                                    <router-link v-else :to="{ path: '/profile/venue/' + update.id }"
+                                                        class="reverse-text">
+                                                        <img :src="(update.photo || defaultProfilePhoto)"
+                                                            style="width: 35px; height: 35px;" class="img-border">
+                                                        <b class="ps-2"> {{ update.name }} </b>
+                                                    </router-link>
+                                                    <br />
                                                     updated status: "<b>{{ update.text }}</b>"
                                                     <br>
                                                     <i>{{ getTimeDifference(update.date) }}</i>
@@ -160,13 +195,16 @@
                                                 <!-- Show if it's either producer or venue question? (Kai Lin wants to show newly added expressions)-->
                                             </div>
                                         </div>
-                                        <div v-else-if="userID" style="display: flex; align-items: center; justify-content: center; height: 100%;">
+                                        <div v-else-if="userID"
+                                            style="display: flex; align-items: center; justify-content: center; height: 100%;">
                                             <h6 class="fst-italic"> No brands added yet. </h6>
                                         </div>
-                                        <div v-else-if="!userID" style="display: flex;  align-items: center; justify-content: center; height: 100%; flex-direction: column;">
-                                            <p class="text-white">Log in to follow your favourite brands</p>
+                                        <div v-else
+                                            style="display: flex; align-items: center; justify-content: center; height: 100%;">
                                             <router-link :to="{ path: '/login' }">
-                                                <button class="btn secondary-btn-border-thick  py-2 px-3" style="font-weight: bold;"> Login</button>
+                                                <button class="btn secondary-btn-border-thick btn-sm py-2 px-3"
+                                                    style="font-weight: bold;"> Log in to follow your favourite
+                                                    brands</button>
                                             </router-link>
                                         </div>
                                     </div>
@@ -177,29 +215,37 @@
                         <!-- [producer] listing requests / fan questions / activity -->
                         <div v-else-if="userType == 'producer'" class="row">
                             <!-- listing requests -->
-                            <div class="col-12"> 
-                                <div class="square primary-square-green-outline rounded p-3 mb-3"> <!--tzh changed to green outline -->
+                            <div class="col-12">
+                                <div class="square primary-square-green-outline rounded p-3 mb-3">
+                                    <!--tzh changed to green outline -->
                                     <!-- header text -->
                                     <div class="square-inline text-start">
                                         <span v-if="totalRequests != 0" class="square-inline text-start mr-auto">
                                             <h4>
-                                                <span class="title-card-text"> {{ totalRequests }} </span> Pending Listing Requests 
+                                                <span class="title-card-text"> {{ totalRequests }} </span> Pending
+                                                Listing Requests
                                             </h4>
                                         </span>
-                                        <h4 v-else class="square-inline text-start mr-auto">  No New Pending Listing Requests! </h4>
+                                        <h4 v-else class="square-inline text-start mr-auto"> No New Pending Listing
+                                            Requests! </h4>
                                     </div>
                                     <!-- body -->
                                     <div v-if="totalRequests != 0">
                                         <div style="align-items: center; justify-content: center;">
                                             <p>
-                                                <span class="title-card-text"> {{ requestListings.length}} </span> New Listing Requests
+                                                <span class="title-card-text"> {{ requestListings.length }} </span> New
+                                                Listing Requests
                                                 <br>
-                                                <span class="title-card-text"> {{requestEdits.length}} </span> Edit Listing Requests
+                                                <span class="title-card-text"> {{ requestEdits.length }} </span> Edit
+                                                Listing Requests
                                                 <br>
-                                                <span class="title-card-text"> {{requestDupes.length}} </span> Duplicate Reports
+                                                <span class="title-card-text"> {{ requestDupes.length }} </span>
+                                                Duplicate
+                                                Reports
                                             </p>
                                             <router-link :to="{ path: '/request/view' }">
-                                                <button class="btn secondary-btn-border btn-sm py-2 px-3" style="font-weight: bold;"> View all requests </button>
+                                                <button class="btn secondary-btn-border btn-sm py-2 px-3"
+                                                    style="font-weight: bold;"> View all requests </button>
                                             </router-link>
                                         </div>
                                     </div>
@@ -207,21 +253,25 @@
                             </div>
                             <!-- fan questions -->
                             <div class="col-12">
-                                <div class="square primary-square-green-outline rounded p-3 mb-3">   <!--tzh changed to green outline -->
+                                <div class="square primary-square-green-outline rounded p-3 mb-3">
+                                    <!--tzh changed to green outline -->
                                     <!-- header text -->
                                     <div class="square-inline">
-                                        <span v-if="unansweredQuestions.length != 0" class="square-inline text-start mr-auto">
+                                        <span v-if="unansweredQuestions.length != 0"
+                                            class="square-inline text-start mr-auto">
                                             <h4>
-                                                <span class="title-card-text"> {{ unansweredQuestions.length }} </span>  Pending Fan Questions For You
+                                                <span class="title-card-text"> {{ unansweredQuestions.length }} </span>
+                                                Pending Fan Questions For You
                                             </h4>
                                         </span>
-                                        <h4 v-else class="square-inline text-start mr-auto">  No New Fan Questions! </h4>
+                                        <h4 v-else class="square-inline text-start mr-auto"> No New Fan Questions! </h4>
                                     </div>
                                     <!-- body -->
                                     <div v-if="unansweredQuestions.length != 0">
                                         <div style="display: flex; align-items: center; justify-content: center;">
                                             <router-link :to="{ path: '/Producers/ProducersQA/' + userID }">
-                                                <button class="btn secondary-btn-border btn-sm py-2 px-3"  style="font-weight: bold;"> Respond to Q&A </button>
+                                                <button class="btn secondary-btn-border btn-sm py-2 px-3"
+                                                    style="font-weight: bold;"> Respond to Q&A </button>
                                             </router-link>
                                         </div>
                                     </div>
@@ -229,7 +279,8 @@
                             </div>
                             <!-- activity -->
                             <div class="col-12">
-                                <div class="square primary-square-green-outline rounded p-3 mb-3">  <!--tzh changed to green outline -->
+                                <div class="square primary-square-green-outline rounded p-3 mb-3">
+                                    <!--tzh changed to green outline -->
                                     <!-- header text -->
                                     <div class="square-inline">
                                         <h4 class="square-inline text-start mr-auto"> Activity on Your Listings </h4>
@@ -238,7 +289,8 @@
                                     <div>
                                         <div style="display: flex; align-items: center; justify-content: center;">
                                             <router-link :to="{ path: '/profile/producer/' + userID }">
-                                                <button class="btn secondary-btn-border btn-sm py-2 px-3" style="font-weight: bold;"> View Dashboard </button>
+                                                <button class="btn secondary-btn-border btn-sm py-2 px-3"
+                                                    style="font-weight: bold;"> View Dashboard </button>
                                             </router-link>
                                         </div>
                                     </div>
@@ -250,21 +302,25 @@
                         <div v-else-if="userType == 'venue'" class="row">
                             <!-- fan questions -->
                             <div class="col-12">
-                                <div class="square primary-square-green-outline rounded p-3 mb-3">  <!--tzh changed to green outline -->
+                                <div class="square primary-square-green-outline rounded p-3 mb-3">
+                                    <!--tzh changed to green outline -->
                                     <!-- header text -->
                                     <div class="square-inline">
-                                        <span v-if="unansweredQuestions.length != 0" class="square-inline text-start mr-auto">
+                                        <span v-if="unansweredQuestions.length != 0"
+                                            class="square-inline text-start mr-auto">
                                             <h4>
-                                                <span class="title-card-text"> {{ unansweredQuestions.length }} </span>  Pending Fan Questions For You
+                                                <span class="title-card-text"> {{ unansweredQuestions.length }} </span>
+                                                Pending Fan Questions For You
                                             </h4>
                                         </span>
-                                        <h4 v-else class="square-inline text-start mr-auto">  No New Fan Questions! </h4>
+                                        <h4 v-else class="square-inline text-start mr-auto"> No New Fan Questions! </h4>
                                     </div>
                                     <!-- body -->
                                     <div v-if="unansweredQuestions.length != 0">
                                         <div style="display: flex; align-items: center; justify-content: center;">
                                             <router-link :to="{ path: '/Venues/VenuesQA/' + userID }">
-                                                <button class="btn secondary-btn-border btn-sm py-2 px-3" style="font-weight: bold;"> Respond to Q&A </button>
+                                                <button class="btn secondary-btn-border btn-sm py-2 px-3"
+                                                    style="font-weight: bold;"> Respond to Q&A </button>
                                             </router-link>
                                         </div>
                                     </div>
@@ -272,7 +328,8 @@
                             </div>
                             <!-- check ins at your venue -->
                             <div class="col-12">
-                                <div class="square primary-square-green-outline rounded p-3 mb-3">  <!--tzh changed to green outline -->
+                                <div class="square primary-square-green-outline rounded p-3 mb-3">
+                                    <!--tzh changed to green outline -->
                                     <!-- header text -->
                                     <div class="square-inline">
                                         <h4 class="square-inline text-start mr-auto"> Activity on Your Listings </h4>
@@ -281,344 +338,298 @@
                                     <div>
                                         <div style="display: flex; align-items: center; justify-content: center;">
                                             <router-link :to="{ path: '/profile/venue/' + userID }">
-                                                <button class="btn secondary-btn-border btn-sm py-2 px-3" style="font-weight: bold;"> View Dashboard </button>
+                                                <button class="btn secondary-btn-border btn-sm py-2 px-3"
+                                                    style="font-weight: bold;"> View Dashboard </button>
                                             </router-link>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
+
                 <!-- discover, following & filter by drink type -->
-                <div class="col-lg-9 col-md-9 col-12">
-                    <div class="container ">
-                        <div class="row d-flex justify-content-between ps-lg-4 pe-lg-4 mobile-ps-3 mobile-pe-3 flex-row">
+                <div class="col-lg-9 col-md-8 col-12">
+                    <div class="container">
+                        <div class="row ps-lg-4 pe-lg-4 mobile-ps-3 mobile-pe-3">
                             <!-- discover  tzh changed col-12 to col-4-->
-                             <div class="row col-12">
-                            <div class="col-xl-6 col-lg-4 col-4 mb-3 mobile-pe-0 mobile-ps-0">
+                            <div class="col-xl-3 col-lg-4 col-4 mb-3 mobile-pe-0 mobile-ps-0">
                                 <div class="d-grid gap-2  mx-1">
-                                    <button class="btn btn-sm mobile-ps-0 text-center" 
+                                    <button class="btn btn-sm mobile-ps-0 text-center"
                                         :class="{ 'primary-btn-green mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0 mobile-pe-0': discovery, 'primary-btn-green-outline mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0': !discovery }"
-                                        v-on:click="changeDiscoveryStatus()"> <!--tzh added -green and green-outline, changed mt-1 to mb-0_5 mt-0_5 -->
-                                        <p class="mb-0_5 mt-0_5 discover-and-following mobile-mb-0"> Search Results </p>
+                                        v-on:click="changeDiscoveryStatus()">
+                                        <!--tzh added -green and green-outline, changed mt-1 to mb-0_5 mt-0_5 -->
+                                        <p class="mb-0_5 mt-0_5 discover-and-following mobile-mb-0"> Drinks </p>
                                     </button>
                                 </div>
                             </div>
-                            <!-- following tzh changed col-12 to col-4-->
+                            <!-- filter by drink type / category tzh changed col-12 to col-4 -->
+                            <!-- <div class="dropdown col-xl-3 col-lg-4 col-4 mb-3 mobile-col-2 mobile-pe-0">
+                                <div class="d-grid gap-2"> -->
+                            <!-- tzh added -homepage and some changes for mobile-->
+                            <!-- <div v-if="selectedDrinkType != ''"
+                                        style="position:absolute; width:100%; font-size:0.8em; transform: translate3d(-20px, -20px, 0px);"
+                                        class="cross-icon mobile-view-hide ps-4" @click="clearSelection">&#10005; Clear
+                                        Selection</div>
+                                    <button
+                                        class="btn primary-light-dropdown-homepage btn-lg dropdown-toggle mobile-view-remove-toggle"
+                                        type="button" data-bs-toggle="dropdown" aria-expanded="false"
+                                        style="white-space: nowrap; overflow:hidden; text-overflow: ellipsis;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+                                            class="bi bi-funnel funnel-svg-dimensions" viewBox="0 0 16 16">
+                                            <path
+                                                d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2z" />
+                                        </svg>
+                                        <span class="mobile-view-hide" style="margin-left: 5px;">{{ selectedDrinkType ?
+                                            selectedDrinkType['drinkType'] : 'Filter: Drink Type' }}</span>
+
+                                    </button> -->
+                            <!-- tzh - above to be replaced for mobile-->
+                            <!-- <div class="dropdown-menu pt-0" aria-labelledby="dropdownMenuButton" @click.stop>
+
+                                        <div class="d-flex filter-div">
+                                            <div class="dropdown-column ms-2 pt-3"
+                                                :class="{ 'greyed-out': selectedDrinkType }">
+                                                <h6 class="ms-3"> Filter by <span class=""
+                                                        :class="{ 'text-decoration-underline': !selectedDrinkType }">Drink
+                                                        Type</span> </h6>
+                                                <hr>
+                                                <div v-for="drinkType in drinkTypes" v-bind:key="drinkType.id"> -->
+                            <!-- Filter button for drink type -->
+                            <!-- <a class="dropdown-item"
+                                                        :class="{ 'active': selectedDrinkType === drinkType }"
+                                                        @click="selectDrinkType(drinkType)">
+                                                        <span>{{ drinkType['drinkType'] }}</span>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            <div v-show="selectedDrinkType"
+                                                class="dropdown-column drink-category-column me-2 pt-3"
+                                                :class="{ 'greyed-out': !selectedDrinkType }">
+                                                <h6 class="ms-3"> Filter by <span class=""
+                                                        :class="{ 'text-decoration-underline': selectedDrinkType }">Drink
+                                                        Category</span> </h6>
+                                                <hr style="min-width:500px;">
+                                                <div v-if="selectedTypeCategory != ''">
+                                                    <div v-for="category in selectedTypeCategory" v-bind:key="category">
+                                                        <a class="dropdown-item"
+                                                            :class="{ 'active': selectedCategory === category }"
+                                                            @click="selectDrinkCategory(category)">
+                                                            <span>{{ category }}</span>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                                <div v-else>
+                                                    <a class="dropdown-item-disabled default-clickable-text">
+                                                        <span> Select Drink Type first. </span>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div> -->
+                            <!-- Filter button for drink type 
+                                        <div class="d-flex  mobile-view-show">
+                                            <div class="dropdown-column ms-2 mt-2" >
+                                                <h6 class="ms-3"> Filter by Drink Type </h6>
+                                                <p class="ms-3" style="font-size: 12px;">(Scroll down to filter by Sub-Category)</p>
+                                                <hr>
+                                                <div v-for="drinkType in drinkTypes" v-bind:key="drinkType.id">
+                                                    
+                                                    <a class="dropdown-item" :class="{ 'active': selectedDrinkType === drinkType }" @click="selectDrinkType(drinkType)"> 
+                                                        <span>{{ drinkType['drinkType'] }}</span>
+                                                    </a>   
+                                                </div>
+                                                <hr>
+                                                <h6> Filter by Drink Category </h6>
+                                                <hr>
+                                                <div v-if="selectedTypeCategory != ''">
+                                                    <div v-for="category in selectedTypeCategory" v-bind:key="category">
+                                                        <a class="dropdown-item" :class="{ 'active': selectedCategory === category }" @click="selectDrinkCategory(category)">
+                                                            <span>{{ category }}</span>
+                                                        </a> 
+                                                    </div>
+                                                </div>
+                                                <div v-else>
+                                                    <a class="dropdown-item-disabled default-clickable-text"> 
+                                                        <span> There is no category for this </span>
+                                                    </a>   
+                                                </div>
+                                            </div>
+                                        </div>
+                                        -->
+                            <!-- </div>
+                                </div>
+                            </div> -->
+                            <!-- sort by drink type - tzh changed col-12 to col-4 -->
+                            <div class="dropdown col-xl-3 col-lg-4 col-4 mb-3 mobile-col-2 mobile-ps-0">
+                                <div class="d-grid gap-2">
+                                    <button
+                                        class="btn primary-light-dropdown-homepage btn-lg dropdown-toggle mobile-view-remove-toggle"
+                                        type="button" data-bs-toggle="dropdown" aria-expanded="false"
+                                        style="white-space: nowrap; overflow:hidden; text-overflow: ellipsis;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+                                            class="bi bi-sort-down funnel-svg-dimensions" viewBox="0 0 16 16">
+                                            <path
+                                                d="M3.5 2.5a.5.5 0 0 0-1 0v8.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L3.5 11.293zm3.5 1a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5M7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1z" />
+                                        </svg>
+                                        <span class="mobile-view-hide" style="margin-left: 5px;"> Sort: {{
+                                            sortSelection.category != '' ? sortSelection.category : 'Category' }}
+                                        </span>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><span class="dropdown-item" @click="sortByCategory('')"> Clear Sort </span>
+                                        </li>
+                                        <li>
+                                            <hr class="dropdown-divider">
+                                        </li>
+                                        <li v-for="category in sortCategoryList" :key="category">
+                                            <span class="dropdown-item"
+                                                :class="{ 'active': sortSelection.category === category }"
+                                                @click="sortByCategory(category)"> {{ category }} </span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
-                        </div>
-                        
+
                         <!-- listings  TZH removed class scrollable-listings--->
-                         <div class="container">
-
-                        <div class="row">
-
                             <!-- [if] discovery mode-->
                             <div v-if="discovery == true || following == false" class="mobile-ps-0 mobile-pe-0">
                                 <!-- Display error message when no results for filter-->
 
-                                 <!-- Displays Message if there are no listing available  -->
-                                <h5 v-if="listings == '' || (selectedDrinkType!='' && filteredListings=='')" style="display: inline-block;" class="pt-5"> There is no listing available for the selected filter </h5>
+                                <!-- Displays Message if there are no listing available  -->
+                                <h5 v-if="listings.length === 0 || (selectedDrinkType !== '' && filteredListings.length === 0)"
+                                    style="display: inline-block;" class="pt-5 text-muted">
+                                    <div>Sorry, we don’t have enough info to recommend listings.</div>
+                                    <div>Head to your profile to update your preferences!</div>
+                                </h5>
+                                <div v-if="listings.length === 0 || (selectedDrinkType !== '' && filteredListings.length === 0)"
+                                    class="pt-3">
+                                    <button class="btn secondary-btn btn-md ms-2 fw-bold" @click="goToProfile">
+                                        Update Preferences
+                                    </button>
+                                </div>
                                 <!-- v-loop for each listing -->
-                                <div class="containers text-start">
-                                    <!-- Displays listings from all general listings or from filtered listings from drinkCategory/drinkType depending if filter is selected-->
-                                    <!-- <div v-for="listing in filteredListings" v-bind:key="listing.id" class="p-3 mobile-pt-0"> -->
 
-
-
-                             <div v-for="listing in (selectedDrinkType == '' ? listings : filteredListings)" v-bind:key="listing.id" class="">
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <div class="card  mb-4  d-flex flex-row  " 
-                                style="background-color:white !important; border-radius: 10px; box-shadow: 4px 4px 4px #827C75; overflow: hidden;">
-
-                                <!-- Image Section -->
-                                <div class="text-center text-md-start">
-                                    <div class="image-wrapper position-relative d-inline-block">
-                                        <img v-if="listing['photo']" 
-                                            :src="listing['photo']" 
-                                            class="listing-image"
-                                            style=" border-top-left-radius: 10px; border-bottom-left-radius: 10px;">
-                                            
-                                        <img v-else 
-                                            src="../../Images/Drinks/Placeholder.png" 
-                                            class="listing-image"
-                                            style=" border-top-left-radius: 10px; border-bottom-left-radius: 10px;">
+                                <div class="recommendations">
+                                    <div class="drink-card" v-for="listing in selectedDrinkType ==
+                                        ''
+                                        ? listings
+                                        : filteredListings" v-bind:key="listing.id">
+                                        <div class="drink-img">
+                                            <img v-if="listing.photo" :src="listing.photo" :alt="listing.listingName" />
+                                            <img v-else src="../../Images/Drinks/Placeholder.png"
+                                                :alt="listing.listingName" />
+                                        </div>
+                                        <div class="drink-info">
+                                            <h4 class="drink-name">
+                                                {{ listing.listingName }}
+                                            </h4>
+                                            <div class="distillery">
+                                                {{ listing.bottler }}
+                                            </div>
+                                            <p class="drink-desc">
+                                                {{
+                                                    listing.officialDesc.slice(
+                                                        0,
+                                                        300
+                                                    ) +
+                                                    (listing["officialDesc"]
+                                                        .length > 300
+                                                        ? "..."
+                                                        : "")
+                                                }}
+                                            </p>
+                                            <div class="rating">
+                                                <span class="rating-number">{{
+                                                    listing.rating || "0.0"
+                                                    }}</span>
+                                                <span class="rating-star">★</span>
+                                            </div>
+                                            <div class="drink-meta">
+                                                <div class="mobile-view-hide">
+                                                    <BookmarkIcon v-if="user" :user="user" :listing="listing"
+                                                        :overlay="true" size="30" @icon-clicked="handleIconClick" />
+                                                </div>
+                                                <router-link :to="'/listing/view/' +
+                                                    listing.id
+                                                    ">
+                                                    <button type="button" class="btn btn-primary">
+                                                        Read more
+                                                    </button>
+                                                </router-link>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            <div class="detials-rating d-flex flex-column flex-md-row justify-content-between w-100">
-
-                                <!-- Details Section -->
-                                <div class="flex-grow-1 py-md-3 py-1 w-100 d-flex flex-column justify-content-between md-px-3 px-1">
-                                    <!-- Name & Producer -->
-                                    <div class="name-producer">
-                                        <router-link :to="{ path: '/listing/view/' + listing.id }" class="primary-clickable-text text-decoration-none" style="color:#027562;">
-                                            <h5 class="d-none d-md-block"><b>{{ listing["listingName"] }}</b></h5>
-                                            <h6 class="d-block d-md-none"><b>{{ listing["listingName"] }}</b></h6>
-                                        </router-link>
-                                        
-                                        <!-- Producer -->
-                                        <router-link :to="{ path: '/profile/producer/' + listing.producerID }" class="primary-clickable-text">
-                                            <h6 class="mobile-rating-smaller-text"><b>{{ getProducerName(listing) }}</b></h6>
-                                        </router-link>
-                                    </div>
-
-                                    <!-- Description -->
-                                    <router-link :to="{ path: '/listing/view/' + listing.id }" class="default-clickable-text fst-italic">
-                                        <p class="homepage-bottle-listing-description">
-                                            {{ listing.officialDesc?.length > 300 ? listing.officialDesc.slice(0, 300) + '...' : listing.officialDesc }}
-                                        </p>
-                                    </router-link>
-                                </div>
-
-                                <!-- Rating & Read More Button -->
-                                <div class="text-center text-md-end d-flex flex-row flex-md-col justify-content-between d-md-block mt-0 mt-md-3 px-3">
-                                <h1 class="fw-bold text-warning">
-                                    {{ getRatings(listing) }} ★
-                                </h1>
-                                <div class="d-grid">
-                                    <router-link :to="{ path: '/listing/view/' + listing.id }" class="primary-clickable-text">
-                                        <button class="btn btn-warning btn-sm fw-bold shadow-lg rounded-pill px-2 py-0 px-md-4 py-md-2" 
-                                                style="font-size: 16px; background-color: #F0B358; transition: background-color 0.3s;" 
-                                                onmouseover="this.style.backgroundColor='#FDD497'" 
-                                                onmouseout="this.style.backgroundColor='#F0B358'">
-                                            Read More
-                                        </button>
-                                    </router-link>
-                                </div>
-                            </div>
-
-                            </div>
-
-                            </div>
-
-                                    </div>
-                                </div>
-                            </div>
+                                <div class="d-grid justify-content-center align-content-center pt-3">
+                                    <button v-if="moreListings && listings.length > 0" class="btn secondary-btn btn-md"
+                                        style="font-weight: bold" @click="retrieveListings">
+                                        Click to load more!
+                                    </button>
                                 </div>
                             </div> <!-- end of listings -->
-
-                            <!-- [else] following clicked -->
+                            <!-- [else] clubs clicked -->
                             <div v-else-if="following || discovery == false" class="mobile-ps-0 mobile-pe-0">
-
-
-                                <!-- latest reviews from users the current user is following -->
-                                <h3 class="text-body-secondary text-start pt-3"> 
-                                    <b> Latest Reviews from Followed Users</b>
-                                </h3>
-                                <!-- v-loop for each review -->
-                                <div class="container text-start">
-                                    <h5 v-if="latestReviews.length == 0" style="display: inline-block;"> There is no listing available for the selected filter </h5>
-                                    <div v-else v-for="review in latestReviews" v-bind:key="review.id" class="p-3 mobile-pt-0">
-
-                                        <!-- For latest reviews -->
-                                        <div class="row gap-3">
-
-                                            <!-- row 1: For followed user info and reviewTarget name-->
-                                            <div class="row my-auto">
-                                                <!-- Column 1: Followed user photo-->
-                                                <div class="col-2 d-flex justify-content-center">
-                                                    <img :src="(review['userInfo']['photo'] || defaultProfilePhoto)" class="w-50 h-100 rounded-circle">
-                                                </div>
-
-                                                <!-- Column 2: Followed user displayName and reviewTarget listingName-->
-                                                <div class="col-10 d-flex align-items-center gap-2">
-                                                    <router-link :to="{ path: '/profile/user/' + review.userID }" class="primary-clickable-text">
-                                                        <h5> <b> @{{ review['userInfo']['displayName'] }} </b> </h5>
-                                                    </router-link>
-                                                    <h5>just drank and rated </h5>
-                                                    <router-link :to="{ path: '/listing/view/' +review.reviewTarget.id }" class="primary-clickable-text">
-                                                        <h5> <b> {{ review['reviewTarget']['listingName'] }} </b> </h5>
-                                                    </router-link>
-                                                </div>
-
-                                            </div>
-
-                                            <!-- row 2: For reviewTarget photo, review description, rating and "View drink listing" button-->
-                                            <div class="row">
-                                                <!--Column 1: listing image-->
-                                                <!-- image -->
-                                                <div class="col-md-5 col-12">
-                                                    <div class="image-container mb-3 homepage" >
-                                                        <img v-if="review['reviewTarget']['photo']" :src="review['photo']" class="img-border homepage">
-                                                        <img v-else src="../../Images/Drinks/Placeholder.png" class="img-border homepage">
-                                                    </div>
-                                                </div>
-
-                                                <!-- Column 2: rating description, rating and "View drink listing" button-->                                                
-                                                <div class="col-md-7 col-12 d-flex flex-column justify-content-between">
-
-                                                    <!-- Row 1 in column 2: Rating description-->
-                                                    <div class="row">
-                                                        <h5> "{{ review["reviewDesc"] }}" </h5>
-                                                    </div>
-
-                                                    <!-- Row 2 in column 2: Rating and "View drink listing" button-->
-                                                    <div class="row">
-                                                        <!-- Rating -->
-                                                        <div class="col-6 d-flex align-items-center">
-                                                            <h1 class="rating-text text-end d-flex align-items-center">
-                                                                {{ review["rating"] }}
-                                                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
-                                                                    <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                                                </svg>
-                                                            </h1>
-                                                        </div>
-
-                                                        <!-- "View drink listing" button -->
-                                                        <div class="col-6">
-                                                            <div class="d-grid gap-5">
-                                                                <router-link :to="{ path: '/listing/view/' +review.reviewTarget.id }" class="primary-clickable-text">
-                                                                    <a class="btn secondary-btn btn-lg" style="font-weight: bold;"> View Drink Listing </a>
-                                                                </router-link>
-                                                            </div>
-                                                        </div>  
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                <!-- Added by SMU GROUP 3 to handle the error (no preferences in DB) -->
+                                <!-- Displays Message if there are no listing available  -->
+                                <h5 v-if="!recommendedClubs || recommendedClubs.length === 0"
+                                    style="display: inline-block;" class="pt-5 text-muted">
+                                    <div>Sorry, we don't have enough info to recommend clubs.</div>
+                                    <div>Head to your profile to update your preferences!</div>
+                                </h5>
+                                <div v-if="!recommendedClubs || recommendedClubs.length === 0"
+                                    class="pt-3">
+                                    <button class="btn secondary-btn btn-md ms-2 fw-bold" @click="goToProfile">
+                                        Update Preferences
+                                    </button>
                                 </div>
-
-
-                                <!-- recently added  -->
-                                <h3 class="text-body-secondary text-start pt-3"> 
-                                    <b> Recently Added </b> 
-                                </h3>
-                                <!-- v-loop for each listing -->
-                                <div class="container text-start">
-                                    <h5 v-if="recentlyAdded==''" style="display: inline-block;"> There is no listing available for the selected filter </h5>
-                                    <h5 v-if="recentlyAdded == '' || (selectedDrinkType!='' && filteredRecentlyAdded=='')" style="display: inline-block;"> There is no listing available for the selected filter </h5>
-                                    <!-- <div v-for="listing in recentlyAdded" v-bind:key="listing.id" class="p-3 mobile-pt-0"> -->
-                                    <div v-for="listing in (selectedDrinkType == '' ? recentlyAdded : filteredRecentlyAdded)" v-bind:key="listing.id" class="p-3 mobile-pt-0">
-                                        <!-- For latest reviews -->
-                                        
-                                        <!-- For listings -->
-                                        <div class="row">
+                                <div class="recommendations">
+                                    <div v-for="club in recommendedClubs" :key="club.id" class="drink-card">
                                             <!-- image -->
-                                            <div class="col-5"> <!-- tzh changed col-xl-5 col-12 to col-5 -->
-                                                <div class="image-container mb-3 homepage" >
-                                                    <img v-if="listing['photo']" :src="listing['photo']"  class="img-border homepage">
-                                                    <img v-else src="../../Images/Drinks/Placeholder.png" class="img-border homepage">
-                                                    <div class="mobile-view-hide">
-                                                    <BookmarkIcon 
-                                                        v-if="user" 
-                                                        :user="user" 
-                                                        :listing="listing" 
-                                                        :overlay="true"
-                                                        size="30"
-                                                        @icon-clicked="handleIconClick" />
-                                                    </div>    
-                                                </div>
+                                            <div class="drink-img"> <!-- tzh changed col-xl-5 col-12 to col-5 -->
+                                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAe1BMVEX///8AAABqamr7+/vb29vw8PD8/PzV1dXi4uKlpaXLy8u2trbp6enz8/OoqKjs7OwqKip0dHSdnZ16enqvr6/JyclTU1OFhYWOjo4/Pz9lZWUPDw9GRkZcXFwWFhaUlJS/v783NzcmJiY6OjpNTU0dHR1WVlZ/f38oKCjDkx2ZAAAHVElEQVR4nO2caX/iIBDGN57xrPGo2nokrdb9/p9wa9sVEiDMA6l7/J7/a0eYAMPMMPDjByGEEEIIIYQQQgghhBBCCCGEEEIIIYQQQgghhPzHtDuj6Xw+GPUfAoTTfDA/rjfz6XCMC3f7o+lgPpiGNS0kPRaJIsvbiOz8LdF5nCId7WzOunArB3suY7RNqmTCsWgPCkM2SU5LYcu5RXqDfF4Rw7PZyvVrdv2ik7VV9Mpc0HJ/ZpcdROtUouXspHcgBk7Rdw4rn/jCKbudNKPblfRQ08mnWtGxObfLtGqn29gxgJ90mlJwVd/HWc23zD36efrZ94gOm1HQ28tn52KcCxRMkjxUwRpRhKG/i2fHTNuIFEySkV08FYj24xV8kHRxZxWVjeAVu72pW/034vf/QtTFjUVyJFbQvhafRJKzWAWl42B2cQwomCQ9Q15ipK5kcQqKu7k1RAtIw0dDXiwaZ1DdO72vHfki/KRqbeTy5scFAGbaqSzZBRVMkkrTgGSMPXV7lCZlL9ztbLko+6iImVpEaIj08KgL4kNYMTZv/t8rwhX0+xQar7qkdK/X0X34NiQZPk0xa6G7p5DgF4Um73GFK0iCMDt7qB3Nmgo8PQup+oMjJLgP1rA2dDHQQtKQSVoaCpk/85tgvwZbDMlFSb5ikl9oG84OkwxNaYAGUYXC4Ke5oZp+wQQFuZQmNFSrAbLBGmohPmOCd9dwiQneUEGUKHBS3EnD1k0wzNAkyfT2D5iNS0JzUhOsGRUjXjDBG8otOmGCwclTbL2rEZBHJGXUN8ogucLWeRHYjq98J2w3U6xv/1CbZDVo2TovAvPa1FQJHUOlIWaNw9PfHaQZbb+OX4eYY5uaXZeCNBPttJWiC2QhvoQrCHVV25OwVaTQkoqI7340Oy4GyGLoqx2LfRR6mgCw41EnNPLJoq8FURbZgt6y3C+KSWIAfS03Yz9s9PFW+g+xaxp5yCYNRcteBbZh/6YcqkuneniA/4XMQ8zLQtJ8dZmK0Zel6+xHJggiY7OuCPVCFDwHfdzQsEJD4F6YeZKQaWp4JpLYppFjYG9y9mTKQN7QF6bF8M+fhg6BPWvemukCw5/EnOlXup5dsYHz0U86dZbb1rOQRIbV6LfrwptZQGmVE/e6yh0SaATlMvpTp0TcTm/QtycIbWe/n4AJAnfKc2L/VrvGZuiN1aOpX507ge2JdQFQau6MrYZMTIXJ8umWA3vebXyNIIGJr7IqX6jN8bxfNl7UptHtDPN81Rfts/IkiN1alZl0Rsv5cjRssNYrHnNe24ksNviTyM45L/4/+nuReM8Nl1HeG/95fPNW/85067f+hrftP8PQXWL6FpEH/KtY2feNVmMVsH8B3Wkl2Dhko+/ctv8I7f5y3do/7nanbJM3GRUQQgghhEB0+6P5epFl2WK9Pk7zVXovv6s7XK6z/bs3tG9ll+My73TNywuxTFbHR0tauMhG3+1/pdOWpQTs+XWxbDAu6a/rkuvF/PtChFV9juAJuqjrYrzxH8bOBt8xXzuSFEh04nQoTZc1HusNpWc7Z+l1YmsrhbCVK43G6x2kSPjguN3nJUVPyC5NzdUJWja2DZlB7ZDSrbwRBUPKcfCcax+sQ/5g2dA2FVJjfAaHMaQyLbrsI7J9JLPchm4dfZI5T0wehoPL7nU2O3wwK7bb09vb/rI5Tldu4zTGals/kJeZPoB15O8c7NtSe7jxbDfFwuUVrfB1shWaOskV6grWzHU6EG6m52xlW8A9vBD3LLr3HKCgZQDTDVbbtrelTwNKqwQHm7iCe6NvPcs7KH4y84xmAhetuF8/+A1+NdIwoV3k5mmJmbndwEb1xbcWwQtH5gwdh5axf7KujgFyXfYDTykffI+gYu8nYXWXOuvKOMIFZLUHdmiBdvVZE/SKup3KvO/+BOVrgg3sGYT3/af8uV2vAcGcy+9k9MDbiIk77wBejKy8gxA/QRWVd3lAk+p8g8BdQmalXJPYxx2hWsoWTBqIf+FwUcHC3vIIgl9HQPkWBThR7U4yto2VZ0LcFmHnUV/lvQKStT5ehV2SeNYXygRrXsqL7mWCtY62SADbCvXG05BoWYQe1WLupOVKIvYHugsZeq8ZbQd7xsDUEHIdBsENo+izDfIn4jTU1/F3juAVfRSRPSNKw+fQoQ9C83wRaxOloTZzQt6hQdGsNhBoxGio1bv24GArAH3nlbtvMRpq/kJAQiwA7ZPKLX6Ehlps00yw5Ec7lxC792aoL9ZQiXy3GVUo/0JsbEzPVKqh5hCH3RQNQVuK0uMUM68o1VDlUYITTgGo7yqN0s0oWKihuokXkFeNQO2KwkSleWAg0PAwK05q0aOphThUBm25K34KMjeWo6i2Sd1hGZzli6ScLu5ZelumputC7qyg6OJQs9xbQ8tV3P9Mw8N/r2HE84/UkBpSQ2pIDakhNaSG1JAa/sMa7lv3JfxFa0IIIYQQQgghhBBCCCGEEEIIIYQQQgghhBBCCPmn+AXqtWvu4oFmeQAAAABJRU5ErkJggg=="
+                                                    alt="Club Image" />
                                             </div>
                                             <!-- details -->
-                                            <div class="col-7 mobile-p-0"> <!-- tzh changed col-xl-5 col-12 ps-lg-0 to col-7 mobile-p-0 -->
-                                                <!-- expression name -->
-                                                <div class="row pt-1">
-                                                    <router-link :to="{ path: '/listing/view/' +listing.id }" class="primary-clickable-text mobile-col-12"> <!--tzh changed mobile-col-10 to mobile-col-12 -->
-                                                        <h4 class="mobile-mb-0 mobile-view-hide"> <b> {{ listing["listingName"] }} </b> </h4> <!-- tzh added mobile-mb-0-->
-                                                        <h6 class="mobile-mb-0 mobile-view-show"> <b> {{ listing["listingName"] }} </b> </h6> <!-- tzh added mobile-mb-0-->
-                                                    </router-link>
-                                                    <!--<div class="mobile-col-2 mobile-view-show">
-                                                    <BookmarkIcon 
-                                                        v-if="user" 
-                                                        :user="user" 
-                                                        :listing="listing" 
-                                                        :overlay="true"Hello, cp! What's Pouring?
-
-                                                        size="30"
-                                                        @icon-clicked="handleIconClick" />
-                                                    </div>-->  
-                                                </div>
-                                                <!-- producer -->
-                                                <div class="row mobile-view-hide">  <!-- tzh added mobile-view-hide -->
-                                                    <router-link :to="{ path: '/profile/producer/' + listing.producerID }" class="primary-clickable-text">
-                                                        <h5 class="mobile-rating-smaller-text"> <b> {{ getProducerName(listing) }} </b> </h5>
-                                                    </router-link>
-                                                </div>
-                                                <!-- review -->
-                                                <div class="row pt-3">
-                                                    <!-- tzh transplanted code below from another section-->
-                                                    <div class="mobile-col-11 mobile-pe-0"> <!-- tzh changed mobile-col-9 to mobile-col-11 -->
-                                                    <router-link :to="{ path: '/listing/view/' +listing.id }" class="default-clickable-text fst-italic scrollable-user-bottle-listings-description-box">
-                                                        <span class="mobile-view-hide"> <!-- tzh added this section below -->
-                                                            <div v-if="listing.officialDesc?.length > 300">  
-                                                                <p class="homepage-bottle-listing-description"> {{ listing["officialDesc"].slice(0, 300) + (listing["officialDesc"].length > 300 ? '...' : '') }} </p>
-                                                            </div>
-                                                            <div v-else>  
-                                                                <p class="homepage-bottle-listing-description"> {{ listing["officialDesc"] }}. </p>
-                                                            </div>
-                                                        </span>
-                                                        <span class="mobile-view-show"> <!-- tzh added this section below -->
-                                                            <div v-if="listing.officialDesc?.length > 80">  
-                                                                <p class="homepage-bottle-listing-description"> {{ listing["officialDesc"].slice(0, 300) + (listing["officialDesc"].length > 300 ? '...' : '') }} </p>
-                                                            </div>
-                                                            <div v-else>  
-                                                                <p class="homepage-bottle-listing-description"> {{ listing["officialDesc"] }}. </p>
-                                                            </div>
-                                                        </span>
-                                                    </router-link>
+                                            <div class="drink-info">
+                                                <h4 class="drink-name">
+                                                    {{ club.clubName }}
+                                                </h4>
+                                                <p class="drink-desc">
+                                                    {{
+                                                        club.isInviteOnly
+                                                            ? "Private group"
+                                                            : "Public group"
+                                                    }}
+                                                    • {{ club.totalMembers }} members
+                                                </p>
+                                                <div class="drink-meta">
+                                                    <div class="mobile-view-hide">
+                                                        <button class="icon-button">
+                                                            <i class="bi bi-bookmark"></i>
+                                                        </button>
                                                     </div>
-                                                    <!-- tzh commented out to make way for code above <router-link :to="{ path: '/listing/view/' +listing.id }" class="default-clickable-text fst-italic scrollable">
-                                                        <h5> {{ listing["officialDesc"] }}. </h5>
-                                                    </router-link>-->
-                                                </div>
-                                                <!-- rating -->
-                                                <div class="row pt-4 mobile-pt-0">  <!--tzh added mobile-pt-0 -->
-                                                    <div class="col-6 d-flex align-items-center">
-                                                        <h1 class="rating-text text-end d-flex align-items-center mobile-view-hide">
-                                                            {{ getRatings(listing) }} ★
-                                                            <!--<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
-                                                                <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                                            </svg>-->
-                                                        </h1>
-                                                        <h5 class="rating-text text-end d-flex align-items-center mobile-view-show">
-                                                            {{ getRatings(listing) }} ★
-                                                            <!--<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
-                                                                <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                                            </svg>-->
-                                                        </h5>
-                                                    </div>
-                                                    <div class="col-6 mobile-view-hide"> <!--tzh added mobile-view-hide -->
-                                                        <div class="d-grid gap-5">
-                                                            <router-link :to="{ path: '/listing/view/' +listing.id }" class="primary-clickable-text">
-                                                                <a class="btn secondary-btn btn-md"> Read what the crowd thinks </a>
-                                                            </router-link>
-                                                        </div>
-                                                    </div>
+                                                    <router-link
+                                                        :to="{ name: 'clubview', params: { clubID: club.id } }">
+                                                        <button type="button" class="btn btn-primary">
+                                                            Read more
+                                                        </button>
+                                                    </router-link>
                                                 </div>
                                             </div>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
-
-                            <div class="d-grid justify-content-center align-content-center">
-                                <button v-if="moreListings" class="btn secondary-btn btn-md" style="font-weight: bold;" @click = "retrieveListings"> Click to load more! </button>
-                            </div>
-
-                        </div> <!-- end of scrollable section -->
-                    </div>
-
                     </div> <!-- end of container -->
-                </div> 
-                
-                
-                
-                <!--  end of discover, following & filter by drink type -->
+                </div> <!--  end of discover, following & filter by drink type -->
             </div> <!-- end of row -->
         </div>
     </div>
 
     <!-- [else] with search inputs -->
     <div>
-        <BookmarkModal 
-            v-if="user"
-            :user="user" 
-            :listings="listings" 
-            :listingID="bookmarkListingID" />
+        <BookmarkModal v-if="user" :user="user" :listings="listings" :listingID="bookmarkListingID" />
     </div>
 
 </template>
@@ -628,1082 +639,1245 @@
 <!-- JavaScript -->
 <script>
 
-    import NavBar from '@/components/NavBar.vue';
-    import BookmarkIcon from '@/components/BookmarkIcon.vue';
-    import BookmarkModal from '@/components/BookmarkModal.vue';
+import NavBar from '@/components/NavBar.vue';
+import BookmarkIcon from '@/components/BookmarkIcon.vue';
+import BookmarkModal from '@/components/BookmarkModal.vue';
 
-    export default {
-        components: {
-            NavBar,
-            BookmarkIcon, 
-            BookmarkModal
-        },
+export default {
+    components: {
+        NavBar,
+        BookmarkIcon,
+        BookmarkModal
+    },
 
-        data() {
-            return {
-                dataLoaded: false,
-                // data from database
-                // countries: [],
-                listings: [],
-                producers: [],
-                reviews: [],
-                users: [],
-                venues: [],
-                venuesAPI: [],
-                drinkTypes: [],
-                requestListings: [],
-                requestEdits: [],
-                requestDupes: [],
-                modRequests: [],
+    data() {
+        return {
+            dataLoaded: false,
+            // data from database
+            // countries: [],
+            listings: [],
+            producers: [],
+            reviews: [],
+            users: [],
+            venues: [],
+            venuesAPI: [],
+            drinkTypes: [],
+            requestListings: [],
+            requestEdits: [],
+            requestDupes: [],
+            modRequests: [],
+            recommendedClubs: [],
 
-                // for user account credentials
-                userID: "",
-                userType: "",
-                types: [],
-                username: "",
-                displayName: "",
-                isAdmin: "",
-                isModerator: "",
-                drinkShelf: [],
+            // for user account credentials
+            userID: "",
+            userType: "",
+            types: [],
+            username: "",
+            displayName: "",
+            isAdmin: "",
+            isModerator: "",
+            drinkShelf: [],
 
-                // for producer listing information
-                totalRequests: 0,
-                unansweredQuestions: [],
+            // for producer listing information
+            totalRequests: 0,
+            unansweredQuestions: [],
 
-                // search
-                search: false,
-                searchInput: '',
-                searchTerm: '',
-                searchResults: [],
-                filteredListings: [],
-                searchHistory: [],
+            // search
+            search: false,
+            searchInput: '',
+            searchTerm: '',
+            searchResults: [],
+            filteredListings: [],
+            searchHistory: [],
 
-                // for filter by drink categories
-                selectedDrinkType:"",
-                selectedTypeCategory:[],
-                selectedCategory:"",
-                filterSearchResult: [],
-                isFilterType:false,
-                moreListings:true,
+            // for filter by drink categories
+            selectedDrinkType: "",
+            selectedTypeCategory: [],
+            selectedCategory: "",
+            filterSearchResult: [],
+            isFilterType: false,
+            moreListings: true,
 
-                // for sort function
-                sortSelection: {
-                    category: ''
-                },
-                sortCategoryList: [
-                    'Alphabetical (A - Z)',
-                    'Alphabetical (Z - A)',
-                    'Date (Newest - Oldest)',
-                    'Date (Oldest - Newest)',
-                    'Ratings (Highest - Lowest)',
-                    'Ratings (Lowest - Highest)',
-                ],
-                sortedListings: [],
-
-                // customization for drinkLists buttons
-                // [TODO] get drink list of user, for now is hardcoded
-                drinkList:  {
-                                "haveTried": ["Harmony Collection Inspired by Intense Arabica"],
-                                "wantToTry": ["Catnip Gin No. 2", "Five Farms Irish Cream Liqueur"]
-                            },
-                haveTried: false,
-                wantToTry: false,
-
-                // for discovery - tzh changed 'false' to 'true'
-                discovery: true,
-                allReviews: {},
-                mostReviews: [],
-
-                // for following
-                following: false,
-                userFollowing: [], // list of users that the current user is following
-                followedProducers: [],
-                followedVenues: [],
-                allProducerDrinks: [],
-                allVenueDrinks: [],
-                recentlyAdded: [],
-                filteredRecentlyAdded:[],
-                questionsUpdates: [],
-                followCount:0,
-
-                // for bookmark
-                user: null,
-                userBookmarks: [],
-
-                // for latest reviews by users that the current user is following
-                latestReviews: [],
-                
-                // for bookmark component
-                bookmarkListingID: {},
-
-                defaultProfilePhoto: "https://drinkximages.s3.us-east-1.amazonaws.com/images/2d4d94bc-313e-4621-9a15-4bfbf77958de.jpg",
-            };
-        },
-        mounted() {
-            // Load local storage variables
-            const accID = localStorage.getItem("88B_accID");
-            if(accID !== null){
-                this.userID = localStorage.getItem('88B_accID')
-            }
-            let userType = localStorage.getItem('88B_accType')
-            if(userType !=null){
-                this.userType = userType
-            }
-            this.loadData();
-        },
-        methods: {
-            // load data from database
-            async loadData() {
-                try {
-                    const logo = this.$route.query.logo; // Get the logo from URL parameters
-                    const labels = this.$route.query.labels
-                        ? this.$route.query.labels.split(",")
-                        : []; // Get the labels from URL, assuming it's a comma-separated list
-                    const detectedText = this.$route.query.detectedText
-                        ? this.$route.query.detectedText.split(",")
-                        : []; // Get the detected text from URL, assuming it's a comma-separated list
-
-                    if (!logo && labels.length === 0 && detectedText.length === 0) {
-                        console.warn("No logo, labels, or text parameters found in query.");
-                        return;
-                    }
-
-                    const requestData = {
-                        logo: logo,
-                        labels: labels,
-                        detectedText: detectedText,
-                    };
-
-                    const response = await this.$axios.post(
-                        `${process.env.VUE_APP_API_URL}/getData/getImageSearchResults`,
-                        requestData, // Pass the entire request body
-                        { headers: { "Content-Type": "application/json" } }
-                    );
-
-                    if (response.status === 200 && response.data.length > 0) {
-                        this.listings = response.data; // Store API results
-                        this.filteredListings = this.listings;
-                        this.dataLoaded = true;
-                    } else {
-                        console.warn("No listings found for the given parameters.");
-                        this.listings = [];
-                        this.filteredListings = [];
-                        this.dataLoaded = false;
-                    }
-                } 
-                catch (error) {
-                    console.error("Error fetching listings:", error);
-                    this.listings = [];
-                    this.filteredListings = [];
-                    this.dataLoaded = false;
-                }
-                // producers
-                // _id, producerName, producerDesc, originCountry, statusOB, mainDrinks
-                // TODO: make retrieved producers only for listings that are retrieved initially
-                    try {
-                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducers`);
-                        this.producers = response.data;
-                    } 
-                    catch (error) {
-                        console.error(error);
-                        this.dataLoaded = null;
-                    }
-                // reviews
-                // _id, userID, reviewTarget, date, rating, reviewDesc, taggedUsers, reviewTitle, reviewType, flavorTag, photo
-                // TODO: make retrieved reviews only for the listings that are retrieved initially
-                    try {
-                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getReviews`);
-                        this.reviews = response.data;
-                        this.getAllReviews()
-                        this.getMostReviews()
-                    }
-                    catch (error) {
-                        console.error(error);
-                        this.dataLoaded = null;
-                    }
-                // venues
-                // _id, venueName, venueDesc, originCountry, address, openingHours
-                try {
-                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenues`);
-                        this.venues = response.data;
-                    } 
-                    catch (error) {
-                        console.error(error);
-                        this.dataLoaded = null;
-                    }
-                // users
-                // _id, username, displayName, choiceDrinks, drinkLists, modType, photo
-                try {
-                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUser/${this.userID}`);
-                    this.user = response.data;
-                    if (this.user) {
-                        // Get the list of users that the current user is following
-
-                        this.userBookmarks = this.user.drinkLists;
-                        this.getFollowedProducers()
-                        this.getFollowedVenues()
-                        this.getListingsByProducer()
-                        this.getListingsByVenue()
-                        this.getRecentlyAdded()
-                        this.getQuestionsUpdates();
-                        
-                        if (this.user.followLists.users.length > 0) {
-                            this.userFollowing = this.user.followLists.users;
-                            // Get the latest reviews from users that the current user is following
-                            this.getUsersLatestReviews()
-                        }
-                        // check if user is an admin
-                        if (this.user.isAdmin) {
-                            this.isAdmin = true
-                        }
-                        // if user is not admin, check if user is a moderator
-                        if (this.user.modType.length > 0) {
-                            this.isModerator = true
-                        }
-                    }
-                } 
-                catch (error) {
-                    console.error(error);
-                    // this.dataLoaded = null;
-                }
-                // venuesAPI
-                // _id, venueName, venueDesc, originCountry
-                // try {
-                //         const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenuesAPI`);
-                //         this.venuesAPI = response.data;
-                //     } 
-                //     catch (error) {
-                //         console.error(error);
-                //     }
-                // drinkTypes
-                // _id, drinkType, typeCategory
-                    try {
-                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getDrinkTypes`);
-                        this.drinkTypes = response.data;
-                        this.drinkTypes.sort((a,b)=>{
-                            return a.drinkType.localeCompare(b.drinkType)
-                        })
-                    } 
-                    catch (error) {
-                        console.error(error);
-                        this.dataLoaded = null;
-                    }
-                // requestListings
-                // _id, listingName, producerNew, producerID, bottler, originCountry, drinkType, typeCategory, age, abv, reviewLink, sourceLink, brandRelation, reviewStatus, userID, photo
-                    try {
-                            const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getRequestListings`);
-                            this.requestListings = response.data;
-                            // Filter requests based on user role
-                            if (this.userType == 'producer') {
-                                this.requestListings = response.data.filter((request) => {
-                                    return request["reviewStatus"] == false && request["producerID"] == this.userID;
-                                })
-                            }
-                            else if (this.userType == 'user') {
-                                if (this.isAdmin) {
-                                    this.requestListings = response.data.filter((request) => {
-                                        return request["reviewStatus"] == false;
-                                    })
-                                } else {
-                                    this.requestListings = response.data.filter((request) => {
-                                        return request["reviewStatus"] == false && (request["userID"] == this.userID || this.types.includes(request["drinkType"]));
-                                    })
-                                }
-                            }
-                        } 
-                    catch (error) {
-                        console.error(error);
-                        this.dataLoaded = null;
-                    }
-                // requestEdits
-                // _id, duplicateLink, editDesc, sourceLink, brandRelation, listingID, userID, reviewStatus
-                    try {
-                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getRequestEdits`);
-                        let unreviewedRequests = response.data.filter((request) => {
-                            return request["reviewStatus"] == false;
-                        });
-
-                        // Obtain listing data for each request
-                        for (let request of unreviewedRequests) {
-                            let targetListing = this.listings.find((listing) => {
-                                return listing["id"] == request["listingID"];
-                            });
-                            if (targetListing == undefined) {
-                                continue;
-                            }
-
-                            request['photo'] = targetListing['photo'];
-                            request['listingName'] = targetListing['listingName'];
-                            request['producerID'] = targetListing['producerID'];
-
-                            if (request['duplicateLink']) {
-                                this.requestDupes.push(request);
-                            } else {
-                                this.requestEdits.push(request);
-                            }
-                        }
-
-                        // Filter requests based on user role
-                        if (this.userType == 'producer') {
-                            this.requestEdits = this.requestEdits.filter((request) => {
-                                return request["producerID"] == this.userID;
-                            })
-                            this.requestDupes = this.requestDupes.filter((request) => {
-                                return request["producerID"] == this.userID;
-                            })
-                        }
-                        else if (this.userType == 'user' && !this.isAdmin) {
-                            this.requestEdits = this.requestEdits.filter((request) => {
-                                return request["userID"] == this.userID || this.types.includes(request["drinkType"]);
-                            })
-                            this.requestDupes = this.requestDupes.filter((request) => {
-                                return request["userID"] == this.userID || this.types.includes(request["drinkType"]);
-                            })
-                        }
-                    } 
-                    catch (error) {
-                        console.error(error);
-                        this.dataLoaded = null;
-                    }
-                // modRequests
-                // _id, userID, drinkType, modDesc
-                    // try {
-                    //         const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getModRequests`);
-                    //         this.modRequests = response.data;
-                    //     } 
-                    // catch (error) {
-                    //     console.error(error);
-                    // }
-
-                this.getUsername()
-                // listing requests
-                this.totalRequests = this.requestListings.length + this.requestEdits.length + this.requestDupes.length;
-
-                // set dataLoaded to true
-                if (this.dataLoaded != null) {
-                    this.dataLoaded = true;
-                }
+            // for sort function
+            sortSelection: {
+                category: ''
             },
+            sortCategoryList: [
+                'Alphabetical (A - Z)',
+                'Alphabetical (Z - A)',
+                'Date (Newest - Oldest)',
+                'Date (Oldest - Newest)',
+                'Ratings (Highest - Lowest)',
+                'Ratings (Lowest - Highest)',
+            ],
+            sortedListings: [],
 
-            // get username of user accessing page
-            getUsername() {
-                let producer = this.producers.find(producer => producer.id == parseInt(this.userID))
-                let venue = this.venues.find(venue => venue.id == parseInt(this.userID))
-                if (this.user && this.userType == 'user') {
-                    this.username = this.user.username
-                    this.displayName = this.user.displayName
-                    // drink shelf
-                    let allDrinkShelf = Object.values(this.user.drinkLists).flatMap(obj => obj.listItems);
-                    allDrinkShelf.sort((a, b) => {
-                        return new Date(b[0]) - new Date(a[0]);
-                    })
-                    let allDrinks = []
-                    for (const item of allDrinkShelf) {
-                        const listing = this.listings.find(listing => listing.id === parseInt(item));
-                        if (listing) {
-                            allDrinks.push(listing);
-                        }
-                    }
-                    this.drinkShelf = [...new Set(allDrinks)];
-                }
-                else if (producer && this.userType == 'producer') {
-                    this.username = producer.producerName
-                    // Q&A
-                    let answeredQuestions = producer["questionsAnswers"];
-                    if (answeredQuestions.length > 0) {
-                        for (let qa in answeredQuestions) {
-                            let answer = answeredQuestions[qa]["answer"];
-                            if (answer == "") {
-                                this.unansweredQuestions.push(answeredQuestions[qa]);
-                            }
-                        }
-                    }
-                }
-                else if (venue) {
-                    this.username = venue.venueName
-
-                    // Q&A
-                    let answeredQuestions = venue["questionsAnswers"];
-                    if (answeredQuestions.length > 0) {
-                        for (let qa in answeredQuestions) {
-                            let answer = answeredQuestions[qa]["answer"];
-                            if (answer == "") {
-                                this.unansweredQuestions.push(answeredQuestions[qa]);
-                            }
-                        }
-                    }
-                }
+            // customization for drinkLists buttons
+            // [TODO] get drink list of user, for now is hardcoded
+            drinkList: {
+                "haveTried": ["Harmony Collection Inspired by Intense Arabica"],
+                "wantToTry": ["Catnip Gin No. 2", "Five Farms Irish Cream Liqueur"]
             },
+            haveTried: false,
+            wantToTry: false,
 
-            // Helper function for onkeyup search to reset filter
-            // helperSearch(){
-            //     this.searchListings()
-            //     this.isFilterType = false
-            //     this.selectedDrinkType = ''
-            // },
+            // for discovery - tzh changed 'false' to 'true'
+            discovery: true,
+            allReviews: {},
+            mostReviews: [],
 
-            // for search button
-            // searchListings() {
-            //     // flag to check if there are search inputs
-            //     const searchInput = this.searchInput.toLowerCase();
-            //     this.searchTerm = this.searchInput;
+            // for following
+            following: false,
+            userFollowing: [], // list of users that the current user is following
+            followedProducers: [],
+            followedVenues: [],
+            allProducerDrinks: [],
+            allVenueDrinks: [],
+            recentlyAdded: [],
+            filteredRecentlyAdded: [],
+            questionsUpdates: [],
+            followCount: 0,
 
-            //     // if there is something searched
-            //     this.search = true;
-            //     const searchResults = this.listings.filter((listing) => {
-            //         const expressionName = listing["listingName"].toLowerCase();
-            //         const producer = this.getProducerName(listing).toLowerCase(); //error here if return null, meaning drink doesnt belong to any producer
-            //         return expressionName.includes(searchInput) || producer.includes(searchInput);
-            //     });
+            // for bookmark
+            user: null,
+            userBookmarks: [],
 
-            //     // add search results to search history
-            //     this.searchHistory.push([searchInput, searchResults]);
+            // for latest reviews by users that the current user is following
+            latestReviews: [],
 
-            //     // if nothing found
-            //     if (searchResults.length == 0) {
-            //         this.filteredListings = [];
-            //     } 
-            //     else {
-            //         this.filteredListings = searchResults;
-            //     }
+            // for bookmark component
+            bookmarkListingID: {},
 
-            //     // if there is nothing searched
-            //     if (this.searchInput == '') {
-            //         this.resetListings();
-            //     }
-            // },
+            defaultProfilePhoto: "https://drinkximages.s3.us-east-1.amazonaws.com/images/2d4d94bc-313e-4621-9a15-4bfbf77958de.jpg",
+        };
+    },
+    mounted() {
+        // Load local storage variables
+        const accID = localStorage.getItem("88B_accID");
+        if (accID !== null) {
+            this.userID = localStorage.getItem('88B_accID')
+        }
+        let userType = localStorage.getItem('88B_accType')
+        if (userType != null) {
+            this.userType = userType
+        }
+        this.loadData();
+    },
+    methods: {
+        // load data from database
+        async loadData() {
+            try {
+                const logo = this.$route.query.logo; // Get the logo from URL parameters
+                const labels = this.$route.query.labels
+                ? this.$route.query.labels.split(",")
+                : []; // Get the labels from URL, assuming it's a comma-separated list
+                const detectedText = this.$route.query.detectedText
+                ? this.$route.query.detectedText.split(",")
+                : []; // Get the detected text from URL, assuming it's a comma-separated list
 
-            // for viewing previous listings (show previous search results)
-            // previousListing() {
-            //     // more than 1 search result history
-            //     if (this.searchHistory.length > 1) {
-            //         // remove current search result
-            //         this.searchHistory.pop();
-            //         // get previous search result
-            //         const previousSearch = this.searchHistory[this.searchHistory.length - 1];
-            //         this.searchInput = previousSearch[0];
-            //         this.searchTerm = this.searchInput;
-            //         this.filteredListings = previousSearch[1];
-            //     }
-            //     // only 1 search result history
-            //     else {
-            //         this.resetListings();
-            //     }
-            // },
+                if (!logo && labels.length === 0 && detectedText.length === 0) {
+                console.warn("No logo, labels, or text parameters found in query.");
+                return;
+                }
 
-            // for resetting listings (show full listings)
-            resetListings() {
-                this.searchInput = '';
-                this.search = false;
+                const requestData = {
+                logo: logo,
+                labels: labels,
+                detectedText: detectedText,
+                };
+
+                const response = await this.$axios.post(
+                `${process.env.VUE_APP_API_URL}/getData/getImageSearchResults`,
+                requestData, // Pass the entire request body
+                { headers: { "Content-Type": "application/json" } }
+                );
+
+                if (response.status === 200 && response.data.length > 0) {
+                this.listings = response.data; // Store API results
                 this.filteredListings = this.listings;
-                this.searchHistory = [];
-                this.moreListings=true
-            },
-
-            // get producerName for a listing based on listing
-            getProducerName(listing) {
-                const producer = this.producers.find((producer) => {
-                    return producer["id"] == listing["producerID"];
-                });
-                // ensures that producer is found before accessing "producerName"
-                if (producer) {
-                    const producerName = producer["producerName"];
-                    return producerName;
+                this.dataLoaded = true;
+                } else {
+                console.warn("No listings found for the given parameters.");
+                this.listings = [];
+                this.filteredListings = [];
+                this.dataLoaded = false;
                 }
-                else {
-                    return null;
-                }
-            },
-
-            // get reviews for a listing
-            getReviews(listing) {
-                // list of all reviews of the particular drink
-                const reviews = this.reviews.filter((review) => {
-                    return review["reviewTarget"] == listing["listingName"];
-                });
-                // choose random review from the list
-                const randomReview = reviews[Math.floor(Math.random() * reviews.length)];
-                // check if a review is found before accessing "Review Desc"
-                const reviewDesc = randomReview ? randomReview["reviewDesc"] : null;
-                return reviewDesc;
-            },
-
-            // get ratings for a listing
-            getRatings(listing) {
-                const ratings = this.reviews.filter((rating) => {
-                    return rating["reviewTarget"] == listing["id"];
-                });
-                // if there are no ratings
-                if (ratings.length == 0) {
-                    return "-";
-                }
-                // else there are ratings
-                const averageRating = ratings.reduce((total, rating) => {
-                    return total + rating["rating"];
-                }, 0) / ratings.length;
-                return averageRating.toFixed(1); //tzh changed .toFixed(2) to .toFixed(1)
-            },
-
-            // get ratings for a listing --> return 0 if no ratings
-            getAllRatings(listing) {
-                const ratings = this.reviews.filter((rating) => {
-                    return rating["reviewTarget"] == listing["id"];
-                });
-                // if there are no ratings
-                if (ratings.length == 0) {
-                    return 0;
-                }
-                // else there are ratings
-                const averageRating = ratings.reduce((total, rating) => {
-                    return total + rating["rating"];
-                }, 0) / ratings.length;
-                // round to 1 decimal place
-                const roundedRating = Math.round(averageRating * 10) / 10;
-                return roundedRating;
-            },
-
-            // Handle select of drink type filter option like sake, gin, whiskey
-            selectDrinkType(drinkType) {
-
-                // reset most reviews and recently added arrays so that can repeatedly filter
+            } catch (error) {
+                console.error("Error fetching listings:", error);
+                this.listings = [];
+                this.filteredListings = [];
+                this.dataLoaded = false;
+            }
+            // producers
+            // _id, producerName, producerDesc, originCountry, statusOB, mainDrinks
+            // TODO: make retrieved producers only for listings that are retrieved initially
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducers`);
+                this.producers = response.data;
+            }
+            catch (error) {
+                console.error(error);
+                this.dataLoaded = null;
+            }
+            // reviews
+            // _id, userID, reviewTarget, date, rating, reviewDesc, taggedUsers, reviewTitle, reviewType, flavorTag, photo
+            // TODO: make retrieved reviews only for the listings that are retrieved initially
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getReviews`);
+                this.reviews = response.data;
+                this.getAllReviews()
                 this.getMostReviews()
-                this.moreListings=true
-                // Determine selected drink type, and corresponding drink categories
-                this.selectedCategory = null;
-                this.selectedDrinkType = drinkType;
-                for(let drinks of this.drinkTypes){
-                    if(drinks['drinkType'] == drinkType['drinkType']){
-                        this.selectedTypeCategory = drinks['typeCategory']
+            }
+            catch (error) {
+                console.error(error);
+                this.dataLoaded = null;
+            }
+            // venues
+            // _id, venueName, venueDesc, originCountry, address, openingHours
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenues`);
+                this.venues = response.data;
+            }
+            catch (error) {
+                console.error(error);
+                this.dataLoaded = null;
+            }
+            // users
+            // _id, username, displayName, choiceDrinks, drinkLists, modType, photo
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUser/${this.userID}`);
+                this.user = response.data;
+                if (this.user) {
+                    // Get the list of users that the current user is following
+
+                    this.userBookmarks = this.user.drinkLists;
+                    this.getFollowedProducers()
+                    this.getFollowedVenues()
+                    this.getListingsByProducer()
+                    this.getListingsByVenue()
+                    this.getRecentlyAdded()
+                    this.getQuestionsUpdates();
+
+                    if (this.user.followLists.users.length > 0) {
+                        this.userFollowing = this.user.followLists.users;
+                        // Get the latest reviews from users that the current user is following
+                        this.getUsersLatestReviews()
+                    }
+                    // check if user is an admin
+                    if (this.user.isAdmin) {
+                        this.isAdmin = true
+                    }
+                    // if user is not admin, check if user is a moderator
+                    if (this.user.modType.length > 0) {
+                        this.isModerator = true
+                    }
+                }
+            }
+            catch (error) {
+                console.error(error);
+                // this.dataLoaded = null;
+            }
+            // venuesAPI
+            // _id, venueName, venueDesc, originCountry
+            // try {
+            //         const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenuesAPI`);
+            //         this.venuesAPI = response.data;
+            //     } 
+            //     catch (error) {
+            //         console.error(error);
+            //     }
+            // drinkTypes
+            // _id, drinkType, typeCategory
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getDrinkTypes`);
+                // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getDrinkTypes`);
+                this.drinkTypes = response.data;
+                this.drinkTypes.sort((a, b) => {
+                    return a.drinkType.localeCompare(b.drinkType)
+                })
+            }
+            catch (error) {
+                console.error(error);
+                this.dataLoaded = null;
+            }
+            // requestListings
+            // _id, listingName, producerNew, producerID, bottler, originCountry, drinkType, typeCategory, age, abv, reviewLink, sourceLink, brandRelation, reviewStatus, userID, photo
+            try {
+                // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getRequestListings`);
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getRequestListings`);
+                this.requestListings = response.data;
+                // Filter requests based on user role
+                if (this.userType == 'producer') {
+                    this.requestListings = response.data.filter((request) => {
+                        return request["reviewStatus"] == false && request["producerID"] == this.userID;
+                    })
+                }
+                else if (this.userType == 'user') {
+                    if (this.isAdmin) {
+                        this.requestListings = response.data.filter((request) => {
+                            return request["reviewStatus"] == false;
+                        })
+                    } else {
+                        this.requestListings = response.data.filter((request) => {
+                            return request["reviewStatus"] == false && (request["userID"] == this.userID || this.types.includes(request["drinkType"]));
+                        })
+                    }
+                }
+            }
+            catch (error) {
+                console.error(error);
+                this.dataLoaded = null;
+            }
+            // requestEdits
+            // _id, duplicateLink, editDesc, sourceLink, brandRelation, listingID, userID, reviewStatus
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getRequestEdits`);
+                let unreviewedRequests = response.data.filter((request) => {
+                    return request["reviewStatus"] == false;
+                });
+
+                // Obtain listing data for each request
+                for (let request of unreviewedRequests) {
+                    let targetListing = this.listings.find((listing) => {
+                        return listing["id"] == request["listingID"];
+                    });
+                    if (targetListing == undefined) {
+                        continue;
+                    }
+
+                    request['photo'] = targetListing['photo'];
+                    request['listingName'] = targetListing['listingName'];
+                    request['producerID'] = targetListing['producerID'];
+
+                    if (request['duplicateLink']) {
+                        this.requestDupes.push(request);
+                    } else {
+                        this.requestEdits.push(request);
                     }
                 }
 
-                // Determine the drinkType searched, might not be neccessary
-                const drinkTypeSearch = this.selectedDrinkType['drinkType']?.toLowerCase();
+                // Filter requests based on user role
+                if (this.userType == 'producer') {
+                    this.requestEdits = this.requestEdits.filter((request) => {
+                        return request["producerID"] == this.userID;
+                    })
+                    this.requestDupes = this.requestDupes.filter((request) => {
+                        return request["producerID"] == this.userID;
+                    })
+                }
+                else if (this.userType == 'user' && !this.isAdmin) {
+                    this.requestEdits = this.requestEdits.filter((request) => {
+                        return request["userID"] == this.userID || this.types.includes(request["drinkType"]);
+                    })
+                    this.requestDupes = this.requestDupes.filter((request) => {
+                        return request["userID"] == this.userID || this.types.includes(request["drinkType"]);
+                    })
+                }
+            }
+            catch (error) {
+                console.error(error);
+                this.dataLoaded = null;
+            }
+            // modRequests
+            // _id, userID, drinkType, modDesc
+            // try {
+            //         const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getModRequests`);
+            //         this.modRequests = response.data;
+            //     } 
+            // catch (error) {
+            //     console.error(error);
+            // }
 
+            this.getUsername()
+            // listing requests
+            this.totalRequests = this.requestListings.length + this.requestEdits.length + this.requestDupes.length;
 
-                // Search listings for when input is in the searchbar
-                // if(this.search){
-                //     this.searchListings()
-                //     const searchResults = this.filteredListings.filter((listing) => {
-                //         const drinkTypeListing = listing["drinkType"].toLowerCase();
-                //         return drinkTypeListing.includes(drinkTypeSearch);
-                //     });
-                //     this.filterSearchResult=searchResults
-                //     // to set filter message together with search terms when searched listings
-                //     this.isFilterType = true
-                // }
+            // set dataLoaded to true
+            if (this.dataLoaded != null) {
+                this.dataLoaded = true;
+            }
+        },
 
-                // Filter listings for when discovery mode
-                if(this.discovery){
-
-                    const searchResults = this.mostReviews.filter((listing) => {
-                        const drinkTypeListing = listing["drinkType"].toLowerCase();
-                        return drinkTypeListing.includes(drinkTypeSearch);
-                    });
-                    // if nothing found
-                    if(searchResults.length==0 || searchResults==null){
-                        this.mostReviews = []
-                        this.filteredListings = []
-                        this.retrieveListings()
+        // get username of user accessing page
+        getUsername() {
+            let producer = this.producers.find(producer => producer.id == parseInt(this.userID))
+            let venue = this.venues.find(venue => venue.id == parseInt(this.userID))
+            if (this.user && this.userType == 'user') {
+                this.username = this.user.username
+                this.displayName = this.user.displayName
+                // drink shelf
+                let allDrinkShelf = Object.values(this.user.drinkLists).flatMap(obj => obj.listItems);
+                allDrinkShelf.sort((a, b) => {
+                    return new Date(b[0]) - new Date(a[0]);
+                })
+                let allDrinks = []
+                for (const item of allDrinkShelf) {
+                    const listing = this.listings.find(listing => listing.id === parseInt(item.drinkId));
+                    if (listing) {
+                        allDrinks.push(listing);
                     }
-                    else{
-                        this.mostReviews=searchResults
-                        this.filteredListings = searchResults
-                        if(this.filteredListings.length<30){
-                            this.retrieveListings();
+                }
+                this.drinkShelf = [...new Set(allDrinks)];
+            }
+            else if (producer && this.userType == 'producer') {
+                this.username = producer.producerName
+                // Q&A
+                let answeredQuestions = producer["questionsAnswers"];
+                if (answeredQuestions.length > 0) {
+                    for (let qa in answeredQuestions) {
+                        let answer = answeredQuestions[qa]["answer"];
+                        if (answer == "") {
+                            this.unansweredQuestions.push(answeredQuestions[qa]);
                         }
                     }
-
                 }
+            }
+            else if (venue) {
+                this.username = venue.venueName
 
-                // Filter listings for when following mode
-                else if(this.following){
-                    const searchResults = this.recentlyAdded.filter((listing) => {
-                        const drinkTypeListing = listing["drinkType"].toLowerCase();
-                        return drinkTypeListing.includes(drinkTypeSearch);
-                    });
-
-                    // if nothing found
-                    if(searchResults == null){
-                        this.filteredRecentlyAdded = []
-                    }
-                    else{
-                        this.filteredRecentlyAdded=searchResults
+                // Q&A
+                let answeredQuestions = venue["questionsAnswers"];
+                if (answeredQuestions.length > 0) {
+                    for (let qa in answeredQuestions) {
+                        let answer = answeredQuestions[qa]["answer"];
+                        if (answer == "") {
+                            this.unansweredQuestions.push(answeredQuestions[qa]);
+                        }
                     }
                 }
-            },
+            }
+        },
 
-            // Function to sort results based on selected category
-            sortResults() {
-                let category = this.sortSelection.category;
+        // Helper function for onkeyup search to reset filter
+        // helperSearch(){
+        //     this.searchListings()
+        //     this.isFilterType = false
+        //     this.selectedDrinkType = ''
+        // },
 
-                // ------ SORT LISTINGS --------
-                // #1: Alphabetical (A - Z)
-                if (category == 'Alphabetical (A - Z)') {
-                    this.filteredListings.sort((a, b) => {
-                        return a.listingName.localeCompare(b.listingName);
-                    });
-                }
-                // #2: Alphabetical (Z - A)
-                else if (category == 'Alphabetical (Z - A)') {
-                    this.filteredListings.sort((a, b) => {
-                        return b.listingName.localeCompare(a.listingName);
-                    });
-                }
-                // #3: Date (Newest - Oldest)
-                else if (category == 'Date (Newest - Oldest)') {
-                    this.filteredListings.sort((a, b) => {
-                        return new Date(b.addedDate) - new Date(a.addedDate);
-                    });
-                }
-                // [DEFAULT] #4: Date (Oldest - Newest)
-                else if (category == '' || category == 'Date (Oldest - Newest)') {
-                    this.filteredListings.sort((a, b) => {
-                        return new Date(a.addedDate) - new Date(b.addedDate);
-                    });
-                }
-                // #5: Ratings (Highest - Lowest)
-                else if (category == 'Ratings (Highest - Lowest)') {
-                    this.filteredListings.sort((a, b) => {
-                        return this.getAllRatings(b) - this.getAllRatings(a);
-                    });
-                }
-                // #6: Ratings (Lowest - Highest)
-                else if (category == 'Ratings (Lowest - Highest)') {
-                    this.filteredListings.sort((a, b) => {
-                        return this.getAllRatings(a) - this.getAllRatings(b);
-                    });
-                }
-            },
+        // for search button
+        // searchListings() {
+        //     // flag to check if there are search inputs
+        //     const searchInput = this.searchInput.toLowerCase();
+        //     this.searchTerm = this.searchInput;
 
-            // Sort Support Function (Category)
-            sortByCategory(category) {
-                // Check if the selected filter is the same as the current filter
-                if (this.sortSelection.category == category) {
-                    return;
+        //     // if there is something searched
+        //     this.search = true;
+        //     const searchResults = this.listings.filter((listing) => {
+        //         const expressionName = listing["listingName"].toLowerCase();
+        //         const producer = this.getProducerName(listing).toLowerCase(); //error here if return null, meaning drink doesnt belong to any producer
+        //         return expressionName.includes(searchInput) || producer.includes(searchInput);
+        //     });
+
+        //     // add search results to search history
+        //     this.searchHistory.push([searchInput, searchResults]);
+
+        //     // if nothing found
+        //     if (searchResults.length == 0) {
+        //         this.filteredListings = [];
+        //     } 
+        //     else {
+        //         this.filteredListings = searchResults;
+        //     }
+
+        //     // if there is nothing searched
+        //     if (this.searchInput == '') {
+        //         this.resetListings();
+        //     }
+        // },
+
+        // for viewing previous listings (show previous search results)
+        // previousListing() {
+        //     // more than 1 search result history
+        //     if (this.searchHistory.length > 1) {
+        //         // remove current search result
+        //         this.searchHistory.pop();
+        //         // get previous search result
+        //         const previousSearch = this.searchHistory[this.searchHistory.length - 1];
+        //         this.searchInput = previousSearch[0];
+        //         this.searchTerm = this.searchInput;
+        //         this.filteredListings = previousSearch[1];
+        //     }
+        //     // only 1 search result history
+        //     else {
+        //         this.resetListings();
+        //     }
+        // },
+
+        // for resetting listings (show full listings)
+        resetListings() {
+            this.searchInput = '';
+            this.search = false;
+            this.filteredListings = this.listings;
+            this.searchHistory = [];
+            this.moreListings = true
+        },
+
+        // get producerName for a listing based on listing
+        getProducerName(listing) {
+            const producer = this.producers.find((producer) => {
+                return producer["id"] == listing["producerID"];
+            });
+            // ensures that producer is found before accessing "producerName"
+            if (producer) {
+                const producerName = producer["producerName"];
+                return producerName;
+            }
+            else {
+                return null;
+            }
+        },
+
+        // get reviews for a listing
+        getReviews(listing) {
+            // list of all reviews of the particular drink
+            const reviews = this.reviews.filter((review) => {
+                return review["reviewTarget"] == listing["listingName"];
+            });
+            // choose random review from the list
+            const randomReview = reviews[Math.floor(Math.random() * reviews.length)];
+            // check if a review is found before accessing "Review Desc"
+            const reviewDesc = randomReview ? randomReview["reviewDesc"] : null;
+            return reviewDesc;
+        },
+
+        // get ratings for a listing
+        getRatings(listing) {
+            const ratings = this.reviews.filter((rating) => {
+                return rating["reviewTarget"] == listing["id"];
+            });
+            // if there are no ratings
+            if (ratings.length == 0) {
+                return "-";
+            }
+            // else there are ratings
+            const averageRating = ratings.reduce((total, rating) => {
+                return total + rating["rating"];
+            }, 0) / ratings.length;
+            return averageRating.toFixed(1); //tzh changed .toFixed(2) to .toFixed(1)
+        },
+
+        // get ratings for a listing --> return 0 if no ratings
+        getAllRatings(listing) {
+            const ratings = this.reviews.filter((rating) => {
+                return rating["reviewTarget"] == listing["id"];
+            });
+            // if there are no ratings
+            if (ratings.length == 0) {
+                return 0;
+            }
+            // else there are ratings
+            const averageRating = ratings.reduce((total, rating) => {
+                return total + rating["rating"];
+            }, 0) / ratings.length;
+            // round to 1 decimal place
+            const roundedRating = Math.round(averageRating * 10) / 10;
+            return roundedRating;
+        },
+
+        // Handle select of drink type filter option like sake, gin, whiskey
+        selectDrinkType(drinkType) {
+
+            // reset most reviews and recently added arrays so that can repeatedly filter
+            this.getMostReviews()
+            this.moreListings = true
+            // Determine selected drink type, and corresponding drink categories
+            this.selectedCategory = null;
+            this.selectedDrinkType = drinkType;
+            for (let drinks of this.drinkTypes) {
+                if (drinks['drinkType'] == drinkType['drinkType']) {
+                    this.selectedTypeCategory = drinks['typeCategory']
+                }
+            }
+
+            // Determine the drinkType searched, might not be neccessary
+            const drinkTypeSearch = this.selectedDrinkType['drinkType']?.toLowerCase();
+
+
+            // Search listings for when input is in the searchbar
+            // if(this.search){
+            //     this.searchListings()
+            //     const searchResults = this.filteredListings.filter((listing) => {
+            //         const drinkTypeListing = listing["drinkType"].toLowerCase();
+            //         return drinkTypeListing.includes(drinkTypeSearch);
+            //     });
+            //     this.filterSearchResult=searchResults
+            //     // to set filter message together with search terms when searched listings
+            //     this.isFilterType = true
+            // }
+
+            // Filter listings for when discovery mode
+            if (this.discovery) {
+
+                const searchResults = this.mostReviews.filter((listing) => {
+                    const drinkTypeListing = listing["drinkType"].toLowerCase();
+                    return drinkTypeListing.includes(drinkTypeSearch);
+                });
+                // if nothing found
+                if (searchResults.length == 0 || searchResults == null) {
+                    this.mostReviews = []
+                    this.filteredListings = []
+                    this.retrieveListings()
                 }
                 else {
-                    this.sortSelection.category = category
-                    this.sortResults();
-                }
-            },
-
-            //Select drink category like Blended for whiskey 
-            selectDrinkCategory(drinkCategory) {
-                this.selectDrinkType(this.selectedDrinkType)
-                this.selectedCategory = drinkCategory;
-                const drinkCategorySearch = this.selectedCategory.toLowerCase();
-
-                if(this.discovery){
-                    const searchResults = this.mostReviews.filter((listing) => {
-                        const drinkCategory = listing["typeCategory"].toLowerCase();
-                        return drinkCategory.includes(drinkCategorySearch);
-                    });
-                    if (searchResults.length ==0) {
-                        this.errorFound = true;
-                        this.errorMessage = 'No results found, please try again.';
-                        this.mostReviews = [];
-                        this.filteredListings = [];
+                    this.mostReviews = searchResults
+                    this.filteredListings = searchResults
+                    if (this.filteredListings.length < 30) {
                         this.retrieveListings();
-                    } 
-                    else {
-                        this.errorFound = false;
-                        this.errorMessage = '';
-                        this.mostReviews = searchResults;
-                        this.filteredListings = searchResults;
-                        if (this.filteredListings.length<30){
-                            this.retrieveListings();
-                        }
                     }
                 }
-                else if(this.following){
-                    const searchResults = this.filteredRecentlyAdded.filter((listing) => {
-                        const drinkCategory = listing["typeCategory"].toLowerCase();
-                        return drinkCategory.includes(drinkCategorySearch);
-                    });
-                    if (searchResults.length==0 || searchResults==null) {
-                        this.errorFound = true;
-                        this.errorMessage = 'No results found, please try again.';
-                        this.filteredRecentlyAdded = [];
+
+            }
+
+            // Filter listings for when following mode
+            else if (this.following) {
+                const searchResults = this.recentlyAdded.filter((listing) => {
+                    const drinkTypeListing = listing["drinkType"].toLowerCase();
+                    return drinkTypeListing.includes(drinkTypeSearch);
+                });
+
+                // if nothing found
+                if (searchResults == null) {
+                    this.filteredRecentlyAdded = []
+                }
+                else {
+                    this.filteredRecentlyAdded = searchResults
+                }
+            }
+        },
+
+        // Function to sort results based on selected category
+        sortResults() {
+            let category = this.sortSelection.category;
+
+            // ------ SORT LISTINGS --------
+            // #1: Alphabetical (A - Z)
+            if (category == 'Alphabetical (A - Z)') {
+                this.filteredListings.sort((a, b) => {
+                    return a.listingName.localeCompare(b.listingName);
+                });
+            }
+            // #2: Alphabetical (Z - A)
+            else if (category == 'Alphabetical (Z - A)') {
+                this.filteredListings.sort((a, b) => {
+                    return b.listingName.localeCompare(a.listingName);
+                });
+            }
+            // #3: Date (Newest - Oldest)
+            else if (category == 'Date (Newest - Oldest)') {
+                this.filteredListings.sort((a, b) => {
+                    return new Date(b.addedDate) - new Date(a.addedDate);
+                });
+            }
+            // [DEFAULT] #4: Date (Oldest - Newest)
+            else if (category == '' || category == 'Date (Oldest - Newest)') {
+                this.filteredListings.sort((a, b) => {
+                    return new Date(a.addedDate) - new Date(b.addedDate);
+                });
+            }
+            // #5: Ratings (Highest - Lowest)
+            else if (category == 'Ratings (Highest - Lowest)') {
+                this.filteredListings.sort((a, b) => {
+                    return this.getAllRatings(b) - this.getAllRatings(a);
+                });
+            }
+            // #6: Ratings (Lowest - Highest)
+            else if (category == 'Ratings (Lowest - Highest)') {
+                this.filteredListings.sort((a, b) => {
+                    return this.getAllRatings(a) - this.getAllRatings(b);
+                });
+            }
+        },
+
+        // Sort Support Function (Category)
+        sortByCategory(category) {
+            // Check if the selected filter is the same as the current filter
+            if (this.sortSelection.category == category) {
+                return;
+            }
+            else {
+                this.sortSelection.category = category
+                this.sortResults();
+            }
+        },
+
+        //Select drink category like Blended for whiskey 
+        selectDrinkCategory(drinkCategory) {
+            this.selectDrinkType(this.selectedDrinkType)
+            this.selectedCategory = drinkCategory;
+            const drinkCategorySearch = this.selectedCategory.toLowerCase();
+
+            if (this.discovery) {
+                const searchResults = this.mostReviews.filter((listing) => {
+                    const drinkCategory = listing["typeCategory"].toLowerCase();
+                    return drinkCategory.includes(drinkCategorySearch);
+                });
+                if (searchResults.length == 0) {
+                    this.errorFound = true;
+                    this.errorMessage = 'No results found, please try again.';
+                    this.mostReviews = [];
+                    this.filteredListings = [];
+                    this.retrieveListings();
+                }
+                else {
+                    this.errorFound = false;
+                    this.errorMessage = '';
+                    this.mostReviews = searchResults;
+                    this.filteredListings = searchResults;
+                    if (this.filteredListings.length < 30) {
                         this.retrieveListings();
-                    } 
-                    else {
-                        this.errorFound = false;
-                        this.errorMessage = '';
-                        this.filteredRecentlyAdded = searchResults;
-                        if(this.filteredRecentlyAdded.length<30){
-                            this.retrieveListings();
-                        }
                     }
                 }
-            },
-
-            clearSelection() {
-                // Handle the click event here
-                this.resetListings()
-                this.selectedDrinkType = ''
-                this.selectedCategory = ''
-                this.isFilterType = ''
-                if(this.discovery){
-                    this.mostReviews=[]
-                    this.getMostReviews()
+            }
+            else if (this.following) {
+                const searchResults = this.filteredRecentlyAdded.filter((listing) => {
+                    const drinkCategory = listing["typeCategory"].toLowerCase();
+                    return drinkCategory.includes(drinkCategorySearch);
+                });
+                if (searchResults.length == 0 || searchResults == null) {
+                    this.errorFound = true;
+                    this.errorMessage = 'No results found, please try again.';
+                    this.filteredRecentlyAdded = [];
+                    this.retrieveListings();
                 }
-            },
+                else {
+                    this.errorFound = false;
+                    this.errorMessage = '';
+                    this.filteredRecentlyAdded = searchResults;
+                    if (this.filteredRecentlyAdded.length < 30) {
+                        this.retrieveListings();
+                    }
+                }
+            }
+        },
 
-            clearCategory() {
-                // Handle the click event here
-                this.resetListings()
-                this.selectDrinkType(this.selectedDrinkType)
-                this.moreListings=true
-            },
+        clearSelection() {
+            // Handle the click event here
+            this.resetListings()
+            this.selectedDrinkType = ''
+            this.selectedCategory = ''
+            this.isFilterType = ''
+            if (this.discovery) {
+                this.mostReviews = []
+                this.getMostReviews()
+            }
+        },
 
-            // check if user has already added listing to shelf, add colour to button accordingly
-            checkDrinkLists(listing) {
-                const haveTried = this.drinkList.haveTried.includes(listing.listingName);
-                const wantToTry = this.drinkList.wantToTry.includes(listing.listingName);
+        clearCategory() {
+            // Handle the click event here
+            this.resetListings()
+            this.selectDrinkType(this.selectedDrinkType)
+            this.moreListings = true
+        },
 
-                const haveTriedButton = `
+        // check if user has already added listing to shelf, add colour to button accordingly
+        checkDrinkLists(listing) {
+            const haveTried = this.drinkList.haveTried.includes(listing.listingName);
+            const wantToTry = this.drinkList.wantToTry.includes(listing.listingName);
+
+            const haveTriedButton = `
                 <button type="button" class="btn custom-drink-list-btn rounded-0 ${haveTried ? 'disabled' : ''}">
                     Have tried
                 </button>
                 `;
 
-                const wantToTryButton = `
+            const wantToTryButton = `
                 <button type="button" class="btn custom-drink-list-btn rounded-0 ${wantToTry ? 'disabled' : ''}">
                     Want to try
                 </button>
                 `;
 
-                return {
-                    buttons: {
-                        haveTried: haveTriedButton,
-                        wantToTry: wantToTryButton,
-                    }
+            return {
+                buttons: {
+                    haveTried: haveTriedButton,
+                    wantToTry: wantToTryButton,
                 }
-            },
+            }
+        },
 
-            // find drink name given reviewTarget
-            findDrinkNameForReview(reviewTarget) {
-                if (reviewTarget) {
-                    let drink = this.listings.find(listing => listing.id == reviewTarget);
-                    if (drink) {
-                        let drink_name = drink.listingName; 
-                        return drink_name;
-                    }
-                }
-
-                return '';
-            },
-
-            // change status of discovery
-            changeDiscoveryStatus() {
-                if (!this.discovery) {
-                    this.discovery = true;
-                    this.moreListings = true;
-                } 
-                if (this.following) {
-                    this.following = false;
-                }
-                this.clearSelection()
-            },
-
-            // change status of following
-            changeFollowingStatus() {
-                if (!this.following) {
-                    this.following = true;
-                    this.moreListings = true;
-                } 
-                if (this.discovery) {
-                    this.discovery = false;
-                }
-                this.clearSelection()
-            },
-
-            // find drink name given listing
-            findDrinkNameForListing(listing) {
-                let drink_name = listing.listingName;
-                return drink_name;
-            },
-
-            // get all reviews that a producer has
-            getAllReviews() {
-                const reviewCounts = {};
-                // Iterate through all reviews
-                this.reviews.forEach(review => {
-                    const reviewTargetName = this.findDrinkNameForReview(review.reviewTarget);
-                    // Check if reviewTargetId is already in reviewCounts
-                    if (reviewTargetName in reviewCounts) {
-                        reviewCounts[reviewTargetName]++;
-                    } else {
-                        reviewCounts[reviewTargetName] = 1;
-                    }
-                });
-
-                // Iterate through all drinks
-                this.listings.forEach(drink => {
-                    const drinkName = drink.listingName;
-                    // Check if drinkId is not in reviewCounts
-                    if (! (drinkName in reviewCounts)) {
-                        reviewCounts[drinkName] = 0;
-                    }
-                });
-
-                this.allReviews = reviewCounts;
-            },
-            
-            // get top 5 most reviewed items by producer
-            getMostReviews() {
-                this.mostReviews = []
-                let mostProducerReviews = Object.keys(this.allReviews).sort((a, b) => {
-                    return this.allReviews[b] - this.allReviews[a];
-                }) // to get top five, add .slice(0, 5)
-                mostProducerReviews.forEach(drink => {
-                    let review = this.getListingByName(drink);
-                    if(review && review !=''){
-                        this.mostReviews.push(review);
-                    }
-                });
-            },
-
-            // get listing by name
-            getListingByName(name) {
-                let listing = this.listings.find(listing => {
-                    return listing.listingName == name;
-                });
-                return listing;
-            },
-
-            // get latest review from any users that the current user is following
-            async getUsersLatestReviews() {
-
-                // Get the list of users that the current user is following
-                let user_ids = this.user.followLists.users.join(",");
-
-                try {
-                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getReviewsByUserIds?user_ids=${user_ids}`);
-                    this.latestReviews = response.data.data;
-                }
-                catch (error) {
-                    console.error(error);
-                    this.latestReviews = [];
-                }
-            },
-
-            // get producers that user follows
-            getFollowedProducers() {
-                this.followedProducers = this.user.followLists.producers;
-            },
-
-            // get listings by producer
-            getListingsByProducer() {
-                this.followedProducers.forEach(producer => {
-                    const producerListings = this.listings.filter(listing => listing.producerID == parseInt(producer));
-                    this.allProducerDrinks.push(...producerListings);
-                });
-            },
-
-            // get venues that user follows
-            getFollowedVenues() {
-                if (this.user) {
-                    this.followedVenues = this.user.followLists.venues;
-                }
-            },
-
-            // get listings by venue
-            getListingsByVenue() {
-                this.followedVenues.forEach(venue => {
-                    const venueID = parseInt(venue);
-                    const venueObject = this.venues.find(v => v.id === venueID);
-                    let allMenuItems = venueObject["menu"]
-                    let allSectionMenus = allMenuItems.reduce((acc, menuItem) => {
-                        return acc.concat(menuItem.sectionMenu);
-                    }, []);
-
-                    let allListingsIDs = allSectionMenus.reduce((acc, menuItem) => {
-                        return acc.concat(menuItem.itemID); 
-                    }, []);
-
-                    let uniqueListingsIDs = [...new Set(allListingsIDs.map(item => item))];
-                    let allVenueDrinks = this.listings.filter(listing => {
-                        let listing_id = listing.id;
-                        return uniqueListingsIDs.includes(listing_id);
-                    }).map(listing => ({ ...listing }));
-                    this.allVenueDrinks = allVenueDrinks;
-                });
-            },
-
-            // get recently added
-            getRecentlyAdded() {
-                this.recentlyAdded = [...new Map(this.allProducerDrinks.concat(this.allVenueDrinks).map(item => [item.id, item])).values()];
-            },
-
-            getQuestionsUpdates() {
-                // get all following producers updates
-                const producerUpdates = this.producers
-                    .filter(producer => JSON.stringify(this.followedProducers).includes(JSON.stringify(producer.id)))
-                    .reduce((arr, producer) => {
-                        if (producer.updates && producer.updates.length > 0) {
-                            let updatesWithProducerName = producer.updates.map(update => ({
-                                ...update,
-                                name: producer.producerName, 
-                                id: producer.id,
-                                photo: producer.photo,
-                                type: 'producerUpdate'
-                            }));
-                            arr.push(...updatesWithProducerName);
-                        }
-                        return arr;
-                    }, []);
-
-                // get all following venues updates
-                const venueUpdates = this.venues
-                    .filter(venue => JSON.stringify(this.followedVenues).includes(JSON.stringify(venue.id)))
-                    .reduce((arr, venue) => {
-                        if (venue.updates && venue.updates.length > 0) {
-                            let updatesWithVenueName = venue.updates.map(update => ({
-                                ...update,
-                                name: venue.venueName, 
-                                id: venue.id,
-                                photo: venue.photo,
-                                type: 'venueUpdate'
-                            }));
-                            arr.push(...updatesWithVenueName);
-                        }
-                        return arr;
-                    }, []);
-
-                // get all following producers questions with answers
-                const producerQuestions = this.producers
-                    .filter(producer => JSON.stringify(this.followedProducers).includes(JSON.stringify(producer.id)))
-                    .reduce((arr, producer) => {
-                        if (producer.questionsAnswers && producer.questionsAnswers.some(qa => qa.answer)) {
-                            let questionsWithProducerName = producer.questionsAnswers.map(question => ({
-                                ...question,
-                                name: producer.producerName, 
-                                type: 'producerQuestion'
-                            }));
-                            arr.push(...questionsWithProducerName);
-                        }
-                        return arr;
-                    }, []);
-                // get all following venues questions with answers
-                const venueQuestions = this.venues
-                    .filter(venue => JSON.stringify(this.followedVenues).includes(JSON.stringify(venue.id)))
-                    .reduce((arr, venue) => {
-                        if (venue.questionsAnswers && venue.questionsAnswers.some(qa => qa.answer)) {
-                            let questionsWithVenueName = venue.questionsAnswers.map(question => ({
-                                ...question,
-                                name: venue.venueName, 
-                                type: 'venueQuestion'
-                            }));
-                            arr.push(...questionsWithVenueName);
-                        }
-                        return arr;
-                    }, []);
-
-                this.questionsUpdates = [...producerUpdates, ...venueUpdates, ...producerQuestions, ...venueQuestions];
-                
-                // TO REMOVE after date is added to question answers
-                // this.questionsUpdates = [...producerUpdates, ...venueUpdates];
-
-                // sort by date
-                this.questionsUpdates.sort((a, b) => {
-                    return new Date(b.date) - new Date(a.date);
-                });
-
-            
-            }, 
-
-            // get time difference
-            getTimeDifference(date) {
-                let currentDate = new Date();
-                let updateDate = new Date(date);
-                let timeDifference = currentDate - updateDate;
-                let seconds = Math.floor(timeDifference / 1000);
-                let minutes = Math.floor(seconds / 60);
-                let hours = Math.floor(minutes / 60);
-                let days = Math.floor(hours / 24);
-                let months = Math.floor(days / 30);
-                let years = Math.floor(months / 12);
-                if (years > 0) {
-                    return years + (years === 1 ? ' year ago' : ' years ago');
-                } else if (months > 0) {
-                    return months + (months === 1 ? ' month ago' : ' months ago');
-                } else if (days > 0) {
-                    return days + (days === 1 ? ' day ago' : ' days ago');
-                } else if (hours > 0) {
-                    return hours + (hours === 1 ? ' hour ago' : ' hours ago');
-                } else if (minutes > 0) {
-                    return minutes + (minutes === 1 ? ' minute ago' : ' minutes ago');
-                } else {
-                    return seconds + (seconds === 1 ? ' second ago' : ' seconds ago');
-                }
-            }, 
-
-            // for bookmark component
-            handleIconClick(data) {
-                this.bookmarkListingID = data
-            },
-
-            async retrieveListings(){
-                // if selectedDrinkType not empty, meaning listings are filtered, retrieve based off the drink type and/or drink category
-                if(this.discovery){
-                    if(this.selectedDrinkType != ''){
-                        let lastFilteredId = 0
-                        if(this.filteredListings.length>0){
-                            lastFilteredId = this.filteredListings[this.filteredListings.length-1].id
-                        }
-                        let params = {
-                            "drinkType" : this.selectedDrinkType.drinkType,
-                            "drinkCategory": this.selectedCategory
-                        }
-                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getFiltered30` + '/' + lastFilteredId, { params });
-                        this.filteredListings.push(...response.data);
-                        if(response.data.length == 0){
-                            this.moreListings = false
-                        }
-                    }
-                    // if not, meaning listings are not filtered, retrieve next 30 listings in DB
-                    else{
-                        let lastId = this.listings[this.listings.length-1].id
-                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getNext30` + '/' + lastId);
-                        this.listings.push(...response.data);
-                        if(response.data.length == 0){
-                            this.moreListings = false
-                        }
-                    }
-                }
-                //Lazy loading for following tab
-                else{
-                    // TODO: Add in lazy loading filter options, right now just pulling normally
-                    // if selectedDrinkType not empty, meaning listings are filtered, retrieve based off the drink type and/or drink category based off following list
-                    // if(this.selectedDrinkType!=''){
-                    // if not, meaning listings are not filtered, retrieve next 30 listings in DB based off following list
-                    // }else{
-                        let lastFollowingId = this.recentlyAdded[this.recentlyAdded.length-1].id
-                        
-                        let params = {
-                            "followedProducers" : this.followedProducers,
-                            "followedVenues": this.followedVenues.length>this.followCount?this.followedVenues[this.followCount]:'null'
-                        }
-                        let queryString = new URLSearchParams({
-                            followedProducers: JSON.stringify(params.followedProducers),
-                            followedVenues: JSON.stringify(params.followedVenues)
-                        }).toString();
-                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getNextFollowing30` + '/' + lastFollowingId+ `?${queryString}` );
-                        const newItems = response.data.filter(item => !this.recentlyAdded.some(existingItem => existingItem.id === item.id));
-                        this.recentlyAdded.push(...newItems);
-                        if(response.data.length == 0){
-                            this.moreListings = false
-                        }
-                    // }
-
-                    this.followCount++;
+        // find drink name given reviewTarget
+        findDrinkNameForReview(reviewTarget) {
+            if (reviewTarget) {
+                let drink = this.listings.find(listing => listing.id == reviewTarget);
+                if (drink) {
+                    let drink_name = drink.listingName;
+                    return drink_name;
                 }
             }
 
+            return '';
+        },
+
+        // change status of discovery
+        changeDiscoveryStatus() {
+            if (!this.discovery) {
+                this.discovery = true;
+                this.moreListings = true;
+            }
+            if (this.following) {
+                this.following = false;
+            }
+            this.clearSelection()
+        },
+
+        // change status of following
+        changeFollowingStatus() {
+            if (!this.following) {
+                this.following = true;
+                this.moreListings = true;
+            }
+            if (this.discovery) {
+                this.discovery = false;
+            }
+            this.clearSelection()
+        },
+
+        // find drink name given listing
+        findDrinkNameForListing(listing) {
+            let drink_name = listing.listingName;
+            return drink_name;
+        },
+
+        // get all reviews that a producer has
+        getAllReviews() {
+            const reviewCounts = {};
+            // Iterate through all reviews
+            this.reviews.forEach(review => {
+                const reviewTargetName = this.findDrinkNameForReview(review.reviewTarget);
+                // Check if reviewTargetId is already in reviewCounts
+                if (reviewTargetName in reviewCounts) {
+                    reviewCounts[reviewTargetName]++;
+                } else {
+                    reviewCounts[reviewTargetName] = 1;
+                }
+            });
+
+            // Iterate through all drinks
+            this.listings.forEach(drink => {
+                const drinkName = drink.listingName;
+                // Check if drinkId is not in reviewCounts
+                if (!(drinkName in reviewCounts)) {
+                    reviewCounts[drinkName] = 0;
+                }
+            });
+
+            this.allReviews = reviewCounts;
+        },
+
+        // get top 5 most reviewed items by producer
+        getMostReviews() {
+            this.mostReviews = []
+            let mostProducerReviews = Object.keys(this.allReviews).sort((a, b) => {
+                return this.allReviews[b] - this.allReviews[a];
+            }) // to get top five, add .slice(0, 5)
+            mostProducerReviews.forEach(drink => {
+                let review = this.getListingByName(drink);
+                if (review && review != '') {
+                    this.mostReviews.push(review);
+                }
+            });
+        },
+
+        // get listing by name
+        getListingByName(name) {
+            let listing = this.listings.find(listing => {
+                return listing.listingName == name;
+            });
+            return listing;
+        },
+
+        // get latest review from any users that the current user is following
+        async getUsersLatestReviews() {
+
+            // Get the list of users that the current user is following
+            let user_ids = this.user.followLists.users.join(",");
+
+            try {
+                // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getReviewsByUserIds?user_ids=${user_ids}`); [Comment out for deployed site]
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getReviewsByUserIds?user_ids=${user_ids}`);
+                this.latestReviews = response.data.data;
+            }
+            catch (error) {
+                console.error(error);
+                this.latestReviews = [];
+            }
+        },
+
+        // get producers that user follows
+        getFollowedProducers() {
+            this.followedProducers = this.user.followLists.producers;
+        },
+
+        // get listings by producer
+        getListingsByProducer() {
+            this.followedProducers.forEach(producer => {
+                const producerListings = this.listings.filter(listing => listing.producerID == parseInt(producer));
+                this.allProducerDrinks.push(...producerListings);
+            });
+        },
+
+        // get venues that user follows
+        getFollowedVenues() {
+            if (this.user) {
+                this.followedVenues = this.user.followLists.venues;
+            }
+        },
+
+        // get listings by venue
+        getListingsByVenue() {
+            this.followedVenues.forEach(venue => {
+                const venueID = parseInt(venue);
+                const venueObject = this.venues.find(v => v.id === venueID);
+                let allMenuItems = venueObject["menu"]
+                let allSectionMenus = allMenuItems.reduce((acc, menuItem) => {
+                    return acc.concat(menuItem.sectionMenu);
+                }, []);
+
+                let allListingsIDs = allSectionMenus.reduce((acc, menuItem) => {
+                    return acc.concat(menuItem.itemID);
+                }, []);
+
+                let uniqueListingsIDs = [...new Set(allListingsIDs.map(item => item))];
+                let allVenueDrinks = this.listings.filter(listing => {
+                    let listing_id = listing.id;
+                    return uniqueListingsIDs.includes(listing_id);
+                }).map(listing => ({ ...listing }));
+                this.allVenueDrinks = allVenueDrinks;
+            });
+        },
+
+        // get recently added
+        getRecentlyAdded() {
+            this.recentlyAdded = [...new Map(this.allProducerDrinks.concat(this.allVenueDrinks).map(item => [item.id, item])).values()];
+        },
+
+        getQuestionsUpdates() {
+            // get all following producers updates
+            const producerUpdates = this.producers
+                .filter(producer => JSON.stringify(this.followedProducers).includes(JSON.stringify(producer.id)))
+                .reduce((arr, producer) => {
+                    if (producer.updates && producer.updates.length > 0) {
+                        let updatesWithProducerName = producer.updates.map(update => ({
+                            ...update,
+                            name: producer.producerName,
+                            id: producer.id,
+                            photo: producer.photo,
+                            type: 'producerUpdate'
+                        }));
+                        arr.push(...updatesWithProducerName);
+                    }
+                    return arr;
+                }, []);
+
+            // get all following venues updates
+            const venueUpdates = this.venues
+                .filter(venue => JSON.stringify(this.followedVenues).includes(JSON.stringify(venue.id)))
+                .reduce((arr, venue) => {
+                    if (venue.updates && venue.updates.length > 0) {
+                        let updatesWithVenueName = venue.updates.map(update => ({
+                            ...update,
+                            name: venue.venueName,
+                            id: venue.id,
+                            photo: venue.photo,
+                            type: 'venueUpdate'
+                        }));
+                        arr.push(...updatesWithVenueName);
+                    }
+                    return arr;
+                }, []);
+
+            // get all following producers questions with answers
+            const producerQuestions = this.producers
+                .filter(producer => JSON.stringify(this.followedProducers).includes(JSON.stringify(producer.id)))
+                .reduce((arr, producer) => {
+                    if (producer.questionsAnswers && producer.questionsAnswers.some(qa => qa.answer)) {
+                        let questionsWithProducerName = producer.questionsAnswers.map(question => ({
+                            ...question,
+                            name: producer.producerName,
+                            type: 'producerQuestion'
+                        }));
+                        arr.push(...questionsWithProducerName);
+                    }
+                    return arr;
+                }, []);
+            // get all following venues questions with answers
+            const venueQuestions = this.venues
+                .filter(venue => JSON.stringify(this.followedVenues).includes(JSON.stringify(venue.id)))
+                .reduce((arr, venue) => {
+                    if (venue.questionsAnswers && venue.questionsAnswers.some(qa => qa.answer)) {
+                        let questionsWithVenueName = venue.questionsAnswers.map(question => ({
+                            ...question,
+                            name: venue.venueName,
+                            type: 'venueQuestion'
+                        }));
+                        arr.push(...questionsWithVenueName);
+                    }
+                    return arr;
+                }, []);
+
+            this.questionsUpdates = [...producerUpdates, ...venueUpdates, ...producerQuestions, ...venueQuestions];
+
+            // TO REMOVE after date is added to question answers
+            // this.questionsUpdates = [...producerUpdates, ...venueUpdates];
+
+            // sort by date
+            this.questionsUpdates.sort((a, b) => {
+                return new Date(b.date) - new Date(a.date);
+            });
+
+
+        },
+
+        // get time difference
+        getTimeDifference(date) {
+            let currentDate = new Date();
+            let updateDate = new Date(date);
+            let timeDifference = currentDate - updateDate;
+            let seconds = Math.floor(timeDifference / 1000);
+            let minutes = Math.floor(seconds / 60);
+            let hours = Math.floor(minutes / 60);
+            let days = Math.floor(hours / 24);
+            let months = Math.floor(days / 30);
+            let years = Math.floor(months / 12);
+            if (years > 0) {
+                return years + (years === 1 ? ' year ago' : ' years ago');
+            } else if (months > 0) {
+                return months + (months === 1 ? ' month ago' : ' months ago');
+            } else if (days > 0) {
+                return days + (days === 1 ? ' day ago' : ' days ago');
+            } else if (hours > 0) {
+                return hours + (hours === 1 ? ' hour ago' : ' hours ago');
+            } else if (minutes > 0) {
+                return minutes + (minutes === 1 ? ' minute ago' : ' minutes ago');
+            } else {
+                return seconds + (seconds === 1 ? ' second ago' : ' seconds ago');
+            }
+        },
+
+        // for bookmark component
+        handleIconClick(data) {
+            this.bookmarkListingID = data
+        },
+
+        async retrieveListings() {
+            // if selectedDrinkType not empty, meaning listings are filtered, retrieve based off the drink type and/or drink category
+            if (this.discovery) {
+                if (this.selectedDrinkType != '') {
+                    let lastFilteredId = 0
+                    if (this.filteredListings.length > 0) {
+                        lastFilteredId = this.filteredListings[this.filteredListings.length - 1].id
+                    }
+                    let params = {
+                        "drinkType": this.selectedDrinkType.drinkType,
+                        "drinkCategory": this.selectedCategory
+                    }
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getFiltered30` + '/' + lastFilteredId, { params });
+                    this.filteredListings.push(...response.data);
+                    if (response.data.length == 0) {
+                        this.moreListings = false
+                    }
+                }
+                // if not, meaning listings are not filtered, retrieve next 30 listings in DB
+                else {
+                    let lastId = this.listings[this.listings.length - 1].id
+                    // const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getNext30` + '/' + lastId);
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getNext30` + '/' + lastId);
+                    this.listings.push(...response.data);
+                    if (response.data.length == 0) {
+                        this.moreListings = false
+                    }
+                }
+            }
+            //Lazy loading for following tab
+            else {
+                // TODO: Add in lazy loading filter options, right now just pulling normally
+                // if selectedDrinkType not empty, meaning listings are filtered, retrieve based off the drink type and/or drink category based off following list
+                // if(this.selectedDrinkType!=''){
+                // if not, meaning listings are not filtered, retrieve next 30 listings in DB based off following list
+                // }else{
+                let lastFollowingId = this.recentlyAdded[this.recentlyAdded.length - 1].id
+
+                let params = {
+                    "followedProducers": this.followedProducers,
+                    "followedVenues": this.followedVenues.length > this.followCount ? this.followedVenues[this.followCount] : 'null'
+                }
+                let queryString = new URLSearchParams({
+                    followedProducers: JSON.stringify(params.followedProducers),
+                    followedVenues: JSON.stringify(params.followedVenues)
+                }).toString();
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getNextFollowing30` + '/' + lastFollowingId + `?${queryString}`);
+                const newItems = response.data.filter(item => !this.recentlyAdded.some(existingItem => existingItem.id === item.id));
+                this.recentlyAdded.push(...newItems);
+                if (response.data.length == 0) {
+                    this.moreListings = false
+                }
+                // }
+
+                this.followCount++;
+            }
+        },
+        goToProfile() {
+            this.$router.push({
+                name: "profileuser",
+                params: { userID: this.userID, username: this.username} // Added By SMU GROUP 3 --> username 
+            });
         }
-    };
+
+    }
+};
 </script>
 
+<style>
+.recommendations {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
 
+.drink-card {
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+    display: flex;
+    text-align: start;
+    border: 1px solid #444;
+    position: relative;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.drink-card:hover {
+    transform: scale(1.03);
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.drink-img {
+    flex: 0 0 200px;
+    background-color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid #e0e0e0;
+    /* Add this line for the divider */
+}
+
+.drink-img img {
+    width: 70%;
+    height: 180px;
+    object-fit: contain;
+    padding: 10px;
+}
+
+.drink-info {
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.drink-name {
+    font-size: 20px;
+    font-weight: 500;
+    margin-bottom: 5px;
+    color: #027562;
+}
+
+.distillery {
+    font-size: 16px;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.drink-desc {
+    font-size: 14px;
+    color: #444;
+    line-height: 1.5;
+    flex-grow: 1;
+    margin-bottom: 15px;
+}
+
+.rating {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.drink-meta {
+    display: flex;
+    justify-content: flex-end;
+    /* Keep items aligned to the right */
+    align-items: center;
+    gap: 10px;
+    /* Add space between the buttons */
+}
+
+.icon-button {
+    background: transparent;
+    border: solid 1px #ccc;
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+}
+
+.icon-button:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.icon-button i {
+    font-size: 18px;
+    color: #666;
+}
+
+.rating-number {
+    font-size: 24px;
+    font-weight: bold;
+    color: #f0a030;
+}
+
+.rating-star {
+    font-size: 24px;
+    color: #f0a030;
+}
+
+.btn-primary {
+    background-color: #f0a030;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    color: #fff;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.btn-primary:hover {
+    background-color: #fee5bf;
+    /* Light gold/cream color on hover */
+    color: #333;
+    /* Darker text color for better contrast on light background */
+    border-color: transparent;
+}
+
+@media (max-width: 768px) {
+    .drink-card {
+        flex-direction: column;
+    }
+
+    .drink-img {
+        width: 100%;
+    }
+
+    .rating {
+        position: static;
+        margin-top: 10px;
+    }
+}
+</style>
