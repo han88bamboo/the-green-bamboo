@@ -2,7 +2,7 @@
 # Routes: /getAccountRequests (GET), /getCountries (GET), /getListings (GET), /getListingsByIDs (POST), /getListing/<id> (GET), /getProducers (GET), /getProducer/<id> (GET),
 #           /getRecentListingReviews/<id> (GET), /getAllListingsNames (GET), /getBookmarkListings (POST), /getUserReviewSummary/<id> (GET),
 #           /getReviews (GET), /getReviewByTarget/<id> (GET), /getReviewsByUserIds (GET), /getProducerTourReviews (GET), /getUsers (GET), /getUser/<id> (GET), 
-#           /getUserPhoto/<id>/<userType> (GET), /getUserByUsername/<username> (GET), /getVenues (GET), 
+#           /getUserPhoto/<id>/<userType> (GET), /getUserByUsername/<username> (GET), /getVenues (GET), /getImageSearchResults (POST)
 #           /getVenue/<id> (GET), /getVenuesAPI (GET), /getDrinkTypes (GET), /getRequestListings (GET), /getRequestListing/<id> (GET), /getRequestEdits (GET), 
 #           /getRequestEdit/<id> (GET), /getModRequests (GET), /getFlavourTags (GET), /getSubTags (GET), /getObservationTags (GET), /getColours (GET), 
 #           /getSpecialColours (GET), /getLanguages (GET), /getServingTypes (GET), /getProducersProfileViews (GET), /getVenuesProfileViewsByVenue/<id> (GET), /getRequestInaccuracyByVenue/<id> (GET)
@@ -2852,7 +2852,7 @@ def getRandomListings():
 # -----------------------------------------------------------------------------------------
 # [GET] Get Listings from reverse image search -- ADDED BY SMU GROUP 3
 @blueprint.route("/getImageSearchResults", methods=["POST"])
-def get_listings_by_logo():
+def getImageSearchResults():
     data = request.json
     detected_logo = data.get("logo")
     detected_labels = data.get("labels", [])  
@@ -2996,12 +2996,16 @@ def get_listings_by_logo():
         for listing_id, listing_dict in scored_listings.items():
             print(f"🏆 Listing {listing_id}: {listing_dict['score']} points")
 
-    if not scored_listings:
-        return jsonify({"error": "No matching listings found"}), 404
 
-    sorted_listings = sorted(scored_listings.values(), key=lambda x: x["score"], reverse=True)
+    filtered_listings = [listing for listing in scored_listings.values() if listing["score"] > 0]
+
+    if not filtered_listings:
+        return jsonify({"error": "No listings with a positive score found"}), 404
+
+    # Sort and return top 30
+    sorted_listings = sorted(filtered_listings, key=lambda x: x["score"], reverse=True)
     top_30_listings = sorted_listings[:30]
-    
+    print (top_30_listings)
     return jsonify(top_30_listings), 200
 # -----------------------------------------------------------------------------------------
 # [GET] Get Recommended Clubs -- ADDED BY SMU GROUP 3
