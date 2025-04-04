@@ -311,7 +311,8 @@ CREATE TABLE "listings" (
     "reviewLink" VARCHAR(255),
     "sourceLink" VARCHAR(255),
     "photo" TEXT,
-    "drinkStyle" VARCHAR(255) -- added by tzh 
+    "drinkStyle" VARCHAR(255), -- added by tzh 
+    "googleFlavourTags" TEXT[] -- added by Group-3
 );
 
 -- ========= "modRequests" =========
