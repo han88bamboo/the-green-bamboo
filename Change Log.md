@@ -502,3 +502,21 @@ Purpose of the changes:
 
 Nature of the changes (frontend / backend / database):
 frontend/backend
+
+# Update as of 4 April
+Coder: Jovinne
+
+Purpose of the changes:
+(1) Updated listings table - Added new column 'googleFlavourTags' that stores flavour tags retrieved from Google Search JSON API
+(2) Updates associations table - Updated all rows to store more associations
+
+Nature of the changes (frontend / backend / database):
+database
+
+Coder: Jovinne
+
+Purpose of the changes:
+(1) Updated Backend API (getData.py) - Updated getRecommendedListings to recommend listings based on flavour tags in googleFlavourTags (in the "listings" table) instead of the "reviews" table 
+
+Nature of the changes (frontend / backend / database):
+backend
