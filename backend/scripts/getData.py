@@ -3120,16 +3120,16 @@ def basic_algo(userID):
 
         # Get listings with the same flavour tags
         if choiceFlavour:
-            cursor.execute('''SELECT s."id" FROM "subTags" s, "flavourTags" ft 
+            cursor.execute('''SELECT s."subTag" FROM "subTags" s, "flavourTags" ft 
                            WHERE s."familyTagId" = ft."id" AND ft."familyTag" = ANY(%s)''', (choiceFlavour,))
-            flavour_ids = [row["id"] for row in cursor.fetchall()]
+            flavour_ids = [row["subTag"] for row in cursor.fetchall()]
+            print(flavour_ids)
 
             if flavour_ids:
                 flavour_query = '''
                     SELECT DISTINCT l.*
                     FROM "listings" l
-                    JOIN "reviews" r ON l."id" = r."reviewTarget"
-                    WHERE r."flavourTag" && %s::text[]
+                    WHERE l."googleFlavourTags" && %s::text[]
                 '''
                 cursor.execute(flavour_query, (flavour_ids,))
                 flavour_listings = cursor.fetchall()
@@ -3192,39 +3192,61 @@ def advanced_algo_reviews(userID):
         user_reviews_tags = cursor.fetchall()
         if not user_reviews_tags:
             return jsonify([])
+
         tags_used = {}
         associations_dict = association_rules()
+        
+        # Count how many times each tag appears in the user's reviews
         for tag in user_reviews_tags:
             for num in tag["flavourTag"]:
                 if num not in tags_used:
                     tags_used[num] = 1
                 else:
                     tags_used[num] += 1
+        
+        # Get the top 5 most frequent tags
         top_tags = sorted(tags_used, key=tags_used.get, reverse=True)[:5]
         print(top_tags)
+
+        # Get associated tags based on top tags
         close_tags = []
         for tag in top_tags:
             if int(tag) in associations_dict:
                 close_tags += associations_dict[int(tag)]
+
+        # Ensure unique tags and convert to tuple for IN query
         close_tags = list(set(close_tags))
         print(close_tags)
-        recommended = {}
-        flavour_query = '''
-            SELECT DISTINCT l.*
-            FROM "listings" l
-            JOIN "reviews" r ON l."id" = r."reviewTarget"
-            WHERE r."flavourTag" && %s::text[]
+
+        # Query to fetch subTags based on associated tag IDs
+        get_tags_names = '''
+            SELECT "subTag" FROM "subTags" WHERE "id" = ANY(%s)
         '''
-        cursor.execute(flavour_query, (close_tags,))
+        cursor.execute(get_tags_names, (close_tags,))
+        tag_names = cursor.fetchall()
+
+        # Query to fetch listings that match the tags
+        flavour_query = '''
+            SELECT DISTINCT l.* 
+            FROM "listings" l
+            WHERE l."googleFlavourTags" && %s::text[]
+        '''
+        # Extract only the tag names for the query
+        tag_names_list = [tag["subTag"] for tag in tag_names]
+        cursor.execute(flavour_query, (tag_names_list,))
         flavour_listings = cursor.fetchall()
 
+        recommended = {}
         for listing in flavour_listings:
             if listing["id"] not in recommended:
                 recommended[listing["id"]] = listing
 
+        # If no recommendations, return an empty dictionary
         if not recommended:
             return {}
+
         return recommended
+
 
 @blueprint.route("testRecommender/<userID>")
 def testRecommender(userID):
@@ -3293,11 +3315,10 @@ def advanced_algo_list(userID):
         close_tags = list(set(close_tags))
         print(close_tags)
         flavour_query = '''
-            SELECT DISTINCT l.*
-            FROM "listings" l
-            JOIN "reviews" r ON l."id" = r."reviewTarget"
-            WHERE r."flavourTag" && %s::text[]
-        '''
+                    SELECT DISTINCT l.*
+                    FROM "listings" l
+                    WHERE l."googleFlavourTags" && %s::text[]
+                '''
         cursor.execute(flavour_query, (close_tags,))
         flavour_listings = cursor.fetchall()
 
