@@ -128,18 +128,6 @@ export default {
       this.captchaToken = token;
       this.captchaTimestamp = Date.now();
       console.log("Captcha verified, token:", token);
-
-      setTimeout(() => {
-    // Check if the token is indeed older than 2 minutes
-    if (Date.now() - this.captchaTimestamp >= 120000) {
-      if (window.grecaptcha) {
-        window.grecaptcha.reset();
-      }
-      this.captchaVerified = false;
-      this.captchaToken = "";
-      this.triggerPopup("CAPTCHA expired, please complete it again.");
-    }
-  }, 120000);
     },
     onCaptchaExpired() {
       // Reset CAPTCHA state when it expires
@@ -248,7 +236,7 @@ export default {
         this.reverseImageSearch(imageToSend)
           .then(({ logo, labels, detectedText }) => {
             if (logo || labels.length > 0 || detectedText) {
-              if (window.grecaptcha) {
+              if (window.grecaptcha && document.getElementById("recaptcha")) {
                 window.grecaptcha.reset();
               }
               this.captchaVerified = false;
@@ -463,7 +451,7 @@ export default {
   },
   beforeUnmount() {
     // Clean up reCAPTCHA when the component is about to be destroyed
-    if (window.grecaptcha) {
+    if (window.grecaptcha && document.getElementById("recaptcha")) {
       window.grecaptcha.reset();
     }
   },
