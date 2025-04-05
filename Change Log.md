@@ -492,8 +492,8 @@ any clubs or drinks
 Nature of the changes (frontend / backend / database):
 backend
 
+# Update as of 3 April
 
-# Update as of 3 April 
 Coder: TeckXuan
 
 Purpose of the changes:
@@ -504,6 +504,7 @@ Nature of the changes (frontend / backend / database):
 frontend/backend
 
 # Update as of 4 April
+
 Coder: Jovinne
 
 Purpose of the changes:
@@ -516,15 +517,24 @@ database
 Coder: Jovinne
 
 Purpose of the changes:
-(1) Updated Backend API (getData.py) - Updated getRecommendedListings to recommend listings based on flavour tags in googleFlavourTags (in the "listings" table) instead of the "reviews" table 
+(1) Updated Backend API (getData.py) - Updated getRecommendedListings to recommend listings based on flavour tags in googleFlavourTags (in the "listings" table) instead of the "reviews" table
 
 Nature of the changes (frontend / backend / database):
 backend
 
 # Update as of 5 April
+
 Coder: Jovinne
 
 Purpose of the changes:
 (1) Updated Backend API (getData.py) - Updated helper function advanced_algo_list to retrieve the correct flavour tags
 Nature of the changes (frontend / backend / database):
 backend
+
+Coder: TeckXuan
+
+Purpose of the changes:
+(1) Updated Frontend (ImageSearchResults.vue) - Updated the result lsitings to be in the similar format as the SearchView
+
+Nature of the changes (frontend / backend / database):
+frontend
