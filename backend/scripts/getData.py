@@ -3250,7 +3250,7 @@ def advanced_algo_reviews(userID):
 
 @blueprint.route("testRecommender/<userID>")
 def testRecommender(userID):
-    return advanced_algo_reviews(userID)       
+    return advanced_algo_list(userID)       
 
 # helper function for advanced algo (drink lists) 
 def advanced_algo_list(userID):
@@ -3307,21 +3307,36 @@ def advanced_algo_list(userID):
                 else:
                     tags_used[num] += 1
         top_tags = sorted(tags_used, key=tags_used.get, reverse=True)[:5]
-        association_dict = association_rules()
+        associations_dict = association_rules()
+        print(top_tags)
+
+        # Get associated tags based on top tags
         close_tags = []
         for tag in top_tags:
-            if int(tag) in association_dict:
-                close_tags += association_dict[int(tag)]
+            if int(tag) in associations_dict:
+                close_tags += associations_dict[int(tag)]
         close_tags = list(set(close_tags))
         print(close_tags)
+
+        # Query to fetch subTags based on associated tag IDs
+        get_tags_names = '''
+            SELECT "subTag" FROM "subTags" WHERE "id" = ANY(%s)
+        '''
+        cursor.execute(get_tags_names, (close_tags,))
+        tag_names = cursor.fetchall()
+
+        # Query to fetch listings that match the tags
         flavour_query = '''
-                    SELECT DISTINCT l.*
-                    FROM "listings" l
-                    WHERE l."googleFlavourTags" && %s::text[]
-                '''
-        cursor.execute(flavour_query, (close_tags,))
+            SELECT DISTINCT l.* 
+            FROM "listings" l
+            WHERE l."googleFlavourTags" && %s::text[]
+        '''
+        # Extract only the tag names for the query
+        tag_names_list = [tag["subTag"] for tag in tag_names]
+        cursor.execute(flavour_query, (tag_names_list,))
         flavour_listings = cursor.fetchall()
 
+        recommended = {}
         for listing in flavour_listings:
             if listing["id"] not in recommended:
                 recommended[listing["id"]] = listing
