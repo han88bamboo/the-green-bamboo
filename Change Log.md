@@ -230,3 +230,14 @@ Updated Backend getReviewsByUserIds code to accommodate tuple userIds
 (1) Updated backend/getData.py
 Nature of the changes (frontend / backend / database):
 backend
+
+# Update as of 5 April
+
+Coder: Han
+
+Purpose of the changes:
+Producer bottle listings - to allow admin / moderators to delete reviews.
+Still require CP's assistance to bug fix thihs issue.
+Nature of the changes (frontend / backend / database):
+frontend
+
