@@ -106,7 +106,8 @@ export default {
       script.defer = true;
       document.head.appendChild(script);
       // Bind the onload callback to the window so the API can call it
-      window.onRecaptchaLoadCallback = this.renderRecaptcha;
+      window.onRecaptchaLoadCallback = () => {this.renderRecaptcha();
+    };
     } else {
       // If already loaded, render immediately
       this.renderRecaptcha();
@@ -247,6 +248,11 @@ export default {
         this.reverseImageSearch(imageToSend)
           .then(({ logo, labels, detectedText }) => {
             if (logo || labels.length > 0 || detectedText) {
+              if (window.grecaptcha) {
+                window.grecaptcha.reset();
+              }
+              this.captchaVerified = false;
+              this.captchaToken = "";
               // Navigate to results page with detected logo, labels, and text
               this.$router.push({
                 path: "/imageSearchResults",
