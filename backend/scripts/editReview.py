@@ -383,18 +383,14 @@ def updateProducerReview(id):
     remove_component = []
     added_component = []
 
+    print("New data: ", data)
+    print("Old Data: ", existing_review)
 
     # ===== Need to edit this part =====
-    # [1] Check if text review was removed
-    if not data.get('reviewDesc') and existing_review['reviewDesc']:
-        remove_component.append(2)
-    elif data.get('reviewDesc') and not existing_review['reviewDesc']:
-        added_component.append(2)
-
-    # [2] Check if photo was removed or added  
-    if not data.get('photos') and existing_review['photos']:
+    # [1] Check if photo was removed or added  
+    if data['photos'] == [] and existing_review['photos'] != []:
         remove_component.append(4)
-    elif data.get('photos') and not existing_review['photos']:
+    elif data.get('photos') and existing_review['photos'] == []:
         added_component.append(4)
 
     # =========================================

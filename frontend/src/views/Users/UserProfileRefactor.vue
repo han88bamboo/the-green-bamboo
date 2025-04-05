@@ -125,7 +125,7 @@
                   <b> Points Earned </b>
                 </div>
                 <div class="col-7 text-end">
-                  <span> {{ totalPoints }} pts </span>
+                  <span> {{ proofPoints }} pts </span>
                 </div>
               </div>
             </div>
@@ -2640,6 +2640,7 @@ export default {
       drinkType: [],
       drinkTypes: [],
       bookedMarkedListings: {},
+      proofPoints: 0,
 
       // Reviews information
       subTags: [],
@@ -2801,10 +2802,15 @@ export default {
               );
               // const response  = await this.$axios.get(`http://127.0.0.1:5000/getData/getUser/${this.userID}`);
               this.user = response.data;
+
             } catch (error) {
               console.error(error);
             }
           }
+
+          // Get proof points
+          this.getProofPoints();
+
           // check if current user is following the user being viewed
           if (this.userType === "user") {
             this.following = this.user.followLists.users.includes(
@@ -3257,6 +3263,19 @@ export default {
         }
       } else {
         return "#" + "030303";
+      }
+    },
+
+    async getProofPoints() {
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/proofPoints/getPointsForUser/${this.displayUserID}/user` 
+        );
+
+        this.proofPoints = response.data;
+
+      } catch (error) {
+        console.error(error);
       }
     },
 

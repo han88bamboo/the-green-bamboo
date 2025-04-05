@@ -176,14 +176,18 @@ def getPointsForUser(id, userType):
     if review_ids:
         for review_id in review_ids:
 
-            id = review_id['id']
-            cursor.execute('SELECT "upvotes", "downvotes" FROM "reviewsUserVotes" WHERE "reviewId" = %s', (id,))
+            r_id = review_id['id']
+            cursor.execute('SELECT "upvotes", "downvotes" FROM "reviewsUserVotes" WHERE "reviewId" = %s', (r_id,))
             votes = cursor.fetchone()
 
-            total_review_upvotes += len(votes['upvotes'])
-            total_review_downvotes += len(votes['downvotes'])
+            if votes:
+                total_review_upvotes += len(votes['upvotes'])
+                total_review_downvotes += len(votes['downvotes'])
+            else:
+                # If no votes, set to 0
+                total_review_upvotes += 0
+                total_review_downvotes += 0
     
-
     print("Total review upvotes: ", total_review_upvotes)
     print("Total review downvotes: ", total_review_downvotes)
 
@@ -202,8 +206,12 @@ def getPointsForUser(id, userType):
             cursor.execute('SELECT "upvotes", "downvotes" FROM "producerReviewsUserVotes" WHERE "reviewId" = %s', (pr_id,))
             votes = cursor.fetchone()
 
-            total_producer_review_upvotes += len(votes['upvotes'])
-            total_producer_review_downvotes += len(votes['downvotes'])
+            if votes:
+                total_producer_review_upvotes += len(votes['upvotes'])
+                total_producer_review_downvotes += len(votes['downvotes'])
+            else:
+                total_producer_review_upvotes += 0
+                total_producer_review_downvotes += 0
 
     print("Total producer review upvotes: ", total_producer_review_upvotes)
     print("Total producer review downvotes: ", total_producer_review_downvotes)
