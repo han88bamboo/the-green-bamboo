@@ -2276,7 +2276,7 @@
                     <!-- Edit & Delete Buttons -->
                     <div class="mt-2">
                       <button
-                        v-if="review.userID === parseInt(userID)"
+                        v-if="review.userID === parseInt(userID) || correctModerator || user.isAdmin"
                         class="btn btn-warning me-1 py-1 mobile-fs-7"
                         @click="setUpdateID(review)"
                         data-bs-toggle="modal"
@@ -2285,7 +2285,7 @@
                         Edit
                       </button>
                       <button
-                        v-if="review.userID === correctModerator"
+                        v-if="review.userID === correctModerator || user.isAdmin"
                         class="btn btn-danger py-1 mobile-fs-7"
                         @click="setDeleteID(review)"
                         data-bs-toggle="modal"
