@@ -534,7 +534,7 @@ backend
 Coder: TeckXuan
 
 Purpose of the changes:
-(1) Updated Frontend (ImageSearchResults.vue) - Updated the result lsitings to be in the similar format as the SearchView
-
+(1) Updated Frontend (ImageSearchResults.vue) - Updated the result listings to be in the similar format as the SearchView
+(2) Updated Frontend (ImageSearchView.vue) - Updated the colour of the Hide Image button 
 Nature of the changes (frontend / backend / database):
 frontend
