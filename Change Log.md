@@ -520,3 +520,11 @@ Purpose of the changes:
 
 Nature of the changes (frontend / backend / database):
 backend
+
+# Update as of 5 April
+Coder: Jovinne
+
+Purpose of the changes:
+(1) Updated Backend API (getData.py) - Updated helper function advanced_algo_list to retrieve the correct flavour tags
+Nature of the changes (frontend / backend / database):
+backend
