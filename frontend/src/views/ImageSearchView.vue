@@ -122,6 +122,7 @@ export default {
         "expired-callback": this.onCaptchaExpired
       });
     },
+
     onCaptchaSuccess(token) {
       // Callback invoked when CAPTCHA is solved
       this.captchaVerified = true;
@@ -129,12 +130,14 @@ export default {
       this.captchaTimestamp = Date.now();
       console.log("Captcha verified, token:", token);
     },
+
     onCaptchaExpired() {
       // Reset CAPTCHA state when it expires
       this.captchaVerified = false;
       this.captchaToken = "";
       console.log("Captcha expired");
     },
+
     onFileChange(event) {
       const file = event.target.files[0];
       if (file && this.isValidImageType(file)) {
@@ -206,6 +209,7 @@ export default {
     toggleImage() {
       this.imagePreview = !this.imagePreview;
     },
+
     isValidUrl(string) {
       try {
         new URL(string);
@@ -262,7 +266,6 @@ export default {
       },
     
     async reverseImageSearch(image) {
-
       try {
         let base64Image = image.startsWith("data:image")
           ? image.replace(/^data:image\/(png|jpeg);base64,/, "")
@@ -320,9 +323,9 @@ export default {
         const response = await fetch(apiUrl, {
           method: "POST", // Ensure POST method
           headers: {
-            "Content-Type": "application/json", // Correct content type for sending JSON
+            "Content-Type": "application/json", 
           },
-          body: JSON.stringify(requestData), // Convert request data to JSON string
+          body: JSON.stringify(requestData), 
         });
 
         // Check if the response is successful (status code 200)
@@ -347,77 +350,6 @@ export default {
           return null;
         }
       },
-
-    // version 1
-    // async reverseImageSearch(image) {
-    //   try {
-    //     let base64Image = image.startsWith("data:image")
-    //       ? image.replace(/^data:image\/(png|jpeg);base64,/, "")
-    //       : await this.convertToBase64(await (await fetch(image)).blob());
-
-    //     const visionApiUrl = `https://vision.googleapis.com/v1/images:annotate?key=${this.apiKey}`;
-
-    //     const visionRequest = {
-    //       requests: [
-    //         {
-    //           image: { content: base64Image },
-    //           features: [
-    //             { type: "LOGO_DETECTION" },
-    //             { type: "LABEL_DETECTION" },
-    //           ],
-    //         },
-    //       ],
-    //     };
-
-    //     const visionResponse = await fetch(visionApiUrl, {
-    //       method: "POST",
-    //       headers: { "Content-Type": "application/json" },
-    //       body: JSON.stringify(visionRequest),
-    //     });
-
-    //     const visionData = await visionResponse.json();
-    //     console.log("Google Vision API Response:", visionData);
-
-    //     // Extract the detected logo (if available)
-    //     let detectedLogo = null;
-    //     if (
-    //       visionData.responses &&
-    //       visionData.responses[0].logoAnnotations &&
-    //       visionData.responses[0].logoAnnotations.length > 0
-    //     ) {
-    //       detectedLogo = visionData.responses[0].logoAnnotations[0].description;
-    //       console.log("Detected Logo:", detectedLogo);
-    //     } else {
-    //       console.warn("No logo detected");
-    //     }
-
-    //     // Extract labels (if available)
-    //     let detectedLabels = [];
-    //     if (
-    //       visionData.responses &&
-    //       visionData.responses[0].labelAnnotations &&
-    //       visionData.responses[0].labelAnnotations.length > 0
-    //     ) {
-    //       detectedLabels = visionData.responses[0].labelAnnotations.map(
-    //         (label) => label.description
-    //       );
-    //       console.log("Detected Labels:", detectedLabels);
-    //     } else {
-    //       console.warn("No labels detected");
-    //     }
-
-    //     if (!detectedLogo && detectedLabels.length === 0) {
-    //       console.error("No logo or labels detected");
-    //       return null;
-    //     }
-
-    //     // Return an object with both detected logo and labels
-    //     return { logo: detectedLogo, labels: detectedLabels };
-    //   } catch (error) {
-    //     console.error("Error in reverse image search:", error);
-    //     return null;
-    //   }
-    // },
 
     // Helper function to convert an image blob to base64
     async convertToBase64(blob) {
@@ -449,6 +381,7 @@ export default {
       }, 3000);
     },
   },
+
   beforeUnmount() {
     // Clean up reCAPTCHA when the component is about to be destroyed
     if (window.grecaptcha && document.getElementById("recaptcha")) {
@@ -473,7 +406,6 @@ export default {
   text-align: center;
   border: 5px solid #027562;
   padding: 50px 10px;
-  /* max-width: 500px; */
 }
 
 .upload-section,
@@ -509,7 +441,7 @@ export default {
 }
 
 #recaptcha {
-  margin-top: 20px; /* Adjust the value as needed */
+  margin-top: 20px; 
 }
 
 
@@ -523,7 +455,7 @@ export default {
 }
 
 .dragging {
-  background-color: #d9f7e1; /* Light green to indicate drop area is active */
+  background-color: #d9f7e1; 
   border-color: #027562;
 }
 
@@ -546,11 +478,11 @@ export default {
 
 .submit-button:hover {
   background-color: #066251;
-  transform: translateY(-2px); /* Adds a hover effect to lift the button */
+  transform: translateY(-2px); 
 }
 
 .submit-button:active {
-  transform: translateY(1px); /* Adds a pressed effect */
+  transform: translateY(1px); 
 }
 
 .submit-button img {
@@ -584,7 +516,7 @@ export default {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: #0f0275;
+  background-color: #021575;
   color: white;
   padding: 20px;
   border-radius: 10px;
@@ -618,7 +550,7 @@ export default {
   transform: translateY(-50%);
   margin-left: 5px;
   cursor: pointer;
-  background-color: rgb(255, 255, 255); /* Opaque background */
+  background-color: rgb(255, 255, 255); 
 }
 
 .toggle-button {
@@ -626,14 +558,14 @@ export default {
   align-items: center;
   justify-content: center;
   margin: 20px auto;
-  background-color: #027562;
+  background-color: #0f2ec9;
   color: white;
   border: none;
   padding: 12px 16px;
   cursor: pointer;
-  border-radius: 25px; /* More rounded for a modern look */
-  width: auto; /* Auto width to fit text */
-  min-width: 150px; /* Ensures a decent size */
+  border-radius: 25px; 
+  width: auto;
+  min-width: 150px; 
   font-size: clamp(14px, 1.2vw, 16px);
   text-align: center;
   transition: background-color 0.3s, transform 0.2s;
@@ -641,12 +573,12 @@ export default {
 }
 
 .toggle-button:hover {
-  background-color: #025c4f;
+  background-color: #021575;
   transform: scale(1.05);
 }
 
 .toggle-button:active {
-  background-color: #02473c;
+  background-color: #020a33;
   transform: scale(0.98);
 }
 
