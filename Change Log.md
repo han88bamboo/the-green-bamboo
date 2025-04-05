@@ -241,3 +241,15 @@ Still require CP's assistance to bug fix thihs issue.
 Nature of the changes (frontend / backend / database):
 frontend
 
+# Update as of 5 April
+
+Coder: Han
+
+Purpose of the changes:
+Producer Profile page - added button to review the producer (to monitor responsiveness, etc)
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+
+
