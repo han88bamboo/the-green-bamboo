@@ -1561,6 +1561,13 @@ export default {
 
           // Increase the total likes of the post by 1
           post.totalLikes += 1;
+
+          // Check if post is disliked
+          if (this.postDislikes.includes(postID)) {
+            // Trigger dislikePost function to remove the dislike
+            await this.dislikePost(postID);
+          }
+
         } else {
           // If is liked before, Get the current index of the postID in the postLikes array
           const index = this.postLikes.indexOf(postID);
@@ -1600,6 +1607,12 @@ export default {
 
           // Increase the total dislikes of the post by 1
           post.totalDislikes += 1;
+
+          // Check if post is liked
+          if (this.postLikes.includes(postID)) {
+            // Trigger likePost function to remove the like
+            await this.likePost(postID);
+          }
         } else {
           // If is disliked before, Get the current index of the postID in the postDislikes array
           const index = this.postDislikes.indexOf(postID);

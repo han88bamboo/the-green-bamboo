@@ -142,7 +142,7 @@
           <div class="col-12 d-flex gap-4">
             <!-- Green thumbs up with green fill if user already liked the post -->
             <p
-              v-if="post.likedMembers.includes(Number(memberID))"
+              v-if="post.likedMembers.includes(memberID)"
               data-bs-toggle="tooltip"
               data-bs-placement="top"
               title="Unlike"
@@ -193,7 +193,7 @@
 
             <!-- Red thumbs down with red fill if user already disliked the post -->
             <p
-              v-if="post.dislikedMembers.includes(Number(memberID))"
+              v-if="post.dislikedMembers.includes(memberID)"
               data-bs-toggle="tooltip"
               data-bs-placement="top"
               title="Undislike"
@@ -642,6 +642,14 @@ export default {
         // Check if the post is liked
         if (likeData.data.liked) {
           this.post.likedMembers.push(this.memberID);
+
+          // Check if the post is disliked
+          if (this.post.dislikedMembers.includes(this.memberID)) {
+            
+            // Trigger the dislikePost function to remove the dislike
+            await this.dislikePost(postID);
+          }
+
         } else {
           // If is liked before, remove the memberID from the likedMembers array
           const index = this.post.likedMembers.indexOf(this.memberID);
@@ -659,7 +667,7 @@ export default {
       try {
         // Dislike the post
         const dislikeData = await this.$axios.put(
-          `${process.env.VUE_APP_API_URL}/club/likeUnlikePost`,
+          `${process.env.VUE_APP_API_URL}/club/dislikeUndislikePost`,
           {
             postID: postID,
             memberID: this.memberID,
@@ -670,6 +678,14 @@ export default {
         // Check if the post is disliked
         if (dislikeData.data.disliked) {
           this.post.dislikedMembers.push(this.memberID);
+
+          // Check if the post is liked
+          if (this.post.likedMembers.includes(this.memberID)) {
+            
+            // Trigger the likePost function to remove the like
+            await this.likePost(postID);
+          }
+
         } else {
           // If is disliked before, remove the memberID from the dislikedMembers array
           const index = this.post.dislikedMembers.indexOf(this.memberID);

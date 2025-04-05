@@ -178,7 +178,7 @@ def sendQuestions():
         cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s', (points['proofPoints'], userID))
         conn.commit()
 
-        print(f"Points awarded to user {userID} for asking a question")
+        print(f" {points['proofPoints']} points awarded to user {userID} for asking a question")
 
         return jsonify(
             {

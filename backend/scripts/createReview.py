@@ -304,6 +304,8 @@ def createReviews():
             cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE id = %s AND "userType" = %s', (total_points, user_id, 'user',))
             conn.commit()
 
+            print(f"Awarded points: {total_points}")
+
         return jsonify({
             "code": 201,
             "data": raw_review['reviewDesc'],

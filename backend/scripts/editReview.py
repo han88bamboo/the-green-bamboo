@@ -255,6 +255,8 @@ def updateReview(id):
             """, (modify_point, data.get('userID')))
             conn.commit()
 
+            print("Additional points: ", modify_point)
+
         return jsonify({
             "code": 200,
             "data": data.get('reviewDesc', ''),
@@ -381,6 +383,8 @@ def updateProducerReview(id):
     remove_component = []
     added_component = []
 
+
+    # ===== Need to edit this part =====
     # [1] Check if text review was removed
     if not data.get('reviewDesc') and existing_review['reviewDesc']:
         remove_component.append(2)
@@ -392,6 +396,8 @@ def updateProducerReview(id):
         remove_component.append(4)
     elif data.get('photos') and not existing_review['photos']:
         added_component.append(4)
+
+    # =========================================
 
     try:
         cur.execute(update_review_sql, review_values)

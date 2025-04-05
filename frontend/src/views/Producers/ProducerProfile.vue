@@ -4044,6 +4044,7 @@ import ListingRowDisplayProducerProfile from "@/components/ListingRowDisplayProd
 import BookmarkIcon from "@/components/BookmarkIcon.vue";
 import BookmarkModal from "@/components/BookmarkModal.vue";
 import FooterBar from "@/components/FooterBar.vue";
+import { useToast } from "vue-toastification";
 
 export default {
   components: {
@@ -5294,7 +5295,8 @@ export default {
             },
           }
         );
-        alert("Your question has been successfully sent!");
+        const toast = useToast();
+        toast.success("Your question has been successfully sent!");
         console.log(response.data);
       } catch (error) {
         console.error(error);
