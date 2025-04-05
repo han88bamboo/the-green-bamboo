@@ -125,7 +125,20 @@ export default {
       // Callback invoked when CAPTCHA is solved
       this.captchaVerified = true;
       this.captchaToken = token;
+      this.captchaTimestamp = Date.now();
       console.log("Captcha verified, token:", token);
+
+      setTimeout(() => {
+    // Check if the token is indeed older than 2 minutes
+    if (Date.now() - this.captchaTimestamp >= 120000) {
+      if (window.grecaptcha) {
+        window.grecaptcha.reset();
+      }
+      this.captchaVerified = false;
+      this.captchaToken = "";
+      this.triggerPopup("CAPTCHA expired, please complete it again.");
+    }
+  }, 120000);
     },
     onCaptchaExpired() {
       // Reset CAPTCHA state when it expires
@@ -159,6 +172,7 @@ export default {
         const reader = new FileReader();
         reader.onload = () => {
           this.uploadedImage = reader.result;
+          this.imagePreview = true;
           this.triggerPopup("Image Uploaded Successfully!");
         };
         reader.readAsDataURL(file);
@@ -441,6 +455,12 @@ export default {
       }, 3000);
     },
   },
+  beforeUnmount() {
+    // Clean up reCAPTCHA when the component is about to be destroyed
+    if (window.grecaptcha) {
+      window.grecaptcha.reset();
+    }
+  },
 };
 </script>
 
@@ -500,8 +520,9 @@ export default {
 
 
 .image-preview {
-  max-width: 100%;
-  height: auto;
+  width: 300px;
+  height: 300px;
+  object-fit: contain;
   margin-top: 20px;
   border: 2px solid #ccc;
   border-radius: 5px;
@@ -610,6 +631,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 20px auto;
   background-color: #027562;
   color: white;
   border: none;
