@@ -538,3 +538,11 @@ Purpose of the changes:
 (2) Updated Frontend (ImageSearchView.vue) - Updated the colour of the Hide Image button 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 6 April
+Coder: TeckXuan
+
+Purpose of the changes:
+(1) Updated Frontend (ImageSearchResults.vue) - Cleaned up the code in the loaddata()
+Nature of the changes (frontend / backend / database):
+frontend
