@@ -1,5 +1,3 @@
-x<!-- Search page from navigation bar. Globally available, and should still use NavBar for new search queries. -->
-
 <template>
     <NavBar />
 
@@ -115,15 +113,6 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
 
             </div>
             
-            
-
-            <!-- Dropdown Buttons -->
-            <!-- <hr>
-            <p class="gap-1">
-                <button class="btn primary-btn mx-1" type="button" data-bs-toggle="collapse" data-bs-target="#collapseListings" aria-expanded="false" aria-controls="collapseListings">
-                    Listings
-                </button>
-            </p> -->
 
             <!-- navtab to toggle between search results -->
             <nav class="pb-0 mobile-px-0">
@@ -420,35 +409,8 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                 this.listings = [];
                 this.resultListings = [];
                 this.dataLoaded = false;
-            }
-            // producers
-            // _id, producerName, producerDesc, originCountry, statusOB, mainDrinks
-            // TODO: make retrieved producers only for listings that are retrieved initially
-            try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducers`);
-                this.producerList = response.data;
-                this.producerListings = [];
-
-                // search by producerName, originCountry
-                this.producerListings = this.producerList.filter((producer) => {
-                    return producer["producerName"]?.toLowerCase().includes(this.searchTerm) || producer["originCountry"]?.toLowerCase().includes(this.searchTerm);
-                });
-            }
-            catch (error) {
-                console.error(error);
-                this.dataLoaded = null;
-            }
-            // venues
-            // _id, venueName, venueDesc, originCountry, address, openingHours
-            try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenues`);
-                this.venues = response.data;
-            }
-            catch (error) {
-                console.error(error);
-                this.dataLoaded = null;
             }},
-
+            
             sortResults() {
                 let category = this.sortSelection.category;
 
