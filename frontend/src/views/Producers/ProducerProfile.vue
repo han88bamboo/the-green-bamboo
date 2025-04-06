@@ -479,6 +479,35 @@
             </div>
           </div>
         </div>
+        <!-- review this business below -->
+        <div class="row mt-3 mobile-mt-1">
+          <!-- empty space -->
+          <div class="col-7 d-flex justify-content-start mobile-pe-0">
+            
+          </div>
+          <!-- review this business button -->
+          <div
+            class="col-5 justify-content-end padding-for-followthisbusinessbutton-large-screen"
+            v-if="userType == 'user' && userID !== 'defaultUser'"
+          >
+          <div class="d-grid gap-2">
+          <button v-if="!inEdit"
+            class="btn primary-btn-less-round-blue btn-lg" 
+            data-bs-toggle="modal" 
+            data-bs-target="#reviewModal" 
+            style="font-weight: bold;"
+          > 
+            Review this Business
+          </button>  
+          <button v-else
+            class="btn primary-btn-less-round-blue btn-lg" 
+          > 
+            Business Reviewed
+          </button> 
+          </div> 
+          </div>
+        </div>   
+        <!--review this business above-->     
         <div class="row mt-3 mobile-mt-1">
           <div class="col-7 d-flex justify-content-start mobile-pe-0">
             <!-- toggle latest updates-->
