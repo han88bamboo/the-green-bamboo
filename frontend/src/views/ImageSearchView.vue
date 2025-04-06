@@ -41,7 +41,7 @@
         </div>
 
         <!-- Replace checkbox with reCAPTCHA widget -->
-        <div id="recaptcha"></div>
+        <div v-if="showRecaptcha" id="recaptcha"></div>
 
         <button
           @click="onSubmitImage"
@@ -94,7 +94,8 @@ export default {
       // CAPTCHA state
       captchaVerified: false,
       captchaToken: "",
-      captchaSiteKey: process.env.VUE_APP_GOOGLE_CAPTCHA_API_KEY
+      captchaSiteKey: process.env.VUE_APP_GOOGLE_CAPTCHA_API_KEY,
+      showRecaptcha: true
     };
   },
   mounted() {
@@ -243,6 +244,7 @@ export default {
               if (window.grecaptcha && document.getElementById("recaptcha")) {
                 window.grecaptcha.reset();
               }
+              this.showRecaptcha = false;
               this.captchaVerified = false;
               this.captchaToken = "";
               // Navigate to results page with detected logo, labels, and text
