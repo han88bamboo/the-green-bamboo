@@ -656,7 +656,6 @@ def getUserClubs(userID, userType):
 
             # Add club info into club
             club['clubInfo'] = club_info
-            print(club)
 
             if club['isAdmin']:
                 user_club_admin.append(club)

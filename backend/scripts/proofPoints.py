@@ -220,33 +220,50 @@ def getPointsForUser(id, userType):
     cursor.execute('SELECT id FROM "clubMembers" WHERE "userID" = %s', (id,))
     member_ids = cursor.fetchall()
 
+    post_ids = []
+    comment_ids = []
+
+    # Get the post ids for posts ids and comments ids made by user
+    for member_id in member_ids:
+        m_id = member_id['id']
+        cursor.execute('SELECT id FROM "clubPosts" WHERE "posterID" = %s', (m_id,))
+        post_ids += cursor.fetchall()
+
+        cursor.execute('SELECT id FROM "clubPostComments" WHERE "commenterID" = %s', (m_id,))
+        comment_ids += cursor.fetchall()
+    
     # Loop through each member id and compile number of likes and dislikes for posts and comments made 
     total_member_likes = 0
     total_member_dislikes = 0
 
-    if member_ids:
-        for member_id in member_ids:
 
-            m_id = member_id['id']
+    if post_ids:
+        for post_id in post_ids:
+
+            p_id = post_id['id']
 
             # Get total likes for club posts
-            cursor.execute('SELECT COUNT(id) FROM "clubPostsLikes" WHERE "memberID" = %s', (m_id,))
+            cursor.execute('SELECT COUNT(id) FROM "clubPostsLikes" WHERE "postID" = %s', (p_id,))
             total_member_likes += cursor.fetchone()['count']
 
             # Get total dislikes for club posts
-            cursor.execute('SELECT COUNT(id) FROM "clubPostsDislikes" WHERE "memberID" = %s', (m_id,))
+            cursor.execute('SELECT COUNT(id) FROM "clubPostsDislikes" WHERE "postID" = %s', (p_id,))
             total_member_dislikes += cursor.fetchone()['count']
 
-            # Get total likes for club comments
-            cursor.execute('SELECT COUNT(id) FROM "clubPostCommentsLikes" WHERE "memberID" = %s', (m_id,))
+    if comment_ids:
+        for comment_id in comment_ids:
+
+            c_id = comment_id['id']
+            print("Comment id: ", c_id)
+
+            # Get total likes for club post comments
+            cursor.execute('SELECT COUNT(id) FROM "clubPostCommentsLikes" WHERE "commentID" = %s', (c_id,))
             total_member_likes += cursor.fetchone()['count']
 
-            # Get total dislikes for club comments
-            cursor.execute('SELECT COUNT(id) FROM "clubPostCommentsDislikes" WHERE "memberID" = %s', (m_id,))
+            # Get total dislikes for club post comments
+            cursor.execute('SELECT COUNT(id) FROM "clubPostCommentsDislikes" WHERE "commentID" = %s', (c_id,))
             total_member_dislikes += cursor.fetchone()['count']
         
-    print("Total member likes: ", total_member_likes)
-    print("Total member dislikes: ", total_member_dislikes)
 
     # Get the proofPoints for upvotes and downvotes
     cursor.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = 8')
