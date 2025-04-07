@@ -440,6 +440,16 @@ def getClubPostDetails(postID, last_seen_id):
             # Add comments_liked_members into comment
             comment['likedMembers'] = comments_liked_members_list
 
+            # Get a list of members who disliked the comment
+            cur.execute('SELECT "memberID" FROM "clubPostCommentsDislikes" WHERE "commentID" = %s', (comment['id'],))
+            comments_disliked_members = cur.fetchall()
+
+            # Format the comments_disliked_members into a list of memberID
+            comments_disliked_members_list = [member['memberID'] for member in comments_disliked_members]
+
+            # Add comments_disliked_members into comment
+            comment['dislikedMembers'] = comments_disliked_members_list
+
             # Add comment into filtered_comment_list
             filtered_comment_list.append(comment)
 
