@@ -350,7 +350,7 @@
 
                 <!-- Column 2 Row 3: Comment's like button and total likes -->
                 <div class="row d-flex align-items-center">
-                  <div class="col-12 d-flex gap-4">
+                  <div class="col-12 d-flex gap-4" >
 
                     <!-- Black arrow up if user already like comment (aka upvote) -->
                     <p
@@ -639,6 +639,11 @@ export default {
         this.post = response.data.post_info;
         this.poster = response.data.poster_info;
         this.comments = response.data.comments;
+
+        this.comments[0].likedMembers.forEach(item => {
+          console.log(typeof item);  // Logs the type of each element (e.g., "string", "number")
+        });
+
 
 
         // Set the dataLoaded variable to true
@@ -958,6 +963,7 @@ export default {
 
     // Get the user's membership data from the localStorage
     let memberID = localStorage.getItem("memberID");
+    memberID = parseInt(memberID, 10);
     let isMember = localStorage.getItem("isMember"); // is string
     let isAdmin = localStorage.getItem("isAdmin"); // is string
 
