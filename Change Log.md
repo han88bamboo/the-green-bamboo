@@ -246,10 +246,30 @@ frontend
 Coder: Han
 
 Purpose of the changes:
-Producer Profile page - added button to review the producer (to monitor responsiveness, etc)
+Producer Profile page - added button to review the producer 
+
+Still need to monitor for bugs, responsiveness, etc
 
 Nature of the changes (frontend / backend / database):
 frontend
 
+
+# Update as of 8 April
+
+Coder: Han
+
+Purpose of the changes:
+To create function of reviewing venue on Venue Profile page
+
+Files updated:
+(a) createReview.py - [POST] Creates a venue review
+(b) deleteReview.py - [DELETE] Deletes a venue review
+(c) editReview.py - [POST] Vote venue review /   [PUT] Update venue review
+(d) getData.py - [GET] Venue Reviews / 
+(e) VenueProfile.vue - buttons, functions, review displays, calling of endpoints
+(f) 01-postgresql_data3.sql - venueReviews and venueReviewsUserVotes tables
+
+Nature of the changes (frontend / backend / database):
+frontend, backend and database
 
 

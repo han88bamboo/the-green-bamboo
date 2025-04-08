@@ -302,17 +302,12 @@
 
                 </div>
 
-                <!-- ------- END Header / START Content Buttons ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+                <!-- ------- END Header  ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
-                <!-- Content Buttons (Bar Overview / Bar Menu / Follow Venue) -->
+                <!-- Follow Venue button -->
                 <div class="row mt-3 mobile-mt-1">
                     <div class="col-8 d-flex justify-content-start mobile-col-7 mobile-pe-0">
-                        <!-- Toggle Bar Overview -->
-                        <button v-if="contentMode == 'overview'" class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'overview'"> Bar Overview </button>
-                        <button v-else class="btn inactive-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'overview'"> Bar Overview </button>
-                        <!-- Toggle Bar Menu -->
-                        <button v-if="contentMode == 'menu'" class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'menu'"> Bar Menu </button>
-                        <button v-else class="btn inactive-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'menu'"> Bar Menu </button>
+                     <!--empty space-->
                     </div>
                     <!-- Follow Venue -->
                     <div v-if="viewerType == 'user'" class="col-4 no-d-flex justify-content-end mobile-col-5 padding-for-followthisbusinessbutton-large-screen">
@@ -325,11 +320,55 @@
                         </div>    
                     </div>
                 </div>
+                <!--------- END Follow Venue Button ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
+                <!-- START Content Buttons (Bar Overview / Bar Menu / Venue Reviews / Review a venue button) -->
+                <div class="row mt-3 mobile-mt-1">
+                    <div class="col-8 d-flex justify-content-start mobile-col-7 mobile-pe-0">
+                        <!-- Toggle Bar Overview -->
+                        <button v-if="contentMode == 'overview'" class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'overview'"> Bar Overview </button>
+                        <button v-else class="btn inactive-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'overview'"> Bar Overview </button>
+                        <!-- Toggle Bar Menu -->
+                        <button v-if="contentMode == 'menu'" class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'menu'"> Bar Menu </button>
+                        <button v-else class="btn inactive-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'menu'"> Bar Menu </button>
+                        <!-- Toggle Venue Reviews -->
+                        <button 
+                        v-if="contentMode == 'venueReviews'" 
+                        class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile"
+                        @click="contentMode = 'venueReviews'"
+                        >
+                        Venue Reviews
+                        </button>
+                        <button 
+                        v-else 
+                        class="btn inactive-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile"
+                        @click="contentMode = 'venueReviews'"
+                        >
+                        Venue Reviews
+                        </button>
+                    </div>
+                    <!-- review a venue button -->
+                    <div 
+                    v-if="userType == 'user' && userID !== 'defaultUser'" 
+                    class="col-4 no-d-flex justify-content-end mobile-col-5 padding-for-followthisbusinessbutton-large-screen">
+                    <div class="d-grid gap-2"> 
+                        <button v-if="!inEdit" 
+                            class="btn btn-lg primary-btn-less-round-blue mx-1" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#venueReviewModal" 
+                            style="font-weight: bold;" >
+                            Review this Venue
+                        </button>  <!--tzh added -blue-->
+                        <button v-else 
+                            class="btn btn-lg primary-btn-less-round-blue mx-1 " 
+                            >
+                            Venue Reviewed
+                        </button> <!--tzh added -blue-->
+                    </div>     
+                    </div>
+                </div>
+                <!-- End Content Buttons (Bar Overview / Bar Menu / Venue Reviews / review a venue button START Bar Overview -->
                 <hr>
-
-                <!-- ------- END Content Buttons / START Bar Overview ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
-
                 <!-- Bar Overview -->
                 <div v-if="contentMode == 'overview'">
 
@@ -1863,6 +1902,340 @@
                 </div>
 
                 <!-- ------- END Bar Menu ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+                <!-- Venue Reviews -->
+                
+                <div v-if="contentMode == 'venueReviews'">
+                    <!-- Example heading for venue reviews -->
+                    <h4
+                        class="text-start"
+                        style="font-weight: bold; color: black; margin-bottom: 2rem"
+                    >
+                        Average Venue Rating:&nbsp;{{ getAverageVenueRatings() }}
+                        <span style="color: #f0b358">★</span>
+                    </h4>
+
+                    <!-- Example row for "Add Review" button and some preview images -->
+                    <div class="row text-start" style="padding-left: 1.5em">
+                        <div class="col">
+                        <div class="justify-content-start row">
+                            <!-- Add new review button (only if user is logged in + not editing) -->
+                            <div
+                            v-if="userType === 'user' && user_id !== 'defaultUser' && !inEdit"
+                            class="mobile-col-3 col-sm-6 col-md-4 col-lg-2 mobile-px-1"
+                            data-bs-toggle="modal"
+                            data-bs-target="#venueReviewModal"
+                            style="cursor: pointer"
+                            >
+                            <!-- Example plus icon (like in ProducerProfile) -->
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="#83A9E8"
+                                class="bi bi-plus-lg review-image"
+                                viewBox="0 0 16 16"
+                            >
+                                <path
+                                fill-rule="evenodd"
+                                d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0
+                                    1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0
+                                    1 0-1h5v-5A.5.5 0 0 1 8 2"
+                                />
+                            </svg>
+                            </div>
+
+                            <!-- (Optional) preview the first few review images -->
+                            <div
+                            v-for="reviewImage in filteredVenueReviewsWithImages.slice(0,5)"
+                            :key="reviewImage"
+                            class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 mobile-px-1"
+                            >
+                            <img :src="reviewImage || defaultPhoto" alt="" class="review-image" />
+                            </div>
+                        </div>
+                        </div>
+                    </div> 
+
+                    <hr />
+
+                    <!-- Loop through each venue review -->
+                    <div
+                        class="row mb-3"
+                        v-for="review in filteredVenueReviews"
+                        :key="review.id"
+                    >
+                        <div class="col-9 xcol-lg-8">
+                        <div class="row">
+                            <div class="text-start mb-2">
+                            <div class="row">
+                                <!-- User's profile photo -->
+                                <div
+                                class="col-12 col-lg-1 mobile-col-2"
+                                style="text-align: left"
+                                >
+                                <router-link :to="`/profile/user/${review.userID}`">
+                                    <img
+                                    :src="getPhotoFromReview(review) || defaultProfilePhoto"
+                                    alt=""
+                                    class="profile-image"
+                                    />
+                                </router-link>
+                                </div>
+
+                                <div class="col-10 pe-0 mobile-fs-7 mobile-ps-4">
+                                <!-- Username -->
+                                <router-link
+                                    :to="`/profile/user/${review.userID}`"
+                                    style="color: inherit"
+                                >
+                                    <b> @{{ getUsernameFromReview(review) }} </b>
+                                </router-link>
+                                &nbsp;rated
+                                <span style="color: #f0b358">★</span>
+                                <span style="font-weight: bold">{{ review.rating }}</span> Stars
+
+                                <!-- Moderator Badge -->
+                                <span
+                                    v-if="checkModFromUserID(review.userID)"
+                                    class="badge rounded-pill ms-3 mobile-ms-0 mobile mt-1"
+                                    style="color: black; background-color: #f0b358"
+                                    >Moderator</span
+                                >
+
+                                <!-- Edit/Delete buttons (if user is owner or mod) -->
+                                <div class="mt-2 mobile-mt-1">
+                                    <button
+                                    v-if="review.userID === parseInt(user_id)"
+                                    class="btn btn-warning me-1 py-1 mobile-fs-7"
+                                    @click="setUpdateID(review)"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#venueReviewModal"
+                                    >
+                                    Edit
+                                    </button>
+                                    <button
+                                    v-if="canMod"
+                                    class="btn btn-danger py-1 mobile-fs-7"
+                                    @click="setDeleteID(review)"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#deleteReview"
+                                    >
+                                    Delete
+                                    </button>
+                                </div>
+                                </div>
+                            </div>
+
+                            <!-- Review text -->
+                            <div class="text-start mb-2">
+                                {{ review.reviewDesc }}
+                            </div>
+
+                            <!-- Upvote/Downvote Logic -->
+                            <div style="display: inline" class="text-start">
+                                <!-- Upvote -->
+                                <svg
+                                v-if="!JSON.stringify(review.userVotes.upvotes).includes(JSON.stringify(user_id))"
+                                @click="voteReview(review, 'upvote')"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="20"
+                                height="20"
+                                fill="currentColor"
+                                class="bi bi-caret-up"
+                                viewBox="0 0 16 16"
+                                >
+                                <path
+                                    d="M3.204 11h9.592L8 5.519zm-.753-.659
+                                    4.796-5.48a1 1 0 0 1
+                                    1.506 0l4.796 5.48c.566.647.106
+                                    1.659-.753 1.659H3.204a1
+                                    1 0 0 1-.753-1.659"
+                                />
+                                </svg>
+                                <svg
+                                v-else
+                                @click="voteReview(review, 'unupvote')"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="20"
+                                height="20"
+                                fill="currentColor"
+                                class="bi bi-caret-up-fill"
+                                viewBox="0 0 16 16"
+                                >
+                                <path
+                                    d="m7.247 4.86-4.796
+                                    5.481c-.566.647-.106
+                                    1.659.753 1.659h9.592a1 1 0 0
+                                    0 .753-1.659l-4.796-5.48a1 1 0 0
+                                    0-1.506 0z"
+                                />
+                                </svg>
+                                <!-- Score -->
+                                <span class="mx-2">
+                                {{ review.userVotes.upvotes.length - review.userVotes.downvotes.length }}
+                                </span>
+                                <!-- Downvote -->
+                                <svg
+                                v-if="!JSON.stringify(review.userVotes.downvotes).includes(JSON.stringify(user_id))"
+                                @click="voteReview(review, 'downvote')"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="20"
+                                height="20"
+                                fill="currentColor"
+                                class="bi bi-caret-down me-3"
+                                viewBox="0 0 16 16"
+                                >
+                                <path
+                                    d="M3.204 5h9.592L8
+                                    10.481zm-.753.659
+                                    4.796 5.48a1 1 0 0 0
+                                    1.506 0l4.796-5.48c.566-.647.106-1.659-.753-1.659H3.204a1
+                                    1 0 0 0-.753 1.659"
+                                />
+                                </svg>
+                                <svg
+                                v-else
+                                @click="voteReview(review, 'undownvote')"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="20"
+                                height="20"
+                                fill="currentColor"
+                                class="bi bi-caret-down-fill me-3"
+                                viewBox="0 0 16 16"
+                                >
+                                <path
+                                    d="M7.247 11.14 2.451
+                                    5.658C1.885 5.013 2.345 4
+                                    3.204 4h9.592a1 1 0 0 1
+                                    .753 1.659l-4.796 5.48a1 1 0 0
+                                    1-1.506 0z"
+                                />
+                                </svg>
+                            </div>
+                            </div>
+                        </div>
+                        </div>
+
+                        <!-- Review photo (desktop view) -->
+                        <div class="col-2 xcol-lg-3 text-end mobile-view-hide">
+                        <div
+                            data-bs-toggle="modal"
+                            :data-bs-target="`#reviewImageModal${getUsernameFromReview(review)}`"
+                            style="cursor: pointer"
+                        >
+                            <img
+                            :src="review['photos'][0] || defaultPhoto"
+                            alt=""
+                            class="review-image"
+                            style="width: 125px; height: 125px"
+                            />
+                        </div>
+                        </div>
+
+                        <!-- Review photo (mobile view) -->
+                        <div class="col-3 xcol-lg-3 text-start mobile-view-show px-0">
+                        <div
+                            data-bs-toggle="modal"
+                            :data-bs-target="`#reviewImageModal${getUsernameFromReview(review)}`"
+                            style="cursor: pointer"
+                        >
+                            <img
+                            :src="review['photos'][0] || defaultPhoto"
+                            alt=""
+                            class="review-image"
+                            style="width: 100%; height: 100%"
+                            />
+                        </div>
+                        </div>
+
+                        <!-- Larger image modal when user clicks the photo -->
+                        <div
+                        class="modal fade"
+                        :id="`reviewImageModal${getUsernameFromReview(review)}`"
+                        tabindex="-1"
+                        aria-labelledby="venueReviewModalLabel"
+                        aria-hidden="true"
+                        >
+                        <div
+                            class="modal-dialog modal-lg d-flex align-items-center"
+                            style="height: 100vh"
+                        >
+                            <div class="modal-content">
+                            <div class="modal-body p-4">
+                                <img
+                                :src="review['photos'][0] || defaultPhoto"
+                                alt=""
+                                style="width: 100%; height: auto"
+                                />
+                            </div>
+                            </div>
+                        </div>
+                        </div>
+
+                        <hr />
+                    </div>
+
+                    <!-- Example "Delete Review" Modal (similar to ProducerProfile) -->
+                    <div
+                        class="modal fade"
+                        id="deleteReview"
+                        tabindex="-1"
+                        aria-labelledby="exampleModalLabel"
+                        aria-hidden="true"
+                    >
+                        <div class="modal-dialog">
+                        <!-- ... replicate your existing 'deleteProducerReview' structure,
+                            but referencing 'deleteVenueReview' with successDelete, errorDelete, etc. -->
+                        <div
+                            class="text-success fst-italic fw-bold fs-3 modal-content"
+                            v-if="successDelete"
+                        >
+                            <span>Your review has successfully been deleted!</span>
+                            <div class="modal-footer">
+                            <button
+                                type="button"
+                                @click="reloadRoute"
+                                class="btn btn-secondary"
+                                data-bs-dismiss="modal"
+                            >
+                                Close
+                            </button>
+                            </div>
+                        </div>
+                        <!-- If error, etc... -->
+                        <div v-if="errorDelete" class="text-danger fst-italic fw-bold fs-3 modal-content">
+                            <!-- ... etc. -->
+                        </div>
+                        <!-- Deleting in progress -->
+                        <div v-if="deletingReview" class="modal-content">
+                            <div class="modal-header">
+                            <h5 class="modal-title" id="deleteReview">Delete Review</h5>
+                            <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"
+                            ></button>
+                            </div>
+                            <div class="modal-body">
+                            Are you sure you want to delete your review?
+                            </div>
+                            <div class="modal-footer">
+                            <button
+                                type="button"
+                                class="btn btn-secondary"
+                                data-bs-dismiss="modal"
+                            >
+                                Close
+                            </button>
+                            <button type="button" class="btn btn-danger" @click="deleteReview">
+                                Delete Review
+                            </button>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                    </div>
+
+                <!-- ------- END Venue reviews ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
             </div>
 
@@ -2411,6 +2784,165 @@
 
         </div>
     </div>
+    <!-- Venue Review Modal -->
+    <div v-if="user_id != 'defaultUser'" class="modal fade" id="venueReviewModal" tabindex="-1" aria-labelledby="venueReviewModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <!-- Success Message -->
+        <div class="text-success fst-italic fw-bold fs-3 modal-content" v-if="successSubmission">
+        <span v-if="!inEdit">Your review has successfully been submitted!</span>
+        <span v-else>Your review has successfully been updated!</span>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="reloadRoute" data-bs-dismiss="modal">Close</button>
+        </div>
+        </div>
+        <!-- Error Message -->
+        <div class="text-danger fst-italic fw-bold fs-3 modal-content" v-if="errorSubmission"> 
+        <div v-if="errorMessage" class="row"> 
+            <span v-if="!inEdit">An error occurred while attempting to submit, please try again!</span>
+            <span v-else>An error occurred while attempting to update, please try again!</span>
+            <br>
+            <button class="btn primary-btn btn-sm" @click="reset">
+            <span class="fs-5 fst-italic">Retry your submission here!</span>
+            </button>
+        </div>
+        <div v-if="duplicateEntry">
+            <span v-if="!inEdit">You've already submitted a review for this venue!</span>
+            <span v-else>There is no review for this venue!</span>
+        </div>
+        <br>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+        </div>
+        <!-- Add/Edit Review Form -->
+        <div v-if="addingVenueReview" class="modal-content">
+        <div class="modal-header" style="background-color:#F0B358">
+            <!-- Change heading based on edit state -->
+            <h5 v-if="!inEdit" class="modal-title" id="venueReviewModalLabel" style="color: black; font-weight:bold;">Add Your Review</h5>
+            <h5 v-else class="modal-title" id="venueReviewModalLabel" style="color: black; font-weight:bold;">Edit Your Review</h5>
+            <button type="button" class="btn-close review-modal" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body px-4">
+            <div class="row">
+            <div class="col-3 mobile-col-4">
+                <!-- File input for review photo -->
+                <input class="form-control mb-2" @change="onFilesChange" type="file" id="venueReviewPhotos" style="display: none;" multiple>
+                <label for="venueReviewPhotos">
+                <div class="mobile-review-svg-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <path d="M20.4 14.5L16 10 4 20"></path>
+                    <circle cx="19" cy="19" r="3" fill="black"></circle>
+                    <line x1="18" y1="19" x2="20" y2="19" stroke="white" stroke-width="1"></line>
+                    <line x1="19" y1="18" x2="19" y2="20" stroke="white" stroke-width="1"></line>
+                    </svg>
+                </div>
+                </label>
+
+                <!--<div class="row">-->
+                    <!-- <img :src="selectedImageForReview || reviewImage64" alt="" id="venueReviewOutput" class="py-2 review-preview-photo">-->
+                    <div v-if="selectedImagesForReview.length > 0" class="row"> 
+                        <div 
+                            v-for="(image, index) in selectedImagesForReview" 
+                            :key="index" 
+                            class="col-4"> 
+                            <img 
+                            :src="image" 
+                            alt="Review Image" 
+                            id="venueReviewOutput" 
+                            class="py-2 review-preview-photo" 
+                            style="max-width: 300px" /> 
+                        </div> 
+                    </div> 
+                    <div v-else-if="reviewImages64.length > 0" class="row"> 
+                        <div 
+                        v-for="(image, index) in reviewImages64" 
+                        :key="index" 
+                        class="col-4"> 
+                            <img 
+                            :src="image" 
+                            alt="Review Image" 
+                            id="venueReviewOutput" 
+                            class="py-2 review-preview-photo" 
+                            style="max-width: 300px" /> 
+                        </div> 
+                    </div>
+               <!--</div>-->
+
+                <div class="row justify-content-start mb-2">
+                <div class="col-md-4 text-start">
+                    <!--<button v-if="reviewImage64 !== null" class="btn tertiary-square-btn mb-1" @click="clearPhoto">Clear Photo</button>-->
+                    <button v-if="reviewImages64.length > 0" class="btn tertiary-square-btn mb-1" @click="clearPhoto">Clear Photos</button>
+                </div>
+                </div>
+            </div>
+            </div>
+            <!-- Review Text -->
+            <div class="row">
+            <div class="col justify-content-start mb-3">
+                <div class="col-md-12">
+                <p class="text-start mb-2 fw-bold">Review<span class="text-danger">*</span></p>
+                <textarea v-model="reviewDesc" class="form-control" id="venueReviewTextarea" rows="3" placeholder="Min 20 characters"></textarea>
+                </div>
+                <div v-if="reviewDescError !== ''" class="col-md-12">
+                <p class="text-danger text-start mb-2 fw-bold">{{ reviewDescError }}</p>
+                </div>
+            </div>
+            </div>
+            <!-- Rating Slider -->
+            <div class="row">
+            <div class="col">
+                <p class="text-star mb-1 fw-bold">My Rating<span class="text-danger">*</span></p>
+                <label for="customRange2" class="form-label">
+                <span style="color:#F0B358;">★</span>
+                <span style="font-weight:bold;">{{ rating }}</span> Stars
+                </label>
+                <div class="col-auto">
+                <label for="customRange" class="form-label fw-bold">1</label>
+                </div>
+                <div class="col">
+                <div class="slider-container" style="position: relative;">
+                    <input v-model="rating" type="range" class="form-range" min="1" max="10" step="0.1" id="customRange">
+                    <div class="tickmarks">
+                    <span class="tick" style="left: 5%;">|</span>
+                    <span class="tick" style="left: 15%;">|</span>
+                    <span class="tick" style="left: 25%;">|</span>
+                    <span class="tick" style="left: 35%;">|</span>
+                    <span class="tick" style="left: 45%;">|</span>
+                    <span class="tick" style="left: 55%;">|</span>
+                    <span class="tick" style="left: 65%;">|</span>
+                    <span class="tick" style="left: 75%;">|</span>
+                    <span class="tick" style="left: 85%;">|</span>
+                    <span class="tick" style="left: 95%;">|</span>
+                    </div>
+                </div>
+                </div>
+                <div class="col-auto">
+                <label for="customRange" class="form-label fw-bold">10</label>
+                </div>
+            </div>
+            </div>
+        </div>
+        <!-- Modal Footer with Action Buttons -->
+        <div class="modal-footer d-flex">
+            <span v-for="review in filteredVenueReviews.filter(review => review.userID === parseInt(user_id))" :key="review.id" class="me-auto">
+            <button 
+                v-if="inEdit" 
+                class="btn btn-danger py-1 mobile-fs-7" 
+                @click="setDeleteID(filteredVenueReviews.find(review => review.userID === parseInt(user_id)))" 
+                data-bs-toggle="modal" 
+                data-bs-target="#deleteReview">
+                Delete Review
+            </button>
+            </span>
+            <button type="button" class="btn secondary-btn-less-round-inverse" data-bs-dismiss="modal">Close</button>
+            <button v-if="!inEdit" type="button" @click="addVenueReview" class="btn secondary-btn-less-round">Submit Review</button>
+            <button v-else type="button" @click="editVenueReview" class="btn secondary-btn-less-round">Update Review</button>
+        </div>
+        </div>
+    </div>
+    </div>
     <FooterBar />
 </template>
 
@@ -2438,6 +2970,10 @@
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         data() {
             return {
+                updateID: null,
+                users: [],
+                user_id: "", 
+
                 // to get producer's answered questions
                 showQnA: false,
 
@@ -2565,7 +3101,34 @@
 
                 // for bookmark component
                 bookmarkListingID: {},
-                
+
+                // for venueReviews
+                venueReviews: [],
+                reviewDesc: "",
+                reviewDescError: "",
+                rating: 5,
+                venueReviewResponseCode: "",
+                successSubmission: false,
+                addingVenueReview: true,
+                errorSubmission: false,
+                errorMessage: false,
+                duplicateEntry: false,
+                notExist: false,
+                inEdit: false,
+                specificReview: [],
+                // For handling venue review photos
+                selectedImagesForReview: [],
+                reviewImages64: [],
+                // For deleting reviews
+                deleteID: null,
+                successDelete: false,
+                deletingReview: true,
+                errorDelete: false,
+                errorDeleteMessage: false,
+                // Filtered arrays
+                filteredVenueReviews: [],
+                filteredVenueReviewsWithImages: [],
+
                 // for change/reset password
                 oldPassword:"",
                 newPassword:"",
@@ -2642,9 +3205,41 @@
             if(userType != null){
                 this.userType = userType;
             }
+
         },
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         methods: {
+            setUpdateID(review) {
+                this.updateID = review.id;
+            },
+            setDeleteID(review) {
+              this.deleteID = review.id;
+            },
+            getPhotoFromReview(review) {
+                const user = this.users.find((u) => u.id == review.userID);
+                if (user) {
+                return user.photo;
+                }
+                return "";
+            },
+
+            getUsernameFromReview(review) {
+                // If you have an array of users in `this.users`:
+                const user = this.users.find((u) => u.id === review.userID);
+                if (user) {
+                return user.username;
+                }
+                return "(unknown user)";
+            },
+            clearPhoto() {
+                this.reviewImages64 = [];
+                this.selectedImagesForReview = [];
+                const fileInput = document.getElementById("venueReviewPhotos");
+                if (fileInput) {
+                    fileInput.value = "";
+                }
+            },
+
             // Obtain venue data
             async getVenueData() {
                 try {
@@ -2830,10 +3425,26 @@
                     this.showQnA = true;
                 }
             },
+            // check if user is mod
+            checkModFromUserID(userID) {
+            const user = this.users.find((user) => {
+                return user["id"] == userID;
+            });
+            if (user) {
+                return user["modType"].length > 0;
+            }
+            },
+
+
 
             // Load other data
             async loadData() {
-
+                try {
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUsers`);
+                    this.users = response.data;
+                } catch (error) {
+                    console.error("Error fetching users:", error);
+                }
                 // Get listing data for each item in menu
                 try {
                     for (let section of this.detailedMenu) {
@@ -3090,7 +3701,54 @@
                 if (this.dataLoaded != null) {
                     this.dataLoaded = true;
                 }
+
+                //calling endpoint for getData/getVenueReviews
+                try {
+                    const response = await this.$axios.get(
+                        `${process.env.VUE_APP_API_URL}/getData/getVenueReviews`
+                );
+                // Assign all fetched reviews to a property
+                this.venueReviews = response.data;
+                // Immediately filter reviews to only include those for the current venue
+                this.filteredVenueReviews = this.venueReviews.filter((review) => {
+                return review.venueID == this.targetVenue.id;
+                });
+
+                this.getFilteredVenueReviewsWithImages();
+                this.filteredVenueReviews = this.getVenueReviews();
+                this.specificReview = this.getLoggedUserReview();
+
+                } catch (error) {
+                console.error("Error fetching venue reviews:", error);
+                }
+                
+
             },
+            onFilesChange(event) {
+                const files = event.target.files;
+                // Limit to a total of 3 images (existing plus new ones)
+                if (files.length + this.selectedImagesForReview.length > 3) {
+                    alert("You can only upload up to 3 images.");
+                    return;
+                }
+
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    const reader = new FileReader();
+
+                    reader.onloadend = () => {
+                    // Push the preview data into the array for displaying the image
+                    this.selectedImagesForReview.push(reader.result);
+                    // Create a base64 string (without the metadata) for submitting
+                    const base64String = reader.result.replace("data:", "").replace(/^.+,/, "");
+                    this.reviewImages64.push(base64String);
+                    };
+
+                    reader.readAsDataURL(file);
+                }
+            },
+
+
 
             // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
             
@@ -4380,6 +5038,205 @@
                     this.passwordError = true // Display generic error message
                 }
             },
+
+                // get average venue ratings
+                getAverageVenueRatings() {
+                const ratings = this.filteredVenueReviews.map((review) => parseFloat(review.rating));
+                if (ratings.length === 0) return "-";
+                const avg = ratings.reduce((sum, val) => sum + val, 0) / ratings.length;
+                return avg.toFixed(1);
+                },
+
+                addVenueReview() {
+                if (this.reviewDesc.length < 20) {
+                this.reviewDescError = 
+                    "Character count is less than 20, please write more for a detailed review.";
+                alert("Submission error, please fill in the fields properly");
+                return;
+                } else {
+                this.reviewDescError = "";
+                }
+
+                let createdDate = new Date().toISOString();
+
+                let submitAPI = `${process.env.VUE_APP_API_URL}/createReview/createVenueReview`;
+                let submitData = {
+                userID: parseInt(this.user_id),
+                venueID: this.targetVenue.id,
+                rating: this.rating,
+                reviewDesc: this.reviewDesc.trim(),
+                photos: this.reviewImages64,
+                createdDate: createdDate,
+                userVotes: {
+                    downvotes: [],
+                    upvotes: [],
+                },
+                };
+
+                this.writeReview(submitAPI, submitData);
+            },
+
+            editVenueReview() {
+                if (this.reviewDesc.length < 20) {
+                this.reviewDescError = 
+                    "Character count is less than 20, please write more for a detailed review.";
+                alert("Submission error, please fill in the fields properly");
+                return;
+                }
+
+                let submitAPI = 
+                `${process.env.VUE_APP_API_URL}/editReview/updateVenueReview/` + this.specificReview[0].id;
+                let submitData = {
+                userID: parseInt(this.user_id),
+                venueID: this.targetVenue.id,
+                rating: this.rating,
+                reviewDesc: this.reviewDesc.trim(),
+                photos: this.reviewImages64,
+                createdDate: this.specificReview[0].createdDate,
+                };
+
+                this.updateReview(submitAPI, submitData);
+            },
+
+            async writeReview(submitAPI, submitData) {
+                try {
+                    const response = await this.$axios.post(submitAPI, submitData, {
+                    headers: { 'Content-Type': 'application/json' }
+                    });
+                    this.venueReviewResponseCode = response.data.code;
+                } catch (error) {
+                    console.error(error);
+                    this.venueReviewResponseCode = error.response?.data?.code || 500;
+                }
+                if (this.venueReviewResponseCode === 201) {
+                    this.successSubmission = true;  // Review successfully created
+                    this.addingVenueReview = false;
+                } else {
+                    this.errorSubmission = true;    // Error occurred during review creation
+                    this.addingVenueReview = false;
+                    if (this.venueReviewResponseCode === 400) {
+                    this.duplicateEntry = true;   // Duplicate review detected
+                    } else {
+                    this.errorMessage = true;       // General error
+                    }
+                }
+            },
+
+            async updateReview(submitAPI, submitData) {
+                try {
+                    const response = await this.$axios.put(submitAPI, submitData, {
+                    headers: { 'Content-Type': 'application/json' }
+                    });
+                    this.venueReviewResponseCode = response.data.code;
+                } catch (error) {
+                    console.error(error);
+                    this.venueReviewResponseCode = error.response?.data?.code || 500;
+                }
+                if (this.venueReviewResponseCode === 200) {
+                    this.successSubmission = true;  // Review successfully updated
+                } else {
+                    this.errorSubmission = true;    // Error occurred during update
+                    if (this.venueReviewResponseCode === 400) {
+                    this.duplicateEntry = true;   // Error: Review not found or duplicate
+                    } else {
+                    this.errorMessage = true;       // General error
+                    }
+                }
+            },
+            async voteReview(review, vote) {
+                if (vote === "upvote") {
+                    review.userVotes.upvotes.push(this.user_id);
+                    review.userVotes.downvotes = review.userVotes.downvotes.filter(
+                    (id) => id !== this.user_id
+                    );
+                } 
+                else if (vote === "downvote") {
+                    review.userVotes.downvotes.push(this.user_id);
+                    review.userVotes.upvotes = review.userVotes.upvotes.filter(
+                    (id) => id !== this.user_id
+                    );
+                } 
+                else if (vote === "unupvote") {
+                    review.userVotes.upvotes = review.userVotes.upvotes.filter(
+                    (id) => id !== this.user_id
+                    );
+                } 
+                else if (vote === "undownvote") {
+                    review.userVotes.downvotes = review.userVotes.downvotes.filter(
+                    (id) => id !== this.user_id
+                    );
+                }
+
+                try {
+                    await this.$axios.post(`${process.env.VUE_APP_API_URL}/editReview/voteVenueReview`, {
+                    reviewID: review.id,
+                    userVotes: review.userVotes,
+                    action: vote,
+                    });
+                } catch (error) {
+                    console.error(error);
+                }
+            },
+            async deleteReview() {
+                let deleteAPI = `${process.env.VUE_APP_API_URL}/deleteReview/deleteVenueReview/` + this.deleteID;
+                
+                try {
+                    const response = await this.$axios.delete(deleteAPI);
+                    this.deleteReviewCode = response.data.code;
+                    
+                    if (this.deleteReviewCode == 200) {
+                    this.successDelete = true;
+                    this.deletingReview = false;
+                    } else {
+                    this.errorDelete = true;
+                    this.deletingReview = false;
+                    if (this.deleteReviewCode == 400) {
+                        this.notExist = true;
+                    } else {
+                        this.errorDeleteMessage = true;
+                    }
+                    }
+                } catch (error) {
+                    console.error(error);
+                    this.errorDelete = true;
+                    this.deletingReview = false;
+                }
+            },
+            getVenueReviews() {
+                const reviews = this.venueReviews.filter((review) => {
+                    return review["venueID"] == this.targetVenue.id;
+                });
+                return reviews;
+            },
+            getFilteredVenueReviewsWithImages() {
+                let allReviews = this.getVenueReviews();
+
+                let reviewsWithImages = allReviews
+                    .filter((review) => review.photos && review.photos.length > 0)
+                    .sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
+
+                this.filteredVenueReviewsWithImages = [];
+
+                reviewsWithImages.forEach((review) => {
+                    review.photos.forEach((photo) => {
+                    this.filteredVenueReviewsWithImages.push(photo);
+                    });
+                });
+            },
+            getLoggedUserReview() {
+                const specificReview = this.filteredVenueReviews.filter((review) => {
+                    return review.userID == parseInt(this.user_id);
+                });
+                if (specificReview.length !== 0) {
+                    this.inEdit = true;
+                    this.reviewDesc = specificReview[0].reviewDesc;
+                    this.rating = specificReview[0].rating;
+                    this.reviewImages64 = specificReview[0].photos || [];
+                }
+                return specificReview;
+                },
+
+
         }
     }
 </script>
