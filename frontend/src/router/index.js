@@ -273,7 +273,7 @@ const routes = [
 
   // ----------------- Events -----------------
   {
-    path: "/event/:eventID",
+    path: "/event/:eventID/:eventName",
     name: "eventview",
     component: () => import("../views/SpecificEventPage.vue"),
   },

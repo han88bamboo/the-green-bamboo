@@ -284,6 +284,7 @@ Updated profile URL for venue
 (3) Updated router - NavBar.vue
 (4) Updated router - LandingPageNavBar.vue
 (5) Updated router - SearchView.vue
+getData/getVenueReviews receive 500 Internal server error 
 Nature of the changes (frontend / backend / database):
 frontend
 
@@ -301,6 +302,19 @@ Updated profile URL for profile/producer and lisitng/view in search view
 (6) Updated router for listing/view/:listingid to include listing name - LandingPage.vue
 (7) Updated router for listing/view/:listingid to include listing name - ProducerDashboard.vue
 (8) Updated router for listing/view/:listingid to include listing name - ProducerProfile.vue
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 11 April (Part 3)
+
+Coder: Candy
+
+Purpose of the changes:
+Updated URL for events
+(1) Updated router for events URL - SpecificEventPage.vue
+(2) Updated router for events URL - router/index.js
+(3) Updated router for events URL - events.vue
 
 Nature of the changes (frontend / backend / database):
 frontend

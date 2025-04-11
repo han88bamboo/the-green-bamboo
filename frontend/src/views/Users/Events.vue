@@ -94,7 +94,7 @@
                         <div class="col-12 col-lg-7 text-start">
                             <!-- Event Name -->
                             <p class="fw-bold">
-                                <router-link :to="{ name: 'eventview', params: { eventID: event.eventID } }" class="text-black fs-5 event-link">
+                                <router-link :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: event.eventName } }" class="text-black fs-5 event-link">
                                     {{ event.eventName }}
                                 </router-link>
                             </p>
@@ -152,7 +152,7 @@
                         <div class="col-12 col-lg-7 text-start">
                             <!-- Event Name -->
                             <p class="fw-bold">
-                                <router-link :to="{ name: 'eventview', params: { eventID: event.eventID } }" class="text-black fs-5 event-link">
+                                <router-link :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: event.eventName } }" class="text-black fs-5 event-link">
                                     {{ event.eventName }}
                                 </router-link>
                             </p>
@@ -208,7 +208,7 @@
                         <div class="col-12 col-lg-7 text-start">
                             <!-- Event Name -->
                             <p class="fw-bold">
-                                <router-link :to="{ name: 'eventview', params: { eventID: event.eventID } }" class="text-black fs-5 event-link">
+                                <router-link :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: event.eventName } }" class="text-black fs-5 event-link">
                                     {{ event.eventName }}   
                                 </router-link>
                             </p>
@@ -254,7 +254,7 @@
                         <div class=" row text-start">
                             <!-- Event Name -->
                             <p class="fw-bold">
-                                <router-link :to="{ name: 'eventview', params: { eventID: event.eventID } }" class="text-black fs-5 event-link">
+                                <router-link :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: event.eventName } }" class="text-black fs-5 event-link">
                                     {{ event.eventName }}
                                 </router-link>
                             </p>
@@ -291,7 +291,7 @@
                             <div class="text-start row mt-3">
                                 <!-- Event Name -->
                                 <p class="fw-bold">
-                                    <router-link :to="{ name: 'eventview', params: { eventID: event.eventID } }" class="text-black fs-5 event-link">
+                                    <router-link :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }" class="text-black fs-5 event-link">
                                         {{ event.eventName }}   
                                     </router-link>
                                 </p>
@@ -338,7 +338,7 @@
                             <div class="text-start row mt-3">
                                 <!-- Event Name -->
                                 <p class="fw-bold">
-                                    <router-link :to="{ name: 'eventview', params: { eventID: event.eventID } }" class="text-black fs-5 event-link">
+                                    <router-link :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }" class="text-black fs-5 event-link">
                                         {{ event.eventName }}
                                     </router-link>
                                 </p>
@@ -449,6 +449,13 @@ export default {
         }
     },
     methods: {
+        slugify(text) {
+                return text
+                    .toString()
+                    .toLowerCase()
+                    .replace(/\s+/g, '')
+                    .replace(/[^\w]/g, '');
+            },
         // Function to get upcoming events 
         async getUpcomingEvents() {
             try {
