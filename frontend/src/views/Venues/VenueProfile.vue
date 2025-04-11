@@ -2981,6 +2981,7 @@
                 // Info
                 viewerID: localStorage.getItem('88B_accID'),
                 viewerType: localStorage.getItem('88B_accType'),
+                userName: '',
                 targetVenue: '',
                 currentURL: window.location.href,
 
@@ -3169,6 +3170,7 @@
             // Check if route params "venueID" is present
             if (this.$route.params.venueID != "" && this.$route.params.venueID != undefined) {
                 this.targetVenue = this.$route.params.venueID;
+                this.userName = this.$route.params.username || this.userName;
 
                 // If logged in as a venue, check if the venueID matches the logged in venue's ID
                 if (this.viewerType == 'venue' && this.viewerID == this.targetVenue) {
@@ -3179,7 +3181,7 @@
             else if (this.viewerType == 'venue') {
                 this.targetVenue = this.viewerID;
                 this.selfView = true;
-                this.currentURL = this.currentURL + '/' + this.targetVenue;
+                this.currentURL = this.currentURL + '/' + this.targetVenue + '/' + this.userName;
             }
             // If not logged in as a venue, redirect to your own profile page / login
             else {
@@ -3205,6 +3207,12 @@
             if(userType != null){
                 this.userType = userType;
             }
+
+            var userName = localStorage.getItem("88B_accUsername");
+            if (userName !== null) {
+            this.userName = userName;
+            }
+
 
         },
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

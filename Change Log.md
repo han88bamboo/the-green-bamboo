@@ -273,3 +273,18 @@ Nature of the changes (frontend / backend / database):
 frontend, backend and database
 
 
+# Update as of 11 April
+
+Coder: Candy
+
+Purpose of the changes:
+Updated profile URL for venue
+(1) Updated router - VenueProfile.vue
+(2) Updated router - router/index.js
+(3) Updated router - NavBar.vue
+(4) Updated router - LandingPageNavBar.vue
+(5) Updated router - SearchView.vue
+Nature of the changes (frontend / backend / database):
+frontend
+
+

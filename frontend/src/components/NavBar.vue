@@ -439,10 +439,10 @@ export default {
         this.dashboardURL = "/Producers/ProducersDashboard/" + accID;
         this.dashboardWord = "Brand";
       } else if (this.accType == "venue") {
-        url = url + "Venue/" + accID;
+        url = url + "Venue/" + accID + "/" + accUsername;
         this.loadData(url);
 
-        this.profileURL = "/profile/venue";
+        this.profileURL = "/profile/venue/" + accID + "/" + accUsername;
         this.dashboardURL = "/dashboard/venue";
         this.dashboardWord = "Venue";
       }

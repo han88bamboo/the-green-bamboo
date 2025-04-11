@@ -104,19 +104,19 @@ const routes = [
 
     component: () => import("../views/Producers/ProducerProfile.vue"),
   },
-  {
-    // TO BE DELETED
-    path: "/profile/venueOld/:venueID?",
-    name: "profilevenueOld",
+  // {
+  //   // TO BE DELETED
+  //   path: "/profile/venueOld/:venueID?",
+  //   name: "profilevenueOld",
 
-    // OLD LINK FOR REFERENECE
-    // path: '/Venues/Profile-Page/:id',
-    // name: 'venuesprofilepage',
+  //   // OLD LINK FOR REFERENECE
+  //   // path: '/Venues/Profile-Page/:id',
+  //   // name: 'venuesprofilepage',
 
-    component: () => import("../views/Venues/VenueProfileOld.vue"),
-  },
+  //   component: () => import("../views/Venues/VenueProfileOld.vue"),
+  // },
   {
-    path: "/profile/venue/:venueID?",
+    path: "/profile/venue/:venueID?/:username",
     name: "profilevenue",
     component: () => import("../views/Venues/VenueProfile.vue"),
   },

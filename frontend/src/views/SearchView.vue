@@ -412,7 +412,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                             <hr>
                             <!-- Image -->
                             <div class="col-lg-3 col-12 image-container mb-3 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
-                                <router-link :to="{ path: '/profile/venue/' + venue.id }">
+                                <router-link :to="{ path: '/profile/venue/' + venue.id + '/' + slugify(venue.venueName)}">
                                     <img v-if="venue['photo']" :src="venue['photo']" class="img-border img-fluid object-fit-cover" style="/*width:256px; height:256px*/">
                                     <img v-else src="../../Images/Drinks/Placeholder.png" class="img-border img-fluid object-fit-cover" style="/*width:256px; height:256px*/"> 
                                 </router-link>
@@ -423,7 +423,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
 
                                 <div class="col-lg-8 col-12">
                                     <!-- Venue Name + Router Link -->
-                                    <router-link class="text-dark text-decoration-none" :to="{ path: '/profile/venue/' + venue.id }">
+                                    <router-link class="text-dark text-decoration-none" :to="{ path: '/profile/venue/' + venue.id + '/' + slugify(venue.venueName) }">
                                         <h4 class="fw-bold my-1">{{ venue['venueName'] }}</h4>
                                     </router-link>
                                     <!-- Country of Origin -->
@@ -597,6 +597,11 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
             if(userType !=null){
                 this.userType = userType
             }
+            let userName = localStorage.getItem("88B_accUsername");
+            if (userName !== null) {
+            this.userName = userName;
+            }
+
 
             // if there is a search input
             if (this.searchTerm != '' || this.searchTerm != null) {
@@ -608,6 +613,13 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
             }
         },
         methods: {
+            slugify(text) {
+                return text
+                    .toString()
+                    .toLowerCase()
+                    .replace(/\s+/g, '')
+                    .replace(/[^\w]/g, '');
+            },
             async runSearch() {
                 // Search Criteria: if any of the following attributes includes the search term
                 // - Listings: listingName, producerName, bottler, originCountry, drinkType, typeCategory
