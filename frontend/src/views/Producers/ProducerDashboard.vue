@@ -333,11 +333,11 @@
                             <div class="overflow-auto" style="max-height: 100%;">
                                 <!-- v-for loop here-->
                                 <div v-for="review in allReviews" v-bind:key="review.id" class="py-2">
-                                    <router-link :to="{ path: '/profile/user/' + review.userID }" class="reverse-clickable-text">
+                                    <router-link :to="{ path: '/profile/user/' + review.userID + '/' + getUsernameFromID(review.userID)}" class="reverse-clickable-text">
                                         <b> @{{ getUsernameFromID(review.userID) }}</b>
                                     </router-link> 
                                     rated 
-                                    <router-link :to="{ path: '/listing/view/' + getListingFromID(review.reviewTarget).id }" class="reverse-clickable-text">
+                                    <router-link :to="{ path: '/listing/view/' + getListingFromID(review.reviewTarget).id + '/' + getListingFromID(review.reviewTarget).listingName }" class="reverse-clickable-text">
                                         <u> {{ getListingFromID(review.reviewTarget).listingName }} </u>
                                     </router-link>
                                     <span class="ps-2">
@@ -364,11 +364,11 @@
                             <div class="overflow-auto" style="max-height: 100%;">
                                 <!-- v-for loop here-->
                                 <div v-for="review in allReviews" v-bind:key="review.id" class="py-2">
-                                    <router-link :to="{ path: '/profile/user/' + review.userID }" class="reverse-clickable-text">
+                                    <router-link :to="{ path: '/profile/user/' + review.userID + '/' + getUsernameFromID(review.userID) }" class="reverse-clickable-text">
                                         <b> @{{ getUsernameFromID(review.userID) }}</b>
                                     </router-link> 
                                     rated 
-                                    <router-link :to="{ path: '/listing/view/' + getListingFromID(review.reviewTarget).id }" class="reverse-clickable-text">
+                                    <router-link :to="{ path: '/listing/view/' + getListingFromID(review.reviewTarget).id + '/' + getListingFromID(review.reviewTarget).listingName}" class="reverse-clickable-text">
                                         <u> {{ getListingFromID(review.reviewTarget).listingName }} </u>
                                     </router-link>
                                     <span class="ps-2">
@@ -443,7 +443,7 @@
                         <div id="BestRatedExpressions" class="tab-pane fade show active col-lg-5 col-md-12 col-sm-12 text-start pt-3 mx-lg-3 ps-lg-0 pe-lg-0">
                             
                             <div class="text-start pb-2" v-for="listing in mostPopular" v-bind:key="listing.id">
-                                <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
+                                <router-link :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}" class="reverse-clickable-text">
                                     <div class="d-flex align-items-center">
                                         <img :src="(listing.photo || defaultPhoto)" style="width: 70px; height: 70px;">
                                         <p class="ms-3 default-clickable-text"> 
@@ -463,7 +463,7 @@
                         <div id="MostReviewedExpressions" class="tab-pane fade col-lg-5 col-md-12 col-sm-12 text-start pt-3 mx-lg-3 ps-lg-0 pe-lg-0">
                             
                             <div class="text-start pb-2" v-for="listing in mostDiscussed" v-bind:key="listing.id">
-                                <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
+                                <router-link :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName) }" class="reverse-clickable-text">
                                     <div class="d-flex align-items-center">
                                         <img :src="(listing.photo || defaultPhoto)" style="width: 70px; height: 70px;">
                                         <p class="ms-3 default-clickable-text"> 
@@ -520,7 +520,7 @@
                     <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-lg-3 ps-lg-0 pe-lg-0" style="color:black;">
                         <h3> Your Best Rated Expressions </h3>
                         <div class="text-start pb-2" v-for="listing in mostPopular" v-bind:key="listing.id">
-                            <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
+                            <router-link :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName) }" class="reverse-clickable-text">
                                 <div class="d-flex align-items-center">
                                     <img :src="(listing.photo || defaultPhoto)" style="width: 70px; height: 70px;">
                                     <p class="ms-3 default-clickable-text"> 
@@ -540,7 +540,7 @@
                     <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-lg-3 ps-lg-0 pe-lg-0" style="color:black;">
                         <h3> Your Most Reviewed Expressions </h3>
                         <div class="text-start pb-2" v-for="listing in mostDiscussed" v-bind:key="listing.id">
-                            <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
+                            <router-link :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName) }" class="reverse-clickable-text">
                                 <div class="d-flex align-items-center">
                                     <img :src="(listing.photo || defaultPhoto)" style="width: 70px; height: 70px;">
                                     <p class="ms-3 default-clickable-text"> 
@@ -776,6 +776,13 @@
             await this.loadData();
         },
         methods: {
+            slugify(text) {
+                return text
+                    .toString()
+                    .toLowerCase()
+                    .replace(/\s+/g, '')
+                    .replace(/[^\w]/g, '');
+            },
             // load data from database
             async loadData() {
                 // Get the query string parameters (listing ID) from the URL

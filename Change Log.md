@@ -287,4 +287,21 @@ Updated profile URL for venue
 Nature of the changes (frontend / backend / database):
 frontend
 
+# Update as of 11 April (Part 2)
+
+Coder: Candy
+
+Purpose of the changes:
+Updated profile URL for profile/producer and lisitng/view in search view 
+(1) Updated router for both profile/producer and listing/view - SearchView.vue
+(2) Updated router for listing/view/:listingid to include listing name - RandomExplorePage.vue
+(3) Updated router for listing/view/:listingid to include listing name - ListingRowDisplay.vue
+(4) Updated router for listing/view/:listingid to include listing name - ListingRowDisplayProducerProfile.vue
+(5) Updated router for listing/view/:listingid to include listing name - SubmitListingNew.vue
+(6) Updated router for listing/view/:listingid to include listing name - LandingPage.vue
+(7) Updated router for listing/view/:listingid to include listing name - ProducerDashboard.vue
+(8) Updated router for listing/view/:listingid to include listing name - ProducerProfile.vue
+
+Nature of the changes (frontend / backend / database):
+frontend
 

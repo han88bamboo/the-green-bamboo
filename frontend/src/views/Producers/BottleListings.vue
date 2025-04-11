@@ -519,7 +519,7 @@
                                   >
                                     <router-link
                                       :to="{
-                                        path: '/profile/venue/' + venue.id,
+                                        path: '/profile/venue/' + venue.id + '/' + venue.venueName,
                                       }"
                                       class="reverse-clickable-text"
                                     >
