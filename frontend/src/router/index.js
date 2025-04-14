@@ -259,7 +259,7 @@ const routes = [
   },
 
   {
-    path: "/club/view/:clubID",
+    path: "/club/view/:clubID/:clubName?",
     name: "clubview",
     component: () => import("../views/Users/ClubView.vue"),
   },

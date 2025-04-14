@@ -319,3 +319,30 @@ Updated URL for events
 Nature of the changes (frontend / backend / database):
 frontend
 
+# Update as of 11 April (Part 4)
+
+Coder: Candy
+
+Purpose of the changes:
+Updated URL for events and club
+(1) Updated router for past & recommended events URL - events.vue
+(2) Updated router for club/view/:clubid/:clubName - router/index.js
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 14 April 
+
+Coder: Candy
+
+Purpose of the changes:
+Updated URL for events and club
+(1) Updated profile and club/view router for BrowseClubs.vue
+(2) Updated router for club/view/:clubid/:clubName - router/index.js
+(3) Updated router for CreateClubs.vue
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+
+

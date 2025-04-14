@@ -152,7 +152,7 @@
                         <div class="col-12 col-lg-7 text-start">
                             <!-- Event Name -->
                             <p class="fw-bold">
-                                <router-link :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: event.eventName } }" class="text-black fs-5 event-link">
+                                <router-link :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }" class="text-black fs-5 event-link">
                                     {{ event.eventName }}
                                 </router-link>
                             </p>
@@ -208,7 +208,7 @@
                         <div class="col-12 col-lg-7 text-start">
                             <!-- Event Name -->
                             <p class="fw-bold">
-                                <router-link :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: event.eventName } }" class="text-black fs-5 event-link">
+                                <router-link :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName)} }" class="text-black fs-5 event-link">
                                     {{ event.eventName }}   
                                 </router-link>
                             </p>
