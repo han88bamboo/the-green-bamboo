@@ -21,19 +21,39 @@
         </div>
 
         <div class="col mobile-view-hide d-flex align-items-center">
-          <!-- search bar tzh added mobile-view-hide -->
+          <!-- search bar with suggestions -tzh added mobile-view-hide  -->
           <div
             class="col-8 position-relative search-bar d-flex"
             style="height: 50px"
           >
-            <input
-              class="form-control fst-italic"
-              type="text"
-              placeholder="What are you drinking today?"
-              style="width: 90%"
-              v-model="searchInput"
-              v-on:keyup.enter="goSearch"
-            />
+            <div class="w-100 position-relative">
+              <input
+                class="form-control fst-italic"
+                type="text"
+                placeholder="What are you drinking today?"
+                v-model="searchInput"
+                v-on:keyup.enter="goSearch"
+                v-on:input="getSuggestions"
+                autocomplete="off"
+              />
+              <div
+                class="autocomplete-container position-absolute w-100"
+                v-if="showSuggestions && filteredSuggestions.length > 0"
+              >
+                <ul class="list-group">
+                  <li
+                    class="list-group-item list-group-item-action text-start"
+                    v-for="(suggestion, index) in filteredSuggestions"
+                    :key="index"
+                    v-on:click="selectSuggestion(suggestion)"
+                    :class="{ active: selectedIndex === index }"
+                    v-on:mouseover="selectedIndex = index"
+                  >
+                    {{ suggestion }}
+                  </li>
+                </ul>
+              </div>
+            </div>
             <img
               src="../../Images/Others/search-green.png"
               style="
@@ -45,7 +65,6 @@
               v-on:click="goSearch"
             />
           </div>
-
           <!-- camera button -->
           <!-- <div class="col mobile-view-hide">
                             <button class="btn primary-btn-less-round-green d-flex align-items-center" style="height: 50px; margin-left: 10px; padding: 0px 15px;" v-on:click="imageSearch">
@@ -290,15 +309,36 @@
     <div class="col-12 primary-square mt-2 py-1">
       <div class="mobile-view-show col-11 ps-4 pe-4 d-flex">
         <!-- <input class="search-bar form-control rounded fst-italic" type="text" placeholder="What are you drinking today?" style="height: 50px;" v-model="searchInput" v-on:keyup.enter="goSearch"> -->
-        <div class="search-bar d-flex align-items-center col-12">
-          <input
-            class="form-control fst-italic"
-            type="text"
-            placeholder="What are you drinking today?"
-            style="width: 90%"
-            v-model="searchInput"
-            v-on:keyup.enter="goSearch"
-          />
+        <div class="search-bar d-flex align-items-center col-12 position-relative">
+          <div class="w-100 position-relative">
+            <input
+              class="form-control fst-italic"
+              type="text"
+              placeholder="What are you drinking today?"
+              style="width: 90%"
+              v-model="searchInput"
+              v-on:keyup.enter="goSearch"
+              v-on:input="getSuggestions"
+              autocomplete="off"
+            />
+            <div
+              class="autocomplete-container position-absolute w-100"
+              v-if="showSuggestions && filteredSuggestions.length > 0"
+            >
+              <ul class="list-group">
+                <li
+                  class="list-group-item list-group-item-action text-start"
+                  v-for="(suggestion, index) in filteredSuggestions"
+                  :key="index"
+                  v-on:click="selectSuggestion(suggestion)"
+                  :class="{ active: selectedIndex === index }"
+                  v-on:mouseover="selectedIndex = index"
+                >
+                  {{ suggestion }}
+                </li>
+              </ul>
+            </div>
+          </div>
           <img
             src="../../Images/Others/search-green.png"
             style="
@@ -330,8 +370,6 @@
             {{ dashboardWord }} Dashboard
           </button>
         </router-link>
-
-        <!-- candy fixing this -->
 
         <router-link :to="'/Latest-News'">
           <button
@@ -399,6 +437,8 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   name: "NavBar",
   data() {
@@ -414,7 +454,46 @@ export default {
       onCreate: false,
       onRequest: false,
       dashboardWord: "",
+      suggestions: [],
+      showSuggestions: false,
+      selectedIndex: -1,
+      isFetching: false,
     };
+  },
+  computed: {
+    filteredSuggestions() {
+      if (this.searchInput.trim() === "") return [];
+
+      const searchTerm = this.searchInput.toLowerCase();
+
+      const startsWithMatches = this.suggestions.filter((item) =>
+        item.toLowerCase().startsWith(searchTerm)
+      );
+
+      const wordStartsWithMatches = this.suggestions.filter((item) => {
+        const words = item.toLowerCase().split(" ");
+        return (
+          words.some((word) => word.startsWith(searchTerm)) &&
+          !item.toLowerCase().startsWith(searchTerm)
+        );
+      });
+
+      const substringMatches = this.suggestions.filter(
+        (item) =>
+          item.toLowerCase().includes(searchTerm) &&
+          !item.toLowerCase().startsWith(searchTerm) &&
+          !item
+            .toLowerCase()
+            .split(" ")
+            .some((word) => word.startsWith(searchTerm))
+      );
+
+      return [
+        ...startsWithMatches,
+        ...wordStartsWithMatches,
+        ...substringMatches,
+      ].slice(0, 7);
+    },
   },
   mounted() {
     // Obtain user's profile picture + set profile URL
@@ -465,6 +544,15 @@ export default {
         this.onRequest = true;
       }
     }
+
+    this.fetchAllListings();
+
+    document.addEventListener("click", this.handleClickOutside);
+    document.addEventListener("keydown", this.handleKeyDown);
+  },
+  beforeUnmount() {
+    document.removeEventListener("click", this.handleClickOutside);
+    document.removeEventListener("keydown", this.handleKeyDown);
   },
   methods: {
     // load data from database (profile picture)
@@ -488,8 +576,63 @@ export default {
         console.error(error);
       }
     },
-
     // for search feature
+    async fetchAllListings() {
+      try {
+        this.isFetching = true;
+        const response = await axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getListingsName`
+        );
+        this.suggestions = response.data;
+      } catch (error) {
+        console.error("Error fetching listings:", error);
+        this.suggestions = [];
+      } finally {
+        this.isFetching = false;
+      }
+    },
+
+    getSuggestions() {
+      if (this.searchInput.trim().length > 0) {
+        this.showSuggestions = true;
+      } else {
+        this.showSuggestions = false;
+      }
+    },
+
+    selectSuggestion(suggestion) {
+      this.searchInput = suggestion;
+      this.showSuggestions = false;
+      this.goSearch();
+    },
+
+    handleKeyDown(e) {
+      if (!this.showSuggestions) return;
+
+      const suggestions = this.filteredSuggestions;
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        this.selectedIndex = Math.min(
+          this.selectedIndex + 1,
+          suggestions.length - 1
+        );
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        this.selectedIndex = Math.max(this.selectedIndex - 1, 0);
+      } else if (e.key === "Enter" && this.selectedIndex >= 0) {
+        e.preventDefault();
+        this.selectSuggestion(suggestions[this.selectedIndex]);
+      } else if (e.key === "Escape") {
+        this.showSuggestions = false;
+      }
+    },
+
+    handleClickOutside(e) {
+      if (!this.$el.contains(e.target)) {
+        this.showSuggestions = false;
+      }
+    },
+
     goSearch() {
       if (this.searchInput != "") {
         // remove any '/' from search input
@@ -502,9 +645,10 @@ export default {
           // re-route to search page
           this.$router.push({ path: "/search/" + this.searchInput });
         }
+        this.showSuggestions = false;
       }
     },
-    // route to image search page
+
     imageSearch() {
       // if already on image search page, refresh the page
       if (this.$route.path.split("/")[1] == "imageSearch") {
@@ -514,7 +658,6 @@ export default {
         this.$router.push({ path: "/imageSearch" });
       }
     },
-
     // logout function
     logout() {
       localStorage.removeItem("88B_accID");
@@ -545,5 +688,28 @@ export default {
   .d-flex {
     flex-direction: unset;
   }
+}
+
+/* Styles for autocomplete dropdown */
+.autocomplete-container {
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+  top: 100%;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.list-group-item:hover {
+  background-color: #f8f9fa;
+  cursor: pointer;
+}
+.list-group-item.active {
+  background-color: #83a9e8;
+  border-color: #dee2e6;
+  color: white;
+}
+input.form-control {
+  border: none;
+  box-shadow: none !important;
+  outline: none;
 }
 </style>

@@ -345,4 +345,13 @@ Nature of the changes (frontend / backend / database):
 frontend
 
 
+# Update as of 18 April 
+
+Coder: TZH
+
+Purpose of the changes:
+updated NavBar.vue to allow search to autocomplete, referencing code from SearchBar.vue (used Copilot)
+
+Nature of the changes (frontend / backend / database):
+frontend
 
