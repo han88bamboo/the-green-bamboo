@@ -355,6 +355,7 @@ updated NavBar.vue to allow search to autocomplete, referencing code from Search
 Nature of the changes (frontend / backend / database):
 frontend
 
+<<<<<<< Updated upstream
 
 # Update as of 24 April 
 
@@ -365,3 +366,40 @@ updated data folder to include the right countries
 
 Nature of the changes (frontend / backend / database):
 frontend
+=======
+# Update as of 24 April 
+Coder: Carissa
+
+Purpose of the changes:
+(1) Updated Page - Landing Page (LandingPage.vue) - Resolved the wonky code in landing page
+--> Updated News Article section to include more news 
+--> Refined goSearchListing() function to ensure page loads to the right page as url has been changed from before
+--> Added getData/getUser/${this.userID} to retrieve username to route to profile page for Icon Button "Start Collecting Points and Badges From You First Review", included error handling to route users to sign up page if they do not have an account
+--> Added icon buttons and routing
+--> Updated colour scheme of background and headings
+(2) Updated Component - Search Bar (SearchBar.vue) - Edited placeholder in search bar
+
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+Coder: Dycia
+
+Purpose of the changes:
+(1) Updated Backend API (rssFeed.py)
+- Edited the URL in feed_urls for Spotlight because the old URL was giving 404 error
+- Updated fetchRSS(): Retrieve articles for newly requested UI update. Retrieve articles for Features, Interviews, Escapades and What's Happening.
+- Added new fetchRssReviews(): Newly requested reviews requriement. Retrieve reviews from 5 different drink category and populate them based on chronological order.
+
+Nature of the changes (frontend / backend / database):
+backend
+
+Coder: Dycia
+
+Purpose of the changes:
+(1) Updated Landing Page (LandingPage.vue)
+- Edited the Latest News section with the new request requirement.
+
+Nature of the changes (frontend / backend / database):
+frontend
+>>>>>>> Stashed changes
