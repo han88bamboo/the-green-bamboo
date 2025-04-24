@@ -355,7 +355,6 @@ updated NavBar.vue to allow search to autocomplete, referencing code from Search
 Nature of the changes (frontend / backend / database):
 frontend
 
-<<<<<<< Updated upstream
 
 # Update as of 24 April 
 
@@ -366,7 +365,6 @@ updated data folder to include the right countries
 
 Nature of the changes (frontend / backend / database):
 frontend
-=======
 # Update as of 24 April 
 Coder: Carissa
 
@@ -402,4 +400,3 @@ Purpose of the changes:
 
 Nature of the changes (frontend / backend / database):
 frontend
->>>>>>> Stashed changes
