@@ -355,3 +355,13 @@ updated NavBar.vue to allow search to autocomplete, referencing code from Search
 Nature of the changes (frontend / backend / database):
 frontend
 
+
+# Update as of 24 April 
+
+Coder: TZH
+
+Purpose of the changes:
+updated data folder to include the right countries
+
+Nature of the changes (frontend / backend / database):
+frontend
