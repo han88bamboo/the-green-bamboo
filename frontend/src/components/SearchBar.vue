@@ -14,7 +14,7 @@
                         <input
                             class="form-control fst-italic"
                             type="text"
-                            placeholder="What are you drinking today?"
+                            placeholder="Go For It!"
                             v-model="searchInput"
                             v-on:keyup.enter="goSearch"
                             v-on:input="getSuggestions"
