@@ -386,3 +386,14 @@ added 3-dot dropwon feature for users to edit reviews - but buggy TZH to fix
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 25 April 
+
+Coder: Kai
+
+Purpose of the changes:
+neatened the margins and the line spacings on the drink listing pages (mobile + Desktop)
+added mobile only row of buttons like add review, bookmark, and extended info
+
+Nature of the changes (frontend / backend / database):
+frontend
