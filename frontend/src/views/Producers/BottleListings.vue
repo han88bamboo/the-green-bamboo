@@ -57,8 +57,8 @@
         <div class="row container">
           <!-- image -->
           <div
-            class="col-5 col-md-5 col-lg-4 col-xl-3 d-flex justify-content-center"
-          >
+          class="col-5 col-md-5 col-lg-4 col-xl-3 d-flex justify-content-center"
+          > 
             <div
               class="rounded overflow-hidden"
               style="
@@ -74,6 +74,7 @@
               />
             </div>
           </div>
+
 
           <!-- details -->
           <div
@@ -209,103 +210,92 @@
               <div class="row">
                 <div class="col-12 col-lg-8">
                   <div class="row">
-                    <div class="col-12 row">
-                      <div class="col-9 mobile-view-show px-1 py-0">
-                        <div
-                          v-if="userType == 'user' && userID !== 'defaultUser'"
-                          class="padding-for-addyourreviewbutton-large-screen mobile-view-show"
+
+                    <!--mobile only row of buttons (kai-edited)-->
+                    <div class="col-12 d-flex align-items-center gap-1 px-2 py-1 mobile-view-show mb-1">
+                      
+                      <!-- Red Add Review Button -->
+                      <template v-if="userType == 'user'">
+                        <!-- Logged-In User -->
+                        <button
+                          class="btn btn-danger text-white fw-semibold px-2"
+                          data-bs-toggle="modal"
+                          data-bs-target="#reviewModal"
+                          style="border-radius: 0; height: 40px;"
                         >
-                          <div v-if="!inEdit" class="d-grid gap-2">
-                            <button
-                              class="btn primary-btn-less-round-blue btn-lg"
-                              data-bs-toggle="modal"
-                              data-bs-target="#reviewModal"
-                              style="font-weight: 500; padding: 2px"
-                            >
-                              <!--tzh added -blue -->
-                              <!-- <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 16">
-                                                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
-                                                        </svg> -->
-                              Add Review
-                            </button>
-                          </div>
-                          <div v-else class="d-grid gap-2">
-                            <button
-                              class="btn primary-btn-less-round-blue btn-lg mobile-rating-smaller-text-2"
-                            >
-                              <!--tzh added -blue -->
-                              Reviewed
-                            </button>
-                          </div>
-                        </div>
-                        <div
-                          v-else-if="userType == 'user'"
-                          class="col-5 padding-for-addyourreviewbutton-large-screen mobile-view-hide justify-content-end"
-                        >
-                          <div class="d-grid gap-2">
-                            <router-link
-                              :to="{ path: '/login' }"
-                              class="reverse-clickable-text"
-                            >
-                              <button
-                                class="btn primary-btn-less-round-blue btn-lg mobile-rating-smaller-text-2"
-                                style="font-weight: bold"
-                              >
-                                <!--tzh added -blue -->
-                                Add Your Review
-                              </button>
-                            </router-link>
-                          </div>
-                        </div>
-                      </div>
+                          {{ !inEdit ? 'Add Review' : 'Reviewed' }}
+                        </button>
+                      </template>
+                      
+                        <!-- Red Add Review Button When User Is Logged Out -->
+                      <router-link
+                      v-else
+                      :to="{ path: '/login' }"
+                      class="text-decoration-none"
+                    >
+                      <button
+                        class="btn btn-danger text-white fw-semibold px-2"
+                        style="border-radius: 0; height: 38px;"
+                      >
+                        Add Review
+                      </button>
+                    </router-link>
+                    
+                      <!-- Teal Bookmark Icon -->
                       <div
-                        class="col-1 d-flex flex-row justify-content-center make-bookmark-bigger mobile-view-show"
+                      v-if="userType =='user'"
+                      class="d-flex align-items-center justify-content-center teal-bookmark-icon"
+                      style="background-color: #006A50; width: 40px; height: 40px; cursor: pointer;"
                       >
                         <BookmarkIcon
                           v-if="user"
                           :user="user"
                           :listing="specified_listing"
                           :overlay="false"
-                          size="35"
+                          size="20"
                           @icon-clicked="handleIconClick"
                         />
                       </div>
-                      <div class="col-1 mobile-view-show">
-                        <svg
-                          width="35"
-                          height="35"
-                          viewBox="0 0 100 100"
-                          xmlns="http://www.w3.org/2000/svg"
-                          data-bs-toggle="modal"
-                          data-bs-target="#whereToBuyModal"
+                    
+                       <!-- Teal Bookmark Button When User Is Logged Out -->
+                        <router-link
+                        v-else
+                        :to="{ path: '/login' }"
+                        class="d-flex align-items-center justify-content-center text-decoration-none"
+                        style="background-color: #006A50; width: 38px; height: 38px;"
                         >
-                          <!-- Checkbox border -->
-                          <rect
-                            x="5"
-                            y="5"
-                            width="90"
-                            height="90"
-                            stroke="#006A50"
-                            stroke-width="8"
-                            fill="none"
-                            rx="10"
-                          />
-
-                          <!-- Checkmark -->
-                          <polyline
-                            points="25,50 45,75 80,30"
-                            stroke="#006A50"
-                            stroke-width="8"
-                            fill="none"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                          />
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#ffffff" viewBox="0 0 16 16">
+                          <path d="M2 2v13.5l5.5-3.5 5.5 3.5V2z"/>
                         </svg>
+                        </router-link>
 
-                        <!-- <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" data-bs-toggle="modal" data-bs-target="#whereToBuyModal" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="arcs"><path d="M3.8 3.8l16.4 16.4M20.2 3.8L3.8 20.2M15 3h6v6M9 3H3v6M15 21h6v-6M9 21H3v-6"/></svg> -->
+
+                      <!-- Black External Link Icon -->
+                      <div
+                        class="d-flex align-items-center justify-content-center"
+                        style="background-color: #000000; width: 40px; height: 40px; cursor: pointer;"
+                        data-bs-toggle="modal"
+                        data-bs-target="#whereToBuyModal"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="#ffffff"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path d="M18 13v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                          <polyline points="15 3 21 3 21 9" />
+                          <line x1="10" y1="14" x2="21" y2="3" />
+                        </svg>
                       </div>
                     </div>
-
+                
+                    
                     <h3 class="text-body-secondary mb-0 mobile-view-hide">
                       <b> {{ specified_listing["listingName"] }} </b>
                     </h3>
@@ -841,7 +831,7 @@
         </div>
         <div class="row pt-2 container mobile-view-show text-black">
           <p
-            class="text-start mb-1 col-10"
+            class="text-start mb-1 col-12"
             style="
               white-space: nowrap;
               overflow: hidden;
@@ -884,7 +874,7 @@
         </div>
         <!-- more information (category, age, country of origin, abv, list buttons & bookmark) -->
         <div class="row pt-4 mobile-view-hide">
-          <div class="col-9 col-lg-10">
+          <div class="col-9 col-lg-11">
             <div class="row listing-details">
               <!-- category -->
               <div
@@ -898,7 +888,7 @@
 
               <!-- drink styles -->
               <div
-                class="col-6 col-lg-2 px-1 text-start mobile-view-hide text-color-black"
+                class="col-6 col-lg-3 px-1 text-start mobile-view-hide text-color-black"
               >
                 <h5 class="text-body-secondary mb-1">
                   <b v-if="specified_listing['drinkStyle']">
@@ -949,43 +939,16 @@
             </div>
           </div>
 
-          <div class="col-2 row">
-            <!-- have tried button -->
-            <div class="col-1 col-lg-5 p-0">
-              <!-- <div v-if="user && Object.keys(user.drinkLists).length > 0" v-html="checkDrinkLists(specified_listing).buttons.haveTried" class="d-grid" @click="addToTriedList"> </div> -->
-              <!-- CP edits: Removed the if logic so public users can also view and click -->
-              <div
-                v-html="checkDrinkLists(specified_listing).buttons.haveTried"
-                class="d-grid"
-                @click="addToTriedList"
-              ></div>
-            </div>
-            <!-- want to try button -->
-
-            <!-- bookmark button -->
-            <div
-              class="col-1 col-lg-5 text-center d-flex justify-content-end make-bookmark-bigger"
-            >
-              <!-- CP edits: removed v-if logic for public users to view and click -->
-              <BookmarkIcon
-                :user="user"
-                :listing="specified_listing"
-                :overlay="false"
-                size="40"
-                @icon-clicked="handleIconClick"
-              />
-            </div>
-          </div>
         </div>
 
         <!-- more information (average rating, would recommend, would drink again) -->
-        <div class="row pt-3 container">
+        <div class="row pt-3 container pe-4 g-0 align-items-center">
           <!-- xyz -->
-          <div class="col-12 col-lg-7">
-            <div class="row">
+          <div class="col-8 mobile-col-12">
+            <div class="row gx-2">
               <!-- average rating -->
               <div
-                class="col-4 text-start mobile-col-3 mobile-pe-0 text-color-black"
+                class="col-4 text-start ps-4 mobile-col-4 mobile-pe-0 text-color-black"
               >
                 <h3
                   class="mobile-rating-smaller-text text-body-secondary rating-text"
@@ -1005,7 +968,7 @@
               </div>
               <!-- would recommend -->
               <div
-                class="col-4 text-start mobile-col-3 mobile-ps-0 mobile-pe-0 text-color-black"
+                class="col-4 text-start mobile-col-4 mobile-ps-0 mobile-pe-0 text-color-black"
               >
                 <h3
                   class="mobile-rating-smaller-text text-body-secondary rating-text"
@@ -1019,7 +982,7 @@
               </div>
               <!-- would drink again -->
               <div
-                class="col-4 text-start mobile-col-3 mobile-ps-0 text-color-black"
+                class="col-4 text-start pe-0 mobile-col-4 mobile-ps-0 text-color-black"
               >
                 <h3
                   class="mobile-rating-smaller-text text-body-secondary rating-text"
@@ -1129,46 +1092,53 @@
           </div>
           <!-- END of delete review modal -->
 
-          <!-- add your review -->
-          <!-- Display Add review or Review already added accordingly to whether user already left review -->
-          <div
-            v-if="userType == 'user' && userID !== 'defaultUser'"
-            class="col-5 padding-for-addyourreviewbutton-large-screen mobile-view-hide justify-content-end"
-          >
-            <div v-if="!inEdit" class="d-grid gap-2">
+          <!-- ADD YOUR REVIEW & BOOKMARK -->
+          <div class="col-4 d-flex align-items-center mobile-view-hide me-0">
+            <!-- Logged-in users -->
+            <div v-if="userType === 'user' && userID !== 'defaultUser'">
               <button
+                v-if="!inEdit"
                 class="btn primary-btn-less-round-blue btn-lg"
                 data-bs-toggle="modal"
                 data-bs-target="#reviewModal"
-                style="font-weight: bold"
+                style="font-weight: bold;"
               >
-                <!---<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 16">
-                                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
-                                </svg>-->
                 Add Your Review
               </button>
-            </div>
-            <div v-else class="d-grid gap-2">
-              <button class="btn primary-btn-less-round-blue btn-lg">
-                Review already added
+              <button
+                v-else
+                class="btn primary-btn-less-round-blue btn-lg"
+                style="font-weight: bold;"
+              >
+                Review Added!
               </button>
             </div>
-          </div>
-          <div
-            v-if="userID == 'defaultUser'"
-            class="col-5 padding-for-addyourreviewbutton-large-screen mobile-view-hide justify-content-end"
-          >
-            <div class="d-grid gap-2">
+
+            <!-- Logged-out users -->
+            <div v-else>
               <button
                 class="btn primary-btn-less-round-blue btn-lg"
                 @click="$router.push('/login')"
-                style="font-weight: bold"
+                style="font-weight: bold;"
               >
                 Add Your Review
               </button>
             </div>
+
+            <!-- Bookmark icon -->
+            <div class="d-flex align-items-center ms-2 mobile-view-hide">
+              <BookmarkIcon
+                :user="user"
+                :listing="specified_listing"
+                :overlay="false"
+                size="40"
+                @icon-clicked="handleIconClick"
+              />
+            </div>
           </div>
+
         </div>
+        
 
         <!-- popular flavorTag -->
         <div class="row pt-3 mobile-pt-2 container">
@@ -2341,23 +2311,20 @@
                     review.userVotes.downvotes.length
                   }}</span>
                   <div class="">
+                    <!-- Downvote -->
                     <svg
-                      v-if="
-                        !review.userVotes.downvotes.some(
-                          (vote) => parseInt(vote?.userId) === parseInt(userID)
-                        )
-                      "
+                      v-if="!hasDownvoted"
                       @click="voteReview(review, 'downvote')"
                       xmlns="http://www.w3.org/2000/svg"
                       width="20"
                       height="20"
                       fill="currentColor"
-                      class="bi bi-caret-down me-3"
+                      class="bi bi-caret-down"
+                      viewBox="0 0 16 16"
                     >
-                      <path
-                        d="M3.204 5h9.592L8 10.481zm-.753.659 4.796 5.48a1 1 0 0 0 1.506 0l4.796 5.48c.566-.647.106-1.659-.753-1.659H3.204a1 1 0 0 0-.753 1.659"
-                      />
+                      <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
                     </svg>
+
                     <svg
                       v-else
                       @click="voteReview(review, 'undownvote')"
@@ -2365,12 +2332,12 @@
                       width="20"
                       height="20"
                       fill="currentColor"
-                      class="bi bi-caret-down-fill me-3"
+                      class="bi bi-caret-down-fill"
+                      viewBox="0 0 16 16"
                     >
-                      <path
-                        d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"
-                      />
+                      <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
                     </svg>
+
                   </div>
                   <a
                     href="#"
@@ -2389,7 +2356,7 @@
                       data-bs-toggle="dropdown"
                       aria-expanded="false"
                     >
-                      <!-- Custom SVG: Three Dots Horizontal / ZHEHAN TO EDIT - right now throws up an error when a user who did not write a review tries to load the drink listing -->
+                      <!-- Custom SVG: Three Dots Horizontal / ZHEHAN TO EDIT - right now throws up an error when a user who did not write a review tries to load the drink listing-->
                       <svg width="20" height="20" viewBox="0 0 512 512" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="96" cy="256" r="48"></circle>
                         <circle cx="256" cy="256" r="48"></circle>

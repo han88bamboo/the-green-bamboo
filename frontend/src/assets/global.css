@@ -1011,6 +1011,11 @@ button.primary-square:hover {
   color: #d58d2d;
 }
 
+/* Scope only inside teal bookmark area for drink listing*/
+.teal-bookmark-icon svg {
+  fill: #ffffff !important;
+}
+
 .active-toggle-button {
   color: black !important; /* Active state text color - tzh changed 495264 to black */
   background-color: white !important; /* Active state background color */
