@@ -2374,7 +2374,7 @@
                   </div>
                   <a
                     href="#"
-                    class="text-decoration-underline text-secondary ms-3"
+                    class="text-decoration-underline text-secondary me-3"
                     data-bs-toggle="modal"
                     data-bs-target="#detailedReviewModal"
                     @click="updateDetailedReview(review)"
@@ -2382,7 +2382,48 @@
                     Detailed Review >
                   </a>
 
-                  <!-- Edit & Delete Buttons -->
+                  <div class="dropdown text-end">
+                    <button
+                      class="btn p-0 border-0 bg-transparent"
+                      type="button"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
+                    >
+                      <!-- Custom SVG: Three Dots Horizontal / ZHEHAN TO EDIT - right now throws up an error when a user who did not write a review tries to load the drink listing -->
+                      <svg width="20" height="20" viewBox="0 0 512 512" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="96" cy="256" r="48"></circle>
+                        <circle cx="256" cy="256" r="48"></circle>
+                        <circle cx="416" cy="256" r="48"></circle>
+                      </svg>
+                    </button>
+                  
+                    <ul class="dropdown-menu">
+                      <li v-if="review.userID === parseInt(userID) || correctModerator || user.isAdmin">
+                        <button
+                          class="dropdown-item"
+                          @click="setUpdateID(review)"
+                          data-bs-toggle="modal"
+                          data-bs-target="#reviewModal"
+                        >
+                          Edit
+                        </button>
+                      </li>
+                      <li v-if="review.userID === correctModerator || user.isAdmin">
+                        <button
+                          class="dropdown-item text-danger"
+                          @click="setDeleteID(review)"
+                          data-bs-toggle="modal"
+                          data-bs-target="#deleteReview"
+                        >
+                          Delete
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+                  
+
+<!-- kai has commented this out and replaced the buttons with a dropdown-->
+                  <!-- Edit & Delete Buttons
                     <button
                       v-if="review.userID === parseInt(userID) || correctModerator || user.isAdmin"
                       class="btn btn-warning me-1 py-1 mobile-fs-7"
@@ -2400,7 +2441,7 @@
                       data-bs-target="#deleteReview"
                       >
                       Delete
-                      </button>
+                      </button>-->
                 </div>
               </div>
 

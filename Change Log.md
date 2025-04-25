@@ -376,3 +376,13 @@ updated positioning of reviews in producer bottle listing page
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 25 April 
+
+Coder: Kai
+
+Purpose of the changes:
+added 3-dot dropwon feature for users to edit reviews - but buggy TZH to fix
+
+Nature of the changes (frontend / backend / database):
+frontend
