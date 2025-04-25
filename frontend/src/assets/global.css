@@ -1685,7 +1685,7 @@ button.primary-square:hover {
 
 @media (max-width: 991px) {
   .rounded-pill {
-    font-size: 12px;
+    font-size: 14px;
   }
 }
 

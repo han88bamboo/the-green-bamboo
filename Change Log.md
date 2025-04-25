@@ -365,3 +365,14 @@ updated data folder to include the right countries
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+
+# Update as of 25 April 
+
+Coder: Kai
+
+Purpose of the changes:
+updated positioning of reviews in producer bottle listing page
+
+Nature of the changes (frontend / backend / database):
+frontend

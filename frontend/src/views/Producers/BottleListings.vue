@@ -888,7 +888,7 @@
             <div class="row listing-details">
               <!-- category -->
               <div
-                class="col-6 col-lg-3 pe-1 text-start mobile-view-hide text-color-black"
+                class="col-6 col-lg-3 pe-1 ps-4 text-start mobile-view-hide text-color-black"
               >
                 <h5 class="text-body-secondary mb-1">
                   <b> {{ specified_listing["typeCategory"] }} </b>
@@ -2092,7 +2092,7 @@
           <h5 class="text-start" style="font-weight: bold; color: black">
             In Photos
           </h5>
-          <div class="row text-start" style="padding-left: 1.5em">
+          <div class="row text-start" style="padding-left: 0.75em">
             <div class="col">
               <div class="row justify-content-start align-items-start">
                 <!-- If user can add a review -->
@@ -2197,7 +2197,7 @@
           >
             <!-- user reviews -->
 
-            <div class="col-9 xcol-lg-8">
+            <div class="col-12 col-lg-9">
               <div class="row">
                 <div class="text-start mb-3">
                   <div class="row align-items-center">
@@ -2215,7 +2215,7 @@
                     </div>
 
                     <!-- Username and Rating -->
-                    <div class="col-10 pe-0 mobile-fs-7 mobile-ps-4">
+                    <div class="col-10 pe-0 mobile-fs-6 mobile-ps-4">
                       <router-link
                         :to="`/profile/user/${review.userID}`"
                         class="text-decoration-none text-dark"
@@ -2273,32 +2273,11 @@
                       </span>
                     </div>
 
-                    <!-- Edit & Delete Buttons -->
-                    <div class="mt-2">
-                      <button
-                        v-if="review.userID === parseInt(userID) || correctModerator || user.isAdmin"
-                        class="btn btn-warning me-1 py-1 mobile-fs-7"
-                        @click="setUpdateID(review)"
-                        data-bs-toggle="modal"
-                        data-bs-target="#reviewModal"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        v-if="review.userID === correctModerator || user.isAdmin"
-                        class="btn btn-danger py-1 mobile-fs-7"
-                        @click="setDeleteID(review)"
-                        data-bs-toggle="modal"
-                        data-bs-target="#deleteReview"
-                      >
-                        Delete
-                      </button>
-                    </div>
                   </div>
                 </div>
 
                 <!-- User's Review -->
-                <div class="text-start mb-3">
+                <div class="text-start mb-2">
                   {{ review["reviewDesc"] }}
                 </div>
 
@@ -2323,7 +2302,7 @@
                 </div>
 
                 <!-- Voting and Detailed Review -->
-                <div class="text-start" style="display: flex !important">
+                <div class="text-start mb-3" style="display: flex !important">
                   <div class="div">
                     <svg
                       v-if="
@@ -2402,6 +2381,26 @@
                   >
                     Detailed Review >
                   </a>
+
+                  <!-- Edit & Delete Buttons -->
+                    <button
+                      v-if="review.userID === parseInt(userID) || correctModerator || user.isAdmin"
+                      class="btn btn-warning me-1 py-1 mobile-fs-7"
+                      @click="setUpdateID(review)"
+                      data-bs-toggle="modal"
+                      data-bs-target="#reviewModal"
+                      >
+                      Edit
+                      </button>
+                      <button
+                      v-if="review.userID === correctModerator || user.isAdmin"
+                      class="btn btn-danger py-1 mobile-fs-7"
+                      @click="setDeleteID(review)"
+                      data-bs-toggle="modal"
+                      data-bs-target="#deleteReview"
+                      >
+                      Delete
+                      </button>
                 </div>
               </div>
 
@@ -2678,8 +2677,10 @@
               </div>
               <!-- modal end -->
             </div>
+
+
             <!-- review photo -->
-            <div class="col-2 xcol-lg-3 text-end mobile-view-hide">
+            <div class="col-3 xcol-lg-3 text-end mobile-view-hide">
               <!-- review photo -->
               <div
                 data-bs-toggle="modal"
@@ -2696,24 +2697,7 @@
                 />
               </div>
             </div>
-            <div class="col-3 xcol-lg-3 text-start mobile-view-show px-0">
-              <!-- review photo -->
-              <div
-                data-bs-toggle="modal"
-                :data-bs-target="`#reviewImageModal${getUsernameFromReview(
-                  review
-                )}`"
-                style="cursor: pointer"
-              >
-                <img
-                  :src="review['photo'] || defaultPhoto"
-                  alt=""
-                  class="review-image"
-                  style="width: 100%; height: 100%"
-                />
-                <!--for mobile tzh replaced 125px with 100% -->
-              </div>
-            </div>
+
 
             <div
               class="modal fade"
@@ -2737,8 +2721,27 @@
                 </div>
               </div>
             </div>
-
-            <hr class="mt-2 mb-2" />
+            <div class="row">
+            <div class="col-3 xcol-lg-3 text-start mobile-view-show">
+              <!-- review photo -->
+              <div
+                data-bs-toggle="modal"
+                :data-bs-target="`#reviewImageModal${getUsernameFromReview(
+                  review
+                )}`"
+                style="cursor: pointer"
+              >
+                <img
+                  :src="review['photo'] || defaultPhoto"
+                  alt=""
+                  class="review-image"
+                  style="width: 200%; height: 200%"
+                />
+                <!--for mobile kai replaced 100px with 90% -->
+              </div>
+            </div>
+            </div>
+            <hr class="mt-4 mb-2" />
           </div>
         </div>
         <!-- end of producer information -->
