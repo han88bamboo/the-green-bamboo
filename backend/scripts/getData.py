@@ -26,6 +26,7 @@ from bson import json_util, ObjectId
 from flask import Blueprint, g, jsonify, request
 from bson.objectid import ObjectId
 from psycopg2.extras import RealDictCursor # ADDED BY SMU GROUP 3
+from urllib.parse import unquote # ADDED BY SMU GROUP 3
 from decimal import Decimal
 
 file_name = os.path.basename(__file__)
