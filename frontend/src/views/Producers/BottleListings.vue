@@ -2100,7 +2100,7 @@
                     <img
                       :src="review['photo'] || defaultPhoto"
                       alt=""
-                      class="review-image shadow-effect"
+                      class="review-image"
                     />
                   </div>
                 </div>

@@ -621,12 +621,13 @@ body {
   top: 0;
   left: 0;
   box-shadow: rgba(0, 0, 0, 0.25) 0px 4px 8px;
+  transition: transform 0.4s ease, opacity 0.4s ease;
 }
 
 /* kai added hover effect for drink listings on venue/producer page*/
 .add-drink-photo-background:hover {
   opacity: 0.8; /* faded slightly when hovered */
-  transform: rotate(2deg);
+  transform: scale(1.05);
 }
 
 
@@ -1715,6 +1716,12 @@ button.primary-square:hover {
   box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.4);
   border-radius: 4px;
 }
+
+.review-image:hover {
+  opacity: 0.8; /* faded slightly when hovered */
+  transform: rotate(2deg);
+}
+
 @media (max-width: 991px) {
   .review-image {
     width: 100%;
