@@ -397,3 +397,13 @@ added mobile only row of buttons like add review, bookmark, and extended info
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 25 April 
+
+Coder: Kai 
+Purpose of changes: 
+1. neatened up the spacing of the venue desc and attributes, and the review venue and follow venue buttons (mobile + desktop)
+2. adjusted the global css for the display of the venue profile images and also the display of the drink listings rows for producer + venue profile pages (added hover effects, changed sizing etc)
+
+Nature of the changes (frontebd/backend / database):
+front end

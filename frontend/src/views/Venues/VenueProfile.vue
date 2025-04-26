@@ -39,7 +39,8 @@
             <!-- ------- START Venue Information ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
             <!-- Venue Information -->
-            <div class="col-xl-9 col-12 no-margin p-lg-0">
+            <div class="col-xl-9 col-12 px-3 px-lg-4">
+
 
                 <!-- ------- START Header ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
@@ -77,9 +78,9 @@
                     <!-- ------- END Image / START Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
                     <!-- Details -->
-                    <div class="col-lg-9 col-12 container text-start padding-for-followthisbusinessbutton-large-screen mobile-col-7 mobile-ps-0 mobile-pe-0">
-                        <div class="container text-start pe-lg-0">
-                            <div class="row">
+                    <div class="col-lg-9 col-12 text-start ps-lg-5 ps-1 mobile-col-7">
+                        <div class="row">
+                      
 
                                 <!-- Country -->
                                 <div class="col-8 pe-0 ps-0">
@@ -93,7 +94,7 @@
                                     <!-- [else] not editing -->
                                     <div v-else>
                                         <h5 class="text-body-secondary mobile-view-hide">{{ targetVenue['originLocation'] }}</h5>
-                                        <h6 class="text-body-secondary mobile-view-show mb-0">{{ targetVenue['originLocation'] }}</h6>
+                                        <h6 class="text-body-secondary mobile-view-show mb-1">{{ targetVenue['originLocation'] }}</h6>
                                     </div>
                                 </div>
 
@@ -227,7 +228,7 @@
                                     <!-- [else] not editing -->
                                     <div v-else class="ps-0 pe-0">
                                         <h3  class="text-body-secondary mobile-view-hide"> <b> {{ targetVenue["venueName"] }} </b> </h3>
-                                        <h4  class="text-body-secondary mobile-view-show pe-0 ps-0 mb-0"> <b> {{ targetVenue["venueName"] }} </b> </h4>
+                                        <h4  class="text-body-secondary mobile-view-show pe-0 ps-0 mb-1"> <b> {{ targetVenue["venueName"] }} </b> </h4>
                                     </div>
                                 <!--</div>-->
                             </div>
@@ -260,68 +261,113 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- Additional Fields -->
-                            <div v-if="editProfile" class="row" style="margin-left: -1.4rem;">
-                                <div class="col-6">
-                                    <label for="yearOpenedInput">Year Opened</label>
-                                    <input type="number" class="form-control mb-3" id="yearOpenedInput" v-model="editYearOpened">
-                                </div>
-                                <div class="col-6">
-                                    <label for="websiteInput">Website</label>
-                                    <input type="url" class="form-control mb-3" id="websiteInput" v-model="editWebsite">
-                                </div>
-                                <div class="col-12 d-flex align-items-center">
-                                    <label class="me-3 mb-0">Open for Reservations:</label>
-                                    <input type="checkbox" id="openForReservationsCheckbox" v-model="editOpenForReservations" :true-value="true" :false-value="false">
-                                    <label for="openForReservationsCheckbox" class="ms-2">{{ editOpenForReservations === true ? 'Yes' : 'No' }}</label>
-                                </div>
-                            </div>
-                            <div v-else class="row" style="margin-top: 4.5rem; margin-left: -1.4rem;">
-                                <div class="col-12">
-                                    <p class="text-body-secondary fs-6 mb-0">
-                                        <span v-if="targetVenue.yearOpened">
-                                            <strong>Year Opened:</strong> {{ targetVenue.yearOpened }}
-                                        </span>
-                                        <span v-if="targetVenue.yearOpened && (targetVenue.openForReservations || targetVenue.website)"> | </span>
-                                        <span v-if="targetVenue.openForReservations">
-                                            <strong>Open for Reservations:</strong> {{ targetVenue.openForReservations === true ? 'Yes' : 'No' }}
-                                        </span>
-                                        <span v-if="targetVenue.openForReservations && targetVenue.website"> | </span>
-                                        <span v-if="targetVenue.website">
-                                            <strong>Website:&nbsp;</strong>{{ targetVenue.website }}
-                                        </span>
-                                    </p>
-                                </div>
-                            </div>
+
+
                         </div>
                         <!-- ------- END Description ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
-
-                    </div>
-
-                    <!-- ------- END Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
-
+                    
                 </div>
+
+                <!-- Edit Mode: Inputs for Year, Website, Reservations -->
+                <div v-if="editProfile" class="row mb-3">
+                    <div class="col-6">
+                    <label for="yearOpenedInput">Year Opened</label>
+                    <input
+                        type="number"
+                        class="form-control mb-3"
+                        id="yearOpenedInput"
+                        v-model="editYearOpened"
+                    />
+                    </div>
+                    <div class="col-6">
+                    <label for="websiteInput">Website</label>
+                    <input
+                        type="url"
+                        class="form-control mb-3"
+                        id="websiteInput"
+                        v-model="editWebsite"
+                    />
+                    </div>
+                    <div class="col-12 d-flex align-items-center">
+                    <label class="me-3 mb-0">Open for Reservations:</label>
+                    <input
+                        type="checkbox"
+                        id="openForReservationsCheckbox"
+                        v-model="editOpenForReservations"
+                        :true-value="true"
+                        :false-value="false"
+                    />
+                    <label for="openForReservationsCheckbox" class="ms-2">
+                        {{ editOpenForReservations === true ? 'Yes' : 'No' }}
+                    </label>
+                    </div>
+                </div>
+                
+                <!-- View Mode: Venue Info + Buttons -->
+                <div v-else class="row mt-4 mobile-mt-1 text-start">
+                    <!-- Venue Info -->
+                    <div class="col-7 mobile-col-12 mobile-mb-2">
+                    <p class="text-body-secondary mobile-rating-smaller-text-2 fs-6 mb-0">
+                        <span v-if="targetVenue.yearOpened">
+                        <strong>Year Opened:</strong> {{ targetVenue.yearOpened }}
+                        </span>
+                        <span v-if="targetVenue.yearOpened && (targetVenue.openForReservations || targetVenue.website)"> | </span>
+                        <span v-if="targetVenue.openForReservations">
+                        <strong>Open for Reservations:</strong> {{ targetVenue.openForReservations === true ? 'Yes' : 'No' }}
+                        </span>
+                        <span v-if="targetVenue.openForReservations && targetVenue.website"> | </span>
+                        <span v-if="targetVenue.website">
+                        <strong>Website:</strong> {{ targetVenue.website }}
+                        </span>
+                    </p>
+                    </div>
+                
+                    <!-- Right Side: Follow and Review Buttons in 1 Column -->
+                    <div class="col-5 d-flex flex-column flex-lg-row justify-content-start justify-content-lg-end align-items-start align-items-lg-center gap-2">
+                    <div class="d-flex gap-2">
+                        <!-- Follow Button -->
+                        <button
+                        v-if="viewerType === 'user' && !userFollowing"
+                        class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2 "
+                        @click="editFollow('follow')"
+                        style="font-weight: bold;">
+                        + Follow
+                        </button>
+                        <button
+                        v-else-if="viewerType === 'user' && userFollowing"
+                        class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2 "
+                        @click="editFollow('unfollow')"
+                        style="font-weight: bold; background-color: rgb(249, 115, 106)">
+                        Following
+                        </button>
+                
+                        <!-- Review Button -->
+                        <button
+                        v-if="userType == 'user' && userID !== 'defaultUser' && !inEdit"
+                        class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2 "
+                        data-bs-toggle="modal"
+                        data-bs-target="#venueReviewModal"
+                        style="font-weight: bold;">
+                        Review Venue
+                        </button>
+                        <button
+                        v-else-if="userType == 'user' && userID !== 'defaultUser' && inEdit"
+                        class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2 "
+                        style="font-weight: bold; background-color: rgb(249, 115, 106)">
+                        Venue Reviewed
+                        </button>
+                    </div>
+                    </div>
+                </div>
+  
+                
+                
+                
+                <!--------- END Follow Venue Button ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+                <!-- ------- END Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
                 <!-- ------- END Header  ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
-
-                <!-- Follow Venue button -->
-                <div class="row mt-3 mobile-mt-1">
-                    <div class="col-8 d-flex justify-content-start mobile-col-7 mobile-pe-0">
-                     <!--empty space-->
-                    </div>
-                    <!-- Follow Venue -->
-                    <div v-if="viewerType == 'user'" class="col-4 no-d-flex justify-content-end mobile-col-5 padding-for-followthisbusinessbutton-large-screen">
-                        <div v-if="!userFollowing" class="d-grid gap-2">
-                            <button  class="btn btn-lg primary-btn-less-round-blue mx-1 mobile-view-show fs-6" @click="editFollow('follow')" style="font-weight: bold;" >+ Follow</button>  <!--tzh added -blue-->
-                            <button  class="btn btn-lg primary-btn-less-round-blue mx-1 mobile-view-hide" @click="editFollow('follow')" style="font-weight: bold;" >+ Follow Venue</button> <!--tzh added -blue-->
-                        </div>
-                        <div v-else class="d-grid gap-2">
-                            <button class="btn btn-lg primary-btn-less-round-blue mx-1" @click="editFollow('unfollow')" style="font-weight: bold;" >Following</button> <!--tzh changed primary-btn-outline-less-round to primary-btn-less-round-blue -->
-                        </div>    
-                    </div>
-                </div>
-                <!--------- END Follow Venue Button ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
-
+               
                 <!-- START Content Buttons (Bar Overview / Bar Menu / Venue Reviews / Review a venue button) -->
                 <div class="row mt-3 mobile-mt-1">
                     <div class="col-8 d-flex justify-content-start mobile-col-7 mobile-pe-0">
@@ -347,25 +393,7 @@
                         Venue Reviews
                         </button>
                     </div>
-                    <!-- review a venue button -->
-                    <div 
-                    v-if="userType == 'user' && userID !== 'defaultUser'" 
-                    class="col-4 no-d-flex justify-content-end mobile-col-5 padding-for-followthisbusinessbutton-large-screen">
-                    <div class="d-grid gap-2"> 
-                        <button v-if="!inEdit" 
-                            class="btn btn-lg primary-btn-less-round-blue mx-1" 
-                            data-bs-toggle="modal" 
-                            data-bs-target="#venueReviewModal" 
-                            style="font-weight: bold;" >
-                            Review this Venue
-                        </button>  <!--tzh added -blue-->
-                        <button v-else 
-                            class="btn btn-lg primary-btn-less-round-blue mx-1 " 
-                            >
-                            Venue Reviewed
-                        </button> <!--tzh added -blue-->
-                    </div>     
-                    </div>
+
                 </div>
                 <!-- End Content Buttons (Bar Overview / Bar Menu / Venue Reviews / review a venue button START Bar Overview -->
                 <hr>
