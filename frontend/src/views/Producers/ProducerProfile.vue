@@ -479,6 +479,35 @@
             </div>
           </div>
         </div>
+        <!-- review this business below -->
+        <div class="row mt-3 mobile-mt-1">
+          <!-- empty space -->
+          <div class="col-7 d-flex justify-content-start mobile-pe-0">
+            
+          </div>
+          <!-- review this business button -->
+          <div
+            class="col-5 justify-content-end padding-for-followthisbusinessbutton-large-screen"
+            v-if="userType == 'user' && userID !== 'defaultUser'"
+          >
+          <div class="d-grid gap-2">
+          <button v-if="!inEdit"
+            class="btn primary-btn-less-round-blue btn-lg" 
+            data-bs-toggle="modal" 
+            data-bs-target="#reviewModal" 
+            style="font-weight: bold;"
+          > 
+            Review this Business
+          </button>  
+          <button v-else
+            class="btn primary-btn-less-round-blue btn-lg" 
+          > 
+            Business Reviewed
+          </button> 
+          </div> 
+          </div>
+        </div>   
+        <!--review this business above-->     
         <div class="row mt-3 mobile-mt-1">
           <div class="col-7 d-flex justify-content-start mobile-pe-0">
             <!-- toggle latest updates-->
@@ -2086,7 +2115,7 @@
                     class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0"
                   >
                     <router-link
-                      :to="{ path: '/listing/view/' + listing.id }"
+                      :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}"
                       class="default-text-no-background"
                     >
                       <!-- <img :src=" 'data:image/jpeg;base64,' + (listing['photo'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" > -->
@@ -2194,7 +2223,7 @@
                             style="margin-bottom: 0.3rem"
                           >
                             <router-link
-                              :to="{ path: '/listing/view/' + listing.id }"
+                              :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}"
                               class="default-text-no-background"
                             >
                               <u>
@@ -2305,7 +2334,7 @@
                       <div class="row">
                         <div class="col-4 mobile-view-hide">
                           <router-link
-                            :to="{ path: '/listing/view/' + listing.id }"
+                            :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}"
                           >
                             <button
                               type="button"
@@ -2388,7 +2417,7 @@
                     class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0"
                   >
                     <router-link
-                      :to="{ path: '/listing/view/' + listing.id }"
+                      :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}"
                       class="default-text-no-background"
                     >
                       <!-- <img :src=" 'data:image/jpeg;base64,' + (listing['photo'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" > -->
@@ -2502,8 +2531,8 @@
                             style="margin-bottom: 0.3rem"
                           >
                             <router-link
-                              :to="{ path: '/listing/view/' + listing.id }"
-                              class="default-text-no-background"
+                              :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}"
+                              class="default-text-no-background" 
                             >
                               <u>
                                 <b> {{ listing["listingName"] }} </b>
@@ -2613,7 +2642,7 @@
                       <div class="row">
                         <div class="col-4 mobile-view-hide">
                           <router-link
-                            :to="{ path: '/listing/view/' + listing.id }"
+                            :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}"
                           >
                             <button
                               type="button"
@@ -4317,6 +4346,13 @@ export default {
     await this.loadData();
   },
   methods: {
+    slugify(text) {
+                return text
+                    .toString()
+                    .toLowerCase()
+                    .replace(/\s+/g, '')
+                    .replace(/[^\w]/g, '');
+            },
     // load data from database
     async loadData() {
       // Get the query string parameters (listing ID) from the URL

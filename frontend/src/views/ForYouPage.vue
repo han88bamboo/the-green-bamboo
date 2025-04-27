@@ -129,7 +129,7 @@
                                                             style="width: 70px; height: 70px;">
                                                     </router-link>
                                                     <span class="ms-3 reverse-clickable-text">
-                                                        <router-link :to="{ path: '/listing/view/' + listing.id }"
+                                                        <router-link :to="{ path: '/listing/view/' + listing.id + '/' + listing.listingName.replace(/[^a-zA-Z0-9]/g, '')}"
                                                             class="reverse-clickable-text">
                                                             <b> {{ listing.listingName }} </b>
                                                         </router-link>
@@ -563,7 +563,7 @@
                                                         :overlay="true" size="30" @icon-clicked="handleIconClick" />
                                                 </div>
                                                 <router-link :to="'/listing/view/' +
-                                                    listing.id
+                                                    listing.id + '/' + listing.listingName.replace(/[^a-zA-Z0-9]/g, '')
                                                     ">
                                                     <button type="button" class="btn btn-primary">
                                                         Read more
@@ -574,7 +574,7 @@
                                     </div>
                                 </div>
                                 <div class="d-grid justify-content-center align-content-center pt-3">
-                                    <button v-if="moreListings" class="btn secondary-btn btn-md"
+                                    <button v-if="moreListings && listings.length > 0" class="btn secondary-btn btn-md"
                                         style="font-weight: bold" @click="retrieveListings">
                                         Click to load more!
                                     </button>
@@ -582,6 +582,19 @@
                             </div> <!-- end of listings -->
                             <!-- [else] clubs clicked -->
                             <div v-else-if="following || discovery == false" class="mobile-ps-0 mobile-pe-0">
+                                <!-- Added by SMU GROUP 3 to handle the error (no preferences in DB) -->
+                                <!-- Displays Message if there are no listing available  -->
+                                <h5 v-if="!recommendedClubs || recommendedClubs.length === 0"
+                                    style="display: inline-block;" class="pt-5 text-muted">
+                                    <div>Sorry, we don't have enough info to recommend clubs.</div>
+                                    <div>Head to your profile to update your preferences!</div>
+                                </h5>
+                                <div v-if="!recommendedClubs || recommendedClubs.length === 0"
+                                    class="pt-3">
+                                    <button class="btn secondary-btn btn-md ms-2 fw-bold" @click="goToProfile">
+                                        Update Preferences
+                                    </button>
+                                </div>
                                 <div class="recommendations">
                                     <div v-for="club in recommendedClubs" :key="club.id" class="drink-card">
                                             <!-- image -->
@@ -1707,7 +1720,7 @@ export default {
         goToProfile() {
             this.$router.push({
                 name: "profileuser",
-                params: { userID: this.user.id } // Ensure `this.user.id` is available
+                params: { userID: this.userID, username: this.username} // Added By SMU GROUP 3 --> username 
             });
         }
 

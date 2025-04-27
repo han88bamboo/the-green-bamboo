@@ -12,6 +12,10 @@ module.exports = {
           '^/api': 'https://88bamboo.co'
         }
       }
-    }
+    },
+    client: {
+      overlay: false,
+      reconnect: true
+    },
   }
 }

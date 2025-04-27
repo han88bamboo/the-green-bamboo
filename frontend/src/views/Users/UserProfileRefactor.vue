@@ -3619,11 +3619,13 @@ export default {
         Object.keys(this.categoryBadges).length + this.otherBadges.length;
     },
 
-       // ------------------- Switch Tabs  between Reviews and Drink Lists -------------------
-       switchTab(tab) {
-           this.activeTab = tab;
-          //  this.$router.push('/profile/user/' + this.displayUserID);
-       },
+    // ------------------- Switch Tabs  between Reviews and Drink Lists -------------------
+    switchTab(tab) {
+      this.activeTab = tab;
+      this.$router.push(
+        "/profile/user/" + this.displayUserID + "/" + this.displayUser.username
+      );
+    },
 
     // ------------------- Reviews -------------------
     // get listing name from listing ID
@@ -3681,11 +3683,22 @@ export default {
     viewList(name) {
       if (name == "lists") {
         this.activeTab = "lists";
-        this.$router.push("/profile/user/" + this.displayUserID);
+        this.$router.push(
+          "/profile/user/" +
+            this.displayUserID +
+            "/" +
+            this.displayUser.username
+        );
       } else {
         this.activeTab = "list";
         this.currentList = name;
-        this.$router.push("/profile/user/" + this.displayUserID + "/" + name);
+        this.$router.push(
+          "/profile/user/" +
+            this.displayUserID +
+            "/" +
+            this.displayUser.username +
+            name
+        );
 
         if (this.ownProfile) {
           this.removeExistingListingInList();
@@ -3910,39 +3923,39 @@ export default {
     },
 
     copyToClipboard(text) {
-           navigator.clipboard.writeText(text)
-           .then(() => {
-               this.clipboardItem = true;
-               setTimeout(() => {
-                   this.clipboardItem = false;
-               }, 3000);
-           })
-           .catch(err => {
-               console.error('Failed to copy text: ', err);
-           });
+      navigator.clipboard.writeText(text)
+      .then(() => {
+          this.clipboardItem = true;
+          setTimeout(() => {
+              this.clipboardItem = false;
+          }, 3000);
+      })
+      .catch(err => {
+          console.error('Failed to copy text: ', err);
+      });
     },
 
     // ------------------ Add Friend Functions ------------------
-        shareOnFacebook() {
-        const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://www.drink-x.com')}&quote=${encodeURIComponent('Come join me on Drink-X!')}`;
-        window.open(url, '_blank', 'width=600,height=400');
-        },
+    shareOnFacebook() {
+      const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://www.drink-x.com')}&quote=${encodeURIComponent('Come join me on Drink-X!')}`;
+      window.open(url, '_blank', 'width=600,height=400');
+      },
 
-        shareViaEmail() {
-        const subject = 'Join me on Drink-X!';
-        const body = 'Come join me on Drink-X! https://www.drink-x.com';
-        window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-        },
+    shareViaEmail() {
+      const subject = 'Join me on Drink-X!';
+      const body = 'Come join me on Drink-X! https://www.drink-x.com';
+      window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    },
 
-        shareOnTelegram() {
-        const text = 'Come join me on Drink-X!';
-        window.open(`https://t.me/share/url?url=${encodeURIComponent('https://www.drink-x.com')}&text=${encodeURIComponent(text)}`, '_blank');
-        },
+    shareOnTelegram() {
+      const text = 'Come join me on Drink-X!';
+      window.open(`https://t.me/share/url?url=${encodeURIComponent('https://www.drink-x.com')}&text=${encodeURIComponent(text)}`, '_blank');
+    },
 
-        shareOnWhatsApp() {
-        const text = 'Come join me on Drink-X! https://www.drink-x.com';
-        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-        },
-   }
+    shareOnWhatsApp() {
+      const text = 'Come join me on Drink-X! https://www.drink-x.com';
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    },
+  },
 };
 </script>

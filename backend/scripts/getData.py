@@ -2,7 +2,7 @@
 # Routes: /getAccountRequests (GET), /getCountries (GET), /getListings (GET), /getListingsByIDs (POST), /getListing/<id> (GET), /getProducers (GET), /getProducer/<id> (GET),
 #           /getRecentListingReviews/<id> (GET), /getAllListingsNames (GET), /getBookmarkListings (POST), /getUserReviewSummary/<id> (GET),
 #           /getReviews (GET), /getReviewByTarget/<id> (GET), /getReviewsByUserIds (GET), /getProducerTourReviews (GET), /getUsers (GET), /getUser/<id> (GET), 
-#           /getUserPhoto/<id>/<userType> (GET), /getUserByUsername/<username> (GET), /getVenues (GET), 
+#           /getUserPhoto/<id>/<userType> (GET), /getUserByUsername/<username> (GET), /getVenues (GET), /getImageSearchResults (POST)
 #           /getVenue/<id> (GET), /getVenuesAPI (GET), /getDrinkTypes (GET), /getRequestListings (GET), /getRequestListing/<id> (GET), /getRequestEdits (GET), 
 #           /getRequestEdit/<id> (GET), /getModRequests (GET), /getFlavourTags (GET), /getSubTags (GET), /getObservationTags (GET), /getColours (GET), 
 #           /getSpecialColours (GET), /getLanguages (GET), /getServingTypes (GET), /getProducersProfileViews (GET), /getVenuesProfileViewsByVenue/<id> (GET), /getRequestInaccuracyByVenue/<id> (GET)
@@ -29,6 +29,7 @@ from bson.objectid import ObjectId
 from psycopg2.extras import RealDictCursor # ADDED BY SMU GROUP 3
 from urllib.parse import unquote # ADDED BY SMU GROUP 3
 
+from decimal import Decimal
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -957,66 +958,144 @@ def getReviewByTarget(id):
 
 
 # [GET] Latest 10 Specific Reviews by usr(s) - using one or more user IDs (retrieve latest reviews for the specified user(s) as well as the review target(s) data)
+# @blueprint.route("/getReviewsByUserIds")
+# def getReviewsByUserIds():
+
+#     user_ids_str = request.args.get('user_ids')
+#     user_ids = user_ids_str.split(',')
+#     conn = g.db
+    
+#     with conn.cursor() as cursor:
+#         # Fetch latest reviews for the specified user(s)
+        
+#         cursor.execute('''
+#             WITH latest_reviews AS (
+#                 SELECT "reviewDesc", "rating", "reviewTarget", "createdDate", "userID"
+#                 FROM "reviews"
+#                 WHERE "userID" IN %s
+#                 ORDER BY "createdDate" DESC
+#                 LIMIT 10
+#             )
+#             SELECT "reviewDesc", "rating", "reviewTarget", "createdDate", "userID"
+#             FROM latest_reviews
+#             ORDER BY "createdDate" DESC;
+#         ''', (tuple(user_ids),))
+#         latest_reviews = cursor.fetchall()
+
+#         # Retrieve the display name(s) for each user
+#         cursor.execute('SELECT "id", "displayName", "photo" FROM "users" WHERE "id" IN %s', (tuple(user_ids),))
+#         user_display_names = cursor.fetchall()
+
+#         # Convert the user display names to dictionary format where the key is the user ID
+#         user_display_names = {user['id']: user for user in user_display_names}
+
+#         # Retrieve the review target(s) for each review
+#         review_target_list = []
+#         for review in latest_reviews:
+#             review = dict(review)
+#             if (review['reviewTarget'] not in review_target_list):
+#                 review_target_list.append(review['reviewTarget'])
+        
+#         # Fetch the review target(s) data
+#         cursor.execute('SELECT "id", "listingName", "photo" FROM "listings" WHERE "id" IN %s', (tuple(review_target_list),))
+#         review_targets_data = cursor.fetchall()
+
+#         # Map the review target data to the reviews
+#         for review in latest_reviews:
+#             review['userInfo'] = user_display_names[review['userID']]
+#             review['reviewTarget'] = next((item for item in review_targets_data if item["id"] == review['reviewTarget']), None)
+        
+#         # Convert the reviews to JSON format
+#         latest_reviews = parse_json(latest_reviews)
+    
+#     if not latest_reviews:
+#         return jsonify({
+#             'code': 404,
+#             'message': 'No reviews found for the specified user(s).'
+#         })
+
+#     return jsonify({
+#         'code': 200,
+#         'message': 'Latest reviews fetched successfully.',
+#         'data': latest_reviews
+#     })
+
+# Updated blueprint route
 @blueprint.route("/getReviewsByUserIds")
 def getReviewsByUserIds():
-
     user_ids_str = request.args.get('user_ids')
+    if not user_ids_str:
+        return jsonify({
+            'code': 400,
+            'message': 'Missing user_ids query parameter.'
+        })
+
     user_ids = user_ids_str.split(',')
+    user_ids = [int(uid) for uid in user_ids]  # Ensure integers
     conn = g.db
-    
+
     with conn.cursor() as cursor:
-        # Fetch latest reviews for the specified user(s)
-        cursor.execute('''
+        # Build dynamic placeholders for user_ids
+        placeholders = ','.join(['%s'] * len(user_ids))
+
+        # --- Fetch latest reviews ---
+        cursor.execute(f'''
             WITH latest_reviews AS (
                 SELECT "reviewDesc", "rating", "reviewTarget", "createdDate", "userID"
                 FROM "reviews"
-                WHERE "userID" IN %s
+                WHERE "userID" IN ({placeholders})
                 ORDER BY "createdDate" DESC
                 LIMIT 10
             )
             SELECT "reviewDesc", "rating", "reviewTarget", "createdDate", "userID"
             FROM latest_reviews
             ORDER BY "createdDate" DESC;
-        ''', (tuple(user_ids),))
+        ''', tuple(user_ids))
         latest_reviews = cursor.fetchall()
 
-        # Retrieve the display name(s) for each user
-        cursor.execute('SELECT "id", "displayName", "photo" FROM "users" WHERE "id" IN %s', (tuple(user_ids),))
-        user_display_names = cursor.fetchall()
+        if not latest_reviews:
+            return jsonify({
+                'code': 404,
+                'message': 'No reviews found for the specified user(s).'
+            })
 
-        # Convert the user display names to dictionary format where the key is the user ID
-        user_display_names = {user['id']: user for user in user_display_names}
+        # Convert to dicts early
+        latest_reviews = [dict(r) for r in latest_reviews]
 
-        # Retrieve the review target(s) for each review
-        review_target_list = []
-        for review in latest_reviews:
-            review = dict(review)
-            if (review['reviewTarget'] not in review_target_list):
-                review_target_list.append(review['reviewTarget'])
-        
-        # Fetch the review target(s) data
-        cursor.execute('SELECT "id", "listingName", "photo" FROM "listings" WHERE "id" IN %s', (tuple(review_target_list),))
-        review_targets_data = cursor.fetchall()
+        # --- Fetch user display info ---
+        cursor.execute(f'''
+            SELECT "id", "displayName", "photo"
+            FROM "users"
+            WHERE "id" IN ({placeholders})
+        ''', tuple(user_ids))
+        user_display_names = {u['id']: dict(u) for u in cursor.fetchall()}
 
-        # Map the review target data to the reviews
-        for review in latest_reviews:
-            review['userInfo'] = user_display_names[review['userID']]
-            review['reviewTarget'] = next((item for item in review_targets_data if item["id"] == review['reviewTarget']), None)
-        
-        # Convert the reviews to JSON format
-        latest_reviews = parse_json(latest_reviews)
-    
-    if not latest_reviews:
+        # --- Prepare listing IDs from reviewTarget ---
+        review_target_ids = list(set([r['reviewTarget'] for r in latest_reviews]))
+        if review_target_ids:
+            target_placeholders = ','.join(['%s'] * len(review_target_ids))
+            cursor.execute(f'''
+                SELECT "id", "listingName", "photo"
+                FROM "listings"
+                WHERE "id" IN ({target_placeholders})
+            ''', tuple(review_target_ids))
+            review_targets_data = {l['id']: dict(l) for l in cursor.fetchall()}
+        else:
+            review_targets_data = {}
+
+        # --- Enrich reviews with user and listing info ---
+        for r in latest_reviews:
+            r['userInfo'] = user_display_names.get(r['userID'], {})
+            r['reviewTarget'] = review_targets_data.get(r['reviewTarget'], {})
+            for k, v in r.items():
+                if isinstance(v, Decimal):
+                    r[k] = float(v)
+
         return jsonify({
-            'code': 404,
-            'message': 'No reviews found for the specified user(s).'
+            'code': 200,
+            'message': 'Latest reviews fetched successfully.',
+            'data': parse_json(latest_reviews)
         })
-
-    return jsonify({
-        'code': 200,
-        'message': 'Latest reviews fetched successfully.',
-        'data': latest_reviews
-    })
 
 # [GET] Producer Tour Reviews
 @blueprint.route("/getProducerTourReviews")
@@ -1044,6 +1123,34 @@ def getTourReviews():
             del review["downvotes"]
 
         return jsonify(reviews_data)
+
+# [GET] Venue Reviews
+@blueprint.route("/getVenueReviews")
+def getVenueReviews():
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        cursor.execute("""
+            SELECT "venueReviews".*, "venueReviewsUserVotes"."upvotes", "venueReviewsUserVotes"."downvotes"
+            FROM "venueReviews"
+            LEFT JOIN "venueReviewsUserVotes" ON "venueReviews"."id" = "venueReviewsUserVotes"."reviewId"
+        """)
+
+        reviews_data = cursor.fetchall()
+
+        if not reviews_data:
+            return jsonify([])
+        
+        for review in reviews_data:
+            review["userVotes"] = {
+                "upvotes": review["upvotes"] if review["upvotes"] else [],
+                "downvotes": review["downvotes"] if review["downvotes"] else []
+            }
+            del review["upvotes"]
+            del review["downvotes"]
+
+        return jsonify(reviews_data)
+
 # ----------------------
 # [NEW] TO BE ADDED:
 # ----------------------
@@ -2773,7 +2880,7 @@ def getRandomListings():
 # -----------------------------------------------------------------------------------------
 # [GET] Get Listings from reverse image search -- ADDED BY SMU GROUP 3
 @blueprint.route("/getImageSearchResults", methods=["POST"])
-def get_listings_by_logo():
+def getImageSearchResults():
     data = request.json
     detected_logo = data.get("logo")
     detected_labels = data.get("labels", [])  
@@ -2917,12 +3024,16 @@ def get_listings_by_logo():
         for listing_id, listing_dict in scored_listings.items():
             print(f"🏆 Listing {listing_id}: {listing_dict['score']} points")
 
-    if not scored_listings:
-        return jsonify({"error": "No matching listings found"}), 404
 
-    sorted_listings = sorted(scored_listings.values(), key=lambda x: x["score"], reverse=True)
+    filtered_listings = [listing for listing in scored_listings.values() if listing["score"] > 0]
+
+    if not filtered_listings:
+        return jsonify({"error": "No listings with a positive score found"}), 404
+
+    # Sort and return top 30
+    sorted_listings = sorted(filtered_listings, key=lambda x: x["score"], reverse=True)
     top_30_listings = sorted_listings[:30]
-    
+    print (top_30_listings)
     return jsonify(top_30_listings), 200
 # -----------------------------------------------------------------------------------------
 # [GET] Get Recommended Clubs -- ADDED BY SMU GROUP 3
@@ -2941,8 +3052,8 @@ def get_recommended_clubs(userID):
         
         print("choiceDrinks:", choiceDrinks)  # Debug
         
-        if not choiceDrinks:
-            return jsonify({"message": "No drink preferences found"}), 200
+        # if not choiceDrinks:
+        #     return jsonify({"message": "No drink preferences found"}), 200
 
         # Process drink variations (handle slashes, parentheses)
         expanded_drinks = []
@@ -3037,16 +3148,16 @@ def basic_algo(userID):
 
         # Get listings with the same flavour tags
         if choiceFlavour:
-            cursor.execute('''SELECT s."id" FROM "subTags" s, "flavourTags" ft 
+            cursor.execute('''SELECT s."subTag" FROM "subTags" s, "flavourTags" ft 
                            WHERE s."familyTagId" = ft."id" AND ft."familyTag" = ANY(%s)''', (choiceFlavour,))
-            flavour_ids = [row["id"] for row in cursor.fetchall()]
+            flavour_ids = [row["subTag"] for row in cursor.fetchall()]
+            print(flavour_ids)
 
             if flavour_ids:
                 flavour_query = '''
                     SELECT DISTINCT l.*
                     FROM "listings" l
-                    JOIN "reviews" r ON l."id" = r."reviewTarget"
-                    WHERE r."flavourTag" && %s::text[]
+                    WHERE l."googleFlavourTags" && %s::text[]
                 '''
                 cursor.execute(flavour_query, (flavour_ids,))
                 flavour_listings = cursor.fetchall()
@@ -3109,43 +3220,65 @@ def advanced_algo_reviews(userID):
         user_reviews_tags = cursor.fetchall()
         if not user_reviews_tags:
             return jsonify([])
+
         tags_used = {}
         associations_dict = association_rules()
+        
+        # Count how many times each tag appears in the user's reviews
         for tag in user_reviews_tags:
             for num in tag["flavourTag"]:
                 if num not in tags_used:
                     tags_used[num] = 1
                 else:
                     tags_used[num] += 1
+        
+        # Get the top 5 most frequent tags
         top_tags = sorted(tags_used, key=tags_used.get, reverse=True)[:5]
         print(top_tags)
+
+        # Get associated tags based on top tags
         close_tags = []
         for tag in top_tags:
             if int(tag) in associations_dict:
                 close_tags += associations_dict[int(tag)]
+
+        # Ensure unique tags and convert to tuple for IN query
         close_tags = list(set(close_tags))
         print(close_tags)
-        recommended = {}
-        flavour_query = '''
-            SELECT DISTINCT l.*
-            FROM "listings" l
-            JOIN "reviews" r ON l."id" = r."reviewTarget"
-            WHERE r."flavourTag" && %s::text[]
+
+        # Query to fetch subTags based on associated tag IDs
+        get_tags_names = '''
+            SELECT "subTag" FROM "subTags" WHERE "id" = ANY(%s)
         '''
-        cursor.execute(flavour_query, (close_tags,))
+        cursor.execute(get_tags_names, (close_tags,))
+        tag_names = cursor.fetchall()
+
+        # Query to fetch listings that match the tags
+        flavour_query = '''
+            SELECT DISTINCT l.* 
+            FROM "listings" l
+            WHERE l."googleFlavourTags" && %s::text[]
+        '''
+        # Extract only the tag names for the query
+        tag_names_list = [tag["subTag"] for tag in tag_names]
+        cursor.execute(flavour_query, (tag_names_list,))
         flavour_listings = cursor.fetchall()
 
+        recommended = {}
         for listing in flavour_listings:
             if listing["id"] not in recommended:
                 recommended[listing["id"]] = listing
 
+        # If no recommendations, return an empty dictionary
         if not recommended:
             return {}
+
         return recommended
+
 
 @blueprint.route("testRecommender/<userID>")
 def testRecommender(userID):
-    return advanced_algo_reviews(userID)       
+    return advanced_algo_list(userID)       
 
 # helper function for advanced algo (drink lists) 
 def advanced_algo_list(userID):
@@ -3202,22 +3335,36 @@ def advanced_algo_list(userID):
                 else:
                     tags_used[num] += 1
         top_tags = sorted(tags_used, key=tags_used.get, reverse=True)[:5]
-        association_dict = association_rules()
+        associations_dict = association_rules()
+        print(top_tags)
+
+        # Get associated tags based on top tags
         close_tags = []
         for tag in top_tags:
-            if int(tag) in association_dict:
-                close_tags += association_dict[int(tag)]
+            if int(tag) in associations_dict:
+                close_tags += associations_dict[int(tag)]
         close_tags = list(set(close_tags))
         print(close_tags)
-        flavour_query = '''
-            SELECT DISTINCT l.*
-            FROM "listings" l
-            JOIN "reviews" r ON l."id" = r."reviewTarget"
-            WHERE r."flavourTag" && %s::text[]
+
+        # Query to fetch subTags based on associated tag IDs
+        get_tags_names = '''
+            SELECT "subTag" FROM "subTags" WHERE "id" = ANY(%s)
         '''
-        cursor.execute(flavour_query, (close_tags,))
+        cursor.execute(get_tags_names, (close_tags,))
+        tag_names = cursor.fetchall()
+
+        # Query to fetch listings that match the tags
+        flavour_query = '''
+            SELECT DISTINCT l.* 
+            FROM "listings" l
+            WHERE l."googleFlavourTags" && %s::text[]
+        '''
+        # Extract only the tag names for the query
+        tag_names_list = [tag["subTag"] for tag in tag_names]
+        cursor.execute(flavour_query, (tag_names_list,))
         flavour_listings = cursor.fetchall()
 
+        recommended = {}
         for listing in flavour_listings:
             if listing["id"] not in recommended:
                 recommended[listing["id"]] = listing

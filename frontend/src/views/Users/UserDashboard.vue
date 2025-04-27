@@ -513,7 +513,8 @@
 
                                         <!-- Grail Details -->
                                         <div class="text-center">
-                                            <router-link :to="'/listing/view/' + grail.id"
+                                            <router-link 
+                                                :to="'/listing/view/' + grail.id + '/' + grail.name.replace(/[^a-zA-Z0-9]/g, '')"
                                                 style="color: white; font-weight: bold;">
                                                 {{ grail.name }}
                                             </router-link>
@@ -551,7 +552,7 @@
                                                 style="width: 100%; height: 100%; object-fit: contain;" />
                                         </div>
                                         <div class="text-start">
-                                            <router-link :to="'/listing/view/' + item.id"
+                                            <router-link :to="'/listing/view/' + item.id + '/' + item.name.replace(/[^a-zA-Z0-9]/g, '')"
                                                 style="color: white; font-weight: bold; text-decoration: underline; display: block;">
                                                 <div v-if="item">
                                                     {{ item.name }}
@@ -591,7 +592,7 @@
                                                 style="width: 100%; height: 100%; object-fit: contain;" />
                                         </div>
                                         <div class="text-start">
-                                            <router-link :to="'/listing/view/' + item.id"
+                                            <router-link :to="'/listing/view/' + item.id + '/' + item.name.replace(/[^a-zA-Z0-9]/g, '')"
                                                 style="color: white; font-weight: bold; text-decoration: underline; display: block;">
                                                 <div v-if="item">
                                                     {{ item.name }}
@@ -2216,6 +2217,9 @@ export default {
             }
         },
         // End: Added by Group 3: Adding drinks to Grails, Up & Coming, GOATS
+        getCleanName(name) {
+            return name.replace(/[^a-zA-Z0-9]/g, '');
+        }
     },
     watch: {
         selectedGrails: {

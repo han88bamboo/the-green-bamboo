@@ -116,7 +116,7 @@
                     <div class="card-footer text-body-secondary">
                         <!-- Link to Bottle Listing Page -->
                         <!-- [RE-ROUTE FLAG] '/listing/view/' -->
-                        <router-link :to="'/listing/view/' + this.$route.params.listingID" class="text-decoration-none">
+                        <router-link :to="'/listing/view/' + this.$route.params.listingID + '/' + slugify(targetListing.listingName)" class="text-decoration-none">
                             <span>View Listing Details</span>
                         </router-link>
                     </div>
@@ -508,6 +508,14 @@
             }
         },
         methods:{
+
+            slugify(text) {
+                return text
+                    .toString()
+                    .toLowerCase()
+                    .replace(/\s+/g, '')
+                    .replace(/[^\w]/g, '');
+            },
             // Function to check if user is a power user
             async checkPower() {
                 let powerValid = false;
