@@ -743,3 +743,18 @@ Purpose of changes:
 
 Nature of the changes (frontebd/backend / database):
 front end
+
+Coder: Dycia
+
+Purpose of the changes:
+(1) Updated Best Of Page (BestOf.vue)
+- Edited the routing of the listing view using the new url path
+(2) Updated For You Page (ForYouPage.vue)
+- Edited the routing of the listing view using the new url path
+(3) Updated Best Of Page (ImageSearchResults.vue)
+- Edited the routing of the listing view using the new url path
+(1) Updated UserDashBoard Page (UserDashBoard.vue)
+- Edited the routing of the listing view using the new url path
+
+Nature of the changes (frontend / backend / database):
+frontend
