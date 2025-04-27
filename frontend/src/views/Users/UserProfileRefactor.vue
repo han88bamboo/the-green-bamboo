@@ -1633,7 +1633,7 @@
                                 
                                 <div class="px-5 pt-1 pb-2">
                                     <div class="position-relative">
-                                        <input type="text" class="form-control rounded-pill" placeholder="Search for friends on Drink-X" aria-label="Search for friends">
+                                        <input type="text" class="form-control rounded-pill" placeholder="Search for friends on Drink-X" aria-label="Search for friends" style="border: 1px solid #ced4da; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                                         <div class="position-absolute" style="right: 15px; top: 50%; transform: translateY(-50%);">
                                         </div>
                                     </div>
