@@ -1,12 +1,17 @@
 <template>
     <NavBar />
 
-    <div class="text-center py-10" v-if="dataLoaded === false">
-      <span class="text-xl font-bold text-teal-700 italic">Loading page, please wait...</span>
-      <div class="mt-4 flex justify-center">
-        <div class="w-10 h-10 border-4 border-teal-600 border-t-transparent rounded-full animate-spin"></div>
-      </div>
+    <!-- Display when data is still loading -->
+  <div
+    class="text-info-emphasis fst-italic fw-bold fs-5 pt-5"
+    v-if="dataLoaded == false"
+  >
+    <span>Loading listing, please wait...</span>
+    <br /><br />
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Loading...</span>
     </div>
+  </div>
   
     <div class="container mx-auto px-4 py-6" v-else>
     <div v-for="(listings, category) in topListings" :key="category" class="mb-10">
@@ -37,7 +42,7 @@
             
             <div class="drink-meta mt-auto flex justify-center">
                 <router-link :to="'/listing/view/' +
-                    listing.id
+                    listing.id + '/' + listing.listingName.replace(/[^a-zA-Z0-9]/g, '')
                     ">
                     <button type="button" class="btn btn-primary">
                         Read more
