@@ -129,7 +129,7 @@
                                                             style="width: 70px; height: 70px;">
                                                     </router-link>
                                                     <span class="ms-3 reverse-clickable-text">
-                                                        <router-link :to="{ path: '/listing/view/' + listing.id }"
+                                                        <router-link :to="{ path: '/listing/view/' + listing.id + '/' + listing.listingName.replace(/[^a-zA-Z0-9]/g, '')}"
                                                             class="reverse-clickable-text">
                                                             <b> {{ listing.listingName }} </b>
                                                         </router-link>
@@ -563,7 +563,7 @@
                                                         :overlay="true" size="30" @icon-clicked="handleIconClick" />
                                                 </div>
                                                 <router-link :to="'/listing/view/' +
-                                                    listing.id
+                                                    listing.id + '/' + listing.listingName.replace(/[^a-zA-Z0-9]/g, '')
                                                     ">
                                                     <button type="button" class="btn btn-primary">
                                                         Read more
