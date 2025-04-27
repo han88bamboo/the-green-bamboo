@@ -184,7 +184,7 @@
                       >
                         <div class="d-flex align-items-start">
                           <router-link
-                            :to="{ path: '/listing/view/' + listing.id }"
+                            :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName) }"
                             class="reverse-clickable-text"
                           >
                             <img
@@ -194,7 +194,7 @@
                           </router-link>
                           <span class="ms-3 reverse-clickable-text">
                             <router-link
-                              :to="{ path: '/listing/view/' + listing.id }"
+                              :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}"
                               class="reverse-clickable-text"
                             >
                               <b> {{ listing.listingName }} </b>
@@ -915,7 +915,7 @@
                                   <div class="name-producer">
                                     <router-link
                                       :to="{
-                                        path: '/listing/view/' + listing.id,
+                                        path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName),
                                       }"
                                       class="primary-clickable-text text-decoration-none"
                                       style="color: #027562"
@@ -944,7 +944,7 @@
                                   </div>
                                   <router-link
                                     :to="{
-                                      path: '/listing/view/' + listing.id,
+                                      path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName),
                                     }"
                                     class="default-clickable-text fst-italic"
                                   >
@@ -971,7 +971,7 @@
                                   <div class="d-grid">
                                     <router-link
                                       :to="{
-                                        path: '/listing/view/' + listing.id,
+                                        path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName),
                                       }"
                                       class="primary-clickable-text"
                                     >
@@ -1208,7 +1208,7 @@
                           <!-- expression name -->
                           <div class="row pt-1">
                             <router-link
-                              :to="{ path: '/listing/view/' + listing.id }"
+                              :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}"
                               class="primary-clickable-text mobile-col-12"
                             >
                               <!--tzh changed mobile-col-10 to mobile-col-12 -->
@@ -1256,7 +1256,7 @@
                             <div class="mobile-col-11 mobile-pe-0">
                               <!-- tzh changed mobile-col-9 to mobile-col-11 -->
                               <router-link
-                                :to="{ path: '/listing/view/' + listing.id }"
+                                :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}"
                                 class="default-clickable-text fst-italic scrollable-user-bottle-listings-description-box"
                               >
                                 <span class="mobile-view-hide">
@@ -1336,7 +1336,7 @@
                               <!--tzh added mobile-view-hide -->
                               <div class="d-grid gap-5">
                                 <router-link
-                                  :to="{ path: '/listing/view/' + listing.id }"
+                                  :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}"
                                   class="primary-clickable-text"
                                 >
                                   <a class="btn secondary-btn btn-md">
@@ -1517,6 +1517,14 @@ export default {
     this.loadData();
   },
   methods: {
+    //remove %20 from url
+    slugify(text) {
+                return text
+                    .toString()
+                    .toLowerCase()
+                    .replace(/\s+/g, '')
+                    .replace(/[^\w]/g, '');
+            },
     // load data from database
     async loadData() {
       // countries

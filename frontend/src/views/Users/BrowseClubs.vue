@@ -60,7 +60,7 @@
                         <div class="row w-100 align-items-center">
                             <div class="col-7 text-start">
                                 <!-- CLub title -->
-                                <router-link :to="{ name: 'clubview', params: { clubID: club.clubID }}" class="text-dark hover-underline fw-bold">
+                                <router-link v-if="club.clubID && club.clubName" :to="{ name: 'clubview', params: { clubID: club.clubID, clubName: slugify(club.clubName || 'unknown-club') }}" class="text-dark hover-underline fw-bold">
                                     {{ club.clubName }}
                                 </router-link>
 
@@ -97,8 +97,8 @@
                             <img v-else :src="defaultBanner" class="img-fluid w-100 border" alt="..." style="object-fit: cover;">
                         </div>
                         <!-- CLub title -->
-                        <router-link :to="{ name: 'clubview', params: { clubID: club.clubID }}" class="text-dark hover-underline">
-                            {{ club.clubInfo.clubName }}
+                        <router-link v-if="club.clubID && club.clubInfo?.clubName" :to="{ name: 'clubview', params: { clubID: club.clubID, clubName: slugify(club.clubInfo?.clubName || 'unknown-club') }}" class="text-dark hover-underline">
+                            {{ club.clubInfo?.clubName }}
                         </router-link>
                     </div>
                 </div>
@@ -146,7 +146,7 @@
                             <img v-else :src="defaultBanner" class="img-fluid w-100 border" alt="..." style="object-fit: cover;">
                         </div>
                         <!-- CLub title -->
-                        <router-link :to="{ name: 'clubview', params: { clubID: club.clubID }}" class="text-dark hover-underline">
+                        <router-link :to="{ name: 'clubview', params: { clubID: club.clubID, clubName: slugify(club.clubInfo.clubName) }}" class="text-dark hover-underline">
                             {{ club.clubInfo.clubName }}
                         </router-link>
                     </div>
@@ -208,10 +208,10 @@
                                     <div class="col-11">
                                         <!-- Club Name -->
                                         <h2 class="card-title fw-bold text-start">
-                                            <router-link :to="{ name: 'clubview', params: { clubID: post.clubID }}" class="text-dark hover-underline">
+                                            <router-link :to="{ name: 'clubview', params: { clubID: post.clubID, clubName: slugify(post.clubName || 'unknown-club') }}" class="text-dark hover-underline">
                                                 {{ post.clubName }}
-                                            </router-link>  
-                                        </h2>  
+                                            </router-link>
+                                        </h2>
 
                                         <div class="text-start d-flex gap-3">
                                             <!-- Poster name -->
@@ -287,7 +287,7 @@
 
                             <!-- Club Name-->
                             <h2 class="card-title fw-bold text-start">
-                                <router-link :to="{ name: 'clubview', params: { clubID: club.id }}" class="text-dark hover-underline">
+                                <router-link v-if="club.clubID && club.clubName" :to="{ name: 'clubview', params: { clubID: club.id, clubName: slugify(club.clubName) }}" class="text-dark hover-underline">
                                     {{ club.clubName }}
                                 </router-link>
                             </h2>
@@ -305,8 +305,8 @@
                             <!-- Join Club Button -->
                             <!-- <button v-if="userClubs.includes(club.id)" type="button" class="btn btn-primary mt-auto align-self-start" disabled>Joined</button> -->
                             <button v-if="requestedClubs.includes(club.id)" type="button" class="btn btn-primary mt-auto align-self-start w-md-25" disabled>Request Sent</button>
-                            <button v-if="!userClubs.includes(club.id) && club.isInviteOnly == false" type="button" class="btn btn-primary mt-auto align-self-start w-md-25" @click="joinClub(club.id)">+Join This Club</button>
-                            <button v-if="!userClubs.includes(club.id) && club.isInviteOnly == true && !requestedClubs.includes(club.id)" type="button" class="btn btn-primary mt-auto align-self-start w-md-25" @click="requestJoin(club.id)">Request to Join</button>
+                            <button v-if="!userClubs.includes(club.id) && club.isInviteOnly == false" type="button" class="btn btn-primary mt-auto align-self-start w-md-25" @click="joinClub(club.id, club.clubName)">+Join This Club</button>
+                            <button v-if="!userClubs.includes(club.id) && club.isInviteOnly == true && !requestedClubs.includes(club.id)" type="button" class="btn btn-primary mt-auto align-self-start w-md-25" @click="requestJoin(club.id, club.clubName)">Request to Join</button>
                         </div>
                     </div>
                 </div>
@@ -385,6 +385,13 @@ export default {
     },
 
     methods: {
+        slugify(text) {
+                if (!text || typeof text !== 'string') return 'unknown';
+                    return text
+                    .toLowerCase()
+                    .replace(/\s+/g, '')
+                    .replace(/[^\w]/g, '');
+            },
         // Function to get 5 latest posts if the user is a member of at least one club
         async getLatestPosts() {
             try {
@@ -513,6 +520,9 @@ export default {
                 return;
             }
 
+            const club = this.clubs.find(c => c.id === clubId || c.clubID === clubId);
+            const clubName = club ? (club.clubName || club.clubInfo?.clubName) : 'unknown-club';
+
             try {
                 // Disable the button to prevent multiple clicks
                 this.disableButton = true;
@@ -528,7 +538,8 @@ export default {
                     const toast = useToast();
                     toast.success("You have successfully joined the club!");
                     // Redirect to the club page
-                    this.$router.push({ name: 'clubview', params: { clubID: clubId } });
+                    this.$router.push({ name: 'clubview', params: { clubID: clubId, clubName: this.slugify(clubName) 
+} });
                 }
 
             } catch (error) {
@@ -548,6 +559,9 @@ export default {
                 return;
             }
 
+            const club = this.clubs.find(c => c.id === clubId || c.clubID === clubId);
+            const clubName = club ? (club.clubName || club.clubInfo?.clubName) : 'unknown-club';
+
             try {
                 // Disable the button to prevent multiple clicks
                 this.disableButton = true;
@@ -563,7 +577,7 @@ export default {
                     const toast = useToast();
                     toast.success("Your request to join the club has been sent successfully!");
                     // Redirect to the club page
-                    this.$router.push({ name: 'clubview', params: { clubID: clubId } });
+                    this.$router.push({ name: 'clubview', params: { clubID: clubId, clubName: this.slugify(clubName)  } });
                 }
 
             } catch (error) {
@@ -619,13 +633,13 @@ export default {
         // Function to redirect to the profile page of the poster
         profileURL(posterID, userType) {
             if (userType == 'user') {
-                return `/profile/user/${posterID}`;
+                return `/profile/user/${posterID}/${this.userName}`;
             }
             else if (userType == 'producer') {
-                return `/profile/producer/${posterID}`;
+                return `/profile/producer/${posterID}/${this.userName}`;
             }
             else {
-                return `/profile/venue/${posterID}`;
+                return `/profile/venue/${posterID}/${this.userName}`;
             }
         },
 
@@ -657,6 +671,10 @@ export default {
 
         // Function to accept an invite to join a club
         async acceptInvite(clubID) {
+
+            const club = this.clubs.find(c => c.id === clubID || c.clubID === clubID);
+            const clubName = club ? (club.clubName || club.clubInfo?.clubName) : 'unknown-club';
+
             try {
                 const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/club/acceptClubInvite`, {
                     userID: this.userID,
@@ -668,7 +686,7 @@ export default {
                     const toast = useToast();
                     toast.success("You have successfully joined the club!");
                     // Redirect to the club page
-                    this.$router.push({ name: 'clubview', params: { clubID: clubID } });
+                    this.$router.push({ name: 'clubview', params: { clubID: clubID, clubName: this.slugify(clubName) } });
                 }
             } catch (error) {
                 console.log(error);
@@ -691,6 +709,8 @@ export default {
         // Get the account id and type of the user
         this.userID = localStorage.getItem("88B_accID");
         let userType = localStorage.getItem("88B_accType");
+        this.userName = localStorage.getItem("88B_accUsername");
+
 
         if (userType) {
             this.userType = userType;

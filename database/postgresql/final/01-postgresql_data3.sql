@@ -54,6 +54,8 @@ DROP TABLE IF EXISTS "typeCategories" CASCADE;
 DROP TABLE IF EXISTS "associations" CASCADE; -- ADDED BY SMU GROUP 3
 DROP TABLE IF EXISTS "pointsRecorder" CASCADE; -- ADDED BY SMU GROUP 3
 DROP TABLE IF EXISTS "pointSystemRules" CASCADE; -- ADDED BY SMU GROUP 3
+DROP TABLE IF EXISTS "venueReviews" CASCADE;
+DROP TABLE IF EXISTS "venueReviewsUserVotes" CASCADE;
 
 -- CREATE TABLES -- 
 -- ========= "accountRequests" =========
@@ -401,6 +403,30 @@ CREATE TABLE "producerReviewsUserVotes" (
     "downvotes" TEXT[], -- Contain "users"("id")s
     "reviewId" INTEGER REFERENCES "producerReviews"("id") on DELETE SET NULL -- [!] reference "producerReviews" FK
 );
+
+-- ==========================================
+-- VENUE REVIEWS
+-- ==========================================
+CREATE TABLE "venueReviews" (
+    "id" SERIAL PRIMARY KEY,
+    "userID" INTEGER REFERENCES "users"("id") ON DELETE SET NULL,
+    "venueID" INTEGER REFERENCES "venues"("id") ON DELETE SET NULL,
+    "rating" DECIMAL(3,1),
+    "reviewDesc" TEXT,
+    "createdDate" TIMESTAMP,
+    "photos" TEXT[]
+);
+
+-- ==========================================
+-- VENUE REVIEWS USER VOTES
+-- ==========================================
+CREATE TABLE "venueReviewsUserVotes" (
+    "id" SERIAL PRIMARY KEY,
+    "upvotes" TEXT[], -- Contain "users"("id")s
+    "downvotes" TEXT[], -- Contain "users"("id")s
+    "reviewId" INTEGER REFERENCES "venueReviews"("id") ON DELETE SET NULL    
+);
+
 
 -- ========= "tokens" =========
 CREATE TABLE "tokens" (

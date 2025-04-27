@@ -209,7 +209,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                             <hr>
                             <!-- Image -->
                             <div class="col-lg-3 col-12 image-container mb-3 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
-                                <router-link :to="{ path: '/listing/view/' + resultListing.id }">
+                                <router-link :to="{ path: '/listing/view/' + resultListing.id + '/' + slugify(resultListing.listingName) }">
                                     <img v-if="resultListing['photo']" :src="resultListing['photo']" class="img-border img-fluid object-fit-cover" style="width:256px; height:256px">
                                     <img v-else src="../../Images/Drinks/Placeholder.png" class=" img-border img-fluid object-fit-cover" style="/*width:256px; height:256px*/"> 
                                 </router-link>
@@ -224,7 +224,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
 
                             <div class="col-lg-8 col-12 ps-3 mobile-col-7 mobile-pe-0 mobile-ps-1 mobile-view-show">
                                 <!-- Listing Name + Router Link -->
-                                <router-link class="xtext-dark xtext-decoration-none" :to="{ path: '/listing/view/' + resultListing.id }">
+                                <router-link class="xtext-dark xtext-decoration-none" :to="{ path: '/listing/view/' + resultListing.id + '/' + slugify(resultListing.listingName) }">
                                     <p class="default-text fs-5 mobile-fs-6" style="margin-bottom: 0.3rem;"><b><u>{{ resultListing['listingName'] }}</u></b></p>
                                 </router-link>
                                 <p class="text-start mb-1 mobile-fs-7"> 
@@ -249,11 +249,11 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
 
                                 <div class="col-lg-8 col-12">
                                     <!-- Listing Name + Router Link -->
-                                    <router-link class="text-dark text-decoration-none" :to="{ path: '/listing/view/' + resultListing.id }">
+                                    <router-link class="text-dark text-decoration-none" :to="{ path: '/listing/view/' + resultListing.id + '/' + slugify(resultListing.listingName)}">
                                         <h4 class="fw-bold my-1">{{ resultListing['listingName'] }}</h4>
                                     </router-link>
                                     <!-- Producer Name + Router Link -->
-                                    <router-link class="text-secondary-emphasis text-decoration-none" :to="{ path: '/profile/producer/' + resultListing.producerID }">
+                                    <router-link class="text-secondary-emphasis text-decoration-none" :to="{ path: '/profile/producer/' + resultListing.producerID + '/' + slugify(resultListing.producerName)}">
                                         <p class="m-0">
                                             <b> Producer: </b>
                                             {{ getProducerName(resultListing['producerID']) }}
@@ -334,14 +334,14 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                             <hr>
                             <!-- Image -->
                             <div class="col-lg-3 col-12 image-container mb-3 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
-                                <router-link :to="{ path: '/profile/producer/' + producer.id }">
+                                <router-link :to="{ path: '/profile/producer/' + producer.id + '/' + slugify(producer.producerName)}">
                                     <img v-if="producer['photo']" :src="producer['photo']" class="img-border img-fluid object-fit-cover" style="/*width:256px; height:256px*/">
                                     <img v-else src="../../Images/Drinks/Placeholder.png" class="img-border img-fluid object-fit-cover" style="/*width:256px; height:256px*/"> 
                                 </router-link>
                             </div>
                             <div class=" ps-3 mobile-col-9 mobile-pe-0 mobile-ps-1 mobile-view-show">
                                 <!-- Producer Name + Router Link -->
-                                <router-link class="xtext-dark xtext-decoration-none" :to="{ path: '/profile/producer/' + producer.id }">
+                                <router-link class="xtext-dark xtext-decoration-none" :to="{ path: '/profile/producer/' + producer.id + '/' + slugify(producer.producerName)}">
                                     <p class="default-text fs-5 mobile-fs-6" style="margin-bottom: 0.3rem;"><b><u>{{ producer['producerName'] }}</u></b></p>
                                 </router-link>
                                 <p v-if="producer.producerDesc.length > 144" class="mobile-fs-7"  >
@@ -357,7 +357,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
 
                                 <div class="col-lg-8 col-12">
                                     <!-- Producer Name + Router Link -->
-                                    <router-link class="text-dark text-decoration-none" :to="{ path: '/profile/producer/' + producer.id }">
+                                    <router-link class="text-dark text-decoration-none" :to="{ path: '/profile/producer/' + producer.id + '/' + slugify(producer.producerName)}">
                                         <h4 class="fw-bold my-1">{{ producer['producerName'] }}</h4>
                                     </router-link>
                                     <!-- Country of Origin -->
@@ -412,7 +412,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                             <hr>
                             <!-- Image -->
                             <div class="col-lg-3 col-12 image-container mb-3 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
-                                <router-link :to="{ path: '/profile/venue/' + venue.id }">
+                                <router-link :to="{ path: '/profile/venue/' + venue.id + '/' + slugify(venue.venueName)}">
                                     <img v-if="venue['photo']" :src="venue['photo']" class="img-border img-fluid object-fit-cover" style="/*width:256px; height:256px*/">
                                     <img v-else src="../../Images/Drinks/Placeholder.png" class="img-border img-fluid object-fit-cover" style="/*width:256px; height:256px*/"> 
                                 </router-link>
@@ -423,7 +423,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
 
                                 <div class="col-lg-8 col-12">
                                     <!-- Venue Name + Router Link -->
-                                    <router-link class="text-dark text-decoration-none" :to="{ path: '/profile/venue/' + venue.id }">
+                                    <router-link class="text-dark text-decoration-none" :to="{ path: '/profile/venue/' + venue.id + '/' + slugify(venue.venueName) }">
                                         <h4 class="fw-bold my-1">{{ venue['venueName'] }}</h4>
                                     </router-link>
                                     <!-- Country of Origin -->
@@ -597,6 +597,11 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
             if(userType !=null){
                 this.userType = userType
             }
+            let userName = localStorage.getItem("88B_accUsername");
+            if (userName !== null) {
+            this.userName = userName;
+            }
+
 
             // if there is a search input
             if (this.searchTerm != '' || this.searchTerm != null) {
@@ -608,6 +613,13 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
             }
         },
         methods: {
+            slugify(text) {
+                return text
+                    .toString()
+                    .toLowerCase()
+                    .replace(/\s+/g, '')
+                    .replace(/[^\w]/g, '');
+            },
             async runSearch() {
                 // Search Criteria: if any of the following attributes includes the search term
                 // - Listings: listingName, producerName, bottler, originCountry, drinkType, typeCategory

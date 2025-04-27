@@ -479,6 +479,19 @@ affected the image displayed
 leading to recommender not being able to recommend clubs and drinks - Added in the code to add in username into the params
 (3) Updated Page - User Profile (UserProfileRefactor.vue) - Added in the code for the buttons in Add Friend so that is it able to call the various
 methods to invite a friend
+Producer bottle listings - to allow admin / moderators to delete reviews.
+Still require CP's assistance to bug fix thihs issue.
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 5 April
+
+Coder: Han
+
+Purpose of the changes:
+Producer Profile page - added button to review the producer 
+
+Still need to monitor for bugs, responsiveness, etc
 
 Nature of the changes (frontend / backend / database):
 frontend
@@ -546,3 +559,187 @@ Purpose of the changes:
 (1) Updated Frontend (ImageSearchResults.vue) - Cleaned up the code in the loaddata()
 Nature of the changes (frontend / backend / database):
 frontend
+# Update as of 8 April
+
+Coder: Han
+
+Purpose of the changes:
+To create function of reviewing venue on Venue Profile page
+
+Files updated:
+(a) createReview.py - [POST] Creates a venue review
+(b) deleteReview.py - [DELETE] Deletes a venue review
+(c) editReview.py - [POST] Vote venue review /   [PUT] Update venue review
+(d) getData.py - [GET] Venue Reviews / 
+(e) VenueProfile.vue - buttons, functions, review displays, calling of endpoints
+(f) 01-postgresql_data3.sql - venueReviews and venueReviewsUserVotes tables
+
+Nature of the changes (frontend / backend / database):
+frontend, backend and database
+
+
+# Update as of 11 April
+
+Coder: Candy
+
+Purpose of the changes:
+Updated profile URL for venue
+(1) Updated router - VenueProfile.vue
+(2) Updated router - router/index.js
+(3) Updated router - NavBar.vue
+(4) Updated router - LandingPageNavBar.vue
+(5) Updated router - SearchView.vue
+getData/getVenueReviews receive 500 Internal server error 
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 11 April (Part 2)
+
+Coder: Candy
+
+Purpose of the changes:
+Updated profile URL for profile/producer and lisitng/view in search view 
+(1) Updated router for both profile/producer and listing/view - SearchView.vue
+(2) Updated router for listing/view/:listingid to include listing name - RandomExplorePage.vue
+(3) Updated router for listing/view/:listingid to include listing name - ListingRowDisplay.vue
+(4) Updated router for listing/view/:listingid to include listing name - ListingRowDisplayProducerProfile.vue
+(5) Updated router for listing/view/:listingid to include listing name - SubmitListingNew.vue
+(6) Updated router for listing/view/:listingid to include listing name - LandingPage.vue
+(7) Updated router for listing/view/:listingid to include listing name - ProducerDashboard.vue
+(8) Updated router for listing/view/:listingid to include listing name - ProducerProfile.vue
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 11 April (Part 3)
+
+Coder: Candy
+
+Purpose of the changes:
+Updated URL for events
+(1) Updated router for events URL - SpecificEventPage.vue
+(2) Updated router for events URL - router/index.js
+(3) Updated router for events URL - events.vue
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 11 April (Part 4)
+
+Coder: Candy
+
+Purpose of the changes:
+Updated URL for events and club
+(1) Updated router for past & recommended events URL - events.vue
+(2) Updated router for club/view/:clubid/:clubName - router/index.js
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 14 April 
+
+Coder: Candy
+
+Purpose of the changes:
+Updated URL for events and club
+(1) Updated profile and club/view router for BrowseClubs.vue
+(2) Updated router for club/view/:clubid/:clubName - router/index.js
+(3) Updated router for CreateClubs.vue
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+
+# Update as of 18 April 
+
+Coder: TZH
+
+Purpose of the changes:
+updated NavBar.vue to allow search to autocomplete, referencing code from SearchBar.vue (used Copilot)
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+
+# Update as of 24 April 
+
+Coder: TZH
+
+Purpose of the changes:
+updated data folder to include the right countries
+
+Nature of the changes (frontend / backend / database):
+frontend
+# Update as of 24 April 
+Coder: Carissa
+
+Purpose of the changes:
+(1) Updated Page - Landing Page (LandingPage.vue) - Resolved the wonky code in landing page
+--> Updated News Article section to include more news 
+--> Refined goSearchListing() function to ensure page loads to the right page as url has been changed from before
+--> Added getData/getUser/${this.userID} to retrieve username to route to profile page for Icon Button "Start Collecting Points and Badges From You First Review", included error handling to route users to sign up page if they do not have an account
+--> Added icon buttons and routing
+--> Updated colour scheme of background and headings
+(2) Updated Component - Search Bar (SearchBar.vue) - Edited placeholder in search bar
+
+
+
+# Update as of 25 April 
+
+Coder: Kai
+
+Purpose of the changes:
+updated positioning of reviews in producer bottle listing page
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+Coder: Dycia
+
+Purpose of the changes:
+(1) Updated Backend API (rssFeed.py)
+- Edited the URL in feed_urls for Spotlight because the old URL was giving 404 error
+- Updated fetchRSS(): Retrieve articles for newly requested UI update. Retrieve articles for Features, Interviews, Escapades and What's Happening.
+- Added new fetchRssReviews(): Newly requested reviews requriement. Retrieve reviews from 5 different drink category and populate them based on chronological order.
+
+Nature of the changes (frontend / backend / database):
+backend
+
+Coder: Dycia
+
+Purpose of the changes:
+(1) Updated Landing Page (LandingPage.vue)
+- Edited the Latest News section with the new request requirement.
+
+Nature of the changes (frontend / backend / database):
+frontend
+# Update as of 25 April 
+
+Coder: Kai
+
+Purpose of the changes:
+added 3-dot dropwon feature for users to edit reviews - but buggy TZH to fix
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 25 April 
+
+Coder: Kai
+
+Purpose of the changes:
+neatened the margins and the line spacings on the drink listing pages (mobile + Desktop)
+added mobile only row of buttons like add review, bookmark, and extended info
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 25 April 
+
+Coder: Kai 
+Purpose of changes: 
+1. neatened up the spacing of the venue desc and attributes, and the review venue and follow venue buttons (mobile + desktop)
+2. adjusted the global css for the display of the venue profile images and also the display of the drink listings rows for producer + venue profile pages (added hover effects, changed sizing etc)
+
+Nature of the changes (frontebd/backend / database):
+front end

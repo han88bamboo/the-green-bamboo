@@ -1123,6 +1123,34 @@ def getTourReviews():
             del review["downvotes"]
 
         return jsonify(reviews_data)
+
+# [GET] Venue Reviews
+@blueprint.route("/getVenueReviews")
+def getVenueReviews():
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        cursor.execute("""
+            SELECT "venueReviews".*, "venueReviewsUserVotes"."upvotes", "venueReviewsUserVotes"."downvotes"
+            FROM "venueReviews"
+            LEFT JOIN "venueReviewsUserVotes" ON "venueReviews"."id" = "venueReviewsUserVotes"."reviewId"
+        """)
+
+        reviews_data = cursor.fetchall()
+
+        if not reviews_data:
+            return jsonify([])
+        
+        for review in reviews_data:
+            review["userVotes"] = {
+                "upvotes": review["upvotes"] if review["upvotes"] else [],
+                "downvotes": review["downvotes"] if review["downvotes"] else []
+            }
+            del review["upvotes"]
+            del review["downvotes"]
+
+        return jsonify(reviews_data)
+
 # ----------------------
 # [NEW] TO BE ADDED:
 # ----------------------

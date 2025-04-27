@@ -292,7 +292,7 @@
                                 </div>
                                 
                                 <!-- Event Name -->
-                                <router-link :to="{ name: 'eventview', params: { eventID: otherEvent.id } }">
+                                <router-link :to="{ name: 'eventview', params: { eventID: otherEvent.id, eventName: slugify(otherEvent.eventName) } }">
                                     <p class="m-0">{{ otherEvent.eventName }}</p>
                                 </router-link>
 
@@ -532,6 +532,13 @@ export default {
         }
     },
     methods: {
+        slugify(text) {
+                return text
+                    .toString()
+                    .toLowerCase()
+                    .replace(/\s+/g, '')
+                    .replace(/[^\w]/g, '');
+            },
         // Function to get event information
         async getEvent() {
             try {

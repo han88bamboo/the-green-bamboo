@@ -294,7 +294,7 @@ export default {
         url = url + "Venue/" + accID;
         this.loadData(url);
 
-        this.profileURL = "/profile/venue";
+        this.profileURL = "/profile/venue/" + accID + "/" + accUsername;
         this.dashboardURL = "/dashboard/venue";
         this.dashboardWord = "Venue";
       }
