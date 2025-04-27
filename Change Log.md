@@ -400,3 +400,15 @@ Purpose of the changes:
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 27 April 
+Coder: Teck Xuan
+
+Purpose of the changes:
+(1) Updated getData.py - Included API endpoint, /getImageSearchResults for photo analysis by Google Vision API
+(2) Updated ImageSearchView - To include backend logic and more javascript to process the image once uploaded. Updated with Google Recaptcha
+(3) Updated ImageSearchResults - To display reverse image search results after processing and extracting information from Google vision PAI
+(4) Updated index.js - for the routing of the ImageSearchResults page
+
+Nature of the changes (frontend / backend / database):
+frontend, backend
