@@ -145,7 +145,7 @@
                             <hr>
                             <!-- Image -->
                             <div class="col-lg-3 col-12 image-container mb-3 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
-                                <router-link :to="{ path: '/listing/view/' + resultListing.id }">
+                                <router-link :to="{ path: '/listing/view/' + resultListing.id + '/' + resultListing.listingName.replace(/[^a-zA-Z0-9]/g, '')}">
                                     <img v-if="resultListing['photo']" :src="resultListing['photo']" class="img-border img-fluid object-fit-cover" style="width:256px; height:256px">
                                     <img v-else src="../../Images/Drinks/Placeholder.png" class=" img-border img-fluid object-fit-cover" style="/*width:256px; height:256px*/"> 
                                 </router-link>
@@ -160,7 +160,7 @@
 
                             <div class="col-lg-8 col-12 ps-3 mobile-col-7 mobile-pe-0 mobile-ps-1 mobile-view-show">
                                 <!-- Listing Name + Router Link -->
-                                <router-link class="xtext-dark xtext-decoration-none" :to="{ path: '/listing/view/' + resultListing.id }">
+                                <router-link class="xtext-dark xtext-decoration-none" :to="{ path: '/listing/view/' + resultListing.id + '/' + resultListing.listingName.replace(/[^a-zA-Z0-9]/g, '')}">
                                     <p class="default-text fs-5 mobile-fs-6" style="margin-bottom: 0.3rem;"><b><u>{{ resultListing['listingName'] }}</u></b></p>
                                 </router-link>
                                 <p class="text-start mb-1 mobile-fs-7"> 
@@ -185,7 +185,7 @@
 
                                 <div class="col-lg-8 col-12">
                                     <!-- Listing Name + Router Link -->
-                                    <router-link class="text-dark text-decoration-none" :to="{ path: '/listing/view/' + resultListing.id }">
+                                    <router-link class="text-dark text-decoration-none" :to="{ path: '/listing/view/' + resultListing.id + '/' + resultListing.listingName.replace(/[^a-zA-Z0-9]/g, '')}">
                                         <h4 class="fw-bold my-1">{{ resultListing['listingName'] }}</h4>
                                     </router-link>
                                     <!-- Producer Name + Router Link -->
