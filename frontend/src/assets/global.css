@@ -613,14 +613,23 @@ body {
   margin: 10px;
 }
 
-/* tzh adjusted sizings from 150 to 175*/
+/* tzh adjusted sizings from 150 to 175, kai added box shadow */
 .add-drink-photo-background {
   width: 175px;
   height: 175px;
   position: absolute;
   top: 0;
   left: 0;
+  box-shadow: rgba(0, 0, 0, 0.25) 0px 4px 8px;
+  transition: transform 0.4s ease, opacity 0.4s ease;
 }
+
+/* kai added hover effect for drink listings on venue/producer page*/
+.add-drink-photo-background:hover {
+  opacity: 0.8; /* faded slightly when hovered */
+  transform: scale(1.05);
+}
+
 
 .add-drink-photo-background-user-profile {
   width: 100%;
@@ -1009,6 +1018,11 @@ button.primary-square:hover {
 
 .text-warning {
   color: #d58d2d;
+}
+
+/* Scope only inside teal bookmark area for drink listing*/
+.teal-bookmark-icon svg {
+  fill: #ffffff !important;
 }
 
 .active-toggle-button {
@@ -1595,22 +1609,26 @@ button.primary-square:hover {
 }
 
 .producer-bottle-listing-page-image {
-  max-width: 230px;
-  height: 230px;
+  max-width: 240px;
+  height: 240px;
+  border-radius:10px;
+  box-shadow: rgba(0, 0, 0.4, 0.4) 0px 4px 4px; /* kai added box shadow o the producer bottle listing */
 }
 
 @media (max-width: 991px) {
   .producer-bottle-listing-page-image {
-    width: 100%;
+    width: 90%;
     height: auto;
     aspect-ratio: 1 / 1; /* Ensures the image remains a square */
     object-fit: cover; /* Ensures the image covers the entire area without stretching */
+    border-radius:10px;
   }
 }
 
 .producer-bottle-listing-page-bottle-image {
   max-width: 150px;
   height: 150px;
+  border-radius:10px
 }
 
 .producer-bottle-listing-page-bottle-image {
@@ -1618,6 +1636,7 @@ button.primary-square:hover {
   height: auto;
   aspect-ratio: 1 / 1; /* Ensures the image remains a square */
   object-fit: cover; /* Ensures the image covers the entire area without stretching */
+  border-radius:10px
 }
 
 .producer-profile-latest-updates-image {
@@ -1685,7 +1704,7 @@ button.primary-square:hover {
 
 @media (max-width: 991px) {
   .rounded-pill {
-    font-size: 12px;
+    font-size: 14px;
   }
 }
 
@@ -1697,6 +1716,12 @@ button.primary-square:hover {
   box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.4);
   border-radius: 4px;
 }
+
+.review-image:hover {
+  opacity: 0.8; /* faded slightly when hovered */
+  transform: rotate(2deg);
+}
+
 @media (max-width: 991px) {
   .review-image {
     width: 100%;
