@@ -1562,7 +1562,8 @@ export default {
         const response = await this.$axios.get(
           `${process.env.VUE_APP_API_URL}/getData/getRandomListings`
         );
-        this.listings = response.data;
+        console.log("Selected Random Date:", response.data.selectedDate);
+        this.listings = response.data.listings;
         // originally, make filteredListings the entire collection of listings
         this.filteredListings = this.listings;
       } catch (error) {

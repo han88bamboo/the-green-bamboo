@@ -2857,10 +2857,10 @@ def getRandomListings():
 
         try:
             # Extract 'addedDate' values properly from RealDictRow
-            date_list = [row['addedDate'] for row in date_results if 'addedDate' in row]
+            # date_list = [row['addedDate'] for row in date_results if 'addedDate' in row]
             
             # Log the extracted date list
-            print("Extracted date_list:", date_list)
+            # print("Extracted date_list:", date_list)
 
             if not date_list:
                 return jsonify({"error": "Date extraction failed (empty list)"}), 400
@@ -2876,7 +2876,11 @@ def getRandomListings():
     if not listings_data:
         return jsonify({"error": "No listings found for selected date"}), 400
 
-    return jsonify(listings_data)
+    return jsonify({
+        "listings": listings_data,
+        "selectedDate": random_date.isoformat()  # ensure proper JSON serialization
+    })
+
 # -----------------------------------------------------------------------------------------
 # [GET] Get Listings from reverse image search -- ADDED BY SMU GROUP 3
 @blueprint.route("/getImageSearchResults", methods=["POST"])
