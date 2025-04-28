@@ -6,7 +6,7 @@
   display: flex;
   align-items: center;
   border: 1px solid #827c75;
-  min-height: 193px !important; 
+  min-height: 193px !important;
 }
 
 @media (max-width: 768px) {
@@ -15,9 +15,9 @@
     overflow: hidden;
     border-radius: 10px;
     position: relative;
-    min-height: 100px !important; 
+    min-height: 100px !important;
   }
-  
+
   /* Fix the image container sizing */
   .card .text-center.text-md-start {
     min-width: 100px;
@@ -35,7 +35,7 @@
     margin: 0;
     z-index: 1;
   }
-  
+
   /* Fix the image wrapper */
   .card .image-wrapper {
     width: 100px;
@@ -48,7 +48,7 @@
     bottom: 0;
     left: 0;
   }
-  
+
   /* Fix the actual image */
   .listing-image {
     width: 100px !important;
@@ -58,8 +58,8 @@
     padding: 0;
     margin: 0;
   }
-/* The actual image */
-.card .listing-image {
+  /* The actual image */
+  .card .listing-image {
     width: 100px !important;
     height: 100% !important;
     object-fit: cover;
@@ -68,7 +68,7 @@
     top: 0;
     bottom: 0;
     left: 0;
-  }  
+  }
   /* Fix the content section to properly align */
   .card .detials-rating {
     width: calc(100% - 100px) !important;
@@ -100,7 +100,7 @@
   border: none;
   border-radius: 20px;
   padding: 8px 12px;
-  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.4) !important; 
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.4) !important;
 
   color: black;
   font-weight: bold;
@@ -268,7 +268,13 @@
                         >
                           <div class="d-flex align-items-start">
                             <router-link
-                              :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName) }"
+                              :to="{
+                                path:
+                                  '/listing/view/' +
+                                  listing.id +
+                                  '/' +
+                                  slugify(listing.listingName),
+                              }"
                               class="reverse-clickable-text"
                             >
                               <img
@@ -278,7 +284,13 @@
                             </router-link>
                             <span class="ms-3 reverse-clickable-text">
                               <router-link
-                                :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}"
+                                :to="{
+                                  path:
+                                    '/listing/view/' +
+                                    listing.id +
+                                    '/' +
+                                    slugify(listing.listingName),
+                                }"
                                 class="reverse-clickable-text"
                               >
                                 <b> {{ listing.listingName }} </b>
@@ -336,119 +348,123 @@
                 </div>
               </div>
               <!-- brands you follow -->
-              <div class="col-12 ">
+              <div class="col-12">
                 <div class="shelf primary-square-green">
                   <div class="square p-3 mb-3 text-start" style="height: 300px">
-                  <!-- header text -->
-                  <div class="square-inline">
-                    <h5 class="square-inline text-start mr-auto fw-bold">
-                      Brands You Follow
-                    </h5>
-                  </div>
-                  <!-- body -->
-                  <div style="height: 85%">
-                    <div
-                      v-if="questionsUpdates.length > 0"
-                      class="Xoverflow-auto"
-                      style="max-height: 100%"
-                    >
+                    <!-- header text -->
+                    <div class="square-inline">
+                      <h5 class="square-inline text-start mr-auto fw-bold">
+                        Brands You Follow
+                      </h5>
+                    </div>
+                    <!-- body -->
+                    <div style="height: 85%">
                       <div
-                        v-for="(update, index) in questionsUpdates"
-                        :key="index"
+                        v-if="questionsUpdates.length > 0"
+                        class="Xoverflow-auto"
+                        style="max-height: 100%"
                       >
-                        <!--Show if it's either producer or venue update-->
                         <div
-                          v-if="
-                            update.type == 'producerUpdate' ||
-                            update.type == 'venueUpdate'
-                          "
+                          v-for="(update, index) in questionsUpdates"
+                          :key="index"
                         >
-                        <!-- Left side: Profile image -->
-                        <div class="row"> 
-                        <div v-if="update.type == 'producerUpdate'" class="col-2 pt-1" >
-                          <router-link
-                            :to="{
-                              path:
-                                '/profile/producer/' +
-                                update.id +
-                                '/' +
-                                update.producerName, //updated username
-                            }"
-                            class="reverse-text"
+                          <!--Show if it's either producer or venue update-->
+                          <div
+                            v-if="
+                              update.type == 'producerUpdate' ||
+                              update.type == 'venueUpdate'
+                            "
                           >
-                            <img
-                              :src="update.photo || defaultProfilePhoto"
-                              style="width: 37.5px; height: 37.5px"
-                              class="img-border"
-                            />
-                            
-                          </router-link>
-                        </div>  
-                        <div v-else  class="col-2 pt-1">
-                          <router-link
-                            :to="{ path: '/profile/venue/' + update.id }"
-                            class="reverse-text"
-                          >
-                            <img
-                              :src="update.photo || defaultProfilePhoto"
-                              style="width: 37.5px; height: 37.5px"
-                              class="img-border"
-                            />
-                            
-                          </router-link>
-                        </div>
-                        
-                          <!-- Right side: Brand info and update -->
-                          <div class="xflex-grow-1 col-10">
-                            <b class="ps-2 reverse-text"> {{ update.name }} </b>  <br />
-                            <i>{{ getTimeDifference(update.date) }}</i>
-                          </div>
-                        </div>
-                          
-                          updated status: "<b>{{ update.text }}</b
-                          >"
-                          <br />
-                          
-                          <br />
+                            <!-- Left side: Profile image -->
+                            <div class="row">
+                              <div
+                                v-if="update.type == 'producerUpdate'"
+                                class="col-2 pt-1"
+                              >
+                                <router-link
+                                  :to="{
+                                    path:
+                                      '/profile/producer/' +
+                                      update.id +
+                                      '/' +
+                                      update.producerName, //updated username
+                                  }"
+                                  class="reverse-text"
+                                >
+                                  <img
+                                    :src="update.photo || defaultProfilePhoto"
+                                    style="width: 37.5px; height: 37.5px"
+                                    class="img-border"
+                                  />
+                                </router-link>
+                              </div>
+                              <div v-else class="col-2 pt-1">
+                                <router-link
+                                  :to="{ path: '/profile/venue/' + update.id }"
+                                  class="reverse-text"
+                                >
+                                  <img
+                                    :src="update.photo || defaultProfilePhoto"
+                                    style="width: 37.5px; height: 37.5px"
+                                    class="img-border"
+                                  />
+                                </router-link>
+                              </div>
+
+                              <!-- Right side: Brand info and update -->
+                              <div class="xflex-grow-1 col-10">
+                                <b class="ps-2 reverse-text">
+                                  {{ update.name }}
+                                </b>
+                                <br />
+                                <i>{{ getTimeDifference(update.date) }}</i>
+                              </div>
+                            </div>
+
+                            updated status: "<b>{{ update.text }}</b
+                            >"
+                            <br />
+
+                            <br />
                           </div>
 
-                        <!-- Show if it's either producer or venue question? (Kai Lin wants to show newly added expressions)-->
+                          <!-- Show if it's either producer or venue question? (Kai Lin wants to show newly added expressions)-->
+                        </div>
+                      </div>
+                      <div
+                        v-else-if="userID"
+                        style="
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                          height: 100%;
+                        "
+                      >
+                        <h6 class="fst-italic">No brands added yet.</h6>
+                      </div>
+                      <div
+                        v-else-if="!userID"
+                        style="
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                          height: 100%;
+                          flex-direction: column;
+                        "
+                      >
+                        <p class="text-white text-center">
+                          Log in to follow your favourite brands
+                        </p>
+                        <router-link :to="{ path: '/login' }">
+                          <button
+                            class="btn btn-shelf-login py-2 px-3"
+                            style="font-weight: bold"
+                          >
+                            Login
+                          </button>
+                        </router-link>
                       </div>
                     </div>
-                    <div
-                      v-else-if="userID"
-                      style="
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        height: 100%;
-                      "
-                    >
-                      <h6 class="fst-italic">No brands added yet.</h6>
-                    </div>
-                    <div
-                      v-else-if="!userID"
-                      style="
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        height: 100%;
-                        flex-direction: column;
-                      "
-                    >
-                      <p class="text-white text-center">
-                        Log in to follow your favourite brands
-                      </p>
-                      <router-link :to="{ path: '/login' }">
-                        <button
-                          class="btn btn-shelf-login py-2 px-3"
-                          style="font-weight: bold"
-                        >
-                          Login
-                        </button>
-                      </router-link>
-                    </div>
-                  </div>
                   </div>
                 </div>
               </div>
@@ -683,7 +699,8 @@
             >
               <!-- discover  tzh changed col-12 to col-4-->
               <div class="row col-6 mobile-col-8 mobile-ps-4 mobile-pe-0">
-                <div class="col-xl-6 col-lg-6 mobile-col-6 mb-3 mobile-pe-0 mobile-ps-0 pe-1 mobile-pe-1 mobile-mb-1"
+                <div
+                  class="col-xl-6 col-lg-6 mobile-col-6 mb-3 mobile-pe-0 mobile-ps-0 pe-1 mobile-pe-1 mobile-mb-1"
                 >
                   <div class="d-grid gap-2">
                     <button
@@ -697,18 +714,17 @@
                       v-on:click="changeDiscoveryStatus()"
                     >
                       <!--tzh added -green and green-outline, changed mt-1 to mb-0_5 mt-0_5 -->
-                      <p
-                        class="my-0 discover-and-following mobile-mb-0 "
-                      >
+                      <p class="my-0 discover-and-following mobile-mb-0">
                         Discover
                       </p>
                     </button>
                   </div>
                 </div>
                 <!-- following tzh changed col-12 to col-4-->
-                <div class="col-xl-6 col-lg-6 mobile-col-6 col-4 mb-3 Xmobile-view-no-padding ps-1 mobile-ps-1 mobile-pe-0 mobile-mb-1"
+                <div
+                  class="col-xl-6 col-lg-6 mobile-col-6 col-4 mb-3 Xmobile-view-no-padding ps-1 mobile-ps-1 mobile-pe-0 mobile-mb-1"
                 >
-                  <div class="d-grid gap-2 ">
+                  <div class="d-grid gap-2">
                     <button
                       class="btn btn-sm mobile-ps-0 text-center"
                       :class="{
@@ -719,18 +735,17 @@
                       }"
                       v-on:click="changeFollowingStatus()"
                     >
-                      <p
-                        class="my-0 discover-and-following mobile-mb-0"
-                      >
+                      <p class="my-0 discover-and-following mobile-mb-0">
                         Following
                       </p>
                     </button>
                   </div>
                 </div>
               </div>
-              <div class="row col-6 mobile-col-4  mobile-ps-0 mobile-pt-1">
+              <div class="row col-6 mobile-col-4 mobile-ps-0 mobile-pt-1">
                 <!-- filter by drink type / category tzh changed col-12 to col-4 -->
-                <div class="dropdown col-xl-6 col-lg-4 col-6 mb-3 col-6 mobile-pe-0 ps-0 mobile-mb-1"
+                <div
+                  class="dropdown col-xl-6 col-lg-4 col-6 mb-3 col-6 mobile-pe-0 ps-0 mobile-mb-1"
                 >
                   <div class="d-grid gap-2">
                     <!-- tzh added -homepage and some changes for mobile-->
@@ -887,7 +902,9 @@
                   </div>
                 </div>
                 <!-- sort by drink type - tzh changed col-12 to col-4 -->
-                <div class="dropdown col-xl-6 col-lg-4 col-6 mb-3 col-6 mobile-ps-0 ps-0 mobile-mb-1" >
+                <div
+                  class="dropdown col-xl-6 col-lg-4 col-6 mb-3 col-6 mobile-ps-0 ps-0 mobile-mb-1"
+                >
                   <div class="d-grid gap-2">
                     <button
                       class="btn primary-light-dropdown-homepage btn-lg dropdown-toggle mobile-view-remove-toggle py-0"
@@ -1002,12 +1019,17 @@
                                 class="detials-rating d-flex flex-column flex-md-row justify-content-between w-100"
                               >
                                 <!-- Details Section -->
-                                <div class="flex-grow-1 py-md-3 py-1 col-12 col-md-9 d-flex flex-column justify-content-between md-px-3 px-3"
+                                <div
+                                  class="flex-grow-1 py-md-3 py-1 col-12 col-md-9 d-flex flex-column justify-content-between md-px-3 px-3"
                                 >
                                   <div class="name-producer">
                                     <router-link
                                       :to="{
-                                        path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName),
+                                        path:
+                                          '/listing/view/' +
+                                          listing.id +
+                                          '/' +
+                                          slugify(listing.listingName),
                                       }"
                                       class="primary-clickable-text text-decoration-none"
                                       style="color: #027562"
@@ -1036,7 +1058,11 @@
                                   </div>
                                   <router-link
                                     :to="{
-                                      path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName),
+                                      path:
+                                        '/listing/view/' +
+                                        listing.id +
+                                        '/' +
+                                        slugify(listing.listingName),
                                     }"
                                     class="default-clickable-text fst-italic"
                                   >
@@ -1054,19 +1080,28 @@
                                 </div>
 
                                 <!-- Rating & Read More Button -->
-                                <div class="text-center text-md-end col-12 col-md-3 d-flex flex-row flex-md-col justify-content-between d-md-block mt-0 mt-md-3 px-3"
+                                <div
+                                  class="text-center text-md-end col-12 col-md-3 d-flex flex-row flex-md-col justify-content-between d-md-block mt-0 mt-md-3 px-3"
                                 >
-                                  <h1 class="fw-bold text-warning mobile-view-hide">
+                                  <h1
+                                    class="fw-bold text-warning mobile-view-hide"
+                                  >
                                     {{ getRatings(listing) }} ★
                                   </h1>
 
-                                  <h4 class="fw-bold text-warning mobile-view-show">
+                                  <h4
+                                    class="fw-bold text-warning mobile-view-show"
+                                  >
                                     {{ getRatings(listing) }} ★
                                   </h4>
                                   <div class="d-grid">
                                     <router-link
                                       :to="{
-                                        path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName),
+                                        path:
+                                          '/listing/view/' +
+                                          listing.id +
+                                          '/' +
+                                          slugify(listing.listingName),
                                       }"
                                       class="primary-clickable-text"
                                     >
@@ -1105,7 +1140,7 @@
                     >
                       There is no listing available for the selected filter
                     </h5>
-                    
+
                     <!-- NEW CARD LAYOUT FOR LATEST REVIEWS -->
                     <div
                       v-else
@@ -1115,40 +1150,64 @@
                       <div class="row">
                         <div class="col-md-12">
                           <div class="container mt-4 mobile-mt-3">
-                                  <!-- User info and what they rated -->
-                                    <div class="d-flex align-items-center mb-2 mobile-view-show">
-                                      <img
-                                        :src="review['userInfo']['photo'] || defaultProfilePhoto"
-                                        class="rounded-circle me-2"
-                                        style="width: 30px; height: 30px;"
-                                      />
+                            <!-- User info and what they rated -->
+                            <div
+                              class="d-flex align-items-center mb-2 mobile-view-show"
+                            >
+                              <img
+                                :src="
+                                  review['userInfo']['photo'] ||
+                                  defaultProfilePhoto
+                                "
+                                class="rounded-circle me-2"
+                                style="width: 30px; height: 30px"
+                              />
 
-                                      <span class="mx-0">  <router-link
-                                        :to="{
-                                          path: '/profile/user/' + review.userID + '/' + review.username,
-                                        }"
-                                        class="primary-clickable-text"
-                                      >
-                                        <span><b>@{{ review["userInfo"]["displayName"] }}</b></span>
-                                      </router-link> just drank and rated  <router-link
-                                      :to="{
-                                        path: '/listing/view/' + review.reviewTarget.id + '/' + slugify(review.reviewTarget.listingName),
-                                      }"
-                                      class="primary-clickable-text text-decoration-none"
-                                      style="color: #027562"
-                                    >
-                                      
-                                        <b >{{ review["reviewTarget"]["listingName"] }}</b>
-                                      
-                                        <!-- <b class="d-block d-md-none mobile-mt-2" >{{ review["reviewTarget"]["listingName"] }}</b> -->
-                                      
-                                    </router-link></span>
-                                    
-                                    </div>
+                              <span class="mx-0">
+                                <router-link
+                                  :to="{
+                                    path:
+                                      '/profile/user/' +
+                                      review.userID +
+                                      '/' +
+                                      review.username,
+                                  }"
+                                  class="primary-clickable-text"
+                                >
+                                  <span
+                                    ><b
+                                      >@{{
+                                        review["userInfo"]["displayName"]
+                                      }}</b
+                                    ></span
+                                  >
+                                </router-link>
+                                just drank and rated
+                                <router-link
+                                  :to="{
+                                    path:
+                                      '/listing/view/' +
+                                      review.reviewTarget.id +
+                                      '/' +
+                                      slugify(review.reviewTarget.listingName),
+                                  }"
+                                  class="primary-clickable-text text-decoration-none"
+                                  style="color: #027562"
+                                >
+                                  <b>{{
+                                    review["reviewTarget"]["listingName"]
+                                  }}</b>
+
+                                  <!-- <b class="d-block d-md-none mobile-mt-2" >{{ review["reviewTarget"]["listingName"] }}</b> -->
+                                </router-link></span
+                              >
+                            </div>
                             <div class="card d-flex flex-row">
                               <!-- Image Section -->
                               <div class="text-center text-md-start">
-                                <div class="image-wrapper position-relative d-inline-block">
+                                <div
+                                  class="image-wrapper position-relative d-inline-block"
+                                >
                                   <img
                                     v-if="review['reviewTarget']['photo']"
                                     :src="review['photo']"
@@ -1161,78 +1220,123 @@
                                   />
                                 </div>
                               </div>
-                              <div class="detials-rating d-flex flex-column flex-md-row justify-content-between w-100">
+                              <div
+                                class="detials-rating d-flex flex-column flex-md-row justify-content-between w-100"
+                              >
                                 <!-- Details Section -->
-                                <div class="flex-grow-1 py-md-3 py-1 col-12 col-md-9 d-flex flex-column justify-content-between md-px-3 px-3">
-                                  
-                                    <!-- User info and what they rated -->
-                                    <div class="d-flex align-items-center mb-2 mobile-view-hide">
-                                      <img
-                                        :src="review['userInfo']['photo'] || defaultProfilePhoto"
-                                        class="rounded-circle me-2"
-                                        style="width: 30px; height: 30px;"
-                                      />
-                                      
-                                      <span class="mx-0"><router-link
+                                <div
+                                  class="flex-grow-1 py-md-3 py-1 col-12 col-md-9 d-flex flex-column justify-content-between md-px-3 px-3"
+                                >
+                                  <!-- User info and what they rated -->
+                                  <div
+                                    class="d-flex align-items-center mb-2 mobile-view-hide"
+                                  >
+                                    <img
+                                      :src="
+                                        review['userInfo']['photo'] ||
+                                        defaultProfilePhoto
+                                      "
+                                      class="rounded-circle me-2"
+                                      style="width: 30px; height: 30px"
+                                    />
+
+                                    <span class="mx-0"
+                                      ><router-link
                                         :to="{
-                                          path: '/profile/user/' + review.userID + '/' + review.username,
+                                          path:
+                                            '/profile/user/' +
+                                            review.userID +
+                                            '/' +
+                                            review.username,
                                         }"
                                         class="primary-clickable-text"
                                       >
-                                        <span><b>@{{ review["userInfo"]["displayName"] }}</b></span>
-                                      </router-link> just drank and rated <router-link
-                                      :to="{
-                                        path: '/listing/view/' + review.reviewTarget.id + '/' + slugify(review.reviewTarget.listingName),
-                                      }"
-                                      class="primary-clickable-text text-decoration-none"
-                                      style="color: #027562"
-                                    >
-                                      
-                                        <b >{{ review["reviewTarget"]["listingName"] }}</b>
-                                      
+                                        <span
+                                          ><b
+                                            >@{{
+                                              review["userInfo"]["displayName"]
+                                            }}</b
+                                          ></span
+                                        >
+                                      </router-link>
+                                      just drank and rated
+                                      <router-link
+                                        :to="{
+                                          path:
+                                            '/listing/view/' +
+                                            review.reviewTarget.id +
+                                            '/' +
+                                            slugify(
+                                              review.reviewTarget.listingName
+                                            ),
+                                        }"
+                                        class="primary-clickable-text text-decoration-none"
+                                        style="color: #027562"
+                                      >
+                                        <b>{{
+                                          review["reviewTarget"]["listingName"]
+                                        }}</b>
+
                                         <!-- <b class="d-block d-md-none mobile-mt-2" >{{ review["reviewTarget"]["listingName"] }}</b> -->
-                                      
-                                    </router-link></span>
-                                    
-                                    </div>
-                                    
-                                    
-                                    <!-- Review text -->
-                                    <div class="mt-2 fst-italic">
-                                      <p class="homepage-bottle-review-description mobile-view-hide">
-                                        "{{ 
-                                          review['reviewDesc'] ?.length > 170
-                                            ? review['reviewDesc'].slice(0, 170) + '...'
-                                            : review['reviewDesc']  
-                                          }}"
-                                      </p>
-                                      <p class="homepage-bottle-review-description  mobile-view-show">
-                                        "{{ 
-                                          review['reviewDesc'] ?.length > 95
-                                            ? review['reviewDesc'].slice(0, 95) + '...'
-                                            : review['reviewDesc']  
-                                          }}"
-                                      </p>
-                                    </div>
-                                  
+                                      </router-link></span
+                                    >
+                                  </div>
+
+                                  <!-- Review text -->
+                                  <div class="mt-2 fst-italic">
+                                    <p
+                                      class="homepage-bottle-review-description mobile-view-hide"
+                                    >
+                                      "{{
+                                        review["reviewDesc"]?.length > 170
+                                          ? review["reviewDesc"].slice(0, 170) +
+                                            "..."
+                                          : review["reviewDesc"]
+                                      }}"
+                                    </p>
+                                    <p
+                                      class="homepage-bottle-review-description mobile-view-show"
+                                    >
+                                      "{{
+                                        review["reviewDesc"]?.length > 95
+                                          ? review["reviewDesc"].slice(0, 95) +
+                                            "..."
+                                          : review["reviewDesc"]
+                                      }}"
+                                    </p>
+                                  </div>
                                 </div>
 
                                 <!-- Rating & View Drink Button -->
-                                <div class="text-center text-md-end col-12 col-md-3 d-flex flex-row flex-md-col justify-content-between d-md-block mt-0 mt-md-3 px-3">
-                                  <h1 class="fw-bold text-warning mobile-view-hide">
+                                <div
+                                  class="text-center text-md-end col-12 col-md-3 d-flex flex-row flex-md-col justify-content-between d-md-block mt-0 mt-md-3 px-3"
+                                >
+                                  <h1
+                                    class="fw-bold text-warning mobile-view-hide"
+                                  >
                                     {{ review["rating"] }} ★
                                   </h1>
-                                  <h4 class="fw-bold text-warning mobile-view-show">
+                                  <h4
+                                    class="fw-bold text-warning mobile-view-show"
+                                  >
                                     {{ review["rating"] }} ★
                                   </h4>
                                   <div class="d-grid">
                                     <router-link
                                       :to="{
-                                        path: '/listing/view/' + review.reviewTarget.id + '/' + slugify(review.reviewTarget.listingName),
+                                        path:
+                                          '/listing/view/' +
+                                          review.reviewTarget.id +
+                                          '/' +
+                                          slugify(
+                                            review.reviewTarget.listingName
+                                          ),
                                       }"
                                       class="primary-clickable-text"
                                     >
-                                      <button class="btn btn-read-more btn-sm fw-bold rounded-pill mobile-pb-1 mobile-pt-1 mobile-mb-2 mobile-fs-7">
+                                      <button
+                                        class="btn btn-read-more btn-sm fw-bold rounded-pill mobile-pb-1 mobile-pt-1 mobile-mb-2 mobile-fs-7"
+                                      >
                                         View Drink
                                       </button>
                                     </router-link>
@@ -1267,19 +1371,35 @@
                     >
                       There is no listing available for the selected filter
                     </h5>
-                    
+
                     <!-- NEW CARD LAYOUT FOR RECENTLY ADDED -->
-                    
-                      <div v-for="listing in selectedDrinkType == '' ? recentlyAdded : filteredRecentlyAdded"  v-bind:key="listing.id"  class="row">
-                        <div class="col-md-12">
-                          <div class="card d-flex flex-row mt-4 mobile-mt-3">
-                              <!-- Image Section -->
-                              <div class="text-center text-md-start">
-                                <div class="image-wrapper position-relative d-inline-block">
-                                  <img v-if="listing['photo']" :src="listing['photo']" class="listing-image" />
-                                  <img v-else src="../../Images/Drinks/Placeholder.png" class="listing-image" />
-                                </div>
-                                <!-- <div class="mobile-view-hide position-absolute" style="top: 10px; right: 10px;">
+
+                    <div
+                      v-for="listing in selectedDrinkType == ''
+                        ? recentlyAdded
+                        : filteredRecentlyAdded"
+                      v-bind:key="listing.id"
+                      class="row"
+                    >
+                      <div class="col-md-12">
+                        <div class="card d-flex flex-row mt-4 mobile-mt-3">
+                          <!-- Image Section -->
+                          <div class="text-center text-md-start">
+                            <div
+                              class="image-wrapper position-relative d-inline-block"
+                            >
+                              <img
+                                v-if="listing['photo']"
+                                :src="listing['photo']"
+                                class="listing-image"
+                              />
+                              <img
+                                v-else
+                                src="../../Images/Drinks/Placeholder.png"
+                                class="listing-image"
+                              />
+                            </div>
+                            <!-- <div class="mobile-view-hide position-absolute" style="top: 10px; right: 10px;">
                                   <BookmarkIcon
                                     v-if="user"
                                     :user="user"
@@ -1289,84 +1409,103 @@
                                     @icon-clicked="handleIconClick"
                                   />
                                 </div> -->
-                              </div>
+                          </div>
 
-                              <div class="detials-rating d-flex flex-column flex-md-row justify-content-between w-100">
-                                <!-- Details Section -->
-                                <div class="flex-grow-1 py-md-3 py-1 col-12 col-md-9 d-flex flex-column justify-content-between md-px-3 px-3">
-                                  <div class="name-producer">
-                                    <router-link
-                                      :to="{
-                                        path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName),
-                                      }"
-                                      class="primary-clickable-text text-decoration-none"
-                                      style="color: #027562"
-                                    >
-                                      <h5 class="d-none d-md-block">
-                                        <b>{{ listing["listingName"] }}</b>
-                                      </h5>
-                                      <h6 class="d-block d-md-none mobile-mt-2">
-                                        <b>{{ listing["listingName"] }}</b>
-                                      </h6>
-                                    </router-link>
-                                    <router-link
-                                      :to="{
-                                        path:
-                                          '/profile/producer/' +
-                                          listing.producerID +
-                                          '/' +
-                                          getProducerName(listing),
-                                      }"
-                                      class="primary-clickable-text"
-                                    >
-                                      <h6 class="Xmobile-rating-smaller-text">
-                                        <b>{{ getProducerName(listing) }}</b>
-                                      </h6>
-                                    </router-link>
-                                  </div>
-                                  <router-link
-                                    :to="{
-                                      path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName),
-                                    }"
-                                    class="default-clickable-text fst-italic"
+                          <div
+                            class="detials-rating d-flex flex-column flex-md-row justify-content-between w-100"
+                          >
+                            <!-- Details Section -->
+                            <div
+                              class="flex-grow-1 py-md-3 py-1 col-12 col-md-9 d-flex flex-column justify-content-between md-px-3 px-3"
+                            >
+                              <div class="name-producer">
+                                <router-link
+                                  :to="{
+                                    path:
+                                      '/listing/view/' +
+                                      listing.id +
+                                      '/' +
+                                      slugify(listing.listingName),
+                                  }"
+                                  class="primary-clickable-text text-decoration-none"
+                                  style="color: #027562"
+                                >
+                                  <h5 class="d-none d-md-block">
+                                    <b>{{ listing["listingName"] }}</b>
+                                  </h5>
+                                  <h6 class="d-block d-md-none mobile-mt-2">
+                                    <b>{{ listing["listingName"] }}</b>
+                                  </h6>
+                                </router-link>
+                                <router-link
+                                  :to="{
+                                    path:
+                                      '/profile/producer/' +
+                                      listing.producerID +
+                                      '/' +
+                                      getProducerName(listing),
+                                  }"
+                                  class="primary-clickable-text"
+                                >
+                                  <h6 class="Xmobile-rating-smaller-text">
+                                    <b>{{ getProducerName(listing) }}</b>
+                                  </h6>
+                                </router-link>
+                              </div>
+                              <router-link
+                                :to="{
+                                  path:
+                                    '/listing/view/' +
+                                    listing.id +
+                                    '/' +
+                                    slugify(listing.listingName),
+                                }"
+                                class="default-clickable-text fst-italic"
+                              >
+                                <p class="homepage-bottle-listing-description">
+                                  {{
+                                    listing.officialDesc?.length > 300
+                                      ? listing.officialDesc.slice(0, 300) +
+                                        "..."
+                                      : listing.officialDesc
+                                  }}
+                                </p>
+                              </router-link>
+                            </div>
+
+                            <!-- Rating & Read More Button -->
+                            <div
+                              class="text-center text-md-end col-12 col-md-3 d-flex flex-row flex-md-col justify-content-between d-md-block mt-0 mt-md-3 px-3"
+                            >
+                              <h1 class="fw-bold text-warning mobile-view-hide">
+                                {{ getRatings(listing) }} ★
+                              </h1>
+                              <h4 class="fw-bold text-warning mobile-view-show">
+                                {{ getRatings(listing) }} ★
+                              </h4>
+                              <div class="d-grid">
+                                <router-link
+                                  :to="{
+                                    path:
+                                      '/listing/view/' +
+                                      listing.id +
+                                      '/' +
+                                      slugify(listing.listingName),
+                                  }"
+                                  class="primary-clickable-text"
+                                >
+                                  <button
+                                    class="btn btn-read-more btn-sm fw-bold rounded-pill mobile-pb-1 mobile-pt-1 mobile-mb-2 mobile-fs-7"
                                   >
-                                    <p class="homepage-bottle-listing-description">
-                                      {{
-                                        listing.officialDesc?.length > 300
-                                          ? listing.officialDesc.slice(0, 300) +
-                                            "..."
-                                          : listing.officialDesc
-                                      }}
-                                    </p>
-                                  </router-link>
-                                </div>
-
-                                <!-- Rating & Read More Button -->
-                                <div class="text-center text-md-end col-12 col-md-3 d-flex flex-row flex-md-col justify-content-between d-md-block mt-0 mt-md-3 px-3">
-                                  <h1 class="fw-bold text-warning mobile-view-hide">
-                                    {{ getRatings(listing) }} ★
-                                  </h1>
-                                  <h4 class="fw-bold text-warning mobile-view-show">
-                                    {{ getRatings(listing) }} ★
-                                  </h4>
-                                  <div class="d-grid">
-                                    <router-link
-                                      :to="{
-                                        path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName),
-                                      }"
-                                      class="primary-clickable-text"
-                                    >
-                                      <button class="btn btn-read-more btn-sm fw-bold rounded-pill mobile-pb-1 mobile-pt-1 mobile-mb-2 mobile-fs-7">
-                                        Read More
-                                      </button>
-                                    </router-link>
-                                  </div>
-                                </div>
+                                    Read More
+                                  </button>
+                                </router-link>
                               </div>
-                            </div> 
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    
+                    </div>
                   </div>
                 </div>
 
@@ -1537,12 +1676,12 @@ export default {
   methods: {
     //remove %20 from url
     slugify(text) {
-                return text
-                    .toString()
-                    .toLowerCase()
-                    .replace(/\s+/g, '')
-                    .replace(/[^\w]/g, '');
-            },
+      return text
+        .toString()
+        .toLowerCase()
+        .replace(/\s+/g, "")
+        .replace(/[^\w]/g, "");
+    },
     // load data from database
     async loadData() {
       // countries
@@ -1622,7 +1761,7 @@ export default {
           await this.getFollowedVenues();
           await Promise.all([
             this.getListingsByProducer(),
-            this.getListingsByVenue()
+            this.getListingsByVenue(),
           ]);
           this.getRecentlyAdded();
           this.getQuestionsUpdates();
@@ -2297,24 +2436,24 @@ export default {
     // get listings by producer
     getListingsByProducer() {
       // Reset the array to avoid duplicate data
-        this.allProducerDrinks = [];
-        
-        if (!this.followedProducers || this.followedProducers.length === 0) {
-          return Promise.resolve(); // Return early if no producers to follow
-        }
-        
-        try {
-          this.followedProducers.forEach((producer) => {
-            const producerListings = this.listings.filter(
-              (listing) => listing.producerID == parseInt(producer)
-            );
-            this.allProducerDrinks.push(...producerListings);
-          });
-          return Promise.resolve();
-        } catch (error) {
-          console.error("Error in getListingsByProducer:", error);
-          return Promise.reject(error);
-        }
+      this.allProducerDrinks = [];
+
+      if (!this.followedProducers || this.followedProducers.length === 0) {
+        return Promise.resolve(); // Return early if no producers to follow
+      }
+
+      try {
+        this.followedProducers.forEach((producer) => {
+          const producerListings = this.listings.filter(
+            (listing) => listing.producerID == parseInt(producer)
+          );
+          this.allProducerDrinks.push(...producerListings);
+        });
+        return Promise.resolve();
+      } catch (error) {
+        console.error("Error in getListingsByProducer:", error);
+        return Promise.reject(error);
+      }
     },
 
     // get venues that user follows
@@ -2325,21 +2464,21 @@ export default {
     },
 
     // get listings by venue
-    getListingsByVenue() {    
+    getListingsByVenue() {
       // Reset the array to avoid duplicate data
       this.allVenueDrinks = [];
-      
+
       if (!this.followedVenues || this.followedVenues.length === 0) {
         return Promise.resolve(); // Return early if no venues to follow
       }
-      
+
       try {
         this.followedVenues.forEach((venue) => {
           const venueID = parseInt(venue);
           const venueObject = this.venues.find((v) => v.id === venueID);
-          
+
           if (!venueObject || !venueObject.menu) return; // Skip if venue not found or has no menu
-          
+
           let allMenuItems = venueObject.menu;
           let allSectionMenus = allMenuItems.reduce((acc, menuItem) => {
             return acc.concat(menuItem.sectionMenu || []);
@@ -2350,11 +2489,11 @@ export default {
           }, []);
 
           let uniqueListingsIDs = [...new Set(allListingsIDs)];
-          
-          const allVenueDrinks = this.listings.filter(listing => 
+
+          const allVenueDrinks = this.listings.filter((listing) =>
             uniqueListingsIDs.includes(listing.id)
           );
-          
+
           this.allVenueDrinks.push(...allVenueDrinks);
         });
         return Promise.resolve();
@@ -2366,34 +2505,34 @@ export default {
 
     // get recently added
     getRecentlyAdded() {
-        try {
-          console.log("Producer drinks:", this.allProducerDrinks.length);
-          console.log("Venue drinks:", this.allVenueDrinks.length);
-          
-          // Combine producer and venue listings with deduplication
-          this.recentlyAdded = [
-            ...new Map(
-              this.allProducerDrinks
-                .concat(this.allVenueDrinks)
-                .map((item) => [item.id, item])
-            ).values(),
-          ];
-          
-          console.log("Combined recently added:", this.recentlyAdded.length);
-          
-          // Sort by date if available, newest first
-          if (this.recentlyAdded.length > 0 && this.recentlyAdded[0].addedDate) {
-            this.recentlyAdded.sort((a, b) => {
-              return new Date(b.addedDate || 0) - new Date(a.addedDate || 0);
-            });
-          }
-          
-          return Promise.resolve(this.recentlyAdded);
-        } catch (error) {
-          console.error("Error in getRecentlyAdded:", error);
-          this.recentlyAdded = [];
-          return Promise.reject(error);
+      try {
+        console.log("Producer drinks:", this.allProducerDrinks.length);
+        console.log("Venue drinks:", this.allVenueDrinks.length);
+
+        // Combine producer and venue listings with deduplication
+        this.recentlyAdded = [
+          ...new Map(
+            this.allProducerDrinks
+              .concat(this.allVenueDrinks)
+              .map((item) => [item.id, item])
+          ).values(),
+        ];
+
+        console.log("Combined recently added:", this.recentlyAdded.length);
+
+        // Sort by date if available, newest first
+        if (this.recentlyAdded.length > 0 && this.recentlyAdded[0].addedDate) {
+          this.recentlyAdded.sort((a, b) => {
+            return new Date(b.addedDate || 0) - new Date(a.addedDate || 0);
+          });
         }
+
+        return Promise.resolve(this.recentlyAdded);
+      } catch (error) {
+        console.error("Error in getRecentlyAdded:", error);
+        this.recentlyAdded = [];
+        return Promise.reject(error);
+      }
     },
 
     getQuestionsUpdates() {
@@ -2567,45 +2706,46 @@ export default {
       }
       //Lazy loading for following tab
       else {
-      //Lazy loading for following tab
-      // Check if there are items in recentlyAdded before accessing
-      if (this.recentlyAdded && this.recentlyAdded.length > 0) {
-        let lastFollowingId = this.recentlyAdded[this.recentlyAdded.length - 1].id;
-        
-        let params = {
-          followedProducers: this.followedProducers,
-          followedVenues:
-            this.followedVenues.length > this.followCount
-              ? this.followedVenues[this.followCount]
-              : "null",
-        };
-        let queryString = new URLSearchParams({
-          followedProducers: JSON.stringify(params.followedProducers),
-          followedVenues: JSON.stringify(params.followedVenues),
-        }).toString();
-        const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getNextFollowing30` +
-            "/" +
-            lastFollowingId +
-            `?${queryString}`
-        );
-        const newItems = response.data.filter(
-          (item) =>
-            !this.recentlyAdded.some(
-              (existingItem) => existingItem.id === item.id
-            )
-        );
-        this.recentlyAdded.push(...newItems);
-        if (response.data.length == 0) {
+        //Lazy loading for following tab
+        // Check if there are items in recentlyAdded before accessing
+        if (this.recentlyAdded && this.recentlyAdded.length > 0) {
+          let lastFollowingId =
+            this.recentlyAdded[this.recentlyAdded.length - 1].id;
+
+          let params = {
+            followedProducers: this.followedProducers,
+            followedVenues:
+              this.followedVenues.length > this.followCount
+                ? this.followedVenues[this.followCount]
+                : "null",
+          };
+          let queryString = new URLSearchParams({
+            followedProducers: JSON.stringify(params.followedProducers),
+            followedVenues: JSON.stringify(params.followedVenues),
+          }).toString();
+          const response = await this.$axios.get(
+            `${process.env.VUE_APP_API_URL}/getData/getNextFollowing30` +
+              "/" +
+              lastFollowingId +
+              `?${queryString}`
+          );
+          const newItems = response.data.filter(
+            (item) =>
+              !this.recentlyAdded.some(
+                (existingItem) => existingItem.id === item.id
+              )
+          );
+          this.recentlyAdded.push(...newItems);
+          if (response.data.length == 0) {
+            this.moreListings = false;
+          }
+
+          this.followCount++;
+        } else {
+          // Handle case where there are no items to load
           this.moreListings = false;
+          // Optionally show a message to the user
         }
-        
-        this.followCount++;
-      } else {
-        // Handle case where there are no items to load
-        this.moreListings = false;
-        // Optionally show a message to the user
-      }
       }
     },
   },

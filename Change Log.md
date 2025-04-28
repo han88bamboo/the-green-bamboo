@@ -741,7 +741,7 @@ Purpose of changes:
 1. neatened up the spacing of the venue desc and attributes, and the review venue and follow venue buttons (mobile + desktop)
 2. adjusted the global css for the display of the venue profile images and also the display of the drink listings rows for producer + venue profile pages (added hover effects, changed sizing etc)
 
-Nature of the changes (frontebd/backend / database):
+Nature of the changes (frontend / backend / database):
 front end
 
 Coder: Dycia
@@ -765,5 +765,13 @@ fixed delete review bug on Producer BottleListings page - delete review modal wa
 made UX changes for the randomExplorePage - however may need to discuss with Kai how best to show how users should show up when making the latest change Wes suggested to show the latest review dropped on that rating. what's the implication for the sorting function?
 made UX changes to navbar
 
-Nature of the changes (frontebd/backend / database):
+Nature of the changes (frontend / backend / database):
 front end
+
+Coder: TeckXuan
+Purpose of changes:
+- Changed /getRandomListings to return selected date to be displayed on the frontend 
+- Changed RandomExplorePage to show the selected date in the console
+
+Nature of changes (frontend / backend / database):
+frontend, backend
