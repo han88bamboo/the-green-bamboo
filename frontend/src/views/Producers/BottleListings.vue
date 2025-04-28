@@ -57,8 +57,8 @@
         <div class="row container">
           <!-- image -->
           <div
-            class="col-5 col-md-5 col-lg-4 col-xl-3 d-flex justify-content-center"
-          >
+          class="col-5 col-md-5 col-lg-4 col-xl-3 d-flex justify-content-center"
+          > 
             <div
               class="rounded overflow-hidden"
               style="
@@ -74,6 +74,7 @@
               />
             </div>
           </div>
+
 
           <!-- details -->
           <div
@@ -209,103 +210,92 @@
               <div class="row">
                 <div class="col-12 col-lg-8">
                   <div class="row">
-                    <div class="col-12 row">
-                      <div class="col-9 mobile-view-show px-1 py-0">
-                        <div
-                          v-if="userType == 'user' && userID !== 'defaultUser'"
-                          class="padding-for-addyourreviewbutton-large-screen mobile-view-show"
+
+                    <!--mobile only row of buttons (kai-edited)-->
+                    <div class="col-12 d-flex align-items-center gap-1 px-2 py-1 mobile-view-show mb-1">
+                      
+                      <!-- Red Add Review Button -->
+                      <template v-if="userType == 'user'">
+                        <!-- Logged-In User -->
+                        <button
+                          class="btn btn-danger text-white fw-semibold px-2"
+                          data-bs-toggle="modal"
+                          data-bs-target="#reviewModal"
+                          style="border-radius: 0; height: 40px;"
                         >
-                          <div v-if="!inEdit" class="d-grid gap-2">
-                            <button
-                              class="btn primary-btn-less-round-blue btn-lg"
-                              data-bs-toggle="modal"
-                              data-bs-target="#reviewModal"
-                              style="font-weight: 500; padding: 2px"
-                            >
-                              <!--tzh added -blue -->
-                              <!-- <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 16">
-                                                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
-                                                        </svg> -->
-                              Add Review
-                            </button>
-                          </div>
-                          <div v-else class="d-grid gap-2">
-                            <button
-                              class="btn primary-btn-less-round-blue btn-lg mobile-rating-smaller-text-2"
-                            >
-                              <!--tzh added -blue -->
-                              Reviewed
-                            </button>
-                          </div>
-                        </div>
-                        <div
-                          v-else-if="userType == 'user'"
-                          class="col-5 padding-for-addyourreviewbutton-large-screen mobile-view-hide justify-content-end"
-                        >
-                          <div class="d-grid gap-2">
-                            <router-link
-                              :to="{ path: '/login' }"
-                              class="reverse-clickable-text"
-                            >
-                              <button
-                                class="btn primary-btn-less-round-blue btn-lg mobile-rating-smaller-text-2"
-                                style="font-weight: bold"
-                              >
-                                <!--tzh added -blue -->
-                                Add Your Review
-                              </button>
-                            </router-link>
-                          </div>
-                        </div>
-                      </div>
+                          {{ !inEdit ? 'Add Review' : 'Reviewed' }}
+                        </button>
+                      </template>
+                      
+                        <!-- Red Add Review Button When User Is Logged Out -->
+                      <router-link
+                      v-else
+                      :to="{ path: '/login' }"
+                      class="text-decoration-none"
+                    >
+                      <button
+                        class="btn btn-danger text-white fw-semibold px-2"
+                        style="border-radius: 0; height: 38px;"
+                      >
+                        Add Review
+                      </button>
+                    </router-link>
+                    
+                      <!-- Teal Bookmark Icon -->
                       <div
-                        class="col-1 d-flex flex-row justify-content-center make-bookmark-bigger mobile-view-show"
+                      v-if="userType =='user'"
+                      class="d-flex align-items-center justify-content-center teal-bookmark-icon"
+                      style="background-color: #006A50; width: 40px; height: 40px; cursor: pointer;"
                       >
                         <BookmarkIcon
                           v-if="user"
                           :user="user"
                           :listing="specified_listing"
                           :overlay="false"
-                          size="35"
+                          size="20"
                           @icon-clicked="handleIconClick"
                         />
                       </div>
-                      <div class="col-1 mobile-view-show">
-                        <svg
-                          width="35"
-                          height="35"
-                          viewBox="0 0 100 100"
-                          xmlns="http://www.w3.org/2000/svg"
-                          data-bs-toggle="modal"
-                          data-bs-target="#whereToBuyModal"
+                    
+                       <!-- Teal Bookmark Button When User Is Logged Out -->
+                        <router-link
+                        v-else
+                        :to="{ path: '/login' }"
+                        class="d-flex align-items-center justify-content-center text-decoration-none"
+                        style="background-color: #006A50; width: 38px; height: 38px;"
                         >
-                          <!-- Checkbox border -->
-                          <rect
-                            x="5"
-                            y="5"
-                            width="90"
-                            height="90"
-                            stroke="#006A50"
-                            stroke-width="8"
-                            fill="none"
-                            rx="10"
-                          />
-
-                          <!-- Checkmark -->
-                          <polyline
-                            points="25,50 45,75 80,30"
-                            stroke="#006A50"
-                            stroke-width="8"
-                            fill="none"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                          />
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#ffffff" viewBox="0 0 16 16">
+                          <path d="M2 2v13.5l5.5-3.5 5.5 3.5V2z"/>
                         </svg>
+                        </router-link>
 
-                        <!-- <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" data-bs-toggle="modal" data-bs-target="#whereToBuyModal" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="arcs"><path d="M3.8 3.8l16.4 16.4M20.2 3.8L3.8 20.2M15 3h6v6M9 3H3v6M15 21h6v-6M9 21H3v-6"/></svg> -->
+
+                      <!-- Black External Link Icon -->
+                      <div
+                        class="d-flex align-items-center justify-content-center"
+                        style="background-color: #000000; width: 40px; height: 40px; cursor: pointer;"
+                        data-bs-toggle="modal"
+                        data-bs-target="#whereToBuyModal"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="#ffffff"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path d="M18 13v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                          <polyline points="15 3 21 3 21 9" />
+                          <line x1="10" y1="14" x2="21" y2="3" />
+                        </svg>
                       </div>
                     </div>
-
+                
+                    
                     <h3 class="text-body-secondary mb-0 mobile-view-hide">
                       <b> {{ specified_listing["listingName"] }} </b>
                     </h3>
@@ -841,7 +831,7 @@
         </div>
         <div class="row pt-2 container mobile-view-show text-black">
           <p
-            class="text-start mb-1 col-10"
+            class="text-start mb-1 col-12"
             style="
               white-space: nowrap;
               overflow: hidden;
@@ -884,11 +874,11 @@
         </div>
         <!-- more information (category, age, country of origin, abv, list buttons & bookmark) -->
         <div class="row pt-4 mobile-view-hide">
-          <div class="col-9 col-lg-10">
+          <div class="col-9 col-lg-11">
             <div class="row listing-details">
               <!-- category -->
               <div
-                class="col-6 col-lg-3 pe-1 text-start mobile-view-hide text-color-black"
+                class="col-6 col-lg-3 pe-1 ps-4 text-start mobile-view-hide text-color-black"
               >
                 <h5 class="text-body-secondary mb-1">
                   <b> {{ specified_listing["typeCategory"] }} </b>
@@ -898,7 +888,7 @@
 
               <!-- drink styles -->
               <div
-                class="col-6 col-lg-2 px-1 text-start mobile-view-hide text-color-black"
+                class="col-6 col-lg-3 px-1 text-start mobile-view-hide text-color-black"
               >
                 <h5 class="text-body-secondary mb-1">
                   <b v-if="specified_listing['drinkStyle']">
@@ -949,43 +939,16 @@
             </div>
           </div>
 
-          <div class="col-2 row">
-            <!-- have tried button -->
-            <div class="col-1 col-lg-5 p-0">
-              <!-- <div v-if="user && Object.keys(user.drinkLists).length > 0" v-html="checkDrinkLists(specified_listing).buttons.haveTried" class="d-grid" @click="addToTriedList"> </div> -->
-              <!-- CP edits: Removed the if logic so public users can also view and click -->
-              <div
-                v-html="checkDrinkLists(specified_listing).buttons.haveTried"
-                class="d-grid"
-                @click="addToTriedList"
-              ></div>
-            </div>
-            <!-- want to try button -->
-
-            <!-- bookmark button -->
-            <div
-              class="col-1 col-lg-5 text-center d-flex justify-content-end make-bookmark-bigger"
-            >
-              <!-- CP edits: removed v-if logic for public users to view and click -->
-              <BookmarkIcon
-                :user="user"
-                :listing="specified_listing"
-                :overlay="false"
-                size="40"
-                @icon-clicked="handleIconClick"
-              />
-            </div>
-          </div>
         </div>
 
         <!-- more information (average rating, would recommend, would drink again) -->
-        <div class="row pt-3 container">
+        <div class="row pt-3 container pe-4 g-0 align-items-center">
           <!-- xyz -->
-          <div class="col-12 col-lg-7">
-            <div class="row">
+          <div class="col-8 mobile-col-12">
+            <div class="row gx-2">
               <!-- average rating -->
               <div
-                class="col-4 text-start mobile-col-3 mobile-pe-0 text-color-black"
+                class="col-4 text-start ps-4 mobile-col-4 mobile-pe-0 text-color-black"
               >
                 <h3
                   class="mobile-rating-smaller-text text-body-secondary rating-text"
@@ -1005,7 +968,7 @@
               </div>
               <!-- would recommend -->
               <div
-                class="col-4 text-start mobile-col-3 mobile-ps-0 mobile-pe-0 text-color-black"
+                class="col-4 text-start mobile-col-4 mobile-ps-0 mobile-pe-0 text-color-black"
               >
                 <h3
                   class="mobile-rating-smaller-text text-body-secondary rating-text"
@@ -1019,7 +982,7 @@
               </div>
               <!-- would drink again -->
               <div
-                class="col-4 text-start mobile-col-3 mobile-ps-0 text-color-black"
+                class="col-4 text-start pe-0 mobile-col-4 mobile-ps-0 text-color-black"
               >
                 <h3
                   class="mobile-rating-smaller-text text-body-secondary rating-text"
@@ -1129,46 +1092,53 @@
           </div>
           <!-- END of delete review modal -->
 
-          <!-- add your review -->
-          <!-- Display Add review or Review already added accordingly to whether user already left review -->
-          <div
-            v-if="userType == 'user' && userID !== 'defaultUser'"
-            class="col-5 padding-for-addyourreviewbutton-large-screen mobile-view-hide justify-content-end"
-          >
-            <div v-if="!inEdit" class="d-grid gap-2">
+          <!-- ADD YOUR REVIEW & BOOKMARK -->
+          <div class="col-4 d-flex align-items-center mobile-view-hide me-0">
+            <!-- Logged-in users -->
+            <div v-if="userType === 'user' && userID !== 'defaultUser'">
               <button
+                v-if="!inEdit"
                 class="btn primary-btn-less-round-blue btn-lg"
                 data-bs-toggle="modal"
                 data-bs-target="#reviewModal"
-                style="font-weight: bold"
+                style="font-weight: bold;"
               >
-                <!---<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 16">
-                                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
-                                </svg>-->
                 Add Your Review
               </button>
-            </div>
-            <div v-else class="d-grid gap-2">
-              <button class="btn primary-btn-less-round-blue btn-lg">
-                Review already added
+              <button
+                v-else
+                class="btn primary-btn-less-round-blue btn-lg"
+                style="font-weight: bold;"
+              >
+                Review Added!
               </button>
             </div>
-          </div>
-          <div
-            v-if="userID == 'defaultUser'"
-            class="col-5 padding-for-addyourreviewbutton-large-screen mobile-view-hide justify-content-end"
-          >
-            <div class="d-grid gap-2">
+
+            <!-- Logged-out users -->
+            <div v-else>
               <button
                 class="btn primary-btn-less-round-blue btn-lg"
                 @click="$router.push('/login')"
-                style="font-weight: bold"
+                style="font-weight: bold;"
               >
                 Add Your Review
               </button>
             </div>
+
+            <!-- Bookmark icon -->
+            <div class="d-flex align-items-center ms-2 mobile-view-hide">
+              <BookmarkIcon
+                :user="user"
+                :listing="specified_listing"
+                :overlay="false"
+                size="40"
+                @icon-clicked="handleIconClick"
+              />
+            </div>
           </div>
+
         </div>
+        
 
         <!-- popular flavorTag -->
         <div class="row pt-3 mobile-pt-2 container">
@@ -2092,7 +2062,7 @@
           <h5 class="text-start" style="font-weight: bold; color: black">
             In Photos
           </h5>
-          <div class="row text-start" style="padding-left: 1.5em">
+          <div class="row text-start" style="padding-left: 0.75em">
             <div class="col">
               <div class="row justify-content-start align-items-start">
                 <!-- If user can add a review -->
@@ -2130,7 +2100,7 @@
                     <img
                       :src="review['photo'] || defaultPhoto"
                       alt=""
-                      class="review-image shadow-effect"
+                      class="review-image"
                     />
                   </div>
                 </div>
@@ -2197,7 +2167,7 @@
           >
             <!-- user reviews -->
 
-            <div class="col-9 xcol-lg-8">
+            <div class="col-12 col-lg-9">
               <div class="row">
                 <div class="text-start mb-3">
                   <div class="row align-items-center">
@@ -2215,7 +2185,7 @@
                     </div>
 
                     <!-- Username and Rating -->
-                    <div class="col-10 pe-0 mobile-fs-7 mobile-ps-4">
+                    <div class="col-10 pe-0 mobile-fs-6 mobile-ps-4">
                       <router-link
                         :to="`/profile/user/${review.userID}`"
                         class="text-decoration-none text-dark"
@@ -2273,32 +2243,11 @@
                       </span>
                     </div>
 
-                    <!-- Edit & Delete Buttons -->
-                    <div class="mt-2">
-                      <button
-                        v-if="review.userID === parseInt(userID) || correctModerator || user.isAdmin"
-                        class="btn btn-warning me-1 py-1 mobile-fs-7"
-                        @click="setUpdateID(review)"
-                        data-bs-toggle="modal"
-                        data-bs-target="#reviewModal"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        v-if="review.userID === correctModerator || user.isAdmin"
-                        class="btn btn-danger py-1 mobile-fs-7"
-                        @click="setDeleteID(review)"
-                        data-bs-toggle="modal"
-                        data-bs-target="#deleteReview"
-                      >
-                        Delete
-                      </button>
-                    </div>
                   </div>
                 </div>
 
                 <!-- User's Review -->
-                <div class="text-start mb-3">
+                <div class="text-start mb-2">
                   {{ review["reviewDesc"] }}
                 </div>
 
@@ -2323,7 +2272,7 @@
                 </div>
 
                 <!-- Voting and Detailed Review -->
-                <div class="text-start" style="display: flex !important">
+                <div class="text-start mb-3" style="display: flex !important">
                   <div class="div">
                     <svg
                       v-if="
@@ -2362,23 +2311,20 @@
                     review.userVotes.downvotes.length
                   }}</span>
                   <div class="">
+                    <!-- Downvote -->
                     <svg
-                      v-if="
-                        !review.userVotes.downvotes.some(
-                          (vote) => parseInt(vote?.userId) === parseInt(userID)
-                        )
-                      "
+                      v-if="!hasDownvoted"
                       @click="voteReview(review, 'downvote')"
                       xmlns="http://www.w3.org/2000/svg"
                       width="20"
                       height="20"
                       fill="currentColor"
-                      class="bi bi-caret-down me-3"
+                      class="bi bi-caret-down"
+                      viewBox="0 0 16 16"
                     >
-                      <path
-                        d="M3.204 5h9.592L8 10.481zm-.753.659 4.796 5.48a1 1 0 0 0 1.506 0l4.796 5.48c.566-.647.106-1.659-.753-1.659H3.204a1 1 0 0 0-.753 1.659"
-                      />
+                      <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
                     </svg>
+
                     <svg
                       v-else
                       @click="voteReview(review, 'undownvote')"
@@ -2386,22 +2332,83 @@
                       width="20"
                       height="20"
                       fill="currentColor"
-                      class="bi bi-caret-down-fill me-3"
+                      class="bi bi-caret-down-fill"
+                      viewBox="0 0 16 16"
                     >
-                      <path
-                        d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"
-                      />
+                      <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
                     </svg>
+
                   </div>
                   <a
                     href="#"
-                    class="text-decoration-underline text-secondary ms-3"
+                    class="text-decoration-underline text-secondary me-3"
                     data-bs-toggle="modal"
                     data-bs-target="#detailedReviewModal"
                     @click="updateDetailedReview(review)"
                   >
                     Detailed Review >
                   </a>
+
+                  <div class="dropdown text-end">
+                    <button
+                      class="btn p-0 border-0 bg-transparent"
+                      type="button"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
+                    >
+                      <!-- Custom SVG: Three Dots Horizontal / ZHEHAN TO EDIT - right now throws up an error when a user who did not write a review tries to load the drink listing-->
+                      <svg width="20" height="20" viewBox="0 0 512 512" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="96" cy="256" r="48"></circle>
+                        <circle cx="256" cy="256" r="48"></circle>
+                        <circle cx="416" cy="256" r="48"></circle>
+                      </svg>
+                    </button>
+                  
+                    <ul class="dropdown-menu">
+                      <li v-if="review.userID === parseInt(userID) || correctModerator || user.isAdmin">
+                        <button
+                          class="dropdown-item"
+                          @click="setUpdateID(review)"
+                          data-bs-toggle="modal"
+                          data-bs-target="#reviewModal"
+                        >
+                          Edit
+                        </button>
+                      </li>
+                      <li v-if="review.userID === correctModerator || user.isAdmin">
+                        <button
+                          class="dropdown-item text-danger"
+                          @click="setDeleteID(review)"
+                          data-bs-toggle="modal"
+                          data-bs-target="#deleteReview"
+                        >
+                          Delete
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+                  
+
+<!-- kai has commented this out and replaced the buttons with a dropdown-->
+                  <!-- Edit & Delete Buttons
+                    <button
+                      v-if="review.userID === parseInt(userID) || correctModerator || user.isAdmin"
+                      class="btn btn-warning me-1 py-1 mobile-fs-7"
+                      @click="setUpdateID(review)"
+                      data-bs-toggle="modal"
+                      data-bs-target="#reviewModal"
+                      >
+                      Edit
+                      </button>
+                      <button
+                      v-if="review.userID === correctModerator || user.isAdmin"
+                      class="btn btn-danger py-1 mobile-fs-7"
+                      @click="setDeleteID(review)"
+                      data-bs-toggle="modal"
+                      data-bs-target="#deleteReview"
+                      >
+                      Delete
+                      </button>-->
                 </div>
               </div>
 
@@ -2677,9 +2684,68 @@
                 </div>
               </div>
               <!-- modal end -->
+
+              <!-- Delete Review Modal -->
+              <div class="modal fade" id="deleteReview" tabindex="-1" aria-labelledby="deleteReviewLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                  <!-- DELETE SUCCESS -->
+                  <div class="text-success fst-italic fw-bold fs-3 modal-content" v-if="successDelete">
+                    <span>Your review has been successfully deleted!</span>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" @click="reloadRoute" data-bs-dismiss="modal">
+                        Close
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <!-- DELETE ERROR -->
+                  <div class="text-danger fst-italic fw-bold fs-3 modal-content" v-if="errorDelete">
+                    <div v-if="errorDeleteMessage" class="row">
+                      <span>An error occurred while attempting to delete, please try again!</span>
+                      <br />
+                      <button class="btn primary-btn btn-sm" @click="reloadRoute">
+                        <span class="fs-5 fst-italic">
+                          Retry your delete request here!
+                        </span>
+                      </button>
+                    </div>
+
+                    <span v-if="notExist">There is no review by you for this bottle listing!</span>
+                    <br />
+
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Close
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- DELETE IN PROGRESS MODAL -->
+                  <div v-if="deletingReview" class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="deleteReviewLabel">Delete Review</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      Are you sure you want to delete this review?
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Close
+                      </button>
+                      <button type="button" class="btn btn-danger" @click="deleteReview">
+                        Delete Review
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- modal end -->
             </div>
+
+
             <!-- review photo -->
-            <div class="col-2 xcol-lg-3 text-end mobile-view-hide">
+            <div class="col-3 xcol-lg-3 text-end mobile-view-hide">
               <!-- review photo -->
               <div
                 data-bs-toggle="modal"
@@ -2696,24 +2762,7 @@
                 />
               </div>
             </div>
-            <div class="col-3 xcol-lg-3 text-start mobile-view-show px-0">
-              <!-- review photo -->
-              <div
-                data-bs-toggle="modal"
-                :data-bs-target="`#reviewImageModal${getUsernameFromReview(
-                  review
-                )}`"
-                style="cursor: pointer"
-              >
-                <img
-                  :src="review['photo'] || defaultPhoto"
-                  alt=""
-                  class="review-image"
-                  style="width: 100%; height: 100%"
-                />
-                <!--for mobile tzh replaced 125px with 100% -->
-              </div>
-            </div>
+
 
             <div
               class="modal fade"
@@ -2737,8 +2786,27 @@
                 </div>
               </div>
             </div>
-
-            <hr class="mt-2 mb-2" />
+            <div class="row">
+            <div class="col-3 xcol-lg-3 text-start mobile-view-show">
+              <!-- review photo -->
+              <div
+                data-bs-toggle="modal"
+                :data-bs-target="`#reviewImageModal${getUsernameFromReview(
+                  review
+                )}`"
+                style="cursor: pointer"
+              >
+                <img
+                  :src="review['photo'] || defaultPhoto"
+                  alt=""
+                  class="review-image"
+                  style="width: 200%; height: 200%"
+                />
+                <!--for mobile kai replaced 100px with 90% -->
+              </div>
+            </div>
+            </div>
+            <hr class="mt-4 mb-2" />
           </div>
         </div>
         <!-- end of producer information -->
