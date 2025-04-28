@@ -758,3 +758,12 @@ Purpose of the changes:
 
 Nature of the changes (frontend / backend / database):
 frontend
+# Update as of 28 April 
+
+Coder: Han
+fixed delete review bug on Producer BottleListings page - delete review modal was apparently accidentally deleted
+made UX changes for the randomExplorePage - however may need to discuss with Kai how best to show how users should show up when making the latest change Wes suggested to show the latest review dropped on that rating. what's the implication for the sorting function?
+made UX changes to navbar
+
+Nature of the changes (frontebd/backend / database):
+front end

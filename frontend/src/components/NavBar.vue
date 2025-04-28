@@ -313,7 +313,7 @@
 
     <!-- secondary nav bar -tzh added mobile-view-hide -->
     <div class="col-12 primary-square mt-2 py-1">
-      <div class="mobile-view-show col-11 ps-4 pe-4 d-flex">
+      <div class="mobile-view-show col-12 ps-4 pe-4 d-flex justify-content-center py-2">
         <!-- <input class="search-bar form-control rounded fst-italic" type="text" placeholder="What are you drinking today?" style="height: 50px;" v-model="searchInput" v-on:keyup.enter="goSearch"> -->
         <div class="search-bar d-flex align-items-center col-12 position-relative">
           <div class="w-100 position-relative">
@@ -321,7 +321,7 @@
               class="form-control fst-italic"
               type="text"
               placeholder="What are you drinking today?"
-              style="width: 90%"
+              style="width: calc(100% - 40px); "
               v-model="searchInput"
               v-on:keyup.enter="goSearch"
               v-on:input="getSuggestions"
