@@ -337,7 +337,7 @@
                         v-else-if="viewerType === 'user' && userFollowing"
                         class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2 "
                         @click="editFollow('unfollow')"
-                        style="font-weight: bold; background-color: rgb(249, 115, 106)">
+                        style="font-weight: bold; background-color:rgb(249, 115, 106);">
                         Following
                         </button>
                 
@@ -347,13 +347,13 @@
                         class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2 "
                         data-bs-toggle="modal"
                         data-bs-target="#venueReviewModal"
-                        style="font-weight: bold;">
+                        style="font-weight: bold; background-color:rgb(249, 115, 106);">
                         Review Venue
                         </button>
                         <button
                         v-else-if="userType == 'user' && userID !== 'defaultUser' && inEdit"
                         class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2 "
-                        style="font-weight: bold; background-color: rgb(249, 115, 106)">
+                        style="font-weight: bold; background-color: rgb(249, 115, 106);">
                         Venue Reviewed
                         </button>
                     </div>
@@ -406,7 +406,7 @@
                     <div class="row">
                         <div class="col-12">
                             <p class="text-start text-body-secondary fs-4 fw-bold m-0 mobile-fs-6">Latest Updates from {{ targetVenue["venueName"] }}</p>
-                            <p v-if="!(targetVenue['updates'].length > 0) && targetVenue['claimStatus']" class="text-start fs-5 fst-italic m-0 pb-2">{{ targetVenue["venueName"] }} has not posted any updates!</p>
+                            <p v-if="!(targetVenue['updates'].length > 0) && targetVenue['claimStatus']" class="text-start fs-6 mobile-rating-smaller-text-2 fst-italic m-1 pb-2">{{ targetVenue["venueName"] }} has not posted any updates!</p>
                         </div>
                     </div>
 
@@ -423,105 +423,74 @@
                     </div>
 
                     <!-- Latest Update Information -->
-                    <div class="row" v-if="targetVenue['updates'].length > 0 && targetVenue['claimStatus']">
+                    <div v-if="targetVenue['updates'].length > 0 && targetVenue['claimStatus']">
 
-                        <!-- Update Date + Edit / Delete Update -->
+                        <!-- Row 1: Photo + Update Text -->
                         <div class="row">
-                            <div class="col-xl-8 col-md-6 col-12">
-                                <p class="text-start text-decoration-underline fs-5 m-0 pb-3 mobile-fs-6">Posted on: {{ targetVenue["updates"][0].date }}</p>
-                            </div>
-                            <div v-if="selfView || powerView" class="col-xl-4 col-md-6 col-12 text-end mobile-view-hide">
-                                <!-- [if] not editing -->
-                                <button v-if="editUpdateTarget != targetVenue['updates'][0].id" type="button" class="btn btn-warning rounded-0" @click="editUpdate(targetVenue['updates'][0])">
-                                    Edit
-                                </button>
-                                <button v-if="editUpdateTarget != targetVenue['updates'][0].id" type="button" class="btn btn-danger rounded-0 ms-1" @click="deleteUpdate(targetVenue['updates'][0])">
-                                    Delete
-                                </button>
-                                
-                                <!-- [else] if editing -->
-                                <button v-if="editUpdateTarget == targetVenue['updates'][0].id" type="button" class="btn btn-success rounded-0 reverse-clickable-text" @click="saveUpdate(targetVenue['updates'][0])" :disabled="!(editUpdateContent[targetVenue['updates'][0].id].newText.length > 0)">
-                                    Save
-                                </button>
-                                <button v-if="editUpdateTarget == targetVenue['updates'][0].id" type="button" class="btn btn-warning rounded-0 reverse-clickable-text ms-1" @click="editUpdateTarget = null">
-                                    Cancel
-                                </button>
-                               <!--<button v-if="editUpdateTarget == targetVenue['updates'][0].id" type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1" @click="editUpdateContent[targetVenue['updates'][0].id] = {newText: targetVenue['updates'][0].text, newPhoto: targetVenue['updates'][0].photo}">
-                                    Reset
-                                </button>-->
-                            </div>
-                        </div>
-
-                        <!-- Photo / Number of Likes -->
-                        <div class="col-lg-2 col-md-3 col-4">
-
-                            <!-- Image -->
+                      
+                          <!-- Left Column: Photo -->
+                          <div class="col-3 mt-3">
                             <div class="image-container">
-
-                                <!-- [if] editing update -->
-                                <div v-if="editUpdateTarget == targetVenue['updates'][0].id" style="position: relative; text-align: center;">
-                                    <!-- image -->
-                                    <!-- <img :src="(editUpdateContent[targetVenue['updates'][0].id].newPhoto || defaultPhoto)" alt="" style="width: 128px; height: 128px; z-index: 1; opacity: 50%"> -->
-                                    <img :src="(selectedEditUpdate|| editUpdateContent[targetVenue['updates'][0].id].newPhoto || defaultPhoto)" alt="" style="width: 128px; height: 128px; z-index: 1; opacity: 50%">
-                                    <!-- change option -->
-                                    <label :for="'fileSelectEditUpdate' + targetVenue['updates'][0].id" class="btn primary-light-dropdown" style="position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%); z-index: 2;">Choose</label>
-                                    <input :id="'fileSelectEditUpdate' + targetVenue['updates'][0].id" type="file" @change="handleFileSelectEditUpdate" ref="fileInput" style="width: 0px; height: 0px; display: none;">">
-                                    <!-- reset image option -->
-                                    <button class="btn primary-light-dropdown m-1" @click="editUpdateContent[targetVenue['updates'][0].id].newPhoto = targetVenue['updates'][0].photo; selectedEditUpdate =''">Revert</button>
-                                    <!-- remove image option -->
-                                    <button class="btn primary-light-dropdown m-1" @click="editUpdateContent[targetVenue['updates'][0].id].newPhoto = ''; selectedEditUpdate = ''">Remove</button>
-                                    
-                                </div>
-
-                                <!-- [else] not editing tzh removed style="width: 128px; height: 128px; z-index: 1;"-->
-                                <div v-else>
-                                    <img :src="(targetVenue['updates'][0].photo || defaultPhoto)" alt="" class="producer-profile-latest-updates-image">
-                                </div>
-
+                              <img :src="(targetVenue['updates'][0].photo || defaultPhoto)" alt="" class="producer-profile-latest-updates-image">
                             </div>
-
-                            <div class="row pt-2">
-                                <!-- Like Symbol -->
-                                <div v-if="Array.isArray(targetVenue['updates'][0].likes) && viewerType !== null" class="col-6 text-end">
-                                    <!-- [if] Liked -->
-                                    <div v-if="targetVenue['updates'][0].likes.some(like => ((like.userId == viewerID) && (like.userType === userType)))" class="d-inline-block" @click="unlikeUpdates(targetVenue['updates'][0].id)">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="red" class="bi bi-heart-fill producer-profile-latest-updates-heart" viewBox="0 0 16 16">
-                                            <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"/>
-                                        </svg>
-                                    </div>
-                                    <!-- [else] Not Liked -->
-                                    <div v-else class="d-inline-block" @click="likeUpdates(targetVenue['updates'][0].id)">
-                                        <svg xmlns="http://www.w3.org/2000/svg"  fill="currentColor" class="bi bi-heart producer-profile-latest-updates-heart" viewBox="0 0 16 16">
-                                            <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.920 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.090.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15"/>
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div v-else class="col-6 text-end">
-                                    <div class="d-inline-block opacity-25">
-                                        <svg xmlns="http://www.w3.org/2000/svg"  fill="currentColor" class="bi bi-heart producer-profile-latest-updates-heart" viewBox="0 0 16 16">
-                                            <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.920 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.090.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15"/>
-                                        </svg>
-                                    </div>
-                                </div>
-
-                                <!-- Like Count -->
-                                <div class="col-6 text-start">
-                                    <p v-if="Array.isArray(targetVenue['updates'][0].likes)" class="text-body-secondary fs-5 m-0">{{ targetVenue['updates'][0].likes.length }}</p>
-                                    <p v-else class="text-body-secondary fs-5 m-0">-</p>
-                                </div>
+                          </div>
+                      
+                          <!-- Right Column: Update Text -->
+                          <div class="col-9 mt-3">
+                            <div class="text-start">
+                              <p class="mobile-rating-smaller-text-2">{{ targetVenue['updates'][0].text }}</p>
                             </div>
+                          </div>
+                      
                         </div>
-                        
-                        <!-- Description -->
-                        <div v-if="editUpdateTarget == targetVenue['updates'][0].id" class="col-xl-10 col-md-9 col-8 text-start p-text-lg">
-                            <label :for="'editUpdateText' + targetVenue['updates'][0].id"> Update Text </label>
-                            <textarea type="text" class="form-control" :id="'editUpdateText' + targetVenue['updates'][0].id" aria-describedby="editUpdateText" v-model="editUpdateContent[targetVenue['updates'][0].id].newText"></textarea>
+                      
+                        <!-- Row 2: Likes + Posted Date + Admin Buttons (Full Width) -->
+                        <div class="row pt-3">
+                      
+                          <div class="col-12 d-flex flex-wrap align-items-center justify-content-start gap-3">
+                      
+                            <!-- Like Heart and Count -->
+                            <div class="d-flex align-items-center">
+                              <div v-if="Array.isArray(targetVenue['updates'][0].likes) && viewerType !== null" @click="toggleLike(targetVenue['updates'][0].id)" style="cursor: pointer;">
+                                <svg v-if="targetVenue['updates'][0].likes.some(like => ((like.userId == viewerID) && (like.userType === userType)))"
+                                     xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="red" class="bi bi-heart-fill" viewBox="0 0 16 16">
+                                  <path d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"/>
+                                </svg>
+                                <svg v-else
+                                     xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-heart" viewBox="0 0 16 16">
+                                  <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.920 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.090.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15"/>
+                                </svg>
+                              </div>
+                              <span class="ms-2 mobile-rating-smaller-text-2">{{ targetVenue['updates'][0].likes.length }}</span>
+                            </div>
+                      
+                            <!-- Posted Date -->
+                            <div class="text-body-secondary fs-6 mobile-rating-smaller-text-2">
+                              Posted on: {{ targetVenue["updates"][0].date }}
+                            </div>
+                      
+                            <!-- Admin Buttons -->
+                            <div v-if="selfView || powerView" class="ms-auto">
+                              <button v-if="editUpdateTarget != targetVenue['updates'][0].id" type="button" class="btn btn-warning rounded-0 btn-sm me-2" @click="editUpdate(targetVenue['updates'][0])">
+                                Edit
+                              </button>
+                              <button v-if="editUpdateTarget != targetVenue['updates'][0].id" type="button" class="btn btn-danger rounded-0 btn-sm" @click="deleteUpdate(targetVenue['updates'][0])">
+                                Delete
+                              </button>
+                              <button v-if="editUpdateTarget == targetVenue['updates'][0].id" type="button" class="btn btn-success rounded-0 btn-sm me-2" @click="saveUpdate(targetVenue['updates'][0])" :disabled="!(editUpdateContent[targetVenue['updates'][0].id].newText.length > 0)">
+                                Save
+                              </button>
+                              <button v-if="editUpdateTarget == targetVenue['updates'][0].id" type="button" class="btn btn-secondary rounded-0 btn-sm" @click="editUpdateTarget = null">
+                                Cancel
+                              </button>
+                            </div>
+                      
+                          </div>
+                      
                         </div>
-                        <div v-else class="col-xl-10 col-md-9 col-8">
-                            <p class="text-start p-text-lg">{{ targetVenue['updates'][0].text }}</p>
-                        </div>
-
-                    </div>
+                      
+                      </div>
+                      
 
                     <!-- ------- END Latest Updates Header + Latest Update Information / START Add Update ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
@@ -532,7 +501,7 @@
                         <div class="input-group centered">
 
                             <!-- Text Box -->
-                            <input class="search-bar form-control rounded fst-italic" type="text" placeholder="Say hi to your patrons!" v-model="newUpdateText">
+                            <input class="search-bar form-control mobile-rating-smaller-text-2 rounded fst-italic" style="border: 2px solid #000000;" type="text" placeholder="Say hi to your patrons!" v-model="newUpdateText">
 
                             <!-- Photo Upload -->
                             <label for="fileSelectUpdate" class="btn p-0 ms-2">
@@ -590,7 +559,7 @@
                     <div class="row" v-if="targetVenue['claimStatus'] && (targetVenue['updates'].length > 0)">
 
                         <!-- Toggle Button -->
-                        <button type="button" class="btn tertiary-text text-decoration-underline pt-2 no-margin border border-0" data-bs-toggle="collapse" data-bs-target="#collapseMoreUpdates" aria-expanded="false" aria-controls="collapseMoreUpdates" @click="showMoreUpdates = !showMoreUpdates;"> 
+                        <button type="button" class="btn tertiary-text mobile-rating-smaller-text-2 text-decoration-underline pt-2 no-margin border border-0" data-bs-toggle="collapse" data-bs-target="#collapseMoreUpdates" aria-expanded="false" aria-controls="collapseMoreUpdates" @click="showMoreUpdates = !showMoreUpdates;"> 
                             View <span v-if="showMoreUpdates">less ↑</span><span v-else>more updates ↓</span> 
                         </button>
 
@@ -739,18 +708,18 @@
                                     <div class="square primary-square-green rounded p-3 mb-3"> <!--tzh added -green -->
 
                                         <!-- Header -->
-                                        <div class="square-inline text-start">
+                                        <div class="square-inline text-start px-2">
 
                                             <!-- [if] Self Venue -->
                                             <div v-if="selfView" class="mr-auto">
-                                                <h4> Q&A for You! </h4>
+                                                <h5 style="font-weight:bold"> Q&As for You! </h5>
                                                 <router-link :to="{ path: '/Venues/VenuesQA/' + targetVenue.id }" class="default-text-no-background">
                                                     <p class="reverse-text no-margin text-decoration-underline text-start pb-2"> View All </p>
                                                 </router-link>
                                             </div>
 
                                             <!-- [else] -->
-                                            <h4 v-else class="mr-auto"> Q&As for {{ targetVenue["venueName"] }} </h4>
+                                            <h5 v-else class="mr-auto mt-1" style="font-weight:bold"> Q&As for {{ targetVenue["venueName"] }} </h5>
 
                                         </div>
 
@@ -782,8 +751,9 @@
 
                                         <!-- Q & A Content -->
                                         <div class="text-start pt-2 py-1" v-else>
-                                            <div class="carousel slide" id="carouselQA">
-                                                <div class="carousel-inner px-4">
+                                            <div id="carouselQA" class="carousel slide" data-bs-ride="carousel">
+
+                                                <div class="carousel-inner px-2">
 
                                                     <!-- [if] Self Venue -->
                                                     <div v-if="selfView">
@@ -841,34 +811,54 @@
                                                             <p> A: {{ qa["answer"] }} </p>
                                                             
                                                             <!-- Ask Question -->
-                                                            <div class="input-group centered pt-2">
-                                                                <textarea class="search-bar form-control rounded fst-italic question-box" type="text" placeholder="Ask a question!" v-model="qaQuestion"></textarea>
-                                                                <div @click="sendQuestion" class="send-icon ps-1">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
-                                                                        <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
-                                                                    </svg>
-                                                                </div>
-                                                            </div>
+                                                            <div class="input-group pt-1">
+                                                                <input type="text" class="form-control rounded-start fst-italic question-box" placeholder="Ask a question!" v-model="qaQuestion" style="font-size: 14px;">
+                                                                <span class="input-group-text bg-white border-start-0" style="cursor: pointer;" @click="sendQuestion">
+                                                                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
+                                                                    <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
+                                                                  </svg>
+                                                                </span>
+                                                              </div>
+                                                              
+                                                              
+                                                            
                                                         </div>
 
                                                         <!-- If No Answered Questions -->
                                                         <div v-if="answeredQuestions.length === 0">
                                                             <!-- Ask Question -->
-                                                            <div class="input-group centered pt-2">
-                                                                <textarea class="search-bar form-control rounded fst-italic question-box" type="text" placeholder="Ask a question!" v-model="qaQuestion"></textarea>
-                                                                <div @click="sendQuestion" class="send-icon ps-1">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
-                                                                        <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
-                                                                    </svg>
-                                                                </div>
-                                                            </div>
+                                                            <div class="input-group pt-1">
+                                                                <input type="text" class="form-control rounded-start fst-italic question-box" placeholder="Ask a question!" v-model="qaQuestion" style="font-size: 14px;">
+                                                                <span class="input-group-text bg-white border-start-0" style="cursor: pointer;" @click="sendQuestion">
+                                                                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
+                                                                    <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
+                                                                  </svg>
+                                                                </span>
+                                                              </div>
+                                                              
+                                                              
+                                                            
                                                         </div>
 
                                                     </div>
 
                                                 </div>
 
-                                                <!-- Carousel Control Buttons -->
+                                                <div class="d-flex justify-content-center pt-1">
+                                                    <button class="btn" type="button" data-bs-target="#carouselQA" data-bs-slide="next">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="white" class="bi bi-arrow-right" viewBox="0 0 16 16">
+                                                            <path fill-rule="evenodd" d="M10.146 4.646a.5.5 0 0 1 .708.708L7.707 8l3.147 2.646a.5.5 0 0 1-.708.708l-3.5-3a.5.5 0 0 1 0-.708l3.5-3z"/>
+                                                        </svg>
+                                                    </button>
+                                                    <button class="btn me-2" type="button" data-bs-target="#carouselQA" data-bs-slide="prev">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="white" class="bi bi-arrow-left" viewBox="0 0 16 16">
+                                                            <path fill-rule="evenodd" d="M5.854 4.646a.5.5 0 0 0-.708.708L8.293 8l-3.147 2.646a.5.5 0 0 0 .708.708l3.5-3a.5.5 0 0 0 0-.708l-3.5-3z"/>
+                                                        </svg>
+                                                    </button>
+
+                                                </div>
+
+                                                <!-- Carousel Control Buttons
                                                 <button class="carousel-control-prev" type="button" data-bs-target="#carouselQA" data-bs-slide="prev">
                                                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                                                     <span class="visually-hidden">Previous</span>
@@ -876,17 +866,19 @@
                                                 <button class="carousel-control-next" type="button" data-bs-target="#carouselQA" data-bs-slide="next">
                                                     <span class="carousel-control-next-icon" aria-hidden="true"></span>
                                                     <span class="visually-hidden">Next</span>
-                                                </button>
+                                                </button> -->
 
                                             </div>
                                         </div>
 
                                     </div>
                                 </div>
-                        </div>       
+                        </div> 
+                        
+                    <hr>
                     </div> 
                     <!-- end mobile Q&A-->
-                    <hr>
+                    
                     <!-- View Sorted Listings -->
                         <!-- 1: Most Popular (Highest Ratings) -->
                         <!-- 2: Most Discussed (Most Reviews) -->
@@ -946,12 +938,10 @@
                     <div v-if="!editMenuMode && targetVenue['claimStatus']" class="row align-items-center pb-3">
 
                         <!-- Menu Header -->
-                        <div class="col-8 mobile-view-hide">
-                            <p class="text-body-secondary text-start fs-4 m-0"><span class="fw-bold">{{ loadedListings.length }}</span> Drinks On The Menu</p>
+                        <div class="col-8 mobile-col-7">
+                            <p class="text-start text-body-secondary fs-4 fw-bold m-0 mobile-fs-6"><span class="fw-bold fst-italic">{{ loadedListings.length }}</span> Drinks On The Menu</p>
                         </div>
-                        <div class="col-7 mobile-view-show">
-                            <p class="text-body-secondary text-start fs-6 m-0"><span class="fw-bold">{{ loadedListings.length }}</span> Drinks On The Menu</p>
-                        </div>
+                        
                         <!-- Option Buttons -->
                         <div class="col-4 d-grid mobile-col-5">
                             <div v-if="selfView" class="row">
@@ -1935,17 +1925,17 @@
                 <div v-if="contentMode == 'venueReviews'">
                     <!-- Example heading for venue reviews -->
                     <h4
-                        class="text-start"
-                        style="font-weight: bold; color: black; margin-bottom: 2rem"
+                        class="text-start text-body-secondary fs-4 fw-bold m-0 mobile-fs-6"
+                        style="font-weight: bold; color: black;"
                     >
                         Average Venue Rating:&nbsp;{{ getAverageVenueRatings() }}
                         <span style="color: #f0b358">★</span>
                     </h4>
 
                     <!-- Example row for "Add Review" button and some preview images -->
-                    <div class="row text-start" style="padding-left: 1.5em">
+                    <div class="row text-start" style="padding-left: 0.75em">
                         <div class="col">
-                        <div class="justify-content-start row">
+                        <div class="row justify-content-start align-items-start mt-2">
                             <!-- Add new review button (only if user is logged in + not editing) -->
                             <div
                             v-if="userType === 'user' && user_id !== 'defaultUser' && !inEdit"
@@ -1986,18 +1976,17 @@
 
                     <!-- Loop through each venue review -->
                     <div
-                        class="row mb-3"
+                        class="row mb-2"
                         v-for="review in filteredVenueReviews"
                         :key="review.id"
                     >
-                        <div class="col-9 xcol-lg-8">
+                        <div class="col-12 col-lg-9">
                         <div class="row">
                             <div class="text-start mb-2">
-                            <div class="row">
+                            <div class="row align-items-center">
                                 <!-- User's profile photo -->
                                 <div
-                                class="col-12 col-lg-1 mobile-col-2"
-                                style="text-align: left"
+                                class="col-12 col-lg-1 mobile-col-2 text-start"
                                 >
                                 <router-link :to="`/profile/user/${review.userID}`">
                                     <img
@@ -2008,7 +1997,7 @@
                                 </router-link>
                                 </div>
 
-                                <div class="col-10 pe-0 mobile-fs-7 mobile-ps-4">
+                                <div class="col-10 pe-0 mobile-fs-6 mobile-ps-4">
                                 <!-- Username -->
                                 <router-link
                                     :to="`/profile/user/${review.userID}`"
@@ -2053,12 +2042,12 @@
                             </div>
 
                             <!-- Review text -->
-                            <div class="text-start mb-2">
+                            <div class="text-start my-2">
                                 {{ review.reviewDesc }}
                             </div>
 
                             <!-- Upvote/Downvote Logic -->
-                            <div style="display: inline" class="text-start">
+                            <div style="display: flex !important;" class="text-start mb-1">
                                 <!-- Upvote -->
                                 <svg
                                 v-if="!JSON.stringify(review.userVotes.upvotes).includes(JSON.stringify(user_id))"
@@ -2143,7 +2132,7 @@
                         </div>
 
                         <!-- Review photo (desktop view) -->
-                        <div class="col-2 xcol-lg-3 text-end mobile-view-hide">
+                        <div class="col-3 xcol-lg-3 text-end mobile-view-hide">
                         <div
                             data-bs-toggle="modal"
                             :data-bs-target="`#reviewImageModal${getUsernameFromReview(review)}`"
@@ -2157,23 +2146,24 @@
                             />
                         </div>
                         </div>
-
+                        
                         <!-- Review photo (mobile view) -->
-                        <div class="col-3 xcol-lg-3 text-start mobile-view-show px-0">
-                        <div
-                            data-bs-toggle="modal"
-                            :data-bs-target="`#reviewImageModal${getUsernameFromReview(review)}`"
-                            style="cursor: pointer"
-                        >
-                            <img
-                            :src="review['photos'][0] || defaultPhoto"
-                            alt=""
-                            class="review-image"
-                            style="width: 100%; height: 100%"
-                            />
+                        <div class="row">
+                        <div class="col-3 xcol-lg-3 text-start mobile-view-show">
+                            <div
+                                data-bs-toggle="modal"
+                                :data-bs-target="`#reviewImageModal${getUsernameFromReview(review)}`"
+                                style="cursor: pointer"
+                            >
+                                <img
+                                :src="review['photos'][0] || defaultPhoto"
+                                alt=""
+                                class="review-image"
+                                style="width: 200%; height: 200%"
+                                />
+                            </div>
                         </div>
                         </div>
-
                         <!-- Larger image modal when user clicks the photo -->
                         <div
                         class="modal fade"
@@ -2198,7 +2188,7 @@
                         </div>
                         </div>
 
-                        <hr />
+                        <hr class="mt-4 mb-2"/>
                     </div>
 
                     <!-- Example "Delete Review" Modal (similar to ProducerProfile) -->
@@ -2384,13 +2374,13 @@
                 <div class="row ">
                     <!--  Q&A-->
                     <div class="col-xl-12 col-lg-3 col-md-6 col-12 mobile-view-hide">
-                        <div class="square primary-square-green rounded p-3 mb-3"> <!--tzh added -green -->
+                        <div class="square primary-square-green rounded p-4 mb-3"> <!--tzh added -green -->
 
                             <!-- Header -->
                             <div class="square-inline text-start">
 
                                 <!-- [if] Self Venue -->
-                                <div v-if="selfView" class="mr-auto">
+                                <div v-if="selfView" class="mr-auto mt-1" style="font-weight:bold;">
                                     <h4> Q&A for You! </h4>
                                     <router-link :to="{ path: '/Venues/VenuesQA/' + targetVenue.id }" class="default-text-no-background">
                                         <p class="reverse-text no-margin text-decoration-underline text-start pb-2"> View All </p>
@@ -2398,7 +2388,7 @@
                                 </div>
 
                                 <!-- [else] -->
-                                <h4 v-else class="mr-auto"> Q&As for {{ targetVenue["venueName"] }} </h4>
+                                <h4 v-else class="mr-auto mt-1" style="font-weight:bold;"> Q&As for {{ targetVenue["venueName"] }} </h4>
 
                             </div>
 
@@ -2431,7 +2421,7 @@
                             <!-- Q & A Content -->
                             <div class="text-start pt-2 py-1" v-else>
                                 <div class="carousel slide" id="carouselQA">
-                                    <div class="carousel-inner px-4">
+                                    <div class="carousel-inner px-1">
 
                                         <!-- [if] Self Venue -->
                                         <div v-if="selfView">
@@ -2489,27 +2479,29 @@
                                                 <p> A: {{ qa["answer"] }} </p>
                                                 
                                                 <!-- Ask Question -->
-                                                <div class="input-group centered pt-2">
-                                                    <textarea class="search-bar form-control rounded fst-italic question-box" type="text" placeholder="Ask a question!" v-model="qaQuestion"></textarea>
-                                                    <div @click="sendQuestion" class="send-icon ps-1">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
-                                                            <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
-                                                        </svg>
-                                                    </div>
-                                                </div>
+                                                <div class="input-group pt-2">
+                                                    <input type="text" class="form-control rounded-start fst-italic question-box" placeholder="Ask a question!" v-model="qaQuestion" style="font-size: 14px;">
+                                                    <span class="input-group-text bg-white border-start-0" style="cursor: pointer;" @click="sendQuestion">
+                                                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
+                                                        <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
+                                                      </svg>
+                                                    </span>
+                                                  </div>
+                                                  
                                             </div>
 
                                             <!-- If No Answered Questions -->
                                             <div v-if="answeredQuestions.length === 0">
                                                 <!-- Ask Question -->
-                                                <div class="input-group centered pt-2">
-                                                    <textarea class="search-bar form-control rounded fst-italic question-box" type="text" placeholder="Ask a question!" v-model="qaQuestion"></textarea>
-                                                    <div @click="sendQuestion" class="send-icon ps-1">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
-                                                            <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
-                                                        </svg>
-                                                    </div>
-                                                </div>
+                                                <div class="input-group pt-2">
+                                                    <input type="text" class="form-control rounded-start fst-italic question-box" placeholder="Ask a question!" v-model="qaQuestion" style="font-size: 14px;">
+                                                    <span class="input-group-text bg-white border-start-0" style="cursor: pointer;" @click="sendQuestion">
+                                                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
+                                                        <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
+                                                      </svg>
+                                                    </span>
+                                                  </div>
+                                                  
                                             </div>
 
                                         </div>
@@ -2517,14 +2509,15 @@
                                     </div>
 
                                     <!-- Carousel Control Buttons -->
-                                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselQA" data-bs-slide="prev">
-                                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                        <span class="visually-hidden">Previous</span>
-                                    </button>
-                                    <button class="carousel-control-next" type="button" data-bs-target="#carouselQA" data-bs-slide="next">
-                                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                        <span class="visually-hidden">Next</span>
-                                    </button>
+                                    <div class="d-flex justify-content-center align-items-center gap-4 py-2">
+                                        <button type="button" data-bs-target="#carouselQA" data-bs-slide="prev" style="background: none; border: none; padding: 0; color: inherit;">
+                                          <i class="bi bi-arrow-left" style="font-size: 18px;"></i>
+                                        </button>
+                                        <button type="button" data-bs-target="#carouselQA" data-bs-slide="next" style="background: none; border: none; padding: 0; color: inherit;">
+                                          <i class="bi bi-arrow-right" style="font-size: 18px;"></i>
+                                        </button>
+                                    </div>
+                                      
 
                                 </div>
                             </div>
@@ -2541,7 +2534,7 @@
                         <div class="square primary-square-green-outline rounded p-3 mb-3"> <!--tzh changed secondary-square to primary-square-green-outline-->
 
                             <!-- Header -->
-                            <h4 class="text-start"> Venue Location </h4>
+                            <h4 class="text-start" style="font-weight:bold;"> Venue Location </h4>
 
                             
                             <!-- <div class="pb-1 text-start" v-if="selfView || powerView">
@@ -2618,7 +2611,7 @@
 
                             <!-- Header -->
                             <div class="square-inline text-start">
-                                <h4 class="mr-auto"> Opening Hours and Reservation Details </h4>
+                                <h4 class="mr-auto" style="font-weight:bold;"> Opening Hours and Reservation Details </h4>
                             </div>
 
                             <!-- Opening Hours + Reservation Details Lock Message (Venue Unclaimed) -->

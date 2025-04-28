@@ -1752,13 +1752,14 @@ button.primary-square:hover {
   height: 150px;
   aspect-ratio: 1 / 1; /* Ensures the image remains a square */
   object-fit: cover; /* Ensures the image covers the entire area without stretching */
-  box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.4);
   border-radius: 4px;
+  box-shadow: rgba(0, 0, 0, 0.25) 0px 4px 8px;
+  transition: transform 0.4s ease, opacity 0.4s ease;
 }
 
 .review-image:hover {
   opacity: 0.8; /* faded slightly when hovered */
-  transform: rotate(2deg);
+  transform: scale(1.01);
 }
 
 @media (max-width: 991px) {
