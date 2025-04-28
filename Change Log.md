@@ -417,3 +417,14 @@ made UX changes to navbar
 
 Nature of the changes (frontebd/backend / database):
 front end
+
+# Update as of 28 April 
+
+Coder: Candy
+
+Purpose of the changes:
+Updated URL for username & profile photo in bottle listings review
+(1) Updated username and profile photo router for producers/BottleListings.vue
+
+Nature of the changes (frontend / backend / database):
+frontend

@@ -2173,7 +2173,7 @@
                   <div class="row align-items-center">
                     <!-- Profile Photo -->
                     <div class="col-12 col-lg-1 mobile-col-2 text-start">
-                      <router-link :to="`/profile/user/${review.userID}`">
+                      <router-link :to="`/profile/user/${review.userID}/${review.username}`">
                         <img
                           :src="
                             getPhotoFromReview(review) || defaultProfilePhoto
@@ -2187,7 +2187,7 @@
                     <!-- Username and Rating -->
                     <div class="col-10 pe-0 mobile-fs-6 mobile-ps-4">
                       <router-link
-                        :to="`/profile/user/${review.userID}`"
+                        :to="`/profile/user/${review.userID}/${review.username}`"
                         class="text-decoration-none text-dark"
                       >
                         <b>@{{ getUsernameFromReview(review) }}</b>
