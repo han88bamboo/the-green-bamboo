@@ -672,8 +672,8 @@ INSERT INTO "observationTags" ("observationTag") VALUES
 ('Try Once'),
 ('Is This Water?🚰'),
 ('Daily Drinker'),
-('Netflix & Chill 🍆'),
-('Healthy');
+('Netflix & Chill 🍆');
+
 
 INSERT INTO "users" ("username","displayName","choiceDrinks","modType","photo","hashedPassword","joinDate","firstName","lastName","email","isAdmin","birthday","pin", "choiceFlavours", "preferences") VALUES
 	 ('admin','admin','{}','{}','','-1522920846','2024-10-28 18:45:31.403','admin','admin','admin@drink-x.com',false,'2000-01-01 00:00:00','175029,2024-10-28 18:46:29', '{}', '{}'),
@@ -700,45 +700,57 @@ INSERT INTO "users" ("username","displayName","choiceDrinks","modType","photo","
 
 INSERT INTO "drinkTypes" ("drinkType", "badgePhoto", "typeCategory")
 VALUES (
-    'Whiskey / Whisky',                           -- drinkType
+    'Whisky',                           -- drinkType
     NULL,                                         -- badgePhoto (set a URL if available)
     ARRAY[
         'Single Malt',
         'Single Grain',
-        'Blended Malt',
-        'Blended Grain',
-        'Blended Malt & Grain',
-        'Single Blended (Malt & Grain from the Same Distillery)',
-        'Irish Pot Still Whisk(e)y',
-        'Irish Blended Whisk(e)y',
-        'Bourbon Whisk(e)y',
-        'Tennessee Whisk(e)y',
-        'Rye Whisk(e)y',
-        'Rye Malt Whisk(e)y',
-        'Malt Whisk(e)y',
-        'Corn Whisk(e)y',
-        'Wheat Whisk(e)y',
-        'American Whisk(e)y (Others)',
-        'Rice Whisk(e)y',
+        'Blended',
+        'Single Blended',
+        'Irish Pot Still Whiskey',
+        'Bourbon',
+        'Tennessee Whiskey',
+        'Rye Whiskey',
+        'Malt Whisky',
+        'Corn Whiskey',
+        'Wheat Whiskey',
+        'All Other American Whiskey',
+        'Rice Whisky',
         'Flavoured',
         'New Make / Moonshine / White Dog',
         'Others'
+    ]
+    
+);
+
+INSERT INTO "drinkTypes" ("drinkType", "badgePhoto", "typeCategory")
+VALUES (
+    'Ready-To-Drink Cocktails',                                 -- drinkType
+    NULL,                                        -- badgePhoto (set a URL if available)
+    ARRAY[
+        'Ready-To-Drink Cocktails'
     ]
 );
 
 INSERT INTO "drinkTypes" ("drinkType", "badgePhoto", "typeCategory")
 VALUES (
-    'Cocktails',                                 -- drinkType
+    'Agave +',                                 -- drinkType
     NULL,                                        -- badgePhoto (set a URL if available)
     ARRAY[
-        'Classics',
-        'Punch',
-        'Milk Punch',
-        'Sling',
-        'Sour',
-        'Cobbler',
-        'Highball',
-        'Highball - Canned'
+        'Sotol',
+        'Bacanora',
+        'Raicilla',
+        'All Other Agave Spirit'
+    ]
+);
+
+INSERT INTO "drinkTypes" ("drinkType", "badgePhoto", "typeCategory")
+VALUES (
+    'Rice + (Soju, etc.)',                                 -- drinkType
+    NULL,                                        -- badgePhoto (set a URL if available)
+    ARRAY[
+        'Soju',
+        'Makgeolli'
     ]
 );
 
@@ -754,16 +766,35 @@ VALUES (
         'Extra Añejo (Ultra Aged)',
         'Cristalino',
         'Curado (Flavoured)',
-        'Others'
+        'Others (Including Mixto)'
+    ]
+);
+
+
+INSERT INTO "drinkTypes" ("drinkType", "badgePhoto", "typeCategory")
+VALUES (
+    'Mezcal',                                   -- drinkType
+    NULL,                                        -- badgePhoto (set a URL if available)
+    ARRAY[
+        'Joven (Unaged / Young)',
+        'Reposado (Aged)',
+        'Añejo (Extra Aged)',
+        'Extra Añejo (Ultra Aged)',
+        'En Vidrio (Aged in Glass)',
+        'Destilado Con (Pechuga, Conejos, etc)',
+        'Curado / Abocado Con (Flavoured)',
+        'Cristalino',
+        'Others',
+        'Destilado de Agave'
     ]
 );
 
 INSERT INTO "drinkTypes" ("drinkType", "badgePhoto", "typeCategory")
 VALUES (
-    'Rum / Rhum',                                -- drinkType
+    'Rum',                                -- drinkType
     NULL,                                        -- badgePhoto (set a URL if available)
     ARRAY[
-        'Juice - Rhum Agricole (Column Still)',
+        'Juice - Agricultural (Column Still)',
         'Juice - Pure Single Rum (Pot Still)',
         'Juice - Single Blended Rum (Pot & Column Still)',
         'Juice - All Others (Excluding White Unaged and Including Multi-Distillery Blend, Excluding Clairin / Cachaca / Aguardiente)',
@@ -771,17 +802,45 @@ VALUES (
         'Syrup - Traditional Rum (Column Still)',
         'Syrup - Pure Single Rum (Pot Still)',
         'Syrup - Single Blended Rum (Pot & Column Still)',
-        'Syrup - All Others (Excluding White Unaged and Including Multi-Distillery Blend, Excluding Clairin / Cachaca / Aguardiente)',
+        'Syrup - All Others (Excluding White Unaged and Including Multi-Distillery Blend)',
         'Syrup - White / Unaged',
-        'Syrup / Juice - Clairin / Cachaca / Aguardiente',
+        'Syrup / Juice - Clairin / Cachaça / Aguardiente / Grogue',
         'Molasses - Traditional Rum (Column Still)',
         'Molasses - Pure Single Rum (Pot Still)',
         'Molasses - Single Blended Rum (Pot & Column Still)',
         'Molasses - All Others (Excluding White Unaged and Including Multi-Distillery Blend)',
         'Molasses - White Unaged',
-        'Others - Excluding 100% Juice / 100% Syrup / 100% Molasses',
+        'Others/Undisclosed',
         'Flavoured / Spiced',
+        'Aged Blend of Molasses, Juice, and/or Syrup',
         'White Unaged Blend of Molasses, Juice, and/or Syrup'
+    ]
+);
+
+
+INSERT INTO "drinkTypes" ("drinkType", "badgePhoto", "typeCategory")
+VALUES (
+    'Cocktails',                                   -- drinkType
+    NULL,                                        -- badgePhoto (set a URL if available)
+    ARRAY[
+        'Beer- And Cider-Based Mixed Drinks',
+        'Bottled Cocktails',
+        'Champagne Cocktails',
+        'Cobblers',
+        'Duos and Trios',
+        'French-Italian Drinks',
+        'Frozen Drinks',
+        'Highballs',
+        'Hot Drinks',
+        'Juleps',
+        'Milanese Drinks',
+        'Muddle Drinks',
+        'Pousse-Cafes',
+        'Punches',
+        'Snappers',
+        'Sours',
+        'Tropical Drinks',
+        'Shots'
     ]
 );
 
@@ -791,180 +850,61 @@ VALUES (
     NULL, -- badgePhoto (replace with a URL if applicable)
     ARRAY[
         'Aged Beer',
-        'Ale - All Styles',
-        'Altbier - All Styles',
-        'Barleywine - All Styles',
-        'Barrel Aged Beer',
-        'Belgian Style - Blonde / Brown / Dark Ale',
-        'Belgian Style - Contemporary Spontaneous Fermented',
-        'Belgian Style - Dubbel',
-        'Belgian Style - Golden Ale',
-        'Belgian Style - Quadrupel',
-        'Belgian Style - Saison',
-        'Belgian Style - Tripel',
-        'Belgian Style - All Others',
-        'Bitter Ale - All Styles',
-        'Blonde Ale',
+        'Altbier',
+        'Barleywine',
+        'Belgian Style',
+        'Bitter Ale',
         'Brett Beer',
-        'Brown Ale - All Styles',
-        'California Common / Steam Beer',
-        'Cider - Aged / Barrel Aged',
-        'Cider - Apfelwein / German Style',
-        'Cider - Cidre / French Style',
-        'Cider - Dry',
-        'Cider - Fruited / Flavoured',
-        'Cider - Graff',
-        'Cider - Herbed / Spiced',
-        'Cider - Hopped',
-        'Cider - Ice',
-        'Cider - Mulled',
-        'Cider - Perry',
-        'Cider - Poiré',
-        'Cider - Pommeau',
-        'Cider - Rosé',
-        'Cider - Sitra / Spanish Style',
-        'Cider - Sour',
-        'Cider - Sweet',
-        'Cider - Traditional',
-        'Cider - All Others',
-        'Cider - Other Fruit',
+        'Brown Ale',
+        'Cider',
         'Corn Beer / Chicha de Jora',
         'Cream Ale',
         'Dark Ale',
-        'Farmhouse Ale - Bière de Coupage',
-        'Farmhouse Ale - Bière de Garde',
-        'Farmhouse Ale - Bière de Mars',
-        'Farmhouse Ale - Classic French & Belgian Style',
-        'Farmhouse Ale - Finnish Style Sahti',
-        'Farmhouse Ale - Grisette',
-        'Farmhouse Ale - Saison',
-        'Farmhouse Ale - All Others',
+        'Farmhouse Ale',
         'Field Beer',
         'Flavored Malt Beverage',
         'Freeze-Distilled Beer',
         'Fruit Beer',
-        'German Style - Bock',
-        'German Style - Doppelbock',
-        'German Style - Eisbock',
-        'German Style - Festbier',
-        'German Style - Helles Bock / Maibock',
-        'German Style - Historical',
-        'German Style - Kellerbier / Zwickelbier',
-        'German Style - Kölsch / Koelsch',
-        'German Style - Märzen',
-        'German Style - Oktoberfestbier/Wiesn',
-        'German Style - Rauchbier',
-        'German Style - Roggenbier',
-        'German Style - Rotbier',
-        'German Style - Schwarzbier',
-        'German Style - All Others',
+        'German Style',
         'Ginger Beer / Hard Ginger Beer',
-        'Golden Ale - All Styles',
-        'Grape Ale - All Styles',
-        'Grodziskie / Grätzer',
+        'Blonde / Golden Ale',
+        'Grape Ale',
         'Happoshu',
         'Hard Kombucha',
         'Hard Seltzer',
-        'Historical Beer - All Others',
+        'Historical Beer',
         'Honey Beer',
-        'Hybrid Beer / Hybrid Style Beer / Hybrid Lager / Hybrid Ale',
+        'Hybrid Beer',
         'IPA (India Pale Ale)',
-        'IPA - American Style (All)',
-        'IPA - Barrel Aged',
-        'IPA - Belgian Style',
-        'IPA - Black / Cascadian Dark Ale',
-        'IPA - Brett',
-        'IPA - Brown',
-        'IPA - Brut',
-        'IPA - Cold',
-        'IPA - Double (DIPA) / Imperial',
-        'IPA - Double Dry Hopped (DDH)',
-        'IPA - Dry Hopped',
-        'IPA - Fruited',
-        'IPA - New England / Hazy / Juicy',
-        'IPA - Hazy Double (DIPA)',
-        'IPA - Hazy Triple (TIPA)',
-        'IPA - Milkshake / Double Milkshake / Imperial',
-        'IPA - Quadruple',
-        'IPA - Red',
-        'IPA - Rye',
-        'IPA - Session',
-        'IPA - Single Hop',
-        'IPA - Sour',
-        'IPA - Triple (TIPA)',
-        'IPA - Triple Dry Hopped (TDH)',
-        'IPA - West Coast',
-        'IPA - White / Wheat',
-        'IPA - All Others',
         'Koji Beer / Ginjo Beer / Sake Yeast Beer',
         'Kvass',
-        'Lager - All Styles',
-        'Lambic - All Others',
-        'Malt Beverage - All Styles',
-        'Mead - Traditional / Sack / Great / Imperial / Session',
-        'Mead - Fruited',
-        'Mead - Herbed & Spiced',
-        'Mild Ale - All Styles',
-        'Non Alcohlic - Lager',
-        'Non Alcoholic - Beer',
-        'Non Alcoholic - Cider',
-        'Non Alcoholic - IPA',
-        'Non Alcoholic - Malt Beverage',
-        'Non Alcoholic - Mead',
-        'Non Alcoholic - Pale Ale',
-        'Non Alcoholic - Porter',
-        'Non Alcoholic - Sour',
-        'Non Alcoholic - Stout',
-        'Non Alcoholic - Wheat Beer',
-        'Non Alcoholic - All Others',
+        'Lager',
+        'Lambic',
+        'Malt Beverage',
+        'Mead',
+        'Mild Ale',
+        'Non-Alcoholic',
         'Old Ale',
-        'Pale Ale - All American Styles',
-        'Pale Ale - All Australian Style',
-        'Pale Ale - Barrel Aged',
-        'Pale Ale - All Belgian Styles',
-        'Pale Ale - English Style',
-        'Pale Ale - Hazy / Juicy',
-        'Pale Ale - Milkshake',
-        'Pale Ale - All Others',
-        'Pilsner - All Styles',
-        'Porter - All Styles',
+        'Pale Ale',
+        'Pilsner',
+        'Porter',
         'Stout',
-        'Stout - Barrel Aged',
-        'Stout - Foreign / Export',
-        'Stout - Imperial / Double',
-        'Stout - Imperial / Pastry',
-        'Stout - Oyster',
-        'Stout - Pastry',
         'Pumpkin Beer',
-        'Red Ale - American Style / American Amber',
-        'Red Ale - Imperial / Double',
-        'Red Ale - All Others',
+        'Red Ale',
         'Root Beer',
         'Rye Beer',
-        'Scotch Ale - Export',
-        'Scotch Ale - Heavy / Wee Heavy',
-        'Scotch Ale - Light',
+        'Scotch Ale',
         'Shandy / Radler',
-        'Smoke Beer / Smoked Beer',
+        'Smoked Beer',
         'Sorghum / Millet Beer',
-        'Sour - American Style (All)',
-        'Sour - Barrel Aged',
-        'Sour - Berliner Weisse / Fruited',
-        'Sour - Flanders Oud Bruin / Oud Red Ale',
-        'Sour - Fruited',
-        'Sour - Gose (All)',
-        'Sour - Smoothie / Pastry',
-        'Sour - All Others',
-        'Specialty Beer - All Styles',
-        'Specialty Grain',
+        'Sour',
+        'Specialty Beer',
         'Squash Beer',
-        'Strong Ale - All Others',
-        'Summer Ale - All Styles',
+        'Strong Ale',
+        'Summer Ale',
         'Table Beer / Small Beer',
-        'Wheat Beer - American Style',
-        'Wheat Beer - German / Bavarian Style',
-        'Wheat Beer - All Others',
-        'Wild Beer / Wild Ale - All Styles',
+        'Wheat Beer',
+        'Wild Beer / Wild Ale',
         'Yam Beer'
     ]
 );
@@ -985,8 +925,8 @@ VALUES (
         'Flavoured',
         'Kusu (Aged Awamori)',
         'Shisho (Perilla)',
-        'All Others (Undisclosed ingredients Incl. milk, perilla, sesame, corn, sugarcane etc)',
-        'Kasu (Sake Lees)'
+        'Kasu (Sake Lees)',
+        'All Others (Undisclosed)'
     ]
 );
 
@@ -995,22 +935,21 @@ VALUES (
     'Sake', -- drinkType
     NULL, -- badgePhoto (replace with a URL if needed)
     ARRAY[
-        'Futsushu (Table sakes) & All Others – NOT including Flavoured',
+        'Futsushu (Table sakes)',
         'Honjozo (Alcohol added)',
         'Junmai',
         'Ginjo (Alcohol added)',
         'Junmai Ginjo',
         'Daiginjo (Alcohol added)',
         'Junmai Daiginjo',
-        'Only Nigori (Cloudy) – all grades, NOT including Sparkling-Nigori, NOT including Kijoshu-Nigori',
-        'Only Sparkling – all grades, NOT including Sparkling-Nigori, NOT including Kijoshu-Sparkling',
-        'Only Sparkling-Nigoris – all grades',
-        'Only Kijoshu (Concentrated) – all grades, including Kijoshu-Nigori or Kijoshu-Sparkling sakes',
+        'Nigori',
+        'Sparkling',
+        'Sparkling Nigori',
+        'All Kijoshu',
         'Amazake',
         'Doburoku',
-        'Flavoured (Umeshu sakes, fruit-flavoured sakes, flavoured nigoris, others)',
-        'Uncategorised',
-        'Komodaru (Traditional Barrel Aged)'
+        'Flavoured',
+        'Taru / Komodaru'
     ]
 );
 
@@ -1027,41 +966,19 @@ VALUES (
     ]
 );
 
-INSERT INTO "drinkTypes" ("drinkType", "badgePhoto", "typeCategory")
-VALUES (
-    'Makgeolli & Korean Rice Wines', -- drinkType
-    NULL, -- badgePhoto (replace with a URL if needed)
-    ARRAY[
-        'Modern Makgeolli/Takju (Grocery store makgeolli) - Unflavoured',
-        'Artisanal Makgeolli/Takju (Craft, Traditional)',
-        'Cheongju / Yakju (Clarified Makgeolli)',
-        'Flavoured Makgeolli - All types'
-    ]
-);
 
 INSERT INTO "drinkTypes" ("drinkType", "badgePhoto", "typeCategory")
 VALUES (
-    'Wine (Grape wine)', -- drinkType
+    'Wine', -- drinkType
     NULL, -- badgePhoto (replace with a URL if needed)
     ARRAY[
-        'Red Wine - Single Varietal',
-        'Red Wine - Blend of Varietals',
-        'White Wine - Single Varietal',
-        'White Wine - Blend of Varietals',
-        'Orange Wine - Single Varietal',
-        'Orange Wine - Blend of Varietals',
-        'Rosé - Single Varietal',
-        'Rosé - Blend of Varietals',
-        'Sparkling White (Incl Champagne) - Single Varietal, NOT natural wine',
-        'Sparkling White (Incl Champagne) - Blend of Varietals, NOT natural wine',
-        'Sparkling Rosé - Single Varietal, NOT natural wine',
-        'Sparkling Rosé - Blend of Varietals, NOT natural wine',
-        'Sparkling Red - Single Varietal, NOT natural wine',
-        'Sparkling Red - Blend of Varietals, NOT natural wine',
-        'Fortified Wine (Incl. Port, Sherry, Apera) - Single Varietal',
-        'Fortified Wine (Incl. Port, Sherry, Apera) - Blend of Varietals',
-        'Only Natural Wine (Incl. Pét Nat, Organic, Biodynamic) – All grades, all colours, including sparkling',
-        'All Others'
+        'Red Wine',
+        'White Wine',
+        'Rosé Wine',
+        'Sparkling Wine',
+        'Fortified Wine',
+        'Dessert Wine',
+        'All Other Fruit Wine'
     ]
 );
 
@@ -1070,25 +987,11 @@ VALUES (
     'Brandy', -- drinkType
     NULL, -- badgePhoto (replace with a URL if needed)
     ARRAY[
-        'Armagnac - Bas-Armagnac',
-        'Armagnac - Haut-Armagnac',
-        'Armagnac - Ténarèze',
-        'Armagnac - Blend',
-        'Armagnac - All Others / Undisclosed Region',
-        'Cognac - Single Estate',
-        'Cognac - Blend',
-        'Cognac - All Others / Undisclosed Region',
-        'Grappa / Pomace / Marc Brandy - Mono-Varietal',
-        'Grappa / Pomace / Marc Brandy - Poli-Varietal',
-        'Grappa / Pomace / Marc Brandy - All Others / Undisclosed Varietal',
-        'Pisco - Puro',
-        'Pisco - Acholado',
-        'Pisco - Mosto Verde',
-        'Pisco - All Others / Undisclosed Varietal',
-        'Calvados - Pays d''Auge',
-        'Calvados - Domfrontais',
-        'Calvados - Blend',
-        'Calvados - All Others / Undisclosed Region',
+        'Armagnac',
+        'Cognac',
+        'Grappa / Pomace / Marc Brandy',
+        'Pisco',
+        'Calvados',
         'All Others - Aged',
         'All Others - Unaged',
         'All Others - Flavoured'
@@ -1115,6 +1018,24 @@ VALUES (
 
 INSERT INTO "drinkTypes" ("drinkType", "badgePhoto", "typeCategory")
 VALUES (
+    'Gin', -- drinkType
+    NULL, -- badgePhoto (replace with a URL if needed)
+    ARRAY[
+        'London Dry',
+        'Contemporary',
+        'Genever',
+        'Plymouth Gin',
+        'Old Tom',
+        'Sloe Gin',
+        'Barrel Aged',
+        'Flavoured Gin',
+        'Distilled Gin',
+        'Navy Strength'
+    ]
+);
+
+INSERT INTO "drinkTypes" ("drinkType", "badgePhoto", "typeCategory")
+VALUES (
     'Vodka', -- drinkType
     NULL, -- badgePhoto (replace with a URL if needed)
     ARRAY[
@@ -1127,7 +1048,7 @@ VALUES (
 
 INSERT INTO "drinkTypes" ("drinkType", "badgePhoto", "typeCategory")
 VALUES (
-    'Liqueur', -- drinkType
+    'Liqueurs & Bitters', -- drinkType
     NULL, -- badgePhoto (replace with a URL if needed)
     ARRAY[
         'Cream',
@@ -1143,46 +1064,1645 @@ VALUES (
 
 INSERT INTO "drinkTypes" ("drinkType", "badgePhoto", "typeCategory")
 VALUES (
-    'All Other Drinks', -- drinkType
+    'Umeshu', -- drinkType
     NULL, -- badgePhoto (replace with a URL if needed)
     ARRAY[
-        'Absinthe',
-        'Arrack',
-        'Ready-To-Drink Cocktails (Canned Chuhai, Canned Negroni, etc)',
-        'Other Spirits (Feni, Huangjiu etc)',
-        'Other Fermented Drinks (Palm Wine, Pulque, etc)',
-        'Destilado de Agave (unregistered ''mezcals'')',
-        'Sotol'
+        'Umeshu'
     ]
 );
 
--- Fetch the ID of the "Beer" drinkType
+INSERT INTO "drinkTypes" ("drinkType", "badgePhoto", "typeCategory")
+VALUES (
+    'Absinthe', -- drinkType
+    NULL, -- badgePhoto (replace with a URL if needed)
+    ARRAY[
+        'Absinthe'
+    ]
+);
+
+INSERT INTO "drinkTypes" ("drinkType", "badgePhoto", "typeCategory")
+VALUES (
+    'Arrack', -- drinkType
+    NULL, -- badgePhoto (replace with a URL if needed)
+    ARRAY[
+        'Arrack'
+    ]
+);
+
+-- Fetch the ID of the "Whisky" drinkType
 WITH drink_type AS (
-    SELECT id FROM "drinkTypes" WHERE "drinkType" = 'Beer'
+    SELECT id FROM "drinkTypes" WHERE "drinkType" = 'Whisky'
+)
+-- Insert corresponding type categories
+INSERT INTO "typeCategories" ("drinkType_id", "typeCategory", "drinkStyle")
+VALUES
+    ((SELECT id FROM drink_type), 'Single Malt', ARRAY[
+        'Highland',
+        'Lowland',
+        'Speyside',
+        'Islay',
+        'Campbeltown',
+        'Islands'
+    ]),
+    ((SELECT id FROM drink_type), 'Single Grain', ARRAY[
+        'Highland',
+        'Lowland',
+        'Speyside',
+        'Islay',
+        'Campbeltown',
+        'Islands'
+    ]),
+    ((SELECT id FROM drink_type), 'Blended', ARRAY[
+        'Highland',
+        'Lowland',
+        'Speyside',
+        'Islay',
+        'Campbeltown',
+        'Islands',
+        'World Blend'
+    ]),
+    ((SELECT id FROM drink_type), 'Single Blended', ARRAY[
+        'Highland',
+        'Lowland',
+        'Speyside',
+        'Islay',
+        'Campbeltown',
+        'Islands'
+    ]);
+
+-- Fetch the ID of the "Rum" drinkType
+WITH drink_type AS (
+    SELECT id FROM "drinkTypes" WHERE "drinkType" = 'Rum'
+)
+-- Insert corresponding type categories
+INSERT INTO "typeCategories" ("drinkType_id", "typeCategory", "drinkStyle")
+VALUES
+    ((SELECT id FROM drink_type), 'Juice - Agricultural (Column Still)', ARRAY[
+        'British Style Rum',
+        'French Style Rhum',
+        'Spanish Style Ron',
+        'Navy Rum Blend',
+        'Rhum Agricole',
+        'Jamaican High Ester',
+        'Trinidad Heavy',
+        'Reunion Island Grand Arome',
+        'Barbados Long Fermentation',
+        'High Ester',
+        'Central America',
+        'South America',
+        'Indian Jaggery',
+        'Japanese Kokuto (Brown Sugar)'
+    ]),
+    ((SELECT id FROM drink_type), 'Juice - Pure Single Rum (Pot Still)', ARRAY[
+        'British Style Rum',
+        'French Style Rhum',
+        'Spanish Style Ron',
+        'Navy Rum Blend',
+        'Rhum Agricole',
+        'Jamaican High Ester',
+        'Trinidad Heavy',
+        'Reunion Island Grand Arome',
+        'Barbados Long Fermentation',
+        'High Ester',
+        'Central America',
+        'South America',
+        'Indian Jaggery',
+        'Japanese Kokuto (Brown Sugar)'
+    ]),
+    ((SELECT id FROM drink_type), 'Juice - Single Blended Rum (Pot & Column Still)', ARRAY[
+        'British Style Rum',
+        'French Style Rhum',
+        'Spanish Style Ron',
+        'Navy Rum Blend',
+        'Rhum Agricole',
+        'Jamaican High Ester',
+        'Trinidad Heavy',
+        'Reunion Island Grand Arome',
+        'Barbados Long Fermentation',
+        'High Ester',
+        'Central America',
+        'South America',
+        'Indian Jaggery',
+        'Japanese Kokuto (Brown Sugar)'
+    ]),
+    ((SELECT id FROM drink_type), 'Juice - All Others', ARRAY[
+        'British Style Rum',
+        'French Style Rhum',
+        'Spanish Style Ron',
+        'Navy Rum Blend',
+        'Rhum Agricole',
+        'Jamaican High Ester',
+        'Trinidad Heavy',
+        'Reunion Island Grand Arome',
+        'Barbados Long Fermentation',
+        'High Ester',
+        'Central America',
+        'South America',
+        'Indian Jaggery',
+        'Japanese Kokuto (Brown Sugar)'
+    ]),
+    ((SELECT id FROM drink_type), 'Juice - White Unaged', ARRAY[
+        'British Style Rum',
+        'French Style Rhum',
+        'Spanish Style Ron',
+        'Navy Rum Blend',
+        'Rhum Agricole',
+        'Jamaican High Ester',
+        'Trinidad Heavy',
+        'Reunion Island Grand Arome',
+        'Barbados Long Fermentation',
+        'High Ester',
+        'Central America',
+        'South America',
+        'Indian Jaggery',
+        'Japanese Kokuto (Brown Sugar)'
+    ]),
+    ((SELECT id FROM drink_type), 'Syrup - Traditional Rum (Column Still)', ARRAY[
+        'British Style Rum',
+        'French Style Rhum',
+        'Spanish Style Ron',
+        'Navy Rum Blend',
+        'Rhum Agricole',
+        'Jamaican High Ester',
+        'Trinidad Heavy',
+        'Reunion Island Grand Arome',
+        'Barbados Long Fermentation',
+        'High Ester',
+        'Central America',
+        'South America',
+        'Indian Jaggery',
+        'Japanese Kokuto (Brown Sugar)'
+    ]),
+    ((SELECT id FROM drink_type), 'Syrup - Pure Single Rum (Pot Still)', ARRAY[
+        'British Style Rum',
+        'French Style Rhum',
+        'Spanish Style Ron',
+        'Navy Rum Blend',
+        'Rhum Agricole',
+        'Jamaican High Ester',
+        'Trinidad Heavy',
+        'Reunion Island Grand Arome',
+        'Barbados Long Fermentation',
+        'High Ester',
+        'Central America',
+        'South America',
+        'Indian Jaggery',
+        'Japanese Kokuto (Brown Sugar)'
+    ]),
+    ((SELECT id FROM drink_type), 'Syrup - Single Blended Rum (Pot & Column Still)', ARRAY[
+        'British Style Rum',
+        'French Style Rhum',
+        'Spanish Style Ron',
+        'Navy Rum Blend',
+        'Rhum Agricole',
+        'Jamaican High Ester',
+        'Trinidad Heavy',
+        'Reunion Island Grand Arome',
+        'Barbados Long Fermentation',
+        'High Ester',
+        'Central America',
+        'South America',
+        'Indian Jaggery',
+        'Japanese Kokuto (Brown Sugar)'
+    ]),
+    ((SELECT id FROM drink_type), 'Syrup - All Others', ARRAY[
+        'British Style Rum',
+        'French Style Rhum',
+        'Spanish Style Ron',
+        'Navy Rum Blend',
+        'Rhum Agricole',
+        'Jamaican High Ester',
+        'Trinidad Heavy',
+        'Reunion Island Grand Arome',
+        'Barbados Long Fermentation',
+        'High Ester',
+        'Central America',
+        'South America',
+        'Indian Jaggery',
+        'Japanese Kokuto (Brown Sugar)'
+    ]),
+    ((SELECT id FROM drink_type), 'Syrup - White / Unaged', ARRAY[
+        'British Style Rum',
+        'French Style Rhum',
+        'Spanish Style Ron',
+        'Navy Rum Blend',
+        'Rhum Agricole',
+        'Jamaican High Ester',
+        'Trinidad Heavy',
+        'Reunion Island Grand Arome',
+        'Barbados Long Fermentation',
+        'High Ester',
+        'Central America',
+        'South America',
+        'Indian Jaggery',
+        'Japanese Kokuto (Brown Sugar)'
+    ]),
+    ((SELECT id FROM drink_type), 'Syrup / Juice - Clairin / Cachaça / Aguardiente / Grogue', ARRAY[
+        'British Style Rum',
+        'French Style Rhum',
+        'Spanish Style Ron',
+        'Navy Rum Blend',
+        'Rhum Agricole',
+        'Jamaican High Ester',
+        'Trinidad Heavy',
+        'Reunion Island Grand Arome',
+        'Barbados Long Fermentation',
+        'High Ester',
+        'Central America',
+        'South America',
+        'Indian Jaggery',
+        'Japanese Kokuto (Brown Sugar)'
+    ]),
+    ((SELECT id FROM drink_type), 'Molasses - Traditional Rum (Column Still)', ARRAY[
+        'British Style Rum',
+        'French Style Rhum',
+        'Spanish Style Ron',
+        'Navy Rum Blend',
+        'Rhum Agricole',
+        'Jamaican High Ester',
+        'Trinidad Heavy',
+        'Reunion Island Grand Arome',
+        'Barbados Long Fermentation',
+        'High Ester',
+        'Central America',
+        'South America',
+        'Indian Jaggery',
+        'Japanese Kokuto (Brown Sugar)'
+    ]),
+    ((SELECT id FROM drink_type), 'Molasses - Pure Single Rum (Pot Still)', ARRAY[
+        'British Style Rum',
+        'French Style Rhum',
+        'Spanish Style Ron',
+        'Navy Rum Blend',
+        'Rhum Agricole',
+        'Jamaican High Ester',
+        'Trinidad Heavy',
+        'Reunion Island Grand Arome',
+        'Barbados Long Fermentation',
+        'High Ester',
+        'Central America',
+        'South America',
+        'Indian Jaggery',
+        'Japanese Kokuto (Brown Sugar)'
+    ]),
+    ((SELECT id FROM drink_type), 'Molasses - Single Blended Rum (Pot & Column Still)', ARRAY[
+        'British Style Rum',
+        'French Style Rhum',
+        'Spanish Style Ron',
+        'Navy Rum Blend',
+        'Rhum Agricole',
+        'Jamaican High Ester',
+        'Trinidad Heavy',
+        'Reunion Island Grand Arome',
+        'Barbados Long Fermentation',
+        'High Ester',
+        'Central America',
+        'South America',
+        'Indian Jaggery',
+        'Japanese Kokuto (Brown Sugar)'
+    ]),
+    ((SELECT id FROM drink_type), 'Molasses - All Others', ARRAY[
+        'British Style Rum',
+        'French Style Rhum',
+        'Spanish Style Ron',
+        'Navy Rum Blend',
+        'Rhum Agricole',
+        'Jamaican High Ester',
+        'Trinidad Heavy',
+        'Reunion Island Grand Arome',
+        'Barbados Long Fermentation',
+        'High Ester',
+        'Central America',
+        'South America',
+        'Indian Jaggery',
+        'Japanese Kokuto (Brown Sugar)'
+    ]),
+    ((SELECT id FROM drink_type), 'Molasses - White Unaged', ARRAY[
+        'British Style Rum',
+        'French Style Rhum',
+        'Spanish Style Ron',
+        'Navy Rum Blend',
+        'Rhum Agricole',
+        'Jamaican High Ester',
+        'Trinidad Heavy',
+        'Reunion Island Grand Arome',
+        'Barbados Long Fermentation',
+        'High Ester',
+        'Central America',
+        'South America',
+        'Indian Jaggery',
+        'Japanese Kokuto (Brown Sugar)'
+    ]),
+    ((SELECT id FROM drink_type), 'Others / Undisclosed', ARRAY[
+        'British Style Rum',
+        'French Style Rhum',
+        'Spanish Style Ron',
+        'Navy Rum Blend',
+        'Rhum Agricole',
+        'Jamaican High Ester',
+        'Trinidad Heavy',
+        'Reunion Island Grand Arome',
+        'Barbados Long Fermentation',
+        'High Ester',
+        'Central America',
+        'South America',
+        'Indian Jaggery',
+        'Japanese Kokuto (Brown Sugar)'
+    ]),
+    ((SELECT id FROM drink_type), 'Flavoured / Spiced', ARRAY[
+        'British Style Rum',
+        'French Style Rhum',
+        'Spanish Style Ron',
+        'Navy Rum Blend',
+        'Rhum Agricole',
+        'Jamaican High Ester',
+        'Trinidad Heavy',
+        'Reunion Island Grand Arome',
+        'Barbados Long Fermentation',
+        'High Ester',
+        'Central America',
+        'South America',
+        'Indian Jaggery',
+        'Japanese Kokuto (Brown Sugar)'
+    ]),
+    ((SELECT id FROM drink_type), 'Aged Blend of Molasses, Juice, and/or Syrup', ARRAY[
+        'British Style Rum',
+        'French Style Rhum',
+        'Spanish Style Ron',
+        'Navy Rum Blend',
+        'Rhum Agricole',
+        'Jamaican High Ester',
+        'Trinidad Heavy',
+        'Reunion Island Grand Arome',
+        'Barbados Long Fermentation',
+        'High Ester',
+        'Central America',
+        'South America',
+        'Indian Jaggery',
+        'Japanese Kokuto (Brown Sugar)'
+    ]),
+    ((SELECT id FROM drink_type), 'White Unaged Blend of Molasses, Juice, and/or Syrup', ARRAY[
+        'British Style Rum',
+        'French Style Rhum',
+        'Spanish Style Ron',
+        'Navy Rum Blend',
+        'Rhum Agricole',
+        'Jamaican High Ester',
+        'Trinidad Heavy',
+        'Reunion Island Grand Arome',
+        'Barbados Long Fermentation',
+        'High Ester',
+        'Central America',
+        'South America',
+        'Indian Jaggery',
+        'Japanese Kokuto (Brown Sugar)'
+    ]);
+
+    -- Fetch the ID of the "Tequila" drinkType
+    WITH drink_type AS (
+        SELECT id FROM "drinkTypes" WHERE "drinkType" = 'Tequila'
+    )
+    -- Insert corresponding type categories
+    INSERT INTO "typeCategories" ("drinkType_id", "typeCategory", "drinkStyle")
+    VALUES
+        ((SELECT id FROM drink_type), 'Blanco (Unaged / White)', ARRAY[
+            'Jalisco',
+            'Nayarit',
+            'Guanajuato',
+            'Michoaćan',
+            'Tamaulipas'
+        ]),
+        ((SELECT id FROM drink_type), 'Joven / Oro (Young / Gold)', ARRAY[
+            'Jalisco',
+            'Nayarit',
+            'Guanajuato',
+            'Michoaćan',
+            'Tamaulipas'
+        ]),
+        ((SELECT id FROM drink_type), 'Reposado (Aged)', ARRAY[
+            'Jalisco',
+            'Nayarit',
+            'Guanajuato',
+            'Michoaćan',
+            'Tamaulipas'
+        ]),
+        ((SELECT id FROM drink_type), 'Añejo (Extra Aged)', ARRAY[
+            'Jalisco',
+            'Nayarit',
+            'Guanajuato',
+            'Michoaćan',
+            'Tamaulipas'
+        ]),
+        ((SELECT id FROM drink_type), 'Extra Añejo (Ultra Aged)', ARRAY[
+            'Jalisco',
+            'Nayarit',
+            'Guanajuato',
+            'Michoaćan',
+            'Tamaulipas'
+        ]),
+        ((SELECT id FROM drink_type), 'Cristalino', ARRAY[
+            'Jalisco',
+            'Nayarit',
+            'Guanajuato',
+            'Michoaćan',
+            'Tamaulipas'
+        ]),
+        ((SELECT id FROM drink_type), 'Curado (Flavoured)', ARRAY[
+            'Jalisco',
+            'Nayarit',
+            'Guanajuato',
+            'Michoaćan',
+            'Tamaulipas'
+        ]),
+        ((SELECT id FROM drink_type), 'Others (Including Mixto)', ARRAY[
+            'Jalisco',
+            'Nayarit',
+            'Guanajuato',
+            'Michoaćan',
+            'Tamaulipas'
+        ]);
+
+-- Fetch the ID of the "Mezcal" drinkType
+WITH drink_type AS (
+    SELECT id FROM "drinkTypes" WHERE "drinkType" = 'Mezcal'
+)
+-- Insert corresponding type categories
+INSERT INTO "typeCategories" ("drinkType_id", "typeCategory", "drinkStyle")
+VALUES
+    ((SELECT id FROM drink_type), 'Joven (Unaged / Young)', ARRAY[
+        'Oaxaca',
+        'Guerrero',
+        'Michoaćan',
+        'Puebla',
+        'Durango',
+        'San Luís Potosí',
+        'Zacatecas',
+        'Guanajuato',
+        'Tamaulipas'
+    ]),
+    ((SELECT id FROM drink_type), 'Reposado (Aged)', ARRAY[
+        'Oaxaca',
+        'Guerrero',
+        'Michoaćan',
+        'Puebla',
+        'Durango',
+        'San Luís Potosí',
+        'Zacatecas',
+        'Guanajuato',
+        'Tamaulipas'
+    ]),
+    ((SELECT id FROM drink_type), 'Añejo (Extra Aged)', ARRAY[
+        'Oaxaca',
+        'Guerrero',
+        'Michoaćan',
+        'Puebla',
+        'Durango',
+        'San Luís Potosí',
+        'Zacatecas',
+        'Guanajuato',
+        'Tamaulipas'
+    ]),
+    ((SELECT id FROM drink_type), 'Extra Añejo (Ultra Aged)', ARRAY[
+        'Oaxaca',
+        'Guerrero',
+        'Michoaćan',
+        'Puebla',
+        'Durango',
+        'San Luís Potosí',
+        'Zacatecas',
+        'Guanajuato',
+        'Tamaulipas'
+    ]),
+    ((SELECT id FROM drink_type), 'En Vidrio (Aged in Glass)', ARRAY[
+        'Oaxaca',
+        'Guerrero',
+        'Michoaćan',
+        'Puebla',
+        'Durango',
+        'San Luís Potosí',
+        'Zacatecas',
+        'Guanajuato',
+        'Tamaulipas'
+    ]),
+    ((SELECT id FROM drink_type), 'Destilado Con (Pechuga, Conejos, etc)', ARRAY[
+        'Oaxaca',
+        'Guerrero',
+        'Michoaćan',
+        'Puebla',
+        'Durango',
+        'San Luís Potosí',
+        'Zacatecas',
+        'Guanajuato',
+        'Tamaulipas'
+    ]),
+    ((SELECT id FROM drink_type), 'Curado / Abocado Con (Flavoured)', ARRAY[
+        'Oaxaca',
+        'Guerrero',
+        'Michoaćan',
+        'Puebla',
+        'Durango',
+        'San Luís Potosí',
+        'Zacatecas',
+        'Guanajuato',
+        'Tamaulipas'
+    ]),
+    ((SELECT id FROM drink_type), 'Cristalino', ARRAY[
+        'Oaxaca',
+        'Guerrero',
+        'Michoaćan',
+        'Puebla',
+        'Durango',
+        'San Luís Potosí',
+        'Zacatecas',
+        'Guanajuato',
+        'Tamaulipas'
+    ]),
+    ((SELECT id FROM drink_type), 'Others', ARRAY[
+        'Oaxaca',
+        'Guerrero',
+        'Michoaćan',
+        'Puebla',
+        'Durango',
+        'San Luís Potosí',
+        'Zacatecas',
+        'Guanajuato',
+        'Tamaulipas'
+    ]),
+    ((SELECT id FROM drink_type), 'Destilado de Agave', ARRAY[
+        'Oaxaca',
+        'Guerrero',
+        'Michoaćan',
+        'Puebla',
+        'Durango',
+        'San Luís Potosí',
+        'Zacatecas',
+        'Guanajuato',
+        'Tamaulipas'
+    ]);
+
+
+-- Fetch the ID of the "Sake" drinkType
+WITH drink_type AS (
+    SELECT id FROM "drinkTypes" WHERE "drinkType" = 'Sake'
+)
+-- Insert corresponding type categories
+INSERT INTO "typeCategories" ("drinkType_id", "typeCategory", "drinkStyle")
+VALUES
+    ((SELECT id FROM drink_type), 'Futsushu (Table sakes)', ARRAY[
+        'Niigata', 'Aichi', 'Hyogo', 'Fukushima', 'Kyoto', 'Ishikawa', 'Kumamoto', 'Saga', 'Shiga', 'Iwate', 
+        'Osaka', 'Gunma', 'Yamaguchi', 'Akita', 'Shizuoka', 'Mie', 'Yamagata', 'Hokkaido', 'Saitama', 'Ibaraki', 
+        'Nara', 'Chiba', 'Okayama', 'Tottori', 'Shimane', 'Kochi', 'Hiroshima', 'Nagano', 'Miyagi', 'Fukuoka'
+    ]),
+    ((SELECT id FROM drink_type), 'Honjozo (Alcohol added)', ARRAY[
+        'Niigata', 'Aichi', 'Hyogo', 'Fukushima', 'Kyoto', 'Ishikawa', 'Kumamoto', 'Saga', 'Shiga', 'Iwate', 
+        'Osaka', 'Gunma', 'Yamaguchi', 'Akita', 'Shizuoka', 'Mie', 'Yamagata', 'Hokkaido', 'Saitama', 'Ibaraki', 
+        'Nara', 'Chiba', 'Okayama', 'Tottori', 'Shimane', 'Kochi', 'Hiroshima', 'Nagano', 'Miyagi', 'Fukuoka'
+    ]),
+    ((SELECT id FROM drink_type), 'Junmai', ARRAY[
+        'Niigata', 'Aichi', 'Hyogo', 'Fukushima', 'Kyoto', 'Ishikawa', 'Kumamoto', 'Saga', 'Shiga', 'Iwate', 
+        'Osaka', 'Gunma', 'Yamaguchi', 'Akita', 'Shizuoka', 'Mie', 'Yamagata', 'Hokkaido', 'Saitama', 'Ibaraki', 
+        'Nara', 'Chiba', 'Okayama', 'Tottori', 'Shimane', 'Kochi', 'Hiroshima', 'Nagano', 'Miyagi', 'Fukuoka'
+    ]),
+    ((SELECT id FROM drink_type), 'Ginjo (Alcohol added)', ARRAY[
+        'Niigata', 'Aichi', 'Hyogo', 'Fukushima', 'Kyoto', 'Ishikawa', 'Kumamoto', 'Saga', 'Shiga', 'Iwate', 
+        'Osaka', 'Gunma', 'Yamaguchi', 'Akita', 'Shizuoka', 'Mie', 'Yamagata', 'Hokkaido', 'Saitama', 'Ibaraki', 
+        'Nara', 'Chiba', 'Okayama', 'Tottori', 'Shimane', 'Kochi', 'Hiroshima', 'Nagano', 'Miyagi', 'Fukuoka'
+    ]),
+    ((SELECT id FROM drink_type), 'Junmai Ginjo', ARRAY[
+        'Niigata', 'Aichi', 'Hyogo', 'Fukushima', 'Kyoto', 'Ishikawa', 'Kumamoto', 'Saga', 'Shiga', 'Iwate', 
+        'Osaka', 'Gunma', 'Yamaguchi', 'Akita', 'Shizuoka', 'Mie', 'Yamagata', 'Hokkaido', 'Saitama', 'Ibaraki', 
+        'Nara', 'Chiba', 'Okayama', 'Tottori', 'Shimane', 'Kochi', 'Hiroshima', 'Nagano', 'Miyagi', 'Fukuoka'
+    ]),
+    ((SELECT id FROM drink_type), 'Daiginjo (Alcohol added)', ARRAY[
+        'Niigata', 'Aichi', 'Hyogo', 'Fukushima', 'Kyoto', 'Ishikawa', 'Kumamoto', 'Saga', 'Shiga', 'Iwate', 
+        'Osaka', 'Gunma', 'Yamaguchi', 'Akita', 'Shizuoka', 'Mie', 'Yamagata', 'Hokkaido', 'Saitama', 'Ibaraki', 
+        'Nara', 'Chiba', 'Okayama', 'Tottori', 'Shimane', 'Kochi', 'Hiroshima', 'Nagano', 'Miyagi', 'Fukuoka'
+    ]),
+    ((SELECT id FROM drink_type), 'Junmai Daiginjo', ARRAY[
+        'Niigata', 'Aichi', 'Hyogo', 'Fukushima', 'Kyoto', 'Ishikawa', 'Kumamoto', 'Saga', 'Shiga', 'Iwate', 
+        'Osaka', 'Gunma', 'Yamaguchi', 'Akita', 'Shizuoka', 'Mie', 'Yamagata', 'Hokkaido', 'Saitama', 'Ibaraki', 
+        'Nara', 'Chiba', 'Okayama', 'Tottori', 'Shimane', 'Kochi', 'Hiroshima', 'Nagano', 'Miyagi', 'Fukuoka'
+    ]),
+    ((SELECT id FROM drink_type), 'Nigori', ARRAY[
+        'Niigata', 'Aichi', 'Hyogo', 'Fukushima', 'Kyoto', 'Ishikawa', 'Kumamoto', 'Saga', 'Shiga', 'Iwate', 
+        'Osaka', 'Gunma', 'Yamaguchi', 'Akita', 'Shizuoka', 'Mie', 'Yamagata', 'Hokkaido', 'Saitama', 'Ibaraki', 
+        'Nara', 'Chiba', 'Okayama', 'Tottori', 'Shimane', 'Kochi', 'Hiroshima', 'Nagano', 'Miyagi', 'Fukuoka'
+    ]),
+    ((SELECT id FROM drink_type), 'Sparkling', ARRAY[
+        'Niigata', 'Aichi', 'Hyogo', 'Fukushima', 'Kyoto', 'Ishikawa', 'Kumamoto', 'Saga', 'Shiga', 'Iwate', 
+        'Osaka', 'Gunma', 'Yamaguchi', 'Akita', 'Shizuoka', 'Mie', 'Yamagata', 'Hokkaido', 'Saitama', 'Ibaraki', 
+        'Nara', 'Chiba', 'Okayama', 'Tottori', 'Shimane', 'Kochi', 'Hiroshima', 'Nagano', 'Miyagi', 'Fukuoka'
+    ]),
+    ((SELECT id FROM drink_type), 'Sparkling Nigori', ARRAY[
+        'Niigata', 'Aichi', 'Hyogo', 'Fukushima', 'Kyoto', 'Ishikawa', 'Kumamoto', 'Saga', 'Shiga', 'Iwate', 
+        'Osaka', 'Gunma', 'Yamaguchi', 'Akita', 'Shizuoka', 'Mie', 'Yamagata', 'Hokkaido', 'Saitama', 'Ibaraki', 
+        'Nara', 'Chiba', 'Okayama', 'Tottori', 'Shimane', 'Kochi', 'Hiroshima', 'Nagano', 'Miyagi', 'Fukuoka'
+    ]),
+    ((SELECT id FROM drink_type), 'All Kijoshu', ARRAY[
+        'Niigata', 'Aichi', 'Hyogo', 'Fukushima', 'Kyoto', 'Ishikawa', 'Kumamoto', 'Saga', 'Shiga', 'Iwate', 
+        'Osaka', 'Gunma', 'Yamaguchi', 'Akita', 'Shizuoka', 'Mie', 'Yamagata', 'Hokkaido', 'Saitama', 'Ibaraki', 
+        'Nara', 'Chiba', 'Okayama', 'Tottori', 'Shimane', 'Kochi', 'Hiroshima', 'Nagano', 'Miyagi', 'Fukuoka'
+    ]),
+    ((SELECT id FROM drink_type), 'Amazake', ARRAY[
+        'Niigata', 'Aichi', 'Hyogo', 'Fukushima', 'Kyoto', 'Ishikawa', 'Kumamoto', 'Saga', 'Shiga', 'Iwate', 
+        'Osaka', 'Gunma', 'Yamaguchi', 'Akita', 'Shizuoka', 'Mie', 'Yamagata', 'Hokkaido', 'Saitama', 'Ibaraki', 
+        'Nara', 'Chiba', 'Okayama', 'Tottori', 'Shimane', 'Kochi', 'Hiroshima', 'Nagano', 'Miyagi', 'Fukuoka'
+    ]),
+    ((SELECT id FROM drink_type), 'Doburoku', ARRAY[
+        'Niigata', 'Aichi', 'Hyogo', 'Fukushima', 'Kyoto', 'Ishikawa', 'Kumamoto', 'Saga', 'Shiga', 'Iwate', 
+        'Osaka', 'Gunma', 'Yamaguchi', 'Akita', 'Shizuoka', 'Mie', 'Yamagata', 'Hokkaido', 'Saitama', 'Ibaraki', 
+        'Nara', 'Chiba', 'Okayama', 'Tottori', 'Shimane', 'Kochi', 'Hiroshima', 'Nagano', 'Miyagi', 'Fukuoka'
+    ]),
+    ((SELECT id FROM drink_type), 'Flavoured', ARRAY[
+        'Niigata', 'Aichi', 'Hyogo', 'Fukushima', 'Kyoto', 'Ishikawa', 'Kumamoto', 'Saga', 'Shiga', 'Iwate', 
+        'Osaka', 'Gunma', 'Yamaguchi', 'Akita', 'Shizuoka', 'Mie', 'Yamagata', 'Hokkaido', 'Saitama', 'Ibaraki', 
+        'Nara', 'Chiba', 'Okayama', 'Tottori', 'Shimane', 'Kochi', 'Hiroshima', 'Nagano', 'Miyagi', 'Fukuoka'
+    ]),
+    ((SELECT id FROM drink_type), 'Taru / Komodaru', ARRAY[
+        'Niigata', 'Aichi', 'Hyogo', 'Fukushima', 'Kyoto', 'Ishikawa', 'Kumamoto', 'Saga', 'Shiga', 'Iwate', 
+        'Osaka', 'Gunma', 'Yamaguchi', 'Akita', 'Shizuoka', 'Mie', 'Yamagata', 'Hokkaido', 'Saitama', 'Ibaraki', 
+        'Nara', 'Chiba', 'Okayama', 'Tottori', 'Shimane', 'Kochi', 'Hiroshima', 'Nagano', 'Miyagi', 'Fukuoka'
+    ]);
+
+-- Fetch the ID of the "Brandy" drinkType
+WITH drink_type AS (
+    SELECT id FROM "drinkTypes" WHERE "drinkType" = 'Brandy'
+)
+-- Insert corresponding type categories
+INSERT INTO "typeCategories" ("drinkType_id", "typeCategory", "drinkStyle")
+VALUES
+    ((SELECT id FROM drink_type), 'Armagnac', ARRAY[
+        'Bas-Armagnac',
+        'Haut-Armagnac',
+        'Ténarèze',
+        'Armagnac Blend',
+        'Armagnac - All Others / Undisclosed Region'
+    ]),
+    ((SELECT id FROM drink_type), 'Cognac', ARRAY[
+        'Single Estate',
+        'Cognac Blend',
+        'All Others / Undisclosed Region'
+    ]),
+    ((SELECT id FROM drink_type), 'Grappa / Pomace / Marc Brandy', ARRAY[
+        'Mono-Varietal',
+        'Poli-Varietal',
+        'All Others / Undisclosed Varietal'
+    ]),
+    ((SELECT id FROM drink_type), 'Pisco', ARRAY[
+        'Puro',
+        'Acholado',
+        'Mosto Verde',
+        'All Others / Undisclosed Varietal'
+    ]),
+    ((SELECT id FROM drink_type), 'Calvados', ARRAY[
+        'Pays d''Auge',
+        'Domfrontais',
+        'Blend',
+        'All Others / Undisclosed Region'
+    ]);
+
+
+
+
+-- Fetch the ID of the "Beer" drinkType
+    WITH drink_type AS (
+        SELECT id FROM "drinkTypes" WHERE "drinkType" = 'Beer'
+    )
+    -- Insert corresponding type categories
+    INSERT INTO "typeCategories" ("drinkType_id", "typeCategory", "drinkStyle")
+    VALUES
+        ((SELECT id FROM drink_type), 'Aged Beer', ARRAY[
+            'Wood- and Barrel-Aged Beer',
+            'Aged Beer - Other Styles'
+        ]),
+        ((SELECT id FROM drink_type), 'Altbier', ARRAY[
+            'Altbier - Sticke',
+            'Altbier - Traditional'
+        ]),
+        ((SELECT id FROM drink_type), 'Barleywine', ARRAY[
+            'Barleywine - American',
+            'Barleywine - English',
+            'Barleywine - All Others'
+        ]),
+        ((SELECT id FROM drink_type), 'Belgian Style', ARRAY[
+            'Belgian Style - Blonde / Golden Ale',
+            'Belgian Style - Contemporary Spontaneous Fermented',
+            'Belgian Style - Dubbel',
+            'Belgian Style - Quadrupel',
+            'Belgian Style - Saison',
+            'Belgian Style - Tripel',
+            'Belgian Style - All Others',
+            'Belgian Style - Brown',
+            'Belgian Style - Dark Ale',
+            'Belgian Style - Enkel / Patersbier',
+            'Belgian Style - Bière de Champagne / Bière Brut'
+        ]),
+        ((SELECT id FROM drink_type), 'Bitter Ale', ARRAY[
+            'Bitter Ale - Best',
+            'Bitter Ale - Extra Special / Strong (ESB)',
+            'Bitter Ale - Session / Ordinary'
+        ]),
+        ((SELECT id FROM drink_type), 'Brown Ale', ARRAY[
+            'Brown Ale - American',
+            'Brown Ale - Belgian',
+            'Brown Ale - English',
+            'Brown Ale - Imperial / Double',
+            'Brown Ale - All Others'
+        ]),
+        ((SELECT id FROM drink_type), 'Cider', ARRAY[
+            'Cider - Aged / Barrel Aged',
+            'Cider - Apfelwein / German Style',
+            'Cider - Cidre / French Style',
+            'Cider - Dry',
+            'Cider - Fruited / Flavoured',
+            'Cider - Graff',
+            'Cider - Herbed / Spiced',
+            'Cider - Hopped',
+            'Cider - Ice',
+            'Cider - Mulled',
+            'Cider - Perry / Poiré',
+            'Cider - Pommeau',
+            'Cider - Rosé',
+            'Cider - Sitra / Spanish Style',
+            'Cider - Sour',
+            'Cider - Sweet',
+            'Cider - Traditional',
+            'Cider - All Others',
+            'Cider - Other Fruit'
+        ]),
+        ((SELECT id FROM drink_type), 'Cream Ale', ARRAY[
+            'Cream Ale - Imperial / Double',
+            'Cream Ale - All Others'
+        ]),
+        ((SELECT id FROM drink_type), 'Farmhouse Ale', ARRAY[
+            'Farmhouse Ale - Bière de Coupage',
+            'Farmhouse Ale - Bière de Garde',
+            'Farmhouse Ale - Bière de Mars',
+            'Farmhouse Ale - Classic French & Belgian Style',
+            'Farmhouse Ale - Finnish Style Sahti',
+            'Farmhouse Ale - Grisette',
+            'Farmhouse Ale - Saison',
+            'Farmhouse Ale - All Others'
+        ]),
+        ((SELECT id FROM drink_type), 'German Style', ARRAY[
+            'German Style - Bock (Single / Traditional)',
+            'German Style - Doppelbock',
+            'German Style - Eisbock',
+            'German Style - Helles Bock / Maibock / Lentebock',
+            'German Style - Weizenbock',
+            'German Style - Weizendoppelbock',
+            'German Style - Kellerbier / Zwickelbier',
+            'German Style - Kölsch / Koelsch',
+            'German Style - Märzen',
+            'German Style - Oktoberfestbier/Wiesn',
+            'German Style - Rauchbier',
+            'German Style - Roggenbier',
+            'German Style - Rotbier',
+            'German Style - Schwarzbier',
+            'German Style - All Others',
+            'German Style - Festbier'
+        ]),
+        ((SELECT id FROM drink_type), 'Blonde / Golden Ale', ARRAY[
+            'Blonde / Golden Ale - Belgian Style',
+            'Blonde / Golden Ale - American',
+            'Blonde / Golden Ale - English',
+            'Blonde / Golden Ale - Ukrainian',
+            'Blonde / Golden Ale - All Others'
+        ]),
+        ((SELECT id FROM drink_type), 'Grape Ale', ARRAY[
+            'Grape Ale - Italian',
+            'Grape Ale - All Others'
+        ]),
+        ((SELECT id FROM drink_type), 'Historical Beer', ARRAY[
+            'Historical Beer - California Common / Steam Beer',
+            'Historical Beer - Adambier',
+            'Historical Beer - Berliner Braunbier',
+            'Historical Beer - Broyhan',
+            'Historical Beer - Burton Ale',
+            'Historical Beer - Dampfbier',
+            'Historical Beer - Gruit / Ancient Herbed Ale',
+            'Historical Beer - Kentucky Common',
+            'Historical Beer - Kottbusser',
+            'Historical Beer - Kuit / Kuyt / Koyt',
+            'Historical Beer - Lichtenhainer',
+            'Historical Beer - Mumme',
+            'Historical Beer - Steinbier',
+            'Historical Beer - Zoigl',
+            'Historical Beer - Australian Sparkling Ale',
+            'Historical Beer - All Others',
+            'Historical Beer - Grodziskie / Grätzer',
+            'Historical Beer - Roggenbier'
+        ]),
+        ((SELECT id FROM drink_type), 'Hybrid Beer', ARRAY[
+            'Hybrid Lager',
+            'Hybrid Ale',
+            'Hybrid Beer - All Others'
+        ]),
+        ((SELECT id FROM drink_type), 'IPA (India Pale Ale)', ARRAY[
+            'IPA - American Style (All)',
+            'IPA - Barrel Aged',
+            'IPA - Belgian Style',
+            'IPA - Black / Cascadian Dark Ale',
+            'IPA - Brett',
+            'IPA - Brown',
+            'IPA - Brut',
+            'IPA - Cold',
+            'IPA - Double (DIPA) / Imperial',
+            'IPA - Double Dry Hopped (DDH)',
+            'IPA - Dry Hopped',
+            'IPA - Fruited',
+            'IPA - New England / Hazy / Juicy',
+            'IPA - Hazy Double (DIPA)',
+            'IPA - Hazy Triple (TIPA)',
+            'IPA - Milkshake / Double Milkshake / Imperial',
+            'IPA - Quadruple',
+            'IPA - Red',
+            'IPA - Rye',
+            'IPA - Session',
+            'IPA - Single Hop',
+            'IPA - Sour',
+            'IPA - Triple (TIPA)',
+            'IPA - Triple Dry Hopped (TDH)',
+            'IPA - West Coast',
+            'IPA - White / Wheat',
+            'IPA - All Others'
+        ]),
+        ((SELECT id FROM drink_type), 'Lager', ARRAY[
+            'Lager - Amber / Red',
+            'Lager - American Style (All Styles)',
+            'Lager - Dark',
+            'Lager - Dortmunder / Export',
+            'Lager - Dunkel',
+            'Lager - European Style',
+            'Lager - Helles',
+            'Lager - IPL (India Pale Lager)',
+            'Lager - Japanese Rice / All Rice',
+            'Lager - Leichtbier',
+            'Lager - Mexican',
+            'Lager - Pale',
+            'Lager - Strong',
+            'Lager - Vienna Style',
+            'Lager - Winter',
+            'Lager - All Others'
+        ]),
+        ((SELECT id FROM drink_type), 'Lambic', ARRAY[
+            'Lambic - Framboise',
+            'Lambic - Other Fruit',
+            'Lambic - Gueuze',
+            'Lambic - Kriek',
+            'Lambic - All Others'
+        ]),
+        ((SELECT id FROM drink_type), 'Mead', ARRAY[
+            'Mead - Acerglyn / Maple Wine',
+            'Mead - Bochet',
+            'Mead - Braggot',
+            'Mead - Cyser',
+            'Mead - Melomel',
+            'Mead - Metheglin',
+            'Mead - Pyment',
+            'Mead - Session / Short',
+            'Mead - Sack',
+            'Mead - Great / Spiced',
+            'Mead - Imperial',
+            'Mead - Herbed & Spiced',
+            'Mead - Fruited',
+            'Mead - Traditional',
+            'Mead - All Others'
+        ]),
+        ((SELECT id FROM drink_type), 'Mild Ale', ARRAY[
+            'Mild Ale - Dark',
+            'Mild Ale - Light',
+            'Mild Ale - All Others'
+        ]),
+        ((SELECT id FROM drink_type), 'Non-Alcoholic', ARRAY[
+            'Non-Alcohlic - Lager',
+            'Non-Alcoholic - Beer',
+            'Non-Alcoholic - Cider',
+            'Non-Alcoholic - IPA',
+            'Non-Alcoholic - Malt Beverage',
+            'Non-Alcoholic - Mead',
+            'Non-Alcoholic - Pale Ale',
+            'Non-Alcoholic - Porter',
+            'Non-Alcoholic - Sour',
+            'Non-Alcoholic - Stout',
+            'Non-Alcoholic - Wheat Beer',
+            'Non-Alcoholic - All Others'
+        ]),
+        ((SELECT id FROM drink_type), 'Pale Ale', ARRAY[
+            'Pale Ale - All American Styles',
+            'Pale Ale - All Australian Styles',
+            'Pale Ale - Barrel Aged',
+            'Pale Ale - All Belgian Styles',
+            'Pale Ale - English Style',
+            'Pale Ale - New England / Hazy / Juicy',
+            'Pale Ale - Milkshake',
+            'Pale Ale - New Zealand',
+            'Pale Ale - XPA (Extra Pale)',
+            'Pale Ale - All Others'
+        ]),
+        ((SELECT id FROM drink_type), 'Pilsner', ARRAY[
+            'Pilsner - Czech / Bohemian',
+            'Pilsner - German',
+            'Pilsner - Imperial / Double',
+            'Pilsner - Italian',
+            'Pilsner - New Zealand',
+            'Pilsner - All Others'
+        ]),
+        ((SELECT id FROM drink_type), 'Porter', ARRAY[
+            'Porter - American',
+            'Porter - Baltic',
+            'Porter - Coffee',
+            'Porter - English',
+            'Porter - Imperial / Double',
+            'Porter - Imperial / Double Baltic',
+            'Porter - Imperial / Double Coffee',
+            'Porter - Smoked',
+            'Porter - All Others'
+        ]),
+        ((SELECT id FROM drink_type), 'Stout', ARRAY[
+            'Stout - All Others',
+            'Stout - American',
+            'Stout - Belgian',
+            'Stout - Coffee',
+            'Stout - English',
+            'Stout - Imperial / Double Coffee',
+            'Stout - Imperial / Double Milk',
+            'Stout - Imperial / Double Oatmeal',
+            'Stout - Imperial / Double White / Golden',
+            'Stout - Irish Dry',
+            'Stout - Milk / Sweet',
+            'Stout - Oatmeal',
+            'Stout - Russian Imperial',
+            'Stout - White / Golden',
+            'Stout - Barrel Aged',
+            'Stout - Foreign / Export',
+            'Stout - Imperial / Double',
+            'Stout - Imperial / Double Pastry',
+            'Stout - Oyster',
+            'Stout - Pastry'
+        ]),
+        ((SELECT id FROM drink_type), 'Red Ale', ARRAY[
+            'Red Ale - American Style / American Amber',
+            'Red Ale - Imperial / Double',
+            'Red Ale - Irish',
+            'Red Ale - All Others'
+        ]),
+        ((SELECT id FROM drink_type), 'Scotch Ale', ARRAY[
+            'Scotch Ale - Export',
+            'Scotch Ale - Heavy / Wee Heavy',
+            'Scotch Ale - Light'
+        ]),
+        ((SELECT id FROM drink_type), 'Sour', ARRAY[
+            'Sour - American Style (All)',
+            'Sour - Barrel Aged',
+            'Sour - Berliner Weisse',
+            'Sour - Fruited Berliner Weisse',
+            'Sour - Flanders Oud Bruin',
+            'Sour - Oud Red Ale',
+            'Sour - Fruited',
+            'Sour - Fruited Gose',
+            'Sour - Traditional Gose',
+            'Sour - Tomato / Vegetable Gose',
+            'Sour - All Other Gose',
+            'Sour - Smoothie / Pastry',
+            'Sour - Catharina',
+            'Sour - All Others'
+        ]),
+        ((SELECT id FROM drink_type), 'Specialty Beer', ARRAY[
+            'Specialty Grain',
+            'Specialty Beer - All Others'
+        ]),
+        ((SELECT id FROM drink_type), 'Strong Ale', ARRAY[
+            'Strong Ale - American',
+            'Strong Ale - English',
+            'Strong Ale - All Others'
+        ]),
+        ((SELECT id FROM drink_type), 'Wheat Beer', ARRAY[
+            'Wheat Beer - American Pale Wheat',
+            'Wheat Beer - Dunkelweizen',
+            'Wheat Beer - Fruited',
+            'Wheat Beer - Hefeweizen',
+            'Wheat Beer - Hefeweizen Light / Leicht',
+            'Wheat Beer - Hopfenweisse',
+            'Wheat Beer - Kristallweizen',
+            'Wheat Beer - Other German / Bavarian Style',
+            'Wheat Beer - Wheat Wine',
+            'Wheat Beer - Witbier / Blanche',
+            'Wheat Beer - All Others'
+        ]),
+        ((SELECT id FROM drink_type), 'Wild Beer / Wild Ale', ARRAY[
+            'Wild Beer / Wild Ale - American',
+            'Wild Beer / Wild Ale - All Others'
+        ]);
+
+-- Fetch the ID of the "Wine" drinkType
+WITH drink_type AS (
+    SELECT id FROM "drinkTypes" WHERE "drinkType" = 'Wine'
 )
 
 -- Insert corresponding type categories
 INSERT INTO "typeCategories" ("drinkType_id", "typeCategory", "drinkStyle")
 VALUES
-    ((SELECT id FROM drink_type), 'Aged Beer', ARRAY[
-        'Barrel-Aged Beer',
-        'Sour Aged Beer',
-        'Brett Beer'
+    ((SELECT id FROM drink_type), 'Red Wine', ARRAY[
+        'Alsace Pinot Noir',
+        'Amyndeon Red',
+        'Argentinian Agrelo Malbec Red',
+        'Argentinian Bonarda',
+        'Argentinian Bordeaux Blend',
+        'Argentinian Cabernet Sauvignon',
+        'Argentinian Cabernet Sauvignon - Malbec',
+        'Argentinian Lujan de Cuyo Malbec Red',
+        'Argentinian Malbec',
+        'Argentinian Malbec Red Blend',
+        'Argentinian Mendoza Cabernet Franc Red',
+        'Argentinian Mendoza Malbec Red',
+        'Argentinian Merlot',
+        'Argentinian Petit Verdot Red',
+        'Argentinian Pinot Noir',
+        'Argentinian Salta Malbec Red',
+        'Argentinian Syrah',
+        'Argentinian Syrah - Viognier',
+        'Argentinian Tempranillo Red',
+        'Argentinian Tupungato Cabernet Franc Red',
+        'Argentinian Tupungato Malbec Red',
+        'Argentinian Uco Valley Cabernet Franc Red',
+        'Argentinian Uco Valley Malbec Red',
+        'Arizona Red',
+        'Australian Adelaide Hills Shiraz',
+        'Australian Barossa Valley Shiraz',
+        'Australian Bordeaux Blend',
+        'Australian Cabernet - Shiraz',
+        'Australian Cabernet Sauvignon',
+        'Australian Canberra District Shiraz',
+        'Australian Clare Valley Shiraz',
+        'Australian Coonawarra Shiraz',
+        'Australian Eden Valley Shiraz',
+        'Australian Heathcote Shiraz',
+        'Australian Hunter Valley Shiraz',
+        'Australian Malbec',
+        'Australian McLaren Vale Shiraz',
+        'Australian Merlot',
+        'Australian Nebbiolo Red',
+        'Australian New South Wales Shiraz',
+        'Australian Pinot Noir',
+        'Australian Red Blend',
+        'Australian Rhône Blend Red',
+        'Australian Sangiovese Red',
+        'Australian Shiraz',
+        'Australian Syrah - Viognier',
+        'Australian Victoria Shiraz',
+        'Australian Yarra Valley Shiraz',
+        'Austrian Blaufränkisch',
+        'Austrian Pinot Noir',
+        'Austrian Red',
+        'Austrian St. Laurent Red',
+        'Austrian Zweigelt',
+        'Beaujolais Nouveau Red',
+        'Beaujolais Red',
+        'Bordeaux Graves Red',
+        'Bordeaux Haut-Médoc Red',
+        'Bordeaux Libournais Red',
+        'Bordeaux Listrac-Médoc Red',
+        'Bordeaux Margaux',
+        'Bordeaux Médoc',
+        'Bordeaux Moulis-en-Médoc Red',
+        'Bordeaux Pauillac',
+        'Bordeaux Pessac-Léognan',
+        'Bordeaux Pomerol',
+        'Bordeaux Red',
+        'Bordeaux Saint-Émilion',
+        'Bordeaux Saint-Estèphe',
+        'Bordeaux Saint-Julien',
+        'Brazilian Cabernet Franc',
+        'Brazilian Merlot',
+        'Brazilian Pinot Noir',
+        'Burgundy Côte Chalonnaise Red',
+        'Burgundy Côte de Beaune Red',
+        'Burgundy Côte de Nuits Red',
+        'Burgundy Red',
+        'Californian Alexander Valley Cabernet Sauvignon Red',
+        'Californian Anderson Valley Pinot Noir Red',
+        'Californian Barbera Red',
+        'Californian Bordeaux Blend',
+        'Californian Cabernet Franc',
+        'Californian Cabernet Sauvignon',
+        'Californian Carignan Red',
+        'Californian Grenache Red',
+        'Californian Knights Valley Cabernet Sauvignon Red',
+        'Californian Los Carneros Pinot Noir Red',
+        'Californian Malbec',
+        'Californian Meritage',
+        'Californian Merlot',
+        'Californian Paso Robles Cabernet Sauvignon Red',
+        'Californian Petite Sirah',
+        'Californian Pinot Noir',
+        'Californian Red Blend',
+        'Californian Rhône Blend Red',
+        'Californian Russian River Valley Pinot Noir Red',
+        'Californian Sangiovese',
+        'Californian Santa Lucia Highlands Pinot Noir Red',
+        'Californian Santa Maria Valley Pinot Noir Red',
+        'Californian Sierra Foothills Barbera Red',
+        'Californian Sonoma Coast Pinot Noir Red',
+        'Californian Sonoma County Cabernet Sauvignon Red',
+        'Californian Sta. Rita Hills Pinot Noir Red',
+        'Californian Syrah',
+        'Californian Tempranillo Red',
+        'Californian Zinfandel',
+        'Canadian Cabernet Franc',
+        'Canadian Cabernet Sauvignon',
+        'Canadian Merlot',
+        'Canadian Pinot Noir',
+        'Canadian Syrah',
+        'Central Italy Red',
+        'Central Portugal Red',
+        'Chilean Bordeaux Blend',
+        'Chilean Cabernet - Syrah',
+        'Chilean Cabernet Sauvignon',
+        'Chilean Carménère',
+        'Chilean Malbec',
+        'Chilean Merlot',
+        'Chilean Pinot Noir',
+        'Chilean Syrah',
+        'Chinese Red',
+        'Connecticut Red',
+        'Croatian Cabernet Sauvignon Red',
+        'Croatian Dalmatian Coast Plavac Mali Red',
+        'Croatian Plavac Mali Red',
+        'Croatian Red',
+        'French Atlantique Red',
+        'French Comtés Rhodaniens Red',
+        'French Corsica Red',
+        'French Jura Red',
+        'French Méditerranée Red',
+        'French Middle Loire Cabernet Franc Red',
+        'French Middle Loire Red',
+        'French Provence Red',
+        'French Red',
+        'French Savoie Red',
+        'German Blauer Portugieser Red',
+        'German Blaufränkisch Red',
+        'German Cabernet Sauvignon Red',
+        'German Dornfelder',
+        'German Merlot Red',
+        'German Pinot Noir Précoce Red',
+        'German Red',
+        'German Schwarzriesling Red',
+        'German Spätburgunder',
+        'German St. Laurent Red',
+        'German Trollinger Red',
+        'Goumenissa Red',
+        'Greek Nemea Red',
+        'Greek Red',
+        'Hungarian Blaufränkisch Red',
+        'Hungarian Bordeaux Blend',
+        'Hungarian Pinot Noir Red',
+        'Hungarian Red',
+        'Idaho red',
+        'Israeli Cabernet Franc Red',
+        'Israeli Cabernet Sauvignon',
+        'Israeli Merlot',
+        'Israeli Red',
+        'Israeli Red Blend',
+        'Israeli Syrah',
+        'Italian Amarone',
+        'Italian Barbaresco',
+        'Italian Barbera',
+        'Italian Barolo',
+        'Italian Bolgheri',
+        'Italian Brunello',
+        'Italian Chianti',
+        'Italian Chianti Classico Red',
+        'Italian Montepulciano d''Abruzzo',
+        'Italian Nebbiolo',
+        'Italian Red',
+        'Italian Ripasso',
+        'Italian Valpolicella Red',
+        'Italian Vino Nobile Di Montepulciano',
+        'Japanese Cabernet Sauvignon Red',
+        'Languedoc-Roussillon Grenache',
+        'Languedoc-Roussillon Red',
+        'Lebanese Red',
+        'Maryland Red',
+        'Michigan Red',
+        'Minnesota Red',
+        'Missouri Red',
+        'Naoussa Red',
+        'Napa Valley Bordeaux Blend',
+        'Napa Valley Cabernet Sauvignon',
+        'New Jersey Red',
+        'New Mexico Red',
+        'New York Cabernet Franc Red',
+        'New York Pinot Noir Red',
+        'New Zealand Bordeaux Blend',
+        'New Zealand Cabernet Sauvignon',
+        'New Zealand Central Otago Pinot Noir Red',
+        'New Zealand Martinborough Pinot Noir Red',
+        'New Zealand Merlot',
+        'New Zealand Pinot Noir',
+        'New Zealand Red',
+        'New Zealand Syrah',
+        'New Zealand Wairarapa Pinot Noir Red',
+        'North Carolina Red',
+        'Northern Italy Pinot Noir',
+        'Northern Italy Red',
+        'Northern Portugal Red',
+        'Northern Rhône Cornas',
+        'Northern Rhône Côte-Rotie',
+        'Northern Rhône Crozes-Hermitage',
+        'Northern Rhône Hermitage',
+        'Northern Rhône Red',
+        'Northern Rhône Saint-Joseph',
+        'Oregon Cabernet Franc Red',
+        'Oregon Cabernet Sauvignon',
+        'Oregon Grenache Red',
+        'Oregon Merlot Red',
+        'Oregon Petite Sirah Red',
+        'Oregon Pinot Noir',
+        'Oregon Red',
+        'Oregon Syrah Red',
+        'Oregon Tannat Red',
+        'Oregon Tempranillo Red',
+        'Oregon Zinfandel Red',
+        'Pennsylvania Red',
+        'Portuguese Alentejo Red',
+        'Portuguese Azores Red',
+        'Portuguese Dão Red',
+        'Portuguese Douro Red',
+        'Portuguese Red',
+        'Rapsani Red',
+        'Sardinian Cannonau',
+        'South African Bordeaux Blend',
+        'South African Cabernet - Syrah',
+        'South African Cabernet Franc',
+        'South African Cabernet Sauvignon',
+        'South African Cinsault Red',
+        'South African Grenache Red',
+        'South African Malbec',
+        'South African Merlot',
+        'South African Pinot Noir',
+        'South African Pinotage',
+        'South African Pinotage Blend',
+        'South African Red',
+        'South African Rhône Blend Red',
+        'South African Syrah',
+        'South African Syrah - Viognier',
+        'South Australia Grenache Red',
+        'South Australia Shiraz',
+        'South Australia Tempranillo Red',
+        'South Eastern Australia Shiraz',
+        'Southern Italy Primitivo',
+        'Southern Italy Red',
+        'Southern Portugal Red',
+        'Southern Rhône Châteauneuf-du-Pape Red',
+        'Southern Rhône Red',
+        'Southwest France Madiran Red',
+        'Southwest France Malbec',
+        'Southwest France Red',
+        'Spanish Cabernet Sauvignon',
+        'Spanish Grenache',
+        'Spanish Mencia',
+        'Spanish Merlot',
+        'Spanish Monastrell',
+        'Spanish Montsant Red',
+        'Spanish Priorat Red',
+        'Spanish Red',
+        'Spanish Rhône Blend Red',
+        'Spanish Ribera Del Duero Red',
+        'Spanish Rioja Red',
+        'Spanish Syrah',
+        'Spanish Tempranillo',
+        'Spanish Toro Red',
+        'Swiss Gamay Red',
+        'Swiss Merlot',
+        'Swiss Pinot Noir',
+        'Swiss Syrah',
+        'Swiss Valais Dôle Red',
+        'Swiss Valais Humagne Rouge Red',
+        'Texas Cabernet Sauvignon Red',
+        'Texas Red',
+        'Tuscan Red',
+        'Upper Loire Red',
+        'Virginia Red',
+        'Washington State Cabernet Franc Red',
+        'Washington State Cabernet Sauvignon',
+        'Washington State Columbia Valley Bordeaux Red Blend',
+        'Washington State Merlot',
+        'Washington State Pinot Noir',
+        'Washington State Red Blend',
+        'Washington State Syrah',
+        'Western Australia Shiraz'
     ]),
-    ((SELECT id FROM drink_type), 'Ale - All Styles', ARRAY[
-        'Pale Ale',
-        'IPA',
-        'Stout',
-        'Porter',
-        'Wheat Beer',
-        'Belgian Ale'
+    ((SELECT id FROM drink_type), 'White Wine', ARRAY[
+        'Alsace Gewürztraminer',
+        'Alsace Pinot Blanc',
+        'Alsace Pinot Gris',
+        'Alsace Riesling',
+        'Argentinian Chardonnay',
+        'Argentinian Chardonnay - Torrontés White Blend',
+        'Argentinian Pinot Gris',
+        'Argentinian Sauvignon Blanc',
+        'Argentinian Sémillon White',
+        'Argentinian Torrontés',
+        'Argentinian Viognier',
+        'Argentinian White',
+        'Arizona White',
+        'Australian Chardonnay',
+        'Australian Gewürztraminer White',
+        'Australian Grüner Veltliner White',
+        'Australian Hunter Valley Sémillon White',
+        'Australian New South Wales Verdelho White',
+        'Australian Pinot Gris',
+        'Australian Riesling',
+        'Australian Sauvignon Blanc',
+        'Australian Viognier',
+        'Austrian Chardonnay',
+        'Austrian Grüner Veltliner',
+        'Austrian Pinot Blanc',
+        'Austrian Pinot Gris',
+        'Austrian Riesling',
+        'Austrian Sauvignon Blanc',
+        'Austrian White',
+        'Bordeaux White',
+        'Burgundy Chablis',
+        'Burgundy Côte Chalonnaise White',
+        'Burgundy Côte de Beaune White',
+        'Burgundy Mâconnais White',
+        'Burgundy White',
+        'Californian Chardonnay',
+        'Californian Chenin Blanc',
+        'Californian Gewürztraminer',
+        'Californian Pinot Gris',
+        'Californian Riesling',
+        'Californian Russian River Valley Chardonnay White',
+        'Californian Santa Barbara County Chardonnay White',
+        'Californian Sauvignon Blanc',
+        'Californian Sonoma Coast Chardonnay White',
+        'Californian Viognier',
+        'Californian White',
+        'Californian White Blend',
+        'Canadian Chardonnay',
+        'Canadian Pinot Gris',
+        'Canadian Riesling',
+        'Central Italy White',
+        'Central Portugal White',
+        'Chilean Chardonnay',
+        'Chilean Riesling',
+        'Chilean Sauvignon Blanc',
+        'Chilean Viognier',
+        'Colorado White',
+        'Connecticut White',
+        'Croatian Chardonnay White',
+        'Croatian Malvazija Istarska White',
+        'Croatian Welschriesling White',
+        'Croatian White',
+        'French Alsace Muscat White',
+        'French Alsace Sylvaner White',
+        'French Alsace White Blend',
+        'French Atlantique White',
+        'French Beaujolais White',
+        'French Comtés Rhodaniens White',
+        'French Corsica Vermentino White',
+        'French Corsica White',
+        'French Côtes de Gascogne White',
+        'French Méditerranée White',
+        'French Provence White',
+        'French Savoie White',
+        'French White',
+        'German Auxerrois White',
+        'German Chardonnay',
+        'German Gewürztraminer',
+        'German Grauburgunder',
+        'German Müller Thurgau',
+        'German Muscat White',
+        'German Pinot Blanc',
+        'German Pinot Noir White',
+        'German Riesling',
+        'German Sauvignon Blanc',
+        'German Scheurebe White',
+        'German Silvaner',
+        'German White',
+        'Greek Malagouzia',
+        'Hungarian Chardonnay White',
+        'Hungarian Furmint White',
+        'Hungarian Hárslevelű White',
+        'Hungarian Welschriesling White',
+        'Hungarian White',
+        'Idaho White',
+        'Israeli Chardonnay White',
+        'Israeli Sauvignon Blanc White',
+        'Israeli White',
+        'Italian Gavi',
+        'Italian Soave',
+        'Italian White',
+        'Japanese Koshu',
+        'Jura Vin Jaune',
+        'Jura White',
+        'Languedoc-Roussillon Viognier',
+        'Languedoc-Roussillon White',
+        'Lebanese White',
+        'Loire Chenin Blanc',
+        'Loire Muscadet',
+        'Loire Touraine Sauvignon Blanc',
+        'Maryland White',
+        'Massachusetts White',
+        'Michigan White',
+        'Minnesota White',
+        'Missouri White',
+        'Napa Valley Chardonnay',
+        'New Jersey White',
+        'New Mexico White',
+        'New York Finger Lakes Riesling White',
+        'New York Riesling White',
+        'New Zealand Chardonnay',
+        'New Zealand Gewürztraminer White',
+        'New Zealand Grüner Veltliner White',
+        'New Zealand Pinot Gris',
+        'New Zealand Riesling',
+        'New Zealand Sauvignon Blanc',
+        'New Zealand Viognier White',
+        'North Carolina White',
+        'Northern Italy Gewürztraminer',
+        'Northern Italy Müller Thurgau',
+        'Northern Italy Pinot Blanc',
+        'Northern Italy Pinot Grigio',
+        'Northern Italy White',
+        'Northern Portugal White',
+        'Northern Rhône Condrieu',
+        'Northern Rhône Saint-Péray',
+        'Northern Rhône White',
+        'Ohio White',
+        'Oregon Chardonnay',
+        'Oregon Gewürztraminer',
+        'Oregon Pinot Gris',
+        'Oregon Riesling',
+        'Oregon Roussanne White',
+        'Oregon Sauvignon Blanc White',
+        'Oregon Viognier White',
+        'Oregon White',
+        'Pennsylvania White',
+        'Portuguese Azores White',
+        'Portuguese Dão White',
+        'Portuguese Vinho Verde White',
+        'Portuguese White',
+        'Santorini White',
+        'South African Chardonnay',
+        'South African Chenin Blanc',
+        'South African Pinot Gris',
+        'South African Riesling White',
+        'South African Sauvignon Blanc',
+        'South African Sauvignon Blanc - Sémillon White',
+        'South African Sémillon White',
+        'South African Viognier',
+        'Southern Italy White',
+        'Southern Portugal White',
+        'Southern Rhône White',
+        'Southwest France White',
+        'Spanish Albariño',
+        'Spanish Castilla Airén White',
+        'Spanish Catalunya Grenache Blanc White',
+        'Spanish Chardonnay',
+        'Spanish Galicia Godello White',
+        'Spanish Islas Canarias White',
+        'Spanish País Vasco Txakoli White',
+        'Spanish Rioja White',
+        'Spanish Sauvignon Blanc',
+        'Spanish Verdejo',
+        'Spanish White',
+        'Swiss Chardonnay',
+        'Swiss Chasselas',
+        'Swiss Petite Arvine White',
+        'Swiss Savagnin White',
+        'Tennessee White',
+        'Texas Viognier White',
+        'Texas White',
+        'Texas White Blend',
+        'Upper Loire White',
+        'Virginia White',
+        'Washington State Chardonnay',
+        'Washington State Columbia Valley Pinot Gris White',
+        'Washington State Gewürztraminer',
+        'Washington State Riesling',
+        'Washington State Sauvignon Blanc',
+        'Western Australia Sauvignon Blanc - Sémillon White',
+        'Wisconsin White'
     ]),
-    ((SELECT id FROM drink_type), 'Lager - All Styles', ARRAY[
-        'Pilsner',
-        'Helles',
-        'Doppelbock',
-        'Vienna Lager',
-        'Amber Lager'
+        ((SELECT id FROM drink_type), 'Rosé Wine', ARRAY[
+            'Argentinian Malbec Rosé',
+            'Argentinian Rosé',
+            'Arizona Rosé',
+            'Australian Grenache Rosé',
+            'Australian Pinot Noir Rosé',
+            'Australian Rosé',
+            'Australian Sangiovese Rosé',
+            'Australian Shiraz Rosé',
+            'Austrian Rosé',
+            'Californian Rosé',
+            'Central Italy Rosé',
+            'Chilean Rosé',
+            'French Bordeaux Rosé',
+            'French Loire Rosé',
+            'French Méditerranée Rosé',
+            'French Rosé',
+            'German Pinot Noir Rosé',
+            'German Rosé',
+            'Hungarian Rosé',
+            'Italian Cerasuolo d''Abruzzo Rosé',
+            'Languedoc-Roussillon Rosé',
+            'Michigan Rosé',
+            'New York Long Island Rosé',
+            'New Zealand Pinot Noir Rosé',
+            'New Zealand Rosé',
+            'Northern Italy Rosé',
+            'Northern Portugal Rosé',
+            'Oregon Pinot Noir Rosé',
+            'Provence Rosé',
+            'South African Rosé',
+            'Southern Italy Rosé',
+            'Southern Rhône Rosé',
+            'Southwest France Rosé',
+            'Spanish Grenache Rosé',
+            'Spanish Rosé',
+            'Spanish Tempranillo Rosé',
+            'Texas Rosé',
+            'Virginia Rosé',
+            'Washington State Rosé'
+    ]),
+        ((SELECT id FROM drink_type), 'Sparkling Wine', ARRAY[
+            'Argentinian Mendoza Sparkling',
+            'Australian Adelaide Hills Sparkling',
+            'Australian Sparkling',
+            'Australian Sparkling Shiraz',
+            'Australian Tasmania Sparkling',
+            'Australian Victoria Sparkling',
+            'Austrian Sparkling',
+            'Brazilian Sparkling',
+            'Californian Sparkling',
+            'Chilean Sparkling',
+            'English Sparkling',
+            'French Champagne',
+            'French Crémant',
+            'French Sparkling',
+            'German Sekt',
+            'Hungarian Sparkling',
+            'Italian Asti',
+            'Italian Emilia-Romagna Lambrusco Sparkling',
+            'Italian Franciacorta Sparkling',
+            'Italian Moscato d''Asti',
+            'Italian Prosecco',
+            'Italian Sparkling',
+            'Italian Trentino-Alto Adige Sparkling',
+            'Japanese Sparkling',
+            'New Mexico Sparkling',
+            'New Zealand Sparkling',
+            'Oregon Sparkling',
+            'Portuguese Sparkling',
+            'South African Sparkling',
+            'South Australia Sparkling',
+            'Spanish Cava',
+            'Spanish Sparkling',
+            'Washington State Sparkling'
+    ]),
+        ((SELECT id FROM drink_type), 'Fortified Wine', ARRAY[
+            'Colheita Port',
+            'Crusted Port',
+            'French Languedoc-Roussillon Fortified',
+            'Late Bottled Vintage Port',
+            'Portuguese Madeira',
+            'Portuguese Moscatel',
+            'Portuguese Port',
+            'Ruby Port',
+            'Single Quinta Vintage Port',
+            'South African Fortified',
+            'Spanish Amontillado Sherry Fortified',
+            'Spanish Cream Sherry Fortified',
+            'Spanish Fino Sherry Fortified',
+            'Spanish Manzanilla Sherry Fortified',
+            'Spanish Montilla-Moriles Fortified',
+            'Spanish Oloroso Sherry Fortified',
+            'Spanish Palo Cortado Sherry Fortified',
+            'Spanish Pedro Ximenez',
+            'Spanish Sherry',
+            'Tawny Port',
+            'Vintage Port',
+            'White Port'
+    ]),
+    ((SELECT id FROM drink_type), 'Dessert Wine', ARRAY[
+        'Australian Dessert',
+        'Australian Sémillon Dessert',
+        'Austrian Dessert',
+        'Bordeaux Sauternes',
+        'Californian Dessert',
+        'Canadian Ice Wine',
+        'French Alsace Gewürztraminer Dessert',
+        'French Alsace Pinot Gris Dessert',
+        'French Alsace Riesling Dessert',
+        'French Bordeaux Dessert',
+        'French Loire Chenin Blanc Dessert',
+        'Hungarian Tokaji Aszú',
+        'Italian Tuscany Vin Santo Dessert',
+        'South African Dessert',
+        'Southwest France Dessert'
     ]);
 
 INSERT INTO "producers" ("producerName", "producerDesc", "originCountry", "mainDrinks", "photo", "hashedPassword", "claimStatus", "claimStatusCheckDate", "statusOB", "username", "producerLink", "stripeCustomerId"
