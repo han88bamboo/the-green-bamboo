@@ -6,6 +6,74 @@
   display: flex;
   align-items: center;
   border: 1px solid #827c75;
+  min-height: 193px !important; 
+}
+
+@media (max-width: 768px) {
+  /* Make card properly handle overflow */
+  .card {
+    overflow: hidden;
+    border-radius: 10px;
+    position: relative;
+    min-height: 100px !important; 
+  }
+  
+  /* Fix the image container sizing */
+  .card .text-center.text-md-start {
+    min-width: 100px;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 100px;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    z-index: 1;
+  }
+  
+  /* Fix the image wrapper */
+  .card .image-wrapper {
+    width: 100px;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    display: block;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+  }
+  
+  /* Fix the actual image */
+  .listing-image {
+    width: 100px !important;
+    height: 100% !important;
+    object-fit: cover;
+    border-radius: 10px 0 0 10px;
+    padding: 0;
+    margin: 0;
+  }
+/* The actual image */
+.card .listing-image {
+    width: 100px !important;
+    height: 100% !important;
+    object-fit: cover;
+    border-radius: 10px 0 0 10px;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+  }  
+  /* Fix the content section to properly align */
+  .card .detials-rating {
+    width: calc(100% - 100px) !important;
+    margin-left: 100px;
+  }
 }
 
 .rating {
@@ -17,13 +85,28 @@
   border: none;
   border-radius: 20px;
   padding: 8px 12px;
-  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.4) !important;
+  /* box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.4) !important; */
 
   color: black;
   font-weight: bold;
   transition: background-color 0.3s;
 }
 .btn-read-more:hover {
+  background-color: #fdd497;
+}
+
+.btn-shelf-login {
+  background-color: #f0b358;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 12px;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.4) !important; 
+
+  color: black;
+  font-weight: bold;
+  transition: background-color 0.3s;
+}
+.btn-shelf-login:hover {
   background-color: #fdd497;
 }
 
@@ -92,7 +175,7 @@
         </div> -->
 
     <!-- main content -->
-    <div class="container-xl pt-3 px-0 px-md-5">
+    <div class="container-xl pt-4 px-0 mobile-pt-3 px-md-5">
       <div class="row">
         <!-- left pane -->
         <div class="col-lg-3 col-md-3 col-12 mobile-view-hide">
@@ -101,23 +184,23 @@
             <div v-if="userType == 'user' || userType == ''" class="row">
               <!-- [moderator] listing requests -->
               <div v-if="isAdmin || isModerator" class="col-12">
-                <div class="square primary-square-green-outline mb-3">
+                <div class="square primary-square-green-outline mb-3 shelf">
                   <!-- header text -->
-                  <div class="square-inline text-start">
+                  <div class="p-3 square-inline text-start">
                     <span
                       v-if="totalRequests != 0"
-                      class="square-inline text-start mr-auto"
+                      class="square-inline text-start mr-auto fw-bold"
                     >
-                      <h4>
+                      <h5>
                         <span class="title-card-text">
                           {{ totalRequests }}
                         </span>
                         Pending Listing Requests
-                      </h4>
+                      </h5>
                     </span>
-                    <h4 v-else class="square-inline text-start mr-auto">
+                    <h5 v-else class="square-inline text-start mr-auto fw-bold">
                       No New Pending Listing Requests!
-                    </h4>
+                    </h5>
                   </div>
                   <!-- body -->
                   <div v-if="totalRequests != 0">
@@ -152,118 +235,121 @@
                 </div>
               </div>
               <!-- your drinks shelf -->
-              <div class="col-12 shelf mb-5 primary-square-green">
-                <div class="square p-3 mb-3 text-start" style="height: 300px">
-                  <!-- header text -->
-                  <div class="square-inline">
-                    <router-link
-                      :to="{
-                        path: '/profile/user/' + userID + '/' + username,
-                      }"
-                      class="reverse-clickable-text"
-                    >
-                      <h4
-                        class="square-inline text-start mr-auto reverse-clickable-text"
+              <div class="col-12">
+                <div class="shelf mb-3 primary-square-green">
+                  <div class="square p-3 mb-3 text-start" style="height: 300px">
+                    <!-- header text -->
+                    <div class="square-inline">
+                      <router-link
+                        :to="{
+                          path: '/profile/user/' + userID + '/' + username,
+                        }"
+                        class="reverse-clickable-text"
                       >
-                        Your Drinks Shelf
-                      </h4>
-                    </router-link>
-                  </div>
-                  <!-- body -->
-                  <div style="height: 85%">
-                    <!-- [if] drinks in drink shelf -->
-                    <div
-                      v-if="drinkShelf.length != 0"
-                      class="overflow-auto"
-                      style="max-height: 100%"
-                    >
+                        <h5
+                          class="square-inline text-start mr-auto reverse-clickable-text fw-bold"
+                        >
+                          Your Drinks Shelf
+                        </h5>
+                      </router-link>
+                    </div>
+                    <!-- body -->
+                    <div style="height: 85%">
+                      <!-- [if] drinks in drink shelf -->
                       <div
-                        class="text-start mb-2"
-                        v-for="listing in drinkShelf"
-                        v-bind:key="listing.id"
+                        v-if="drinkShelf.length != 0"
+                        class="Xoverflow-auto"
+                        style="max-height: 100%"
                       >
-                        <div class="d-flex align-items-start">
-                          <router-link
-                            :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName) }"
-                            class="reverse-clickable-text"
-                          >
-                            <img
-                              :src="listing.photo || defaultProfilePhoto"
-                              style="width: 70px; height: 70px"
-                            />
-                          </router-link>
-                          <span class="ms-3 reverse-clickable-text">
+                        <div
+                          class="text-start mb-2"
+                          v-for="listing in drinkShelf"
+                          v-bind:key="listing.id"
+                        >
+                          <div class="d-flex align-items-start">
                             <router-link
-                              :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}"
+                              :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName) }"
                               class="reverse-clickable-text"
                             >
-                              <b> {{ listing.listingName }} </b>
+                              <img
+                                :src="listing.photo || defaultProfilePhoto"
+                                style="width: 70px; height: 70px"
+                              />
                             </router-link>
-                            <br />
-                            <router-link
-                              :to="{
-                                path:
-                                  '/profile/producer/' +
-                                  listing.producerID +
-                                  '/' +
-                                  getProducerName(listing),
-                              }"
-                              class="reverse-clickable-text"
-                            >
-                              {{ getProducerName(listing) }}
-                            </router-link>
-                          </span>
+                            <span class="ms-3 reverse-clickable-text">
+                              <router-link
+                                :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}"
+                                class="reverse-clickable-text"
+                              >
+                                <b> {{ listing.listingName }} </b>
+                              </router-link>
+                              <br />
+                              <router-link
+                                :to="{
+                                  path:
+                                    '/profile/producer/' +
+                                    listing.producerID +
+                                    '/' +
+                                    getProducerName(listing),
+                                }"
+                                class="reverse-clickable-text"
+                              >
+                                {{ getProducerName(listing) }}
+                              </router-link>
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div
-                      v-if="userID && drinkShelf.length == 0"
-                      style="
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        height: 100%;
-                      "
-                    >
-                      <h6 class="fst-italic">No drinks added yet.</h6>
-                    </div>
-                    <div
-                      v-else-if="!userID"
-                      style="
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        height: 100%;
-                        flex-direction: column;
-                      "
-                    >
-                      <p class="text-white">Log in to add a drink to shelf</p>
-                      <router-link :to="{ path: '/login' }">
-                        <button
-                          class="btn secondary-btn-border-thick py-2 px-3"
-                          style="font-weight: bold"
-                        >
-                          Login
-                        </button>
-                      </router-link>
+                      <div
+                        v-if="userID && drinkShelf.length == 0"
+                        style="
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                          height: 100%;
+                        "
+                      >
+                        <h6 class="fst-italic">No drinks added yet.</h6>
+                      </div>
+                      <div
+                        v-else-if="!userID"
+                        style="
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                          height: 100%;
+                          flex-direction: column;
+                        "
+                      >
+                        <p class="text-white">Log in to add a drink to shelf</p>
+                        <router-link :to="{ path: '/login' }">
+                          <button
+                            class="btn btn-shelf-login py-2 px-3"
+                            style="font-weight: bold"
+                          >
+                            Login
+                          </button>
+                        </router-link>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
               <!-- brands you follow -->
-              <div class="col-12 shelf primary-square-green">
-                <div class="square p-3 mb-3 text-start" style="height: 300px">
+              <div class="col-12 ">
+                <div class="shelf primary-square-green">
+                  <div class="square p-3 mb-3 text-start" style="height: 300px">
                   <!-- header text -->
                   <div class="square-inline">
-                    <h4 class="square-inline text-start mr-auto">
+                    <h5 class="square-inline text-start mr-auto fw-bold">
                       Brands You Follow
-                    </h4>
+                    </h5>
                   </div>
                   <!-- body -->
                   <div style="height: 85%">
                     <div
                       v-if="questionsUpdates.length > 0"
-                      class="overflow-auto"
+                      class="Xoverflow-auto"
                       style="max-height: 100%"
                     >
                       <div
@@ -271,14 +357,16 @@
                         :key="index"
                       >
                         <!--Show if it's either producer or venue update-->
-                        <span
+                        <div
                           v-if="
                             update.type == 'producerUpdate' ||
                             update.type == 'venueUpdate'
                           "
                         >
+                        <!-- Left side: Profile image -->
+                        <div class="row"> 
+                        <div v-if="update.type == 'producerUpdate'" class="col-2 pt-1" >
                           <router-link
-                            v-if="update.type == 'producerUpdate'"
                             :to="{
                               path:
                                 '/profile/producer/' +
@@ -290,30 +378,39 @@
                           >
                             <img
                               :src="update.photo || defaultProfilePhoto"
-                              style="width: 35px; height: 35px"
+                              style="width: 37.5px; height: 37.5px"
                               class="img-border"
                             />
-                            <b class="ps-2"> {{ update.name }} </b>
+                            
                           </router-link>
+                        </div>  
+                        <div v-else  class="col-2 pt-1">
                           <router-link
-                            v-else
                             :to="{ path: '/profile/venue/' + update.id }"
                             class="reverse-text"
                           >
                             <img
                               :src="update.photo || defaultProfilePhoto"
-                              style="width: 35px; height: 35px"
+                              style="width: 37.5px; height: 37.5px"
                               class="img-border"
                             />
-                            <b class="ps-2"> {{ update.name }} </b>
+                            
                           </router-link>
-                          <br />
+                        </div>
+                        
+                          <!-- Right side: Brand info and update -->
+                          <div class="xflex-grow-1 col-10">
+                            <b class="ps-2 reverse-text"> {{ update.name }} </b>  <br />
+                            <i>{{ getTimeDifference(update.date) }}</i>
+                          </div>
+                        </div>
+                          
                           updated status: "<b>{{ update.text }}</b
                           >"
                           <br />
-                          <i>{{ getTimeDifference(update.date) }}</i>
-                          <br /><br />
-                        </span>
+                          
+                          <br />
+                          </div>
 
                         <!-- Show if it's either producer or venue question? (Kai Lin wants to show newly added expressions)-->
                       </div>
@@ -339,18 +436,19 @@
                         flex-direction: column;
                       "
                     >
-                      <p class="text-white">
+                      <p class="text-white text-center">
                         Log in to follow your favourite brands
                       </p>
                       <router-link :to="{ path: '/login' }">
                         <button
-                          class="btn secondary-btn-border-thick py-2 px-3"
+                          class="btn btn-shelf-login py-2 px-3"
                           style="font-weight: bold"
                         >
                           Login
                         </button>
                       </router-link>
                     </div>
+                  </div>
                   </div>
                 </div>
               </div>
@@ -368,18 +466,18 @@
                   <div class="square-inline text-start">
                     <span
                       v-if="totalRequests != 0"
-                      class="square-inline text-start mr-auto"
+                      class="square-inline text-start mr-auto fw-bold"
                     >
-                      <h4>
+                      <h5>
                         <span class="title-card-text">
                           {{ totalRequests }}
                         </span>
                         Pending Listing Requests
-                      </h4>
+                      </h5>
                     </span>
-                    <h4 v-else class="square-inline text-start mr-auto">
+                    <h5 v-else class="square-inline text-start mr-auto fw-bold">
                       No New Pending Listing Requests!
-                    </h4>
+                    </h5>
                   </div>
                   <!-- body -->
                   <div v-if="totalRequests != 0">
@@ -584,11 +682,10 @@
               class="row d-flex justify-content-between ps-lg-4 pe-lg-4 mobile-ps-3 mobile-pe-3 flex-row"
             >
               <!-- discover  tzh changed col-12 to col-4-->
-              <div class="row col-8">
-                <div
-                  class="col-xl-6 col-lg-4 col-6 mb-3 mobile-pe-0 mobile-ps-0"
+              <div class="row col-6 mobile-col-8 mobile-ps-4 mobile-pe-0">
+                <div class="col-xl-6 col-lg-6 mobile-col-6 mb-3 mobile-pe-0 mobile-ps-0 pe-1 mobile-pe-1 mobile-mb-1"
                 >
-                  <div class="d-grid gap-2 mx-1">
+                  <div class="d-grid gap-2">
                     <button
                       class="btn btn-sm mobile-ps-0 text-center"
                       :class="{
@@ -601,7 +698,7 @@
                     >
                       <!--tzh added -green and green-outline, changed mt-1 to mb-0_5 mt-0_5 -->
                       <p
-                        class="mb-0_5 mt-0_5 discover-and-following mobile-mb-0"
+                        class="my-0 discover-and-following mobile-mb-0 "
                       >
                         Discover
                       </p>
@@ -609,10 +706,9 @@
                   </div>
                 </div>
                 <!-- following tzh changed col-12 to col-4-->
-                <div
-                  class="col-xl-6 col-lg-4 col-4 mb-3 mobile-view-no-padding"
+                <div class="col-xl-6 col-lg-6 mobile-col-6 col-4 mb-3 Xmobile-view-no-padding ps-1 mobile-ps-1 mobile-pe-0 mobile-mb-1"
                 >
-                  <div class="d-grid gap-2 mx-1">
+                  <div class="d-grid gap-2 ">
                     <button
                       class="btn btn-sm mobile-ps-0 text-center"
                       :class="{
@@ -624,7 +720,7 @@
                       v-on:click="changeFollowingStatus()"
                     >
                       <p
-                        class="mb-0_5 mt-0_5 discover-and-following mobile-mb-0"
+                        class="my-0 discover-and-following mobile-mb-0"
                       >
                         Following
                       </p>
@@ -632,10 +728,9 @@
                   </div>
                 </div>
               </div>
-              <div class="row col-4">
+              <div class="row col-6 mobile-col-4  mobile-ps-0 mobile-pt-1">
                 <!-- filter by drink type / category tzh changed col-12 to col-4 -->
-                <div
-                  class="dropdown col-xl-6 col-lg-4 col-6 mb-3 col-6 mobile-pe-0"
+                <div class="dropdown col-xl-6 col-lg-4 col-6 mb-3 col-6 mobile-pe-0 ps-0 mobile-mb-1"
                 >
                   <div class="d-grid gap-2">
                     <!-- tzh added -homepage and some changes for mobile-->
@@ -653,7 +748,7 @@
                       &#10005; Clear Selection
                     </div>
                     <button
-                      class="btn primary-light-dropdown-homepage btn-lg dropdown-toggle mobile-view-remove-toggle"
+                      class="btn primary-light-dropdown-homepage btn-lg dropdown-toggle mobile-view-remove-toggle py-0"
                       type="button"
                       data-bs-toggle="dropdown"
                       aria-expanded="false"
@@ -792,12 +887,10 @@
                   </div>
                 </div>
                 <!-- sort by drink type - tzh changed col-12 to col-4 -->
-                <div
-                  class="dropdown col-xl-6 col-lg-4 col-6 mb-3 col-6 mobile-ps-0"
-                >
+                <div class="dropdown col-xl-6 col-lg-4 col-6 mb-3 col-6 mobile-ps-0 ps-0 mobile-mb-1" >
                   <div class="d-grid gap-2">
                     <button
-                      class="btn primary-light-dropdown-homepage btn-lg dropdown-toggle mobile-view-remove-toggle"
+                      class="btn primary-light-dropdown-homepage btn-lg dropdown-toggle mobile-view-remove-toggle py-0"
                       type="button"
                       data-bs-toggle="dropdown"
                       aria-expanded="false"
@@ -885,7 +978,7 @@
                     >
                       <div class="row">
                         <div class="col-md-12">
-                          <div class="container mt-4">
+                          <div class="container mt-4 mobile-mt-3">
                             <div class="card d-flex flex-row">
                               <!-- Image Section -->
                               <div class="text-center text-md-start">
@@ -909,8 +1002,7 @@
                                 class="detials-rating d-flex flex-column flex-md-row justify-content-between w-100"
                               >
                                 <!-- Details Section -->
-                                <div
-                                  class="flex-grow-1 py-md-3 py-1 w-100 w-md-50 d-flex flex-column justify-content-between md-px-3 px-3"
+                                <div class="flex-grow-1 py-md-3 py-1 col-12 col-md-9 d-flex flex-column justify-content-between md-px-3 px-3"
                                 >
                                   <div class="name-producer">
                                     <router-link
@@ -923,7 +1015,7 @@
                                       <h5 class="d-none d-md-block">
                                         <b>{{ listing["listingName"] }}</b>
                                       </h5>
-                                      <h6 class="d-block d-md-none">
+                                      <h6 class="d-block d-md-none mobile-mt-2">
                                         <b>{{ listing["listingName"] }}</b>
                                       </h6>
                                     </router-link>
@@ -937,7 +1029,7 @@
                                       }"
                                       class="primary-clickable-text"
                                     >
-                                      <h6 class="mobile-rating-smaller-text">
+                                      <h6 class="Xmobile-rating-smaller-text">
                                         <b>{{ getProducerName(listing) }}</b>
                                       </h6>
                                     </router-link>
@@ -962,12 +1054,15 @@
                                 </div>
 
                                 <!-- Rating & Read More Button -->
-                                <div
-                                  class="text-center text-md-end w-100 w-md-50 d-flex flex-row flex-md-col justify-content-between d-md-block mt-0 mt-md-3 px-3"
+                                <div class="text-center text-md-end col-12 col-md-3 d-flex flex-row flex-md-col justify-content-between d-md-block mt-0 mt-md-3 px-3"
                                 >
-                                  <h1 class="fw-bold text-warning">
+                                  <h1 class="fw-bold text-warning mobile-view-hide">
                                     {{ getRatings(listing) }} ★
                                   </h1>
+
+                                  <h4 class="fw-bold text-warning mobile-view-show">
+                                    {{ getRatings(listing) }} ★
+                                  </h4>
                                   <div class="d-grid">
                                     <router-link
                                       :to="{
@@ -976,7 +1071,7 @@
                                       class="primary-clickable-text"
                                     >
                                       <button
-                                        class="btn btn-read-more btn-sm fw-bold rounded-pill"
+                                        class="btn btn-read-more btn-sm fw-bold rounded-pill mobile-pb-1 mobile-pt-1 mobile-mb-2 mobile-fs-7"
                                       >
                                         Read More
                                       </button>
@@ -999,141 +1094,149 @@
                   class="mobile-ps-0 mobile-pe-0"
                 >
                   <!-- latest reviews from users the current user is following -->
-                  <h3 class="text-body-secondary text-start pt-3">
+                  <h5 class="text-body-secondary text-start pt-3">
                     <b> Latest Reviews from Followed Users</b>
-                  </h3>
+                  </h5>
                   <!-- v-loop for each review -->
-                  <div class="container text-start">
+                  <div class="containerS text-start">
                     <h5
                       v-if="latestReviews.length == 0"
                       style="display: inline-block"
                     >
                       There is no listing available for the selected filter
                     </h5>
+                    
+                    <!-- NEW CARD LAYOUT FOR LATEST REVIEWS -->
                     <div
                       v-else
                       v-for="review in latestReviews"
                       v-bind:key="review.id"
-                      class="p-3 mobile-pt-0"
                     >
-                      <!-- For latest reviews -->
-                      <div class="row gap-3">
-                        <!-- row 1: For followed user info and reviewTarget name-->
-                        <div class="row my-auto">
-                          <!-- Column 1: Followed user photo-->
-                          <div class="col-2 d-flex justify-content-center">
-                            <img
-                              :src="
-                                review['userInfo']['photo'] ||
-                                defaultProfilePhoto
-                              "
-                              class="w-50 h-100 rounded-circle"
-                            />
-                          </div>
+                      <div class="row">
+                        <div class="col-md-12">
+                          <div class="container mt-4 mobile-mt-3">
+                                  <!-- User info and what they rated -->
+                                    <div class="d-flex align-items-center mb-2 mobile-view-show">
+                                      <img
+                                        :src="review['userInfo']['photo'] || defaultProfilePhoto"
+                                        class="rounded-circle me-2"
+                                        style="width: 30px; height: 30px;"
+                                      />
 
-                          <!-- Column 2: Followed user displayName and reviewTarget listingName-->
-                          <div class="col-10 d-flex align-items-center gap-2">
-                            <router-link
-                              :to="{
-                                path:
-                                  '/profile/user/' +
-                                  review.userID +
-                                  '/' +
-                                  review.username,
-                              }"
-                              class="primary-clickable-text"
-                            >
-                              <h5>
-                                <b>
-                                  @{{ review["userInfo"]["displayName"] }}
-                                </b>
-                              </h5>
-                            </router-link>
-                            <h5>just drank and rated</h5>
-                            <router-link
-                              :to="{
-                                path: '/listing/view/' + review.reviewTarget.id,
-                              }"
-                              class="primary-clickable-text"
-                            >
-                              <h5>
-                                <b>
-                                  {{ review["reviewTarget"]["listingName"] }}
-                                </b>
-                              </h5>
-                            </router-link>
-                          </div>
-                        </div>
-
-                        <!-- row 2: For reviewTarget photo, review description, rating and "View drink listing" button-->
-                        <div class="row">
-                          <!--Column 1: listing image-->
-                          <!-- image -->
-                          <div class="col-md-5 col-12">
-                            <div class="image-container mb-3 homepage">
-                              <img
-                                v-if="review['reviewTarget']['photo']"
-                                :src="review['photo']"
-                                class="img-border homepage"
-                              />
-                              <img
-                                v-else
-                                src="../../Images/Drinks/Placeholder.png"
-                                class="img-border homepage"
-                              />
-                            </div>
-                          </div>
-
-                          <!-- Column 2: rating description, rating and "View drink listing" button-->
-                          <div
-                            class="col-md-7 col-12 d-flex flex-column justify-content-between"
-                          >
-                            <!-- Row 1 in column 2: Rating description-->
-                            <div class="row">
-                              <h5>"{{ review["reviewDesc"] }}"</h5>
-                            </div>
-
-                            <!-- Row 2 in column 2: Rating and "View drink listing" button-->
-                            <div class="row">
-                              <!-- Rating -->
-                              <div class="col-6 d-flex align-items-center">
-                                <h1
-                                  class="rating-text text-end d-flex align-items-center"
-                                >
-                                  {{ review["rating"] }}
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="30"
-                                    height="30"
-                                    fill="currentColor"
-                                    class="bi bi-star-fill ms-1"
-                                    viewBox="0 0 16 16"
-                                  >
-                                    <path
-                                      d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"
-                                    />
-                                  </svg>
-                                </h1>
-                              </div>
-
-                              <!-- "View drink listing" button -->
-                              <div class="col-6">
-                                <div class="d-grid gap-5">
-                                  <router-link
-                                    :to="{
-                                      path:
-                                        '/listing/view/' +
-                                        review.reviewTarget.id,
-                                    }"
-                                    class="primary-clickable-text"
-                                  >
-                                    <a
-                                      class="btn secondary-btn btn-lg"
-                                      style="font-weight: bold"
+                                      <span class="mx-0">  <router-link
+                                        :to="{
+                                          path: '/profile/user/' + review.userID + '/' + review.username,
+                                        }"
+                                        class="primary-clickable-text"
+                                      >
+                                        <span><b>@{{ review["userInfo"]["displayName"] }}</b></span>
+                                      </router-link> just drank and rated  <router-link
+                                      :to="{
+                                        path: '/listing/view/' + review.reviewTarget.id + '/' + slugify(review.reviewTarget.listingName),
+                                      }"
+                                      class="primary-clickable-text text-decoration-none"
+                                      style="color: #027562"
                                     >
-                                      View Drink Listing
-                                    </a>
-                                  </router-link>
+                                      
+                                        <b >{{ review["reviewTarget"]["listingName"] }}</b>
+                                      
+                                        <!-- <b class="d-block d-md-none mobile-mt-2" >{{ review["reviewTarget"]["listingName"] }}</b> -->
+                                      
+                                    </router-link></span>
+                                    
+                                    </div>
+                            <div class="card d-flex flex-row">
+                              <!-- Image Section -->
+                              <div class="text-center text-md-start">
+                                <div class="image-wrapper position-relative d-inline-block">
+                                  <img
+                                    v-if="review['reviewTarget']['photo']"
+                                    :src="review['photo']"
+                                    class="listing-image"
+                                  />
+                                  <img
+                                    v-else
+                                    src="../../Images/Drinks/Placeholder.png"
+                                    class="listing-image"
+                                  />
+                                </div>
+                              </div>
+                              <div class="detials-rating d-flex flex-column flex-md-row justify-content-between w-100">
+                                <!-- Details Section -->
+                                <div class="flex-grow-1 py-md-3 py-1 col-12 col-md-9 d-flex flex-column justify-content-between md-px-3 px-3">
+                                  
+                                    <!-- User info and what they rated -->
+                                    <div class="d-flex align-items-center mb-2 mobile-view-hide">
+                                      <img
+                                        :src="review['userInfo']['photo'] || defaultProfilePhoto"
+                                        class="rounded-circle me-2"
+                                        style="width: 30px; height: 30px;"
+                                      />
+                                      
+                                      <span class="mx-0"><router-link
+                                        :to="{
+                                          path: '/profile/user/' + review.userID + '/' + review.username,
+                                        }"
+                                        class="primary-clickable-text"
+                                      >
+                                        <span><b>@{{ review["userInfo"]["displayName"] }}</b></span>
+                                      </router-link> just drank and rated <router-link
+                                      :to="{
+                                        path: '/listing/view/' + review.reviewTarget.id + '/' + slugify(review.reviewTarget.listingName),
+                                      }"
+                                      class="primary-clickable-text text-decoration-none"
+                                      style="color: #027562"
+                                    >
+                                      
+                                        <b >{{ review["reviewTarget"]["listingName"] }}</b>
+                                      
+                                        <!-- <b class="d-block d-md-none mobile-mt-2" >{{ review["reviewTarget"]["listingName"] }}</b> -->
+                                      
+                                    </router-link></span>
+                                    
+                                    </div>
+                                    
+                                    
+                                    <!-- Review text -->
+                                    <div class="mt-2 fst-italic">
+                                      <p class="homepage-bottle-review-description mobile-view-hide">
+                                        "{{ 
+                                          review['reviewDesc'] ?.length > 170
+                                            ? review['reviewDesc'].slice(0, 170) + '...'
+                                            : review['reviewDesc']  
+                                          }}"
+                                      </p>
+                                      <p class="homepage-bottle-review-description  mobile-view-show">
+                                        "{{ 
+                                          review['reviewDesc'] ?.length > 95
+                                            ? review['reviewDesc'].slice(0, 95) + '...'
+                                            : review['reviewDesc']  
+                                          }}"
+                                      </p>
+                                    </div>
+                                  
+                                </div>
+
+                                <!-- Rating & View Drink Button -->
+                                <div class="text-center text-md-end col-12 col-md-3 d-flex flex-row flex-md-col justify-content-between d-md-block mt-0 mt-md-3 px-3">
+                                  <h1 class="fw-bold text-warning mobile-view-hide">
+                                    {{ review["rating"] }} ★
+                                  </h1>
+                                  <h4 class="fw-bold text-warning mobile-view-show">
+                                    {{ review["rating"] }} ★
+                                  </h4>
+                                  <div class="d-grid">
+                                    <router-link
+                                      :to="{
+                                        path: '/listing/view/' + review.reviewTarget.id + '/' + slugify(review.reviewTarget.listingName),
+                                      }"
+                                      class="primary-clickable-text"
+                                    >
+                                      <button class="btn btn-read-more btn-sm fw-bold rounded-pill mobile-pb-1 mobile-pt-1 mobile-mb-2 mobile-fs-7">
+                                        View Drink
+                                      </button>
+                                    </router-link>
+                                  </div>
                                 </div>
                               </div>
                             </div>
@@ -1144,9 +1247,9 @@
                   </div>
 
                   <!-- recently added  -->
-                  <h3 class="text-body-secondary text-start pt-3">
+                  <h5 class="text-body-secondary text-start pt-3 mt-3">
                     <b> Recently Added </b>
-                  </h3>
+                  </h5>
                   <!-- v-loop for each listing -->
                   <div class="container text-start">
                     <h5
@@ -1164,191 +1267,106 @@
                     >
                       There is no listing available for the selected filter
                     </h5>
-                    <!-- <div v-for="listing in recentlyAdded" v-bind:key="listing.id" class="p-3 mobile-pt-0"> -->
-                    <div
-                      v-for="listing in selectedDrinkType == ''
-                        ? recentlyAdded
-                        : filteredRecentlyAdded"
-                      v-bind:key="listing.id"
-                      class="p-3 mobile-pt-0"
-                    >
-                      <!-- For latest reviews -->
-
-                      <!-- For listings -->
-                      <div class="row">
-                        <!-- image -->
-                        <div class="col-5">
-                          <!-- tzh changed col-xl-5 col-12 to col-5 -->
-                          <div class="image-container mb-3 homepage">
-                            <img
-                              v-if="listing['photo']"
-                              :src="listing['photo']"
-                              class="img-border homepage"
-                            />
-                            <img
-                              v-else
-                              src="../../Images/Drinks/Placeholder.png"
-                              class="img-border homepage"
-                            />
-                            <div class="mobile-view-hide">
-                              <BookmarkIcon
-                                v-if="user"
-                                :user="user"
-                                :listing="listing"
-                                :overlay="true"
-                                size="30"
-                                @icon-clicked="handleIconClick"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                        <!-- details -->
-                        <div class="col-7 mobile-p-0">
-                          <!-- tzh changed col-xl-5 col-12 ps-lg-0 to col-7 mobile-p-0 -->
-                          <!-- expression name -->
-                          <div class="row pt-1">
-                            <router-link
-                              :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}"
-                              class="primary-clickable-text mobile-col-12"
-                            >
-                              <!--tzh changed mobile-col-10 to mobile-col-12 -->
-                              <h4 class="mobile-mb-0 mobile-view-hide">
-                                <b> {{ listing["listingName"] }} </b>
-                              </h4>
-                              <!-- tzh added mobile-mb-0-->
-                              <h6 class="mobile-mb-0 mobile-view-show">
-                                <b> {{ listing["listingName"] }} </b>
-                              </h6>
-                              <!-- tzh added mobile-mb-0-->
-                            </router-link>
-                            <!--<div class="mobile-col-2 mobile-view-show">
-                                                    <BookmarkIcon 
-                                                        v-if="user" 
-                                                        :user="user" 
-                                                        :listing="listing" 
-                                                        :overlay="true"Hello, cp! What's Pouring?
-
-                                                        size="30"
-                                                        @icon-clicked="handleIconClick" />
-                                                    </div>-->
-                          </div>
-                          <!-- producer -->
-                          <div class="row mobile-view-hide">
-                            <!-- tzh added mobile-view-hide -->
-                            <router-link
-                              :to="{
-                                path:
-                                  '/profile/producer/' +
-                                  listing.producerID +
-                                  '/' +
-                                  getProducerName(listing),
-                              }"
-                              class="primary-clickable-text"
-                            >
-                              <h5 class="mobile-rating-smaller-text">
-                                <b> {{ getProducerName(listing) }} </b>
-                              </h5>
-                            </router-link>
-                          </div>
-                          <!-- review -->
-                          <div class="row pt-3">
-                            <!-- tzh transplanted code below from another section-->
-                            <div class="mobile-col-11 mobile-pe-0">
-                              <!-- tzh changed mobile-col-9 to mobile-col-11 -->
-                              <router-link
-                                :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}"
-                                class="default-clickable-text fst-italic scrollable-user-bottle-listings-description-box"
-                              >
-                                <span class="mobile-view-hide">
-                                  <!-- tzh added this section below -->
-                                  <div
-                                    v-if="listing.officialDesc?.length > 300"
-                                  >
-                                    <p
-                                      class="homepage-bottle-listing-description"
-                                    >
-                                      {{
-                                        listing["officialDesc"].slice(0, 300) +
-                                        (listing["officialDesc"].length > 300
-                                          ? "..."
-                                          : "")
-                                      }}
-                                    </p>
-                                  </div>
-                                  <div v-else>
-                                    <p
-                                      class="homepage-bottle-listing-description"
-                                    >
-                                      {{ listing["officialDesc"] }}.
-                                    </p>
-                                  </div>
-                                </span>
-                                <span class="mobile-view-show">
-                                  <!-- tzh added this section below -->
-                                  <div v-if="listing.officialDesc?.length > 80">
-                                    <p
-                                      class="homepage-bottle-listing-description"
-                                    >
-                                      {{
-                                        listing["officialDesc"].slice(0, 300) +
-                                        (listing["officialDesc"].length > 300
-                                          ? "..."
-                                          : "")
-                                      }}
-                                    </p>
-                                  </div>
-                                  <div v-else>
-                                    <p
-                                      class="homepage-bottle-listing-description"
-                                    >
-                                      {{ listing["officialDesc"] }}.
-                                    </p>
-                                  </div>
-                                </span>
-                              </router-link>
-                            </div>
-                            <!-- tzh commented out to make way for code above <router-link :to="{ path: '/listing/view/' +listing.id }" class="default-clickable-text fst-italic scrollable">
-                                                        <h5> {{ listing["officialDesc"] }}. </h5>
-                                                    </router-link>-->
-                          </div>
-                          <!-- rating -->
-                          <div class="row pt-4 mobile-pt-0">
-                            <!--tzh added mobile-pt-0 -->
-                            <div class="col-6 d-flex align-items-center">
-                              <h1
-                                class="rating-text text-end d-flex align-items-center mobile-view-hide"
-                              >
-                                {{ getRatings(listing) }} ★
-                                <!--<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
-                                                                <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                                            </svg>-->
-                              </h1>
-                              <h5
-                                class="rating-text text-end d-flex align-items-center mobile-view-show"
-                              >
-                                {{ getRatings(listing) }} ★
-                                <!--<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
-                                                                <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                                            </svg>-->
-                              </h5>
-                            </div>
-                            <div class="col-6 mobile-view-hide">
-                              <!--tzh added mobile-view-hide -->
-                              <div class="d-grid gap-5">
-                                <router-link
-                                  :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}"
-                                  class="primary-clickable-text"
-                                >
-                                  <a class="btn secondary-btn btn-md">
-                                    Read what the crowd thinks
-                                  </a>
-                                </router-link>
+                    
+                    <!-- NEW CARD LAYOUT FOR RECENTLY ADDED -->
+                    
+                      <div v-for="listing in selectedDrinkType == '' ? recentlyAdded : filteredRecentlyAdded"  v-bind:key="listing.id"  class="row">
+                        <div class="col-md-12">
+                          <div class="card d-flex flex-row mt-4 mobile-mt-3">
+                              <!-- Image Section -->
+                              <div class="text-center text-md-start">
+                                <div class="image-wrapper position-relative d-inline-block">
+                                  <img v-if="listing['photo']" :src="listing['photo']" class="listing-image" />
+                                  <img v-else src="../../Images/Drinks/Placeholder.png" class="listing-image" />
+                                </div>
+                                <!-- <div class="mobile-view-hide position-absolute" style="top: 10px; right: 10px;">
+                                  <BookmarkIcon
+                                    v-if="user"
+                                    :user="user"
+                                    :listing="listing"
+                                    :overlay="true"
+                                    size="30"
+                                    @icon-clicked="handleIconClick"
+                                  />
+                                </div> -->
                               </div>
-                            </div>
-                          </div>
+
+                              <div class="detials-rating d-flex flex-column flex-md-row justify-content-between w-100">
+                                <!-- Details Section -->
+                                <div class="flex-grow-1 py-md-3 py-1 col-12 col-md-9 d-flex flex-column justify-content-between md-px-3 px-3">
+                                  <div class="name-producer">
+                                    <router-link
+                                      :to="{
+                                        path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName),
+                                      }"
+                                      class="primary-clickable-text text-decoration-none"
+                                      style="color: #027562"
+                                    >
+                                      <h5 class="d-none d-md-block">
+                                        <b>{{ listing["listingName"] }}</b>
+                                      </h5>
+                                      <h6 class="d-block d-md-none mobile-mt-2">
+                                        <b>{{ listing["listingName"] }}</b>
+                                      </h6>
+                                    </router-link>
+                                    <router-link
+                                      :to="{
+                                        path:
+                                          '/profile/producer/' +
+                                          listing.producerID +
+                                          '/' +
+                                          getProducerName(listing),
+                                      }"
+                                      class="primary-clickable-text"
+                                    >
+                                      <h6 class="Xmobile-rating-smaller-text">
+                                        <b>{{ getProducerName(listing) }}</b>
+                                      </h6>
+                                    </router-link>
+                                  </div>
+                                  <router-link
+                                    :to="{
+                                      path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName),
+                                    }"
+                                    class="default-clickable-text fst-italic"
+                                  >
+                                    <p class="homepage-bottle-listing-description">
+                                      {{
+                                        listing.officialDesc?.length > 300
+                                          ? listing.officialDesc.slice(0, 300) +
+                                            "..."
+                                          : listing.officialDesc
+                                      }}
+                                    </p>
+                                  </router-link>
+                                </div>
+
+                                <!-- Rating & Read More Button -->
+                                <div class="text-center text-md-end col-12 col-md-3 d-flex flex-row flex-md-col justify-content-between d-md-block mt-0 mt-md-3 px-3">
+                                  <h1 class="fw-bold text-warning mobile-view-hide">
+                                    {{ getRatings(listing) }} ★
+                                  </h1>
+                                  <h4 class="fw-bold text-warning mobile-view-show">
+                                    {{ getRatings(listing) }} ★
+                                  </h4>
+                                  <div class="d-grid">
+                                    <router-link
+                                      :to="{
+                                        path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName),
+                                      }"
+                                      class="primary-clickable-text"
+                                    >
+                                      <button class="btn btn-read-more btn-sm fw-bold rounded-pill mobile-pb-1 mobile-pt-1 mobile-mb-2 mobile-fs-7">
+                                        Read More
+                                      </button>
+                                    </router-link>
+                                  </div>
+                                </div>
+                              </div>
+                            </div> 
                         </div>
                       </div>
-                    </div>
+                    
                   </div>
                 </div>
 
@@ -1393,13 +1411,13 @@
 <!-- JavaScript -->
 <script>
 import NavBar from "@/components/NavBar.vue";
-import BookmarkIcon from "@/components/BookmarkIcon.vue";
+// import BookmarkIcon from "@/components/BookmarkIcon.vue";
 import BookmarkModal from "@/components/BookmarkModal.vue";
 
 export default {
   components: {
     NavBar,
-    BookmarkIcon,
+    // BookmarkIcon,
     BookmarkModal,
   },
 
@@ -1598,11 +1616,13 @@ export default {
         if (this.user) {
           // Get the list of users that the current user is following
 
-          this.userBookmarks = this.user.drinkLists;
-          this.getFollowedProducers();
-          this.getFollowedVenues();
-          this.getListingsByProducer();
-          this.getListingsByVenue();
+          // Add awaits to ensure these complete in order
+          await this.getFollowedProducers();
+          await this.getFollowedVenues();
+          await Promise.all([
+            this.getListingsByProducer(),
+            this.getListingsByVenue()
+          ]);
           this.getRecentlyAdded();
           this.getQuestionsUpdates();
 
@@ -1920,7 +1940,7 @@ export default {
       // else there are ratings
       const averageRating =
         ratings.reduce((total, rating) => {
-          return total + rating["rating"];
+          return total + parseFloat(rating["rating"]);
         }, 0) / ratings.length;
       return averageRating.toFixed(1); //tzh changed .toFixed(2) to .toFixed(1)
     },
@@ -2275,12 +2295,25 @@ export default {
 
     // get listings by producer
     getListingsByProducer() {
-      this.followedProducers.forEach((producer) => {
-        const producerListings = this.listings.filter(
-          (listing) => listing.producerID == parseInt(producer)
-        );
-        this.allProducerDrinks.push(...producerListings);
-      });
+      // Reset the array to avoid duplicate data
+        this.allProducerDrinks = [];
+        
+        if (!this.followedProducers || this.followedProducers.length === 0) {
+          return Promise.resolve(); // Return early if no producers to follow
+        }
+        
+        try {
+          this.followedProducers.forEach((producer) => {
+            const producerListings = this.listings.filter(
+              (listing) => listing.producerID == parseInt(producer)
+            );
+            this.allProducerDrinks.push(...producerListings);
+          });
+          return Promise.resolve();
+        } catch (error) {
+          console.error("Error in getListingsByProducer:", error);
+          return Promise.reject(error);
+        }
     },
 
     // get venues that user follows
@@ -2291,41 +2324,75 @@ export default {
     },
 
     // get listings by venue
-    getListingsByVenue() {
-      this.followedVenues.forEach((venue) => {
-        const venueID = parseInt(venue);
-        const venueObject = this.venues.find((v) => v.id === venueID);
-        let allMenuItems = venueObject["menu"];
-        let allSectionMenus = allMenuItems.reduce((acc, menuItem) => {
-          return acc.concat(menuItem.sectionMenu);
-        }, []);
+    getListingsByVenue() {    
+      // Reset the array to avoid duplicate data
+      this.allVenueDrinks = [];
+      
+      if (!this.followedVenues || this.followedVenues.length === 0) {
+        return Promise.resolve(); // Return early if no venues to follow
+      }
+      
+      try {
+        this.followedVenues.forEach((venue) => {
+          const venueID = parseInt(venue);
+          const venueObject = this.venues.find((v) => v.id === venueID);
+          
+          if (!venueObject || !venueObject.menu) return; // Skip if venue not found or has no menu
+          
+          let allMenuItems = venueObject.menu;
+          let allSectionMenus = allMenuItems.reduce((acc, menuItem) => {
+            return acc.concat(menuItem.sectionMenu || []);
+          }, []);
 
-        let allListingsIDs = allSectionMenus.reduce((acc, menuItem) => {
-          return acc.concat(menuItem.itemID);
-        }, []);
+          let allListingsIDs = allSectionMenus.reduce((acc, menuItem) => {
+            return acc.concat(menuItem.itemID || []);
+          }, []);
 
-        let uniqueListingsIDs = [
-          ...new Set(allListingsIDs.map((item) => item)),
-        ];
-        let allVenueDrinks = this.listings
-          .filter((listing) => {
-            let listing_id = listing.id;
-            return uniqueListingsIDs.includes(listing_id);
-          })
-          .map((listing) => ({ ...listing }));
-        this.allVenueDrinks = allVenueDrinks;
-      });
+          let uniqueListingsIDs = [...new Set(allListingsIDs)];
+          
+          const allVenueDrinks = this.listings.filter(listing => 
+            uniqueListingsIDs.includes(listing.id)
+          );
+          
+          this.allVenueDrinks.push(...allVenueDrinks);
+        });
+        return Promise.resolve();
+      } catch (error) {
+        console.error("Error in getListingsByVenue:", error);
+        return Promise.reject(error);
+      }
     },
 
     // get recently added
     getRecentlyAdded() {
-      this.recentlyAdded = [
-        ...new Map(
-          this.allProducerDrinks
-            .concat(this.allVenueDrinks)
-            .map((item) => [item.id, item])
-        ).values(),
-      ];
+        try {
+          console.log("Producer drinks:", this.allProducerDrinks.length);
+          console.log("Venue drinks:", this.allVenueDrinks.length);
+          
+          // Combine producer and venue listings with deduplication
+          this.recentlyAdded = [
+            ...new Map(
+              this.allProducerDrinks
+                .concat(this.allVenueDrinks)
+                .map((item) => [item.id, item])
+            ).values(),
+          ];
+          
+          console.log("Combined recently added:", this.recentlyAdded.length);
+          
+          // Sort by date if available, newest first
+          if (this.recentlyAdded.length > 0 && this.recentlyAdded[0].addedDate) {
+            this.recentlyAdded.sort((a, b) => {
+              return new Date(b.addedDate || 0) - new Date(a.addedDate || 0);
+            });
+          }
+          
+          return Promise.resolve(this.recentlyAdded);
+        } catch (error) {
+          console.error("Error in getRecentlyAdded:", error);
+          this.recentlyAdded = [];
+          return Promise.reject(error);
+        }
     },
 
     getQuestionsUpdates() {
@@ -2499,14 +2566,11 @@ export default {
       }
       //Lazy loading for following tab
       else {
-        // TODO: Add in lazy loading filter options, right now just pulling normally
-        // if selectedDrinkType not empty, meaning listings are filtered, retrieve based off the drink type and/or drink category based off following list
-        // if(this.selectedDrinkType!=''){
-        // if not, meaning listings are not filtered, retrieve next 30 listings in DB based off following list
-        // }else{
-        let lastFollowingId =
-          this.recentlyAdded[this.recentlyAdded.length - 1].id;
-
+      //Lazy loading for following tab
+      // Check if there are items in recentlyAdded before accessing
+      if (this.recentlyAdded && this.recentlyAdded.length > 0) {
+        let lastFollowingId = this.recentlyAdded[this.recentlyAdded.length - 1].id;
+        
         let params = {
           followedProducers: this.followedProducers,
           followedVenues:
@@ -2534,9 +2598,13 @@ export default {
         if (response.data.length == 0) {
           this.moreListings = false;
         }
-        // }
-
+        
         this.followCount++;
+      } else {
+        // Handle case where there are no items to load
+        this.moreListings = false;
+        // Optionally show a message to the user
+      }
       }
     },
   },
