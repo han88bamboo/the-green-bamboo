@@ -2851,19 +2851,20 @@ def getRandomListings():
             return jsonify({"error": "No dates found in listings"}), 400
 
         # Log the fetched dates
-        print("Fetched date_results:", date_results)
+        # print("Fetched date_results:", date_results)
 
         try:
             # Extract 'addedDate' values properly from RealDictRow
             date_list = [row['addedDate'] for row in date_results if 'addedDate' in row]
             
             # Log the extracted date list
-            print("Extracted date_list:", date_list)
+            # print("Extracted date_list:", date_list)
 
             if not date_list:
                 return jsonify({"error": "Date extraction failed (empty list)"}), 400
 
             random_date = random.choice(date_list)  # Select a random date
+            print("Extracted date:", random_date)
         except Exception as e:
             return jsonify({"error": f"Random selection failed: {str(e)}"}), 500
 
@@ -2874,7 +2875,10 @@ def getRandomListings():
     if not listings_data:
         return jsonify({"error": "No listings found for selected date"}), 400
 
-    return jsonify(listings_data)
+    return jsonify({
+        "listings": listings_data,
+        "selectedDate": random_date.isoformat()
+    })
 
 # -----------------------------------------------------------------------------------------
 # [GET] Get Listings from reverse image search -- ADDED BY SMU GROUP 3
