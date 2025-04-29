@@ -5,9 +5,9 @@
         <b> {{ displayName }} </b> 
     </h5>
     <div class="container pe-lg-0 mobile-ps-0 mobile-pe-0 mobile-view-hide">
-        <div class="row" v-if="Object.keys(listingArr).length > 0">
-            <div v-for="(listing, index) in listingArr" :key="index" class="col-12 col-sm-6 col-md-6 col-lg-3 col-xl-2 align-items-center p-lg-0" :style="{ display: 'flex', flexDirection: 'column', width: columnWidth }">
-                <div class="drink-photo-container-row image-container-150 mb-2" v-if="listing?.id">
+        <div class="d-flex justify-content-between flex-row w-100" v-if="listingArr.length > 0" style="flex-wrap: nowrap;">
+        <div v-for="(listing, index) in listingArr.filter(l => l?.id)" :key="index" class="d-flex flex-column align-items-center" style="flex: 0 0 19%; max-width: 19%;">
+                   <div class="drink-photo-container-row image-container-150 mb-2" v-if="listing?.id">
                     <router-link :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName) }" class="default-text-no-background">
                         <img v-if="listing.photo !== '' && listing.photo !== null" :src="listing.photo" class="add-drink-photo-background centered rounded"> 
                         <img v-else src="https://drinkximages.s3.us-east-1.amazonaws.com/images/2d4d94bc-313e-4621-9a15-4bfbf77958de.jpg" class="add-drink-photo-background centered rounded">
@@ -39,44 +39,68 @@
     </div>
 
     <div class="container pe-lg-0 mobile-ps-0 mobile-pe-0 mobile-view-show">
-        <div  v-if="listingArr.length > 0" >
-            <div class="row d-flex flex-nowrap" style="overflow-x: auto;" v-if="listing?.id">
-            <div v-for="(listing, index) in listingArr" :key="index" class="col-12 col-sm-6 col-md-6 col-lg-3 col-xl-2 align-items-center p-lg-0 me-4 mobile-col-4 mobile-me-0 mobile-ps-1 mobile-pe-1 mobile-fs-7" :style="{ display: 'flex', flexDirection: 'column' }">
-                <div class="drink-photo-container-row-producer-profile image-container-150">
-                    <router-link :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}" class="default-text-no-background">
-                        <img v-if="listing.photo !== '' && listing.photo !== null" :src="'data:image/jpeg;base64,' + listing.photo" class="add-drink-photo-background centered rounded review-image"> 
-                        <!-- <img v-if="listing.photo !== '' && listing.photo !== null" :src="listing.photo" class="add-drink-photo-background centered rounded review-image">  -->
-                        <img v-else src="../../Images/Drinks/Placeholder.png" class="add-drink-photo-background centered rounded review-image">
-                    </router-link>
-                    
-                    <BookmarkIcon 
-                        v-if="user && Object.keys(user).length > 0" 
-                        :user="user" 
-                        :listing="listing" 
-                        :overlay="true"
-                        size="20"
-                        @icon-clicked="handleIconClick" />
-
-                </div>
-                <router-link :to="{ path: '/listing/view/' +listing.id + '/' + slugify(listing.listingName)}" class="default-clickable-text scrollable mt-2 " style="text-align: center; max-height: 75px;">
-                    <div v-if="listing.listingName.length > 63"> 
-                        {{ listing.listingName.slice(0,63) + (listing.listingName.length > 63 ? '...' : '') }}
-                    </div>
-                    <div v-else> 
-                        {{ listing.listingName }}
-                    </div>    
+        <div v-if="listingArr.length > 0">
+          
+          <div class="mobile-scroll-row">
+            
+            <div v-for="(listing, index) in listingArr.filter(l => l?.id)" 
+                 :key="index" 
+                 class="scroll-item">
+      
+              <!-- Image + BookmarkIcon block -->
+              <div class="drink-photo-container-row-producer-profile image-container-150">
+                
+                <router-link 
+                  :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName) }" 
+                  class="default-text-no-background">
+      
+                  <img v-if="listing.photo !== '' && listing.photo !== null" 
+                       :src="'data:image/jpeg;base64,' + listing.photo" 
+                       class="add-drink-photo-background centered rounded review-image">
+      
+                  <img v-else 
+                       src="../../Images/Drinks/Placeholder.png" 
+                       class="add-drink-photo-background centered rounded review-image">
+                
                 </router-link>
+      
+                <BookmarkIcon 
+                  v-if="user && Object.keys(user).length > 0" 
+                  :user="user" 
+                  :listing="listing" 
+                  :overlay="true"
+                  size="20"
+                  @icon-clicked="handleIconClick" />
+      
+              </div>
+      
+              <!-- Listing Name block -->
+              <router-link 
+                :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName) }" 
+                class="default-clickable-text mobile-rating-smaller-text-2 scrollable mt-2" 
+                style="text-align: center; max-height: 75px;">
+      
+                <div v-if="listing.listingName.length > 25"> <!--kai edited to truncate text earlier-->
+                  {{ listing.listingName.slice(0, 25) + '...' }}
+                </div>
+                <div v-else>
+                  {{ listing.listingName }}
+                </div>
+      
+              </router-link>
+      
             </div>
-            </div>
-            <p style="font-weight:bold; font-size:0.75rem; text-align: right;">View more ⟶</p>
+      
+          </div>
+    
         </div>
-        
+      
         <div v-else class="m-2 text-start">
-            No {{ displayName.toLowerCase() }} yet. To explore more drinks in the home page, 
-            <router-link to="/" style="color: inherit;">click here</router-link>. 
+          No {{ displayName.toLowerCase() }} yet. To explore more drinks in the home page, 
+          <router-link to="/" style="color: inherit;">click here</router-link>.
         </div>
-        
-    </div>
+      </div>
+      
 
 </template>
 
