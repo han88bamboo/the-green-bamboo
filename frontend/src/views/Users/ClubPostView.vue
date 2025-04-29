@@ -136,7 +136,6 @@
             <p>{{ post.postContent }}</p>
           </div>
         </div>
-
         <!-- Row 4: Like Button -->
         <div v-if="isMember" class="row text-start">
           <div class="col-12 d-flex gap-4">
@@ -640,12 +639,6 @@ export default {
         this.poster = response.data.poster_info;
         this.comments = response.data.comments;
 
-        this.comments[0].likedMembers.forEach(item => {
-          console.log(typeof item);  // Logs the type of each element (e.g., "string", "number")
-        });
-
-
-
         // Set the dataLoaded variable to true
         this.dataLoaded = true;
       } catch (error) {
@@ -978,7 +971,6 @@ export default {
       // Convert isMember and isAdmin to boolean
       this.isMember = isMember === "true";
       this.isAdmin = isAdmin === "true";
-
       // Call the getPostData function to retrieve the post data
       this.getPostData();
     }

@@ -287,7 +287,7 @@
 
                             <!-- Club Name-->
                             <h2 class="card-title fw-bold text-start">
-                                <router-link v-if="club.clubID && club.clubName" :to="{ name: 'clubview', params: { clubID: club.id, clubName: slugify(club.clubName) }}" class="text-dark hover-underline">
+                                <router-link v-if="club.id && club.clubName" :to="{ name: 'clubview', params: { clubID: club.id, clubName: slugify(club.clubName) }}" class="text-dark hover-underline">
                                     {{ club.clubName }}
                                 </router-link>
                             </h2>

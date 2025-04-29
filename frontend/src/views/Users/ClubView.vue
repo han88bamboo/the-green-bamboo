@@ -715,7 +715,7 @@
                     </div>
                   </div>
 
-                  <!-- Row 5: Like button image -->
+                  <!-- Row 5: Up vote and downvote and view all comment button -->
                   <div v-if="isMember" class="row text-start">
                     <div class="col-12 d-flex">
                       <div v-if="postLikes !== null && postDislikes !== null" class="d-flex gap-4">
@@ -812,7 +812,7 @@
                       <span
                         data-bs-toggle="tooltip"
                         data-bs-placement="top"
-                        title="Comment"
+                        title="View all Comments"
                         class="cursor-pointer ps-4"
                         @click="openPost(post.id)"
                       >
@@ -833,6 +833,30 @@
                           />
                         </svg>
                       </span>
+                    </div>
+                  </div>
+
+                  <!-- Row 6: Comment bar -->
+                  <div v-if="isMember" class="row mt-3">
+                    <div class="col-12">
+                      <div class="input-group">
+                        <input
+                          type="text"
+                          class="form-control"
+                          placeholder="Write a comment..."
+                          aria-label="Write a comment..."
+                          aria-describedby="button-addon2"
+                          v-model="newComment"
+                        />
+                        <button
+                          class="btn primary-btn"
+                          type="button"
+                          id="button-addon2"
+                          @click="addComment"
+                        >
+                          Comment
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1397,10 +1421,11 @@ export default {
           this.isAdmin = response.data.isAdmin;
           this.memberID = response.data.memberID;
 
-          // Store the user's membership status in the local storage
-          localStorage.setItem("isMember", this.isMember);
-          localStorage.setItem("isAdmin", this.isAdmin);
-          localStorage.setItem("memberID", this.memberID);
+          this.getPostLikes();  
+          // // Store the user's membership status in the local storage
+          // localStorage.setItem("isMember", this.isMember);
+          // localStorage.setItem("isAdmin", this.isAdmin);
+          // localStorage.setItem("memberID", this.memberID);
 
           // If current user is a member, get the user's likes for the posts
           if (this.isMember) {
@@ -1879,6 +1904,39 @@ export default {
     openPost(postID) {
       this.$router.push(`/club/${this.clubId}/post/${postID}`);
     },
+
+    // Function to add comment on a post
+    async addComment() {
+      try {
+        // Comment on the post
+        const commentData = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/club/addComment`,
+          {
+            postID: this.postID,
+            commenterID: this.memberID,
+            commentContent: this.newComment,
+          }
+        );
+
+        // Check if the comment is successful
+        if (commentData.status == 201) {
+          // Add the comment to the front of the comments array
+          this.comments.unshift(commentData.data.comment_obj);
+
+          // Clear the comment input
+          this.newComment = "";
+
+          const toast = useToast();
+          toast.success("Comment added successfully.");
+        }
+      } catch (error) {
+        console.log(error);
+        const toast = useToast();
+        toast.error(
+          "An error occurred while adding the comment. Please try again later."
+        );
+      }
+    },
   },
 
   mounted() {
@@ -1899,15 +1957,10 @@ export default {
 
     if (this.userID && this.userType != "defaultUser") {
 
-      if (localStorage.getItem("isMember") === null) {  
-          this.dataLoaded = false;
-          this.checkMembership();
-      } else {
-        this.isMember = localStorage.getItem("isMember");
-        this.isAdmin = localStorage.getItem("isAdmin");
-        this.memberID = localStorage.getItem("memberID");
-        this.getPostLikes();
-      }      
+      this.dataLoaded = false;
+      this.checkMembership();
+      // isMember, isAdmin and memberID varies across clubs, so we cant set them in local storage
+         
     }
   },
 };
