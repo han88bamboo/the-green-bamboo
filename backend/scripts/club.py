@@ -1391,6 +1391,20 @@ def addPost():
         user = cur.fetchone()
 
         if (user['userType'] == 'user'):
+
+            # if max points is reached, do not add points
+            cur.execute('SELECT "currentPoints" FROM "pointsRecorder" WHERE "userID" = %s AND "userType" = %s', (user['userID'], 'user',))
+            current_points = cur.fetchone()
+
+            cur.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = %s', (1,))
+            max_points = cur.fetchone()
+
+            if current_points['currentPoints'] >= max_points['proofPoints']:
+                return jsonify({
+                    'message': 'Post added successfully',
+                    'postID': post_id
+                }), 201
+
             # Get the current points for posting
             cur.execute('SELECT "proofPoints", "ruleName" FROM "pointSystemRules" WHERE id = %s', (7,))
             points = cur.fetchone()
@@ -1476,6 +1490,27 @@ def addComment():
         user = cur.fetchone()
 
         if (user['userType'] == 'user'):
+            # if max points is reached, do not add points
+            cur.execute('SELECT "currentPoints" FROM "pointsRecorder" WHERE "userID" = %s AND "userType" = %s', (user['userID'], 'user',))
+            current_points = cur.fetchone()
+
+            cur.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = %s', (1,))
+            max_points = cur.fetchone()
+
+            if current_points['currentPoints'] >= max_points['proofPoints']:
+                return jsonify({
+                    'message': 'Comment added successfully',
+                    'comment_obj': {
+                        "commentContent": comment_content,
+                        "commentDate": comment_date,
+                        "commenterID": commenter_id,
+                        "commenterInfo": commenter_info,
+                        "id": comment_id,
+                        "likedMembers": [],
+                        "postID": post_id
+                    }
+                }), 201
+
             # Get the current points for commenting
             cur.execute('SELECT "proofPoints", "ruleName" FROM "pointSystemRules" WHERE id = %s', (10,))
             points = cur.fetchone()

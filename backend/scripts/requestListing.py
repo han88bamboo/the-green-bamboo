@@ -431,12 +431,63 @@ def requestReviewStatus(requestID):
             (status, requestID)
         )
 
-        conn.commit()
+        # Add proof points to the user if the review status is true
+        # Get max proof points for a user 
+        cur.execute(
+            'SELECT "proofPoints" FROM "pointSystemRules" WHERE id = 1;'
+        )
+        maxProofPoints = cur.fetchone()
+    
+        # Step 1: Get the userID from the requestID
+        cur.execute(
+            f'SELECT "userID" FROM "{targetCollection}" WHERE id = %s;',
+            (requestID,)
+        )
+        userID = cur.fetchone()
+
+        # Get current user's proof points
+        cur.execute(
+            'SELECT "currentPoints" FROM "pointsRecorder" WHERE "userID" = %s;',
+            (userID['userID'],)
+        )
+        userProofPoints = cur.fetchone()
+
+        if userProofPoints is not None and userProofPoints['currentPoints'] >= maxProofPoints['proofPoints']:
+            return jsonify(
+                {
+                    "code": 201,
+                    "data": requestID
+                }
+            ), 201
+
+        # Step 2: Get the proof points for successful add drink listings
+        if (targetCollection == "requestListings" and status == True):
+            cur.execute(
+                'SELECT "proofPoints" FROM "pointSystemRules" WHERE id = 12;'
+            )
+            proofPoints = cur.fetchone()
+
+        elif (targetCollection == "requestEdits" and status == True):
+            cur.execute(
+                'SELECT "proofPoints" FROM "pointSystemRules" WHERE id = 13;'
+            )
+            proofPoints = cur.fetchone()
+        
+        if (proofPoints is not None and userID is not None):
+
+            # Step 3: Update the user's proof points
+            newProofPoints = userProofPoints['currentPoints'] + proofPoints['proofPoints']
+            cur.execute(
+                'UPDATE "pointsRecorder" SET "currentPoints" = %s WHERE id = %s;',
+                (newProofPoints, userID['userID'])
+            )
+            conn.commit()
 
         return jsonify(
             {
                 "code": 201,
-                "data": requestID
+                "data": requestID,
+                "proofPoints added": proofPoints['proofPoints'] if proofPoints else 0,
             }
         ), 201
     

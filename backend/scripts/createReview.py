@@ -270,6 +270,19 @@ def createReviews():
         cur.execute(insert_review_sql, review_values)
         conn.commit()
 
+        # if max points is reached, do not add points
+        cur.execute('SELECT "currentPoints" FROM "pointsRecorder" WHERE "userID" = %s AND "userType" = %s', (user_id, 'user',))
+        current_points = cur.fetchone()
+
+        cur.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = %s', (1,))
+        max_points = cur.fetchone()
+
+        if current_points['currentPoints'] >= max_points['proofPoints']:
+            return jsonify({
+                "code": 400,
+                "data": raw_review['reviewDesc']
+            }), 201
+
         # Calculate proof points earned 
         rule_fulfiled_id = []
 
@@ -353,6 +366,17 @@ def createProducerReviews():
         conn.commit()
 
         total_points = 0
+
+        # if max points is reached, do not add points
+        cur.execute('SELECT "currentPoints" FROM "pointsRecorder" WHERE "userID" = %s AND "userType" = %s', (user_id, 'user',))
+        current_points = cur.fetchone()
+
+        cur.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = %s', (1,))
+        max_points = cur.fetchone()
+
+        if current_points['currentPoints'] >= max_points['proofPoints']:
+            return jsonify({"code": 201, "data": raw_review['reviewDesc']}), 201
+
         # Get the proof points for simple text review
         if raw_review['reviewDesc']:
             cur.execute("""SELECT "proofPoints" FROM "pointSystemRules" WHERE id = 2""")

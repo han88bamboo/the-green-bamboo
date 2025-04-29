@@ -15,6 +15,12 @@ from scripts.createReview import create_username
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
 
+def is_empty_photo(value):
+    return value in (None, '', [])
+
+def is_non_empty_photo(value):
+    return not is_empty_photo(value)
+
 # -----------------------------------------------------------------------------------------
 # [POST] Vote review
 # - Update review with new votes
@@ -169,10 +175,11 @@ def updateReview(id):
         remove_component.append(3)
     
 
-    # [3] Check if photo was removed or added
-    if (data['photo'] == [] and data['photo'] is None and data['photo'] == '') and (existing_review['photo'] != '' and existing_review['photo'] != [] and existing_review['photo'] is not None):
+    # [3] Check if photo was removed or added - not working
+    if is_empty_photo(data['photo']) and is_non_empty_photo(existing_review['photo']):
         remove_component.append(4)
-    elif (data['photo'] != [] and data['photo'] != '' and data['photo'] is not None) and (existing_review['photo'] == '' and existing_review['photo'] == [] and existing_review['photo'] is None):
+    # Check if photo was added
+    elif is_non_empty_photo(data['photo']) and is_empty_photo(existing_review['photo']):
         added_component.append(4)
 
     # [4] Check if location was removed or added

@@ -169,6 +169,20 @@ def sendQuestions():
         conn.commit()
 
         # Award points to user for asking a question
+        # if max points is reached, do not add points
+        cur.execute('SELECT "currentPoints" FROM "pointsRecorder" WHERE "userID" = %s AND "userType" = %s', (userID, 'user',))
+        current_points = cur.fetchone()
+
+        cur.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = %s', (1,))
+        max_points = cur.fetchone()
+
+        if current_points['currentPoints'] + points['proofPoints'] > max_points['proofPoints']:
+            return jsonify(
+                {
+                    "code": 201,
+                    "message": "Question sent successfully!"
+                }
+            ), 201
  
         # get points for asking a question
         cur.execute('SELECT "proofPoints", "ruleName" FROM "pointSystemRules" WHERE id = %s', (15,))
