@@ -422,3 +422,115 @@ def updateProducerReview(id):
     except Exception as e:
         print(str(e))
         return jsonify({"code": 500, "message": "An error occurred updating the review."}), 500
+    
+# -----------------------------------------------------------------------------------------
+# [POST] Vote venue review
+# - Update venue review with new votes
+# - Possible return codes: 201 (Updated), 500 (Error during update)
+@blueprint.route('/voteVenueReview', methods=['POST'])
+def voteVenueReview():
+    conn = g.db
+    data = request.get_json()
+
+    review_id = data['reviewID']
+    user_votes = data['userVotes']
+    action = data['action']
+
+    with conn.cursor() as cur:
+        try:
+            cur.execute(
+                "SELECT id, upvotes, downvotes FROM \"venueReviewsUserVotes\" WHERE \"reviewId\" = %s",
+                (review_id,)
+            )
+            result = cur.fetchone()
+            print("Result: ", result)
+
+            if result:
+                cur.execute("""
+                    UPDATE "venueReviewsUserVotes"
+                    SET upvotes = %s, downvotes = %s
+                    WHERE id = %s;
+                """, (user_votes['upvotes'], user_votes['downvotes'], result['id']))
+            else:
+                cur.execute("""
+                    INSERT INTO "venueReviewsUserVotes" ("reviewId", upvotes, downvotes)
+                    VALUES (%s, %s, %s);
+                """, (review_id, user_votes['upvotes'], user_votes['downvotes']))
+
+            conn.commit()
+
+            return jsonify({
+                "code": 201,
+                "data": {
+                    "upvotes": user_votes['upvotes'],
+                    "downvotes": user_votes['downvotes']
+                }
+            }), 201
+
+        except Exception as e:
+            print(str(e))
+            conn.rollback()
+            return jsonify({
+                "code": 500,
+                "message": "An error occurred updating the votes.",
+                "details": str(e)
+            }), 500
+
+# -----------------------------------------------------------------------------------------
+# [PUT] Update venue review
+# - Update venue review with review metrics
+# - Possible return codes: 200 (Updated), 400 (Review not found), 500 (Error during update)
+@blueprint.route('/updateVenueReview/<id>', methods=['PUT'])
+def updateVenueReview(id):
+    conn = g.db
+    cur = conn.cursor()
+    data = request.get_json()
+
+    try:
+        created_date = datetime.strptime(data.get('createdDate', ''), "%a, %d %b %Y %H:%M:%S %Z")
+    except ValueError:
+        return jsonify({"code": 400, "message": "Invalid date format."}), 400
+
+    # Check if review exists
+    cur.execute("""SELECT EXISTS(SELECT 1 FROM "venueReviews" WHERE id = %s)""", (id,))
+    if not cur.fetchone()['exists']:
+        return jsonify({"code": 400, "message": "Review does not exist."}), 400
+
+    cur.execute("""SELECT photos FROM "venueReviews" WHERE id = %s""", (id,))
+    old_photos = cur.fetchone()['photos'] or []
+
+    from threading import Thread
+    def async_delete_images(photo_list):
+        for photo in photo_list:
+            s3Images.deleteImageFromS3(photo)
+
+    Thread(target=async_delete_images, args=(old_photos,)).start()
+
+    new_photos = [s3Images.uploadBase64ImageToS3(photo) for photo in data.get('photos', []) if photo]
+
+    update_review_sql = """
+        UPDATE "venueReviews"
+        SET "userID" = %s, "venueID" = %s, "rating" = %s, "reviewDesc" = %s, "createdDate" = %s, "photos" = %s
+        WHERE "id" = %s
+    """
+    
+    review_values = (
+        data.get('userID'),
+        data.get('venueID'),
+        float(data.get('rating', 0.0)),
+        data.get('reviewDesc'),
+        created_date,
+        new_photos,
+        id
+    )
+
+    try:
+        cur.execute(update_review_sql, review_values)
+        conn.commit()
+        return jsonify({"code": 200, "data": data.get('reviewDesc', '')}), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({"code": 500, "message": "An error occurred updating the review."}), 500
+
+

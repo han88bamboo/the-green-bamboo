@@ -104,19 +104,19 @@ const routes = [
 
     component: () => import("../views/Producers/ProducerProfile.vue"),
   },
-  {
-    // TO BE DELETED
-    path: "/profile/venueOld/:venueID?",
-    name: "profilevenueOld",
+  // {
+  //   // TO BE DELETED
+  //   path: "/profile/venueOld/:venueID?",
+  //   name: "profilevenueOld",
 
-    // OLD LINK FOR REFERENECE
-    // path: '/Venues/Profile-Page/:id',
-    // name: 'venuesprofilepage',
+  //   // OLD LINK FOR REFERENECE
+  //   // path: '/Venues/Profile-Page/:id',
+  //   // name: 'venuesprofilepage',
 
-    component: () => import("../views/Venues/VenueProfileOld.vue"),
-  },
+  //   component: () => import("../views/Venues/VenueProfileOld.vue"),
+  // },
   {
-    path: "/profile/venue/:venueID?",
+    path: "/profile/venue/:venueID?/:username",
     name: "profilevenue",
     component: () => import("../views/Venues/VenueProfile.vue"),
   },
@@ -124,7 +124,7 @@ const routes = [
 
   // ----------------- LISTING PAGES -----------------
   {
-    path: "/listing/view/:listingID",
+    path: "/listing/view/:listingID/:listingName",
     name: "listingview",
 
     // OLD LINK FOR REFERENECE
@@ -259,7 +259,7 @@ const routes = [
   },
 
   {
-    path: "/club/view/:clubID",
+    path: "/club/view/:clubID/:clubName?",
     name: "clubview",
     component: () => import("../views/Users/ClubView.vue"),
   },
@@ -273,7 +273,7 @@ const routes = [
 
   // ----------------- Events -----------------
   {
-    path: "/event/:eventID",
+    path: "/event/:eventID/:eventName",
     name: "eventview",
     component: () => import("../views/SpecificEventPage.vue"),
   },

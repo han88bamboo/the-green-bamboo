@@ -1,6 +1,6 @@
 # Port: 5021
-# Routes: /createReview (POST), /createProducerReview (POST)
-# Dataclass: reviews, producerReviews
+# Routes: /createReview (POST), /createProducerReview (POST), /createVenueReview (POST)
+# Dataclass: reviews, producerReviews, venueReviews
 # -----------------------------------------------------------------------------------------
 
 
@@ -374,3 +374,53 @@ def createProducerReviews():
     except Exception as e:
         print(str(e))
         return jsonify({"code": 500, "message": "An error occurred creating the review."}), 500
+    
+# ======================================================
+
+# [POST] Creates a venue review
+
+@blueprint.route("/createVenueReview", methods=['POST'])
+def createVenueReviews():
+    raw_review = request.get_json()
+    conn = g.db
+    cur = conn.cursor()
+
+    venue_id = int(raw_review['venueID'])
+    user_id = int(raw_review['userID'])
+    created_date = datetime.strptime(raw_review['createdDate'], "%Y-%m-%dT%H:%M:%S.%fZ")
+
+    # Check for duplicate review using EXISTS
+    cur.execute(
+        """SELECT EXISTS(SELECT 1 FROM "venueReviews" WHERE "venueID" = %s AND "userID" = %s)""",
+        (venue_id, user_id)
+    )
+    if cur.fetchone()['exists']:
+        return jsonify({"code": 400, "message": "Review already exists."}), 400
+
+    # Upload images & store their returned URLs
+    photos = [s3Images.uploadBase64ImageToS3(photo) for photo in raw_review.get('photos', []) if photo]
+
+    insert_review_sql = """
+        INSERT INTO "venueReviews" ("userID", "venueID", "rating", "reviewDesc", "createdDate", "photos") 
+        VALUES (%s, %s, %s, %s, %s, %s)
+    """
+    review_values = (
+        user_id,
+        venue_id,
+        float(raw_review['rating']),
+        raw_review['reviewDesc'],
+        created_date,
+        photos
+    )
+
+    try:
+        cur.execute(insert_review_sql, review_values)
+        conn.commit()
+        return jsonify({"code": 201, "data": raw_review['reviewDesc']}), 201
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({"code": 500, "message": "An error occurred creating the review."}), 500
+
+
+

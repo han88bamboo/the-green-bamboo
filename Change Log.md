@@ -230,3 +230,209 @@ Updated Backend getReviewsByUserIds code to accommodate tuple userIds
 (1) Updated backend/getData.py
 Nature of the changes (frontend / backend / database):
 backend
+
+# Update as of 5 April
+
+Coder: Han
+
+Purpose of the changes:
+Producer bottle listings - to allow admin / moderators to delete reviews.
+Still require CP's assistance to bug fix thihs issue.
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 5 April
+
+Coder: Han
+
+Purpose of the changes:
+Producer Profile page - added button to review the producer 
+
+Still need to monitor for bugs, responsiveness, etc
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+
+# Update as of 8 April
+
+Coder: Han
+
+Purpose of the changes:
+To create function of reviewing venue on Venue Profile page
+
+Files updated:
+(a) createReview.py - [POST] Creates a venue review
+(b) deleteReview.py - [DELETE] Deletes a venue review
+(c) editReview.py - [POST] Vote venue review /   [PUT] Update venue review
+(d) getData.py - [GET] Venue Reviews / 
+(e) VenueProfile.vue - buttons, functions, review displays, calling of endpoints
+(f) 01-postgresql_data3.sql - venueReviews and venueReviewsUserVotes tables
+
+Nature of the changes (frontend / backend / database):
+frontend, backend and database
+
+
+# Update as of 11 April
+
+Coder: Candy
+
+Purpose of the changes:
+Updated profile URL for venue
+(1) Updated router - VenueProfile.vue
+(2) Updated router - router/index.js
+(3) Updated router - NavBar.vue
+(4) Updated router - LandingPageNavBar.vue
+(5) Updated router - SearchView.vue
+getData/getVenueReviews receive 500 Internal server error 
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 11 April (Part 2)
+
+Coder: Candy
+
+Purpose of the changes:
+Updated profile URL for profile/producer and lisitng/view in search view 
+(1) Updated router for both profile/producer and listing/view - SearchView.vue
+(2) Updated router for listing/view/:listingid to include listing name - RandomExplorePage.vue
+(3) Updated router for listing/view/:listingid to include listing name - ListingRowDisplay.vue
+(4) Updated router for listing/view/:listingid to include listing name - ListingRowDisplayProducerProfile.vue
+(5) Updated router for listing/view/:listingid to include listing name - SubmitListingNew.vue
+(6) Updated router for listing/view/:listingid to include listing name - LandingPage.vue
+(7) Updated router for listing/view/:listingid to include listing name - ProducerDashboard.vue
+(8) Updated router for listing/view/:listingid to include listing name - ProducerProfile.vue
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 11 April (Part 3)
+
+Coder: Candy
+
+Purpose of the changes:
+Updated URL for events
+(1) Updated router for events URL - SpecificEventPage.vue
+(2) Updated router for events URL - router/index.js
+(3) Updated router for events URL - events.vue
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 11 April (Part 4)
+
+Coder: Candy
+
+Purpose of the changes:
+Updated URL for events and club
+(1) Updated router for past & recommended events URL - events.vue
+(2) Updated router for club/view/:clubid/:clubName - router/index.js
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 14 April 
+
+Coder: Candy
+
+Purpose of the changes:
+Updated URL for events and club
+(1) Updated profile and club/view router for BrowseClubs.vue
+(2) Updated router for club/view/:clubid/:clubName - router/index.js
+(3) Updated router for CreateClubs.vue
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+
+# Update as of 18 April 
+
+Coder: TZH
+
+Purpose of the changes:
+updated NavBar.vue to allow search to autocomplete, referencing code from SearchBar.vue (used Copilot)
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+
+# Update as of 24 April 
+
+Coder: TZH
+
+Purpose of the changes:
+updated data folder to include the right countries
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+
+# Update as of 25 April 
+
+Coder: Kai
+
+Purpose of the changes:
+updated positioning of reviews in producer bottle listing page
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 25 April 
+
+Coder: Kai
+
+Purpose of the changes:
+added 3-dot dropwon feature for users to edit reviews - but buggy TZH to fix
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 25 April 
+
+Coder: Kai
+
+Purpose of the changes:
+neatened the margins and the line spacings on the drink listing pages (mobile + Desktop)
+added mobile only row of buttons like add review, bookmark, and extended info
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 25 April 
+
+Coder: Kai 
+Purpose of changes: 
+1. neatened up the spacing of the venue desc and attributes, and the review venue and follow venue buttons (mobile + desktop)
+2. adjusted the global css for the display of the venue profile images and also the display of the drink listings rows for producer + venue profile pages (added hover effects, changed sizing etc)
+
+Nature of the changes (frontend/backend / database):
+front end
+
+# Update as of 28 April 
+
+Coder: Han
+fixed delete review bug on Producer BottleListings page - delete review modal was apparently accidentally deleted
+made UX changes for the randomExplorePage - however may need to discuss with Kai how best to show how users should show up when making the latest change Wes suggested to show the latest review dropped on that rating. what's the implication for the sorting function?
+made UX changes to navbar
+
+Nature of the changes (frontend/backend / database):
+front end
+
+# Update as of 28 April 
+
+Coder: Han
+updated drink styles again
+
+Nature of the changes (frontend/backend / database):
+front end
+
+# Update as of 28 April 
+
+Coder: Candy
+
+Purpose of the changes:
+Updated URL for username & profile photo in bottle listings review
+(1) Updated username and profile photo router for producers/BottleListings.vue
+
+Nature of the changes (frontend / backend / database):
+frontend

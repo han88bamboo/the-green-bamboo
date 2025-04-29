@@ -1,7 +1,7 @@
 # Port: 5000
 # Routes: /getAccountRequests (GET), /getCountries (GET), /getListings (GET), /getListingsByIDs (POST), /getListing/<id> (GET), /getProducers (GET), /getProducer/<id> (GET),
 #           /getRecentListingReviews/<id> (GET), /getAllListingsNames (GET), /getBookmarkListings (POST), /getUserReviewSummary/<id> (GET),
-#           /getReviews (GET), /getReviewByTarget/<id> (GET), /getReviewsByUserIds (GET), /getProducerTourReviews (GET), /getUsers (GET), /getUser/<id> (GET), 
+#           /getReviews (GET), /getReviewByTarget/<id> (GET), /getReviewsByUserIds (GET), /getProducerTourReviews (GET), /getVenueReviews (GET), /getUsers (GET), /getUser/<id> (GET), 
 #           /getUserPhoto/<id>/<userType> (GET), /getUserByUsername/<username> (GET), /getVenues (GET), 
 #           /getVenue/<id> (GET), /getVenuesAPI (GET), /getDrinkTypes (GET), /getRequestListings (GET), /getRequestListing/<id> (GET), /getRequestEdits (GET), 
 #           /getRequestEdit/<id> (GET), /getModRequests (GET), /getFlavourTags (GET), /getSubTags (GET), /getObservationTags (GET), /getColours (GET), 
@@ -1120,6 +1120,34 @@ def getTourReviews():
             del review["downvotes"]
 
         return jsonify(reviews_data)
+
+# [GET] Venue Reviews
+@blueprint.route("/getVenueReviews")
+def getVenueReviews():
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        cursor.execute("""
+            SELECT "venueReviews".*, "venueReviewsUserVotes"."upvotes", "venueReviewsUserVotes"."downvotes"
+            FROM "venueReviews"
+            LEFT JOIN "venueReviewsUserVotes" ON "venueReviews"."id" = "venueReviewsUserVotes"."reviewId"
+        """)
+
+        reviews_data = cursor.fetchall()
+
+        if not reviews_data:
+            return jsonify([])
+        
+        for review in reviews_data:
+            review["userVotes"] = {
+                "upvotes": review["upvotes"] if review["upvotes"] else [],
+                "downvotes": review["downvotes"] if review["downvotes"] else []
+            }
+            del review["upvotes"]
+            del review["downvotes"]
+
+        return jsonify(reviews_data)
+
 # ----------------------
 # [NEW] TO BE ADDED:
 # ----------------------

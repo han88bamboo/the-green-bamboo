@@ -188,6 +188,13 @@ export default {
         }
     },
     methods: {
+        slugify(text) {
+                return text
+                    .toString()
+                    .toLowerCase()
+                    .replace(/\s+/g, '')
+                    .replace(/[^\w]/g, '');
+            },
 
         // Function to retrieve data for the page ========================================
         // Function to get the list of users the current user is following
@@ -287,13 +294,13 @@ export default {
             })
                 .then(() => {
                     // Redirect to the club page
-                    this.$router.push(`/club/view/${clubID}`);
+                    this.$router.push(`/club/view/${clubID}/${this.slugify(this.club.clubName)}`);
                 })
                 .catch((error) => {
                     console.log(error);
                     alert("Failed to add friends to the club. Please add your friends in the club page.");
                     // Redirect to the club page
-                    this.$router.push(`/club/view/${clubID}`);
+                    this.$router.push(`/club/view/${clubID}/${this.slugify(this.club.clubName)}`);
                 });
         },
 
@@ -302,7 +309,11 @@ export default {
         // Helper functions ==============================================================
         // Function to upload images and convert them to base64String
         uploadImage(e) {
-            const file = e.target.files[0];
+            const file = e.target.files && e.target.files[0];
+            if (!file) {
+                console.warn("No file selected.");
+                return;
+            }
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = (e) => {

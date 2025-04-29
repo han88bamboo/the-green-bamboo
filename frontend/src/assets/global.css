@@ -110,7 +110,7 @@ body {
   color: white;
   background-color: #027562; /*TZH added for Discovery and Following buttons on homepage */
   border-radius: 10px;
-  border: 4px solid #027562; /*TZH changed 535C72 to F0B258 */
+  border: 2px solid #027562; /*TZH changed 535C72 to F0B258 */
   font-weight: bold;
 }
 
@@ -118,7 +118,7 @@ body {
   color: white;
   background-color: #026453;
   border-radius: 10px;
-  border: 4px solid #026453;
+  border: 2px solid #026453;
   font-weight: bold;
 }
 
@@ -126,7 +126,7 @@ body {
   color: #027562;
   background-color: white;
   border-radius: 10px;
-  border: 4px solid #027562;
+  border: 2px solid #027562;
   font-weight: bold;
 }
 
@@ -240,8 +240,8 @@ body {
 .primary-square-green-outline {
   color: black;
   background-color: white; /* added by tzh for left side bar on homepage*/
-  border-radius: 30px;
-  border: 4px solid #027562;
+  border-radius: 10px; /*  tzh changed from 30px to 10px*/
+  border: 2px solid #027562;
   font-weight: bold;
 }
 
@@ -508,8 +508,33 @@ body {
   box-shadow: none;
 }
 
+@media (max-width: 991px) {
+  /* Right-align the hamburger menu */
+  .navbar-toggler {
+    margin: 0 !important;
+  }
+  
+  /* Ensure the navbar container properly distributes space */
+  .navbar > .container,
+  .navbar > .container-fluid {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  /* If your navbar has other elements that need positioning */
+  .navbar-brand {
+    margin-right: 0;
+  }
+  .col-2.dropdown.mobile-col-4 {
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+  }
+}
+
 .search-bar {
-  border: 4px solid #027562;
+  border: 3px solid #027562;
   border-radius: 10px;
   background-color: white;
 }
@@ -520,7 +545,7 @@ body {
 }
 
 .img-border {
-  border: 4px solid #83a9e8; /* tzh changed 868fa7 to #83A9E8 and 2.5px to 4px */
+  border: 0x solid #83a9e8; /* tzh changed 868fa7 to #83A9E8 and 2.5px to 4px */
   border-radius: 30px;
 }
 
@@ -613,14 +638,23 @@ body {
   margin: 10px;
 }
 
-/* tzh adjusted sizings from 150 to 175*/
+/* tzh adjusted sizings from 150 to 175, kai added box shadow */
 .add-drink-photo-background {
   width: 175px;
   height: 175px;
   position: absolute;
   top: 0;
   left: 0;
+  box-shadow: rgba(0, 0, 0, 0.25) 0px 4px 8px;
+  transition: transform 0.4s ease, opacity 0.4s ease;
 }
+
+/* kai added hover effect for drink listings on venue/producer page*/
+.add-drink-photo-background:hover {
+  opacity: 0.8; /* faded slightly when hovered */
+  transform: scale(1.05);
+}
+
 
 .add-drink-photo-background-user-profile {
   width: 100%;
@@ -806,8 +840,8 @@ body {
 
 
 .dropdown-toggle {
-  height: 47.25px;
-  font-size: medium;
+  height: 36px;   /* tzh changed 47.25px to 36px */
+  font-size: 14px; /* tzh changed medium to 14px */
 }
 
 .rounded-circle {
@@ -1009,6 +1043,11 @@ button.primary-square:hover {
 
 .text-warning {
   color: #d58d2d;
+}
+
+/* Scope only inside teal bookmark area for drink listing*/
+.teal-bookmark-icon svg {
+  fill: #ffffff !important;
 }
 
 .active-toggle-button {
@@ -1214,6 +1253,14 @@ button.primary-square:hover {
   margin-bottom: 0.5rem;
 }
 
+.homepage-bottle-review-description {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.2;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
 .sub-flavour-tags {
   width: 100px;
   height: 60px;
@@ -1235,6 +1282,9 @@ button.primary-square:hover {
   .homepage-bottle-listing-description {
     font-size: 0.8rem;
     display: none;
+  } 
+  .homepage-bottle-review-description {
+    font-size: 0.8rem;
   }
 }
 .shadow-effect {
@@ -1316,12 +1366,12 @@ button.primary-square:hover {
   .mobile-col-3 {
     flex: 0 0 auto;
     width: 25%;
-    display: block;
+    /* display: block; */
   }
   .mobile-col-4 {
     flex: 0 0 auto;
     width: 33.333333333333%;
-    display: block;
+    /* display: block; */
   }
   .mobile-col-5 {
     flex: 0 0 auto;
@@ -1341,12 +1391,12 @@ button.primary-square:hover {
   .mobile-col-8 {
     flex: 0 0 auto;
     width: 66.666666666666%;
-    display: block;
+    /* display: block; */
   }
   .mobile-col-9 {
     flex: 0 0 auto;
     width: 75%;
-    display: block;
+    /* display: block; */
   }
   .mobile-col-10 {
     flex: 0 0 auto;
@@ -1399,8 +1449,8 @@ button.primary-square:hover {
 
 @media (max-width: 991px) {
   .discover-and-following {
-    font-size: 16px;
-    font-weight: 500;
+    font-size: 18px;
+    font-weight: 700;
   }
 }
 
@@ -1499,12 +1549,15 @@ button.primary-square:hover {
   .mobile-pb-0 {
     padding-bottom: 0 !important;
   }
+  .mobile-pb-1 {
+    padding-bottom: 0.25rem !important;
+  }
 }
 
 @media (max-width: 991px) {
   .funnel-svg-dimensions {
-    /* width: 50px; */
-    /* height: 50px; */
+    width: 35px;
+    height: 35px;
   }
 }
 
@@ -1595,22 +1648,26 @@ button.primary-square:hover {
 }
 
 .producer-bottle-listing-page-image {
-  max-width: 230px;
-  height: 230px;
+  max-width: 240px;
+  height: 240px;
+  border-radius:10px;
+  box-shadow: rgba(0, 0, 0.4, 0.4) 0px 4px 4px; /* kai added box shadow o the producer bottle listing */
 }
 
 @media (max-width: 991px) {
   .producer-bottle-listing-page-image {
-    width: 100%;
+    width: 90%;
     height: auto;
     aspect-ratio: 1 / 1; /* Ensures the image remains a square */
     object-fit: cover; /* Ensures the image covers the entire area without stretching */
+    border-radius:10px;
   }
 }
 
 .producer-bottle-listing-page-bottle-image {
   max-width: 150px;
   height: 150px;
+  border-radius:10px
 }
 
 .producer-bottle-listing-page-bottle-image {
@@ -1618,6 +1675,7 @@ button.primary-square:hover {
   height: auto;
   aspect-ratio: 1 / 1; /* Ensures the image remains a square */
   object-fit: cover; /* Ensures the image covers the entire area without stretching */
+  border-radius:10px
 }
 
 .producer-profile-latest-updates-image {
@@ -1685,7 +1743,7 @@ button.primary-square:hover {
 
 @media (max-width: 991px) {
   .rounded-pill {
-    font-size: 12px;
+    font-size: 14px;
   }
 }
 
@@ -1694,9 +1752,16 @@ button.primary-square:hover {
   height: 150px;
   aspect-ratio: 1 / 1; /* Ensures the image remains a square */
   object-fit: cover; /* Ensures the image covers the entire area without stretching */
-  box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.4);
   border-radius: 4px;
+  box-shadow: rgba(0, 0, 0, 0.25) 0px 4px 8px;
+  transition: transform 0.4s ease, opacity 0.4s ease;
 }
+
+.review-image:hover {
+  opacity: 0.8; /* faded slightly when hovered */
+  transform: scale(1.01);
+}
+
 @media (max-width: 991px) {
   .review-image {
     width: 100%;
