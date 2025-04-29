@@ -436,3 +436,14 @@ Updated URL for username & profile photo in bottle listings review
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 29 April 
+
+Coder: Kai
+
+Purpose of the changes:
+Neatening up the spacing and margins on venue profile pages
+Fixed the error on ListingRowDisplayProducerProfile. that was preventing it from showing up on mobile
+
+Nature of the changes (frontend / backend / database):
+frontend

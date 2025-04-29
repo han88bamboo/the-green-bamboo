@@ -180,11 +180,14 @@ body {
   color: white;
   background-color: #FF3E31;
   border-radius: 10px;
+  transition: transform 0.4s ease;
 }
+
 .primary-btn-less-round-blue:hover {
   color: white;
   background-color: #e7291c;
   border-radius: 10px;
+  transform: scale(1.05)
 }
 
 .primary-btn-less-round-green {
