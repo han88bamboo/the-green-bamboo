@@ -490,3 +490,15 @@ Purpose of the changes:
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 1 May 
+
+Coder: Candy
+
+Purpose of the changes:
+(1) Update dashboard/user linking URL
+(2) router/index.js - events/view url
+(3) Update Events.vue and SpecificEventPage.vue url
+
+Nature of the changes (frontend / backend / database):
+frontend

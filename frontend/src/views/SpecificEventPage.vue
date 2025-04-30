@@ -84,17 +84,17 @@
                         <div class="d-flex justify-content-between align-items-center p-3 mt-3" style="background-color: #83A9E8;">
                             <div class="ms-5 fw-bold d-flex align-items-center"> 
                                 <p v-if="event.eventOwnerType =='venue'" class="m-0">Organized by: 
-                                    <router-link :to="profileURL(event.ownerInfo.id, event.ownerInfo.userType)">
+                                    <router-link :to="profileURL(event.ownerInfo.id, event.ownerInfo.userType, event.ownerInfo.venueName)">
                                         <span class="text-decoration-underline" >{{ event.ownerInfo.venueName }}</span>
                                     </router-link>
                                 </p>
                                 <p v-if="event.eventOwnerType =='producer'" class="m-0">Organized by: 
-                                    <router-link :to="profileURL(event.ownerInfo.id, event.ownerInfo.userType)">
+                                    <router-link :to="profileURL(event.ownerInfo.id, event.ownerInfo.userType, event.ownerInfo.producerName)">
                                         <span class="text-decoration-underline" >{{ event.ownerInfo.producerName }}</span>
                                     </router-link>
                                 </p>
                                 <p v-if="event.eventOwnerType =='user'" class="m-0">Organized by: 
-                                    <router-link :to="profileURL(event.ownerInfo.id, event.ownerInfo.userType)">
+                                    <router-link :to="profileURL(event.ownerInfo.id, event.ownerInfo.userType, event.ownerInfo.displayName)">
                                         <span class="text-decoration-underline" >{{ event.ownerInfo.displayName }}</span>
                                     </router-link>
                                 </p>
@@ -145,7 +145,11 @@
                                     </svg>
 
                                     <!-- Profile link -->
-                                    <router-link :to="profileURL(attendee.id, attendee.userType)">
+                                    <router-link :to="profileURL(attendee.id, attendee.userType,   attendee.userType === 'user'
+      ? attendee.displayName
+      : attendee.userType === 'producer'
+        ? attendee.producerName
+        : attendee.venueName)">
                                         <p v-if="attendee.userType == 'user'" class="ms-2">{{ attendee.displayName }}</p>
                                         <p v-if="attendee.userType == 'venue'" class="ms-2">{{ attendee.venueName }}</p>
                                         <p v-if="attendee.userType == 'producer'" class="ms-2">{{ attendee.producerName }}</p>
@@ -187,7 +191,11 @@
                                                             <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
                                                             <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
                                                         </svg>
-                                                        <router-link :to="profileURL(attendee.id, attendee.userType)">
+                                                        <router-link :to="profileURL(attendee.id, attendee.userType, attendee.userType === 'user'
+      ? attendee.displayName
+      : attendee.userType === 'producer'
+        ? attendee.producerName
+        : attendee.venueName)">
                                                             <p v-if="attendee.userType == 'user'" class="ms-2">{{ attendee.displayName }}</p>
                                                             <p v-if="attendee.userType == 'venue'" class="ms-2">{{ attendee.venueName }}</p>
                                                             <p v-if="attendee.userType == 'producer'" class="ms-2">{{ attendee.producerName }}</p>
@@ -536,8 +544,11 @@ export default {
                 return text
                     .toString()
                     .toLowerCase()
-                    .replace(/\s+/g, '')
-                    .replace(/[^\w]/g, '');
+                    .replace(/['’]/g, '')
+                    .replace(/[^\w\s-]/g, '')
+                    .trim()
+                    .replace(/\s+/g, '-')
+                    .replace(/-+/g, '-')
             },
         // Function to get event information
         async getEvent() {
@@ -868,15 +879,15 @@ export default {
         },
 
         // Function to get the profile URL of the poster 
-        profileURL(posterID, userType) {
+        profileURL(posterID, userType, userName) {
             if (userType == 'user') {
-                return `/profile/user/${posterID}`;
+                return `/profile/user/${this.slugify(userName)}/${posterID}`;
             }
             else if (userType == 'producer') {
-                return `/profile/producer/${posterID}`;
+                return `/profile/producer/${this.slugify(userName)}/${posterID}`;
             }
             else {
-                return `/profile/venue/${posterID}`;
+                return `/profile/venue/${this.slugify(userName)}/${posterID}`;
             }
 
         },
