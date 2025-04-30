@@ -584,8 +584,11 @@ export default {
                 return text
                     .toString()
                     .toLowerCase()
-                    .replace(/\s+/g, '')
-                    .replace(/[^\w]/g, '');
+                    .replace(/['’]/g, '')
+                    .replace(/[^\w\s-]/g, '')
+                    .trim()
+                    .replace(/\s+/g, '-')
+                    .replace(/-+/g, '-')
             },
         // Load data from the database (e.g., profile picture)
         async loadData(url) {
@@ -678,7 +681,7 @@ export default {
             try {
                 this.selectedListing = listing;
                 console.log("listing:", listing);
-                this.$router.push({ path: '/listing/view/' + listing.id + '/' + this.slugify(listing.listingName)});
+                this.$router.push({ path: '/listing/view/' + this.slugify(listing.listingName) + '/' + listing.id});
             } catch (error) {
                 console.error("Error navigating to listing:", error);
             }

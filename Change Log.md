@@ -447,3 +447,25 @@ Fixed the error on ListingRowDisplayProducerProfile. that was preventing it from
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 30 April 
+
+Coder: Candy
+
+Purpose of the changes:
+(1) Update router/index.js URL to 
+    A. listing/view/:listingName(with dash)/:listingId
+    B. "/profile/producer/:username/:producerID"
+
+(2) Update producers/BottleListings.vue URL to listing/view/:listingName(with dash)/:listingId
+    A. Added slugify(text) fn in producers/BottleListings.vue
+    B. Update Where to buy function to fix url link
+    C. User review link to users.
+
+(3) Update landing page trending links to listing/view/:listingName(with dash)/:listingId
+(4) Update ProducerProfile.vue links to other producers page (Most popular/ Most discussed/ Recently added)
+    A. ListingRowDisplay.vue
+    B. ListingRowDisplayProducerProfile.vue
+
+Nature of the changes (frontend / backend / database):
+frontend

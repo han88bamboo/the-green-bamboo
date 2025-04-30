@@ -2115,7 +2115,7 @@
                     class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0"
                   >
                     <router-link
-                      :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}"
+                      :to="{ path: '/listing/view/' + slugify(listing.listingName) + '/' + listing.id}"
                       class="default-text-no-background"
                     >
                       <!-- <img :src=" 'data:image/jpeg;base64,' + (listing['photo'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" > -->
@@ -2223,7 +2223,7 @@
                             style="margin-bottom: 0.3rem"
                           >
                             <router-link
-                              :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}"
+                              :to="{ path: '/listing/view/' + slugify(listing.listingName) + '/' + listing.id}"
                               class="default-text-no-background"
                             >
                               <u>
@@ -2334,7 +2334,7 @@
                       <div class="row">
                         <div class="col-4 mobile-view-hide">
                           <router-link
-                            :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}"
+                            :to="{ path: '/listing/view/' + slugify(listing.listingName) + '/' + listing.id}"
                           >
                             <button
                               type="button"
@@ -2417,7 +2417,7 @@
                     class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0"
                   >
                     <router-link
-                      :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}"
+                      :to="{ path: '/listing/view/' + slugify(listing.listingName) + '/' + listing.id}"
                       class="default-text-no-background"
                     >
                       <!-- <img :src=" 'data:image/jpeg;base64,' + (listing['photo'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" > -->
@@ -2531,7 +2531,7 @@
                             style="margin-bottom: 0.3rem"
                           >
                             <router-link
-                              :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}"
+                              :to="{ path: '/listing/view/' + slugify(listing.listingName) + '/' + listing.id}"
                               class="default-text-no-background" 
                             >
                               <u>
@@ -2642,7 +2642,7 @@
                       <div class="row">
                         <div class="col-4 mobile-view-hide">
                           <router-link
-                            :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}"
+                            :to="{ path: '/listing/view/' + slugify(listing.listingName) + '/' + listing.id}"
                           >
                             <button
                               type="button"
@@ -2849,7 +2849,7 @@
                       class="col-12 col-lg-1 mobile-col-2"
                       style="text-align: left"
                     >
-                      <router-link :to="`/profile/user/${review.userID}`">
+                      <router-link :to="`/profile/user/${review.userName}/${review.userID}`">
                         <img
                           :src="
                             getPhotoFromReview(review) || defaultProfilePhoto
@@ -2862,7 +2862,7 @@
                     <div class="col-10 pe-0 mobile-fs-7 mobile-ps-4">
                       <!-- username -->
                       <router-link
-                        :to="`/profile/user/${review.userID}`"
+                        :to="`/profile/user/${review.userName}/${review.userID}`"
                         style="color: inherit"
                       >
                         <b> @{{ getUsernameFromReview(review) }} </b>
@@ -4350,8 +4350,11 @@ export default {
                 return text
                     .toString()
                     .toLowerCase()
-                    .replace(/\s+/g, '')
-                    .replace(/[^\w]/g, '');
+                    .replace(/['’]/g, '')
+                    .replace(/[^\w\s-]/g, '')
+                    .trim()
+                    .replace(/\s+/g, '-')
+                    .replace(/-+/g, '-')
             },
     // load data from database
     async loadData() {
