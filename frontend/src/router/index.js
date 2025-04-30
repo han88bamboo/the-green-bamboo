@@ -85,7 +85,7 @@ const routes = [
 
   // ----------------- PROFILE PAGES -----------------
   {
-    path: "/profile/user/:userID/:username/:listName?",
+    path: "/profile/user/:username/:listName?/:userID",
     name: "profileuser",
 
     // OLD LINK FOR REFERENECE
@@ -259,7 +259,7 @@ const routes = [
   },
 
   {
-    path: "/club/view/:clubID/:clubName?",
+    path: "/club/view/:clubName?/:clubID",
     name: "clubview",
     component: () => import("../views/Users/ClubView.vue"),
   },

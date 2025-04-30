@@ -507,21 +507,21 @@ export default {
         url = url + "User/" + accID;
         this.loadData(url);
 
-        this.profileURL = "/profile/user/" + accID + "/" + accUsername;
+        this.profileURL = "/profile/user/" + accUsername + "/" + accID;
         this.dashboardURL = "/dashboard/user";
         this.dashboardWord = "Drink";
       } else if (this.accType == "producer") {
         url = url + "Producer/" + accID;
         this.loadData(url);
 
-        this.profileURL = "/profile/producer/" + accID + "/" + accUsername;
+        this.profileURL = "/profile/producer/" + accUsername + '/' + accID;
         this.dashboardURL = "/Producers/ProducersDashboard/" + accID;
         this.dashboardWord = "Brand";
       } else if (this.accType == "venue") {
-        url = url + "Venue/" + accID + "/" + accUsername;
+        url = url + "Venue/" + accUsername + "/" + accID;
         this.loadData(url);
 
-        this.profileURL = "/profile/venue/" + accID + "/" + accUsername;
+        this.profileURL = "/profile/venue/";
         this.dashboardURL = "/dashboard/venue";
         this.dashboardWord = "Venue";
       }

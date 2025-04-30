@@ -216,7 +216,7 @@
                                         <div class="text-start d-flex gap-3">
                                             <!-- Poster name -->
                                             <p>
-                                                <router-link :to="profileURL(post.posterInfo.id, post.posterInfo.userType)">
+                                                <router-link :to="profileURL(post.posterInfo.id, post.posterInfo.userType, post.posterInfo.displayName)">
                                                     <p v-if="post.posterInfo.userType == 'user'" class="name-container">{{ post.posterInfo.displayName }}</p>
                                                     <p v-else-if="post.posterInfo.userType == 'producer'" class="name-container">{{ post.posterInfo.producerName }}</p>
                                                     <p v-else class="name-container">{{ post.posterInfo.venueName }}</p>
@@ -386,11 +386,14 @@ export default {
 
     methods: {
         slugify(text) {
-                if (!text || typeof text !== 'string') return 'unknown';
-                    return text
+                return text
+                    .toString()
                     .toLowerCase()
-                    .replace(/\s+/g, '')
-                    .replace(/[^\w]/g, '');
+                    .replace(/['’]/g, '')
+                    .replace(/[^\w\s-]/g, '')
+                    .trim()
+                    .replace(/\s+/g, '-')
+                    .replace(/-+/g, '-')
             },
         // Function to get 5 latest posts if the user is a member of at least one club
         async getLatestPosts() {
@@ -631,15 +634,15 @@ export default {
         },
 
         // Function to redirect to the profile page of the poster
-        profileURL(posterID, userType) {
+        profileURL(posterID, userType, name) {
             if (userType == 'user') {
-                return `/profile/user/${posterID}/${this.userName}`;
+                return `/profile/user/${this.slugify(name)}/${posterID}`;
             }
             else if (userType == 'producer') {
-                return `/profile/producer/${posterID}/${this.userName}`;
+                return `/profile/producer/${this.slugify(name)}/${posterID}`;
             }
             else {
-                return `/profile/venue/${posterID}/${this.userName}`;
+                return `/profile/venue/${this.slugify(name)}/${posterID}`;
             }
         },
 

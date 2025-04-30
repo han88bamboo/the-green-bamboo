@@ -330,7 +330,7 @@
                 <div class="col-md-1 d-flex flex-column align-items-start">
                   <router-link
                     :to="
-                      profileURL(post.posterInfo.id, post.posterInfo.userType)
+                      profileURL(post.posterInfo.id, post.posterInfo.userType, post.posterName)
                     "
                   >
                     <p class="fw-bold">{{ post.posterName }}</p>
@@ -367,7 +367,8 @@
                         :to="
                           profileURL(
                             post.posterInfo.id,
-                            post.posterInfo.userType
+                            post.posterInfo.userType,
+                            post.posterName
                           )
                         "
                         class="text-black"
@@ -906,7 +907,7 @@
                 </svg>
 
                 <!-- Admin name -->
-                <router-link :to="profileURL(admin.id, admin.userType)">
+                <router-link :to="profileURL(admin.id, admin.userType, admin.producerName)">
                   <p v-if="admin.userType == 'user'">{{ admin.displayName }}</p>
                   <p v-else-if="admin.userType == 'producer'">
                     {{ admin.producerName }}
@@ -982,7 +983,7 @@
                         </svg>
 
                         <!-- Admin name -->
-                        <router-link :to="profileURL(admin.id, admin.userType)">
+                        <router-link :to="profileURL(admin.id, admin.userType, admin.producerName)">
                           <p v-if="admin.userType == 'user'">
                             {{ admin.displayName }}
                           </p>
@@ -1043,7 +1044,7 @@
                 </svg>
 
                 <!-- Member name -->
-                <router-link :to="profileURL(member.id, member.userType)">
+                <router-link :to="profileURL(member.id, member.userType, member.producerName)">
                   <p v-if="member.userType == 'user'" class="name-container">
                     {{ member.displayName }}
                   </p>
@@ -1135,7 +1136,7 @@
 
                         <!-- Member name -->
                         <router-link
-                          :to="profileURL(member.id, member.userType)"
+                          :to="profileURL(member.id, member.userType, member.producerName)"
                         >
                           <p
                             v-if="member.userType == 'user'"
@@ -1266,6 +1267,18 @@ export default {
   },
 
   methods: {
+
+    slugify(text) {
+                return text
+                    .toString()
+                    .toLowerCase()
+                    .replace(/['’]/g, '')
+                    .replace(/[^\w\s-]/g, '')
+                    .trim()
+                    .replace(/\s+/g, '-')
+                    .replace(/-+/g, '-')
+            },
+
     // Function to get data for page start ========================================
     // Function to get club information
     async getPageData() {
@@ -1370,11 +1383,11 @@ export default {
     },
 
     // Function to get the profile URL of the poster
-    profileURL(posterID, userType) {
+    profileURL(posterID, userType, name) {
       if (userType == "user") {
-        return `/profile/user/${posterID}/${this.username}`;
+        return `/profile/user/${this.username}/${posterID}`;
       } else if (userType == "producer") {
-        return `/profile/producer/${posterID}`;
+        return `/profile/producer/${this.slugify(name)}/${posterID}`;
       } else {
         return `/profile/venue/${posterID}`;
       }
