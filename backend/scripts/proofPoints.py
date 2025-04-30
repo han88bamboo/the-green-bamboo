@@ -51,7 +51,7 @@ def createPointSystemRule():
     data = request.json
 
     # Check if all required fields are present
-    if 'rule_name' not in data or 'rule_desc' not in data or 'rule_category' not in data or 'points' not in data:
+    if 'rule_name' not in data or 'rule_desc' not in data or 'rule_category' not in data or 'proof_points' not in data:
         return jsonify({"message": "Missing required fields"}), 400
     
     # Check if user is admin
@@ -60,13 +60,13 @@ def createPointSystemRule():
     
     try:
         # Check if rule already exists (rule_name)
-        cursor.execute('SELECT * FROM "pointSystemRules" WHERE "ruleName" = %s', (data['rule_name'],))
+        cursor.execute('SELECT * FROM "pointSystemRules" WHERE "ruleName" ILIKE %s', (data['rule_name'],))
 
         if cursor.fetchone():
             return jsonify({"message": "Point system rule already exists"}), 409
         
         # Create point system rule
-        cursor.execute('INSERT INTO "pointSystemRules" ("ruleName", "ruleDesc", "ruleCategory", "proofPoints") VALUES (%s, %s, %s)', (data['rule_name'], data['rule_desc'], data['rule_category'], data['proof_points']))
+        cursor.execute('INSERT INTO "pointSystemRules" ("ruleName", "ruleDesc", "ruleCategory", "proofPoints") VALUES (%s, %s, %s, %s)', (data['rule_name'], data['rule_desc'], data['rule_category'], data['proof_points']))
         conn.commit()
 
         return jsonify({"message": "Point system rule created"}), 201
@@ -82,8 +82,8 @@ def createPointSystemRule():
 
 # -----------------------------------------------------------------------------------------
 # [PUT] /updatePointSystemRule/<id>
-@blueprint.route('/updatePointSystemRule/<id>', methods=['PUT'])
-def updatePointSystemRule(id):
+@blueprint.route('/updatePointSystemRule', methods=['PUT'])
+def updatePointSystemRule():
 
     conn = g.db
     cursor = conn.cursor()
@@ -91,7 +91,7 @@ def updatePointSystemRule(id):
     data = request.json
 
     # Check if all required fields are present
-    if 'rule_name' not in data or 'rule_desc' not in data or 'rule_category' not in data or 'points' not in data:
+    if 'ruleId' not in data or 'rule_name' not in data or 'rule_desc' not in data or 'rule_category' not in data or 'proof_points' not in data:
         return jsonify({"message": "Missing required fields"}), 400
     
     # Check if user is admin
@@ -100,13 +100,13 @@ def updatePointSystemRule(id):
     
     try:
         # Check if rule exists
-        cursor.execute('SELECT * FROM "pointSystemRules" WHERE "ruleId" = %s', (id,))
+        cursor.execute('SELECT * FROM "pointSystemRules" WHERE id = %s', (data['ruleId'],))
 
         if not cursor.fetchone():
             return jsonify({"message": "Point system rule not found"}), 404
         
         # Update point system rule
-        cursor.execute('UPDATE "pointSystemRules" SET "ruleName" = %s, "ruleDesc" = %s, "ruleCategory" = %s, "proofPoints" = %s WHERE "ruleId" = %s', (data['rule_name'], data['rule_desc'], data['rule_category'], data['proof_points'], id))
+        cursor.execute('UPDATE "pointSystemRules" SET "ruleName" = %s, "ruleDesc" = %s, "ruleCategory" = %s, "proofPoints" = %s WHERE id = %s', (data['rule_name'], data['rule_desc'], data['rule_category'], data['proof_points'], data['ruleId']))
         conn.commit()
 
         return jsonify({"message": "Point system rule updated"}), 201
@@ -122,26 +122,29 @@ def updatePointSystemRule(id):
 
 # -----------------------------------------------------------------------------------------
 # [DELETE] /deletePointSystemRule/<id>
-@blueprint.route('/deletePointSystemRule/<id>', methods=['DELETE'])
-def deletePointSystemRule(id):
+@blueprint.route('/deletePointSystemRule', methods=['DELETE'])
+def deletePointSystemRule():
 
     conn = g.db
     cursor = conn.cursor()
 
     data = request.json
 
+    if 'ruleId' not in data:
+        return jsonify({"message": "Missing required fields"}), 400
+
     # Check if user is admin
     if data['userType'] != 'admin':
         return jsonify({"message": "Unauthorized"}), 401
     
     # Check if rule exists
-    cursor.execute('SELECT * FROM "pointSystemRules" WHERE "ruleId" = %s', (id,))
+    cursor.execute('SELECT * FROM "pointSystemRules" WHERE id = %s', (data['ruleId'],))
 
     if not cursor.fetchone():
         return jsonify({"message": "Point system rule not found"}), 404
     
     # Delete point system rule
-    cursor.execute('DELETE FROM "pointSystemRules" WHERE "ruleId" = %s', (id,))
+    cursor.execute('DELETE FROM "pointSystemRules" WHERE id = %s', (data['ruleId'],))
     conn.commit()
 
     cursor.close()
