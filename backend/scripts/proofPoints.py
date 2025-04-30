@@ -281,9 +281,16 @@ def getPointsForUser(id, userType):
     # Calculate total points
     total_points = user_points['currentPoints'] + (overall_total_upvotes * upvote_points) + (overall_total_downvotes * downvote_points)
 
+    # Get max points
+    cursor.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = 1')
+    max_points = cursor.fetchone()['proofPoints']
+
     cursor.close()
 
-    return jsonify(total_points), 200
+    return jsonify({
+        'totalPoints': total_points,
+        'maxPoints': max_points,
+    }), 200
 
 
 # -----------------------------------------------------------------------------------------

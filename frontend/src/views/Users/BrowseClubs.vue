@@ -47,7 +47,7 @@
                 </div> 
 
                 <!-- Create Club Button -->
-                <div class="text-start">
+                <div v-if="!(userType == 'user' && isUnderMax)" class="text-start">
                     <button class="btn btn-primary" @click="createClub">+ Create a Club</button>
                 </div>
 
@@ -381,6 +381,10 @@ export default {
 
             // Variable to store error message
             latestPostsError: null,
+
+            // Variable to store user proof point
+            proofPoint: localStorage.getItem("88B_proofPoints") ? localStorage.getItem("88B_proofPoints") : null,
+            maxProofPoints: localStorage.getItem("88B_maxProofPoints") ? localStorage.getItem("88B_maxProofPoints") : null,
         }
     },
 
@@ -539,7 +543,7 @@ export default {
                     toast.success("You have successfully joined the club!");
                     // Redirect to the club page
                     this.$router.push({ name: 'clubview', params: { clubID: clubId, clubName: this.slugify(clubName) 
-} });
+                    } });
                 }
 
             } catch (error) {
@@ -700,6 +704,9 @@ export default {
         // Function to filter clubs by excluding the clubs the user is already a member of
         filteredClubs() {
             return this.clubs.filter(club => !this.userClubs.includes(club.id));
+        },
+        isUnderMax() {
+            return Number(this.proofPoint) < Number(this.maxProofPoints);
         }
     },
 
@@ -724,6 +731,8 @@ export default {
             // Get the list of clubs the user has been invited to join
             this.getInvitedClubs();
         }
+
+        console.log(localStorage.getItem("88B_proofPoints"));
     }
 }
 

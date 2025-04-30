@@ -3271,8 +3271,13 @@ export default {
         const response = await this.$axios.get(
           `${process.env.VUE_APP_API_URL}/proofPoints/getPointsForUser/${this.displayUserID}/user` 
         );
+        this.proofPoints = response.data.totalPoints;
 
-        this.proofPoints = response.data;
+        // put in local storage
+        if (this.ownProfile) {
+          localStorage.setItem("88B_proofPoints", response.data.totalPoints);
+        }
+        localStorage.setItem("88B_maxProofPoints", response.data.maxPoints);
 
       } catch (error) {
         console.error(error);
