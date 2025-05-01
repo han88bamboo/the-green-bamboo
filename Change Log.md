@@ -502,3 +502,15 @@ Purpose of the changes:
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 1 May 
+
+Coder: Kai
+
+Purpose of the changes:
+(1) Neaten up spacing on Producer Catalogue
+(2) Neaten up spacing on Producer Tours and Experience Review
+(3) Neaten up spacing on Venue page where they shared common components with Proudcer profile page
+ 
+Nature of the changes (frontend / backend / database):
+frontend

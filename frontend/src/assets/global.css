@@ -443,7 +443,7 @@ body {
   font-weight: bold;
   color: #83a9e8;
   background-color: white; /*tzh added for edit profile button*/
-  border: 3px solid #83a9e8;
+  border: 2px solid #83a9e8;
 }
 .tertiary-btn-blue-outline:hover {
   color: whitesmoke;

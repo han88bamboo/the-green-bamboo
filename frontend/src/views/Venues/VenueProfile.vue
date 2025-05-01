@@ -83,7 +83,7 @@
                       
 
                                 <!-- Country -->
-                                <div class="col-8 pe-0 ps-0">
+                                <div class="col-7 pe-0 ps-0">
 
                                     <!-- [if] editing profile -->
                                     <div v-if="editProfile">
@@ -99,7 +99,7 @@
                                 </div>
 
                                 <!-- Claim Venue / Report Menu Inaccuracy / Edit Profile -->
-                                <div class="col-4 mobile-view-hide">
+                                <div class="col-5 mobile-view-hide">
                                     <!-- [if] not logged in as viewed venue -->
                                     <div class="d-grid no-padding text-end" v-if="!selfView && !powerView">
 
@@ -427,7 +427,7 @@
                         <div class="row align-items-start mt-3">
 
                             <!-- Image (25%) -->
-                            <div class="col-2 mobile-col-3 text-start1">
+                            <div class="col-2 mobile-col-4 text-start1">
                               <img
                                 :src="(targetVenue['updates'][0].photo || defaultPhoto)"
                                 alt=""
@@ -436,7 +436,7 @@
                             </div>
                           
                             <!-- Text (75%) -->
-                            <div class="col-10 mobile-col-9 text-start">
+                            <div class="col-10 mobile-col-8 text-start">
                               <p class="mobile-rating-smaller-text-2 mb-0">
                                 {{ targetVenue['updates'][0].text }}
                               </p>
@@ -491,7 +491,7 @@
                       
                         </div>
                       
-                      </div>
+                    </div>
                       
 
                     <!-- ------- END Latest Updates Header + Latest Update Information / START Add Update ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
@@ -572,6 +572,7 @@
                             <p v-if="targetVenue['updates'].length > 1" class="text-body-secondary fs-5 fw-bold m-0">Viewing {{ targetVenue['updates'].length -1 }} more updates</p>
                             <p v-else class="fs-5 fst-italic m-0">There are no more updates to view!</p>
                             -->
+                            
                             <!-- For Each Update -->
                             <div v-for="updateMore in targetVenue['updates'].slice(1)" v-bind:key="updateMore.id">
 
@@ -1204,7 +1205,7 @@
 
                                             </div>
 
-                                            <!-- Item Producer / Drink Type / Type Category / ABV / Country / Description -->
+                                            <!-- Item Producer / Drink Type / Type Category / ABV / <Country> / Description -->
                                             <div class="row">
                                                     <p class="text-start mb-1 mobile-fs-7" >
                                                         <router-link v-if="sectionItem.itemDetails['itemProducerID']" style="color: #2c3e50;" class="text-decoration-none" :to="{ path: '/profile/producer/' + sectionItem.itemDetails['itemProducerID'] }">
@@ -1874,7 +1875,7 @@
                 <div v-if="contentMode == 'venueReviews'">
                     <!-- Example heading for venue reviews -->
                     <h4
-                        class="text-start text-body-secondary fs-4 fw-bold m-0 mobile-fs-6"
+                        class="text-start text-body-secondary fs-4 fw-bold m-0 mobile-fs-6 mb-2"
                         style="font-weight: bold; color: black;"
                     >
                         Average Venue Rating:&nbsp;{{ getAverageVenueRatings() }}
