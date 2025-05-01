@@ -4,9 +4,13 @@
     <h5 class="text-body-secondary text-start pt-1 mb-3"> 
         <b> {{ displayName }} </b> 
     </h5>
-    <div class="container pe-lg-0 mobile-ps-0 mobile-pe-0 mobile-view-hide">
-        <div class="d-flex justify-content-between flex-row w-100" v-if="listingArr.length > 0" style="flex-wrap: nowrap;">
-        <div v-for="(listing, index) in listingArr.filter(l => l?.id)" :key="index" class="d-flex flex-column align-items-center" style="flex: 0 0 19%; max-width: 19%;">
+    <div class="container pe-lg-0 ps-0 mobile-pe-0 mobile-view-hide">
+        <div class="d-flex flex-row flex-wrap justify-content-start w-100" v-if="listingArr.length > 0">
+            <div 
+            v-for="(listing, index) in listingArr.filter(l => l?.id)" 
+            :key="index" 
+            class="d-flex flex-column align-items-center" 
+            style="flex: 0 0 19%; max-width: 19%; min-width: 150px; margin-right: 1%;">
                    <div class="drink-photo-container-row image-container-150 mb-2" v-if="listing?.id">
                     <router-link :to="{ path: '/listing/view/' + slugify(listing.listingName) + '/' + listing.id }" class="default-text-no-background">
                         <img v-if="listing.photo !== '' && listing.photo !== null" :src="listing.photo" class="add-drink-photo-background centered rounded"> 

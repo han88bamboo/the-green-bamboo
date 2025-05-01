@@ -358,11 +358,9 @@
                         </button>
                     </div>
                     </div>
+
                 </div>
-  
-                
-                
-                
+            
                 <!--------- END Follow Venue Button ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
                 <!-- ------- END Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
@@ -887,11 +885,11 @@
                                 </div>
                         </div> 
                         
-                    <hr>
+                        <hr>
                     </div> 
-                    <!-- end mobile Q&A-->
+                        <!-- end mobile Q&A-->
                     
-                    <!-- View Sorted Listings -->
+                        <!-- View Sorted Listings -->
                         <!-- 1: Most Popular (Highest Ratings) -->
                         <!-- 2: Most Discussed (Most Reviews) -->
                         <!-- 3: Recently Added (Newest) -->
@@ -917,7 +915,7 @@
                             :user="userInfo" 
                             :listing="loadedListings" 
                             @icon-clicked="handleIconClick"/>
-
+                        <br>
 
                     </div>
 
@@ -1284,14 +1282,14 @@
 
                                             <div v-if="!showFullItemDescription"> <!--tzh needs help with .id code -->
                                                 <p class="text-start fst-italic mb-1" style="height: 50px; max-height: 50px; overflow-y: auto;">
-                                                    <span v-if="sectionItem.itemDetails['itemDesc']">{{ sectionItem.itemDetails['itemDesc'].slice(0, 140) + (sectionItem.itemDetails['itemDesc'].length > 140 ? '...' : '') }}</span>
-                                                    <a @click="showFullItemDescription = true"  style="font-weight: bold;">(Read More)</a>
+                                                    <span v-if="sectionItem.itemDetails['itemDesc']">{{ sectionItem.itemDetails['itemDesc'].slice(0, 200) + (sectionItem.itemDetails['itemDesc'].length > 200 ? '...' : '') }}</span>
+                                                    <a @click="showFullItemDescription = true"  style="font-weight: bold;"> (Read More)</a>
                                                 </p>
                                             </div>
                                             <div v-else>
                                                 <p class="text-start fst-italic mb-1" style="height: 50px; max-height: 50px; overflow-y: auto;">
                                                     <span v-if="sectionItem.itemDetails['itemDesc']">{{ sectionItem.itemDetails['itemDesc'] }}</span>
-                                                    <a @click="showFullItemDescription = false"  style="font-weight: bold;">(Read Less)</a>
+                                                    <a @click="showFullItemDescription = false"  style="font-weight: bold;"> (Read Less)</a>
                                                 </p>
                                             </div>
 
@@ -2532,7 +2530,7 @@
 
                             <!-- Section Content (View Mode) -->
                             <div>
-                                <p class="text-start mb-1 fst-italic">{{ targetVenue["address"] }}</p>
+                                <p class="text-start mb-1 mobile-rating-smaller-text-2">{{ targetVenue["address"] }}</p>
                             </div>
 
                             <!-- Map -->
@@ -2584,23 +2582,23 @@
 
                                 <!-- Section Header -->
                                 <div class="square-inline">
-                                    <h5 class="mr-auto"> Opening Hours </h5>
+                                    <h5 class="mr-auto mobile-fs-6 fw-bold"> Opening Hours </h5>
                                 </div>
 
                                 <!-- Buttons -->
-                                <div class="pb-1" v-if="selfView || powerView">
+                                <div class="pb-1 mobile-rating-smaller-text-2" v-if="selfView || powerView">
                                     <!-- [if] not editing -->
-                                    <button v-if="!editOpeningHours" type="button" class="btn btn-warning rounded-0 reverse-clickable-text" @click="editOpeningHours = true; checkOpeningHours()">
+                                    <button v-if="!editOpeningHours" type="button" class="btn btn-warning rounded-0 reverse-clickable-text  mobile-rating-smaller-text-2" @click="editOpeningHours = true; checkOpeningHours()">
                                         Edit
                                     </button>
                                     <!-- [else] if editing -->
-                                    <button v-if="editOpeningHours" type="button" class="btn btn-warning rounded-0 reverse-clickable-text ms-1" @click="newOpeningHours = JSON.parse(JSON.stringify(openingHours)); checkOpeningHours()">
+                                    <button v-if="editOpeningHours" type="button" class="btn btn-warning rounded-0 reverse-clickable-text ms-1  mobile-rating-smaller-text-2" @click="newOpeningHours = JSON.parse(JSON.stringify(openingHours)); checkOpeningHours()">
                                         Reset
                                     </button>
-                                    <button v-if="editOpeningHours" type="button" class="btn btn-success rounded-0 reverse-clickable-text ms-1" @click="saveOpeningHours" :disabled="editOpeningHoursError">
+                                    <button v-if="editOpeningHours" type="button" class="btn btn-success rounded-0 reverse-clickable-text ms-1  mobile-rating-smaller-text-2" @click="saveOpeningHours" :disabled="editOpeningHoursError">
                                         Save
                                     </button>
-                                    <button v-if="editOpeningHours" type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1" @click="editOpeningHours = false">
+                                    <button v-if="editOpeningHours" type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1  mobile-rating-smaller-text-2" @click="editOpeningHours = false">
                                         Cancel
                                     </button>
                                     
@@ -2608,8 +2606,8 @@
 
                                 <!-- Section Content (Edit Mode) -->
                                 <div v-if="editOpeningHours">
-                                    <div class="default-text-no-background" v-for = "(hours, day) in newOpeningHours" v-bind:key="day">
-                                        <span class="fw-bold">{{ day }}: </span>
+                                    <div class="default-text-no-background  mobile-rating-smaller-text-2" v-for = "(hours, day) in newOpeningHours" v-bind:key="day">
+                                        <span>{{ day }}: </span>
                                         <div class="pb-1">
                                             <div class="d-flex align-items-center">
                                                 <input type="time" class="form-control" :id="day + 'start'" v-model="hours[0]" @change="checkOpeningHours">
@@ -2624,8 +2622,8 @@
 
                                 <!-- Section Content (View Mode) -->
                                 <div v-else>
-                                    <div class="default-text-no-background" v-for = "(hours, day) in openingHours" v-bind:key="day">
-                                        <span class="fw-bold">{{ day }}: </span>
+                                    <div class="default-text-no-background  mobile-rating-smaller-text-2" v-for = "(hours, day) in openingHours" v-bind:key="day">
+                                        <span>{{ day }}: </span>
                                         <p class="d-inline">{{ hours[0] }} - {{ hours[1] }}</p>
                                     </div>
                                 </div>
@@ -2639,24 +2637,24 @@
 
                                 <!-- Section Header -->
                                 <div class="square-inline">
-                                    <h5 class="mr-auto"> Public Holiday Information </h5>
+                                    <h5 class="mr-auto mobile-fs-6 fw-bold"> Public Holiday Information </h5>
                                 </div>
 
                                 <!-- Buttons -->
                                 <div class="pb-1" v-if="selfView || powerView">
                                     <!-- [if] not editing -->
-                                    <button v-if="!editPublicHolidays" type="button" class="btn btn-warning rounded-0 reverse-clickable-text" @click="editPublicHolidays = true">
+                                    <button v-if="!editPublicHolidays" type="button" class="btn btn-warning rounded-0 reverse-clickable-text  mobile-rating-smaller-text-2" @click="editPublicHolidays = true">
                                         Edit
                                     </button>
                                     
                                     <!-- [else] if editing -->
-                                    <button v-if="editPublicHolidays" type="button" class="btn btn-warning rounded-0 reverse-clickable-text ms-1" @click="newPublicHolidays = targetVenue['publicHolidays']">
+                                    <button v-if="editPublicHolidays" type="button" class="btn btn-warning rounded-0 reverse-clickable-text ms-1  mobile-rating-smaller-text-2" @click="newPublicHolidays = targetVenue['publicHolidays']">
                                         Reset
                                     </button>
-                                    <button v-if="editPublicHolidays" type="button" class="btn btn-success rounded-0 reverse-clickable-text ms-1" @click="savePublicHolidays">
+                                    <button v-if="editPublicHolidays" type="button" class="btn btn-success rounded-0 reverse-clickable-text ms-1  mobile-rating-smaller-text-2" @click="savePublicHolidays">
                                         Save
                                     </button>
-                                    <button v-if="editPublicHolidays" type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1" @click="editPublicHolidays = false">
+                                    <button v-if="editPublicHolidays" type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1  mobile-rating-smaller-text-2" @click="editPublicHolidays = false">
                                         Cancel
                                     </button>
                                     
@@ -2669,7 +2667,7 @@
 
                                 <!-- Section Content (View Mode) -->
                                 <div v-else>
-                                    <div class="text-body-secondary">
+                                    <div class="text-body-secondary  mobile-rating-smaller-text-2">
                                         <div v-if="targetVenue['publicHolidays'] == ''" class="fst-italic">
                                             No information about public holiday opening hours!
                                         </div>
@@ -2688,24 +2686,24 @@
 
                                 <!-- Section Header -->
                                 <div class="square-inline">
-                                    <h5 class="mr-auto"> Reservation Details </h5>
+                                    <h5 class="mr-auto mobile-fs-6 fw-bold"> Reservation Details </h5>
                                 </div>
 
                                 <!-- Buttons -->
                                 <div class="pb-1" v-if="selfView || powerView">
                                     <!-- [if] not editing -->
-                                    <button v-if="!editReservationDetails" type="button" class="btn btn-warning rounded-0 reverse-clickable-text" @click="editReservationDetails = true">
+                                    <button v-if="!editReservationDetails" type="button" class="btn btn-warning rounded-0 reverse-clickable-text  mobile-rating-smaller-text-2" @click="editReservationDetails = true">
                                         Edit
                                     </button>
                                     
                                     <!-- [else] if editing -->
-                                    <button v-if="editReservationDetails" type="button" class="btn btn-warning rounded-0 reverse-clickable-text ms-1" @click="newReservationDetails = targetVenue['reservationDetails']">
+                                    <button v-if="editReservationDetails" type="button" class="btn btn-warning rounded-0 reverse-clickable-text ms-1  mobile-rating-smaller-text-2" @click="newReservationDetails = targetVenue['reservationDetails']">
                                         Reset
                                     </button>
-                                    <button v-if="editReservationDetails" type="button" class="btn btn-success rounded-0 reverse-clickable-text ms-1" @click="saveReservationDetails">
+                                    <button v-if="editReservationDetails" type="button" class="btn btn-success rounded-0 reverse-clickable-text ms-1  mobile-rating-smaller-text-2" @click="saveReservationDetails">
                                         Save
                                     </button>
-                                    <button v-if="editReservationDetails" type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1" @click="editReservationDetails = false">
+                                    <button v-if="editReservationDetails" type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1  mobile-rating-smaller-text-2" @click="editReservationDetails = false">
                                         Cancel
                                     </button>
                                     
@@ -2718,8 +2716,8 @@
 
                                 <!-- Section Content (View Mode) -->
                                 <div v-else>
-                                    <div class="text-body-secondary">
-                                        <div v-if="targetVenue['reservationDetails'] == ''" class="fst-italic">
+                                    <div class="text-body-secondary mobile-rating-smaller-text-2">
+                                        <div v-if="targetVenue['reservationDetails'] == ''" class="fst-italic  mobile-rating-smaller-text-2">
                                             No reservation details available!
                                         </div>
                                         <div v-else>

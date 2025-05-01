@@ -226,6 +226,22 @@ body {
   font-weight: bold;
 }
 
+.btn-read-more {
+  background-color: #f0b358;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 12px;
+  /* box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.4) !important; */
+  color: black;
+  font-weight: bold;
+  transition: background-color 0.3s transform 0.5s;
+}
+.btn-read-more:hover {
+  background-color: #fdd497;
+  color:black;
+  transform: scale(1.05);
+}
+
 .primary-square {
   color: black; /*tzh changed whitesmoke to black*/
   background-color: #f0b258; /* color changed by TZH from #495264 to #F0B258 */
@@ -244,14 +260,16 @@ body {
 .primary-square-green {
   color: whitesmoke;
   background-color: #027562; /* added by tzh for left side bar on homepage */
+  box-shadow: rgba(0, 0, 0, 0.4) 4px 4px 4px;  /* added by klc to apply to all pages */
 }
 
 .primary-square-green-outline {
   color: black;
   background-color: white; /* added by tzh for left side bar on homepage*/
   border-radius: 10px; /*  tzh changed from 30px to 10px*/
-  border: 2px solid #027562;
+  border: 0.15rem solid #027562; /* added by klc to apply to all pages */
   font-weight: bold;
+  box-shadow: rgba(0, 0, 0, 0.4) 4px 4px 4px;
 }
 
 .primary-square-btn-green {
@@ -1126,9 +1144,9 @@ button.primary-square:hover {
 }
 
 .inactive-toggle-button:hover {
-  color: #495264 !important; /* Active state text color */
+  color: #83a9e8 !important; /* Active state text color */
   background-color: white !important; /* Active state background color */
-  border-bottom: 3px solid #8593af !important;
+  border-bottom: 3px solid #83a9e8 !important;
   border-radius: 0px !important;
   font-weight: bold !important;
 }

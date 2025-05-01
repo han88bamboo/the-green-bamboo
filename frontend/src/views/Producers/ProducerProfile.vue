@@ -36,7 +36,7 @@
   <div class="container pt-5 ps-lg-0 mobile-pt-4" v-if="dataLoaded">
     <div class="row">
       <!-- producer information -->
-      <div class="col-xl-9 col-12 no-margin p-lg-0">
+      <div class="col-xl-9 col-12 px-3 px-lg-4"> <!-- KAI Added Impt margins for left columm -->
         <!-- header -->
         <div class="row">
           <!-- image -->
@@ -108,7 +108,7 @@
           </div>
           <!-- details -->
           <div
-            class="col-lg-9 col-12 text-start padding-for-followthisbusinessbutton-large-screen mobile-col-7 mobile-ps-0 mobile-pe-0"
+            class="col-lg-9 col-12 text-start ps-lg-5 ps-1 mobile-col-7" 
           >
             <div class="container text-start pe-lg-0">
               <!-- country -->
@@ -153,7 +153,7 @@
                       </button>
                     </div>
                     <!-- edit profile -->
-                    <div class="col d-grid no-padding">
+                    <div class="col d-grid">
                       <!-- [if] not editing -->
                       <button
                         v-if="editing == false"
@@ -198,7 +198,7 @@
                     v-model="edit_producerName"
                   />
                 </div>
-                <div v-else class="ps-0 pe-0">
+                <div v-else class="ps-0 pe-1">
                   <h3 class="text-body-secondary mobile-view-hide">
                     <b>{{ specified_producer["producerName"] }}</b>
                   </h3>
@@ -358,10 +358,10 @@
               <div
                 v-else
                 class="row"
-                style="margin-top: 4.5rem; margin-left: -1.4rem"
+                style="margin-top: 1rem; margin-left: -1.4rem"
               >
                 <div class="col-12">
-                  <p class="text-body-secondary fs-6 mb-0">
+                  <p class="text-body-secondary mobile-rating-smaller-text-2 fs-6 mb-0">
                     <span v-if="specified_producer.website">
                       <strong>Website:&nbsp;</strong
                       ><a :href="specified_producer.website" target="_blank">{{
@@ -375,141 +375,91 @@
           </div>
         </div>
 
-        <!-- more information (expressions, reviews) -->
+        <!-- Info + Buttons (Responsive Layout) -->
         <div class="row mt-3 mobile-mt-1">
-          <div class="col-7 d-flex justify-content-start mobile-pe-0">
-            <div
-              v-if="specified_producer.yearFounded"
-              class="col-6 col-lg-3 text-start mobile-view-hide text-color-black"
-            >
-              <h5 class="text-body-secondary" style="margin-bottom: 0">
-                <b> {{ specified_producer["yearFounded"] }} </b>
+          <!-- Info Fields (7 columns desktop, full width mobile) -->
+          <div class="col-12 col-lg-7 d-flex flex-wrap justify-content-start mobile-pe-0">
+            <!-- Year Founded -->
+            <div v-if="specified_producer.yearFounded" class="col-3 text-start text-color-black">
+              <h5 class="mobile-rating-smaller-text text-body-secondary rating-text mb-0">
+                <b>{{ specified_producer["yearFounded"] }}</b>
               </h5>
-              <p class="mb-1"><u> Year Founded </u></p>
+              <p class="mb-2 mobile-rating-smaller-text-2"><u>Year Founded</u></p>
             </div>
 
-            <div
-              v-if="specified_producer.activeStatus"
-              class="col-6 col-lg-3 text-start mobile-view-hide text-color-black"
-            >
-              <h5
-                class="text-body-secondary text-capitalize"
-                style="margin-bottom: 0"
-              >
-                <b> {{ specified_producer["activeStatus"] }} </b>
+            <!-- Active Status -->
+            <div v-if="specified_producer.activeStatus" class="col-3 text-start text-color-black">
+              <h5 class="mobile-rating-smaller-text text-body-secondary rating-text mb-0" style="text-transform: capitalize;">
+                <b>{{ specified_producer["activeStatus"] }}</b>
               </h5>
-              <p class="mb-1"><u> Status </u></p>
+              <p class="mb-2 mobile-rating-smaller-text-2"><u>Status</u></p>
             </div>
 
-            <div
-              v-if="
-                specified_producer.openForTours !== null &&
-                specified_producer.openForTours !== undefined
-              "
-              class="col-6 col-lg-3 text-start mobile-view-hide text-color-black"
-            >
-              <h5
-                class="text-body-secondary text-capitalize"
-                style="margin-bottom: 0"
-              >
-                <b>
-                  {{
-                    specified_producer["openForTours"] === true ? "Yes" : "No"
-                  }}
-                </b>
+            <!-- Open for Tours -->
+            <div v-if="specified_producer.openForTours !== null && specified_producer.openForTours !== undefined"
+              class="col-3 text-start text-color-black">
+              <h5 class="mobile-rating-smaller-text text-body-secondary rating-text mb-0">
+                <b>{{ specified_producer["openForTours"] === true ? "Yes" : "No" }}</b>
               </h5>
-              <p class="mb-1"><u> Open for Tours?</u></p>
+              <p class="mb-2 mobile-rating-smaller-text-2"><u>Open for Tours?</u></p>
             </div>
 
-            <div
-              v-if="specified_producer.owner"
-              class="col-6 col-lg-3 text-start mobile-view-hide text-color-black"
-            >
-              <h5 class="text-body-secondary" style="margin-bottom: 0">
-                <b> {{ specified_producer["owner"] }} </b>
+            <!-- Owner -->
+            <div v-if="specified_producer.owner" class="col-3 text-start text-color-black">
+              <h5 class="mobile-rating-smaller-text text-body-secondary rating-text mb-0">
+                <b>{{ specified_producer["owner"] }}</b>
               </h5>
-              <p class="mb-1"><u> Owner </u></p>
+              <p class="mb-2 mobile-rating-smaller-text-2"><u>Owner</u></p>
             </div>
           </div>
 
-          <!-- follow this business -->
-          <div
-            class="col-5 justify-content-end padding-for-followthisbusinessbutton-large-screen"
-            v-if="userType == 'user'"
-          >
-            <div v-if="!following" class="d-grid gap-2">
-              <button
-                class="btn primary-btn-less-round-blue btn-lg mobile-view-show fs-6"
-                @click="editFollow('follow')"
-                style="font-weight: bold"
-              >
-                + Follow
-              </button>
-              <!--tzh added -blue -->
-              <button
-                class="btn primary-btn-less-round-blue btn-lg mobile-view-hide"
-                @click="editFollow('follow')"
-                style="font-weight: bold"
-              >
-                <!--tzh added -blue -->
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="25"
-                  height="25"
-                  fill="currentColor"
-                  class="bi bi-plus"
-                  viewBox="0 0 16 20"
-                >
-                  <path
-                    d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"
-                  />
-                </svg>
-                Follow this business
-              </button>
-            </div>
-            <div v-else class="d-grid gap-2">
-              <button
-                class="btn primary-btn-less-round-blue btn-lg"
-                @click="editFollow('unfollow')"
-                style="font-weight: bold"
-              >
-                <!--tzh changed primary-btn-outline-less-round to primary-btn-less-round-blue -->
-                Following
-              </button>
-            </div>
+          <!-- Buttons (5 columns desktop, full width mobile) -->
+          <div class="col-12 col-lg-5 d-flex gap-2 justify-content-lg-end justify-content-start mt-3 mt-lg-0">
+            <!-- Follow Button -->
+            <button
+              v-if="!following"
+              class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
+              @click="editFollow('follow')"
+              style="font-weight: bold;"
+            >
+              + Follow
+            </button>
+            <button
+              v-else
+              class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
+              @click="editFollow('unfollow')"
+              style="font-weight: bold; background-color: rgb(249, 115, 106);"
+            >
+              Following
+            </button>
+
+            <!-- Review Button -->
+            <button
+              v-if="!inEdit"
+              class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
+              data-bs-toggle="modal"
+              data-bs-target="#reviewModal"
+              style="font-weight: bold; background-color: rgb(249, 115, 106);"
+            >
+              Review Producer
+            </button>
+            <button
+              v-else
+              class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
+              style="font-weight: bold; background-color: rgb(249, 115, 106);"
+            >
+              Reviewed!
+            </button>
           </div>
         </div>
-        <!-- review this business below -->
-        <div class="row mt-3 mobile-mt-1">
-          <!-- empty space -->
-          <div class="col-7 d-flex justify-content-start mobile-pe-0">
-            
-          </div>
-          <!-- review this business button -->
-          <div
-            class="col-5 justify-content-end padding-for-followthisbusinessbutton-large-screen"
-            v-if="userType == 'user' && userID !== 'defaultUser'"
-          >
-          <div class="d-grid gap-2">
-          <button v-if="!inEdit"
-            class="btn primary-btn-less-round-blue btn-lg" 
-            data-bs-toggle="modal" 
-            data-bs-target="#reviewModal" 
-            style="font-weight: bold;"
-          > 
-            Review this Business
-          </button>  
-          <button v-else
-            class="btn primary-btn-less-round-blue btn-lg" 
-          > 
-            Business Reviewed
-          </button> 
-          </div> 
-          </div>
-        </div>   
+
+
+
+        <!-- backspace to here Kai -->
+
         <!--review this business above-->     
         <div class="row mt-3 mobile-mt-1">
-          <div class="col-7 d-flex justify-content-start mobile-pe-0">
+          <div class="col-12 d-flex justify-content-start mobile-pe-0">
             <!-- toggle latest updates-->
             <button
               v-if="showListings == false && showTours == false"
@@ -1525,8 +1475,8 @@
                 </p>
               </div>
             </div>
-            <div class="row text-center py-2" style="background-color: #ddc8a9">
-              <p class="fw-bold fs-3 pt-3" style="font-style: italic">
+            <div class="row text-center" style="background-color: #ddc8a9; margin:10px">
+              <p class="fw-bold fs-4 mobile-fs-6 pt-3">
                 Do you own this business?
               </p>
               <p>
@@ -1864,7 +1814,7 @@
                       class="row text-center mx-1 py-2 default-text-no-background"
                       style="background-color: #ddc8a9"
                     >
-                      <p class="fw-bold fs-3 pt-3" style="font-style: italic">
+                      <p class="fw-bold fs-4 mobile-fs-5" style="padding: 10px;">
                         Do you own this business?
                       </p>
                       <p>
@@ -1876,7 +1826,7 @@
                       <!-- button -->
                       <button
                         type="submit"
-                        class="col-8 btn secondary-btn-border-thick mb-3"
+                        class="btn btn-read-more mb-3"
                         @click="claimProducerAccount"
                       >
                         Claim This Business
@@ -1888,34 +1838,38 @@
                 </div>
               </div>
             </div>
+            <hr />
           </div>
-          <hr />
-          <!-- most popular (highest ratings) -->
-          <ListingRowDisplayProducerProfile
-            :listingArr="mostPopular"
-            displayName="Most Popular"
-            :user="user"
-            :listing="listing"
-            @icon-clicked="handleIconClick"
-          />
+          
+          
+          
+            <!-- most popular (highest ratings) -->
+            <ListingRowDisplayProducerProfile
+              :listingArr="mostPopular"
+              displayName="Most Popular"
+              :user="user"
+              :listing="listing"
+              @icon-clicked="handleIconClick"
+            />
 
-          <!-- most discussed (most number of reviews) -->
-          <ListingRowDisplayProducerProfile
-            :listingArr="mostDiscussed"
-            displayName="Most Discussed"
-            :user="user"
-            :listing="listing"
-            @icon-clicked="handleIconClick"
-          />
+            <!-- most discussed (most number of reviews) -->
+            <ListingRowDisplayProducerProfile
+              :listingArr="mostDiscussed"
+              displayName="Most Discussed"
+              :user="user"
+              :listing="listing"
+              @icon-clicked="handleIconClick"
+            />
 
-          <!-- recently added -->
-          <ListingRowDisplayProducerProfile
-            :listingArr="recentlyAdded"
-            displayName="Recently Added"
-            :user="user"
-            :listing="listing"
-            @icon-clicked="handleIconClick"
-          />
+            <!-- recently added -->
+            <ListingRowDisplayProducerProfile
+              :listingArr="recentlyAdded"
+              displayName="Recently Added"
+              :user="user"
+              :listing="listing"
+              @icon-clicked="handleIconClick"
+            />
+          <br>
         </div>
         <!-- end of main page (hide all listings) -->
 
@@ -3146,7 +3100,7 @@
       <!-- end of producer information -->
 
       <!-- view analytics & q&a for producer & 88 bamboo's deepdive -->
-      <div class="col-xl-3 col-12 ps-lg-0">
+      <div class="col-xl-3 col-12">
         <div class="row">
           <!-- view analytics -->
           <div v-if="correctProducer">
@@ -3470,10 +3424,10 @@
               <!-- [else] account is not claimed -->
               <div v-else>
                 <div
-                  class="row text-center mx-1 py-2 default-text-no-background"
-                  style="background-color: #ddc8a9"
+                  class="row text-center"
+                  style="background-color: #ddc8a9; margin:10px"
                 >
-                  <p class="fw-bold fs-3 pt-3" style="font-style: italic">
+                  <p class="fw-bold fs-4 mobile-fs-6 pt-3">
                     Do you own this business?
                   </p>
                   <p>
