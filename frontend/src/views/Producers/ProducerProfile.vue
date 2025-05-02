@@ -979,7 +979,7 @@
 
             <!-- no other updates -->
             <div v-else>
-              <p class="fs-5 fst-italic m-0 text-start">
+              <p class="text-start fs-6 mobile-rating-smaller-text-2 fst-italic m-1 pb-2">
                 {{ specified_producer["producerName"] }} has not posted any
                 updates!
               </p>
@@ -1267,31 +1267,30 @@
               </div>
             </div>
             <div class="row text-center" style="background-color: #ddc8a9; margin:10px">
-              <p class="fw-bold fs-4 mobile-fs-6 pt-3">
+              <p class="fs-5 mobile-fs-6 fw-bold mt-3 mb-2">
                 Do you own this business?
               </p>
               <p>
                 Sign up for a producer account to share your latest updates with
                 your fans!
               </p>
-              <!-- spacer -->
-              <div class="col-4"></div>
               <!-- button -->
+              <div class="col-4 mobile-col-2"></div>
               <button
                 type="submit"
-                class="col-4 btn secondary-btn-border-thick mb-3"
+                class="col-4 mobile-col-8 btn secondary-btn mb-4"
+                style="font-weight:bold"
                 @click="claimProducerAccount"
               >
                 Claim This Business
               </button>
-              <!-- spacer -->
-              <div class="col-4"></div>
+              <div class="col-4 mobile-col-2"></div>
             </div>
           </div>
 
           <hr />
 
-          <!-- view Q&A for mobile -->
+          <!-- VIEW Q&A FOR MOBILE -->
           <div class="row mobile-view-show ps-2 pe-2">
             <!-- Toggle Button active-toggle-producer-QnA-->
             <button
@@ -1320,7 +1319,7 @@
             >
               Q&As for {{ specified_producer["producerName"] }} ↓
             </button>
-            <!-- show Q&A when button is clicked -->
+            <!-- show Q&A when button is clicked MOBILE VIEW  -->
             <div class="collapse pe-0 ps-0" id="collapseQnA">
               <!-- q&a -->
               <br />
@@ -1330,8 +1329,8 @@
                   <!-- header text -->
                   <div class="square-inline text-start">
                     <!-- [if] user type producer -->
-                    <div v-if="correctProducer" class="mr-auto">
-                      <h4>Q&A for You!</h4>
+                    <div v-if="correctProducer" class="mr-auto ms-1">
+                      <h5 style="font-weight: bold">Q&A for You!</h5>
                       <div v-if="claimStatus">
                         <router-link
                           :to="{
@@ -1348,19 +1347,21 @@
                       </div>
                     </div>
                     <!-- [else] user type is NOT producer -->
-                    <h4 v-else class="mr-auto">
+                    <h5 v-else class="mr-auto ms-1"  style="font-weight: bold">
                       Q&As for {{ specified_producer["producerName"] }}
-                    </h4>
+                    </h5>
                   </div>
 
-                  <!-- [if] account is claimed -->
+                  <!-- [if] account is claimed MOBILE VIEW -->
                   <div v-if="claimStatus">
                     <!-- show buttons for answered & unanswered questions -->
                     <div v-if="correctProducer" class="row text-center px-2">
+                      
                       <div class="col-6 d-grid gap-0 no-padding">
                         <button
                           type="button"
                           class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text"
+                          style="background-color:#1c9e88"
                         >
                           <a
                             class="reverse-clickable-text"
@@ -1374,6 +1375,7 @@
                         <button
                           type="button"
                           class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text"
+                          style="background-color:#1c9e88"
                         >
                           <a
                             class="reverse-clickable-text"
@@ -1383,12 +1385,13 @@
                           </a>
                         </button>
                       </div>
+                      
                     </div>
                     <!-- body -->
                     <div class="text-start pt-2">
                       <!-- responses to q&a -->
-                      <div id="carouselExample" class="carousel slide">
-                        <div class="carousel-inner px-4">
+                      <div id="carouselMobileQnA" class="carousel slide">
+                        <div class="carousel-inner px-1">
                           <!-- [if] user type is producer -->
                           <div v-if="correctProducer">
                             <!-- show answered questions -->
@@ -1399,7 +1402,7 @@
                                 v-bind:key="qa.id"
                                 v-bind:class="{ active: index === 0 }"
                               >
-                                <p>
+                                <p class="mb-2">
                                   <b> Q: {{ qa["question"] }} </b>
                                 </p>
                                 <!-- [if] not editing -->
@@ -1467,7 +1470,7 @@
                                 v-bind:key="qa.id"
                                 v-bind:class="{ active: index === 0 }"
                               >
-                                <p>
+                                <p class="mb-2">
                                   <b> Q: {{ qa["question"] }} </b>
                                 </p>
                                 <div class="input-group centered">
@@ -1509,10 +1512,10 @@
                               v-bind:class="{ active: index === 0 }"
                             >
                               <div>
-                                <p>
+                                <p class="mb-2">
                                   <b> Q: {{ qa["question"] }} </b>
                                 </p>
-                                <p>A: {{ qa["answer"] }}</p>
+                                <p class="mb-2">A: {{ qa["answer"] }}</p>
                               </div>
                               <div class="input-group centered pt-2">
                                 <textarea
@@ -1570,60 +1573,58 @@
                             </div>
                           </div>
                         </div>
-                        <button
-                          class="carousel-control-prev"
-                          type="button"
-                          data-bs-target="#carouselExample"
-                          data-bs-slide="prev"
-                        >
-                          <span
-                            class="carousel-control-prev-icon"
-                            aria-hidden="true"
-                          ></span>
-                          <span class="visually-hidden">Previous</span>
-                        </button>
-                        <button
-                          class="carousel-control-next"
-                          type="button"
-                          data-bs-target="#carouselExample"
-                          data-bs-slide="next"
-                        >
-                          <span
-                            class="carousel-control-next-icon"
-                            aria-hidden="true"
-                          ></span>
-                          <span class="visually-hidden">Next</span>
-                        </button>
+                        <div class="d-flex justify-content-center gap-3">
+                          <button
+                            class="btn btn-sm"
+                            type="button"
+                            data-bs-target="#carouselMobileQnA"
+                            data-bs-slide="next"
+                            widt
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="white" class="bi bi-arrow-right" viewBox="0 0 16 16">
+                              <path fill-rule="evenodd" d="M10.146 4.646a.5.5 0 0 1 .708.708L7.707 8l3.147 2.646a.5.5 0 0 1-.708.708l-3.5-3a.5.5 0 0 1 0-.708l3.5-3z"/>
+                            </svg>
+                          </button>
+                          <button
+                            class="btn btn-sm"
+                            type="button"
+                            data-bs-target="#carouselMobileQnA"
+                            data-bs-slide="prev"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="white" class="bi bi-arrow-left" viewBox="0 0 16 16">
+                              <path fill-rule="evenodd" d="M5.854 4.646a.5.5 0 0 0-.708.708L8.293 8l-3.147 2.646a.5.5 0 0 0 .708.708l3.5-3a.5.5 0 0 0 0-.708l-3.5-3z"/>
+                            </svg>
+                          </button>
+                        </div>
                       </div>
                     </div>
-                    <div class="py-1"></div>
                   </div>
 
-                  <!-- [else] account is not claimed -->
+                  <!-- [else] account is not claimed MOBILE VIEW -->
                   <div v-else>
                     <div
                       class="row text-center mx-1 py-2 default-text-no-background"
                       style="background-color: #ddc8a9"
                     >
-                      <p class="fw-bold fs-4 mobile-fs-5" style="padding: 10px;">
+                      <p class="fw-bold fs-4 mobile-fs-6 mb-1" style="padding: 10px;">
                         Do you own this business?
                       </p>
                       <p>
-                        Sign up for a producer account to answer latest
-                        questions from your fans!
+                        Sign up for a producer account to answer latest questions from your fans!
                       </p>
                       <!-- spacer -->
-                      <div class="col-2"></div>
+                      <div class="col-1"></div>
                       <!-- button -->
                       <button
                         type="submit"
-                        class="btn btn-read-more mb-3"
+                        class="btn col-10 secondary-btn mb-3"
+                        style="font-weight:bold"
                         @click="claimProducerAccount"
                       >
                         Claim This Business
                       </button>
                       <!-- spacer -->
-                      <div class="col-2"></div>
+                      <div class="col-1"></div>
                     </div>
                   </div>
                 </div>
@@ -2587,7 +2588,9 @@
               Change/Reset Password
             </button>
           </div>
-          <!-- q&a -->
+          
+          <!-- VIEW Q&A DESKTOP VIEW -->
+          
           <div class="col-xl-12 col-lg-4 col-md-6 col-12 mobile-view-hide">
             <div class="square primary-square-green rounded p-3 mb-3">
               <!--tzh added -green -->
@@ -2595,7 +2598,7 @@
               <div class="square-inline text-start">
                 <!-- [if] user type producer -->
                 <div v-if="correctProducer" class="mr-auto">
-                  <h4>Q&A for You!</h4>
+                  <h4 style="font-weight: bold;">Q&A for You!</h4>
                   <div v-if="claimStatus">
                     <router-link
                       :to="{ path: '/Producers/ProducersQA/' + producer_id }"
@@ -2610,19 +2613,21 @@
                   </div>
                 </div>
                 <!-- [else] user type is NOT producer -->
-                <h4 v-else class="mr-auto">
+                <h4 v-else class="mr-auto"  style="font-weight: bold">
                   Q&As for {{ specified_producer["producerName"] }}
                 </h4>
               </div>
 
-              <!-- [if] account is claimed -->
+              <!-- [if] account is claimed DESKTOP VIEW -->
               <div v-if="claimStatus">
                 <!-- show buttons for answered & unanswered questions -->
                 <div v-if="correctProducer" class="row text-center px-2">
+                  
                   <div class="col-6 d-grid gap-0 no-padding">
                     <button
                       type="button"
                       class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text"
+                      style="background-color:#1c9e88"
                     >
                       <a
                         class="reverse-clickable-text"
@@ -2636,6 +2641,7 @@
                     <button
                       type="button"
                       class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text"
+                      style="background-color:#1c9e88"
                     >
                       <a
                         class="reverse-clickable-text"
@@ -2645,12 +2651,13 @@
                       </a>
                     </button>
                   </div>
+                  
                 </div>
                 <!-- body -->
                 <div class="text-start pt-2">
                   <!-- responses to q&a -->
-                  <div id="carouselExample" class="carousel slide">
-                    <div class="carousel-inner px-4">
+                  <div id="carouselDesktopQnA" class="carousel slide">
+                    <div class="carousel-inner px-1">
                       <!-- [if] user type is producer -->
                       <div v-if="correctProducer">
                         <!-- show answered questions -->
@@ -2661,7 +2668,7 @@
                             v-bind:key="qa.id"
                             v-bind:class="{ active: index === 0 }"
                           >
-                            <p>
+                            <p class="mb-2">
                               <b> Q: {{ qa["question"] }} </b>
                             </p>
                             <!-- [if] not editing -->
@@ -2705,7 +2712,7 @@
                             <!-- spacer -->
                             <div class="mt-2"></div>
                             <p
-                              v-if="editingQA == false || editingQAID != qa.id"
+                              v-if="editingQA == false || editingQAID != qa.id" class="mb-1"
                             >
                               A: {{ qa["answer"] }}
                             </p>
@@ -2727,7 +2734,7 @@
                             v-bind:key="qa.id"
                             v-bind:class="{ active: index === 0 }"
                           >
-                            <p>
+                            <p class="mb-2">
                               <b> Q: {{ qa["question"] }} </b>
                             </p>
                             <div class="input-group centered">
@@ -2827,60 +2834,56 @@
                         </div>
                       </div>
                     </div>
-                    <button
-                      class="carousel-control-prev"
-                      type="button"
-                      data-bs-target="#carouselExample"
-                      data-bs-slide="prev"
-                    >
-                      <span
-                        class="carousel-control-prev-icon"
-                        aria-hidden="true"
-                      ></span>
-                      <span class="visually-hidden">Previous</span>
-                    </button>
-                    <button
-                      class="carousel-control-next"
-                      type="button"
-                      data-bs-target="#carouselExample"
-                      data-bs-slide="next"
-                    >
-                      <span
-                        class="carousel-control-next-icon"
-                        aria-hidden="true"
-                      ></span>
-                      <span class="visually-hidden">Next</span>
-                    </button>
+                    <div class="d-flex justify-content-center gap-3">
+                      <button
+                        class="btn btn-sm"
+                        type="button"
+                        data-bs-target="#carouselDesktopQnA"
+                        data-bs-slide="next"
+                        widt
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="white" class="bi bi-arrow-right" viewBox="0 0 16 16">
+                          <path fill-rule="evenodd" d="M10.146 4.646a.5.5 0 0 1 .708.708L7.707 8l3.147 2.646a.5.5 0 0 1-.708.708l-3.5-3a.5.5 0 0 1 0-.708l3.5-3z"/>
+                        </svg>
+                      </button>
+                      <button
+                        class="btn btn-sm"
+                        type="button"
+                        data-bs-target="#carouselDesktopQnA"
+                        data-bs-slide="prev"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="white" class="bi bi-arrow-left" viewBox="0 0 16 16">
+                          <path fill-rule="evenodd" d="M5.854 4.646a.5.5 0 0 0-.708.708L8.293 8l-3.147 2.646a.5.5 0 0 0 .708.708l3.5-3a.5.5 0 0 0 0-.708l-3.5-3z"/>
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <div class="py-1"></div>
               </div>
 
-              <!-- [else] account is not claimed -->
+              <!-- [else] account is not claimed DESKTOP VIEW -->
               <div v-else>
                 <div
-                  class="row text-center"
-                  style="background-color: #ddc8a9; margin:10px"
+                  class="row text-center py-3 m-2 default-text-no-background"
+                  style="background-color: #ddc8a9"
                 >
-                  <p class="fw-bold fs-4 mobile-fs-6 pt-3">
-                    Do you own this business?
+                  <p class="fs-6 fw-bold">
+                  Do you own this business?
                   </p>
-                  <p>
-                    Sign up for a producer account to answer latest questions
-                    from your fans!
+                  <p style="font-weight: normal">
+                    Sign up for a business account to answer latest questions from your fans!
                   </p>
-                  <!-- spacer -->
-                  <div class="col-2"></div>
-                  <!-- button -->
+                  <!-- button --> <!-- mb-2 is for spacing -->
+                  <div class="col-1"></div>
                   <button
                     type="submit"
-                    class="col-8 btn secondary-btn-border-thick mb-3"
+                    class="col-10 btn secondary-btn mb-2" 
+                    style="font-weight:bold"
                     @click="claimProducerAccount"
                   >
                     Claim This Business
                   </button>
-                  <!-- spacer -->
-                  <div class="col-2"></div>
+                  <div class="col-1"></div>
                 </div>
               </div>
             </div>
@@ -2890,7 +2893,7 @@
               <!--tzh changed secondary-square to primary-square-green-outline-->
 
               <!-- Header -->
-              <h4 class="text-start">Location</h4>
+              <h4 class="text-start" style="font-weight: bold">Location</h4>
               <div class="pb-1 text-start" v-if="correctProducer || isAdmin">
                 <!-- [if] not editing -->
                 <button
@@ -2943,7 +2946,7 @@
 
               <!-- Section Content (View Mode) -->
               <div>
-                <p class="text-start mb-1 default-text-no-background mobile-rating-smaller-text-2">
+                <p class="text-start mb-1 default-text-no-background mobile-fs-6">
                   {{ specified_producer["location"] }}
                 </p>
               </div>
@@ -2969,32 +2972,31 @@
             <div class="square primary-square-green-outline rounded p-3 mb-3">
               <!-- Header -->
               <div class="square-inline text-start">
-                <h4 class="mr-auto">Opening Hours and Reservation Details</h4>
+                <h4 class="mr-auto" style="font-weight: bold">Opening Hours and Reservation Details</h4>
               </div>
 
               <!-- Opening Hours Lock Message (producer Unclaimed) -->
               <div
-                class="row text-center py-2 mx-1 default-text-no-background"
+                class="row text-center py-2 m-2 default-text-no-background"
                 v-if="!specified_producer['claimStatus']"
                 style="background-color: #ddc8a9"
               >
-                <p class="fs-3 fw-bold fst-italic mt-3">
+                <p class="fs-6 fw-bold my-2">
                   Do you own this business?
                 </p>
-                <p>
-                  Sign up for a venue account to share your opening hours and
-                  reservation details with your fans!
+                <p style="font-weight: normal">
+                  Sign up for a brand account to share your opening hours and reservation details with your fans!
                 </p>
-
-                <div class="col-lg-2 col-1"></div>
+                <div class="col-1"></div>
                 <button
                   type="submit"
-                  class="col-lg-8 col-10 btn secondary-btn-border-thick mb-3"
+                  class="col-10 btn secondary-btn mb-2"
+                  style="font-weight: bold"
                   @click="claimProducerAccount"
                 >
                   Claim This Business
                 </button>
-                <div class="col-lg-2 col-1"></div>
+                <div class="col-1"></div>
               </div>
 
               <!-- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -->

@@ -104,12 +104,13 @@
                                     <div class="d-grid no-padding text-end" v-if="!selfView && !powerView">
 
                                         <!-- Claim Venue -->
-                                        <p v-if="!targetVenue['claimStatus']" class="text-body-secondary no-margin text-decoration-underline fst-italic" @click="claimVenueAccount"> Claim This Business </p>
+                                        <p v-if="!targetVenue['claimStatus']" class="text-body-secondary no-margin text-decoration-underline fst-italic" style="color: #027562" @click="claimVenueAccount"> Claim This Business </p>
                                         <p v-else class="text-body-secondary no-margin fw-bold fst-italic"> Verified Venue </p>
 
-                                        <!-- Report Menu Inaccuracy (Opens Modal) -->
+                                        <!-- Report Menu Inaccuracy (Opens Modal) 
                                         <p v-if="loggedIn && targetVenue['claimStatus']" class="text-body-secondary no-margin text-decoration-underline fst-italic" data-bs-toggle="modal" data-bs-target="#inaccurateModal"> Report Menu Inaccuracy </p>
                                         <p v-if="!loggedIn && targetVenue['claimStatus']" class="text-body-secondary no-margin text-decoration-underline fst-italic" @click="this.$router.push('/login');"> Report Menu Inaccuracy </p>
+                                        -->
                                     </div>
 
                                     <!-- [else] logged in as viewed venue -->
@@ -347,7 +348,7 @@
                         class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2 "
                         data-bs-toggle="modal"
                         data-bs-target="#venueReviewModal"
-                        style="font-weight: bold; background-color:rgb(249, 115, 106);">
+                        style="font-weight: bold;">
                         Review Venue
                         </button>
                         <button
@@ -409,15 +410,15 @@
                     </div>
 
                     <!-- Latest Updates Lock Message (Venue Unclaimed) -->
-                    <div class="row text-center py-2 mx-1 default-text-no-background" v-if="!targetVenue['claimStatus']" style="background-color:#DDC8A9;">
-                        <p class="fs-3 fw-bold fst-italic mt-3" >
+                    <div class="row text-center py-2 m-3 default-text-no-background" v-if="!targetVenue['claimStatus']" style="background-color: rgb(221, 200, 169); margin: 10px;">
+                        <p class="fs-5 mobile-fs-6 fw-bold mt-3 mb-2" >
                             Do you own this business?
                         </p>
                         <p> Sign up for a venue account to share your latest updates with your fans! </p>
 
-                        <div class="col-lg-4 col-sm-3 col-2"></div>
-                        <button type="submit" class="col-lg-4 col-sm-6 col-8 btn secondary-btn-border-thick mb-3" @click="claimVenueAccount"> Claim This Business </button>
-                        <div class="col-lg-4 col-sm-3 col-2"></div>
+                        <div class="col-4 mobile-col-2"></div>
+                        <button type="submit" class="col-4 mobile-col-8 btn secondary-btn mb-3" style="font-weight:bold"  @click="claimVenueAccount"> Claim This Business </button>
+                        <div class="col-4 mobile-col-2"></div>
                     </div>
 
                     <!-- Latest Update Information -->
@@ -737,32 +738,32 @@
                                         <!-- Buttons for Answered/Unanswered Questions -->
                                         <div v-if="selfView" class="row text-center px-2">
                                             <div class="col-6 d-grid gap-0 no-padding">
-                                                <button type="button" class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text" @click="qaMode = 'answered'">
+                                                <button type="button" class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text" style="background-color: rgb(28, 158, 136)" @click="qaMode = 'answered'">
                                                     Answered
                                                 </button>
                                             </div>
                                             <div class="col-6 d-grid gap-0 no-padding">
-                                                <button type="button" class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text" @click="qaMode = 'unanswered'">
+                                                <button type="button" class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text" style="background-color: rgb(28, 158, 136)" @click="qaMode = 'unanswered'">
                                                     Unanswered
                                                 </button>
                                             </div>
                                         </div>
 
-                                        <!-- Q & A Lock Message (Venue Unclaimed) -->
+                                        <!-- Q & A Lock Message (Venue Unclaimed) DESKTOP VIEW ONLY -->
                                         <div class="row text-center py-2 mx-1 default-text-no-background" v-if="!targetVenue['claimStatus']" style="background-color:#DDC8A9;">
-                                            <p class="fs-3 fw-bold fst-italic mt-3" >
+                                            <p class="fw-bold fs-4 mobile-fs-6 mb-1" >
                                                 Do you own this business?
                                             </p>
                                             <p> Sign up for a venue account to answer questions from your fans! </p>
 
-                                            <div class="col-lg-2 col-1"></div>
-                                            <button type="submit" class="col-lg-8 col-10 btn secondary-btn-border-thick mb-3" @click="claimVenueAccount"> Claim This Business </button>
-                                            <div class="col-lg-2 col-1"></div>
+                                            <div class="col-1"></div>
+                                            <button type="submit" class="col-10 btn secondary-btn mb-2" style="font-weight:bold" @click="claimVenueAccount"> Claim This Business </button>
+                                            <div class="col-1"></div>
                                         </div>
 
                                         <!-- Q & A Content -->
                                         <div class="text-start pt-2 py-1" v-else>
-                                            <div id="carouselQA" class="carousel slide" data-bs-ride="carousel">
+                                            <div id="carouselMobileQA" class="carousel slide" data-bs-ride="carousel">
 
                                                 <div class="carousel-inner px-2">
 
@@ -856,12 +857,12 @@
                                                 </div>
 
                                                 <div class="d-flex justify-content-center pt-1">
-                                                    <button class="btn" type="button" data-bs-target="#carouselQA" data-bs-slide="next">
+                                                    <button class="btn" type="button" data-bs-target="#carouselMobileQA" data-bs-slide="next">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="white" class="bi bi-arrow-right" viewBox="0 0 16 16">
                                                             <path fill-rule="evenodd" d="M10.146 4.646a.5.5 0 0 1 .708.708L7.707 8l3.147 2.646a.5.5 0 0 1-.708.708l-3.5-3a.5.5 0 0 1 0-.708l3.5-3z"/>
                                                         </svg>
                                                     </button>
-                                                    <button class="btn me-2" type="button" data-bs-target="#carouselQA" data-bs-slide="prev">
+                                                    <button class="btn me-2" type="button" data-bs-target="#carouselMobileQA" data-bs-slide="prev">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="white" class="bi bi-arrow-left" viewBox="0 0 16 16">
                                                             <path fill-rule="evenodd" d="M5.854 4.646a.5.5 0 0 0-.708.708L8.293 8l-3.147 2.646a.5.5 0 0 0 .708.708l3.5-3a.5.5 0 0 0 0-.708l-3.5-3z"/>
                                                         </svg>
@@ -931,16 +932,16 @@
 
                     <!-- ------- START Menu Lock Message (Venue Unclaimed) ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
-                    <!-- Menu Lock Message (Venue Unclaimed) -->
-                    <div class="row text-center py-2 mx-1 default-text-no-background" v-if="!targetVenue['claimStatus']" style="background-color:#DDC8A9;">
-                        <p class="fs-3 fw-bold fst-italic mt-3" >
+                    <!-- Menu Lock Message (Venue Unclaimed) MOBILE VIEW ONLY -->
+                    <div class="row text-center py-2 m-3 default-text-no-background" v-if="!targetVenue['claimStatus']" style="background-color: rgb(221, 200, 169); margin: 10px;">
+                        <p class="fs-5 mobile-fs-6 fw-bold mt-3 mb-2" >
                             Do you own this business?
                         </p>
                         <p> Sign up for a venue account to share your bar's menu with your fans! </p>
 
-                        <div class="col-lg-4 col-sm-3 col-2"></div>
-                        <button type="submit" class="col-lg-4 col-sm-6 col-8 btn secondary-btn-border-thick mb-3" @click="claimVenueAccount"> Claim This Business </button>
-                        <div class="col-lg-4 col-sm-3 col-2"></div>
+                        <div class="col-4 mobile-col-2"></div>
+                        <button type="submit" class="col-4 mobile-col-8 btn secondary-btn mb-3" style="font-weight:bold" @click="claimVenueAccount"> Claim This Business </button>
+                        <div class="col-4 mobile-col-2"></div>
                     </div>
 
                     <!-- ------- END Menu Lock Message (Venue Unclaimed) / START Menu Header + Option Buttons ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
@@ -1160,7 +1161,7 @@
                             <!-- Section Name -->
                             <div class="col-12 d-grid mobile-px-0">
                                 <button type="button" class="btn secondary-btn-not-rounded fs-6 fw-bold text-start" data-bs-toggle="collapse" :data-bs-target="'#collapseMenuSection' + index" aria-expanded="true" :aria-controls="'collapseMenuSection' + index" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
-                                    {{ menuSection.sectionName }} ⬇
+                                    {{ menuSection.sectionName }} ↓
                                 </button>
                             </div>
                             <!--START MOBILE VIEW MENU LISTINGS-->
@@ -2345,32 +2346,32 @@
                             <!-- Buttons for Answered/Unanswered Questions -->
                             <div v-if="selfView" class="row text-center px-2">
                                 <div class="col-6 d-grid gap-0 no-padding">
-                                    <button type="button" class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text" @click="qaMode = 'answered'">
+                                    <button type="button" class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text" style="background-color: rgb(28, 158, 136)" @click="qaMode = 'answered'">
                                         Answered
                                     </button>
                                 </div>
                                 <div class="col-6 d-grid gap-0 no-padding">
-                                    <button type="button" class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text" @click="qaMode = 'unanswered'">
+                                    <button type="button" class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text" style="background-color: rgb(28, 158, 136)" @click="qaMode = 'unanswered'">
                                         Unanswered
                                     </button>
                                 </div>
                             </div>
 
-                            <!-- Q & A Lock Message (Venue Unclaimed) -->
-                            <div class="row text-center py-2 mx-1 default-text-no-background" v-if="!targetVenue['claimStatus']" style="background-color:#DDC8A9;">
-                                <p class="fs-3 fw-bold fst-italic mt-3" >
+                            <!-- Q & A Lock Message (Venue Unclaimed) DESKTOP ONLY -->
+                            <div class="row text-center py-3 m-2 default-text-no-background" v-if="!targetVenue['claimStatus']" style="background-color:#DDC8A9;">
+                                <p class="fs-6 fw-bold">
                                     Do you own this business?
                                 </p>
-                                <p> Sign up for a venue account to answer questions from your fans! </p>
+                                <p style="font-weight: normal"> Sign up for a venue account to answer questions from your fans! </p>
 
-                                <div class="col-lg-2 col-1"></div>
-                                <button type="submit" class="col-lg-8 col-10 btn secondary-btn-border-thick mb-3" @click="claimVenueAccount"> Claim This Business </button>
-                                <div class="col-lg-2 col-1"></div>
+                                <div class="col-1"></div>
+                                <button type="submit" class="col-10 btn secondary-btn mb-2" style="font-weight:bold"  @click="claimVenueAccount"> Claim This Business </button>
+                                <div class="col-1"></div>
                             </div>
 
                             <!-- Q & A Content -->
                             <div class="text-start pt-2 py-1" v-else>
-                                <div class="carousel slide" id="carouselQA">
+                                <div class="carousel slide" id="carouselDesktopQnA">
                                     <div class="carousel-inner px-1">
 
                                         <!-- [if] Self Venue -->
@@ -2436,7 +2437,7 @@
                                                         <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
                                                       </svg>
                                                     </span>
-                                                  </div>
+                                                </div>
                                                   
                                             </div>
 
@@ -2460,10 +2461,10 @@
 
                                     <!-- Carousel Control Buttons -->
                                     <div class="d-flex justify-content-center align-items-center gap-4 py-2">
-                                        <button type="button" data-bs-target="#carouselQA" data-bs-slide="prev" style="background: none; border: none; padding: 0; color: inherit;">
+                                        <button type="button" data-bs-target="#carouselDesktopQnA" data-bs-slide="prev" style="background: none; border: none; padding: 0; color: inherit;">
                                           <i class="bi bi-arrow-left" style="font-size: 18px;"></i>
                                         </button>
-                                        <button type="button" data-bs-target="#carouselQA" data-bs-slide="next" style="background: none; border: none; padding: 0; color: inherit;">
+                                        <button type="button" data-bs-target="#carouselDesktopQnA" data-bs-slide="next" style="background: none; border: none; padding: 0; color: inherit;">
                                           <i class="bi bi-arrow-right" style="font-size: 18px;"></i>
                                         </button>
                                     </div>
@@ -2565,15 +2566,15 @@
                             </div>
 
                             <!-- Opening Hours + Reservation Details Lock Message (Venue Unclaimed) -->
-                            <div class="row text-center py-2 mx-1 default-text-no-background" v-if="!targetVenue['claimStatus']" style="background-color:#DDC8A9;">
-                                <p class="fs-3 fw-bold fst-italic mt-3" >
+                            <div class="row text-center py-2 m-2 default-text-no-background" v-if="!targetVenue['claimStatus']" style="background-color:#DDC8A9;">
+                                <p class="fs-6 fw-bold my-2" >
                                     Do you own this business?
                                 </p>
-                                <p> Sign up for a venue account to share your opening hours and reservation details with your fans! </p>
+                                <p style="font-weight: normal;"> Sign up for a venue account to share your opening hours and reservation details with your fans! </p>
 
-                                <div class="col-lg-2 col-1"></div>
-                                <button type="submit" class="col-lg-8 col-10 btn secondary-btn-border-thick mb-3" @click="claimVenueAccount"> Claim This Business </button>
-                                <div class="col-lg-2 col-1"></div>
+                                <div class="col-1"></div>
+                                <button type="submit" class="col-10 btn secondary-btn mb-2" style="font-weight:bold" @click="claimVenueAccount"> Claim This Business </button>
+                                <div class="col-1"></div>
                             </div>
 
                             <!-- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -->

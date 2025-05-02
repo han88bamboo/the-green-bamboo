@@ -218,10 +218,10 @@
                       <template v-if="userType == 'user'">
                         <!-- Logged-In User -->
                         <button
-                          class="btn btn-danger text-white fw-semibold px-2"
+                          class="btn text-white fw-semibold px-2"
                           data-bs-toggle="modal"
                           data-bs-target="#reviewModal"
-                          style="border-radius: 0; height: 40px;"
+                          style="border-radius: 0; height: 40px; background-color: #FF3E31;"
                         >
                           {{ !inEdit ? 'Add Review' : 'Reviewed' }}
                         </button>
@@ -1127,13 +1127,14 @@
 
             <!-- Bookmark icon -->
             <div class="d-flex align-items-center ms-2 mobile-view-hide">
-              <BookmarkIcon
-                :user="user"
-                :listing="specified_listing"
-                :overlay="false"
-                size="40"
-                @icon-clicked="handleIconClick"
-              />
+              <button class="btn primary-btn-less-round-blue btn-lg" @icon-clicked="handleIconClick">
+                <BookmarkIcon
+                  :user="user"
+                  :listing="specified_listing"
+                  :overlay="false"
+                  size="24"
+                />
+              </button>
             </div>
           </div>
 

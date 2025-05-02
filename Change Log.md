@@ -514,3 +514,14 @@ Purpose of the changes:
  
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 2 May 
+
+Coder: Kai
+
+Purpose of the changes:
+(1) Cleaned up Q&A boxes for both Venue and Producers
+(2) Cleaned up "CLAIM THIS BUSINESS" lock boxes for both Venue and Producers
+ 
+Nature of the changes (frontend / backend / database):
+frontend
