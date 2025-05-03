@@ -60,6 +60,12 @@ body {
   text-decoration: none;
 }
 
+.default-clickable-text:hover {
+  color: #027562;
+  text-decoration: underline;
+  font-weight: bold;
+}
+
 .reverse-clickable-text {
   color: whitesmoke;
   text-decoration: none;
@@ -174,11 +180,14 @@ body {
   color: white;
   background-color: #FF3E31;
   border-radius: 10px;
+  transition: transform 0.4s ease;
 }
+
 .primary-btn-less-round-blue:hover {
   color: white;
   background-color: #e7291c;
   border-radius: 10px;
+  transform: scale(1.05)
 }
 
 .primary-btn-less-round-green {
@@ -217,6 +226,22 @@ body {
   font-weight: bold;
 }
 
+.btn-read-more {
+  background-color: #f0b358;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 12px;
+  /* box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.4) !important; */
+  color: black;
+  font-weight: bold;
+  transition: background-color 0.3s transform 0.5s;
+}
+.btn-read-more:hover {
+  background-color: #fdd497;
+  color:black;
+  transform: scale(1.05);
+}
+
 .primary-square {
   color: black; /*tzh changed whitesmoke to black*/
   background-color: #f0b258; /* color changed by TZH from #495264 to #F0B258 */
@@ -235,14 +260,16 @@ body {
 .primary-square-green {
   color: whitesmoke;
   background-color: #027562; /* added by tzh for left side bar on homepage */
+  box-shadow: rgba(0, 0, 0, 0.4) 4px 4px 4px;  /* added by klc to apply to all pages */
 }
 
 .primary-square-green-outline {
   color: black;
   background-color: white; /* added by tzh for left side bar on homepage*/
   border-radius: 10px; /*  tzh changed from 30px to 10px*/
-  border: 2px solid #027562;
+  border: 0.15rem solid #027562; /* added by klc to apply to all pages */
   font-weight: bold;
+  box-shadow: rgba(0, 0, 0, 0.4) 4px 4px 4px;
 }
 
 .primary-square-btn-green {
@@ -416,7 +443,7 @@ body {
   font-weight: bold;
   color: #83a9e8;
   background-color: white; /*tzh added for edit profile button*/
-  border: 3px solid #83a9e8;
+  border: 2px solid #83a9e8;
 }
 .tertiary-btn-blue-outline:hover {
   color: whitesmoke;
@@ -837,6 +864,49 @@ body {
   background-color: #035f50;
 }
 
+.mobile-scroll-row {
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto; /* keep for horizontal swipe */
+  -webkit-overflow-scrolling: touch;
+  padding: 0 0.5rem;
+  gap: 1rem;
+  height: auto; /* <<< this is key */
+  align-items: flex-start; /* <<< this is key */
+}
+
+
+.mobile-scroll-row::-webkit-scrollbar {
+  display: none;
+}
+
+.listings-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap; /* DON'T wrap */
+  justify-content: space-between; /* optional: or space-evenly */
+  align-items: flex-start;
+  width: 100%;
+  overflow-x: auto; /* if you want horizontal scroll just in case */
+}
+
+.listing-item {
+  flex: 0 0 18%; /* each item roughly 18% width (5 items fit neatly) */
+  max-width: 18%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+
+.scroll-item {
+  flex: 0 0 auto;
+  width: 100px; /* or 90px, adjust if needed */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
 
 
 .dropdown-toggle {
@@ -1074,9 +1144,9 @@ button.primary-square:hover {
 }
 
 .inactive-toggle-button:hover {
-  color: #495264 !important; /* Active state text color */
+  color: #83a9e8 !important; /* Active state text color */
   background-color: white !important; /* Active state background color */
-  border-bottom: 3px solid #8593af !important;
+  border-bottom: 3px solid #83a9e8 !important;
   border-radius: 0px !important;
   font-weight: bold !important;
 }
@@ -1675,7 +1745,13 @@ button.primary-square:hover {
   height: auto;
   aspect-ratio: 1 / 1; /* Ensures the image remains a square */
   object-fit: cover; /* Ensures the image covers the entire area without stretching */
-  border-radius:10px
+  border-radius:10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.producer-bottle-listing-page-bottle-image:hover {
+  transform: scale(1.05); /* Slight zoom */
 }
 
 .producer-profile-latest-updates-image {

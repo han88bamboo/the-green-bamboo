@@ -36,7 +36,7 @@
   <div class="container pt-5 ps-lg-0 mobile-pt-4" v-if="dataLoaded">
     <div class="row">
       <!-- producer information -->
-      <div class="col-xl-9 col-12 no-margin p-lg-0">
+      <div class="col-xl-9 col-12 px-3 px-lg-4"> <!-- KAI Added Impt margins for left columm -->
         <!-- header -->
         <div class="row">
           <!-- image -->
@@ -108,12 +108,12 @@
           </div>
           <!-- details -->
           <div
-            class="col-lg-9 col-12 text-start padding-for-followthisbusinessbutton-large-screen mobile-col-7 mobile-ps-0 mobile-pe-0"
+            class="col-lg-9 col-12 text-start ps-lg-5 ps-1 mobile-col-7" 
           >
             <div class="container text-start pe-lg-0">
               <!-- country -->
               <div class="row">
-                <div class="col-8 pe-4 ps-0">
+                <div class="col-7 pe-4 ps-0">
                   <!-- [if] editing -->
                   <div v-if="editing">
                     <label for="originCountryInput"> Country of Origin </label>
@@ -136,7 +136,7 @@
                   </div>
                 </div>
                 <!-- claim this business / add listing & edit profile -->
-                <div class="col-4 mobile-view-hide">
+                <div class="col-5 mobile-view-hide">
                   <!-- [if] user type is producer / admin -->
                   <span v-if="correctProducer || isAdmin" class="row">
                     <!-- add listing-->
@@ -153,7 +153,7 @@
                       </button>
                     </div>
                     <!-- edit profile -->
-                    <div class="col d-grid no-padding">
+                    <div class="col d-grid">
                       <!-- [if] not editing -->
                       <button
                         v-if="editing == false"
@@ -198,7 +198,7 @@
                     v-model="edit_producerName"
                   />
                 </div>
-                <div v-else class="ps-0 pe-0">
+                <div v-else class="ps-0 pe-1">
                   <h3 class="text-body-secondary mobile-view-hide">
                     <b>{{ specified_producer["producerName"] }}</b>
                   </h3>
@@ -358,10 +358,10 @@
               <div
                 v-else
                 class="row"
-                style="margin-top: 4.5rem; margin-left: -1.4rem"
+                style="margin-top: 1rem; margin-left: -1.4rem"
               >
                 <div class="col-12">
-                  <p class="text-body-secondary fs-6 mb-0">
+                  <p class="text-body-secondary mobile-rating-smaller-text-2 fs-6 mb-0">
                     <span v-if="specified_producer.website">
                       <strong>Website:&nbsp;</strong
                       ><a :href="specified_producer.website" target="_blank">{{
@@ -375,141 +375,91 @@
           </div>
         </div>
 
-        <!-- more information (expressions, reviews) -->
+        <!-- Info + Buttons (Responsive Layout) -->
         <div class="row mt-3 mobile-mt-1">
-          <div class="col-7 d-flex justify-content-start mobile-pe-0">
-            <div
-              v-if="specified_producer.yearFounded"
-              class="col-6 col-lg-3 text-start mobile-view-hide text-color-black"
-            >
-              <h5 class="text-body-secondary" style="margin-bottom: 0">
-                <b> {{ specified_producer["yearFounded"] }} </b>
+          <!-- Info Fields (7 columns desktop, full width mobile) -->
+          <div class="col-12 col-lg-7 d-flex flex-wrap justify-content-start mobile-pe-0">
+            <!-- Year Founded -->
+            <div v-if="specified_producer.yearFounded" class="col-3 text-start text-color-black">
+              <h5 class="mobile-rating-smaller-text text-body-secondary rating-text mb-0">
+                <b>{{ specified_producer["yearFounded"] }}</b>
               </h5>
-              <p class="mb-1"><u> Year Founded </u></p>
+              <p class="mb-2 mobile-rating-smaller-text-2"><u>Year Founded</u></p>
             </div>
 
-            <div
-              v-if="specified_producer.activeStatus"
-              class="col-6 col-lg-3 text-start mobile-view-hide text-color-black"
-            >
-              <h5
-                class="text-body-secondary text-capitalize"
-                style="margin-bottom: 0"
-              >
-                <b> {{ specified_producer["activeStatus"] }} </b>
+            <!-- Active Status -->
+            <div v-if="specified_producer.activeStatus" class="col-3 text-start text-color-black">
+              <h5 class="mobile-rating-smaller-text text-body-secondary rating-text mb-0" style="text-transform: capitalize;">
+                <b>{{ specified_producer["activeStatus"] }}</b>
               </h5>
-              <p class="mb-1"><u> Status </u></p>
+              <p class="mb-2 mobile-rating-smaller-text-2"><u>Status</u></p>
             </div>
 
-            <div
-              v-if="
-                specified_producer.openForTours !== null &&
-                specified_producer.openForTours !== undefined
-              "
-              class="col-6 col-lg-3 text-start mobile-view-hide text-color-black"
-            >
-              <h5
-                class="text-body-secondary text-capitalize"
-                style="margin-bottom: 0"
-              >
-                <b>
-                  {{
-                    specified_producer["openForTours"] === true ? "Yes" : "No"
-                  }}
-                </b>
+            <!-- Open for Tours -->
+            <div v-if="specified_producer.openForTours !== null && specified_producer.openForTours !== undefined"
+              class="col-3 text-start text-color-black">
+              <h5 class="mobile-rating-smaller-text text-body-secondary rating-text mb-0">
+                <b>{{ specified_producer["openForTours"] === true ? "Yes" : "No" }}</b>
               </h5>
-              <p class="mb-1"><u> Open for Tours?</u></p>
+              <p class="mb-2 mobile-rating-smaller-text-2"><u>Open for Tours?</u></p>
             </div>
 
-            <div
-              v-if="specified_producer.owner"
-              class="col-6 col-lg-3 text-start mobile-view-hide text-color-black"
-            >
-              <h5 class="text-body-secondary" style="margin-bottom: 0">
-                <b> {{ specified_producer["owner"] }} </b>
+            <!-- Owner -->
+            <div v-if="specified_producer.owner" class="col-3 text-start text-color-black">
+              <h5 class="mobile-rating-smaller-text text-body-secondary rating-text mb-0">
+                <b>{{ specified_producer["owner"] }}</b>
               </h5>
-              <p class="mb-1"><u> Owner </u></p>
+              <p class="mb-2 mobile-rating-smaller-text-2"><u>Owner</u></p>
             </div>
           </div>
 
-          <!-- follow this business -->
-          <div
-            class="col-5 justify-content-end padding-for-followthisbusinessbutton-large-screen"
-            v-if="userType == 'user'"
-          >
-            <div v-if="!following" class="d-grid gap-2">
-              <button
-                class="btn primary-btn-less-round-blue btn-lg mobile-view-show fs-6"
-                @click="editFollow('follow')"
-                style="font-weight: bold"
-              >
-                + Follow
-              </button>
-              <!--tzh added -blue -->
-              <button
-                class="btn primary-btn-less-round-blue btn-lg mobile-view-hide"
-                @click="editFollow('follow')"
-                style="font-weight: bold"
-              >
-                <!--tzh added -blue -->
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="25"
-                  height="25"
-                  fill="currentColor"
-                  class="bi bi-plus"
-                  viewBox="0 0 16 20"
-                >
-                  <path
-                    d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"
-                  />
-                </svg>
-                Follow this business
-              </button>
-            </div>
-            <div v-else class="d-grid gap-2">
-              <button
-                class="btn primary-btn-less-round-blue btn-lg"
-                @click="editFollow('unfollow')"
-                style="font-weight: bold"
-              >
-                <!--tzh changed primary-btn-outline-less-round to primary-btn-less-round-blue -->
-                Following
-              </button>
-            </div>
+          <!-- Buttons (5 columns desktop, full width mobile) -->
+          <div class="col-12 col-lg-5 d-flex gap-2 justify-content-lg-end justify-content-start mt-3 mt-lg-0">
+            <!-- Follow Button -->
+            <button
+              v-if="!following"
+              class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
+              @click="editFollow('follow')"
+              style="font-weight: bold;"
+            >
+              + Follow
+            </button>
+            <button
+              v-else
+              class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
+              @click="editFollow('unfollow')"
+              style="font-weight: bold; background-color: rgb(249, 115, 106);"
+            >
+              Following
+            </button>
+
+            <!-- Review Button -->
+            <button
+              v-if="!inEdit"
+              class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
+              data-bs-toggle="modal"
+              data-bs-target="#reviewModal"
+              style="font-weight: bold;"
+            >
+              Review Producer
+            </button>
+            <button
+              v-else
+              class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
+              style="font-weight: bold; background-color: rgb(249, 115, 106);"
+            >
+              Reviewed!
+            </button>
           </div>
         </div>
-        <!-- review this business below -->
-        <div class="row mt-3 mobile-mt-1">
-          <!-- empty space -->
-          <div class="col-7 d-flex justify-content-start mobile-pe-0">
-            
-          </div>
-          <!-- review this business button -->
-          <div
-            class="col-5 justify-content-end padding-for-followthisbusinessbutton-large-screen"
-            v-if="userType == 'user' && userID !== 'defaultUser'"
-          >
-          <div class="d-grid gap-2">
-          <button v-if="!inEdit"
-            class="btn primary-btn-less-round-blue btn-lg" 
-            data-bs-toggle="modal" 
-            data-bs-target="#reviewModal" 
-            style="font-weight: bold;"
-          > 
-            Review this Business
-          </button>  
-          <button v-else
-            class="btn primary-btn-less-round-blue btn-lg" 
-          > 
-            Business Reviewed
-          </button> 
-          </div> 
-          </div>
-        </div>   
+
+
+
+        <!-- backspace to here Kai -->
+
         <!--review this business above-->     
         <div class="row mt-3 mobile-mt-1">
-          <div class="col-7 d-flex justify-content-start mobile-pe-0">
+          <div class="col-12 d-flex justify-content-start mobile-pe-0">
             <!-- toggle latest updates-->
             <button
               v-if="showListings == false && showTours == false"
@@ -931,207 +881,105 @@
               </div>
             </div>
 
+            <!-- Producer Update Display -->
             <div class="row" v-if="hasUpdates">
-              <div class="row">
-                <div class="col-xl-8 col-md-6 col-12">
-                  <p
-                    class="text-decoration-underline text-start fs-5 m-0 pb-3 mobile-fs-6"
-                  >
-                    Posted on: {{ this.formatDate(latestUpdate.date) }}
+
+              <!-- Row 1: Photo + Text -->
+              <div class="row align-items-start mt-3">
+                <!-- Photo Column -->
+                <div class="col-2 mobile-col-4 text-start1">
+                  <img
+                    :src="selectedLatestUpdateImage || latestUpdate['photo'] || defaultPhoto"
+                    alt=""
+                    class="img-fluid rounded"
+                  />
+                </div>
+
+                <!-- Text Column -->
+                <div class="col-10 mobile-col-8 text-start">
+                  <div v-if="editingLatestUpdate">
+                    <textarea
+                      v-model="latestUpdateText"
+                      class="form-control"
+                      rows="3"
+                    ></textarea>
+                  </div>
+                  <p v-else class="mobile-rating-smaller-text-2 mb-0">
+                    {{ latestUpdate.text }}
                   </p>
                 </div>
-                <div
-                  v-if="correctProducer || isAdmin"
-                  class="col-xl-4 col-md-6 col-12 text-end"
-                >
-                  <!-- edit & delete button -->
-                  <button
-                    v-if="correctProducer && editingLatestUpdate == false"
-                    type="button"
-                    class="btn btn-warning rounded-0"
-                    @click="editUpdate(latestUpdate, 'latest')"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    v-if="correctProducer && editingLatestUpdate"
-                    type="button"
-                    class="btn btn-success rounded-0 reverse-clickable-text"
-                    @click="saveUpdateEdit(latestUpdate, 'latest')"
-                  >
-                    Save Changes
-                  </button>
-                  <button
-                    v-if="correctProducer && editingLatestUpdate"
-                    type="button"
-                    class="btn btn-warning rounded-0 reverse-clickable-text ms-1"
-                    @click="cancelUpdate(latestUpdate, 'latest')"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    v-if="correctProducer && editingLatestUpdate == false"
-                    type="button"
-                    class="btn btn-danger rounded-0 ms-1"
-                    @click="deleteUpdate(latestUpdate)"
-                  >
-                    Delete
-                  </button>
-                </div>
               </div>
 
-              <!-- information -->
-              <div class="row">
-                <!-- profile photo & post timestamp & # of likes -->
-                <div class="col-lg-2 col-md-3 col-4">
-                  <!-- image -->
-                  <div class="image-container">
-                    <!-- [if] editing -->
+              <!-- Row 2: Likes + Posted Date + Admin Buttons -->
+              <div class="row pt-3">
+                <div class="col-12 d-flex flex-wrap align-items-center justify-content-start gap-3">
+
+                  <!-- Likes -->
+                  <div class="d-flex align-items-center">
                     <div
-                      v-if="editingLatestUpdate"
-                      style="position: relative; text-align: center"
+                      v-if="Array.isArray(latestUpdate.likes) && viewerType !== null"
+                      @click="likeUpdates(latestUpdate.id)"
+                      style="cursor: pointer;"
                     >
-                      <!-- image -->
-                      <img
-                        :src="
-                          selectedLatestUpdateImage ||
-                          latestUpdate['photo'] ||
-                          defaultPhoto
-                        "
-                        alt=""
-                        style="
-                          width: 128px;
-                          height: 128px;
-                          z-index: 1;
-                          opacity: 50%;
-                        "
-                      />
-                      <!-- change option -->
-                      <label
-                        for="file2"
-                        class="btn primary-light-dropdown"
-                        style="
-                          position: absolute;
-                          top: 30%;
-                          left: 50%;
-                          transform: translate(-50%, -50%);
-                          z-index: 2;
-                        "
-                        >Choose</label
-                      >
-                      <input
-                        id="file2"
-                        type="file"
-                        v-on:change="loadLatestUpdateFile"
-                        ref="fileInput2"
-                        style="width: 0px; height: 0px"
-                      />
-                      <!-- reset image option -->
-                      <button
-                        class="btn primary-light-dropdown m-1"
-                        @click="
-                          selectedLatestUpdateImage = latestUpdate['photo'];
-                          image64LatestUpdate = null;
-                        "
-                      >
-                        Revert
-                      </button>
-                      <!-- remove image option -->
-                      <button
-                        class="btn primary-light-dropdown m-1"
-                        @click="
-                          selectedLatestUpdateImage = defaultPhoto;
-                          image64LatestUpdate = '';
-                        "
-                      >
-                        Remove
-                      </button>
+                      <svg v-if="latestUpdate.likes.some(like => like.userId == viewerID && like.userType === userType)"
+                          xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="red" class="bi bi-heart-fill" viewBox="0 0 16 16">
+                        <path d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"/>
+                      </svg>
+                      <svg v-else
+                          xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-heart" viewBox="0 0 16 16">
+                        <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.920 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01z"/>
+                      </svg>
                     </div>
-                    <!-- [else] not editing tzh removed style="width: 128px; height: 128px; z-index: 1;" from img tag -->
-                    <div v-else>
-                      <img
-                        :src="
-                          selectedLatestUpdateImage ||
-                          latestUpdate['photo'] ||
-                          defaultPhoto
-                        "
-                        alt=""
-                        class="producer-profile-latest-updates-image"
-                      />
-                    </div>
+                    <span class="ms-2 mobile-rating-smaller-text-2">
+                      {{ latestUpdate.likes.length }}
+                    </span>
                   </div>
 
-                  <!-- # of likes -->
-                  <div class="row pt-2">
-                    <div class="col-6 text-end">
-                      <!-- [if] liked -->
-                      <div
-                        v-if="likeStatus"
-                        class="d-inline-block"
-                        v-on:click="unlikeUpdates(latestUpdate.id)"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="red"
-                          class="bi bi-heart-fill producer-profile-latest-updates-heart"
-                          viewBox="0 0 16 16"
-                        >
-                          <path
-                            fill-rule="evenodd"
-                            d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"
-                          />
-                        </svg>
-                      </div>
-                      <!-- [else] not liked -->
-                      <div
-                        v-else
-                        class="d-inline-block"
-                        v-on:click="likeUpdates(latestUpdate.id)"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="currentColor"
-                          class="bi bi-heart producer-profile-latest-updates-heart"
-                          viewBox="0 0 16 16"
-                        >
-                          <path
-                            d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.920 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.090.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15"
-                          />
-                        </svg>
-                      </div>
-                    </div>
-                    <div class="col-6 text-start mobile-fs-6">
-                      <p class="text-body-secondary fs-5 mobile-fs-6 m-0">
-                        {{ updateLikesCount }}
-                      </p>
-                    </div>
+                  <!-- Posted Date -->
+                  <div class="text-body-secondary mobile-rating-smaller-text-2">
+                    Posted on: {{ formatDate(latestUpdate.date) }}
                   </div>
-                </div>
-                <!-- description -->
-                <div class="col-xl-10 col-md-9 col-8 mobile-ps-0 mobile-pe-0">
-                  <div
-                    class="text-start p-text-lg mobile-rating-smaller-text-2"
-                  >
-                    <p v-if="editingLatestUpdate == false">
-                      {{ latestUpdate["text"] }}
-                    </p>
-                    <p v-else>
-                      <label for="latestUpdateText"> Update Text </label>
-                      <textarea
-                        class="form-control mb-3"
-                        id="latestUpdateText"
-                        aria-describedby="latestUpdateText"
-                        v-model="edit_latestUpdateText"
-                      ></textarea>
-                    </p>
+
+                  <!-- Admin Buttons -->
+                  <div v-if="correctProducer || isAdmin" class="ms-auto">
+                    <button
+                      v-if="!editingLatestUpdate"
+                      class="btn btn-warning btn-sm me-2"
+                      @click="editUpdate(latestUpdate, 'latest')"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      v-if="editingLatestUpdate"
+                      class="btn btn-success btn-sm me-2"
+                      @click="saveUpdateEdit(latestUpdate, 'latest')"
+                    >
+                      Save
+                    </button>
+                    <button
+                      v-if="editingLatestUpdate"
+                      class="btn btn-secondary btn-sm me-2"
+                      @click="cancelUpdate(latestUpdate, 'latest')"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      v-if="!editingLatestUpdate"
+                      class="btn btn-danger btn-sm"
+                      @click="deleteUpdate(latestUpdate)"
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
               </div>
+
             </div>
+
 
             <!-- no other updates -->
             <div v-else>
-              <p class="fs-5 fst-italic m-0 text-start">
+              <p class="text-start fs-6 mobile-rating-smaller-text-2 fst-italic m-1 pb-2">
                 {{ specified_producer["producerName"] }} has not posted any
                 updates!
               </p>
@@ -1142,9 +990,10 @@
               <!-- [if] user type is producer -->
               <div class="input-group centered">
                 <input
-                  class="search-bar form-control rounded fst-italic"
+                  class="search-bar form-control mobile-rating-smaller-text-2 rounded fst-italic"
+                  style="border: 2px solid #000000;"
                   type="text"
-                  placeholder="Say hi to your patrons!"
+                  placeholder="Say hi to your fans!"
                   v-model="updateText"
                 />
 
@@ -1263,17 +1112,9 @@
             <div class="row" v-if="hasUpdates">
               <!-- Toggle Button -->
               <button
-                v-if="remainingUpdates.length > 0"
-                type="button"
-                class="btn tertiary-text text-decoration-underline pt-2 no-margin border border-0"
-                data-bs-toggle="collapse"
-                data-bs-target="#collapseMoreUpdates"
-                aria-expanded="false"
-                aria-controls="collapseMoreUpdates"
-                @click="checkToShowRemainingUpdates()"
-              >
+                v-if="remainingUpdates.length > 0" type="button" class="btn tertiary-text text-decoration-underline pt-2 no-margin border border-0" data-bs-toggle="collapse" data-bs-target="#collapseMoreUpdates" aria-expanded="false" aria-controls="collapseMoreUpdates" @click="checkToShowRemainingUpdates()">
                 View <span v-if="showRemainingUpdates">less ↑</span
-                ><span v-else>more updates ↓</span>
+                  ><span v-else>more updates ↓</span>
               </button>
               <p v-else></p>
               <!-- show remaining updates when "view more" is clicked -->
@@ -1282,232 +1123,132 @@
                                 <p v-if="remainingUpdates.length > 0" class="text-body-secondary fs-5 fw-bold m-0 mobile-fs-6 mobile-mb-2">Viewing {{ remainingUpdates.length }} more updates ↓</p>
                                 <p v-else class="fs-5 fst-italic m-0 mobile-fs-6 mobile-mb-2">There are no more updates to view!</p>
                                 -->
-                <!-- for each update -->
-                <div v-for="update in remainingUpdates" v-bind:key="update.id">
-                  <div class="row">
-                    <div class="row">
-                      <div class="col-xl-8 col-md-6 col-12">
-                        <p
-                          class="text-start text-decoration-underline fs-5 m-0 pb-3 mobile-fs-6"
-                        >
-                          Posted on: {{ this.formatDate(update.date) }}
-                        </p>
+                
+                <!-- For Each Update -->
+                <div v-for="update in remainingUpdates" :key="update.id">
+                  <div class="row pt-3">
+
+                    <!-- Row 1: Photo + Text -->
+                    <div class="row align-items-start">
+
+                      <!-- Photo Column -->
+                      <div class="col-lg-2 col-md-3 col-4">
+                        <div class="image-container">
+                          <div v-if="editingRemainingUpdateID == update.id" style="position: relative; text-align: center">
+                            <img
+                              :src="selectedRemainingUpdateImage || update.photo || defaultPhoto"
+                              alt=""
+                              style="width: 128px; height: 128px; opacity: 50%"
+                            />
+                            <label for="file4" class="btn primary-light-dropdown" style="position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%); z-index: 2;">Choose</label>
+                            <input id="file4" type="file" @change="loadRemainingUpdateFile" ref="fileInput4" style="width: 0px; height: 0px" />
+                            <button class="btn primary-light-dropdown m-1" @click="selectedRemainingUpdateImage = ''; image64RemainingUpdate = null">Revert</button>
+                            <button class="btn primary-light-dropdown m-1" @click="selectedRemainingUpdateImage = defaultPhoto; image64RemainingUpdate = ''">Remove</button>
+                          </div>
+                          <div v-else>
+                            <img :src="update.photo || defaultPhoto" alt="" class="producer-profile-latest-updates-image" />
+                          </div>
+                        </div>
                       </div>
 
-                      <div
-                        v-if="correctProducer || isAdmin"
-                        class="col-xl-4 col-md-6 col-12 text-end"
-                      >
-                        <!-- edit & delete button -->
-                        <button
-                          v-if="
-                            correctProducer &&
-                            (editingRemainingUpdate == false ||
-                              editingRemainingUpdateID != update.id)
-                          "
-                          type="button"
-                          class="btn btn-warning rounded-0"
-                          @click="editUpdate(update, 'remaining')"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          v-if="
-                            correctProducer &&
-                            editingRemainingUpdateID == update.id
-                          "
-                          type="button"
-                          class="btn btn-success rounded-0 reverse-clickable-text"
-                          @click="saveUpdateEdit(update, 'remaining')"
-                        >
-                          Save
-                        </button>
-                        <button
-                          v-if="
-                            correctProducer &&
-                            editingRemainingUpdateID == update.id
-                          "
-                          type="button"
-                          class="btn btn-warning rounded-0 reverse-clickable-text ms-1"
-                          @click="cancelUpdate(update, 'remaining')"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          v-if="
-                            correctProducer &&
-                            (editingRemainingUpdate == false ||
-                              editingRemainingUpdateID != update.id)
-                          "
-                          type="button"
-                          class="btn btn-danger rounded-0 ms-1"
-                          @click="deleteUpdate(update)"
-                        >
-                          Delete
-                        </button>
+                      <!-- Text Column -->
+                      <div class="col-xl-10 col-md-9 col-8 text-start mobile-ps-0 mobile-pe-0">
+                        <div v-if="editingRemainingUpdateID == update.id">
+                          <label :for="'remainingUpdateText' + update.id">Update Text</label>
+                          <textarea
+                            class="form-control"
+                            :id="'remainingUpdateText' + update.id"
+                            v-model="edit_remainingUpdateText[update.id]"
+                          ></textarea>
+                        </div>
+                        <p v-else class="text-start p-text-lg mobile-rating-smaller-text-2 mb-0">
+                          {{ update.text }}
+                        </p>
                       </div>
                     </div>
 
-                    <!-- other info -->
-                    <div class="col-lg-2 col-md-3 col-4">
-                      <!-- photo & # of likes -->
-                      <div class="image-container">
-                        <!-- image -->
-                        <!-- [if] editing -->
-                        <div
-                          v-if="editingRemainingUpdateID == update.id"
-                          style="position: relative; text-align: center"
-                        >
-                          <!-- image -->
-                          <!-- <img :src="selectedRemainingUpdateImage || 'data:image/jpeg;base64,' + (update['photo'] || defaultPhoto)" 
-                                                        alt="" style="width: 128px; height: 128px; z-index: 1; opacity: 50%"> -->
-                          <img
-                            :src="
-                              selectedRemainingUpdateImage ||
-                              update['photo'] ||
-                              defaultPhoto
-                            "
-                            alt=""
-                            style="
-                              width: 128px;
-                              height: 128px;
-                              z-index: 1;
-                              opacity: 50%;
-                            "
-                          />
-                          <!-- change option -->
-                          <label
-                            for="file4"
-                            class="btn primary-light-dropdown"
-                            style="
-                              position: absolute;
-                              top: 30%;
-                              left: 50%;
-                              transform: translate(-50%, -50%);
-                              z-index: 2;
-                            "
-                            >Choose</label
-                          >
-                          <input
-                            id="file4"
-                            type="file"
-                            v-on:change="loadRemainingUpdateFile"
-                            ref="fileInput4"
-                            style="width: 0px; height: 0px"
-                          />
-                          <!-- reset image option -->
-                          <button
-                            class="btn primary-light-dropdown m-1"
-                            @click="
-                              selectedRemainingUpdateImage = '';
-                              image64RemainingUpdate = null;
-                            "
-                          >
-                            Revert
-                          </button>
-                          <!-- remove image option -->
-                          <button
-                            class="btn primary-light-dropdown m-1"
-                            @click="
-                              selectedRemainingUpdateImage = defaultPhoto;
-                              image64RemainingUpdate = '';
-                            "
-                          >
-                            Remove
-                          </button>
-                        </div>
-                        <!-- [else] not editing -->
-                        <div
-                          v-else-if="
-                            editingRemainingUpdate == false ||
-                            editingRemainingUpdateID != update.id
-                          "
-                        >
-                          <!-- <img :src="'data:image/jpeg;base64,' + (update['photo'] || defaultPhoto)" 
-                                                        alt="" class="producer-profile-latest-updates-image"> -->
-                          <img
-                            :src="update['photo'] || defaultPhoto"
-                            alt=""
-                            class="producer-profile-latest-updates-image"
-                          />
-                        </div>
-                      </div>
-                      <!-- # of likes -->
-                      <div class="row pt-2">
-                        <div class="col-6 text-end">
-                          <!-- [if] liked -->
-                          <div
-                            v-if="remainingLikeStatus[update.id]"
-                            class="d-inline-block"
-                            v-on:click="unlikeUpdates(update.id)"
-                          >
+                    <!-- Row 2: Likes + Date + Admin Buttons -->
+                    <div class="row">
+                      <div class="col-12 d-flex flex-wrap align-items-center justify-content-start gap-3 pt-3">
+
+                        <!-- Like Icon + Count -->
+                        <div class="d-flex align-items-center">
+                          <div @click="remainingLikeStatus[update.id] ? unlikeUpdates(update.id) : likeUpdates(update.id)" style="cursor: pointer;">
                             <svg
+                              v-if="remainingLikeStatus[update.id]"
                               xmlns="http://www.w3.org/2000/svg"
                               fill="red"
+                              width="24"
+                              height="24"
                               class="bi bi-heart-fill producer-profile-latest-updates-heart"
                               viewBox="0 0 16 16"
                             >
-                              <path
-                                fill-rule="evenodd"
-                                d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"
-                              />
+                              <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314" />
                             </svg>
-                          </div>
-                          <!-- [else] not liked -->
-                          <div
-                            v-else
-                            class="d-inline-block"
-                            v-on:click="likeUpdates(update.id)"
-                          >
                             <svg
+                              v-else
                               xmlns="http://www.w3.org/2000/svg"
                               fill="currentColor"
+                              width="24"
+                              height="24"
                               class="bi bi-heart producer-profile-latest-updates-heart"
                               viewBox="0 0 16 16"
                             >
                               <path
-                                d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.920 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.090.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15"
+                                d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.09.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15"
                               />
                             </svg>
                           </div>
+                          <span class="ms-2 mobile-rating-smaller-text-2">{{ update.likes?.length || 0 }}</span>
                         </div>
-                        <div class="col-6 text-start">
-                          <p class="text-body-secondary fs-5 m-0 mobile-fs-6">
-                            {{ updateLikesCount }}
-                          </p>
+
+                        <!-- Posted Date -->
+                        <div class="text-body-secondary mobile-rating-smaller-text-2">
+                          Posted on: {{ formatDate(update.date) }}
+                        </div>
+
+                        <!-- Admin Buttons -->
+                        <div v-if="correctProducer || isAdmin" class="ms-auto">
+                          <!-- Not Editing -->
+                          <button
+                            v-if="editingRemainingUpdateID !== update.id"
+                            class="btn btn-warning btn-sm me-2"
+                            @click="editUpdate(update, 'remaining')"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            v-if="editingRemainingUpdateID !== update.id"
+                            class="btn btn-danger btn-sm"
+                            @click="deleteUpdate(update)"
+                          >
+                            Delete
+                          </button>
+
+                          <!-- Editing -->
+                          <button
+                            v-if="editingRemainingUpdateID === update.id"
+                            class="btn btn-success btn-sm me-2 reverse-clickable-text"
+                            @click="saveUpdateEdit(update, 'remaining')"
+                          >
+                            Save
+                          </button>
+                          <button
+                            v-if="editingRemainingUpdateID === update.id"
+                            class="btn btn-warning btn-sm reverse-clickable-text me-2"
+                            @click="cancelUpdate(update, 'remaining')"
+                          >
+                            Cancel
+                          </button>
                         </div>
                       </div>
                     </div>
 
-                    <!-- description -->
-                    <div
-                      class="col-xl-10 col-md-9 col-8 mobile-ps-0 mobile-pe-0"
-                    >
-                      <!-- description -->
-                      <div
-                        class="text-start p-text-lg mobile-rating-smaller-text-2"
-                      >
-                        <p
-                          v-if="
-                            editingRemainingUpdate == false ||
-                            editingRemainingUpdateID != update.id
-                          "
-                        >
-                          {{ update["text"] }}
-                        </p>
-                        <p v-else-if="editingRemainingUpdateID == update.id">
-                          <label for="remainingUpdateText"> Update Text </label>
-                          <textarea
-                            class="form-control"
-                            id="remainingUpdateText"
-                            aria-describedby="remainingUpdateText"
-                            v-model="edit_remainingUpdateText[update.id]"
-                          ></textarea>
-                        </p>
-                      </div>
-                    </div>
+                    <!-- Separator -->
+                    <hr class="mt-3" style="color: rgb(218, 217, 217)" />
                   </div>
                 </div>
+
               </div>
             </div>
           </div>
@@ -1525,32 +1266,31 @@
                 </p>
               </div>
             </div>
-            <div class="row text-center py-2" style="background-color: #ddc8a9">
-              <p class="fw-bold fs-3 pt-3" style="font-style: italic">
+            <div class="row text-center" style="background-color: #ddc8a9; margin:10px">
+              <p class="fs-5 mobile-fs-6 fw-bold mt-3 mb-2">
                 Do you own this business?
               </p>
               <p>
                 Sign up for a producer account to share your latest updates with
                 your fans!
               </p>
-              <!-- spacer -->
-              <div class="col-4"></div>
               <!-- button -->
+              <div class="col-4 mobile-col-2"></div>
               <button
                 type="submit"
-                class="col-4 btn secondary-btn-border-thick mb-3"
+                class="col-4 mobile-col-8 btn secondary-btn mb-4"
+                style="font-weight:bold"
                 @click="claimProducerAccount"
               >
                 Claim This Business
               </button>
-              <!-- spacer -->
-              <div class="col-4"></div>
+              <div class="col-4 mobile-col-2"></div>
             </div>
           </div>
 
           <hr />
 
-          <!-- view Q&A for mobile -->
+          <!-- VIEW Q&A FOR MOBILE -->
           <div class="row mobile-view-show ps-2 pe-2">
             <!-- Toggle Button active-toggle-producer-QnA-->
             <button
@@ -1579,7 +1319,7 @@
             >
               Q&As for {{ specified_producer["producerName"] }} ↓
             </button>
-            <!-- show Q&A when button is clicked -->
+            <!-- show Q&A when button is clicked MOBILE VIEW  -->
             <div class="collapse pe-0 ps-0" id="collapseQnA">
               <!-- q&a -->
               <br />
@@ -1589,8 +1329,8 @@
                   <!-- header text -->
                   <div class="square-inline text-start">
                     <!-- [if] user type producer -->
-                    <div v-if="correctProducer" class="mr-auto">
-                      <h4>Q&A for You!</h4>
+                    <div v-if="correctProducer" class="mr-auto ms-1">
+                      <h5 style="font-weight: bold">Q&A for You!</h5>
                       <div v-if="claimStatus">
                         <router-link
                           :to="{
@@ -1607,19 +1347,21 @@
                       </div>
                     </div>
                     <!-- [else] user type is NOT producer -->
-                    <h4 v-else class="mr-auto">
+                    <h5 v-else class="mr-auto ms-1"  style="font-weight: bold">
                       Q&As for {{ specified_producer["producerName"] }}
-                    </h4>
+                    </h5>
                   </div>
 
-                  <!-- [if] account is claimed -->
+                  <!-- [if] account is claimed MOBILE VIEW -->
                   <div v-if="claimStatus">
                     <!-- show buttons for answered & unanswered questions -->
                     <div v-if="correctProducer" class="row text-center px-2">
+                      
                       <div class="col-6 d-grid gap-0 no-padding">
                         <button
                           type="button"
                           class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text"
+                          style="background-color:#1c9e88"
                         >
                           <a
                             class="reverse-clickable-text"
@@ -1633,6 +1375,7 @@
                         <button
                           type="button"
                           class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text"
+                          style="background-color:#1c9e88"
                         >
                           <a
                             class="reverse-clickable-text"
@@ -1642,12 +1385,13 @@
                           </a>
                         </button>
                       </div>
+                      
                     </div>
                     <!-- body -->
                     <div class="text-start pt-2">
                       <!-- responses to q&a -->
-                      <div id="carouselExample" class="carousel slide">
-                        <div class="carousel-inner px-4">
+                      <div id="carouselMobileQnA" class="carousel slide">
+                        <div class="carousel-inner px-1">
                           <!-- [if] user type is producer -->
                           <div v-if="correctProducer">
                             <!-- show answered questions -->
@@ -1658,7 +1402,7 @@
                                 v-bind:key="qa.id"
                                 v-bind:class="{ active: index === 0 }"
                               >
-                                <p>
+                                <p class="mb-2">
                                   <b> Q: {{ qa["question"] }} </b>
                                 </p>
                                 <!-- [if] not editing -->
@@ -1726,7 +1470,7 @@
                                 v-bind:key="qa.id"
                                 v-bind:class="{ active: index === 0 }"
                               >
-                                <p>
+                                <p class="mb-2">
                                   <b> Q: {{ qa["question"] }} </b>
                                 </p>
                                 <div class="input-group centered">
@@ -1768,10 +1512,10 @@
                               v-bind:class="{ active: index === 0 }"
                             >
                               <div>
-                                <p>
+                                <p class="mb-2">
                                   <b> Q: {{ qa["question"] }} </b>
                                 </p>
-                                <p>A: {{ qa["answer"] }}</p>
+                                <p class="mb-2">A: {{ qa["answer"] }}</p>
                               </div>
                               <div class="input-group centered pt-2">
                                 <textarea
@@ -1829,93 +1573,95 @@
                             </div>
                           </div>
                         </div>
-                        <button
-                          class="carousel-control-prev"
-                          type="button"
-                          data-bs-target="#carouselExample"
-                          data-bs-slide="prev"
-                        >
-                          <span
-                            class="carousel-control-prev-icon"
-                            aria-hidden="true"
-                          ></span>
-                          <span class="visually-hidden">Previous</span>
-                        </button>
-                        <button
-                          class="carousel-control-next"
-                          type="button"
-                          data-bs-target="#carouselExample"
-                          data-bs-slide="next"
-                        >
-                          <span
-                            class="carousel-control-next-icon"
-                            aria-hidden="true"
-                          ></span>
-                          <span class="visually-hidden">Next</span>
-                        </button>
+                        <div class="d-flex justify-content-center gap-3">
+                          <button
+                            class="btn btn-sm"
+                            type="button"
+                            data-bs-target="#carouselMobileQnA"
+                            data-bs-slide="next"
+                            widt
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="white" class="bi bi-arrow-right" viewBox="0 0 16 16">
+                              <path fill-rule="evenodd" d="M10.146 4.646a.5.5 0 0 1 .708.708L7.707 8l3.147 2.646a.5.5 0 0 1-.708.708l-3.5-3a.5.5 0 0 1 0-.708l3.5-3z"/>
+                            </svg>
+                          </button>
+                          <button
+                            class="btn btn-sm"
+                            type="button"
+                            data-bs-target="#carouselMobileQnA"
+                            data-bs-slide="prev"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="white" class="bi bi-arrow-left" viewBox="0 0 16 16">
+                              <path fill-rule="evenodd" d="M5.854 4.646a.5.5 0 0 0-.708.708L8.293 8l-3.147 2.646a.5.5 0 0 0 .708.708l3.5-3a.5.5 0 0 0 0-.708l-3.5-3z"/>
+                            </svg>
+                          </button>
+                        </div>
                       </div>
                     </div>
-                    <div class="py-1"></div>
                   </div>
 
-                  <!-- [else] account is not claimed -->
+                  <!-- [else] account is not claimed MOBILE VIEW -->
                   <div v-else>
                     <div
                       class="row text-center mx-1 py-2 default-text-no-background"
                       style="background-color: #ddc8a9"
                     >
-                      <p class="fw-bold fs-3 pt-3" style="font-style: italic">
+                      <p class="fw-bold fs-4 mobile-fs-6 mb-1" style="padding: 10px;">
                         Do you own this business?
                       </p>
                       <p>
-                        Sign up for a producer account to answer latest
-                        questions from your fans!
+                        Sign up for a producer account to answer latest questions from your fans!
                       </p>
                       <!-- spacer -->
-                      <div class="col-2"></div>
+                      <div class="col-1"></div>
                       <!-- button -->
                       <button
                         type="submit"
-                        class="col-8 btn secondary-btn-border-thick mb-3"
+                        class="btn col-10 secondary-btn mb-3"
+                        style="font-weight:bold"
                         @click="claimProducerAccount"
                       >
                         Claim This Business
                       </button>
                       <!-- spacer -->
-                      <div class="col-2"></div>
+                      <div class="col-1"></div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+            <hr />
           </div>
-          <hr />
-          <!-- most popular (highest ratings) -->
-          <ListingRowDisplayProducerProfile
-            :listingArr="mostPopular"
-            displayName="Most Popular"
-            :user="user"
-            :listing="listing"
-            @icon-clicked="handleIconClick"
-          />
+          
+          
+          
+            <!-- most popular (highest ratings) -->
+            <ListingRowDisplayProducerProfile
+              :listingArr="mostPopular"
+              displayName="Most Popular"
+              :user="user"
+              :listing="listing"
+              @icon-clicked="handleIconClick"
+            />
 
-          <!-- most discussed (most number of reviews) -->
-          <ListingRowDisplayProducerProfile
-            :listingArr="mostDiscussed"
-            displayName="Most Discussed"
-            :user="user"
-            :listing="listing"
-            @icon-clicked="handleIconClick"
-          />
+            <!-- most discussed (most number of reviews) -->
+            <ListingRowDisplayProducerProfile
+              :listingArr="mostDiscussed"
+              displayName="Most Discussed"
+              :user="user"
+              :listing="listing"
+              @icon-clicked="handleIconClick"
+            />
 
-          <!-- recently added -->
-          <ListingRowDisplayProducerProfile
-            :listingArr="recentlyAdded"
-            displayName="Recently Added"
-            :user="user"
-            :listing="listing"
-            @icon-clicked="handleIconClick"
-          />
+            <!-- recently added -->
+            <ListingRowDisplayProducerProfile
+              :listingArr="recentlyAdded"
+              displayName="Recently Added"
+              :user="user"
+              :listing="listing"
+              @icon-clicked="handleIconClick"
+            />
+          <br>
         </div>
         <!-- end of main page (hide all listings) -->
 
@@ -1998,7 +1744,7 @@
                     class="search-bar form-control rounded fst-italic mobile-view-hide"
                     type="text"
                     placeholder="Search for expressions"
-                    style="height: 50px"
+                    style="height: 40px; border: 2px solid #83a9e8"
                     v-model="searchExpressions"
                     v-on:keyup.enter="searchForExpressions()"
                   />
@@ -2006,7 +1752,7 @@
                     class="search-bar form-control rounded fst-italic mobile-view-show mobile-fs-7"
                     type="text"
                     placeholder="Search expressions"
-                    style="height: 50px"
+                    style="height: 40px; border: 2px solid #83a9e8"
                     v-model="searchExpressions"
                     v-on:keyup.enter="searchForExpressions()"
                   />
@@ -2028,7 +1774,7 @@
                     class="search-bar form-control rounded fst-italic"
                     type="text"
                     placeholder="Search for expressions"
-                    style="height: 50px"
+                    style="height: 40px; border: 2px solid #83a9e8;"
                     v-model="searchExpressions"
                     v-on:keyup.enter="searchForExpressions()"
                   />
@@ -2038,7 +1784,7 @@
                     class="search-bar form-control rounded fst-italic"
                     type="text"
                     placeholder="Search for expressions"
-                    style="height: 50px"
+                    style="height: 40px; border: 2px solid #83a9e8;"
                     v-model="searchExpressions"
                     v-on:keyup.enter="searchForExpressions()"
                   />
@@ -2060,27 +1806,27 @@
                     white-space: nowrap;
                     overflow: hidden;
                     text-overflow: ellipsis;
+                    height: 40px;
                   "
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    fill="currentColor"
+                    fill="#83a9e8"
                     class="mobile-view-show bi bi-sort-down funnel-svg-dimensions"
                     viewBox="0 0 16 16"
                   >
                     <path
-                      d="M3.5 2.5a.5.5 0 0 0-1 0v8.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L3.5 11.293zm3.5 1a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5M7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1z"
-                    ></path>
+                    d="M3.5 2.5a.5.5 0 0 0-1 0v8.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L3.5 11.293zm3.5 1a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5M7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1z"
+                  ></path>
                   </svg>
-                  <span class="mobile-view-hide"
-                    >Sort:
+                  <span class="mobile-view-hide">
+                    Sort:
                     {{
-                      sortSelection.category != ""
-                        ? sortSelection.category
-                        : "by Category"
-                    }}</span
-                  >
+                      sortSelection.category != "" ? sortSelection.category : "by Category"
+                    }}
+                  </span>
                 </button>
+
                 <ul class="dropdown-menu">
                   <li>
                     <span class="dropdown-item" @click="sortByCategory('')">
@@ -2100,8 +1846,8 @@
               </div>
             </div>
           </div>
-          <!-- scrollable expressions for desktop view TZH -->
-          <div class="row scrollable-expressions-none mobile-view-hide">
+          <!-- DRINK LISTING CATALOGUE-->
+          <div class="row scrollable-expressions-none">
             <!-- v-loop for each listing -->
             <div class="container text-start">
               <div
@@ -2112,10 +1858,12 @@
                 <div class="row">
                   <!-- image  remove style="width: 150px; height: 150px;" from img tag-->
                   <div
-                    class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0"
+                    class="col-2 image-container text-start mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0"
                   >
+
+                  
                     <router-link
-                      :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}"
+                      :to="{ path: '/listing/view/' + slugify(listing.listingName) + '/' + listing.id}"
                       class="default-text-no-background"
                     >
                       <!-- <img :src=" 'data:image/jpeg;base64,' + (listing['photo'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" > -->
@@ -2124,7 +1872,22 @@
                         class="producer-bottle-listing-page-bottle-image"
                       />
                     </router-link>
-                    <div class="row">
+
+
+                    <!-- Item Rating for MOBILE VIEW ONLY, sits neatly under image -->
+                    <div
+                    class="d-flex flex-column align-items-center ps-lg-3 mobile-view-show"
+                  >
+                    <p
+                      class="fs-3 fw-bold rating-text text-end d-flex align-items-center mobile-fs-5"
+                      style="margin-bottom: 0.1rem"
+                    >
+                      {{ getRatings(listing) }}&nbsp;
+                      <span style="font-size: 30px;"> ★</span>
+                    </p>
+                  </div>
+
+                    <div class="row mt-2">
                       <!-- edit listing -->
                       <div class="col-1">
                         <button
@@ -2211,45 +1974,21 @@
                   </div>
                   <!-- details -->
                   <div
-                    class="col-lg-10 col-12 ps-3 mobile-col-7 mobile-pe-0 mobile-ps-1"
+                    class="col-8 mobile-col-9"
                   >
                     <!-- expression name, have tried & want to try & bookmark buttons -->
-                    <div class="row">
-                      <!-- expression name - tzh removed pt-2 from row-->
-                      <div class="col-7 mobile-col-12 mobile-pe-0">
-                        <div class="row">
-                          <p
-                            class="default-text fs-5 mobile-fs-6"
-                            style="margin-bottom: 0.3rem"
-                          >
-                            <router-link
-                              :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}"
-                              class="default-text-no-background"
-                            >
-                              <u>
-                                <b> {{ listing["listingName"] }} </b>
-                              </u>
-                            </router-link>
-                          </p>
-                        </div>
-                      </div>
-
-                      <!-- have tried button -->
-                      <div class="col-2 pe-0 mobile-view-hide">
-                        <div
-                          v-html="checkDrinkLists(listing).buttons.haveTried"
-                          class="d-grid"
-                        ></div>
-                      </div>
-                      <!-- want to try button -->
-                      <div class="col-2 ps-0 mobile-view-hide">
-                        <div
-                          v-html="checkDrinkLists(listing).buttons.wantToTry"
-                          class="d-grid"
-                        ></div>
-                      </div>
-                      <!-- bookmark button -->
-                      <div class="col-1 text-start p-0 mobile-view-hide">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <!-- Listing name -->
+                      <p class="default-text fs-5 mobile-fs-6 mb-0">
+                        <router-link
+                          :to="{ path: '/listing/view/' + slugify(listing.listingName) + '/' + listing.id }"
+                          class="default-text-no-background"
+                        >
+                          <u><b>{{ listing["listingName"] }}</b></u>
+                        </router-link>
+                      </p>
+                      <!-- Bookmark icon -->
+                      <div class="ps-2" style="color: black;">
                         <BookmarkIcon
                           v-if="user && Object.keys(user).length > 0"
                           :user="user"
@@ -2257,6 +1996,7 @@
                           :overlay="false"
                           size="30"
                           @icon-clicked="handleIconClick"
+                          color="black"
                         />
                       </div>
                     </div>
@@ -2269,17 +2009,17 @@
                       </p>
 
                       <!-- official description --->
-                      <div class="col-10 mobile-view-hide">
-                        <div class="row">
-                          <div v-if="listing.officialDesc?.length > 142">
+                      <div class="col-10 mobile-fs-7">
+                        <div class="row mb-1">
+                          <div v-if="listing.officialDesc?.length > 200">
                             <p
                               v-if="!showFullDescription[listing.id]"
-                              style="margin-bottom: 0.2rem"
+                              style="margin-bottom: 1"
                             >
                               <!-- tzh added truncated description --->
                               <em>{{
-                                listing["officialDesc"].slice(0, 142) +
-                                (listing["officialDesc"].length > 142
+                                listing["officialDesc"].slice(0, 150) +
+                                (listing["officialDesc"].length > 150
                                   ? "..."
                                   : "")
                               }}</em>
@@ -2307,390 +2047,53 @@
                           </div>
                         </div>
                       </div>
-                      <!-- rating-->
-                      <div
-                        class="col-2 d-flex align-items-center ps-lg-3 mobile-view-hide"
-                      >
-                        <p
-                          class="fs-3 fw-bold rating-text text-end d-flex align-items-center"
-                          style="margin-bottom: 0.1rem"
-                        >
-                          {{ getRatings(listing) }}
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="30"
-                            height="30"
-                            fill="currentColor"
-                            class="bi bi-star-fill ms-1"
-                            viewBox="0 0 16 16"
-                          >
-                            <path
-                              d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"
-                            />
-                          </svg>
-                        </p>
-                      </div>
-
-                      <div class="row">
-                        <div class="col-4 mobile-view-hide">
-                          <router-link
-                            :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}"
-                          >
-                            <button
-                              type="button"
-                              class="btn primary-btn-outline-thick p-1 px-2"
-                              style="font-size: 90%"
-                            >
-                              See User Reviews
-                            </button>
-                          </router-link>
-                        </div>
-
-                        <div class="col-4"></div>
-
-                        <div class="col-4"></div>
-                      </div>
                     </div>
-                    <!-- release date -->
-                    <!-- NOTE: can exclude for now (no data) -->
-                    <!-- <div class="row pt-5"> 
-                                            <h5> 
-                                                <b> Release Date:</b>
-                                                date
-                                            </h5>
-                                        </div> -->
-                  </div>
-                  <!--mobile view rating -->
-                  <div class="mobile-col-2 mobile-pe-0 mobile-ps-1">
-                    <div
-                      class="d-flex flex-column align-items-center ps-lg-3 mobile-view-show"
-                    >
-                      <p
-                        class="fs-3 fw-bold rating-text text-end d-flex align-items-center mobile-fs-5"
-                        style="margin-bottom: 0.1rem"
-                      >
-                        {{ getRatings(listing) }}
-                      </p>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        fill="currentColor"
-                        class="bi bi-star-fill ms-2 me-2"
-                        viewBox="0 0 16 16"
-                      >
-                        <path
-                          d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <!-- load more button -->
-              <div
-                class="d-flex justify-content-center align-items-center"
-                v-if="lazyListings.length < filteredListings.length"
-              >
-                <button
-                  class="btn primary-btn-less-round btn-lg mt-2 mb-3"
-                  @click="loadMoreListings"
-                >
-                  Load More
-                </button>
-              </div>
-            </div>
-          </div>
-          <!-- end of listings -->
-          <!-- non-scrollable expressions for mobile view TZH -->
-          <div class="row mobile-view-show">
-            <!-- v-loop for each listing -->
-            <div class="container text-start">
-              <div
-                v-for="listing in lazyListings"
-                v-bind:key="listing.id"
-                class="p-3 mobile-pb-0"
-              >
-                <div class="row">
-                  <!-- image  remove style="width: 150px; height: 150px;" from img tag-->
-                  <div
-                    class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0"
-                  >
-                    <router-link
-                      :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}"
-                      class="default-text-no-background"
-                    >
-                      <!-- <img :src=" 'data:image/jpeg;base64,' + (listing['photo'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" > -->
-                      <img
-                        :src="listing['photo'] || defaultPhoto"
-                        class="producer-bottle-listing-page-bottle-image"
-                      />
-                    </router-link>
-                    <div class="row">
-                      <!-- edit listing -->
-                      <div class="col-1">
-                        <button
-                          v-if="(correctProducer || isAdmin) && editingListing"
-                          type="button"
-                          class="icon-btn"
-                        >
-                          <router-link
-                            :to="`/listing/edit/${listing.id}`"
-                            style="color: black"
-                          >
-                            <svg
-                              width="25"
-                              height="25"
-                              viewBox="0 0 24 24"
-                              fill="currentColor"
-                              class="bi bi-sort-down"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z"
-                              ></path>
-                            </svg>
-                          </router-link>
-                        </button>
-                        <button
-                          v-else-if="
-                            editingListing &&
-                            user.modType.includes(listing.drinkType) &&
-                            listing.allowMod
-                          "
-                          type="button"
-                          class="icon-btn"
-                        >
-                          <router-link
-                            :to="`/listing/edit/${listing.id}`"
-                            style="color: black"
-                          >
-                            <svg
-                              width="25"
-                              height="25"
-                              viewBox="0 0 24 24"
-                              fill="currentColor"
-                              class="bi bi-sort-down"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z"
-                              ></path>
-                            </svg>
-                          </router-link>
-                        </button>
-                      </div>
-                      <!-- delete listing -->
-                      <div class="col-1">
-                        <button
-                          v-if="deletingListing"
-                          type="button"
-                          class="icon-btn"
-                          v-on:click="deleteListings(listing)"
-                        >
-                          <a>
-                            <svg
-                              width="25"
-                              height="25"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              class="bi bi-sort-down"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <g
-                                id="SVGRepo_tracerCarrier"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                              ></g>
-                              <g id="SVGRepo_iconCarrier">
-                                <path
-                                  d="M18 6L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6M4 6H20M16 6L15.7294 5.18807C15.4671 4.40125 15.3359 4.00784 15.0927 3.71698C14.8779 3.46013 14.6021 3.26132 14.2905 3.13878C13.9376 3 13.523 3 12.6936 3H11.3064C10.477 3 10.0624 3 9.70951 3.13878C9.39792 3.26132 9.12208 3.46013 8.90729 3.71698C8.66405 4.00784 8.53292 4.40125 8.27064 5.18807L8 6"
-                                  stroke="#000000"
-                                  stroke-width="2"
-                                  stroke-linecap="round"
-                                  stroke-linejoin="round"
-                                ></path>
-                              </g>
-                            </svg>
-                          </a>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                  <!-- details -->
-                  <div
-                    class="col-lg-10 col-12 ps-3 mobile-col-7 mobile-pe-0 mobile-ps-1"
-                  >
-                    <!-- expression name, have tried & want to try & bookmark buttons -->
-                    <div class="row">
-                      <!-- expression name - tzh removed pt-2 from row-->
-                      <div class="col-7 mobile-col-12 mobile-pe-0">
-                        <div class="row">
-                          <p
-                            class="default-text fs-5 mobile-fs-6"
-                            style="margin-bottom: 0.3rem"
-                          >
-                            <router-link
-                              :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}"
-                              class="default-text-no-background" 
-                            >
-                              <u>
-                                <b> {{ listing["listingName"] }} </b>
-                              </u>
-                            </router-link>
-                          </p>
-                        </div>
-                      </div>
-
-                      <!-- have tried button -->
+                    
+                    <!-- <div class="row">
+                      have tried button 
                       <div class="col-2 pe-0 mobile-view-hide">
                         <div
                           v-html="checkDrinkLists(listing).buttons.haveTried"
                           class="d-grid"
                         ></div>
                       </div>
-                      <!-- want to try button -->
+                      want to try button 
                       <div class="col-2 ps-0 mobile-view-hide">
                         <div
                           v-html="checkDrinkLists(listing).buttons.wantToTry"
                           class="d-grid"
                         ></div>
                       </div>
-                      <!-- bookmark button -->
-                      <div class="col-1 text-start p-0 mobile-view-hide">
-                        <BookmarkIcon
-                          v-if="user && Object.keys(user).length > 0"
-                          :user="user"
-                          :listing="listing"
-                          :overlay="false"
-                          size="30"
-                          @icon-clicked="handleIconClick"
-                        />
-                      </div>
-                    </div>
-                    <div class="row">
-                      <!-- Bottler / Drink Type / Type Category / ABV / Country / Description - added by TZH -->
-                      <p class="text-start mb-1 mobile-fs-7">
-                        {{ listing["bottler"] }} | {{ listing["drinkType"] }} |
-                        {{ listing["typeCategory"] }} | {{ listing["abv"] }} ABV
-                        | {{ listing["originCountry"] }}
-                      </p>
-
-                      <!-- official description --->
-                      <div class="col-10 mobile-view-hide">
-                        <div class="row">
-                          <div v-if="listing.officialDesc?.length > 142">
-                            <p
-                              v-if="!showFullDescription[listing.id]"
-                              style="margin-bottom: 0.2rem"
-                            >
-                              <!-- tzh added truncated description --->
-                              <em>{{
-                                listing["officialDesc"].slice(0, 142) +
-                                (listing["officialDesc"].length > 142
-                                  ? "..."
-                                  : "")
-                              }}</em>
-                              <a
-                                @click="showFullDescription[listing.id] = true"
-                                style="font-weight: bold"
-                                >(Read More)</a
-                              >
-                            </p>
-                            <p v-else style="margin-bottom: 0.2rem">
-                              <!-- tzh added full description --->
-                              <em>{{ listing["officialDesc"] }}</em>
-                              <a
-                                @click="showFullDescription[listing.id] = false"
-                                style="font-weight: bold"
-                                >(Read Less)</a
-                              >
-                            </p>
-                          </div>
-                          <div v-else>
-                            <p style="margin-bottom: 0.2rem">
-                              <!-- tzh added full description --->
-                              <em>{{ listing["officialDesc"] }}</em>
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      <!-- rating-->
-                      <div
-                        class="col-2 d-flex align-items-center ps-lg-3 mobile-view-hide"
-                      >
-                        <p
-                          class="fs-3 fw-bold rating-text text-end d-flex align-items-center"
-                          style="margin-bottom: 0.1rem"
-                        >
-                          {{ getRatings(listing) }}
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="30"
-                            height="30"
-                            fill="currentColor"
-                            class="bi bi-star-fill ms-1"
-                            viewBox="0 0 16 16"
-                          >
-                            <path
-                              d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"
-                            />
-                          </svg>
-                        </p>
-                      </div>
-
-                      <div class="row">
-                        <div class="col-4 mobile-view-hide">
-                          <router-link
-                            :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}"
-                          >
-                            <button
-                              type="button"
-                              class="btn primary-btn-outline-thick p-1 px-2"
-                              style="font-size: 90%"
-                            >
-                              See User Reviews
-                            </button>
-                          </router-link>
-                        </div>
-
-                        <div class="col-4"></div>
-
-                        <div class="col-4"></div>
-                      </div>
-                    </div>
-                    <!-- release date -->
-                    <!-- NOTE: can exclude for now (no data) -->
-                    <!-- <div class="row pt-5"> 
-                                            <h5> 
-                                                <b> Release Date:</b>
-                                                date
-                                            </h5>
-                                        </div> -->
+                      
+                    </div>-->
                   </div>
-                  <!--mobile view rating -->
-                  <div class="mobile-col-2 mobile-pe-0 mobile-ps-1">
+
+
+                  <!-- Item rating for DESKTOP VIEW ONLY -->
+                  <div class="col-2 d-flex flex-column align-items-end mobile-view-hide">
                     <div
-                      class="d-flex flex-column align-items-center ps-lg-3 mobile-view-show"
+                      class="d-flex flex-column align-items-center ps-lg-3"
                     >
                       <p
                         class="fs-3 fw-bold rating-text text-end d-flex align-items-center mobile-fs-5"
                         style="margin-bottom: 0.1rem"
                       >
-                        {{ getRatings(listing) }}
+                        {{ getRatings(listing) }}&nbsp;
+                        <span style="font-size: 30px;"> ★</span>
                       </p>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        fill="currentColor"
-                        class="bi bi-star-fill ms-2 me-2"
-                        viewBox="0 0 16 16"
+                    </div>
+                    <div>
+                      <router-link
+                        :to="{ path: '/listing/view/' + slugify(listing.listingName) + '/' + listing.id}"
                       >
-                        <path
-                          d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"
-                        />
-                      </svg>
+                        <button
+                          type="button"
+                          class="btn btn-read-more px-10"
+                          style="font-size: 90%"
+                        >
+                          See Reviews
+                        </button>
+                      </router-link>
                     </div>
                   </div>
                 </div>
@@ -2709,22 +2112,23 @@
               </div>
             </div>
           </div>
-          <!-- end of listings -->
+          <br>
         </div>
 
+        <!-- END OF DRINKS CATALOGUE -->
         <div v-else class="container no-right-padding-large-screen">
           <h4
-            class="text-start"
-            style="font-weight: bold; color: black; margin-bottom: 2rem"
+            class="text-start text-body-secondary fs-4 fw-bold mb-2 mobile-fs-6"
+            style="font-weight: bold; color: black;"
           >
             Average Tour and Experience Rating:&nbsp;&nbsp;{{
               getAverageTourRatings()
             }}<span style="color: #f0b358">★</span>
           </h4>
-          <h5 class="text-start" style="font-weight: bold; color: black">
+          <h5 class="text-start fs-5 fw-bold mobile-fs-6 mb-3" style="font-style: italic; color: black">
             In Photos
           </h5>
-          <div class="row text-start" style="padding-left: 1.5em">
+          <div class="row text-start" style="padding-left: 0.75em">
             <div class="col">
               <div class="justify-content-start row">
                 <div
@@ -2735,7 +2139,7 @@
                 >
                   <!-- (1) add button -->
                   <div
-                    class="mobile-col-3 col-sm-6 col-md-4 col-lg-2 mobile-px-1"
+                    class="mobile-col-3 col-sm-6 col-md-4 col-lg-2 mobile-px-1 me-2"
                   >
                     <div data-bs-toggle="modal" data-bs-target="#reviewModal">
                       <svg
@@ -2755,24 +2159,17 @@
                   </div>
                   <!-- (2) to (6) other photos -->
                   <div
-                    v-for="reviewImage in filteredTourReviewsWithImages.slice(
-                      0,
-                      5
-                    )"
+                    v-for="reviewImage in filteredTourReviewsWithImages.slice(0,5)"
                     v-bind:key="reviewImage"
                     class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 mobile-px-1"
                   >
-                    <img
-                      :src="reviewImage || defaultPhoto"
-                      alt=""
-                      class="review-image"
-                    />
+                    <img :src="reviewImage || defaultPhoto" alt="" class="review-image me-2"/>
                   </div>
                 </div>
                 <div v-else-if="user_id == 'defaultUser'" class="row">
                   <!-- (1) add button -->
                   <div
-                    class="mobile-col-3 col-sm-6 col-md-4 col-lg-2 mobile-px-1"
+                    class="mobile-col-3 col-sm-6 col-md-4 col-lg-2 mobile-px-1 me-2"
                   >
                     <div>
                       <svg
@@ -2798,7 +2195,7 @@
                       5
                     )"
                     v-bind:key="reviewImage"
-                    class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 mobile-px-1"
+                    class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 mobile-px-1 me-2"
                   >
                     <img
                       :src="reviewImage || defaultPhoto"
@@ -2808,19 +2205,12 @@
                   </div>
                 </div>
                 <div v-else class="row">
-                  <!-- (1) add button 
-                                    <div class="mobile-col-3 col-sm-6 col-md-4 col-lg-2 mobile-px-1">
-                                        <div >
-                                            <svg xmlns="http://www.w3.org/2000/svg"  fill="#83A9E8" class="bi bi-plus-lg review-image" viewBox="0 0 16 16"   @click="$router.push('/login')" style="cursor: pointer;"  > tzh changed currentColor to 83A9E8
-                                                <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
-                                            </svg>
-                                        </div>
-                                    </div>           -->
+  
                   <!-- (2) to (6) other photos-->
                   <div
                     v-for="reviewImage in filteredTourReviewsWithImages"
                     v-bind:key="reviewImage"
-                    class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 p-0 mobile-px-1"
+                    class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 p-0 mobile-px-1 me-2"
                   >
                     <img
                       :src="reviewImage || defaultPhoto"
@@ -2840,7 +2230,7 @@
             v-for="review in filteredTourReviews"
             v-bind:key="review.id"
           >
-            <div class="col-9 xcol-lg-8">
+            <div class="col-12 col-lg-9">
               <div class="row">
                 <div class="text-start mb-2">
                   <div class="row">
@@ -2849,7 +2239,7 @@
                       class="col-12 col-lg-1 mobile-col-2"
                       style="text-align: left"
                     >
-                      <router-link :to="`/profile/user/${review.userID}`">
+                      <router-link :to="`/profile/user/${review.userName}/${review.userID}`">
                         <img
                           :src="
                             getPhotoFromReview(review) || defaultProfilePhoto
@@ -2862,7 +2252,7 @@
                     <div class="col-10 pe-0 mobile-fs-7 mobile-ps-4">
                       <!-- username -->
                       <router-link
-                        :to="`/profile/user/${review.userID}`"
+                        :to="`/profile/user/${review.userName}/${review.userID}`"
                         style="color: inherit"
                       >
                         <b> @{{ getUsernameFromReview(review) }} </b>
@@ -2883,10 +2273,10 @@
                       >
 
                       <!-- Insert Edit modal here -->
-                      <div class="mt-2 mobile-mt-1">
+                      
                         <button
                           v-if="review.userID === parseInt(user_id)"
-                          class="btn btn-warning me-1 py-1 mobile-fs-7"
+                          class="btn btn-warning mx-2 py-1 mobile-fs-7"
                           @click="setUpdateID(review)"
                           data-bs-toggle="modal"
                           data-bs-target="#reviewModal"
@@ -2903,7 +2293,7 @@
                           Delete
                         </button>
                         <!--tzh removed option to delete for ordinary users "parseInt(userID) || ")-->
-                      </div>
+                      
                     </div>
                   </div>
                   <div class="text-start mb-2">
@@ -3082,8 +2472,8 @@
             </div>
 
             <!-- review photo -->
-            <div class="col-2 xcol-lg-3 text-end mobile-view-hide">
-              <!-- review photo -->
+            <div class="col-3 xcol-lg-3 text-end mb-3 mobile-view-hide">
+              <!-- review photo (desktop view) -->
               <div
                 data-bs-toggle="modal"
                 :data-bs-target="`#reviewImageModal${getUsernameFromReview(
@@ -3099,22 +2489,22 @@
                 />
               </div>
             </div>
-            <div class="col-3 xcol-lg-3 text-start mobile-view-show px-0">
-              <!-- review photo -->
-              <div
-                data-bs-toggle="modal"
-                :data-bs-target="`#reviewImageModal${getUsernameFromReview(
-                  review
-                )}`"
-                style="cursor: pointer"
-              >
-                <img
-                  :src="review['photos'][0] || defaultPhoto"
-                  alt=""
-                  class="review-image"
-                  style="width: 100%; height: 100%"
-                />
-                <!--for mobile tzh replaced 125px with 100% -->
+            
+            <!-- review photo (mobile view) -->
+            <div class="row">
+              <div class="col-3 xcol-lg-3 text-start mb-3 mobile-view-show">
+                <div
+                    data-bs-toggle="modal"
+                    :data-bs-target="`#reviewImageModal${getUsernameFromReview(review)}`"
+                    style="cursor: pointer"
+                >
+                    <img
+                    :src="review['photos'][0] || defaultPhoto"
+                    alt=""
+                    class="review-image"
+                    style="width: 200%; height: 200%"
+                    />
+                </div>
               </div>
             </div>
             <div
@@ -3146,7 +2536,7 @@
       <!-- end of producer information -->
 
       <!-- view analytics & q&a for producer & 88 bamboo's deepdive -->
-      <div class="col-xl-3 col-12 ps-lg-0">
+      <div class="col-xl-3 col-12">
         <div class="row">
           <!-- view analytics -->
           <div v-if="correctProducer">
@@ -3198,7 +2588,9 @@
               Change/Reset Password
             </button>
           </div>
-          <!-- q&a -->
+          
+          <!-- VIEW Q&A DESKTOP VIEW -->
+          
           <div class="col-xl-12 col-lg-4 col-md-6 col-12 mobile-view-hide">
             <div class="square primary-square-green rounded p-3 mb-3">
               <!--tzh added -green -->
@@ -3206,7 +2598,7 @@
               <div class="square-inline text-start">
                 <!-- [if] user type producer -->
                 <div v-if="correctProducer" class="mr-auto">
-                  <h4>Q&A for You!</h4>
+                  <h4 style="font-weight: bold;">Q&A for You!</h4>
                   <div v-if="claimStatus">
                     <router-link
                       :to="{ path: '/Producers/ProducersQA/' + producer_id }"
@@ -3221,19 +2613,21 @@
                   </div>
                 </div>
                 <!-- [else] user type is NOT producer -->
-                <h4 v-else class="mr-auto">
+                <h4 v-else class="mr-auto"  style="font-weight: bold">
                   Q&As for {{ specified_producer["producerName"] }}
                 </h4>
               </div>
 
-              <!-- [if] account is claimed -->
+              <!-- [if] account is claimed DESKTOP VIEW -->
               <div v-if="claimStatus">
                 <!-- show buttons for answered & unanswered questions -->
                 <div v-if="correctProducer" class="row text-center px-2">
+                  
                   <div class="col-6 d-grid gap-0 no-padding">
                     <button
                       type="button"
                       class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text"
+                      style="background-color:#1c9e88"
                     >
                       <a
                         class="reverse-clickable-text"
@@ -3247,6 +2641,7 @@
                     <button
                       type="button"
                       class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text"
+                      style="background-color:#1c9e88"
                     >
                       <a
                         class="reverse-clickable-text"
@@ -3256,12 +2651,13 @@
                       </a>
                     </button>
                   </div>
+                  
                 </div>
                 <!-- body -->
                 <div class="text-start pt-2">
                   <!-- responses to q&a -->
-                  <div id="carouselExample" class="carousel slide">
-                    <div class="carousel-inner px-4">
+                  <div id="carouselDesktopQnA" class="carousel slide">
+                    <div class="carousel-inner px-1">
                       <!-- [if] user type is producer -->
                       <div v-if="correctProducer">
                         <!-- show answered questions -->
@@ -3272,7 +2668,7 @@
                             v-bind:key="qa.id"
                             v-bind:class="{ active: index === 0 }"
                           >
-                            <p>
+                            <p class="mb-2">
                               <b> Q: {{ qa["question"] }} </b>
                             </p>
                             <!-- [if] not editing -->
@@ -3316,7 +2712,7 @@
                             <!-- spacer -->
                             <div class="mt-2"></div>
                             <p
-                              v-if="editingQA == false || editingQAID != qa.id"
+                              v-if="editingQA == false || editingQAID != qa.id" class="mb-1"
                             >
                               A: {{ qa["answer"] }}
                             </p>
@@ -3338,7 +2734,7 @@
                             v-bind:key="qa.id"
                             v-bind:class="{ active: index === 0 }"
                           >
-                            <p>
+                            <p class="mb-2">
                               <b> Q: {{ qa["question"] }} </b>
                             </p>
                             <div class="input-group centered">
@@ -3438,60 +2834,56 @@
                         </div>
                       </div>
                     </div>
-                    <button
-                      class="carousel-control-prev"
-                      type="button"
-                      data-bs-target="#carouselExample"
-                      data-bs-slide="prev"
-                    >
-                      <span
-                        class="carousel-control-prev-icon"
-                        aria-hidden="true"
-                      ></span>
-                      <span class="visually-hidden">Previous</span>
-                    </button>
-                    <button
-                      class="carousel-control-next"
-                      type="button"
-                      data-bs-target="#carouselExample"
-                      data-bs-slide="next"
-                    >
-                      <span
-                        class="carousel-control-next-icon"
-                        aria-hidden="true"
-                      ></span>
-                      <span class="visually-hidden">Next</span>
-                    </button>
+                    <div class="d-flex justify-content-center gap-3">
+                      <button
+                        class="btn btn-sm"
+                        type="button"
+                        data-bs-target="#carouselDesktopQnA"
+                        data-bs-slide="next"
+                        widt
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="white" class="bi bi-arrow-right" viewBox="0 0 16 16">
+                          <path fill-rule="evenodd" d="M10.146 4.646a.5.5 0 0 1 .708.708L7.707 8l3.147 2.646a.5.5 0 0 1-.708.708l-3.5-3a.5.5 0 0 1 0-.708l3.5-3z"/>
+                        </svg>
+                      </button>
+                      <button
+                        class="btn btn-sm"
+                        type="button"
+                        data-bs-target="#carouselDesktopQnA"
+                        data-bs-slide="prev"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="white" class="bi bi-arrow-left" viewBox="0 0 16 16">
+                          <path fill-rule="evenodd" d="M5.854 4.646a.5.5 0 0 0-.708.708L8.293 8l-3.147 2.646a.5.5 0 0 0 .708.708l3.5-3a.5.5 0 0 0 0-.708l-3.5-3z"/>
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <div class="py-1"></div>
               </div>
 
-              <!-- [else] account is not claimed -->
+              <!-- [else] account is not claimed DESKTOP VIEW -->
               <div v-else>
                 <div
-                  class="row text-center mx-1 py-2 default-text-no-background"
+                  class="row text-center py-3 m-2 default-text-no-background"
                   style="background-color: #ddc8a9"
                 >
-                  <p class="fw-bold fs-3 pt-3" style="font-style: italic">
-                    Do you own this business?
+                  <p class="fs-6 fw-bold">
+                  Do you own this business?
                   </p>
-                  <p>
-                    Sign up for a producer account to answer latest questions
-                    from your fans!
+                  <p style="font-weight: normal">
+                    Sign up for a business account to answer latest questions from your fans!
                   </p>
-                  <!-- spacer -->
-                  <div class="col-2"></div>
-                  <!-- button -->
+                  <!-- button --> <!-- mb-2 is for spacing -->
+                  <div class="col-1"></div>
                   <button
                     type="submit"
-                    class="col-8 btn secondary-btn-border-thick mb-3"
+                    class="col-10 btn secondary-btn mb-2" 
+                    style="font-weight:bold"
                     @click="claimProducerAccount"
                   >
                     Claim This Business
                   </button>
-                  <!-- spacer -->
-                  <div class="col-2"></div>
+                  <div class="col-1"></div>
                 </div>
               </div>
             </div>
@@ -3501,7 +2893,7 @@
               <!--tzh changed secondary-square to primary-square-green-outline-->
 
               <!-- Header -->
-              <h4 class="text-start">Location</h4>
+              <h4 class="text-start" style="font-weight: bold">Location</h4>
               <div class="pb-1 text-start" v-if="correctProducer || isAdmin">
                 <!-- [if] not editing -->
                 <button
@@ -3554,7 +2946,7 @@
 
               <!-- Section Content (View Mode) -->
               <div>
-                <p class="text-start mb-1 fst-italic">
+                <p class="text-start mb-1 default-text-no-background mobile-fs-6">
                   {{ specified_producer["location"] }}
                 </p>
               </div>
@@ -3580,32 +2972,31 @@
             <div class="square primary-square-green-outline rounded p-3 mb-3">
               <!-- Header -->
               <div class="square-inline text-start">
-                <h4 class="mr-auto">Opening Hours and Reservation Details</h4>
+                <h4 class="mr-auto" style="font-weight: bold">Opening Hours and Reservation Details</h4>
               </div>
 
               <!-- Opening Hours Lock Message (producer Unclaimed) -->
               <div
-                class="row text-center py-2 mx-1 default-text-no-background"
+                class="row text-center py-2 m-2 default-text-no-background"
                 v-if="!specified_producer['claimStatus']"
                 style="background-color: #ddc8a9"
               >
-                <p class="fs-3 fw-bold fst-italic mt-3">
+                <p class="fs-6 fw-bold my-2">
                   Do you own this business?
                 </p>
-                <p>
-                  Sign up for a venue account to share your opening hours and
-                  reservation details with your fans!
+                <p style="font-weight: normal">
+                  Sign up for a brand account to share your opening hours and reservation details with your fans!
                 </p>
-
-                <div class="col-lg-2 col-1"></div>
+                <div class="col-1"></div>
                 <button
                   type="submit"
-                  class="col-lg-8 col-10 btn secondary-btn-border-thick mb-3"
+                  class="col-10 btn secondary-btn mb-2"
+                  style="font-weight: bold"
                   @click="claimProducerAccount"
                 >
                   Claim This Business
                 </button>
-                <div class="col-lg-2 col-1"></div>
+                <div class="col-1"></div>
               </div>
 
               <!-- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -->
@@ -3617,7 +3008,7 @@
               >
                 <!-- Section Header -->
                 <div class="square-inline">
-                  <h5 class="mr-auto">Opening Hours</h5>
+                  <h5 class="mr-auto mobile-fs-6 fw-bold">Opening Hours</h5>
                 </div>
 
                 <!-- Buttons -->
@@ -3746,14 +3137,14 @@
                         style="width: 80px; height: 80px"
                       />
                     </div>
-                    <div class="col-md-7 col-9">
+                    <div class="col-md-7 col-9 text-start mb-1 default-text-no-background mobile-rating-smaller-text-2">
                       {{ deepDiveLinkFormatted }}
                     </div>
                   </div>
                 </a>
                 <div v-else>
                   <div class="text-body-secondary">
-                    <div class="fst-italic">
+                    <div class="text-start mb-1 default-text-no-background mobile-rating-smaller-text-2">
                       No reviews available for this listing. For other 88 Bamboo
                       reviews,
                       <a
@@ -4351,8 +3742,11 @@ export default {
                 return text
                     .toString()
                     .toLowerCase()
-                    .replace(/\s+/g, '')
-                    .replace(/[^\w]/g, '');
+                    .replace(/['’]/g, '')
+                    .replace(/[^\w\s-]/g, '')
+                    .trim()
+                    .replace(/\s+/g, '-')
+                    .replace(/-+/g, '-')
             },
     // load data from database
     async loadData() {

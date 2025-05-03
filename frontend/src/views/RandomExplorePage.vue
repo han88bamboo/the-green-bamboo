@@ -242,7 +242,7 @@
                     <div class="square-inline">
                       <router-link
                         :to="{
-                          path: '/profile/user/' + userID + '/' + username,
+                          path: '/profile/user/' + username + '/' + userID,
                         }"
                         class="reverse-clickable-text"
                       >
@@ -268,7 +268,7 @@
                         >
                           <div class="d-flex align-items-start">
                             <router-link
-                              :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName) }"
+                              :to="{ path: '/listing/view/' + slugify(listing.listingName) + '/' + listing.id }"
                               class="reverse-clickable-text"
                             >
                               <img
@@ -278,7 +278,7 @@
                             </router-link>
                             <span class="ms-3 reverse-clickable-text">
                               <router-link
-                                :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}"
+                                :to="{ path: '/listing/view/' + slugify(listing.listingName) + '/' + listing.id}"
                                 class="reverse-clickable-text"
                               >
                                 <b> {{ listing.listingName }} </b>
@@ -288,9 +288,9 @@
                                 :to="{
                                   path:
                                     '/profile/producer/' +
-                                    listing.producerID +
+                                    slugify(getProducerName(listing)) +
                                     '/' +
-                                    getProducerName(listing),
+                                    listing.producerID,
                                 }"
                                 class="reverse-clickable-text"
                               >
@@ -370,9 +370,9 @@
                             :to="{
                               path:
                                 '/profile/producer/' +
-                                update.id +
+                                slugify(update.producerName) +
                                 '/' +
-                                update.producerName, //updated username
+                                update.id, //updated username
                             }"
                             class="reverse-text"
                           >
@@ -578,7 +578,7 @@
                       "
                     >
                       <router-link
-                        :to="{ path: '/profile/producer/' + userID }"
+                        :to="{ path: '/profile/producer/' + slugify(getProducerName(userID)) + '/' + userID }"
                       >
                         <button
                           class="btn secondary-btn-border btn-sm py-2 px-3"
@@ -1007,7 +1007,7 @@
                                   <div class="name-producer">
                                     <router-link
                                       :to="{
-                                        path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName),
+                                        path: '/listing/view/' + slugify(listing.listingName) + '/' + listing.id,
                                       }"
                                       class="primary-clickable-text text-decoration-none"
                                       style="color: #027562"
@@ -1023,9 +1023,9 @@
                                       :to="{
                                         path:
                                           '/profile/producer/' +
-                                          listing.producerID +
+                                          slugify(getProducerName(listing)) +
                                           '/' +
-                                          getProducerName(listing),
+                                          listing.producerID,
                                       }"
                                       class="primary-clickable-text"
                                     >
@@ -1036,7 +1036,7 @@
                                   </div>
                                   <router-link
                                     :to="{
-                                      path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName),
+                                      path: '/listing/view/' + slugify(listing.listingName) + '/' + listing.id,
                                     }"
                                     class="default-clickable-text fst-italic"
                                   >
@@ -1066,7 +1066,7 @@
                                   <div class="d-grid">
                                     <router-link
                                       :to="{
-                                        path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName),
+                                        path: '/listing/view/' + slugify(listing.listingName) + '/' + listing.id,
                                       }"
                                       class="primary-clickable-text"
                                     >
@@ -1125,14 +1125,14 @@
 
                                       <span class="mx-0">  <router-link
                                         :to="{
-                                          path: '/profile/user/' + review.userID + '/' + review.username,
+                                          path: '/profile/user/' + review.userInfo.displayName + '/' + review.userID,
                                         }"
                                         class="primary-clickable-text"
                                       >
                                         <span><b>@{{ review["userInfo"]["displayName"] }}</b></span>
                                       </router-link> just drank and rated  <router-link
                                       :to="{
-                                        path: '/listing/view/' + review.reviewTarget.id + '/' + slugify(review.reviewTarget.listingName),
+                                        path: '/listing/view/' + slugify(review.reviewTarget.listingName) + '/' + review.reviewTarget.id,
                                       }"
                                       class="primary-clickable-text text-decoration-none"
                                       style="color: #027562"
@@ -1175,14 +1175,14 @@
                                       
                                       <span class="mx-0"><router-link
                                         :to="{
-                                          path: '/profile/user/' + review.userID + '/' + review.username,
+                                          path: '/profile/user/' + review.userInfo.displayName + '/' + review.userID,
                                         }"
                                         class="primary-clickable-text"
                                       >
                                         <span><b>@{{ review["userInfo"]["displayName"] }}</b></span>
                                       </router-link> just drank and rated <router-link
                                       :to="{
-                                        path: '/listing/view/' + review.reviewTarget.id + '/' + slugify(review.reviewTarget.listingName),
+                                        path: '/listing/view/' + slugify(review.reviewTarget.listingName) + '/' + review.reviewTarget.id ,
                                       }"
                                       class="primary-clickable-text text-decoration-none"
                                       style="color: #027562"
@@ -1228,7 +1228,7 @@
                                   <div class="d-grid">
                                     <router-link
                                       :to="{
-                                        path: '/listing/view/' + review.reviewTarget.id + '/' + slugify(review.reviewTarget.listingName),
+                                        path: '/listing/view/' + slugify(review.reviewTarget.listingName) + '/' + review.reviewTarget.id,
                                       }"
                                       class="primary-clickable-text"
                                     >
@@ -1297,7 +1297,7 @@
                                   <div class="name-producer">
                                     <router-link
                                       :to="{
-                                        path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName),
+                                        path: '/listing/view/' + slugify(listing.listingName) + '/' + listing.id,
                                       }"
                                       class="primary-clickable-text text-decoration-none"
                                       style="color: #027562"
@@ -1313,9 +1313,9 @@
                                       :to="{
                                         path:
                                           '/profile/producer/' +
-                                          listing.producerID +
+                                          slugify(getProducerName(listing)) +
                                           '/' +
-                                          getProducerName(listing),
+                                          listing.producerID,
                                       }"
                                       class="primary-clickable-text"
                                     >
@@ -1326,7 +1326,7 @@
                                   </div>
                                   <router-link
                                     :to="{
-                                      path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName),
+                                      path: '/listing/view/' + slugify(listing.listingName) + '/' + listing.id,
                                     }"
                                     class="default-clickable-text fst-italic"
                                   >
@@ -1352,7 +1352,7 @@
                                   <div class="d-grid">
                                     <router-link
                                       :to="{
-                                        path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName),
+                                        path: '/listing/view/' + slugify(listing.listingName) + '/' + listing.id,
                                       }"
                                       class="primary-clickable-text"
                                     >
@@ -1540,8 +1540,11 @@ export default {
                 return text
                     .toString()
                     .toLowerCase()
-                    .replace(/\s+/g, '')
-                    .replace(/[^\w]/g, '');
+                    .replace(/['’]/g, '')
+                    .replace(/[^\w\s-]/g, '')
+                    .trim()
+                    .replace(/\s+/g, '-')
+                    .replace(/-+/g, '-')
             },
     // load data from database
     async loadData() {

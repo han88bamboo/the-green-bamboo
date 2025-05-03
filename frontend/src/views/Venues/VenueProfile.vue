@@ -83,7 +83,7 @@
                       
 
                                 <!-- Country -->
-                                <div class="col-8 pe-0 ps-0">
+                                <div class="col-7 pe-0 ps-0">
 
                                     <!-- [if] editing profile -->
                                     <div v-if="editProfile">
@@ -99,17 +99,18 @@
                                 </div>
 
                                 <!-- Claim Venue / Report Menu Inaccuracy / Edit Profile -->
-                                <div class="col-4 mobile-view-hide">
+                                <div class="col-5 mobile-view-hide">
                                     <!-- [if] not logged in as viewed venue -->
                                     <div class="d-grid no-padding text-end" v-if="!selfView && !powerView">
 
                                         <!-- Claim Venue -->
-                                        <p v-if="!targetVenue['claimStatus']" class="text-body-secondary no-margin text-decoration-underline fst-italic" @click="claimVenueAccount"> Claim This Business </p>
+                                        <p v-if="!targetVenue['claimStatus']" class="text-body-secondary no-margin text-decoration-underline fst-italic" style="color: #027562" @click="claimVenueAccount"> Claim This Business </p>
                                         <p v-else class="text-body-secondary no-margin fw-bold fst-italic"> Verified Venue </p>
 
-                                        <!-- Report Menu Inaccuracy (Opens Modal) -->
+                                        <!-- Report Menu Inaccuracy (Opens Modal) 
                                         <p v-if="loggedIn && targetVenue['claimStatus']" class="text-body-secondary no-margin text-decoration-underline fst-italic" data-bs-toggle="modal" data-bs-target="#inaccurateModal"> Report Menu Inaccuracy </p>
                                         <p v-if="!loggedIn && targetVenue['claimStatus']" class="text-body-secondary no-margin text-decoration-underline fst-italic" @click="this.$router.push('/login');"> Report Menu Inaccuracy </p>
+                                        -->
                                     </div>
 
                                     <!-- [else] logged in as viewed venue -->
@@ -347,7 +348,7 @@
                         class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2 "
                         data-bs-toggle="modal"
                         data-bs-target="#venueReviewModal"
-                        style="font-weight: bold; background-color:rgb(249, 115, 106);">
+                        style="font-weight: bold;">
                         Review Venue
                         </button>
                         <button
@@ -358,11 +359,9 @@
                         </button>
                     </div>
                     </div>
+
                 </div>
-  
-                
-                
-                
+            
                 <!--------- END Follow Venue Button ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
                 <!-- ------- END Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
@@ -411,38 +410,42 @@
                     </div>
 
                     <!-- Latest Updates Lock Message (Venue Unclaimed) -->
-                    <div class="row text-center py-2 mx-1 default-text-no-background" v-if="!targetVenue['claimStatus']" style="background-color:#DDC8A9;">
-                        <p class="fs-3 fw-bold fst-italic mt-3" >
+                    <div class="row text-center py-2 m-3 default-text-no-background" v-if="!targetVenue['claimStatus']" style="background-color: rgb(221, 200, 169); margin: 10px;">
+                        <p class="fs-5 mobile-fs-6 fw-bold mt-3 mb-2" >
                             Do you own this business?
                         </p>
                         <p> Sign up for a venue account to share your latest updates with your fans! </p>
 
-                        <div class="col-lg-4 col-sm-3 col-2"></div>
-                        <button type="submit" class="col-lg-4 col-sm-6 col-8 btn secondary-btn-border-thick mb-3" @click="claimVenueAccount"> Claim This Business </button>
-                        <div class="col-lg-4 col-sm-3 col-2"></div>
+                        <div class="col-4 mobile-col-2"></div>
+                        <button type="submit" class="col-4 mobile-col-8 btn secondary-btn mb-3" style="font-weight:bold"  @click="claimVenueAccount"> Claim This Business </button>
+                        <div class="col-4 mobile-col-2"></div>
                     </div>
 
                     <!-- Latest Update Information -->
                     <div v-if="targetVenue['updates'].length > 0 && targetVenue['claimStatus']">
 
                         <!-- Row 1: Photo + Update Text -->
-                        <div class="row">
-                      
-                          <!-- Left Column: Photo -->
-                          <div class="col-3 mt-3">
-                            <div class="image-container">
-                              <img :src="(targetVenue['updates'][0].photo || defaultPhoto)" alt="" class="producer-profile-latest-updates-image">
+                        <div class="row align-items-start mt-3">
+
+                            <!-- Image (25%) -->
+                            <div class="col-2 mobile-col-4 text-start1">
+                              <img
+                                :src="(targetVenue['updates'][0].photo || defaultPhoto)"
+                                alt=""
+                                class="img-fluid rounded"
+                              />
                             </div>
-                          </div>
-                      
-                          <!-- Right Column: Update Text -->
-                          <div class="col-9 mt-3">
-                            <div class="text-start">
-                              <p class="mobile-rating-smaller-text-2">{{ targetVenue['updates'][0].text }}</p>
+                          
+                            <!-- Text (75%) -->
+                            <div class="col-10 mobile-col-8 text-start">
+                              <p class="mobile-rating-smaller-text-2 mb-0">
+                                {{ targetVenue['updates'][0].text }}
+                              </p>
                             </div>
+                          
                           </div>
-                      
-                        </div>
+                          
+                          
                       
                         <!-- Row 2: Likes + Posted Date + Admin Buttons (Full Width) -->
                         <div class="row pt-3">
@@ -451,7 +454,7 @@
                       
                             <!-- Like Heart and Count -->
                             <div class="d-flex align-items-center">
-                              <div v-if="Array.isArray(targetVenue['updates'][0].likes) && viewerType !== null" @click="toggleLike(targetVenue['updates'][0].id)" style="cursor: pointer;">
+                              <div v-if="Array.isArray(targetVenue['updates'][0].likes) && viewerType !== null" @click="likeUpdates(targetVenue['updates'][0].id)" style="cursor: pointer;">
                                 <svg v-if="targetVenue['updates'][0].likes.some(like => ((like.userId == viewerID) && (like.userType === userType)))"
                                      xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="red" class="bi bi-heart-fill" viewBox="0 0 16 16">
                                   <path d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"/>
@@ -465,22 +468,22 @@
                             </div>
                       
                             <!-- Posted Date -->
-                            <div class="text-body-secondary fs-6 mobile-rating-smaller-text-2">
+                            <div class="text-body-secondary mobile-rating-smaller-text-2">
                               Posted on: {{ targetVenue["updates"][0].date }}
                             </div>
                       
                             <!-- Admin Buttons -->
                             <div v-if="selfView || powerView" class="ms-auto">
-                              <button v-if="editUpdateTarget != targetVenue['updates'][0].id" type="button" class="btn btn-warning rounded-0 btn-sm me-2" @click="editUpdate(targetVenue['updates'][0])">
+                              <button v-if="editUpdateTarget != targetVenue['updates'][0].id" type="button" class="btn btn-warning btn-sm me-2" @click="editUpdate(targetVenue['updates'][0])">
                                 Edit
                               </button>
-                              <button v-if="editUpdateTarget != targetVenue['updates'][0].id" type="button" class="btn btn-danger rounded-0 btn-sm" @click="deleteUpdate(targetVenue['updates'][0])">
+                              <button v-if="editUpdateTarget != targetVenue['updates'][0].id" type="button" class="btn btn-danger btn-sm" @click="deleteUpdate(targetVenue['updates'][0])">
                                 Delete
                               </button>
-                              <button v-if="editUpdateTarget == targetVenue['updates'][0].id" type="button" class="btn btn-success rounded-0 btn-sm me-2" @click="saveUpdate(targetVenue['updates'][0])" :disabled="!(editUpdateContent[targetVenue['updates'][0].id].newText.length > 0)">
+                              <button v-if="editUpdateTarget == targetVenue['updates'][0].id" type="button" class="btn btn-success btn-sm me-2" @click="saveUpdate(targetVenue['updates'][0])" :disabled="!(editUpdateContent[targetVenue['updates'][0].id].newText.length > 0)">
                                 Save
                               </button>
-                              <button v-if="editUpdateTarget == targetVenue['updates'][0].id" type="button" class="btn btn-secondary rounded-0 btn-sm" @click="editUpdateTarget = null">
+                              <button v-if="editUpdateTarget == targetVenue['updates'][0].id" type="button" class="btn btn-secondary btn-sm" @click="editUpdateTarget = null">
                                 Cancel
                               </button>
                             </div>
@@ -489,7 +492,7 @@
                       
                         </div>
                       
-                      </div>
+                    </div>
                       
 
                     <!-- ------- END Latest Updates Header + Latest Update Information / START Add Update ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
@@ -570,38 +573,12 @@
                             <p v-if="targetVenue['updates'].length > 1" class="text-body-secondary fs-5 fw-bold m-0">Viewing {{ targetVenue['updates'].length -1 }} more updates</p>
                             <p v-else class="fs-5 fst-italic m-0">There are no more updates to view!</p>
                             -->
+                            
                             <!-- For Each Update -->
                             <div v-for="updateMore in targetVenue['updates'].slice(1)" v-bind:key="updateMore.id">
 
                                 <!-- Update Information -->
-                                <div class="row">
-
-                                    <!-- Update Date + Edit / Delete Update -->
-                                    <div class="row">
-                                        <div class="col-xl-8 col-md-6 col-12">
-                                            <p class="text-start text-decoration-underline fs-5 m-0 pb-3 mobile-fs-6">Posted on: {{ updateMore.date }}</p>
-                                        </div>
-                                        <div v-if="selfView || powerView" class="col-xl-4 col-md-6 col-12 text-end">
-                                            <!-- [if] not editing -->
-                                            <button v-if="editUpdateTarget != updateMore.id" type="button" class="btn btn-warning rounded-0" @click="editUpdate(updateMore)">
-                                                Edit
-                                            </button>
-                                            <button v-if="editUpdateTarget != updateMore.id" type="button" class="btn btn-danger rounded-0 ms-1" @click="deleteUpdate(updateMore)">
-                                                Delete
-                                            </button>
-                                            
-                                            <!-- [else] if editing -->
-                                            <button v-if="editUpdateTarget == updateMore.id" type="button" class="btn btn-success rounded-0 reverse-clickable-text" @click="saveUpdate(updateMore)" :disabled="!(editUpdateContent[updateMore.id].newText.length > 0)">
-                                                Save
-                                            </button>
-                                            <button v-if="editUpdateTarget == updateMore.id" type="button" class="btn btn-warning rounded-0 reverse-clickable-text ms-1" @click="editUpdateTarget = null">
-                                                Cancel
-                                            </button>
-                                            <button v-if="editUpdateTarget == updateMore.id" type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1" @click="editUpdateContent[updateMore.id] = {newText: updateMore.text, newPhoto: updateMore.photo}">
-                                                Reset
-                                            </button>
-                                        </div>
-                                    </div>
+                                <div class="row pt-3">
 
                                     <!-- Photo / Number of Likes -->
                                     <div class="col-lg-2 col-md-3 col-4">
@@ -631,47 +608,82 @@
 
                                         </div>
 
-                                        <div class="row pt-2">
-                                            <!-- Like Symbol -->
-                                            <div v-if="Array.isArray(updateMore.likes)" class="col-6 text-end">
-                                                <!-- [if] Liked -->
-                                                <div v-if="updateMore.likes.some(like => like == viewerID)" class="d-inline-block" @click="unlikeUpdates(updateMore.id)">
-                                                    <svg xmlns="http://www.w3.org/2000/svg"  fill="red" class="bi bi-heart-fill producer-profile-latest-updates-heart" viewBox="0 0 16 16">
-                                                        <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"/>
-                                                    </svg>
-                                                </div>
-                                                <!-- [else] Not Liked -->
-                                                <div v-else class="d-inline-block" @click="likeUpdates(updateMore.id)">
-                                                    <svg xmlns="http://www.w3.org/2000/svg"  fill="currentColor" class="bi bi-heart producer-profile-latest-updates-heart" viewBox="0 0 16 16">
-                                                        <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.920 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.090.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15"/>
-                                                    </svg>
-                                                </div>
-                                            </div>
-                                            <div v-else class="col-6 text-end">
-                                                <div class="d-inline-block">
-                                                    <svg xmlns="http://www.w3.org/2000/svg"  fill="currentColor" class="bi bi-heart producer-profile-latest-updates-heart" viewBox="0 0 16 16">
-                                                        <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.920 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.090.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15"/>
-                                                    </svg>
-                                                </div>
-                                            </div>
-
-                                            <!-- Like Count -->
-                                            <div class="col-6 text-start mobile-fs-6 ">
-                                                <p v-if="Array.isArray(updateMore.likes)" class="text-body-secondary fs-5 m-0">{{ updateMore.likes.length }}</p>
-                                                <p v-else class="text-body-secondary fs-5 m-0">-</p>
-                                            </div>
-                                        </div>
+                                    
                                     </div>
                                     
                                     <!-- Description -->
-                                    <div v-if="editUpdateTarget == updateMore.id" class="col-xl-10 col-md-9 col-8 text-start p-text-lg mobile-ps-0 mobile-pe-0">
+                                    <div v-if="editUpdateTarget == updateMore.id" class="col-xl-10 col-md-9 col-8 text-start p-text-lg mobile-ps-0 mobile-pe-1">
                                         <label :for="'editUpdateText' + updateMore.id"> Update Text </label>
                                         <textarea type="text" class="form-control" :id="'editUpdateText' + updateMore.id" aria-describedby="editUpdateText" v-model="editUpdateContent[updateMore.id].newText"></textarea>
                                     </div>
-                                    <div v-else class="col-xl-10 col-md-9 col-8 mobile-ps-0 mobile-pe-0">
+                                    <div v-else class="col-xl-10 col-md-9 col-8 mobile-ps-0 mobile-pe-1">
                                         <p class="text-start p-text-lg mobile-rating-smaller-text-2">{{ updateMore.text }}</p>
                                     </div>
 
+                                    <div class="row">
+                                        <div class="d-flex flex-wrap align-items-center justify-content-start gap-3 pt-3">
+                                        
+                                            <!-- Like Symbol + Count -->
+                                            <div class="d-flex align-items-start align-items-center ">
+                                                <div v-if="Array.isArray(updateMore.likes)" class="d-flex align-items-start">
+                                                    <!-- [if] Liked -->
+                                                    <div v-if="updateMore.likes.some(like => like == viewerID)" @click="unlikeUpdates(updateMore.id)">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="red" class="bi bi-heart-fill producer-profile-latest-updates-heart" viewBox="0 0 16 16">
+                                                            <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"/>
+                                                        </svg>
+                                                    </div>
+                                                    <!-- [else] Not Liked -->
+                                                    <div v-else @click="likeUpdates(updateMore.id)">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"  fill="currentColor" class="bi bi-heart producer-profile-latest-updates-heart" viewBox="0 0 16 16">
+                                                            <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.920 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.090.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15"/>
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                                <div v-else class="col-6 d-flex align-items-start">
+                                                    <div>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"  fill="currentColor" class="bi bi-heart producer-profile-latest-updates-heart" viewBox="0 0 16 16">
+                                                            <path d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.920 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143q.090.083.176.171a3 3 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15"/>
+                                                        </svg>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Like Count -->
+                                                <div class="ms-2 mobile-rating-smaller-text-2 align-items-center">
+                                                    <p v-if="Array.isArray(updateMore.likes)" class=" mb-0">{{ updateMore.likes.length }}</p>
+                                                    <p v-else class="mb-0">-</p>
+                                                </div>
+                                            </div>
+
+                                            <!-- Posted Date -->
+                                            <div class="d-flex align-items-center">
+                                                <p class="text-body-secondary mobile-rating-smaller-text-2 mb-0">Posted on: {{ updateMore.date }}</p>
+                                            </div>
+
+                                            <!-- Edit or Delete Function for Statuses-->
+                                            <div v-if="selfView || powerView" class="ms-auto align-items-center ">
+                                                <!-- [if] not editing -->
+                                                <button v-if="editUpdateTarget != updateMore.id" type="button" class="btn btn-warning btn-sm me-2" @click="editUpdate(updateMore)">
+                                                    Edit
+                                                </button>
+                                                <button v-if="editUpdateTarget != updateMore.id" type="button" class="btn btn-danger btn-sm" @click="deleteUpdate(updateMore)">
+                                                    Delete
+                                                </button>
+                                                
+                                                <!-- [else] if editing -->
+                                                <button v-if="editUpdateTarget == updateMore.id" type="button" class="btn btn-success btn-sm me-2 reverse-clickable-text" @click="saveUpdate(updateMore)" :disabled="!(editUpdateContent[updateMore.id].newText.length > 0)">
+                                                    Save
+                                                </button>
+                                                <button v-if="editUpdateTarget == updateMore.id" type="button" class="btn btn-warning btn-sm me-2 reverse-clickable-text ms-1" @click="editUpdateTarget = null">
+                                                    Cancel
+                                                </button>
+                                                <button v-if="editUpdateTarget == updateMore.id" type="button" class="btn btn-danger btn-sm reverse-clickable-text ms-1" @click="editUpdateContent[updateMore.id] = {newText: updateMore.text, newPhoto: updateMore.photo}">
+                                                    Reset
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                    </div>
+                                    <hr class="mt-3" style="color:rgb(218, 217, 217)"/>
                                 </div>
                             </div>
                         </div>
@@ -726,32 +738,32 @@
                                         <!-- Buttons for Answered/Unanswered Questions -->
                                         <div v-if="selfView" class="row text-center px-2">
                                             <div class="col-6 d-grid gap-0 no-padding">
-                                                <button type="button" class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text" @click="qaMode = 'answered'">
+                                                <button type="button" class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text" style="background-color: rgb(28, 158, 136)" @click="qaMode = 'answered'">
                                                     Answered
                                                 </button>
                                             </div>
                                             <div class="col-6 d-grid gap-0 no-padding">
-                                                <button type="button" class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text" @click="qaMode = 'unanswered'">
+                                                <button type="button" class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text" style="background-color: rgb(28, 158, 136)" @click="qaMode = 'unanswered'">
                                                     Unanswered
                                                 </button>
                                             </div>
                                         </div>
 
-                                        <!-- Q & A Lock Message (Venue Unclaimed) -->
+                                        <!-- Q & A Lock Message (Venue Unclaimed) DESKTOP VIEW ONLY -->
                                         <div class="row text-center py-2 mx-1 default-text-no-background" v-if="!targetVenue['claimStatus']" style="background-color:#DDC8A9;">
-                                            <p class="fs-3 fw-bold fst-italic mt-3" >
+                                            <p class="fw-bold fs-4 mobile-fs-6 mb-1" >
                                                 Do you own this business?
                                             </p>
                                             <p> Sign up for a venue account to answer questions from your fans! </p>
 
-                                            <div class="col-lg-2 col-1"></div>
-                                            <button type="submit" class="col-lg-8 col-10 btn secondary-btn-border-thick mb-3" @click="claimVenueAccount"> Claim This Business </button>
-                                            <div class="col-lg-2 col-1"></div>
+                                            <div class="col-1"></div>
+                                            <button type="submit" class="col-10 btn secondary-btn mb-2" style="font-weight:bold" @click="claimVenueAccount"> Claim This Business </button>
+                                            <div class="col-1"></div>
                                         </div>
 
                                         <!-- Q & A Content -->
                                         <div class="text-start pt-2 py-1" v-else>
-                                            <div id="carouselQA" class="carousel slide" data-bs-ride="carousel">
+                                            <div id="carouselMobileQA" class="carousel slide" data-bs-ride="carousel">
 
                                                 <div class="carousel-inner px-2">
 
@@ -845,12 +857,12 @@
                                                 </div>
 
                                                 <div class="d-flex justify-content-center pt-1">
-                                                    <button class="btn" type="button" data-bs-target="#carouselQA" data-bs-slide="next">
+                                                    <button class="btn" type="button" data-bs-target="#carouselMobileQA" data-bs-slide="next">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="white" class="bi bi-arrow-right" viewBox="0 0 16 16">
                                                             <path fill-rule="evenodd" d="M10.146 4.646a.5.5 0 0 1 .708.708L7.707 8l3.147 2.646a.5.5 0 0 1-.708.708l-3.5-3a.5.5 0 0 1 0-.708l3.5-3z"/>
                                                         </svg>
                                                     </button>
-                                                    <button class="btn me-2" type="button" data-bs-target="#carouselQA" data-bs-slide="prev">
+                                                    <button class="btn me-2" type="button" data-bs-target="#carouselMobileQA" data-bs-slide="prev">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="white" class="bi bi-arrow-left" viewBox="0 0 16 16">
                                                             <path fill-rule="evenodd" d="M5.854 4.646a.5.5 0 0 0-.708.708L8.293 8l-3.147 2.646a.5.5 0 0 0 .708.708l3.5-3a.5.5 0 0 0 0-.708l-3.5-3z"/>
                                                         </svg>
@@ -875,11 +887,11 @@
                                 </div>
                         </div> 
                         
-                    <hr>
+                        <hr>
                     </div> 
-                    <!-- end mobile Q&A-->
+                        <!-- end mobile Q&A-->
                     
-                    <!-- View Sorted Listings -->
+                        <!-- View Sorted Listings -->
                         <!-- 1: Most Popular (Highest Ratings) -->
                         <!-- 2: Most Discussed (Most Reviews) -->
                         <!-- 3: Recently Added (Newest) -->
@@ -905,7 +917,7 @@
                             :user="userInfo" 
                             :listing="loadedListings" 
                             @icon-clicked="handleIconClick"/>
-
+                        <br>
 
                     </div>
 
@@ -920,41 +932,41 @@
 
                     <!-- ------- START Menu Lock Message (Venue Unclaimed) ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
-                    <!-- Menu Lock Message (Venue Unclaimed) -->
-                    <div class="row text-center py-2 mx-1 default-text-no-background" v-if="!targetVenue['claimStatus']" style="background-color:#DDC8A9;">
-                        <p class="fs-3 fw-bold fst-italic mt-3" >
+                    <!-- Menu Lock Message (Venue Unclaimed) MOBILE VIEW ONLY -->
+                    <div class="row text-center py-2 m-3 default-text-no-background" v-if="!targetVenue['claimStatus']" style="background-color: rgb(221, 200, 169); margin: 10px;">
+                        <p class="fs-5 mobile-fs-6 fw-bold mt-3 mb-2" >
                             Do you own this business?
                         </p>
                         <p> Sign up for a venue account to share your bar's menu with your fans! </p>
 
-                        <div class="col-lg-4 col-sm-3 col-2"></div>
-                        <button type="submit" class="col-lg-4 col-sm-6 col-8 btn secondary-btn-border-thick mb-3" @click="claimVenueAccount"> Claim This Business </button>
-                        <div class="col-lg-4 col-sm-3 col-2"></div>
+                        <div class="col-4 mobile-col-2"></div>
+                        <button type="submit" class="col-4 mobile-col-8 btn secondary-btn mb-3" style="font-weight:bold" @click="claimVenueAccount"> Claim This Business </button>
+                        <div class="col-4 mobile-col-2"></div>
                     </div>
 
                     <!-- ------- END Menu Lock Message (Venue Unclaimed) / START Menu Header + Option Buttons ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
                     <!-- Menu Header + Option Buttons -->
-                    <div v-if="!editMenuMode && targetVenue['claimStatus']" class="row align-items-center pb-3">
+                    <div v-if="!editMenuMode && targetVenue['claimStatus']" class="col-12 d-flex flex-wrap align-items-center justify-content-start gap-1 mb-2">
 
                         <!-- Menu Header -->
-                        <div class="col-8 mobile-col-7">
-                            <p class="text-start text-body-secondary fs-4 fw-bold m-0 mobile-fs-6"><span class="fw-bold fst-italic">{{ loadedListings.length }}</span> Drinks On The Menu</p>
+                        <div class="dflex">
+                            <p class="text-start text-body-secondary fs-4 fw-bold m-0 mobile-fs-5"><span class="fw-bold fst-italic">{{ loadedListings.length }}</span> Drinks On The Menu</p>
                         </div>
                         
                         <!-- Option Buttons -->
-                        <div class="col-4 d-grid mobile-col-5">
-                            <div v-if="selfView" class="row">
+                        <div class="d-flex ms-auto">
+                            <div v-if="selfView" class="d-flex ms-auto">
 
                                 <!-- Edit Menu -->
-                                <div class="col-6 d-grid px- mobile-view-hide">
+                                <div class="mobile-view-hide me-2">
                                     <button type="button" class="mobile-view-hide btn tertiary-btn-blue-outline Xprimary-btn-outline-thick rounded-0 reverse-clickable-text" @click="enableEditMenuMode"> 
                                         Edit Menu 
                                     </button>
                                 </div>
 
                                 <!-- Share Menu -->
-                                <div class="col-6 d-grid px-1 mobile-view-hide">
+                                <div class="mobile-view-hide">
                                     <button type="button" class="mobile-view-hide btn tertiary-btn-blue-outline Xprimary-btn-outline-thick rounded-0 reverse-clickable-text" data-bs-toggle="modal" data-bs-target="#shareMenuModal"> 
                                         Share Menu 
                                     </button>
@@ -991,14 +1003,14 @@
                                     </div>
 
                                 </div>
-                                <div class="d-grid px-1 mobile-view-show">
-                                    <div class="row justify-content-end pe-4">
-                                        <button type="button" style="max-width:50px;" class="btn  rounded-0 " @click="enableEditMenuMode"> 
+                                <div class="d-grid px-0 mobile-view-show">
+                                    <div class="d-flex ms-auto">
+                                        <button type="button" style="max-width:40px;" class="btn  rounded-0  px-0" @click="enableEditMenuMode"> 
                                             <svg viewBox="0 0 24 24" fill="currentColor" class="bi bi-sort-down funnel-svg-dimensions" xmlns="http://www.w3.org/2000/svg">
                                                 <path d="M21.1213 2.70705C19.9497 1.53548 18.0503 1.53547 16.8787 2.70705L15.1989 4.38685L7.29289 12.2928C7.16473 12.421 7.07382 12.5816 7.02986 12.7574L6.02986 16.7574C5.94466 17.0982 6.04451 17.4587 6.29289 17.707C6.54127 17.9554 6.90176 18.0553 7.24254 17.9701L11.2425 16.9701C11.4184 16.9261 11.5789 16.8352 11.7071 16.707L19.5556 8.85857L21.2929 7.12126C22.4645 5.94969 22.4645 4.05019 21.2929 2.87862L21.1213 2.70705ZM18.2929 4.12126C18.6834 3.73074 19.3166 3.73074 19.7071 4.12126L19.8787 4.29283C20.2692 4.68336 20.2692 5.31653 19.8787 5.70705L18.8622 6.72357L17.3068 5.10738L18.2929 4.12126ZM15.8923 6.52185L17.4477 8.13804L10.4888 15.097L8.37437 15.6256L8.90296 13.5112L15.8923 6.52185ZM4 7.99994C4 7.44766 4.44772 6.99994 5 6.99994H10C10.5523 6.99994 11 6.55223 11 5.99994C11 5.44766 10.5523 4.99994 10 4.99994H5C3.34315 4.99994 2 6.34309 2 7.99994V18.9999C2 20.6568 3.34315 21.9999 5 21.9999H16C17.6569 21.9999 19 20.6568 19 18.9999V13.9999C19 13.4477 18.5523 12.9999 18 12.9999C17.4477 12.9999 17 13.4477 17 13.9999V18.9999C17 19.5522 16.5523 19.9999 16 19.9999H5C4.44772 19.9999 4 19.5522 4 18.9999V7.99994Z" ></path>
                                             </svg>
                                         </button>
-                                        <button type="button" style="max-width:50px;" class=" mobile-view-show btn rounded-0 " data-bs-toggle="modal" data-bs-target="#shareMenuModal1"> 
+                                        <button type="button" style="max-width:40px;" class=" mobile-view-show btn rounded-0  px-0" data-bs-toggle="modal" data-bs-target="#shareMenuModal1"> 
                                             <svg viewBox="0 0 24 24" fill="none" class="bi bi-sort-down funnel-svg-dimensions" xmlns="http://www.w3.org/2000/svg">
                                                 <path d="M16 7L12 3M12 3L8 7M12 3V16M20 13V18C20 19.1046 19.1046 20 18 20H6C4.89543 20 4 19.1046 4 18L4 13" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> 
                                             </svg>
@@ -1047,7 +1059,7 @@
                         <div class="row align-items-center mobile-view-show" >
                             <!-- Search Bar -->
                             <div v-if="!editMenuMode" class="col-12 p-0">
-                                <input class="search-bar form-control rounded fst-italic" type="text" placeholder="Search menu" v-model="searchMenuTerm" @keyup.enter="searchMenu">
+                                <input class="form-control rounded fst-italic" style="border: 2px solid #83a9e8" type="text" placeholder="Search menu" v-model="searchMenuTerm" @keyup.enter="searchMenu">
                             </div>
 
                             <!-- Edit Menu Options: Reset Section Order / Add New Section / Add Menu Item / Save Menu / Reset / Exit -->
@@ -1086,7 +1098,7 @@
 
                             <!-- Search Bar -->
                             <div v-if="!editMenuMode" class="col-9 p-0">
-                                <input class="search-bar form-control rounded fst-italic" type="text" placeholder="Search menu" v-model="searchMenuTerm" @keyup.enter="searchMenu">
+                                <input class="form-control rounded fst-italic" style="border: 2px solid #83a9e8"  type="text" placeholder="Search menu" v-model="searchMenuTerm" @keyup.enter="searchMenu">
                             </div>
 
                             <!-- Edit Menu Options: Reset Section Order / Add New Section / Add Menu Item / Save Menu / Reset / Exit -->
@@ -1143,16 +1155,16 @@
                             <p class="text-start fw-bold fst-italic m-0 mobile-view-hide">Click on each menu section's name to expand or hide its contents!</p>
                         </div>
 
-                        <!-- Menu Sections -->
+                        <!-- MENU FACTIONS -->
                         <div class="row mb-2" v-for="(menuSection, index) in searchMenuResults" v-bind:key="menuSection">
 
                             <!-- Section Name -->
                             <div class="col-12 d-grid mobile-px-0">
-                                <button type="button" class="btn secondary-btn-not-rounded fs-5 fw-bold text-start" data-bs-toggle="collapse" :data-bs-target="'#collapseMenuSection' + index" aria-expanded="true" :aria-controls="'collapseMenuSection' + index" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
-                                    {{ menuSection.sectionName }} ⬇
+                                <button type="button" class="btn secondary-btn-not-rounded fs-6 fw-bold text-start" data-bs-toggle="collapse" :data-bs-target="'#collapseMenuSection' + index" aria-expanded="true" :aria-controls="'collapseMenuSection' + index" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
+                                    {{ menuSection.sectionName }} ↓
                                 </button>
                             </div>
-                            <!--start mobile view menu listings-->
+                            <!--START MOBILE VIEW MENU LISTINGS-->
                             <div class="collapse show mobile-view-show" :id="'collapseMenuSection' + index">
                                 <!-- No Section Contents to Show -->
                                 <div v-if="menuSection.sectionMenu.length == 0" class="col-12 my-3">
@@ -1163,42 +1175,39 @@
                                 <div class="col-12 my-3" v-for="sectionItem in menuSection.sectionMenu" v-bind:key="sectionItem.itemID">
                                     <div class="row">
 
-                                        <!-- Item Image tzh removed style="width: 150px; height: 150px;" from img tag-->
-                                        <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
+                                        <!-- FIRST COLUMN: Image + Rating stacked vertically -->
+                                        <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0 d-flex flex-column align-items-center">
+
+                                            <!-- Item Image -->
                                             <router-link :to="{ path: '/listing/view/' + sectionItem.itemID }" class="default-text-no-background">
-                                                <!-- <img :src=" 'data:image/jpeg;base64,' + (sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" > -->
                                                 <img :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" >
                                             </router-link>
+
+                                            <!-- Item Rating (below image) -->
+                                            <div class="mt-1">
+                                                <p class="fs-4 fw-bold rating-text text-center m-0 d-flex align-items-center justify-content-center">
+                                                    {{ sectionItem.itemDetails['itemRating'] }}
+                                                    <span style="font-size: 20px; margin-left: 0.3rem;">★</span>
+                                                </p>
+                                            </div>
+
                                         </div>
 
-                                        <!-- Item Information -->
-                                        <div class="col-lg-10 col-12 ps-3 mobile-col-7 mobile-pe-0 mobile-ps-1">
-
-                                            <!-- ------- START Item Info Header ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
-
-                                            <!-- Item Info Header -->
+                                        <!-- SECOND COLUMN: Item Information -->
+                                        <div class="mobile-col-9 mobile-pe-0 mobile-ps-2">
                                             <div class="row">
 
-                                                <!-- Item Name -->
-                                                <div class="col-12 mobile-pe-0">
+                                            <!-- Item Name -->
+                                                <div class="mobile-mb-1">
                                                     <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + sectionItem.itemID }">
                                                         <p class="mobile-fs-6 fs-5 fw-bold text-start text-decoration-underline m-0" style="margin-bottom:0.3rem;">{{ sectionItem.itemDetails['itemName'] }}</p>
                                                     </router-link>
                                                 </div>
 
-                                                
-
-                                                
-
                                             </div>
 
-                                            <!-- ------- END Item Info Header / START Item Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
-                                            
-                                            <!-- Item Details -->
+                                            <!-- Item Producer / Drink Type / Type Category / ABV / <Country> / Description -->
                                             <div class="row">
-
-                                                <!-- Item Producer / Drink Type / Type Category / ABV / Country / Description -->
-                                                
                                                     <p class="text-start mb-1 mobile-fs-7" >
                                                         <router-link v-if="sectionItem.itemDetails['itemProducerID']" style="color: #2c3e50;" class="text-decoration-none" :to="{ path: '/profile/producer/' + sectionItem.itemDetails['itemProducerID'] }">
                                                             <span v-if="sectionItem.itemDetails['itemProducer']">{{ sectionItem.itemDetails['itemProducer'] }} | </span>
@@ -1207,49 +1216,30 @@
                                                         <span v-if="sectionItem.itemDetails['itemTypeCategory']">{{ sectionItem.itemDetails['itemTypeCategory'] }} | </span>
                                                         <span v-if="sectionItem.itemDetails['itemABV']">{{ sectionItem.itemDetails['itemABV'] }} ABV | </span>
                                                         <span v-if="sectionItem.itemDetails['itemCountry']">{{ sectionItem.itemDetails['itemCountry'] }}</span>
-                                                    </p>
-                                                    
+                                                    </p>  
                                             </div>
 
-                                            <!-- ------- END Item Details / START Item Menu Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
-
                                             <!-- Item Menu Details -->
-                                            <div class="row">
+                                            <div class="d-flex align-items-center gap-1">
 
                                                 <!-- Item Price / Item Serving Type -->
-                                                <div class="col-6">
-                                                    <p class="text-start fs-6 fw-bold default-text-no-background mb-0">${{ sectionItem.itemPrice == -1 ? '-' : sectionItem.itemPrice }} / {{ sectionItem.itemDetails.itemServingTypeName }}</p>
-                                                </div>
-
+                                                <p class="text-start mobile-rating-smaller-text-2 fw-bold default-text-no-background mb-0">${{ sectionItem.itemPrice == -1 ? '-' : sectionItem.itemPrice }} / {{ sectionItem.itemDetails.itemServingTypeName }}</p>
                                                 
-
                                                 <!-- Item Availability -->
-                                                <div v-if="sectionItem.itemAvailability == false" class="col-6">
-                                                    <p class="text-start fs-6 text-danger fw-bold fst-italic text-decoration-underline mb-0">Unavailable</p>
-                                                </div>
+                                                <p v-if="sectionItem.itemAvailability == false" class="text-start mobile-rating-smaller-text-2 text-danger fw-bold fst-italic text-decoration-underline mb-0">Temporarily Unavailable</p>
+
 
                                             </div>
 
                                             <!-- ------- END Item Menu Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
                                         </div>
-                                        <div class="mobile-col-2 mobile-pe-0 mobile-ps-1">
-                                            
-                                                <!-- Item Rating -->
-                                                <div class="d-flex flex-column align-items-center ps-lg-3 mobile-view-show">
-                                                    <p style="margin-bottom: 0.1rem;" class="fs-3 fw-bold rating-text text-end d-flex align-items-center mobile-fs-5">
-                                                        {{ sectionItem.itemDetails['itemRating'] }}</p>
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-star-fill ms-2 me-2" viewBox="0 0 16 16">
-                                                            <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                                    </svg>
-                                                    
-                                                </div>
-                                        </div>
                                     </div>
                                 </div>
 
                             </div>
                             <!--end mobile view menu listings-->
+
                             <div class="collapse show mobile-view-hide" :id="'collapseMenuSection' + index">
 
                                 <!-- No Section Contents to Show -->
@@ -1258,133 +1248,94 @@
                                 </div>
 
                                 <!-- Section Contents -->
-                                <div class="col-12 my-3" v-for="sectionItem in menuSection.sectionMenu" v-bind:key="sectionItem.itemID">
-                                    <div class="row">
+                                <div class="col-12 my-3 me-3" v-for="sectionItem in menuSection.sectionMenu" v-bind:key="sectionItem.itemID">
+                                    <div class="row align-items-center">
 
-                                        <!-- Item Image -->
-                                        <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0">
+                                        <!-- LEFT COLUMN Item Image -->
+                                        <div class="col-lg-2 col-12 text-center mb-3 mb-lg-0">
                                             <router-link :to="{ path: '/listing/view/' + sectionItem.itemID }" class="default-text-no-background">
                                                 <!-- <img :src=" 'data:image/jpeg;base64,' + (sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" style="width: 150px; height: 150px;"> -->
-                                                <img :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" style="width: 150px; height: 150px;">
+                                                <img :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image">
                                             </router-link>
                                         </div>
 
+                                        <!-- CENTER COLUMN (Main Info) -->
                                         <!-- Item Information -->
-                                        <div class="col-lg-10 col-12 ps-4">
+                                        <div class="col-lg-7 col-12 ps-lg-4">
 
-                                            <!-- ------- START Item Info Header ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+                                            <!-- Item Name -->
+                                            <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + sectionItem.itemID }">
+                                                <p class="fw-bold fs-5 text-start text-decoration-underline m-0" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">{{ sectionItem.itemDetails['itemName'] }}</p>
+                                            </router-link>
 
-                                            <!-- Item Info Header -->
-                                            <div class="row">
+                                            <!-- Item Details (Producer, Type, ABV, Country) -->
 
-                                                <!-- Item Name -->
-                                                <div class="col-7">
-                                                    <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + sectionItem.itemID }">
-                                                        <p class="fs-5 fw-bold text-start text-decoration-underline m-0" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">{{ sectionItem.itemDetails['itemName'] }}</p>
-                                                    </router-link>
-                                                </div>
+                                            <p class="text-start mb-1" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
+                                                <router-link v-if="sectionItem.itemDetails['itemProducerID']" style="color: #2c3e50;" class="text-decoration-none" :to="{ path: '/profile/producer/' + sectionItem.itemDetails['itemProducerID'] }">
+                                                    <span v-if="sectionItem.itemDetails['itemProducer']">{{ sectionItem.itemDetails['itemProducer'] }} | </span>
+                                                </router-link>
+                                                <span v-if="sectionItem.itemDetails['itemType']">{{ sectionItem.itemDetails['itemType'] }} | </span>
+                                                <span v-if="sectionItem.itemDetails['itemTypeCategory']">{{ sectionItem.itemDetails['itemTypeCategory'] }} | </span>
+                                                <span v-if="sectionItem.itemDetails['itemABV']">{{ sectionItem.itemDetails['itemABV'] }} ABV | </span>
+                                                <span v-if="sectionItem.itemDetails['itemCountry']">{{ sectionItem.itemDetails['itemCountry'] }}</span>
+                                            </p>
 
-                                                <!-- Bookmark: Have Tried -->
-                                                <div v-if="viewerType == 'user'" class="col-2 pe-0">
-                                                    <div v-html="checkDrinkLists(sectionItem.itemID).buttons.haveTried" class="d-grid" @click="addToBookmarks('tried', sectionItem.itemID)"></div>
-                                                </div>
+                                            <!-- Item Description  -->
 
-                                                <!-- Bookmark: Want to Try -->
-                                                <div v-if="viewerType == 'user'" class="col-2 ps-0">
-                                                    <div v-html="checkDrinkLists(sectionItem.itemID).buttons.wantToTry" class="d-grid" @click="addToBookmarks('want', sectionItem.itemID)"> </div>
-                                                </div>
-
-                                                <!-- Bookmark Icon -->
-                                                <div class="col-1 text-end">
-                                                    <BookmarkIcon 
-                                                        v-if="viewerType == 'user' && dataLoaded && Object.keys(userInfo).length > 0" 
-                                                        :user="userInfo" 
-                                                        :listing="loadedListings.find(item => item.id === sectionItem.itemID)" 
-                                                        :overlay="false"
-                                                        size="30"
-                                                        @icon-clicked="handleIconClick" />
-                                                </div>
-
+                                            <div v-if="!showFullItemDescription"> <!--tzh needs help with .id code -->
+                                                <p class="text-start fst-italic mb-1" style="height: 50px; max-height: 50px; overflow-y: auto;">
+                                                    <span v-if="sectionItem.itemDetails['itemDesc']">{{ sectionItem.itemDetails['itemDesc'].slice(0, 200) + (sectionItem.itemDetails['itemDesc'].length > 200 ? '...' : '') }}</span>
+                                                    <a @click="showFullItemDescription = true"  style="font-weight: bold;"> (Read More)</a>
+                                                </p>
+                                            </div>
+                                            <div v-else>
+                                                <p class="text-start fst-italic mb-1" style="height: 50px; max-height: 50px; overflow-y: auto;">
+                                                    <span v-if="sectionItem.itemDetails['itemDesc']">{{ sectionItem.itemDetails['itemDesc'] }}</span>
+                                                    <a @click="showFullItemDescription = false"  style="font-weight: bold;"> (Read Less)</a>
+                                                </p>
                                             </div>
 
-                                            <!-- ------- END Item Info Header / START Item Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
-                                            
-                                            <!-- Item Details -->
-                                            <div class="row">
-
-                                                <!-- Item Producer / Drink Type / Type Category / ABV / Country / Description -->
-                                                <div class="col-10 pe-lg-0">
-                                                    <p class="text-start mb-1" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
-                                                        <router-link v-if="sectionItem.itemDetails['itemProducerID']" style="color: #2c3e50;" class="text-decoration-none" :to="{ path: '/profile/producer/' + sectionItem.itemDetails['itemProducerID'] }">
-                                                            <span v-if="sectionItem.itemDetails['itemProducer']">{{ sectionItem.itemDetails['itemProducer'] }} | </span>
-                                                        </router-link>
-                                                        <span v-if="sectionItem.itemDetails['itemType']">{{ sectionItem.itemDetails['itemType'] }} | </span>
-                                                        <span v-if="sectionItem.itemDetails['itemTypeCategory']">{{ sectionItem.itemDetails['itemTypeCategory'] }} | </span>
-                                                        <span v-if="sectionItem.itemDetails['itemABV']">{{ sectionItem.itemDetails['itemABV'] }} ABV | </span>
-                                                        <span v-if="sectionItem.itemDetails['itemCountry']">{{ sectionItem.itemDetails['itemCountry'] }}</span>
+                                            <!-- Item Price / Item Serving Type -->
+                                            <div class="d-flex align-items-center gap-3">
+  
+                                                    <!-- Price + Serving Type -->
+                                                    <p class="text-start fw-bold default-text-no-background mb-0">
+                                                      ${{ sectionItem.itemPrice == -1 ? '-' : sectionItem.itemPrice }} / {{ sectionItem.itemDetails.itemServingTypeName }}
                                                     </p>
-                                                    <div v-if="!showFullItemDescription"> <!--tzh needs help with .id code -->
-                                                        <p class="text-start fst-italic mb-1" style="height: 50px; max-height: 50px; overflow-y: auto;">
-                                                            <span v-if="sectionItem.itemDetails['itemDesc']">{{ sectionItem.itemDetails['itemDesc'].slice(0, 140) + (sectionItem.itemDetails['itemDesc'].length > 140 ? '...' : '') }}</span>
-                                                            <a @click="showFullItemDescription = true"  style="font-weight: bold;">(Read More)</a>
-                                                        </p>
-                                                    </div>
-                                                    <div v-else>
-                                                        <p class="text-start fst-italic mb-1" style="height: 50px; max-height: 50px; overflow-y: auto;">
-                                                            <span v-if="sectionItem.itemDetails['itemDesc']">{{ sectionItem.itemDetails['itemDesc'] }}</span>
-                                                            <a @click="showFullItemDescription = false"  style="font-weight: bold;">(Read Less)</a>
-                                                        </p>
-                                                    </div>
-                                                </div>
-
-                                                <!-- Item Rating -->
-                                                <div class="col-2">
-                                                    <p class="fs-3 fw-bold rating-text text-end">
-                                                        {{ sectionItem.itemDetails['itemRating'] }}
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16">
-                                                            <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                                        </svg>
+                                                  
+                                                    <!-- Availability -->
+                                                    <p v-if="sectionItem.itemAvailability == false" class="text-start text-danger fw-bold fst-italic text-decoration-underline mb-0">
+                                                      Temporarily Unavailable
                                                     </p>
-                                                </div>
-
+                                                  
                                             </div>
-
-                                            <!-- ------- END Item Details / START Item Menu Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
-
-                                            <!-- Item Menu Details -->
-                                            <div class="row">
-
-                                                <!-- Item Price / Item Serving Type -->
-                                                <div class="col-4">
-                                                    <p class="text-start fs-5 fw-bold default-text-no-background">${{ sectionItem.itemPrice == -1 ? '-' : sectionItem.itemPrice }}
-                                                        / {{ sectionItem.itemDetails.itemServingTypeName }}</p>
-                                                </div>
-
-                                                <!-- See User Reviews -->
-                                                <div class="col-4">
-                                                    <router-link :to="{ path: '/listing/view/' + sectionItem.itemID }">
-                                                        <button type="button" class="btn primary-btn-outline-thick p-1 px-2"> See User Reviews </button>
-                                                    </router-link>
-                                                </div>
-
-                                                <!-- Item Availability -->
-                                                <div v-if="sectionItem.itemAvailability == false" class="col-4">
-                                                    <p class="text-start fs-5 text-danger fw-bold fst-italic text-decoration-underline">Temporarily Unavailable</p>
-                                                </div>
-
-                                            </div>
-
-                                            <!-- ------- END Item Menu Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
                                         </div>
 
+                                        <!-- RIGHT COLUMN (Rating + Reviews) -->
+                                        <div class="col-lg-3 col-12 d-flex flex-column align-items-end mb-4">
+                                        
+                                        <!-- Item Rating -->
+                                        <p class="fs-3 fw-bold rating-text text-end">
+                                            {{ sectionItem.itemDetails['itemRating'] }}
+                                            <span style="font-size: 30px;">★</span>
+                                        </p>
+                                        
+
+                                        <!-- See User Reviews -->
+                                            <router-link :to="{ path: '/listing/view/' + sectionItem.itemID }">
+                                                <button type="button" class="btn btn-read-more px-10"> See Reviews </button>
+                                            </router-link>
+                                        </div>
+
+                                    <!-- ------- BOOKMARK ROW ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+
+                                            <!-- ------- END Item Menu Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+                                        <!--- CHANGE TIL HERE!!!!!! KAI LIN CHOO -->
                                     </div>
                                 </div>
-                                
                             </div>
-
                         </div>
-
                     </div>
 
                     <!-- ------- END Menu View (Not Editing) / START Menu View (Editing) ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
@@ -1925,7 +1876,7 @@
                 <div v-if="contentMode == 'venueReviews'">
                     <!-- Example heading for venue reviews -->
                     <h4
-                        class="text-start text-body-secondary fs-4 fw-bold m-0 mobile-fs-6"
+                        class="text-start text-body-secondary fs-4 fw-bold m-0 mobile-fs-6 mb-2"
                         style="font-weight: bold; color: black;"
                     >
                         Average Venue Rating:&nbsp;{{ getAverageVenueRatings() }}
@@ -1997,7 +1948,7 @@
                                 </router-link>
                                 </div>
 
-                                <div class="col-10 pe-0 mobile-fs-6 mobile-ps-4">
+                                <div class="col-10 pe-0 mobile-rating-smaller-text-2 mobile-ps-4">
                                 <!-- Username -->
                                 <router-link
                                     :to="`/profile/user/${review.userID}`"
@@ -2042,7 +1993,7 @@
                             </div>
 
                             <!-- Review text -->
-                            <div class="text-start my-2">
+                            <div class="text-start my-2 mobile-rating-smaller-text-2">
                                 {{ review.reviewDesc }}
                             </div>
 
@@ -2395,32 +2346,32 @@
                             <!-- Buttons for Answered/Unanswered Questions -->
                             <div v-if="selfView" class="row text-center px-2">
                                 <div class="col-6 d-grid gap-0 no-padding">
-                                    <button type="button" class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text" @click="qaMode = 'answered'">
+                                    <button type="button" class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text" style="background-color: rgb(28, 158, 136)" @click="qaMode = 'answered'">
                                         Answered
                                     </button>
                                 </div>
                                 <div class="col-6 d-grid gap-0 no-padding">
-                                    <button type="button" class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text" @click="qaMode = 'unanswered'">
+                                    <button type="button" class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text" style="background-color: rgb(28, 158, 136)" @click="qaMode = 'unanswered'">
                                         Unanswered
                                     </button>
                                 </div>
                             </div>
 
-                            <!-- Q & A Lock Message (Venue Unclaimed) -->
-                            <div class="row text-center py-2 mx-1 default-text-no-background" v-if="!targetVenue['claimStatus']" style="background-color:#DDC8A9;">
-                                <p class="fs-3 fw-bold fst-italic mt-3" >
+                            <!-- Q & A Lock Message (Venue Unclaimed) DESKTOP ONLY -->
+                            <div class="row text-center py-3 m-2 default-text-no-background" v-if="!targetVenue['claimStatus']" style="background-color:#DDC8A9;">
+                                <p class="fs-6 fw-bold">
                                     Do you own this business?
                                 </p>
-                                <p> Sign up for a venue account to answer questions from your fans! </p>
+                                <p style="font-weight: normal"> Sign up for a venue account to answer questions from your fans! </p>
 
-                                <div class="col-lg-2 col-1"></div>
-                                <button type="submit" class="col-lg-8 col-10 btn secondary-btn-border-thick mb-3" @click="claimVenueAccount"> Claim This Business </button>
-                                <div class="col-lg-2 col-1"></div>
+                                <div class="col-1"></div>
+                                <button type="submit" class="col-10 btn secondary-btn mb-2" style="font-weight:bold"  @click="claimVenueAccount"> Claim This Business </button>
+                                <div class="col-1"></div>
                             </div>
 
                             <!-- Q & A Content -->
                             <div class="text-start pt-2 py-1" v-else>
-                                <div class="carousel slide" id="carouselQA">
+                                <div class="carousel slide" id="carouselDesktopQnA">
                                     <div class="carousel-inner px-1">
 
                                         <!-- [if] Self Venue -->
@@ -2486,7 +2437,7 @@
                                                         <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
                                                       </svg>
                                                     </span>
-                                                  </div>
+                                                </div>
                                                   
                                             </div>
 
@@ -2510,10 +2461,10 @@
 
                                     <!-- Carousel Control Buttons -->
                                     <div class="d-flex justify-content-center align-items-center gap-4 py-2">
-                                        <button type="button" data-bs-target="#carouselQA" data-bs-slide="prev" style="background: none; border: none; padding: 0; color: inherit;">
+                                        <button type="button" data-bs-target="#carouselDesktopQnA" data-bs-slide="prev" style="background: none; border: none; padding: 0; color: inherit;">
                                           <i class="bi bi-arrow-left" style="font-size: 18px;"></i>
                                         </button>
-                                        <button type="button" data-bs-target="#carouselQA" data-bs-slide="next" style="background: none; border: none; padding: 0; color: inherit;">
+                                        <button type="button" data-bs-target="#carouselDesktopQnA" data-bs-slide="next" style="background: none; border: none; padding: 0; color: inherit;">
                                           <i class="bi bi-arrow-right" style="font-size: 18px;"></i>
                                         </button>
                                     </div>
@@ -2581,7 +2532,7 @@
 
                             <!-- Section Content (View Mode) -->
                             <div>
-                                <p class="text-start mb-1 fst-italic">{{ targetVenue["address"] }}</p>
+                                <p class="text-start mb-1 mobile-rating-smaller-text-2">{{ targetVenue["address"] }}</p>
                             </div>
 
                             <!-- Map -->
@@ -2615,15 +2566,15 @@
                             </div>
 
                             <!-- Opening Hours + Reservation Details Lock Message (Venue Unclaimed) -->
-                            <div class="row text-center py-2 mx-1 default-text-no-background" v-if="!targetVenue['claimStatus']" style="background-color:#DDC8A9;">
-                                <p class="fs-3 fw-bold fst-italic mt-3" >
+                            <div class="row text-center py-2 m-2 default-text-no-background" v-if="!targetVenue['claimStatus']" style="background-color:#DDC8A9;">
+                                <p class="fs-6 fw-bold my-2" >
                                     Do you own this business?
                                 </p>
-                                <p> Sign up for a venue account to share your opening hours and reservation details with your fans! </p>
+                                <p style="font-weight: normal;"> Sign up for a venue account to share your opening hours and reservation details with your fans! </p>
 
-                                <div class="col-lg-2 col-1"></div>
-                                <button type="submit" class="col-lg-8 col-10 btn secondary-btn-border-thick mb-3" @click="claimVenueAccount"> Claim This Business </button>
-                                <div class="col-lg-2 col-1"></div>
+                                <div class="col-1"></div>
+                                <button type="submit" class="col-10 btn secondary-btn mb-2" style="font-weight:bold" @click="claimVenueAccount"> Claim This Business </button>
+                                <div class="col-1"></div>
                             </div>
 
                             <!-- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -->
@@ -2633,23 +2584,23 @@
 
                                 <!-- Section Header -->
                                 <div class="square-inline">
-                                    <h5 class="mr-auto"> Opening Hours </h5>
+                                    <h5 class="mr-auto mobile-fs-6 fw-bold"> Opening Hours </h5>
                                 </div>
 
                                 <!-- Buttons -->
-                                <div class="pb-1" v-if="selfView || powerView">
+                                <div class="pb-1 mobile-rating-smaller-text-2" v-if="selfView || powerView">
                                     <!-- [if] not editing -->
-                                    <button v-if="!editOpeningHours" type="button" class="btn btn-warning rounded-0 reverse-clickable-text" @click="editOpeningHours = true; checkOpeningHours()">
+                                    <button v-if="!editOpeningHours" type="button" class="btn btn-warning rounded-0 reverse-clickable-text  mobile-rating-smaller-text-2" @click="editOpeningHours = true; checkOpeningHours()">
                                         Edit
                                     </button>
                                     <!-- [else] if editing -->
-                                    <button v-if="editOpeningHours" type="button" class="btn btn-warning rounded-0 reverse-clickable-text ms-1" @click="newOpeningHours = JSON.parse(JSON.stringify(openingHours)); checkOpeningHours()">
+                                    <button v-if="editOpeningHours" type="button" class="btn btn-warning rounded-0 reverse-clickable-text ms-1  mobile-rating-smaller-text-2" @click="newOpeningHours = JSON.parse(JSON.stringify(openingHours)); checkOpeningHours()">
                                         Reset
                                     </button>
-                                    <button v-if="editOpeningHours" type="button" class="btn btn-success rounded-0 reverse-clickable-text ms-1" @click="saveOpeningHours" :disabled="editOpeningHoursError">
+                                    <button v-if="editOpeningHours" type="button" class="btn btn-success rounded-0 reverse-clickable-text ms-1  mobile-rating-smaller-text-2" @click="saveOpeningHours" :disabled="editOpeningHoursError">
                                         Save
                                     </button>
-                                    <button v-if="editOpeningHours" type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1" @click="editOpeningHours = false">
+                                    <button v-if="editOpeningHours" type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1  mobile-rating-smaller-text-2" @click="editOpeningHours = false">
                                         Cancel
                                     </button>
                                     
@@ -2657,8 +2608,8 @@
 
                                 <!-- Section Content (Edit Mode) -->
                                 <div v-if="editOpeningHours">
-                                    <div class="default-text-no-background" v-for = "(hours, day) in newOpeningHours" v-bind:key="day">
-                                        <span class="fw-bold">{{ day }}: </span>
+                                    <div class="default-text-no-background  mobile-rating-smaller-text-2" v-for = "(hours, day) in newOpeningHours" v-bind:key="day">
+                                        <span>{{ day }}: </span>
                                         <div class="pb-1">
                                             <div class="d-flex align-items-center">
                                                 <input type="time" class="form-control" :id="day + 'start'" v-model="hours[0]" @change="checkOpeningHours">
@@ -2673,8 +2624,8 @@
 
                                 <!-- Section Content (View Mode) -->
                                 <div v-else>
-                                    <div class="default-text-no-background" v-for = "(hours, day) in openingHours" v-bind:key="day">
-                                        <span class="fw-bold">{{ day }}: </span>
+                                    <div class="default-text-no-background  mobile-rating-smaller-text-2" v-for = "(hours, day) in openingHours" v-bind:key="day">
+                                        <span>{{ day }}: </span>
                                         <p class="d-inline">{{ hours[0] }} - {{ hours[1] }}</p>
                                     </div>
                                 </div>
@@ -2688,24 +2639,24 @@
 
                                 <!-- Section Header -->
                                 <div class="square-inline">
-                                    <h5 class="mr-auto"> Public Holiday Information </h5>
+                                    <h5 class="mr-auto mobile-fs-6 fw-bold"> Public Holiday Information </h5>
                                 </div>
 
                                 <!-- Buttons -->
                                 <div class="pb-1" v-if="selfView || powerView">
                                     <!-- [if] not editing -->
-                                    <button v-if="!editPublicHolidays" type="button" class="btn btn-warning rounded-0 reverse-clickable-text" @click="editPublicHolidays = true">
+                                    <button v-if="!editPublicHolidays" type="button" class="btn btn-warning rounded-0 reverse-clickable-text  mobile-rating-smaller-text-2" @click="editPublicHolidays = true">
                                         Edit
                                     </button>
                                     
                                     <!-- [else] if editing -->
-                                    <button v-if="editPublicHolidays" type="button" class="btn btn-warning rounded-0 reverse-clickable-text ms-1" @click="newPublicHolidays = targetVenue['publicHolidays']">
+                                    <button v-if="editPublicHolidays" type="button" class="btn btn-warning rounded-0 reverse-clickable-text ms-1  mobile-rating-smaller-text-2" @click="newPublicHolidays = targetVenue['publicHolidays']">
                                         Reset
                                     </button>
-                                    <button v-if="editPublicHolidays" type="button" class="btn btn-success rounded-0 reverse-clickable-text ms-1" @click="savePublicHolidays">
+                                    <button v-if="editPublicHolidays" type="button" class="btn btn-success rounded-0 reverse-clickable-text ms-1  mobile-rating-smaller-text-2" @click="savePublicHolidays">
                                         Save
                                     </button>
-                                    <button v-if="editPublicHolidays" type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1" @click="editPublicHolidays = false">
+                                    <button v-if="editPublicHolidays" type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1  mobile-rating-smaller-text-2" @click="editPublicHolidays = false">
                                         Cancel
                                     </button>
                                     
@@ -2718,7 +2669,7 @@
 
                                 <!-- Section Content (View Mode) -->
                                 <div v-else>
-                                    <div class="text-body-secondary">
+                                    <div class="text-body-secondary  mobile-rating-smaller-text-2">
                                         <div v-if="targetVenue['publicHolidays'] == ''" class="fst-italic">
                                             No information about public holiday opening hours!
                                         </div>
@@ -2737,24 +2688,24 @@
 
                                 <!-- Section Header -->
                                 <div class="square-inline">
-                                    <h5 class="mr-auto"> Reservation Details </h5>
+                                    <h5 class="mr-auto mobile-fs-6 fw-bold"> Reservation Details </h5>
                                 </div>
 
                                 <!-- Buttons -->
                                 <div class="pb-1" v-if="selfView || powerView">
                                     <!-- [if] not editing -->
-                                    <button v-if="!editReservationDetails" type="button" class="btn btn-warning rounded-0 reverse-clickable-text" @click="editReservationDetails = true">
+                                    <button v-if="!editReservationDetails" type="button" class="btn btn-warning rounded-0 reverse-clickable-text  mobile-rating-smaller-text-2" @click="editReservationDetails = true">
                                         Edit
                                     </button>
                                     
                                     <!-- [else] if editing -->
-                                    <button v-if="editReservationDetails" type="button" class="btn btn-warning rounded-0 reverse-clickable-text ms-1" @click="newReservationDetails = targetVenue['reservationDetails']">
+                                    <button v-if="editReservationDetails" type="button" class="btn btn-warning rounded-0 reverse-clickable-text ms-1  mobile-rating-smaller-text-2" @click="newReservationDetails = targetVenue['reservationDetails']">
                                         Reset
                                     </button>
-                                    <button v-if="editReservationDetails" type="button" class="btn btn-success rounded-0 reverse-clickable-text ms-1" @click="saveReservationDetails">
+                                    <button v-if="editReservationDetails" type="button" class="btn btn-success rounded-0 reverse-clickable-text ms-1  mobile-rating-smaller-text-2" @click="saveReservationDetails">
                                         Save
                                     </button>
-                                    <button v-if="editReservationDetails" type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1" @click="editReservationDetails = false">
+                                    <button v-if="editReservationDetails" type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1  mobile-rating-smaller-text-2" @click="editReservationDetails = false">
                                         Cancel
                                     </button>
                                     
@@ -2767,8 +2718,8 @@
 
                                 <!-- Section Content (View Mode) -->
                                 <div v-else>
-                                    <div class="text-body-secondary">
-                                        <div v-if="targetVenue['reservationDetails'] == ''" class="fst-italic">
+                                    <div class="text-body-secondary mobile-rating-smaller-text-2">
+                                        <div v-if="targetVenue['reservationDetails'] == ''" class="fst-italic  mobile-rating-smaller-text-2">
                                             No reservation details available!
                                         </div>
                                         <div v-else>
@@ -2971,7 +2922,6 @@
     import NavBar from '@/components/NavBar.vue';
     import draggable from 'vuedraggable';
     import ListingRowDisplayProducerProfile from '@/components/ListingRowDisplayProducerProfile.vue';
-    import BookmarkIcon from '@/components/BookmarkIcon.vue';
     import BookmarkModal from '@/components/BookmarkModal.vue';
     import EventBox from '@/components/EventBox.vue';
     import FooterBar from "@/components/FooterBar.vue";
@@ -2983,7 +2933,6 @@
             NavBar,
             draggable, 
             ListingRowDisplayProducerProfile,
-            BookmarkIcon, 
             BookmarkModal,
             EventBox,
             FooterBar

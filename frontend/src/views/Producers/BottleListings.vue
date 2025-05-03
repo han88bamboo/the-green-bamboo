@@ -218,10 +218,10 @@
                       <template v-if="userType == 'user'">
                         <!-- Logged-In User -->
                         <button
-                          class="btn btn-danger text-white fw-semibold px-2"
+                          class="btn text-white fw-semibold px-2"
                           data-bs-toggle="modal"
                           data-bs-target="#reviewModal"
-                          style="border-radius: 0; height: 40px;"
+                          style="border-radius: 0; height: 40px; background-color: #FF3E31;"
                         >
                           {{ !inEdit ? 'Add Review' : 'Reviewed' }}
                         </button>
@@ -313,9 +313,9 @@
                           :to="{
                             path:
                               '/profile/producer/' +
-                              this.producer_id +
+                              slugify(getProducerName(this.producer_id)) +
                               '/' +
-                              getProducerName(this.producer_id),
+                              this.producer_id,
                           }"
                           class="default-text-no-background"
                         >
@@ -341,7 +341,7 @@
                       <h6 v-else class="text-body-secondary producer-page">
                         Bottler:
                         <router-link
-                          :to="{ path: '/profile/producer/' + this.bottler_id }"
+                          :to="{ path: '/profile/producer/' + getProducerName(this.bottler_id) + '/' + this.bottler_id }"
                           class="default-text-no-background"
                         >
                           <u style="color: black">
@@ -464,7 +464,7 @@
                                 >
                                   <router-link
                                     :to="{
-                                      path: '/profile/producer/' + producer,
+                                      path: '/profile/producer/' + slugify(getProducerName(producer)) + '/' + producer,
                                     }"
                                     class="reverse-clickable-text"
                                   >
@@ -1127,13 +1127,14 @@
 
             <!-- Bookmark icon -->
             <div class="d-flex align-items-center ms-2 mobile-view-hide">
-              <BookmarkIcon
-                :user="user"
-                :listing="specified_listing"
-                :overlay="false"
-                size="40"
-                @icon-clicked="handleIconClick"
-              />
+              <button class="btn primary-btn-less-round-blue btn-lg" @icon-clicked="handleIconClick">
+                <BookmarkIcon
+                  :user="user"
+                  :listing="specified_listing"
+                  :overlay="false"
+                  size="24"
+                />
+              </button>
             </div>
           </div>
 
@@ -2173,7 +2174,7 @@
                   <div class="row align-items-center">
                     <!-- Profile Photo -->
                     <div class="col-12 col-lg-1 mobile-col-2 text-start">
-                      <router-link :to="`/profile/user/${review.userID}/${review.username}`">
+                      <router-link :to="`/profile/user/${getUsernameFromReview(review)}/${review.userID}`">
                         <img
                           :src="
                             getPhotoFromReview(review) || defaultProfilePhoto
@@ -2187,7 +2188,7 @@
                     <!-- Username and Rating -->
                     <div class="col-10 pe-0 mobile-fs-6 mobile-ps-4">
                       <router-link
-                        :to="`/profile/user/${review.userID}/${review.username}`"
+                        :to="`/profile/user/${getUsernameFromReview(review)}/${review.userID}`"
                         class="text-decoration-none text-dark"
                       >
                         <b>@{{ getUsernameFromReview(review) }}</b>
@@ -2855,12 +2856,12 @@
                 style="max-height: 100%"
               >
                 <!-- [function] where to buy -->
-                <div v-for="producer in producerListings" v-bind:key="producer">
+                <div v-for="producerId in producerListings" v-bind:key="producerId">
                   <router-link
-                    :to="{ path: '/profile/producer/' + producer }"
+                    :to="{ path: '/profile/producer/' + slugify(getProducerName(producerId)) + '/' + producerId }"
                     class="reverse-clickable-text"
                   >
-                    <p>{{ getProducerName(producer) }}</p>
+                    <p>{{ getProducerName(producerId) }}</p>
                   </router-link>
                 </div>
               </div>
@@ -3256,6 +3257,16 @@ export default {
   methods: {
     // fetch specific listing data
     created() {},
+    slugify(text) {
+                return text
+                    .toString()
+                    .toLowerCase()
+                    .replace(/['’]/g, '')
+                    .replace(/[^\w\s-]/g, '')
+                    .trim()
+                    .replace(/\s+/g, '-')
+                    .replace(/-+/g, '-')
+            },
 
     // load data from database
     async loadData() {
