@@ -95,7 +95,7 @@ const routes = [
     component: () => import("../views/Users/UserProfileRefactor.vue"),
   },
   {
-    path: "/profile/producer/:username/:producerID",
+    path: "/profile/producer/:producerID/:username",
     name: "profileproducer",
 
     // OLD LINK FOR REFERENECE
@@ -124,7 +124,7 @@ const routes = [
 
   // ----------------- LISTING PAGES -----------------
   {
-    path: "/listing/view/:listingName/:listingID",
+    path: "/listing/view/:listingID/:listingName",
     name: "listingview",
 
     // OLD LINK FOR REFERENECE

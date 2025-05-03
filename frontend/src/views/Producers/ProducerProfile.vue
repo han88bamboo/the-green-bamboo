@@ -1863,7 +1863,7 @@
 
                   
                     <router-link
-                      :to="{ path: '/listing/view/' + slugify(listing.listingName) + '/' + listing.id}"
+                      :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}"
                       class="default-text-no-background"
                     >
                       <!-- <img :src=" 'data:image/jpeg;base64,' + (listing['photo'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" > -->
@@ -1981,7 +1981,7 @@
                       <!-- Listing name -->
                       <p class="default-text fs-5 mobile-fs-6 mb-0">
                         <router-link
-                          :to="{ path: '/listing/view/' + slugify(listing.listingName) + '/' + listing.id }"
+                           :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}"
                           class="default-text-no-background"
                         >
                           <u><b>{{ listing["listingName"] }}</b></u>
@@ -2084,7 +2084,7 @@
                     </div>
                     <div>
                       <router-link
-                        :to="{ path: '/listing/view/' + slugify(listing.listingName) + '/' + listing.id}"
+                        :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}"
                       >
                         <button
                           type="button"
@@ -2239,7 +2239,7 @@
                       class="col-12 col-lg-1 mobile-col-2"
                       style="text-align: left"
                     >
-                      <router-link :to="`/profile/user/${review.userName}/${review.userID}`">
+                      <router-link :to="`/profile/user/${review.userID}`">
                         <img
                           :src="
                             getPhotoFromReview(review) || defaultProfilePhoto
@@ -2252,7 +2252,7 @@
                     <div class="col-10 pe-0 mobile-fs-7 mobile-ps-4">
                       <!-- username -->
                       <router-link
-                        :to="`/profile/user/${review.userName}/${review.userID}`"
+                        :to="`/profile/user/${review.userID}`"
                         style="color: inherit"
                       >
                         <b> @{{ getUsernameFromReview(review) }} </b>
@@ -3741,11 +3741,8 @@ export default {
                 return text
                     .toString()
                     .toLowerCase()
-                    .replace(/['’]/g, '')
-                    .replace(/[^\w\s-]/g, '')
-                    .trim()
-                    .replace(/\s+/g, '-')
-                    .replace(/-+/g, '-')
+                    .replace(/\s+/g, '')
+                    .replace(/[^\w]/g, '');
             },
     // load data from database
     async loadData() {

@@ -12,7 +12,7 @@
             class="d-flex flex-column align-items-center" 
             style="flex: 0 0 19%; max-width: 19%; min-width: 150px; margin-right: 1%;">
                    <div class="drink-photo-container-row image-container-150 mb-2" v-if="listing?.id">
-                    <router-link :to="{ path: '/listing/view/' + slugify(listing.listingName) + '/' + listing.id }" class="default-text-no-background">
+                    <router-link :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName) }" class="default-text-no-background">
                         <img v-if="listing.photo !== '' && listing.photo !== null" :src="listing.photo" class="add-drink-photo-background centered rounded"> 
                         <img v-else src="https://drinkximages.s3.us-east-1.amazonaws.com/images/2d4d94bc-313e-4621-9a15-4bfbf77958de.jpg" class="add-drink-photo-background centered rounded">
                     </router-link>
@@ -26,7 +26,7 @@
                         @icon-clicked="handleIconClick" />
 
                 </div>
-                <router-link :to="{ path: '/listing/view/' + slugify(listing.listingName) + '/' + listing.id }" class="default-clickable-text scrollable mt-2 mb-3" style="text-align: center; max-height: 75px;" v-if="listing?.id">
+                <router-link :to="{ path: '/listing/view/' +listing.id + '/' + slugify(listing.listingName) }" class="default-clickable-text scrollable mt-2 mb-3" style="text-align: center; max-height: 75px;" v-if="listing?.id">
                     <div v-if="listing.listingName.length > 63"> 
                         {{ listing.listingName.slice(0,63) + (listing.listingName.length > 63 ? '...' : '') }}
                     </div>
@@ -55,7 +55,7 @@
               <div class="drink-photo-container-row-producer-profile image-container-150">
                 
                 <router-link 
-                  :to="{ path: '/listing/view/' + slugify(listing.listingName) + '/' + listing.id }" 
+                  :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName) }" 
                   class="default-text-no-background">
       
                   <img v-if="listing.photo !== '' && listing.photo !== null" 
@@ -80,7 +80,7 @@
       
               <!-- Listing Name block -->
               <router-link 
-                :to="{ path: '/listing/view/' + slugify(listing.listingName) + '/' + listing.id }" 
+                :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName) }" 
                 class="default-clickable-text mobile-rating-smaller-text-2 scrollable mt-2" 
                 style="text-align: center; max-height: 75px;">
       
@@ -132,11 +132,8 @@ import BookmarkIcon from '@/components/BookmarkIcon.vue';
                 return text
                     .toString()
                     .toLowerCase()
-                    .replace(/['’]/g, '')
-                    .replace(/[^\w\s-]/g, '')
-                    .trim()
-                    .replace(/\s+/g, '-')
-                    .replace(/-+/g, '-')
+                    .replace(/\s+/g, '')
+                    .replace(/[^\w]/g, '');
             },
             handleIconClick(data) {
                 this.$emit('icon-clicked', data);
