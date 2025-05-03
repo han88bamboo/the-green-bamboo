@@ -1537,7 +1537,6 @@ export default {
   methods: {
     //remove %20 from url
     slugify(text) {
-      if (!text) return "";
                 return text
                     .toString()
                     .toLowerCase()

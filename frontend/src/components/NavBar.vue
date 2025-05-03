@@ -75,130 +75,6 @@
         </div>
 
         <div class="col-2 dropdown mobile-col-4">
-          <!-- notification button -->
-          <div class="notification-dropdown me-2" v-if="accType != ''">
-            <button
-              type="button"
-              class="btn p-0 notification-btn"
-              @click="toggleNotifications"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="30"
-                height="30"
-                fill="currentColor"
-                class="bi bi-bell"
-                viewBox="0 0 16 16"
-              >
-                <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2M8 1.918l-.797.161A4.002 4.002 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 0 0-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5.002 5.002 0 0 1 13 6c0 .88.32 4.2 1.22 6" />
-              </svg>
-              <span 
-                v-if="unreadCount > 0" 
-                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-              >
-                {{ unreadCount > 9 ? '9+' : unreadCount }}
-              </span>
-            </button>
-
-            <!-- notification dropdown menu -->
-            <div v-if="showNotifications" class="notification-menu">
-              <div class="notification-mobile-header d-md-none">
-                <h5 class="text-center flex-grow-1 mb-0">Notifications</h5>
-                <button class="btn-close" @click="showNotifications = false">X</button>
-              </div>
-              <div class="notification-tabs">
-                <button
-                  class="notification-tab btn border-1 fw-bold"
-                  :class="{ active: activeTab === 'forYou' }"
-                  @click="activeTab = 'forYou'"
-                >
-                  For You
-                </button>
-                <button
-                  v-if="accType === 'user'"
-                  class="notification-tab btn border-1 fw-bold"
-                  :class="{ active: activeTab === 'venues' }"
-                  @click="activeTab = 'venues'"
-                >
-                  Venues & Producers
-                </button>
-                <button
-                  class="notification-tab btn border-1 fw-bold"
-                  :class="{ active: activeTab === 'news' }"
-                  @click="activeTab = 'news'"
-                >
-                  News
-                </button>
-              </div>
-              <div class="notification-content">
-                <!-- Loading state -->
-                <div v-if="!notificationsLoaded" class="p-3 text-center">
-                  <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                  </div>
-                </div>
-                <!-- Error state -->
-                <div v-else-if="notificationsError" class="p-3 text-center text-danger">
-                  {{ notificationsError }}
-                </div>
-                <!-- For You Tab -->
-                <div v-if="activeTab === 'forYou'" class="tab-content">
-                  <div v-if="notifications.forYou && notifications.forYou.length === 0" class="p-3 text-center">
-                    No notifications to display
-                  </div>
-                  <div v-else v-for="(notification, index) in notifications.forYou" :key="index" class="notification-item" @click="navigateToNotification(notification)">
-                    <div class="title">{{ notification.title }}</div>
-                    <div class="time">{{ getTimeDifference(notification.time) }}</div>
-                    <hr v-if="index < notifications.forYou.length - 1" class="notification-divider">
-                  </div>
-                </div>
-                
-                <!-- Venues & Producers Tab -->
-                <div v-if="activeTab === 'venues'" class="tab-content">
-                  <div v-if="notifications.venues && notifications.venues.length === 0" class="p-3 text-center">
-                    No notifications to display
-                  </div>
-                  <div v-else v-for="(notification, index) in notifications.venues" :key="index" class="notification-item with-logo" @click="navigateToNotification(notification)">
-                    <div class="notification-logo">
-                      <img v-if="notification.logo" :src="notification.logo" alt="Venue logo" class="logo-image">
-                      <img v-else src="../../Images/Drinks/Placeholder.png" alt="Default logo" class="logo-image">
-                    </div>
-                    <div class="notification-content-text">
-                      <div class="title">{{ notification.title }}</div>
-                      <div class="time">{{ getTimeDifference(notification.time) }}</div>
-                    </div>
-                    <hr v-if="index < notifications.venues.length - 1" class="notification-divider">
-                  </div>
-                </div>
-                
-                <!-- News Tab -->
-                <div v-if="activeTab === 'news'" class="tab-content">
-                  <div v-if="notifications.news.length === 0" class="p-3 text-center">
-                    No news to display
-                  </div>
-                  <div v-else v-for="(article, index) in notifications.news" :key="index" class="notification-item with-logo" @click="navigateToNotification(article)">
-                    <div class="notification-logo">
-                      <img v-if="article.logo" :src="article.logo" alt="News logo" class="logo-image">
-                      <img v-else src="../../Images/Drinks/Placeholder.png" alt="Default logo" class="logo-image">
-                    </div>
-                    <div class="notification-content-text">
-                      <div class="title">{{ article.title }}</div>
-                      <div class="time">{{ getTimeDifference(article.time) }}</div>
-                    </div>
-                    <hr v-if="index < notifications.news.length - 1" class="notification-divider">
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- backdrop overlay -->
-          <div
-            v-if="showNotifications"
-            class="notification-backdrop"
-            @click="showNotifications = false"
-          ></div>
-
           <!-- profile icon -->
           <button
             v-if="onProfile"
@@ -221,6 +97,7 @@
                 d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"
               />
             </svg>
+            <!-- <img v-else :src="'data:image/png;base64,'+ photo"  style="width: 45px; height: 45px;" class="img-border"> -->
             <img
               v-else
               :src="photo"
@@ -245,6 +122,7 @@
                   d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"
                 />
               </svg>
+              <!-- <img v-else :src="'data:image/png;base64,'+ photo"  style="width: 45px; height: 45px;" class="img-border"> -->
               <img
                 v-else
                 :src="photo"
@@ -253,6 +131,9 @@
               />
             </button>
           </router-link>
+
+          <!-- camera button -->
+          <!-- <img src="../../Images/Others/camera.png" style="width: 50px; height: 50px; margin-right: 10px; cursor: pointer;" v-on:click="imageSearch"> -->
 
           <!-- dropdown button -->
           <button
@@ -577,20 +458,6 @@ export default {
       showSuggestions: false,
       selectedIndex: -1,
       isFetching: false,
-      showNotifications: false,
-      activeTab: "forYou",
-
-      notifications: {
-        forYou: [],
-        venues: [],
-        news: [],
-      },
-      notificationsLoaded: false,
-      notificationsError: null,
-      unreadCount: 0,
-
-      newsArticles: [],
-      newsLoaded: false,
     };
   },
   computed: {
@@ -682,11 +549,6 @@ export default {
 
     document.addEventListener("click", this.handleClickOutside);
     document.addEventListener("keydown", this.handleKeyDown);
-
-    if (localStorage.getItem("88B_accID")) {
-      this.fetchNotifications();
-      this.fetchNewsRSS();
-    }
   },
   beforeUnmount() {
     document.removeEventListener("click", this.handleClickOutside);
@@ -814,111 +676,6 @@ export default {
     externalURL(url) {
       window.location.assign(url);
     },
-
-    toggleNotifications() {
-      this.showNotifications = !this.showNotifications;
-      if (this.showNotifications) {
-        if (!this.notificationsLoaded) {
-          this.fetchNotifications();
-        }
-        if (!this.newsLoaded) {
-          this.fetchNewsRSS();
-        }
-      }
-    },
-    async fetchNotifications() {
-      if (!localStorage.getItem("88B_accID")) {
-        return;
-      }
-      
-      const accID = localStorage.getItem("88B_accID");
-      const accType = localStorage.getItem("88B_accType");
-      
-      try {
-        const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getNotifications/${accType}/${accID}`
-        );
-        
-        this.notifications.forYou = response.data.forYou || [];
-        this.notifications.venues = response.data.venues || [];
-        this.notificationsLoaded = true;
-        
-        // Calculate unread count
-        this.unreadCount = this.countUnreadNotifications();
-      } catch (error) {
-        console.error("Error fetching notifications:", error);
-        this.notificationsError = "Failed to load notifications";
-      }
-    },
-
-    async fetchNewsRSS() {
-      try {
-        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/rssFeed/rssfeed`);
-        
-        const latestNews = response.data[0]?.latest_news || [];
-        
-        this.notifications.news = latestNews.map(article => ({
-          title: article.title,
-          time: new Date(article.published).getTime(),
-          logo: article.image_url,
-          link: article.link,
-          read: false,
-          type: 'news'
-        }));
-        
-        this.newsLoaded = true;
-        
-        this.unreadCount = this.countUnreadNotifications();
-      } catch (error) {
-        console.error("Error fetching RSS feed:", error);
-        this.notificationsError = "Failed to load news";
-      }
-    },
-
-    navigateToNotification(notification) {
-      if (notification.type === 'news') {
-        window.open(notification.link, '_blank');
-      }
-      else {
-        if (notification.link) {
-          const baseUrl = window.location.origin;
-          const newUrl = baseUrl + notification.link;
-          window.location.href = newUrl;
-        }
-      }
-    },
-
-    countUnreadNotifications() {
-      const forYouUnread = this.notifications.forYou.filter(n => !n.read).length;
-      const venuesUnread = this.notifications.venues.filter(n => !n.read).length;
-      const newsUnread = this.notifications.news.filter(n => !n.read).length;
-      return forYouUnread + venuesUnread + newsUnread;
-    },
-
-    getTimeDifference(date) {
-      let currentDate = new Date();
-      let updateDate = new Date(date);
-      let timeDifference = currentDate - updateDate;
-      let seconds = Math.floor(timeDifference / 1000);
-      let minutes = Math.floor(seconds / 60);
-      let hours = Math.floor(minutes / 60);
-      let days = Math.floor(hours / 24);
-      let months = Math.floor(days / 30);
-      let years = Math.floor(months / 12);
-      if (years > 0) {
-          return years + (years === 1 ? ' year ago' : ' years ago');
-      } else if (months > 0) {
-          return months + (months === 1 ? ' month ago' : ' months ago');
-      } else if (days > 0) {
-          return days + (days === 1 ? ' day ago' : ' days ago');
-      } else if (hours > 0) {
-          return hours + (hours === 1 ? ' hour ago' : ' hours ago');
-      } else if (minutes > 0) {
-          return minutes + (minutes === 1 ? ' minute ago' : ' minutes ago');
-      } else {
-          return seconds + (seconds === 1 ? ' second ago' : ' seconds ago');
-      }
-    }, 
   },
 };
 </script>
