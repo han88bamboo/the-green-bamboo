@@ -453,11 +453,8 @@ export default {
                 return text
                     .toString()
                     .toLowerCase()
-                    .replace(/['’]/g, '')
-                    .replace(/[^\w\s-]/g, '')
-                    .trim()
-                    .replace(/\s+/g, '-')
-                    .replace(/-+/g, '-')
+                    .replace(/\s+/g, '')
+                    .replace(/[^\w]/g, '');
             },
         // Function to get upcoming events 
         async getUpcomingEvents() {

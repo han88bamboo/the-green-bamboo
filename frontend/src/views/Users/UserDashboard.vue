@@ -158,11 +158,11 @@
                                     <div v-for="activity in recentFollowerActivity" v-bind:key="activity.id" class="py-2">
                                         <div v-if="activity.type === 'tag'">
                                             <i> 
-                                                <router-link :to="{ path: '/profile/user/' + getUserFromID(activity.userID).username + '/' + activity.userID }" class="reverse-clickable-text">
+                                                <router-link :to="{ path: '/profile/user/' + activity.userID }" class="reverse-clickable-text">
                                                     @<b> {{ getUserFromID(activity.userID).username }} </b>
                                                 </router-link> 
                                                 tagged you in a review on 
-                                                <router-link :to="{ path: '/listing/view/' + slugify(getListingFromID(activity.listingID).listingName) + '/' + activity.listingID }" class="reverse-clickable-text">
+                                                <router-link :to="{ path: '/listing/view/' + activity.listingID }" class="reverse-clickable-text">
                                                     <u> {{ getListingFromID(activity.listingID).listingName }} </u>
                                                 </router-link>
                                                 {{ getTimeDifference(activity.date) }}
@@ -170,7 +170,7 @@
                                         </div>
                                         <div v-else-if="activity.type === 'follow'">
                                             <i> 
-                                                <router-link :to="{ path: '/profile/user/' + activity.username + '/' + activity.userID }" class="reverse-clickable-text">
+                                                <router-link :to="{ path: '/profile/user/' + activity.userID }" class="reverse-clickable-text">
                                                     @<b> {{ activity.username }} </b>
                                                 </router-link> 
                                                 started following you
@@ -254,7 +254,7 @@
                                             <i> 
                                                 You rated 
                                                 <b>
-                                                    <router-link :to="{ path: '/listing/view/' + slugify(getListingFromID(activity.listingID).listingName) + '/' + activity.listingID }" class="reverse-clickable-text">
+                                                    <router-link :to="{ path: '/listing/view/' + activity.listingID }" class="reverse-clickable-text">
                                                         <u> {{ getListingFromID(activity.listingID).listingName }} </u>
                                                     </router-link>
                                                     &nbsp;<span style="color: #F0B358">{{ activity.rating }} stars</span>
@@ -266,13 +266,13 @@
                                             <i>
                                                 You added
                                                 <b>
-                                                    <router-link :to="{ path: '/listing/view/' + slugify(getListingFromID(activity.listingID).listingName) + '/' + activity.listingID }" class="reverse-clickable-text">
+                                                    <router-link :to="{ path: '/listing/view/' + activity.listingID }" class="reverse-clickable-text">
                                                         <u> {{ getListingFromID(activity.listingID).listingName }} </u>
                                                     </router-link>
                                                 </b>
                                                 &nbsp;to your list:&nbsp;
                                                 <b>
-                                                    <router-link :to="{ path: `/profile/user/${getUserFromID(userID)}/${userID}/${activity.listName}`}" class="reverse-clickable-text">
+                                                    <router-link :to="{ path: `/profile/user/${userID}/${activity.listName}`}" class="reverse-clickable-text">
                                                         <u><span style="color: #F0B358;">{{ activity.listName }}</span></u>
                                                     </router-link>
                                                 </b>
@@ -300,7 +300,7 @@
                                             <i> 
                                                 You rated 
                                                 <b>
-                                                    <router-link :to="{ path: '/listing/view/' + slugify(getListingFromID(activity.listingID).listingName) + '/' + activity.listingID }" class="reverse-clickable-text">
+                                                    <router-link :to="{ path: '/listing/view/' + activity.listingID }" class="reverse-clickable-text">
                                                         <u> {{ getListingFromID(activity.listingID).listingName }} </u>
                                                     </router-link>
                                                     &nbsp;<span style="color: #F0B358">{{ activity.rating }} stars</span>
@@ -312,13 +312,13 @@
                                             <i>
                                                 You added
                                                 <b>
-                                                    <router-link :to="{ path: '/listing/view/' + slugify(getListingFromID(activity.listingID).listingName) + '/' + activity.listingID }" class="reverse-clickable-text">
+                                                    <router-link :to="{ path: '/listing/view/' + activity.listingID }" class="reverse-clickable-text">
                                                         <u> {{ getListingFromID(activity.listingID).listingName }} </u>
                                                     </router-link>
                                                 </b>
                                                 &nbsp;to your list:&nbsp;
                                                 <b>
-                                                    <router-link :to="{ path: `/profile/user/${getUserFromID(userID)}/${userID}/${activity.listName}`}" class="reverse-clickable-text">
+                                                    <router-link :to="{ path: `/profile/user/${userID}/${activity.listName}`}" class="reverse-clickable-text">
                                                         <u><span style="color: #F0B358;">{{ activity.listName }}</span></u>
                                                     </router-link>
                                                 </b>
@@ -469,7 +469,7 @@
                         <!-- col 1: your best rated drinks -->
                         <div id="BestRatedExpressions" class="tab-pane fade show active col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-3 ps-lg-0 pe-lg-0 mobile-mx-0">
                             <div class="text-start pb-2" v-for="listing in bestRatedListings" v-bind:key="listing.id">
-                                <router-link :to="{ path: '/listing/view/' + listing.listingName + '/' + listing.id }" class="reverse-clickable-text">
+                                <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
                                     <div class="d-flex align-items-center">
                                         <!-- <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;"> -->
                                         <img :src="(listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;">
@@ -532,7 +532,7 @@
                     <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5  mx-3 ps-lg-0 pe-lg-0" style="color:black;">
                         <h3> Your Best Rated Drinks </h3>
                         <div class="text-start pb-2" v-for="listing in bestRatedListings" v-bind:key="listing.id">
-                            <router-link :to="{ path: '/listing/view/' + slugify(listing.listingName) + '/' + listing.id }" class="reverse-clickable-text">
+                            <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
                                 <div class="d-flex align-items-center">
                                     <!-- <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;"> -->
                                     <img :src="(listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;">
@@ -1076,16 +1076,6 @@
 
         },
         methods: {
-            slugify(text) {
-                return text
-                    .toString()
-                    .toLowerCase()
-                    .replace(/['’]/g, '')
-                    .replace(/[^\w\s-]/g, '')
-                    .trim()
-                    .replace(/\s+/g, '-')
-                    .replace(/-+/g, '-')
-            },
             async loadData() {
                 // listings
                 // _id, listingName, producerID, bottler, originCountry, drinkType, typeCategory, age, abv, reviewLink, officialDesc, sourceLink, photo
