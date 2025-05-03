@@ -1436,44 +1436,24 @@
                 </div>
               </div>
 
-              <div
-                style="
-                  display: flex;
-                  align-items: flex-start;
-                  gap: 16px;
-                  margin-bottom: 16px;
-                "
-              >
-                <img
-                  src="/address-book.png"
-                  style="
-                    width: 64px;
-                    height: 64px;
-                    object-fit: contain;
-                    border-radius: 4px;
-                  "
-                  alt="Invite two friends"
-                />
+              <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px;">
+                <img src="/address-book.png" 
+                  style="width: 64px; height: 64px; object-fit: contain; border-radius: 4px;" 
+                  alt="Invite two friends" />
                 <div>
-                  <p style="font-size: 18px; margin-bottom: 8px">
-                    Invite two friends.
-                  </p>
+                  <p style="font-size: 18px; margin-bottom: 8px;">Invite two friends.</p>
                   <button
-                    style="
-                      padding: 8px 16px;
-                      background-color: #f0b358;
-                      border: none;
-                      color: black;
-                      border-radius: 4px;
-                      cursor: pointer;
-                    "
+                    style="padding: 8px 16px; background-color: #F0B358; border: none; color: black; border-radius: 4px; cursor: pointer;"
                     @mouseover="hoverButton($event)"
                     @mouseleave="leaveButton($event)"
-                  >
+                    data-bs-toggle="modal"
+                    data-bs-target="#addFriendModal">
                     Add A Friend
                   </button>
                 </div>
               </div>
+
+              
 
               <div
                 style="
@@ -1589,6 +1569,87 @@
                           >
                             Save changes
                           </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                                    <!-- add a friend modal -->
+                  <div class="modal fade" id="addFriendModal" tabindex="-1" aria-labelledby="addFriendModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                      <div class="modal-content">
+                        <!-- Modal Header -->
+                        <div class="modal-header position-relative" style="border-radius: 0; border: none; padding: 25px;">
+                          <button type="button" class="position-absolute border-0 bg-transparent" style="right: 20px; top: 50%; transform: translateY(-50%); z-index: 10; padding: 8px;" data-bs-dismiss="modal" aria-label="Close">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="white" viewBox="0 0 16 16">
+                              <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                            </svg>
+                          </button>
+                        </div>
+                  
+                        <div class="modal-body p-0">
+                          <!-- Search bar section -->
+                          <div class="w-100 px-5 pt-4 pb-0">
+                            <h1 class="modal-title fs-5 mb-2" id="addFriendModalLabel" style="font-weight: 600;">
+                              <span class="d-none d-md-inline">Don't Drink Alone! Find your friends on Drink-X!</span>
+                              <span class="d-md-none">Don't Drink Alone!<br>Find your friends on Drink-X!</span>
+                            </h1>
+                          </div>
+                          
+                          <div class="px-5 pt-1 pb-2">
+                            <div class="position-relative">
+                              <input type="text" class="form-control rounded-pill" placeholder="Search for friends on Drink-X" aria-label="Search for friends" style="border: 1px solid #ced4da; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                              <div class="position-absolute" style="right: 15px; top: 50%; transform: translateY(-50%);">
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <!-- Invite section -->
+                          <div class="px-5 py-4">
+                            <h4>Invite Your Friends to Drink-X</h4>
+                            <p>Don't drink alone! See which of your friends are already pouring it up on Drink-X, and invite other friends to join you!</p>
+                            <div class="row mt-4">
+                  
+                              <!-- Facebook -->
+                              <div class="col-4 text-center mb-4">
+                                <div class="d-flex flex-column align-items-center">
+                                  <div class="mb-3" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                                    <img src="/facebook.png" alt="Facebook" style="width: 100%; height: 100%; object-fit: contain; transform: scale(1.0);">
+                                  </div>
+                                  <button class="btn btn-info rounded-pill px-4 text-white" @click="shareOnFacebook">Invite via Facebook</button>
+                                </div>
+                              </div>
+                              
+                              <!-- Email -->
+                              <div class="col-4 text-center mb-4">
+                                <div class="d-flex flex-column align-items-center">
+                                  <div class="mb-3" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                                    <img src="/mail.png" alt="Email" style="width: 100%; height: 100%; object-fit: contain; transform: scale(1.0);">
+                                  </div>
+                                  <button class="btn btn-info rounded-pill px-4 text-white" @click="shareViaEmail">Send Email</button>
+                                </div>
+                              </div>
+                              
+                              <!-- Telegram -->
+                              <div class="col-4 text-center">
+                                <div class="d-flex flex-column align-items-center">
+                                  <div class="mb-3" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                                    <img src="/telegram.png" alt="Telegram" style="width: 100%; height: 100%; object-fit: contain; transform: scale(1.0);">
+                                  </div>
+                                  <button class="btn btn-info rounded-pill px-4 text-white" @click="shareOnTelegram">Invite via Telegram</button>
+                                </div>
+                              </div>
+                              
+                              <!-- WhatsApp -->
+                              <div class="col-4 text-center">
+                                <div class="d-flex flex-column align-items-center">
+                                  <div class="mb-3" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                                    <img src="/social.png" alt="WhatsApp" style="width: 100%; height: 100%; object-fit: contain; transform: scale(1.0);">
+                                  </div>
+                                  <button class="btn btn-info rounded-pill px-4 text-white" @click="shareOnWhatsApp">Invite via Whatsapp</button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -4199,6 +4260,28 @@ export default {
           console.error("Failed to copy text: ", err);
         });
     },
+    // ------------------ Add Friend Functions ------------------
+    shareOnFacebook() {
+      const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://www.drink-x.com')}&quote=${encodeURIComponent('Come join me on Drink-X!')}`;
+      window.open(url, '_blank', 'width=600,height=400');
+    },
+
+    shareViaEmail() {
+      const subject = 'Join me on Drink-X!';
+      const body = 'Come join me on Drink-X! https://www.drink-x.com';
+      window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    },
+
+    shareOnTelegram() {
+      const text = 'Come join me on Drink-X!';
+      window.open(`https://t.me/share/url?url=${encodeURIComponent('https://www.drink-x.com')}&text=${encodeURIComponent(text)}`, '_blank');
+    },
+
+    shareOnWhatsApp() {
+      const text = 'Come join me on Drink-X! https://www.drink-x.com';
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    },
+
   },
 };
 </script>
