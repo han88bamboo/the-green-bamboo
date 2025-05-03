@@ -365,21 +365,21 @@ export default {
         url = url + "User/" + accID;
         this.loadData(url);
 
-        this.profileURL = "/profile/user/" + accUsername + "/" + accID;
+        this.profileURL = "/profile/user/" + accID + "/" + accUsername;
         this.dashboardURL = "/dashboard/user";
         this.dashboardWord = "Drink";
       } else if (this.accType == "producer") {
         url = url + "Producer/" + accID;
         this.loadData(url);
 
-        this.profileURL = "/profile/producer/" + accUsername + "/" + accID;
+        this.profileURL = "/profile/producer/" + accID + "/" + accUsername;
         this.dashboardURL = "/Producers/ProducersDashboard/" + accID;
         this.dashboardWord = "Brand";
       } else if (this.accType == "venue") {
         url = url + "Venue/" + accID;
         this.loadData(url);
 
-        this.profileURL = "/profile/venue/";
+        this.profileURL = "/profile/venue/" + accID + "/" + accUsername;
         this.dashboardURL = "/dashboard/venue";
         this.dashboardWord = "Venue";
       }
@@ -420,7 +420,6 @@ export default {
           ) {
             this.isModerator = true;
           }
-          
         }
       } catch (error) {
         console.error(error);

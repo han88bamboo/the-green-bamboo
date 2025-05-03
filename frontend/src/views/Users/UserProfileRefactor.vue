@@ -1751,7 +1751,7 @@
                       </div>
                       <div class="col-9 mobile-col-9 mobile-ps-2">
                         <a
-                          :href="'/listing/view/' + slugify(getListingName(review.reviewTarget)) + '/' + review.reviewTarget"
+                          :href="'/listing/view/' + review.reviewTarget"
                           style="text-decoration: none; color: #223957"
                         >
                           <p class="fs-5 mobile-fs-7 mb-1 mobile-mb-0_5">
@@ -2843,16 +2843,6 @@ export default {
     this.loadData();
   },
   methods: {
-    slugify(text) {
-                return text
-                    .toString()
-                    .toLowerCase()
-                    .replace(/['’]/g, '')
-                    .replace(/[^\w\s-]/g, '')
-                    .trim()
-                    .replace(/\s+/g, '-')
-                    .replace(/-+/g, '-')
-            },
     // load data from database
     async loadData() {
       try {
@@ -3950,7 +3940,7 @@ export default {
     switchTab(tab) {
       this.activeTab = tab;
       this.$router.push(
-        "/profile/user/" + this.displayUser.username + "/" + this.displayUserID
+        "/profile/user/" + this.displayUserID + "/" + this.displayUser.username
       );
     },
 
@@ -4012,17 +4002,19 @@ export default {
         this.activeTab = "lists";
         this.$router.push(
           "/profile/user/" +
-          this.displayUser.username +
+            this.displayUserID +
             "/" +
-            this.displayUserID
+            this.displayUser.username
         );
       } else {
         this.activeTab = "list";
         this.currentList = name;
         this.$router.push(
           "/profile/user/" +
-            this.displayUser.username + "/" +
-            this.slugify(name) + "/" + this.displayUserID
+            this.displayUserID +
+            "/" +
+            this.displayUser.username +
+            name
         );
 
         if (this.ownProfile) {

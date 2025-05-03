@@ -469,24 +469,3 @@ Purpose of the changes:
 
 Nature of the changes (frontend / backend / database):
 frontend
-
-# Update as of 30 April (Part 2)
-
-Coder: Candy
-
-Purpose of the changes:
-(1) Update router/index.js URL to 
-    A. "/club/view/:clubName?/:clubID"
-    B. "/profile/user/:username/:userID/"
-
-(2) Update club url in BrowseClubs.vue
-    A. Updated slugify(text) fn 
-
-(3) Update producer/profile url in ClubView.vue
-(4) Update users/UserProfileRefactor.vue user review url
-    A. ListingRowDisplayUserProfile component
-(5) Update NavBar & LandingPageNavBar user profile url
-(6) Update Explore page producer and user URL
-
-Nature of the changes (frontend / backend / database):
-frontend
