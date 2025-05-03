@@ -525,3 +525,13 @@ Purpose of the changes:
  
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 3 May 
+
+Coder: Han
+
+Purpose of the changes:
+imported code from LandingPage.vue and rssFeed.py in Group-3A's repository to get the new landing page working
+ 
+Nature of the changes (frontend / backend / database):
+frontend, backend
