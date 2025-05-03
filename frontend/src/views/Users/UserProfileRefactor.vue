@@ -102,8 +102,8 @@
                   <b>Flavour Choice</b>
                 </div>
                 <div class="col-7 text-end">
-                  <span v-if="selectedFlavours.length == 0"><i>None</i></span>
-                  <span v-else>{{ selectedFlavours.join(", ") }}</span>
+                  <span v-if="selectedFlavours?.length == 0"><i>None</i></span>
+                  <span v-else>{{ selectedFlavours?.join(", ") }}</span>
                 </div>
               </div>
               <!-- Display Chosen Flavour Tag End -->
@@ -113,10 +113,10 @@
                   <b>Observation Tags</b>
                 </div>
                 <div class="col-7 text-end">
-                  <span v-if="selectedObservationTags.length == 0"
+                  <span v-if="selectedObservationTags?.length == 0"
                     ><i>None</i></span
                   >
-                  <span v-else>{{ selectedObservationTags.join(", ") }}</span>
+                  <span v-else>{{ selectedObservationTags?.join(", ") }}</span>
                 </div>
               </div>
               <!-- Display Chosen Observation Tag End -->
@@ -326,7 +326,7 @@
                             :value="tag.familyTag"
                           />
                           <label
-                            v-if="selectedFlavours.includes(tag.familyTag)"
+                            v-if="selectedFlavours?.includes(tag.familyTag)"
                             class="btn primary-btn-less-round"
                             :for="'flavour-' + index"
                             style="
@@ -370,7 +370,7 @@
                           />
                           <label
                             v-if="
-                              selectedObservationTags.includes(
+                              selectedObservationTags?.includes(
                                 tag.observationTag
                               )
                             "

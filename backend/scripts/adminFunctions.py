@@ -682,10 +682,19 @@ def importListings():
                 continue
             
             converted_row = []
-            for data_type, value in zip(column_data_types, row):
+            for i, (data_type, value) in enumerate(zip(column_data_types, row)):
                 if data_type is float:
                     value = value.replace('%', '').strip()
-                    converted_value = float(value) if value and value.lower() != 'n/a' else None
+                    try:
+                        # Handle 'NAS', 'N/A', empty strings or any other non-numeric values
+                        if value and value.lower() not in ['n/a', 'na', 'nas']:
+                            converted_value = float(value)
+                        else:
+                            converted_value = None
+                    except ValueError:
+                        # If conversion fails, set to None and log the error
+                        print(f"Could not convert value '{value}' to float in column {i}. Setting to None.")
+                        converted_value = None
                 else:
                     converted_value = data_type(value) if value else None
                 converted_row.append(converted_value)

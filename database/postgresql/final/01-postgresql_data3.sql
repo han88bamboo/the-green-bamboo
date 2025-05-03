@@ -639,6 +639,7 @@ CREATE TABLE "clubPostCommentsLikes" (
     "postID" INTEGER REFERENCES "clubPosts"("id") ON DELETE SET NULL, -- [!] References clubPosts FK
     "commentID" INTEGER REFERENCES "clubPostComments"("id") ON DELETE SET NULL, -- [!] References clubPostComments FK
     "memberID" INTEGER REFERENCES "clubMembers"("id") ON DELETE SET NULL -- [!] References clubMembers FK
+    'likeDate' TIMESTAMP
 );
 
 -- ========= "events" =========
