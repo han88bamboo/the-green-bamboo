@@ -5068,22 +5068,22 @@
                 }
             },
 
-                // get average venue ratings
-                getAverageVenueRatings() {
+            // get average venue ratings
+            getAverageVenueRatings() {
                 const ratings = this.filteredVenueReviews.map((review) => parseFloat(review.rating));
                 if (ratings.length === 0) return "-";
                 const avg = ratings.reduce((sum, val) => sum + val, 0) / ratings.length;
                 return avg.toFixed(1);
-                },
+            },
 
-                addVenueReview() {
+            addVenueReview() {
                 if (this.reviewDesc.length < 20) {
-                this.reviewDescError = 
-                    "Character count is less than 20, please write more for a detailed review.";
-                alert("Submission error, please fill in the fields properly");
-                return;
+                    this.reviewDescError = 
+                        "Character count is less than 20, please write more for a detailed review.";
+                    alert("Submission error, please fill in the fields properly");
+                    return;
                 } else {
-                this.reviewDescError = "";
+                    this.reviewDescError = "";
                 }
 
                 let createdDate = new Date().toISOString();
@@ -5107,21 +5107,21 @@
 
             editVenueReview() {
                 if (this.reviewDesc.length < 20) {
-                this.reviewDescError = 
-                    "Character count is less than 20, please write more for a detailed review.";
-                alert("Submission error, please fill in the fields properly");
-                return;
+                    this.reviewDescError = 
+                        "Character count is less than 20, please write more for a detailed review.";
+                    alert("Submission error, please fill in the fields properly");
+                    return;
                 }
 
                 let submitAPI = 
                 `${process.env.VUE_APP_API_URL}/editReview/updateVenueReview/` + this.specificReview[0].id;
                 let submitData = {
-                userID: parseInt(this.user_id),
-                venueID: this.targetVenue.id,
-                rating: this.rating,
-                reviewDesc: this.reviewDesc.trim(),
-                photos: this.reviewImages64,
-                createdDate: this.specificReview[0].createdDate,
+                    userID: parseInt(this.user_id),
+                    venueID: this.targetVenue.id,
+                    rating: this.rating,
+                    reviewDesc: this.reviewDesc.trim(),
+                    photos: this.reviewImages64,
+                    createdDate: this.specificReview[0].createdDate,
                 };
 
                 this.updateReview(submitAPI, submitData);
@@ -5172,6 +5172,7 @@
                     }
                 }
             },
+
             async voteReview(review, vote) {
                 if (vote === "upvote") {
                     review.userVotes.upvotes.push(this.user_id);
@@ -5206,6 +5207,7 @@
                     console.error(error);
                 }
             },
+
             async deleteReview() {
                 let deleteAPI = `${process.env.VUE_APP_API_URL}/deleteReview/deleteVenueReview/` + this.deleteID;
                 
@@ -5214,11 +5216,12 @@
                     this.deleteReviewCode = response.data.code;
                     
                     if (this.deleteReviewCode == 200) {
-                    this.successDelete = true;
-                    this.deletingReview = false;
+                        this.successDelete = true;
+                        this.deletingReview = false;
+                        this.getVenueReviews();
                     } else {
-                    this.errorDelete = true;
-                    this.deletingReview = false;
+                        this.errorDelete = true;
+                        this.deletingReview = false;
                     if (this.deleteReviewCode == 400) {
                         this.notExist = true;
                     } else {
@@ -5231,12 +5234,14 @@
                     this.deletingReview = false;
                 }
             },
+
             getVenueReviews() {
                 const reviews = this.venueReviews.filter((review) => {
                     return review["venueID"] == this.targetVenue.id;
                 });
                 return reviews;
             },
+
             getFilteredVenueReviewsWithImages() {
                 let allReviews = this.getVenueReviews();
 
@@ -5252,6 +5257,7 @@
                     });
                 });
             },
+
             getLoggedUserReview() {
                 const specificReview = this.filteredVenueReviews.filter((review) => {
                     return review.userID == parseInt(this.user_id);
@@ -5263,7 +5269,7 @@
                     this.reviewImages64 = specificReview[0].photos || [];
                 }
                 return specificReview;
-                },
+            },
 
 
         }

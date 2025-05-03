@@ -191,6 +191,18 @@ def sendQuestions():
         cur.execute('SELECT "proofPoints", "ruleName" FROM "pointSystemRules" WHERE id = %s', (15,))
         points = cur.fetchone()
 
+        # get max points 
+        cur.execute('SELECT "proofPoints", "ruleName" FROM "pointSystemRules" WHERE id = %s', (1,))
+        max_points = cur.fetchone()
+
+        if points['proofPoints'] > max_points['proofPoints']:
+            return jsonify(
+                {
+                    "code": 201,
+                    "message": "Question sent successfully!",
+                }
+            ), 201
+
         # Update user's points
         cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s', (points['proofPoints'], userID))
         conn.commit()

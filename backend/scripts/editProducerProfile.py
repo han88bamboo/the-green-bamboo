@@ -175,7 +175,11 @@ def sendQuestions():
 
         cur.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = %s', (1,))
         max_points = cur.fetchone()
-
+ 
+        # get points for asking a question
+        cur.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = %s', (15,))
+        points = cur.fetchone()
+        
         if current_points['currentPoints'] + points['proofPoints'] > max_points['proofPoints']:
             return jsonify(
                 {
@@ -183,10 +187,6 @@ def sendQuestions():
                     "message": "Question sent successfully!"
                 }
             ), 201
- 
-        # get points for asking a question
-        cur.execute('SELECT "proofPoints", "ruleName" FROM "pointSystemRules" WHERE id = %s', (15,))
-        points = cur.fetchone()
 
         # Update user's points
         cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s', (points['proofPoints'], userID))
@@ -198,8 +198,7 @@ def sendQuestions():
             {
                 "code": 201,
                 "message": "Question sent successfully!",
-                "pointsEarned": points['proofPoints'],
-                "ruleName": points['ruleName']
+                "pointsEarned": points['proofPoints']
             }
         ), 201
     

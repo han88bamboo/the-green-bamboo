@@ -852,7 +852,7 @@
                           class="btn primary-btn"
                           type="button"
                           id="button-addon2"
-                          @click="addComment"
+                          @click="addComment(post.id)"
                         >
                           Comment
                         </button>
@@ -1906,23 +1906,21 @@ export default {
     },
 
     // Function to add comment on a post
-    async addComment() {
+    async addComment(postID) {
       try {
         // Comment on the post
         const commentData = await this.$axios.post(
           `${process.env.VUE_APP_API_URL}/club/addComment`,
           {
-            postID: this.postID,
+            postID: postID,
             commenterID: this.memberID,
             commentContent: this.newComment,
           }
         );
+        console.log(commentData)
 
         // Check if the comment is successful
         if (commentData.status == 201) {
-          // Add the comment to the front of the comments array
-          this.comments.unshift(commentData.data.comment_obj);
-
           // Clear the comment input
           this.newComment = "";
 

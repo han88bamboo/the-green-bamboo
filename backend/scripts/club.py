@@ -2687,6 +2687,9 @@ def removePost():
 
         # Step 6: Remove all the likes for the post
         cur.execute('DELETE FROM "clubPostsLikes" WHERE "postID" = %s', (post_id,))
+
+        # Step 7: Remove all the dislikes for the post
+        cur.execute('DELETE FROM "clubPostsDislikes" WHERE "postID" = %s', (post_id,))
         
         # Step 7: Remove the post
         cur.execute('DELETE FROM "clubPosts" WHERE id = %s', (post_id,))
