@@ -1127,12 +1127,13 @@
 
             <!-- Bookmark icon -->
             <div class="d-flex align-items-center ms-2 mobile-view-hide">
-              <button class="btn primary-btn-less-round-blue btn-lg" @icon-clicked="handleIconClick">
+              <button class="btn primary-btn-less-round-blue btn-lg">
                 <BookmarkIcon
                   :user="user"
                   :listing="specified_listing"
                   :overlay="false"
                   size="24"
+                  @icon-clicked="handleIconClick"
                 />
               </button>
             </div>
@@ -2998,6 +2999,7 @@
       :user="user"
       :listings="listings"
       :listingID="bookmarkListingID"
+      :key="bookmarkListingID ? 'modal-'+bookmarkListingID : 'modal-default'"
     />
   </div>
   <!-- end of your drinks shelf & brands you follow -->
@@ -3179,7 +3181,7 @@ export default {
       userBookmarks: [],
 
       // for bookmark component
-      bookmarkListingID: {},
+      bookmarkListingID: null,
       defaultPhoto:
         "https://drinkximages.s3.us-east-1.amazonaws.com/images/2d4d94bc-313e-4621-9a15-4bfbf77958de.jpg",
       defaultProfilePhoto:
@@ -3214,6 +3216,8 @@ export default {
         // redirect to page
         this.$router.push("/");
       }
+      // Initialize the bookmarkListingID with the current listing
+      this.bookmarkListingID = this.listing_id;
       // Check if listing exists in database
       this.checkListingExists();
     } catch (error) {
@@ -4525,10 +4529,19 @@ export default {
     },
     // for bookmark component
     handleIconClick(data) {
-      if (data == "login") {
+      console.log("BookmarkIcon clicked with data:", data);
+      if (data === "login") {
         this.$router.push("/login");
       } else {
-        this.bookmarkListingID = data;
+        // Make sure data is not null or undefined
+        if (!data) {
+          console.error("Received empty data in handleIconClick");
+          // Use the current listing ID as fallback
+          this.bookmarkListingID = this.listing_id;
+        } else {
+          this.bookmarkListingID = data;
+        }
+        console.log("bookmarkListingID updated to:", this.bookmarkListingID);
       }
     },
 
@@ -4767,6 +4780,7 @@ export default {
           "Please enter a valid location, if not location will be left empty";
       }
     },
+
   },
 };
 </script>

@@ -447,3 +447,46 @@ Fixed the error on ListingRowDisplayProducerProfile. that was preventing it from
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 1 May 
+
+Coder: Kai
+
+Purpose of the changes:
+(1) Neaten up spacing on Producer Catalogue
+(2) Neaten up spacing on Producer Tours and Experience Review
+(3) Neaten up spacing on Venue page where they shared common components with Proudcer profile page
+ 
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 2 May 
+
+Coder: Kai
+
+Purpose of the changes:
+(1) Cleaned up Q&A boxes for both Venue and Producers
+(2) Cleaned up "CLAIM THIS BUSINESS" lock boxes for both Venue and Producers
+ 
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 3 May 
+
+Coder: Han
+
+Purpose of the changes:
+imported code from LandingPage.vue and rssFeed.py in Group-3A's repository to get the new landing page working
+ 
+Nature of the changes (frontend / backend / database):
+frontend, backend
+
+# Update as of 3 May 
+
+Coder: Han
+
+Purpose of the changes:
+fixing bookmarking bug - producer/bottlelistings.vue , bookmarkmodal.vue and bookmarkicon.vue
+
+Nature of the changes (frontend / backend / database):
+frontend
