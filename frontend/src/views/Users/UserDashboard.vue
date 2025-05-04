@@ -429,6 +429,221 @@
 
             <!-- right pane -->
             <div class="col-lg-8 col-md-12 col-sm-12 ps-lg-5">
+                <!-- Start: Added by SMU Group 3: Grails, Up & Coming, GOATS -->
+                <div class="row">
+                    <!-- Grail Card -->
+                    <div class="col-12 col-md-4 mb-2 mt-2">
+                        <div class="card rounded p-4 text-white position-relative d-flex flex-column"
+                            style="background: #F0B358; height: 260px; border-radius: 16px !important;">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="mb-0">Grail 🌱</h5>
+                                <button
+                                    class="btn btn-light rounded-circle d-flex align-items-center justify-content-center"
+                                    style="width: 36px; height: 36px; font-size: 1.5rem; font-weight: 300; border: none;"
+                                    @click="openPopup('Grail')">
+                                    +
+                                </button>
+                            </div>
+                            <div v-if="selectedGrails.length === 0" class="text-center mt-2 font-italic"
+                                style="font-size: 16px; font-style: italic;">
+                                the one on my bucket list...
+                            </div>
+                
+                            <div v-else class="d-flex flex-column align-items-center">
+                                <div v-for="(grail, index) in displayGrailsDetails" :key="index" class="d-flex flex-column align-items-center mb-3">
+                                    
+                                    <!-- Grail Image - Removed me-3 class and added mx-auto -->
+                                    <div class="mx-auto d-flex justify-content-center align-items-center drink-grail">
+                                        <img v-if="grail.image" :src="grail.image" alt="Drink image"
+                                            style="max-height: 100px; object-fit: contain;" />
+                                        <img v-else src="../../../Images/Drinks/Placeholder.png" alt="Image placeholder"
+                                            style="max-height: 100px; object-fit: contain;" />
+                                    </div>
+                
+                                    <!-- Grail Details -->
+                                    <div class="text-center">
+                                        <router-link 
+                                            :to="'/listing/view/' + grail.id + '/' + grail.name.replace(/[^a-zA-Z0-9]/g, '')"
+                                            style="color: white; font-weight: bold;">
+                                            {{ grail.name }}
+                                        </router-link>
+                                        <div style="font-size: 0.9rem;">{{ grail.bottler }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                
+                    <!-- Up & Coming Card -->
+                    <div class="col-12 col-md-4 mb-2 mt-2">
+                        <div class="card rounded p-4 text-white position-relative d-flex flex-column"
+                            style="background: #F0B358; height: 260px; border-radius: 16px !important;">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="mb-0">Up & Coming 🍷</h5>
+                                <button
+                                    class="btn btn-light rounded-circle d-flex align-items-center justify-content-center"
+                                    style="width: 36px; height: 36px; font-size: 1.5rem; font-weight: 300; border: none;"
+                                    @click="openPopup('Up & Coming')">
+                                    +
+                                </button>
+                            </div>
+                            <div v-if="selectedUpAndComing.length === 0" class="text-center mt-2 font-italic"
+                                style="font-size: 16px; font-style: italic;">
+                                the ones that i drink over and over again...
+                            </div>
+                            <div v-else class="d-flex flex-column flex-grow-1 overflow-auto">
+                                <div v-for="(item, index) in displayUpAndComingDetails" :key="index"
+                                    class="d-flex align-items-center mb-2">
+                                    <div class="drink-img me-2">
+                                        <img v-if="item.image" :src="item.image" alt="Drink image"
+                                            style="width: 100%; height: 100%; object-fit: contain;" />
+                                        <img v-else src="../../../Images/Drinks/Placeholder.png" alt="Image placeholder"
+                                            style="width: 100%; height: 100%; object-fit: contain;" />
+                                    </div>
+                                    <div class="text-start">
+                                        <router-link :to="'/listing/view/' + item.id + '/' + item.name.replace(/[^a-zA-Z0-9]/g, '')"
+                                            style="color: white; font-weight: bold; text-decoration: underline; display: block;">
+                                            <div v-if="item">
+                                                {{ item.name }}
+                                            </div>
+                                        </router-link>
+                                        <div style="font-size: 0.9rem;">{{ item.bottler }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                
+                    <!-- GOATs Card -->
+                    <div class="col-12 col-md-4 mb-2 mt-2">
+                        <div class="card rounded p-4 text-white position-relative d-flex flex-column"
+                            style="background: #F0B358; height: 260px; border-radius: 16px !important;">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="mb-0">G.O.A.Ts 🙌</h5>
+                                <button
+                                    class="btn btn-light rounded-circle d-flex align-items-center justify-content-center"
+                                    style="width: 36px; height: 36px; font-size: 1.5rem; font-weight: 300; border: none;"
+                                    @click="openPopup('GOATs')">
+                                    +
+                                </button>
+                            </div>
+                            <div v-if="selectedGOATs.length === 0" class="text-center mt-2 font-italic"
+                                style="font-size: 16px; font-style: italic;">
+                                the ones that i still think about...
+                            </div>
+                            <div v-else class="d-flex flex-column flex-grow-1 overflow-auto">
+                                <div v-for="(item, index) in displayGOATsDetails" :key="index"
+                                    class="d-flex align-items-center mb-2">
+                                    <div class="drink-img me-2">
+                                        <img v-if="item.image" :src="item.image" alt="Drink image"
+                                            style="width: 100%; height: 100%; object-fit: contain;" />
+                                        <img v-else src="../../../Images/Drinks/Placeholder.png" alt="Image placeholder"
+                                            style="width: 100%; height: 100%; object-fit: contain;" />
+                                    </div>
+                                    <div class="text-start">
+                                        <router-link :to="'/listing/view/' + item.id + '/' + item.name.replace(/[^a-zA-Z0-9]/g, '')"
+                                            style="color: white; font-weight: bold; text-decoration: underline; display: block;">
+                                            <div v-if="item">
+                                                {{ item.name }}
+                                            </div>
+                                        </router-link>
+                                        <div style="font-size: 0.9rem;">{{ item.bottler }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                
+                    <!-- Popup Modal -->
+                    <div v-if="showPopup" class="popup-overlay" @click.self="closePopup">
+                        <div class="popup-content">
+                            <button class="close-btn" @click="closePopup">&times;</button>
+                
+                            <h2 class="mb-1">Select Your {{ selectedCategory }} {{ getCategoryEmoji() }}</h2>
+                            <p class="text-muted mb-4 subtitle">{{ getCategorySubtitle() }}</p>
+                
+                            <!-- Search Bar -->
+                            <div class="search-container mb-4">
+                                <div class="position-relative">
+                                    <input class="form-control search-input" type="text"
+                                        placeholder="Search for a drink" v-model="searchInput"
+                                        @keyup.enter="addSelectedDrink" @input="getSuggestions"
+                                        autocomplete="off" />
+                                    <span class="search-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                            fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                                            <path
+                                                d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
+                                        </svg>
+                                    </span>
+                
+                                    <!-- Autocomplete Suggestions -->
+                                    <div class="autocomplete-container position-absolute w-100"
+                                        v-if="showSuggestions && filteredSuggestions.length > 0">
+                                        <ul class="list-group">
+                                            <li class="list-group-item list-group-item-action text-start"
+                                                v-for="(suggestion, index) in filteredSuggestions" :key="index"
+                                                @click="selectSuggestion(suggestion)"
+                                                :class="{ active: selectedIndex === index }"
+                                                @mouseover="selectedIndex = index">
+                                                {{ suggestion }}
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                
+                            <!-- Selected Drinks -->
+                            <div v-if="selectedDrinks && selectedDrinks.length > 0"
+                                class="selected-drinks-container">
+                                <div v-for="(drink, index) in selectedDrinks" :key="index"
+                                    class="selected-drink mb-4">
+                                    <div class="d-flex align-items-center">
+                                        <span class="me-2 remove-drink-btn" @click="removeDrink(drink)"
+                                            style="cursor: pointer;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                fill="red" class="bi bi-x" viewBox="0 0 16 16">
+                                                <path
+                                                    d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
+                                            </svg>
+                                        </span>
+                                        <span class="selected-label">Selected</span>
+                                    </div>
+                                    <div class="selected-item mt-2">
+                                        <div class="d-flex align-items-center">
+                                            <div class="wine-image me-3">
+                                                <img v-if="selectedDrinkDetails && selectedDrinkDetails[index] && selectedDrinkDetails[index].photo"
+                                                    :src="selectedDrinkDetails[index].photo" alt="Drink bottle"
+                                                    style="height: 60px; width: 40px; object-fit: contain;" />
+                                                <img v-else src="../../../Images/Drinks/Placeholder.png"
+                                                    alt="Drink bottle"
+                                                    style="height: 60px; width: 40px; object-fit: contain;" />
+                                            </div>
+                                            <div class="wine-details text-start">
+                                                <div class="wine-name">{{ drink }}</div>
+                                                <div class="wine-producer text-muted"
+                                                    v-if="selectedDrinkDetails && selectedDrinkDetails[index]">
+                                                    {{ selectedDrinkDetails[index].bottler || "Unknown Producer" }}
+                                                    {{ selectedDrinkDetails[index].originCountry ? "• " +
+                                                        selectedDrinkDetails[index].originCountry : "" }}
+                                                </div>
+                                                <div class="wine-producer text-muted" v-else>
+                                                    Loading details...
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                
+                            <!-- Confirm Button -->
+                            <button @click="confirmSelection" class="confirm-btn">
+                                Confirm Selection
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <!-- End: Added by SMU Group 3: Grails, Up & Coming, GOATS -->
                 <!--mobile toggle buttons for graph tzh -->
                 <ul class="nav nav-pills mobile-view-show pt-2"  role="tablist" >
                 <hr>  
@@ -649,6 +864,8 @@
     import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js'
     import { LineElement, PointElement } from 'chart.js'
     import FooterBar from "@/components/FooterBar.vue";
+    import axios from 'axios';
+    import { useToast } from "vue-toastification";
 
     ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
     ChartJS.register(LineElement, PointElement)
@@ -915,6 +1132,45 @@
 
                 return activities.slice(0, 10);
             },
+            // Start: Added by SMU Group 3 for the search bar in the popup modal
+            filteredSuggestions() {
+                if (this.searchInput.trim() === "") return [];
+            
+                const searchTerm = this.searchInput.toLowerCase();
+            
+                // First prioritize items that start with the search term
+                const startsWithMatches = this.suggestions.filter((item) =>
+                    item.toLowerCase().startsWith(searchTerm)
+                );
+            
+                // Then add items where any word starts with the search term
+                const wordStartsWithMatches = this.suggestions.filter((item) => {
+                    const words = item.toLowerCase().split(" ");
+                    return (
+                        words.some((word) => word.startsWith(searchTerm)) &&
+                        !item.toLowerCase().startsWith(searchTerm)
+                    ); // exclude already matched items
+                });
+            
+                // Finally add substring matches not covered by above rules
+                const substringMatches = this.suggestions.filter(
+                    (item) =>
+                        item.toLowerCase().includes(searchTerm) &&
+                        !item.toLowerCase().startsWith(searchTerm) &&
+                        !item
+                            .toLowerCase()
+                            .split(" ")
+                            .some((word) => word.startsWith(searchTerm))
+                );
+            
+                // Combine all matches with priority order and limit to 7
+                return [
+                    ...startsWithMatches,
+                    ...wordStartsWithMatches,
+                    ...substringMatches,
+                ].slice(0, 7);
+            },
+            // End: Added by SMU Group 3 for the search bar in the popup modal
         },
         data() {
             return {
@@ -1042,6 +1298,25 @@
                     askVenue: [0, 50], // ask a venue a question
                 },
                 totalPoints: 0,
+                
+                // Start: Add by Group 3  - Grails, Up & Coming, GOATS
+                showPopup: false,
+                selectedCategory: '',
+                selectedGrails: [],
+                selectedUpAndComing: [],
+                selectedGOATs: [],
+                searchInput: "",
+                suggestions: [],
+                showSuggestions: false,
+                selectedIndex: -1,
+                selectedDrinks: [], 
+                selectedDrinkDetails: [], 
+                currentSelectedDrinkDetails: [], 
+                isLoading: false,
+                displayGrailsDetails: [],
+                displayUpAndComingDetails: [],
+                displayGOATsDetails: [],
+                // End: Add by Group 3  - Grails, Up & Coming, GOATS
             };
         },
         async mounted() {
@@ -1074,6 +1349,16 @@
 
             await this.loadData();
 
+            // Added by SMU Group 3
+            // Fetch user's existing selections from database
+            await this.fetchUserSelections();
+            await this.fetchAllListings();
+            document.addEventListener("click", this.handleClickOutside);
+            document.addEventListener("keydown", this.handleKeyDown);
+        },
+        beforeUnmount() {
+            document.removeEventListener("click", this.handleClickOutside);
+            document.removeEventListener("keydown", this.handleKeyDown);
         },
         methods: {
             async loadData() {
@@ -1475,6 +1760,603 @@
                 // to calculate total points, take value[0] = points | value[1] = count, and sum up all points * count
                 this.totalPoints = Object.values(this.pointSystem).reduce((sum, value) => sum + (value[0] * value[1]), 0);
             },
+            // ------------------- Grails, Up & Coming, GOATS -------------------
+            // Start: Added by Group 3: Adding drinks to Grails, Up & Coming, GOATS
+            async fetchUserSelections() {
+                try {
+                    // Replace with your actual API endpoint
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUser/${this.userID}`);
+                    this.userData = response.data;
+                    console.log(this.userData)
+                    if (this.userData) {
+                        // Update the selections from database
+                        this.selectedGrails = this.userData.grails || [];
+                        console.log("From Database:", this.userData.grails)
+                        this.selectedUpAndComing = this.userData.upAndComing || [];
+                        console.log("From Database:", this.userData.upAndComing)
+                        this.selectedGOATs = this.userData.goats || [];
+                        console.log("From Database:", this.userData.goats)
+                    }
+                } catch (error) {
+                    console.error("Error fetching user selections:", error);
+                }
+            },
+            async openPopup(category) {
+                this.selectedCategory = category;
+                this.showPopup = true;
+                this.searchInput = "";
+            
+                // Determine which array to use based on category
+                let selectedDrinksArray = [];
+                if (category === 'Grail') {
+                    selectedDrinksArray = this.selectedGrails;
+                } else if (category === 'Up & Coming') {
+                    selectedDrinksArray = this.selectedUpAndComing;
+                } else if (category === 'GOATs') {
+                    selectedDrinksArray = this.selectedGOATs;
+                }
+            
+                // Set selectedDrinks as an array of all selected drinks
+                this.selectedDrinks = selectedDrinksArray;
+            
+                // Fetch details for all selected drinks
+                if (selectedDrinksArray.length > 0) {
+                    this.selectedDrinkDetails = await Promise.all(
+                        selectedDrinksArray.map(drink => this.fetchListingDetails(drink))
+                    );
+                } else {
+                    this.selectedDrinkDetails = [];
+                }
+            },
+            closePopup() {
+                this.showPopup = false;
+                this.searchInput = "";
+                this.selectedDrinks = [];
+                this.selectedDrinkDetails = [];
+            },
+            getCategoryEmoji() {
+                if (this.selectedCategory === "Grail") return "🌱";
+                if (this.selectedCategory === "Up & Coming") return "🍷";
+                if (this.selectedCategory === "GOATs") return "🙌";
+                return "";
+            },
+            getCategorySubtitle() {
+                if (this.selectedCategory === "Grail")
+                    return "the one that you covet and wish to try...";
+                if (this.selectedCategory === "Up & Coming")
+                    return "the ones that you drink over and over again...";
+                if (this.selectedCategory === "GOATs")
+                    return "the ones that you still think about...";
+                return "";
+            },
+            async fetchListingDetails(listingName) {
+                try {
+                    // Replace with your actual API endpoint
+                    const response = await this.$axios.get(
+                        `${process.env.VUE_APP_API_URL}/getData/getListingByName/${encodeURIComponent(listingName)}`
+                    );
+                    return response.data;
+                } catch (error) {
+                    console.error("Error fetching listing details:", error);
+                    return null;
+                }
+            },
+            async fetchAllListings() {
+                try {
+                    this.isFetching = true;
+                    const response = await axios.get(
+                        `${process.env.VUE_APP_API_URL}/getData/getListingsName`
+                    );
+                    this.suggestions = response.data;
+                } catch (error) {
+                    console.error("Error fetching listings:", error);
+                    this.suggestions = [];
+                } finally {
+                    this.isFetching = false;
+                }
+            },
+            // Get suggestions based on current input
+            getSuggestions() {
+                if (this.searchInput.trim().length > 0) {
+                    this.showSuggestions = true;
+                } else {
+                    this.showSuggestions = false;
+                }
+            },
+            // Select a suggestion
+            async selectSuggestion(suggestion) {
+                // Check if max number of drinks (3) has been reached, but only for Up & Coming and GOATs
+                if ((this.selectedCategory === 'Up & Coming' && this.selectedUpAndComing.length >= 3) ||
+                    (this.selectedCategory === 'GOATs' && this.selectedGOATs.length >= 3)) {
+                    const toast = useToast();
+                    toast.error(`You can only select up to 3 drinks for ${this.selectedCategory}`);
+                    return;
+                }
+                // Check if max number of drinks (1) has been reached for Grail
+                if ((this.selectedCategory === 'Grail' && this.selectedGrails.length > 1)) {
+                    const toast = useToast();
+                    toast.error(`You can only select 1 drink for ${this.selectedCategory}`);
+                    return;
+                }
+                // Store the suggestion
+                this.searchInput = suggestion;
+                this.showSuggestions = false;
+            
+                try {
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingByName/${suggestion}`);
+            
+                    // Store the drink details
+                    this.currentSelectedDrinkDetails = response.data;
+            
+                    // Add to selectedDrinks if not already there
+                    if (!this.selectedDrinks.includes(suggestion)) {
+                        this.selectedDrinks.push(suggestion);
+                        this.selectedDrinkDetails.push(response.data);
+                    }
+            
+                    // Clear the search input
+                    this.searchInput = '';
+                } catch (error) {
+                    console.error("Error fetching drink details:", error);
+                    this.currentSelectedDrinkDetails = null;
+                }
+            },
+            // Handle keyboard navigation
+            handleKeyDown(e) {
+                if (!this.showSuggestions) return;
+            
+                const suggestions = this.filteredSuggestions;
+                // Down arrow
+                if (e.key === "ArrowDown") {
+                    e.preventDefault();
+                    this.selectedIndex = Math.min(
+                        this.selectedIndex + 1,
+                        suggestions.length - 1
+                    );
+                }
+                // Up arrow
+                else if (e.key === "ArrowUp") {
+                    e.preventDefault();
+                    this.selectedIndex = Math.max(this.selectedIndex - 1, 0);
+                }
+                // Enter key
+                else if (e.key === "Enter") {
+                    e.preventDefault();
+                    // If suggestions are visible and an index is selected, 
+                    // simulate clicking on that suggestion
+                    if (this.showSuggestions && this.selectedIndex >= 0) {
+                        this.selectSuggestion(suggestions[this.selectedIndex]);
+                    }
+                }
+                // Escape key
+                else if (e.key === "Escape") {
+                    this.showSuggestions = false;
+                }
+            },
+            // Close suggestions when clicking outside
+            handleClickOutside(e) {
+                if (!this.$el.contains(e.target)) {
+                    this.showSuggestions = false;
+                }
+            },
+            async addSelectedDrink() {
+                const drinkToAdd = this.searchInput.trim();
+            
+                if (drinkToAdd) {
+                    // First, try to find the exact suggestion
+                    const exactSuggestion = this.suggestions.find(
+                        suggestion => suggestion.toLowerCase() === drinkToAdd.toLowerCase()
+                    );
+            
+                    if (exactSuggestion) {
+                        // Use the selectSuggestion method to ensure consistent handling
+                        await this.selectSuggestion(exactSuggestion);
+            
+                        // Add the drink to the selectedDrinks if not already there
+                        if (!this.selectedDrinks.includes(drinkToAdd)) {
+                            this.selectedDrinks.push(drinkToAdd);
+                        }
+            
+                        // Reset search input
+                        this.searchInput = '';
+                        this.showSuggestions = false;
+                    } else {
+                        // If no exact match, show an error or provide feedback
+                        const toast = useToast();
+                        toast.error("Please select a valid drink from the suggestions");
+                    }
+                }
+            },
+            async confirmSelection() {
+                // Limit to 3 drinks only for Up & Coming and GOATs
+                if (this.selectedCategory === 'Up & Coming' && this.selectedDrinks.length > 3) {
+                    const toast = useToast();
+                    toast.error("You can only select up to 3 Up & Coming drinks");
+                    return;
+                }
+            
+                if (this.selectedCategory === 'GOATs' && this.selectedDrinks.length > 3) {
+                    const toast = useToast();
+                    toast.error("You can only select up to 3 GOAT drinks");
+                    return;
+                }
+                // Limit 1 drink only for Grail
+                if ((this.selectedCategory === 'Grail' && this.selectedGrails.length > 1)) {
+                    const toast = useToast();
+                    toast.error(`You can only only select up to 1 Grail drinks`);
+                    return;
+                }
+            
+                // Determine which array to update based on the selected category
+                if (this.selectedCategory === 'Grail') {
+                    // No limit for Grail
+                    this.selectedGrails = [...this.selectedDrinks];
+                } else if (this.selectedCategory === 'Up & Coming') {
+                    this.selectedUpAndComing = [...this.selectedDrinks].slice(0, 3);
+                } else if (this.selectedCategory === 'GOATs') {
+                    this.selectedGOATs = [...this.selectedDrinks].slice(0, 3);
+                }
+            
+                // Save to database
+                await this.saveSelectionsToDatabase();
+            
+                // Close the popup
+                this.closePopup();
+            },
+            removeDrink(drinkToRemove) {
+                if (this.selectedCategory === 'Grail') {
+                    this.selectedGrails = this.selectedGrails.filter(drink => drink !== drinkToRemove);
+                } else if (this.selectedCategory === 'Up & Coming') {
+                    this.selectedUpAndComing = this.selectedUpAndComing.filter(drink => drink !== drinkToRemove);
+                } else if (this.selectedCategory === 'GOATs') {
+                    this.selectedGOATs = this.selectedGOATs.filter(drink => drink !== drinkToRemove);
+                }
+            
+                // Remove from selectedDrinks and selectedDrinkDetails
+                const index = this.selectedDrinks.indexOf(drinkToRemove);
+                if (index > -1) {
+                    this.selectedDrinks.splice(index, 1);
+                    this.selectedDrinkDetails.splice(index, 1);
+                }
+            },
+            async saveSelectionsToDatabase() {
+                try {
+                    // Replace with your actual API endpoint
+                    const response = await this.$axios.post(
+                        `${process.env.VUE_APP_API_URL}/editDashboard/editTop3`,
+                        {
+                            userID: this.userID,
+                            selectedGrails: this.selectedGrails,
+                            selectedUpAndComing: this.selectedUpAndComing,
+                            selectedGOATs: this.selectedGOATs
+                        }, {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+            
+                    const toast = useToast();
+                    if (response.data.code == 201) {
+                        toast.success("Dashboard updated successfully!");
+                    }
+                } catch (error) {
+                    console.error(error);
+                    const toast = useToast();
+                    toast.error("An error occurred while updating dashboard. Please try again.");
+                }
+            },
+            async fetchGrailDetails() {
+                if (this.selectedGrails.length > 0) {
+                    try {
+                        // Fetch details for all selected grails in parallel
+                        const detailsList = await Promise.all(
+                            this.selectedGrails.map(async (drink) => {
+                                const details = await this.fetchListingDetails(drink);
+                                return {
+                                    name: details?.listingName || drink,
+                                    bottler: details?.bottler || '',
+                                    image: details?.photo || '',
+                                    id: details?.id || '',
+                                };
+                            })
+                        );
+            
+                        // Store the details in an array
+                        this.displayGrailsDetails = detailsList;
+                        console.log("Fixing", this.displayGrailsDetails)
+                    } catch (error) {
+                        console.error("Error fetching grail details:", error);
+                    }
+                } else {
+                    this.displayGrailsDetails = [];
+                }
+            },
+            async fetchUpAndComingDetails() {
+                if (this.selectedUpAndComing.length > 0) {
+                    try {
+                        // Fetch details for each selected drink
+                        const detailsList = await Promise.all(
+                            this.selectedUpAndComing.map(async (drink) => {
+                                const details = await this.fetchListingDetails(drink);
+                                return {
+                                    name: details?.listingName || drink,
+                                    bottler: details?.bottler || '',
+                                    image: details?.photo || '',
+                                    id: details?.id || '',
+                                };
+                            })
+                        );
+            
+                        // Store the details in an array
+                        this.displayUpAndComingDetails = detailsList;
+                        console.log("here", this.displayUpAndComingDetails)
+                    } catch (error) {
+                        console.error("Error fetching drink details:", error);
+                    }
+                } else {
+                    this.displayUpAndComingDetails = [];
+                }
+            },
+            async fetchGOATsDetails() {
+                if (this.selectedGOATs.length > 0) {
+                    try {
+                        // Fetch details for each selected drink
+                        const detailsList = await Promise.all(
+                            this.selectedGOATs.map(async (drink) => {
+                                const details = await this.fetchListingDetails(drink);
+                                return {
+                                    name: details?.listingName || drink,
+                                    bottler: details?.bottler || '',
+                                    image: details?.photo || '',
+                                    id: details?.id || '',
+                                };
+                            })
+                        );
+            
+                        // Store the details in an array
+                        this.displayGOATsDetails = detailsList;
+                        console.log("here", this.displayGOATsDetails)
+                    } catch (error) {
+                        console.error("Error fetching drink details:", error);
+                    }
+                } else {
+                    this.displayGOATsDetails = [];
+                }
+            },
+            getCleanName(name) {
+                return name.replace(/[^a-zA-Z0-9]/g, '');
+            }
+            // End: Added by Group 3: Adding drinks to Grails, Up & Coming, GOATS
+        },
+        watch: {
+            selectedGrails: {
+                immediate: true,
+                handler() {
+                    this.fetchGrailDetails()
+                }
+            },
+            selectedUpAndComing: {
+                immediate: true,
+                handler() {
+                    this.fetchUpAndComingDetails()
+                }
+            },
+            selectedGOATs: {
+                immediate: true,
+                handler() {
+                    this.fetchGOATsDetails()
+                }
+            }
         }
     };
 </script>
+<style scoped>
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 10px;
+}
+
+.popup-content {
+    background: white;
+    width: 90%;
+    max-width: 500px;
+    height: auto;
+    max-height: 90vh;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    position: relative;
+}
+
+/* Scrollable container for selected drinks */
+.selected-drinks-container {
+    max-height: 200px;
+    /* Adjust height as needed */
+    overflow-y: auto;
+    /* Enable vertical scrolling */
+    padding-right: 10px;
+    /* Prevent scrollbar from overlapping text */
+}
+
+/* To prevent modal from resizing too much */
+.popup-content {
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+}
+
+.card {
+    transition: transform 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.subtitle {
+    font-size: 14px;
+    font-style: italic;
+}
+
+.search-container {
+    position: relative;
+    width: 100%;
+}
+
+.search-input {
+    padding: 10px 40px 10px 15px;
+    border: 1px solid #f0b358;
+    border-radius: 8px;
+    width: 100%;
+    font-size: 14px;
+}
+
+.search-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #f0b358;
+}
+
+.autocomplete-container {
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    top: 100%;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    margin-top: 5px;
+}
+
+.list-group-item {
+    padding: 10px 15px;
+    border: none;
+    border-bottom: 1px solid #eee;
+}
+
+.list-group-item:hover,
+.list-group-item.active {
+    background-color: #f8f9fa;
+    cursor: pointer;
+    color: #333;
+}
+
+.selected-drink {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: left;
+}
+
+.selected-label {
+    font-size: 14px;
+    color: #666;
+}
+
+.wine-image {
+    width: 40px;
+    height: 60px;
+    background-color: #eee;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.wine-name {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.wine-producer {
+    font-size: 12px;
+}
+
+.confirm-btn {
+    background-color: #f0b358;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-top: 10px;
+}
+
+.confirm-btn:hover {
+    background-color: #e0a348;
+}
+
+.list-group-item:hover {
+    background-color: #f8f9fa;
+    cursor: pointer;
+}
+
+.list-group-item.active {
+    background-color: #83a9e8;
+    /* standardised the colour */
+    border-color: #dee2e6;
+    color: white;
+    /* standardised the colour */
+}
+
+.drink-grail {
+  flex: 0 0 120px;
+  width: 120px;
+  height: 120px;
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  margin-bottom: 10px; /* Add space between image and text */
+}
+
+.drink-grail img {
+  width: 85%;
+  height: 85%;
+  object-fit: contain;
+}
+
+.drink-img {
+    flex: 0 0 70px; /* Further reduce fixed size */
+    width: 70px; /* Ensure consistent width */
+    height: 70px; /* Ensure consistent height */
+    background-color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid #e0e0e0; /* Divider */
+    border-radius: 4px; /* Slightly rounded corners */
+}
+
+.drink-img img {
+    width: 60%; /* Further reduce image scale */
+    height: 60%;
+    object-fit: contain;
+    padding: 3px; /* Further reduce padding */
+}
+</style>

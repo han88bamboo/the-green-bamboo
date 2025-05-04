@@ -490,3 +490,15 @@ fixing bookmarking bug - producer/bottlelistings.vue , bookmarkmodal.vue and boo
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 4 May 
+
+Coder: Han
+
+Purpose of the changes:
+imported code from Group-3B's repository to get (1) "Grails, Up & Coming, and GOATs" feature on dashboard and (2) "add a friend" bar working on user profile. 
+also reapplied Danish's notifications code - which still requires some bugfixing
+
+Nature of the changes (frontend / backend / database):
+frontend / backend / database
+

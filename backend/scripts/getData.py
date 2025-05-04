@@ -21,6 +21,7 @@ import random # ADDED BY SMU GROUP 3
 import feedparser
 import re
 import requests
+from urllib.parse import unquote
 from bs4 import BeautifulSoup
 from bson import json_util, ObjectId
 from flask import Blueprint, g, jsonify, request
@@ -373,6 +374,25 @@ def getListingsByProducer(id):
         return jsonify([])
 
     return jsonify(listings_data)
+
+# [GET] Get Listings details by listing name
+@blueprint.route("/getListingByName/<listing_name>")
+def getListingByName(listing_name):
+    # URL decode the listing name in case there are special characters
+    listing_name = unquote(listing_name)
+    
+    print(f"Decoded listing_name: {listing_name}")
+
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "listings" WHERE "listingName" = %s', (listing_name,))
+        listing_data = cursor.fetchone()
+
+    if listing_data is None:
+        return jsonify({"code": 404, "message": "Listing not found"}), 404
+
+    return jsonify(listing_data)
 
 # -----------------------------------------------------------------------------------------
 
@@ -1237,6 +1257,13 @@ def getUser(id):
             del user_data["email"]
             del user_data["pin"]
 
+            # Make sure these fields exist (even if empty)
+            if 'grails' not in user_data:
+                user_data['grails'] = []
+            if 'upAndComing' not in user_data:
+                user_data['upAndComing'] = []
+            if 'goats' not in user_data:
+                user_data['goats'] = []
 
         return jsonify(user_data), 200
 

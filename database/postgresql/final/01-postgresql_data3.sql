@@ -230,7 +230,10 @@ CREATE TABLE "users" (
     "birthday" TIMESTAMP,
     "pin" VARCHAR(255),
     "choiceFlavours" TEXT[], -- SMU Group 3 added in "choiceFlavours"
-    "preferences" TEXT[] -- SMU Group 3 added in "preferences"
+    "preferences" TEXT[],-- SMU Group 3 added in "preferences"
+    "grails" TEXT[], -- SMU Group 3 added in "grails"
+    "upAndComing" TEXT[], -- SMU Group 3 added in "upAndComing"
+    "goats" TEXT[] -- SMU Group 3 added in "goats"
 );
 
 -- ========= [NEW!] "producersQuestionAnswers" =========
@@ -638,8 +641,8 @@ CREATE TABLE "clubPostCommentsLikes" (
     "id" SERIAL PRIMARY KEY,
     "postID" INTEGER REFERENCES "clubPosts"("id") ON DELETE SET NULL, -- [!] References clubPosts FK
     "commentID" INTEGER REFERENCES "clubPostComments"("id") ON DELETE SET NULL, -- [!] References clubPostComments FK
-    "memberID" INTEGER REFERENCES "clubMembers"("id") ON DELETE SET NULL -- [!] References clubMembers FK
-    'likeDate' TIMESTAMP
+    "memberID" INTEGER REFERENCES "clubMembers"("id") ON DELETE SET NULL, -- [!] References clubMembers FK
+    "likeDate" TIMESTAMP
 );
 
 -- ========= "events" =========
