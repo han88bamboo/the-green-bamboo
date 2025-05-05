@@ -746,10 +746,7 @@ export default {
         // Function to add comment on a post
         async addComment(id, memberID) {
 
-            this.postID = id;
-            this.memberID = memberID;
-
-            const comment = this.newComments[postId];
+            const comment = this.newComments[id];
 
             // Check if the comment is empty
             if (!comment || comment.trim() === "") {
