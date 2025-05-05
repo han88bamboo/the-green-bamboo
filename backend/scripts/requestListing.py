@@ -6,12 +6,11 @@
 import os
 import json
 import pytz
-import data
 import s3Images
 from bson import json_util
 from flask import Blueprint, g, request, jsonify
-from bson.objectid import ObjectId
 from datetime import datetime
+from scripts import pointsHelperFunc
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -432,11 +431,6 @@ def requestReviewStatus(requestID):
         )
 
         # Add proof points to the user if the review status is true
-        # Get max proof points for a user 
-        cur.execute(
-            'SELECT "proofPoints" FROM "pointSystemRules" WHERE id = 1;'
-        )
-        maxProofPoints = cur.fetchone()
     
         # Step 1: Get the userID from the requestID
         cur.execute(
@@ -445,14 +439,7 @@ def requestReviewStatus(requestID):
         )
         userID = cur.fetchone()
 
-        # Get current user's proof points
-        cur.execute(
-            'SELECT "currentPoints" FROM "pointsRecorder" WHERE "userID" = %s;',
-            (userID['userID'],)
-        )
-        userProofPoints = cur.fetchone()
-
-        if userProofPoints is not None and userProofPoints['currentPoints'] >= maxProofPoints['proofPoints']:
+        if pointsHelperFunc.check_max_proof_points(userID['userID']):
             return jsonify(
                 {
                     "code": 201,
@@ -476,10 +463,9 @@ def requestReviewStatus(requestID):
         if (proofPoints is not None and userID is not None):
 
             # Step 3: Update the user's proof points
-            newProofPoints = userProofPoints['currentPoints'] + proofPoints['proofPoints']
             cur.execute(
-                'UPDATE "pointsRecorder" SET "currentPoints" = %s WHERE id = %s;',
-                (newProofPoints, userID['userID'])
+                'UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s AND "userType" = %s;',
+                (proofPoints['proofPoints'], userID['userID'], 'user')
             )
             conn.commit()
 

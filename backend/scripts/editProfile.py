@@ -3,11 +3,9 @@
 # -----------------------------------------------------------------------------------------
 
 import os
-import pytz
 import s3Images
 from flask import Blueprint, g, request, jsonify
-from bson.objectid import ObjectId
-from datetime import datetime
+from scripts import pointsHelperFunc
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -157,14 +155,8 @@ def updateBookmark():
                 pointsEarned = (num_lists_to_add_count - num_lists_to_delete_count) * proofPoints['proofPoints']
 
                 if pointsEarned > 0: 
-                    # if max points is reached, do not add points
-                    cursor.execute('SELECT "currentPoints" FROM "pointsRecorder" WHERE "userID" = %s AND "userType" = %s', (userID, 'user',))
-                    current_points = cursor.fetchone()
-
-                    cursor.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = %s', (1,))
-                    max_points = cursor.fetchone()
-
-                    if current_points['currentPoints'] >= max_points['proofPoints']:
+                    
+                    if pointsHelperFunc.check_max_proof_points(userID):
                         return jsonify(
                             {
                                 "code": 201,

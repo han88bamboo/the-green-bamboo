@@ -19,6 +19,7 @@
 import os
 from flask import Blueprint, g, jsonify, request
 from datetime import datetime
+from scripts import pointsHelperFunc
 
 # Use to upload image to S3
 import s3Images
@@ -41,6 +42,16 @@ def getUserInfo(cur, member_id):
     if member_info['userType'] == 'user':
         cur.execute('SELECT "id", "displayName", "photo" FROM "users" WHERE id = %s', (member_info['userID'],))
         user_info = cur.fetchone()
+
+        # Get the user's proof points from the database
+        cur.execute('SELECT "currentPoints" FROM "pointsRecorder" WHERE "userID" = %s AND "userType" = %s', (member_info['userID'], member_info['userType'],))
+        current_points = cur.fetchone()
+
+        # Add the proof points into the user_info
+        if current_points:
+            user_info['currentPoints'] = current_points['currentPoints']
+            user_info['rank'] = pointsHelperFunc.get_rank(current_points['currentPoints'])
+
     elif member_info['userType'] == 'producer':
         cur.execute('SELECT "id", "producerName", "photo" FROM "producers" WHERE id = %s', (member_info['userID'],))
         user_info = cur.fetchone()
@@ -1392,14 +1403,7 @@ def addPost():
 
         if (user['userType'] == 'user'):
 
-            # if max points is reached, do not add points
-            cur.execute('SELECT "currentPoints" FROM "pointsRecorder" WHERE "userID" = %s AND "userType" = %s', (user['userID'], 'user',))
-            current_points = cur.fetchone()
-
-            cur.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = %s', (1,))
-            max_points = cur.fetchone()
-
-            if current_points['currentPoints'] >= max_points['proofPoints']:
+            if pointsHelperFunc.check_max_proof_points(user['userID']):
                 return jsonify({
                     'message': 'Post added successfully',
                     'postID': post_id
@@ -1490,14 +1494,8 @@ def addComment():
         user = cur.fetchone()
 
         if (user['userType'] == 'user'):
-            # if max points is reached, do not add points
-            cur.execute('SELECT "currentPoints" FROM "pointsRecorder" WHERE "userID" = %s AND "userType" = %s', (user['userID'], 'user',))
-            current_points = cur.fetchone()
-
-            cur.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = %s', (1,))
-            max_points = cur.fetchone()
-
-            if current_points['currentPoints'] >= max_points['proofPoints']:
+            
+            if pointsHelperFunc.check_max_proof_points(user['userID']):
                 return jsonify({
                     'message': 'Comment added successfully',
                     'comment_obj': {

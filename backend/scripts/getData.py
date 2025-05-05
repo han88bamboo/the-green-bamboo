@@ -1,7 +1,9 @@
 # Port: 5000
 # Routes: /getAccountRequests (GET), /getCountries (GET), /getListings (GET), /getListingsByIDs (POST), /getListing/<id> (GET), /getProducers (GET), /getProducer/<id> (GET),
 #           /getRecentListingReviews/<id> (GET), /getAllListingsNames (GET), /getBookmarkListings (POST), /getUserReviewSummary/<id> (GET),
-#           /getReviews (GET), /getReviewByTarget/<id> (GET), /getReviewsByUserIds (GET), /getProducerTourReviews (GET), /getVenueReviews (GET), /getUsers (GET), /getUser/<id> (GET), 
+#           /getReviews (GET), /getReviewsByListingIDs (POST), /getReviewByTarget/<id> (GET), /getReviewsByUserIds (GET), /getProducerTourReviews (GET), /getVenueReviews (GET), 
+#           /getVenueReviewsByVenueId/<id> (GET), /getProducerReviewsByProducerId/<id> (GET),
+#           /getUsers (GET), /getUsersFromList (POST), /getUser/<id> (GET), 
 #           /getUserPhoto/<id>/<userType> (GET), /getUserByUsername/<username> (GET), /getVenues (GET), 
 #           /getVenue/<id> (GET), /getVenuesAPI (GET), /getDrinkTypes (GET), /getRequestListings (GET), /getRequestListing/<id> (GET), /getRequestEdits (GET), 
 #           /getRequestEdit/<id> (GET), /getModRequests (GET), /getFlavourTags (GET), /getSubTags (GET), /getObservationTags (GET), /getColours (GET), 
@@ -23,12 +25,12 @@ import re
 import requests
 from urllib.parse import unquote
 from bs4 import BeautifulSoup
-from bson import json_util, ObjectId
+from bson import json_util
 from flask import Blueprint, g, jsonify, request
-from bson.objectid import ObjectId
 from psycopg2.extras import RealDictCursor # ADDED BY SMU GROUP 3
 from decimal import Decimal
 from datetime import datetime, timezone, date, timedelta
+from scripts import pointsHelperFunc
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -960,17 +962,54 @@ def getReviews():
 
     return jsonify(reviews_data)
 
+# [POST] Reviews by listing IDs
+@blueprint.route("/getReviewsByListingIDs", methods=['POST'])
+def getReviewsByListingIDs():
+    conn = g.db
+
+    listing_ids = request.json.get('listingIDs', [])
+
+    if not listing_ids:
+        return jsonify([]), 404
+
+    with conn.cursor() as cursor:
+        cursor.execute("""
+            SELECT "reviews".*, "reviewsUserVotes"."upvotes", "reviewsUserVotes"."downvotes"
+            FROM "reviews"
+            LEFT JOIN "reviewsUserVotes" ON "reviews"."id" = "reviewsUserVotes"."reviewId"
+            WHERE "reviews"."reviewTarget" IN %s
+        """, (tuple(listing_ids),))
+        reviews_data = cursor.fetchall()
+    
+    if not reviews_data:
+        return jsonify([])
+
+    return jsonify(reviews_data)
+
 # [GET] Specific Reviews by reviewTarget
 @blueprint.route("/getReviewByTarget/<id>")
 def getReviewByTarget(id):
     conn = g.db
     
     with conn.cursor() as cursor:
-        cursor.execute('SELECT * FROM "reviews" WHERE "reviewTarget" = %s', (id,))
+        cursor.execute("""
+            SELECT "reviews".*, "reviewsUserVotes"."upvotes", "reviewsUserVotes"."downvotes"
+            FROM "reviews"
+            LEFT JOIN "reviewsUserVotes" ON "reviews"."id" = "reviewsUserVotes"."reviewId"
+            WHERE "reviews"."reviewTarget" = %s
+        """, (id,))
         reviews_data = cursor.fetchall()
     
     if not reviews_data:
         return jsonify([])
+    
+    for review in reviews_data:
+        review["userVotes"] = {
+            "upvotes": review["upvotes"] if review["upvotes"] else [],
+            "downvotes": review["downvotes"] if review["downvotes"] else []
+        }
+        del review["upvotes"]
+        del review["downvotes"]
 
     return jsonify(reviews_data)
 
@@ -1169,6 +1208,65 @@ def getVenueReviews():
 
         return jsonify(reviews_data)
 
+
+# [GET] Venue Reviews by venue ID
+@blueprint.route("/getVenueReviewsByVenueId/<id>", methods=['GET'])
+def getVenueReviewsByVenueId(id):
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        cursor.execute("""
+            SELECT "venueReviews".*, "venueReviewsUserVotes"."upvotes", "venueReviewsUserVotes"."downvotes"
+            FROM "venueReviews"
+            LEFT JOIN "venueReviewsUserVotes" ON "venueReviews"."id" = "venueReviewsUserVotes"."reviewId"
+            WHERE "venueReviews"."venueID" = %s
+        """, (id,))
+
+        reviews_data = cursor.fetchall()
+
+        if not reviews_data:
+            return jsonify([])
+        
+        for review in reviews_data:
+            review["userVotes"] = {
+                "upvotes": review["upvotes"] if review["upvotes"] else [],
+                "downvotes": review["downvotes"] if review["downvotes"] else []
+            }
+            del review["upvotes"]
+            del review["downvotes"]
+
+        return jsonify(reviews_data)
+
+
+# [GET] Producer Reviews by producer ID
+@blueprint.route("/getProducerReviewsByProducerId/<id>", methods=['GET'])
+def getProducerReviewsByProducerId(id):
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        cursor.execute("""
+            SELECT "producerReviews".*, "producerReviewsUserVotes"."upvotes", "producerReviewsUserVotes"."downvotes"
+            FROM "producerReviews"
+            LEFT JOIN "producerReviewsUserVotes" ON "producerReviews"."id" = "producerReviewsUserVotes"."reviewId"
+            WHERE "producerReviews"."producerID" = %s
+        """, (id,))
+
+        reviews_data = cursor.fetchall()
+
+        if not reviews_data:
+            return jsonify([])
+        
+        for review in reviews_data:
+            review["userVotes"] = {
+                "upvotes": review["upvotes"] if review["upvotes"] else [],
+                "downvotes": review["downvotes"] if review["downvotes"] else []
+            }
+            del review["upvotes"]
+            del review["downvotes"]
+
+        return jsonify(reviews_data)
+
+
 # ----------------------
 # [NEW] TO BE ADDED:
 # ----------------------
@@ -1231,11 +1329,49 @@ def getUsers():
                 user_data["drinkLists"] = fetch_drink_lists(cursor, user_id)
                 user_data["followLists"] = fetch_follow_lists(cursor, user_id)
 
+                # Remove unnecessary fields
+                del user_data["hashedPassword"]
+                del user_data["pin"]
+
         return jsonify(users_data), 200
 
     except Exception as e:
         print(str(e))
         return jsonify({"code": 500, "message": "An error occurred while fetching users."}), 500
+
+
+# [POST] A list of users
+@blueprint.route("/getUsersFromList", methods=['POST'])
+def getUsersFromList():
+    conn = g.db
+    user_ids = request.json.get('userIDs', [])
+
+    if not user_ids or len(user_ids) == 0:
+        return jsonify({
+            "code": 404,
+            "message": "At least one user ID is required."
+        }), 404
+
+    # Retrieve user information based on the provided IDs
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "users" WHERE "id" IN %s', (tuple(user_ids),))
+        users_data = cursor.fetchall()
+
+        if not users_data:
+            return jsonify([]), 404
+
+        for user_data in users_data:
+            user_id = user_data['id']
+            
+            user_data["drinkLists"] = fetch_drink_lists(cursor, user_id)
+            user_data["followLists"] = fetch_follow_lists(cursor, user_id)
+            user_data['proofRank'] = pointsHelperFunc.get_rank_by_user_id(user_id)
+
+            # Remove unnecessary fields
+            del user_data["hashedPassword"]
+            del user_data["pin"]
+
+    return jsonify(users_data), 200
 
 # [GET] Specific User by ID
 @blueprint.route("/getUser/<id>")
@@ -1250,6 +1386,7 @@ def getUser(id):
 
             user_data["drinkLists"] = fetch_drink_lists(cursor, id)
             user_data["followLists"] = fetch_follow_lists(cursor, id)
+            user_data['proofRank'] = pointsHelperFunc.get_rank_by_user_id(id)
 
             # Remove unnecessary fields
             del user_data["hashedPassword"]

@@ -8,8 +8,9 @@
 import os
 import s3Images
 from flask import Blueprint, g, request, jsonify
-from bson.objectid import ObjectId
 from datetime import datetime
+from scripts import pointsHelperFunc
+
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -186,22 +187,17 @@ def sendQuestions():
         conn.commit()
 
         # Award points to user for asking a question
- 
-        # get points for asking a question
-        cur.execute('SELECT "proofPoints", "ruleName" FROM "pointSystemRules" WHERE id = %s', (15,))
-        points = cur.fetchone()
-
-        # get max points 
-        cur.execute('SELECT "proofPoints", "ruleName" FROM "pointSystemRules" WHERE id = %s', (1,))
-        max_points = cur.fetchone()
-
-        if points['proofPoints'] > max_points['proofPoints']:
+        if pointsHelperFunc.check_max_proof_points(userID):
             return jsonify(
                 {
                     "code": 201,
                     "message": "Question sent successfully!",
                 }
             ), 201
+        
+        # get points for asking a question
+        cur.execute('SELECT "proofPoints", "ruleName" FROM "pointSystemRules" WHERE id = %s', (15,))
+        points = cur.fetchone()
 
         # Update user's points
         cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s', (points['proofPoints'], userID))

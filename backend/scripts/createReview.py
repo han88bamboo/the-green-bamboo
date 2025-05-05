@@ -3,85 +3,17 @@
 # Dataclass: reviews, producerReviews, venueReviews
 # -----------------------------------------------------------------------------------------
 
-
-# [OLD] TO BE DELETED FOR POSTGRES:
-# ------------------------------------------------------
-
-
-# ======================================================
-
-# [NEW] TO BE ADDED FOR POSTGRES:
-# ------------------------------------------------------
-
-
-# ======================================================
-
-
 import os
-import json
-import data
 import s3Images
 from flask import Blueprint, g, request, jsonify
 from datetime import datetime
-from scripts.adminFunctions import hash_password
-# [OLD] TO BE DELETED FOR POSTGRES:
-# ------------------------------------------------------
-from bson import json_util
-from bson.objectid import ObjectId
-# ======================================================
-
-# [NEW] TO BE ADDED FOR POSTGRES:
-# ------------------------------------------------------
-# import psycopg2
-# from psycopg2.extras import RealDictCursor
-# ======================================================
+from scripts import pointsHelperFunc
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
 
-# [OLD] TO BE DELETED FOR POSTGRES:
-# ------------------------------------------------------
-def parse_json(data):
-    return json.loads(json_util.dumps(data))
-# ======================================================
 
-
-# -----------------------------------------------------------------------------------------
-# [OLD] TO BE DELETED FOR POSTGRES:
-# -----------------------------------------------------
-# def create_username(location_name):
-#     # Remove any spaces and convert to lowercase
-#     # Get a dict of all usernames 
-#     db = g.db
-#     username_dict={}
-#     for doc in db.venues.find({}):
-#         username_dict[doc["username"]]=doc["_id"]
-
-    
-#     location_name = location_name.replace(" ", "").lower()
-    
-#     # Check if the location name is empty
-#     if username_dict.get(location_name) is None :
-#         username = location_name
-    
-#     else:
-#         # If the location name already exists, add a number to the end of the location name
-#         # Find the maximum number
-#         count = 0
-#         for key in username_dict.keys():
-#             if key.startswith(location_name):
-#                 count += 1
-                
-        
-#         # Increment the number by 1
-#         id= count + 1
-#         username = location_name +"_"+ str(id)
-    
-#     return username
-# ======================================================
-
-# [NEW] TO BE ADDED FOR POSTGRES:
-# ------------------------------------------------------
+# Helper function to create a unique username for the venue
 def create_username(location_name):
     conn = g.db
     cur = conn.cursor()
@@ -99,7 +31,6 @@ def create_username(location_name):
     else:
         max_suffix = max([int(name[0].split('_')[-1]) for name in existing_usernames if '_' in name[0]], default=0)
         return f"{location_name}_{max_suffix + 1}"
-        
 # ======================================================
 
 
@@ -109,88 +40,6 @@ def create_username(location_name):
 # - Insert entry into the "reviews" collection. Follows reviews dataclass requirements.
 # - Duplicate review check: If a review with the same userID and reviewTarget exists, reject the request
 # - Possible return codes: 201 (Created), 400 (Duplicate Detected), 500 (Error during creation)
-
-# [OLD] TO BE DELETED FOR POSTGRES:
-# ------------------------------------------------------
-# @blueprint.route("/createReview", methods= ['POST'])
-# def createReviews():
-#     db = g.db
-#     rawReview = request.get_json()
-#     rawReview['reviewTarget'] = ObjectId(rawReview['reviewTarget'])  # Convert reviewTarget to ObjectId
-#     rawReview['userID'] = ObjectId(rawReview['userID'])  # Convert userID to ObjectId
-#     rawReview['createdDate'] = datetime.strptime(rawReview['createdDate'], "%Y-%m-%dT%H:%M:%S.%fZ")# convert date to datetime object
-
-#     # get review address
-#     locationAddress=rawReview['address']
-#     locationName=rawReview['location']
-
-    
-#     # create a dictionary of addresses from venue documents and store thier ids
-    
-#     condition_1= db.venues.count_documents({ "address": locationAddress })
-#     condition_2= db.venues.count_documents({ "venueName": locationName })
-    
-
-#     # see if address is in the dictionary, if not insert a new venue
-#     if locationAddress != "" :
-        
-#         if condition_2==0 or condition_1==0 :
-
-#             # Create a username for the venue
-#             username = create_username(locationName)
-            
-#             venue_to_insert = {
-#                 "venueName": rawReview["location"],
-#                 "address": locationAddress,
-#                 "venueType": "",
-#                 "originLocation": "",
-#                 "venueDesc": "",
-#                 "menu": [],
-#                 "hashedPassword": hash_password(username,"admin1234"),
-#                 "claimStatus": False,
-#                 "openingHours": {
-#                 "Monday": [
-#                     "",
-#                     ""
-#                 ],
-#                 "Tuesday": [
-#                     "",
-#                     ""
-#                 ],
-#                 "Wednesday": [
-#                     "",
-#                     ""
-#                 ],
-#                 "Thursday": [
-#                     "",
-#                     ""
-#                 ],
-#                 "Friday": [
-#                     "",
-#                     ""
-#                 ],
-#                 "Saturday": [
-#                     "",
-#                     ""
-#                 ],
-#                 "Sunday": [
-#                     "",
-#                     ""
-#                 ]
-#                 },
-#                 "photo": "",
-#                 "updates": [],
-#                 "questionsAnswers": [],
-#                 "reservationDetails": "",
-#                 "publicHolidays": "",
-#                 "username": username
-#             }
-
-#             db.venues.insert_one(venue_to_insert)
- 
-# ======================================================
-# [NEW] TO BE ADDED FOR POSTGRES:
-# ------------------------------------------------------
 @blueprint.route("/createReview", methods= ['POST'])
 def createReviews():
     raw_review = request.get_json()
@@ -270,14 +119,7 @@ def createReviews():
         cur.execute(insert_review_sql, review_values)
         conn.commit()
 
-        # if max points is reached, do not add points
-        cur.execute('SELECT "currentPoints" FROM "pointsRecorder" WHERE "userID" = %s AND "userType" = %s', (user_id, 'user',))
-        current_points = cur.fetchone()
-
-        cur.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = %s', (1,))
-        max_points = cur.fetchone()
-
-        if current_points['currentPoints'] >= max_points['proofPoints']:
+        if pointsHelperFunc.check_max_proof_points(user_id):
             return jsonify({
                 "code": 400,
                 "data": raw_review['reviewDesc']
@@ -367,14 +209,7 @@ def createProducerReviews():
 
         total_points = 0
 
-        # if max points is reached, do not add points
-        cur.execute('SELECT "currentPoints" FROM "pointsRecorder" WHERE "userID" = %s AND "userType" = %s', (user_id, 'user',))
-        current_points = cur.fetchone()
-
-        cur.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = %s', (1,))
-        max_points = cur.fetchone()
-
-        if current_points['currentPoints'] >= max_points['proofPoints']:
+        if pointsHelperFunc.check_max_proof_points(user_id):
             return jsonify({"code": 201, "data": raw_review['reviewDesc']}), 201
 
         # Get the proof points for simple text review
@@ -402,7 +237,6 @@ def createProducerReviews():
 # ======================================================
 
 # [POST] Creates a venue review
-
 @blueprint.route("/createVenueReview", methods=['POST'])
 def createVenueReviews():
     raw_review = request.get_json()
@@ -443,14 +277,7 @@ def createVenueReviews():
 
         total_points = 0
 
-        # if max points is reached, do not add points
-        cur.execute('SELECT "currentPoints" FROM "pointsRecorder" WHERE "userID" = %s AND "userType" = %s', (user_id, 'user',))
-        current_points = cur.fetchone()
-
-        cur.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = %s', (1,))
-        max_points = cur.fetchone()
-
-        if current_points['currentPoints'] >= max_points['proofPoints']:
+        if pointsHelperFunc.check_max_proof_points(user_id):
             return jsonify({"code": 201, "data": raw_review['reviewDesc']}), 201
         
         # Get the proof points for simple text review
@@ -472,6 +299,4 @@ def createVenueReviews():
     except Exception as e:
         print(str(e))
         return jsonify({"code": 500, "message": "An error occurred creating the review."}), 500
-
-
 
