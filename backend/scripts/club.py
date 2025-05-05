@@ -1049,7 +1049,7 @@ def getRecentActivity(userID, userType):
 
     try:
         # Step 1: Get all the clubs that the user is a member of
-        cur.execute('SELECT "clubID" FROM "clubMembers" WHERE "userID" = %s AND "userType" = %s', (userID, userType,))
+        cur.execute('SELECT "clubID", id FROM "clubMembers" WHERE "userID" = %s AND "userType" = %s', (userID, userType,))
         user_clubs = cur.fetchall()
 
         if not user_clubs:
@@ -1085,8 +1085,16 @@ def getRecentActivity(userID, userType):
             cur.execute('SELECT "clubName", "clubBanner" FROM "clubs" WHERE "id" = %s', (clubID,))
             club_name = cur.fetchone()
 
-            # Add club name and club banner into activity
+            # Get the user's memberID in the club from user_clubs
+            memberID = None
+            for club in user_clubs:
+                if club['clubID'] == clubID:
+                    memberID = club['id']
+                    break
+
+            # Add club name, member ID and club banner into activity
             activity['clubName'] = club_name['clubName']
+            activity['memberID'] = memberID
             activity['clubBanner'] = club_name['clubBanner']
 
         return jsonify({

@@ -257,13 +257,13 @@
                                                     placeholder="Write a comment..."
                                                     aria-label="Write a comment..."
                                                     aria-describedby="button-addon2"
-                                                    v-model="newComment"
+                                                     v-model="newComments[post.id]"
                                                     />
                                                     <button
                                                     class="btn primary-btn"
                                                     type="button"
                                                     id="button-addon2"
-                                                    @click="addComment(post.id)"
+                                                    @click="addComment(post.id, post.memberID)"
                                                     >
                                                     Comment
                                                     </button>
@@ -425,6 +425,10 @@ export default {
             // Variable to store user proof point
             proofPoint: localStorage.getItem("88B_proofPoints") ? localStorage.getItem("88B_proofPoints") : null,
             maxProofPoints: localStorage.getItem("88B_maxProofPoints") ? localStorage.getItem("88B_maxProofPoints") : null,
+
+            // new comment variable
+            newComments: {}  // key: post.id, value: comment string
+
         }
     },
 
@@ -740,36 +744,48 @@ export default {
         },
 
         // Function to add comment on a post
-        async addComment() {
-        try {
-            // Comment on the post
-            const commentData = await this.$axios.post(
-            `${process.env.VUE_APP_API_URL}/club/addComment`,
-            {
-                postID: this.postID,
-                commenterID: this.memberID,
-                commentContent: this.newComment,
+        async addComment(id, memberID) {
+
+            this.postID = id;
+            this.memberID = memberID;
+
+            const comment = this.newComments[postId];
+
+            // Check if the comment is empty
+            if (!comment || comment.trim() === "") {
+                const toast = useToast();
+                toast.error("Please enter a comment before submitting.");
+                return;
             }
-            );
+            try {
+                // Comment on the post
+                const commentData = await this.$axios.post(
+                    `${process.env.VUE_APP_API_URL}/club/addComment`,
+                    {
+                        postID: id,
+                        commenterID: memberID,
+                        commentContent: comment
+                    }
+                );
 
-            // Check if the comment is successful
-            if (commentData.status == 201) {
-            // Add the comment to the front of the comments array
-            this.comments.unshift(commentData.data.comment_obj);
+                // Check if the comment is successful
+                if (commentData.status == 201) {
+                // Add the comment to the front of the comments array
+                this.comments.unshift(commentData.data.comment_obj);
 
-            // Clear the comment input
-            this.newComment = "";
+                // Clear the comment input
+                this.newComment = "";
 
-            const toast = useToast();
-            toast.success("Comment added successfully.");
+                const toast = useToast();
+                toast.success("Comment added successfully.");
+                }
+            } catch (error) {
+                console.log(error);
+                const toast = useToast();
+                toast.error(
+                "An error occurred while adding the comment. Please try again later."
+                );
             }
-        } catch (error) {
-            console.log(error);
-            const toast = useToast();
-            toast.error(
-            "An error occurred while adding the comment. Please try again later."
-            );
-        }
         },
     },
 

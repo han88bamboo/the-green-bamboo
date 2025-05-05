@@ -732,6 +732,13 @@ export default {
     async addComment() {
       try {
         // Comment on the post
+        // Check if the comment is empty
+        if (!this.newCommentomment || this.newComment.trim() === "") {
+                const toast = useToast();
+                toast.error("Please enter a comment before submitting.");
+                return;
+            }
+          
         const commentData = await this.$axios.post(
           `${process.env.VUE_APP_API_URL}/club/addComment`,
           {
