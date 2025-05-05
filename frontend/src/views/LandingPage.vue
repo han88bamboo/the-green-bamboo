@@ -956,6 +956,14 @@ export default {
     }
   },
     methods: {
+
+
+        slugify(text) {
+                return text
+                    .toString()
+                    .toLowerCase()
+                    .replace(/\s+/g, '')
+                    .replace(/[^\w]/g, ''); },
         // Load data from the database (e.g., profile picture)
         async loadData(url) {
             try {
@@ -1042,8 +1050,7 @@ export default {
             try {
                 this.selectedListing = listing;
                 console.log("listing:", listing);
-                const cleanName = listing.listingName.replace(/[^a-zA-Z0-9]/g, '');
-                this.$router.push({ path: `/listing/view/${listing.id}/${cleanName}` });
+                this.$router.push({ path: '/listing/view/' + listing.id + '/' + this.slugify(listing.listingName)});
             } catch (error) {
                 console.error("Error navigating to listing:", error);
             }

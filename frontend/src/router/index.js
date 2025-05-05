@@ -85,7 +85,7 @@ const routes = [
 
   // ----------------- PROFILE PAGES -----------------
   {
-    path: "/profile/user/:username/:listName?/:userID",
+    path: "/profile/user/:userID/:username/:listName?",
     name: "profileuser",
 
     // OLD LINK FOR REFERENECE
@@ -95,7 +95,7 @@ const routes = [
     component: () => import("../views/Users/UserProfileRefactor.vue"),
   },
   {
-    path: "/profile/producer/:username/:producerID",
+    path: "/profile/producer/:producerID/:username",
     name: "profileproducer",
 
     // OLD LINK FOR REFERENECE
@@ -124,7 +124,7 @@ const routes = [
 
   // ----------------- LISTING PAGES -----------------
   {
-    path: "/listing/view/:listingName/:listingID",
+    path: "/listing/view/:listingID/:listingName",
     name: "listingview",
 
     // OLD LINK FOR REFERENECE
@@ -259,7 +259,7 @@ const routes = [
   },
 
   {
-    path: "/club/view/:clubName?/:clubID",
+    path: "/club/view/:clubID/:clubName?",
     name: "clubview",
     component: () => import("../views/Users/ClubView.vue"),
   },
@@ -273,7 +273,7 @@ const routes = [
 
   // ----------------- Events -----------------
   {
-    path: "/event/:eventName/:eventID",
+    path: "/event/:eventID/:eventName",
     name: "eventview",
     component: () => import("../views/SpecificEventPage.vue"),
   },

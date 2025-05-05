@@ -21,12 +21,14 @@ import random # ADDED BY SMU GROUP 3
 import feedparser
 import re
 import requests
+from urllib.parse import unquote
 from bs4 import BeautifulSoup
 from bson import json_util, ObjectId
 from flask import Blueprint, g, jsonify, request
 from bson.objectid import ObjectId
 from psycopg2.extras import RealDictCursor # ADDED BY SMU GROUP 3
 from decimal import Decimal
+from datetime import datetime, timezone, date, timedelta
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -372,6 +374,25 @@ def getListingsByProducer(id):
         return jsonify([])
 
     return jsonify(listings_data)
+
+# [GET] Get Listings details by listing name
+@blueprint.route("/getListingByName/<listing_name>")
+def getListingByName(listing_name):
+    # URL decode the listing name in case there are special characters
+    listing_name = unquote(listing_name)
+    
+    print(f"Decoded listing_name: {listing_name}")
+
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "listings" WHERE "listingName" = %s', (listing_name,))
+        listing_data = cursor.fetchone()
+
+    if listing_data is None:
+        return jsonify({"code": 404, "message": "Listing not found"}), 404
+
+    return jsonify(listing_data)
 
 # -----------------------------------------------------------------------------------------
 
@@ -1236,6 +1257,13 @@ def getUser(id):
             del user_data["email"]
             del user_data["pin"]
 
+            # Make sure these fields exist (even if empty)
+            if 'grails' not in user_data:
+                user_data['grails'] = []
+            if 'upAndComing' not in user_data:
+                user_data['upAndComing'] = []
+            if 'goats' not in user_data:
+                user_data['goats'] = []
 
         return jsonify(user_data), 200
 
@@ -2875,3 +2903,581 @@ def getRandomListings():
 
     return jsonify(listings_data)
 
+# -----------------------------------------------------------------------------------------
+# [GET] Get User Notifications
+# Purpose: Fetch notifications for a user based on their account type
+# Output: Notification items for the logged-in user
+@blueprint.route('/getNotifications/<acc_type>/<acc_id>', methods=['GET'])
+def getNotifications(acc_type, acc_id):
+    conn = g.db
+    cur = conn.cursor()
+    
+    try:
+        acc_id = int(acc_id)
+        
+        for_you_notifications = []
+        venues_notifications = []
+        
+        if acc_type == "user":
+            # Getting upvoted reviews notifications
+            cur.execute("""
+                SELECT r.id AS review_id, r."reviewTarget", r."userID", rv.upvotes, l."listingName" 
+                FROM reviews r
+                JOIN "reviewsUserVotes" rv ON r.id = rv."reviewId"
+                JOIN listings l ON r."reviewTarget" = l.id
+                WHERE r."userID" = %s AND rv.upvotes IS NOT NULL AND jsonb_array_length(rv.upvotes) > 0
+                ORDER BY r."createdDate" DESC
+            """, (acc_id,))
+            upvoted_reviews = cur.fetchall()
+            
+            for review in upvoted_reviews:
+                upvotes = review['upvotes']
+                for i, upvote in enumerate(upvotes):
+                    if i >= 3:
+                        break
+                    
+                    notification = {
+                        'type': 'review_upvote',
+                        'title': f"Your review on {review['listingName']} got upvoted!",
+                        'time': upvote['date'],
+                        'link': f"/listing/view/{review['listingName']}/{review['reviewTarget']}",
+                        'read': False
+                    }
+                    for_you_notifications.append(notification)
+            
+            # Getting comment likes notifications
+            cur.execute("""
+                SELECT cc.id AS comment_id, cc."commentContent", cc."commentDate", 
+                       cp.id AS post_id, c.id AS club_id, c."clubName",
+                       ccl.id AS like_id, ccl."memberID" AS liker_id
+                FROM "clubPostComments" cc
+                JOIN "clubPosts" cp ON cc."postID" = cp.id
+                JOIN clubs c ON cp."clubID" = c.id
+                JOIN "clubMembers" cm ON cc."commenterID" = cm.id
+                LEFT JOIN "clubPostCommentsLikes" ccl ON cc.id = ccl."commentID"
+                WHERE cm."userID" = %s AND cm."userType" = 'user'
+                ORDER BY ccl.id DESC
+            """, (acc_id,))
+            comment_activities = cur.fetchall()
+            
+            comment_likes_count = {}
+            for activity in comment_activities:
+                if activity['like_id'] is not None:
+                    comment_id = activity['comment_id']
+                    if comment_id not in comment_likes_count:
+                        comment_likes_count[comment_id] = 0
+                    
+                    if comment_likes_count[comment_id] < 3:
+                        notification = {
+                            'type': 'comment_like',
+                            'title': f"Someone liked your comment in {activity['clubName']}",
+                            'time': activity['commentDate'],
+                            'link': f"/club/{activity['club_id']}/post/{activity['post_id']}",
+                            'read': False
+                        }
+                        for_you_notifications.append(notification)
+                        comment_likes_count[comment_id] += 1
+            
+            # Getting club invites notifications
+            cur.execute("""
+                SELECT ci.id AS invite_id, ci."inviteDate", c.id AS club_id, c."clubName",
+                       CASE 
+                           WHEN ci."inviterUserType" = 'user' THEN (SELECT username FROM users WHERE id = ci."inviterID")
+                           WHEN ci."inviterUserType" = 'producer' THEN (SELECT username FROM producers WHERE id = ci."inviterID")
+                           WHEN ci."inviterUserType" = 'venue' THEN (SELECT username FROM venues WHERE id = ci."inviterID")
+                       END AS inviter_username
+                FROM "clubInvites" ci
+                JOIN clubs c ON ci."clubID" = c.id
+                WHERE ci."inviteeID" = %s AND ci."inviteeUserType" = 'user'
+                ORDER BY ci."inviteDate" DESC
+            """, (acc_id,))
+            club_invites = cur.fetchall()
+            
+            for invite in club_invites:
+                notification = {
+                    'type': 'club_invite',
+                    'title': f"@{invite['inviter_username']} invited you to join a club: {invite['clubName']}!",
+                    'time': invite['inviteDate'],
+                    'link': f"/club/view/{invite['club_id']}/{invite['clubName']}",
+                    'read': False
+                }
+                for_you_notifications.append(notification)
+            
+            # Getting tagged in reviews notifications
+            cur.execute("""
+                SELECT r.id AS review_id, r."createdDate", r."reviewTarget", l."listingName",
+                       u.username AS tagger_username, u.id AS tagger_id
+                FROM reviews r
+                JOIN listings l ON r."reviewTarget" = l.id
+                JOIN users u ON r."userID" = u.id
+                WHERE %s = ANY(r."taggedUsers")
+                ORDER BY r."createdDate" DESC
+            """, (str(acc_id),))
+            tagged_reviews = cur.fetchall()
+            
+            for review in tagged_reviews:
+                notification = {
+                    'type': 'tagged_in_review',
+                    'title': f"@{review['tagger_username']} just tagged you in their review of {review['listingName']}!",
+                    'time': review['createdDate'],
+                    'link': f"/listing/view/{review['listingName']}/{review['reviewTarget']}",
+                    'read': False
+                }
+                for_you_notifications.append(notification)
+                
+        elif acc_type == "producer":
+            # Getting producer questions notifications
+            cur.execute("""
+                SELECT pqa.id, pqa.question, pqa.date, pqa."userId",
+                       u.username AS user_username,
+                       p.id AS producer_id, p."producerName", p.username AS producer_username
+                FROM "producersQuestionAnswers" pqa
+                JOIN users u ON pqa."userId" = u.id
+                JOIN producers p ON pqa."producerId" = p.id
+                WHERE pqa."producerId" = %s
+                ORDER BY pqa.date DESC
+            """, (acc_id,))
+            producer_questions = cur.fetchall()
+            
+            for question in producer_questions:
+                notification = {
+                    'type': 'producer_question',
+                    'title': f"@{question['user_username']} asked you a question",
+                    'time': question['date'],
+                    'link': f"/profile/producer/{question['producer_id']}/{question['producer_username']}",
+                    'read': False
+                }
+                for_you_notifications.append(notification)
+                
+            # Getting edit requests notifications
+            cur.execute("""
+                SELECT re.id, re."editDesc", re."listingID", l."listingName",
+                       u.username AS user_username
+                FROM "requestEdits" re
+                JOIN listings l ON re."listingID" = l.id
+                JOIN users u ON re."userID" = u.id
+                WHERE l."producerID" = %s
+                ORDER BY re.id DESC
+            """, (acc_id,))
+            edit_requests = cur.fetchall()
+            
+            for request in edit_requests:
+                notification = {
+                    'type': 'edit_request',
+                    'title': f"@{request['user_username']} requested an edit for {request['listingName']}",
+                    'time': None,
+                    'link': f"/request/view",
+                    'read': False
+                }
+                for_you_notifications.append(notification)
+                
+            # Getting menu inclusions notifications
+            cur.execute("""
+                SELECT mi.id, mi."itemPrice", mi."itemAvailability",
+                       l.id AS listing_id, l."listingName",
+                       v.id AS venue_id, v."venueName", v.username AS venue_username,
+                       vm.id AS menu_id
+                FROM "menuItems" mi
+                JOIN listings l ON mi."itemID" = l.id
+                JOIN "venuesMenu" vm ON mi."sectionId" = vm.id
+                JOIN venues v ON vm."venueId" = v.id
+                WHERE l."producerID" = %s
+                ORDER BY mi.id DESC
+            """, (acc_id,))
+            menu_inclusions = cur.fetchall()
+            
+            for inclusion in menu_inclusions:
+                notification = {
+                    'type': 'menu_inclusion',
+                    'title': f"{inclusion['venueName']} added your {inclusion['listingName']} to their menu",
+                    'time': None,
+                    'link': f"/profile/venue/{inclusion['venue_id']}/{inclusion['venue_username']}",
+                    'read': False
+                }
+                for_you_notifications.append(notification)
+            
+            # Getting club joins notifications (for producer-owned clubs)
+            cur.execute("""
+                SELECT cm.id, cm."joinDate", cm."userID", cm."userType",
+                       c.id AS club_id, c."clubName",
+                       CASE 
+                           WHEN cm."userType" = 'user' THEN (SELECT username FROM users WHERE id = cm."userID")
+                           WHEN cm."userType" = 'producer' THEN (SELECT username FROM producers WHERE id = cm."userID")
+                           WHEN cm."userType" = 'venue' THEN (SELECT username FROM venues WHERE id = cm."userID")
+                       END AS member_username
+                FROM "clubMembers" cm
+                JOIN clubs c ON cm."clubID" = c.id
+                WHERE c.id IN (
+                    SELECT cm2."clubID" FROM "clubMembers" cm2 
+                    WHERE cm2."userID" = %s AND cm2."userType" = 'producer' AND cm2."isAdmin" = TRUE
+                )
+                ORDER BY cm."joinDate" DESC
+            """, (acc_id,))
+            club_joins = cur.fetchall()
+            
+            for join in club_joins:
+                notification = {
+                    'type': 'club_join',
+                    'title': f"@{join['member_username']} joined your club: {join['clubName']}",
+                    'time': join['joinDate'],
+                    'link': f"/club/view/{join['club_id']}/{join['clubName']}",
+                    'read': False
+                }
+                for_you_notifications.append(notification)
+                
+            # Getting event joins notifications (for producer-owned events)
+            cur.execute("""
+                SELECT ea.id, ea."eventDate", ea."userID", ea."attendeeType",
+                       e.id AS event_id, e."eventName",
+                       CASE 
+                           WHEN ea."attendeeType" = 'user' THEN (SELECT username FROM users WHERE id = ea."userID")
+                           WHEN ea."attendeeType" = 'producer' THEN (SELECT username FROM producers WHERE id = ea."userID")
+                           WHEN ea."attendeeType" = 'venue' THEN (SELECT username FROM venues WHERE id = ea."userID")
+                       END AS attendee_username
+                FROM "eventAttendees" ea
+                JOIN events e ON ea."eventID" = e.id
+                WHERE e."eventOwnerID" = %s AND e."eventOwnerType" = 'producer'
+                ORDER BY ea."eventDate" DESC
+            """, (acc_id,))
+            event_joins = cur.fetchall()
+            
+            for join in event_joins:
+                notification = {
+                    'type': 'event_join',
+                    'title': f"@{join['attendee_username']} is attending your event: {join['eventName']}",
+                    'time': join['eventDate'],
+                    'link': f"/event/{join['eventName']}/{join['event_id']}",
+                    'read': False
+                }
+                for_you_notifications.append(notification)
+                
+        elif acc_type == "venue":
+            # Getting venue questions notifications
+            cur.execute("""
+                SELECT vqa.id, vqa.question, vqa.date, vqa."userId",
+                       u.username AS user_username,
+                       v.id AS venue_id, v."venueName", v.username AS venue_username
+                FROM "venuesQuestionAnswers" vqa
+                JOIN users u ON vqa."userId" = u.id
+                JOIN venues v ON vqa."venueId" = v.id
+                WHERE vqa."venueId" = %s
+                ORDER BY vqa.date DESC
+            """, (acc_id,))
+            venue_questions = cur.fetchall()
+            
+            for question in venue_questions:
+                notification = {
+                    'type': 'venue_question',
+                    'title': f"@{question['user_username']} asked you a question",
+                    'time': question['date'],
+                    'link': f"/profile/venue/{question['venue_id']}/{question['venue_username']}",
+                    'read': False
+                }
+                for_you_notifications.append(notification)
+                
+            # Getting venue tagged in reviews notifications
+            cur.execute("""
+                SELECT r.id AS review_id, r."createdDate", r."reviewTarget", l."listingName",
+                       u.username AS reviewer_username, u.id AS reviewer_id
+                FROM reviews r
+                JOIN listings l ON r."reviewTarget" = l.id
+                JOIN users u ON r."userID" = u.id
+                WHERE r.location = %s
+                ORDER BY r."createdDate" DESC
+                LIMIT 10
+            """, (acc_id,))
+            venue_tag_reviews = cur.fetchall()
+            
+            for review in venue_tag_reviews:
+                notification = {
+                    'type': 'venue_tagged_review',
+                    'title': f"@{review['reviewer_username']} mentioned your venue in their review of {review['listingName']}",
+                    'time': review['createdDate'],
+                    'link': f"/listing/view/{review['listingName']}/{review['reviewTarget']}",
+                    'read': False
+                }
+                for_you_notifications.append(notification)
+                
+            # Getting club joins notifications (for venue-owned clubs)
+            cur.execute("""
+                SELECT cm.id, cm."joinDate", cm."userID", cm."userType",
+                       c.id AS club_id, c."clubName",
+                       CASE 
+                           WHEN cm."userType" = 'user' THEN (SELECT username FROM users WHERE id = cm."userID")
+                           WHEN cm."userType" = 'producer' THEN (SELECT username FROM producers WHERE id = cm."userID")
+                           WHEN cm."userType" = 'venue' THEN (SELECT username FROM venues WHERE id = cm."userID")
+                       END AS member_username
+                FROM "clubMembers" cm
+                JOIN clubs c ON cm."clubID" = c.id
+                WHERE c.id IN (
+                    SELECT cm2."clubID" FROM "clubMembers" cm2 
+                    WHERE cm2."userID" = %s AND cm2."userType" = 'venue' AND cm2."isAdmin" = TRUE
+                )
+                ORDER BY cm."joinDate" DESC
+            """, (acc_id,))
+            club_joins = cur.fetchall()
+            
+            for join in club_joins:
+                notification = {
+                    'type': 'club_join',
+                    'title': f"@{join['member_username']} joined your club: {join['clubName']}",
+                    'time': join['joinDate'],
+                    'link': f"/club/view/{join['club_id']}/{join['clubName']}",
+                    'read': False
+                }
+                for_you_notifications.append(notification)
+                
+            # Getting event joins notifications (for venue-owned events)
+            cur.execute("""
+                SELECT ea.id, ea."eventDate", ea."userID", ea."attendeeType",
+                       e.id AS event_id, e."eventName",
+                       CASE 
+                           WHEN ea."attendeeType" = 'user' THEN (SELECT username FROM users WHERE id = ea."userID")
+                           WHEN ea."attendeeType" = 'producer' THEN (SELECT username FROM producers WHERE id = ea."userID")
+                           WHEN ea."attendeeType" = 'venue' THEN (SELECT username FROM venues WHERE id = ea."userID")
+                       END AS attendee_username
+                FROM "eventAttendees" ea
+                JOIN events e ON ea."eventID" = e.id
+                WHERE e."eventOwnerID" = %s AND e."eventOwnerType" = 'venue'
+                ORDER BY ea."eventDate" DESC
+            """, (acc_id,))
+            event_joins = cur.fetchall()
+            
+            for join in event_joins:
+                notification = {
+                    'type': 'event_join',
+                    'title': f"@{join['attendee_username']} is attending your event: {join['eventName']}",
+                    'time': join['eventDate'],
+                    'link': f"/event/{join['eventName']}/{join['event_id']}",
+                    'read': False
+                }
+                for_you_notifications.append(notification)
+        
+        # Process venues notifications for user account type
+        if acc_type == "user":
+            # Getting venue status updates
+            cur.execute("""
+                SELECT vu.id, vu.date, vu.text, vu.photo,
+                       v.id AS venue_id, v."venueName", v.photo AS venue_photo, v.username AS venue_username
+                FROM "venuesUpdates" vu
+                JOIN venues v ON vu."venueId" = v.id
+                ORDER BY vu.date DESC
+                LIMIT 20
+            """)
+            venue_updates = cur.fetchall()
+            
+            for update in venue_updates:
+                notification = {
+                    'type': 'venue_status_update',
+                    'title': f"{update['venueName']} just updated their status: \"{update['text']}\"",
+                    'time': update['date'],
+                    'link': f"/profile/venue/{update['venue_id']}/{update['venue_username']}",
+                    'read': False,
+                    'logo': update['venue_photo']
+                }
+                venues_notifications.append(notification)
+            
+            # Getting producer status updates
+            cur.execute("""
+                SELECT pu.id, pu.date, pu.text, pu.photo,
+                       p.id AS producer_id, p."producerName", p.photo AS producer_photo, p.username AS producer_username
+                FROM "producersUpdates" pu
+                JOIN producers p ON pu."producerId" = p.id
+                ORDER BY pu.date DESC
+                LIMIT 20
+            """)
+            producer_updates = cur.fetchall()
+            
+            for update in producer_updates:
+                notification = {
+                    'type': 'producer_status_update',
+                    'title': f"{update['producerName']} just updated their status: \"{update['text']}\"",
+                    'time': update['date'],
+                    'link': f"/profile/producer/{update['producer_id']}/{update['producer_username']}",
+                    'read': False,
+                    'logo': update['producer_photo']
+                }
+                venues_notifications.append(notification)
+            
+            # Getting venue question answers
+            cur.execute("""
+                SELECT vqa.id, vqa.question, vqa.answer, vqa.date,
+                       v.id AS venue_id, v."venueName", v.photo AS venue_photo, v.username AS venue_username
+                FROM "venuesQuestionAnswers" vqa
+                JOIN venues v ON vqa."venueId" = v.id
+                WHERE vqa."userId" = %s
+                AND vqa.answer IS NOT NULL
+                ORDER BY vqa.date DESC
+                LIMIT 20
+            """, (acc_id,))
+            venue_answers = cur.fetchall()
+            
+            for answer in venue_answers:
+                notification = {
+                    'type': 'venue_question_reply',
+                    'title': f"{answer['venueName']} just posted a reply to the question: \"{answer['question']}\"",
+                    'time': answer['date'],
+                    'link': f"/profile/venue/{answer['venue_id']}/{answer['venue_username']}",
+                    'read': False,
+                    'logo': answer['venue_photo']
+                }
+                venues_notifications.append(notification)
+            
+            # Getting producer question answers
+            cur.execute("""
+                SELECT pqa.id, pqa.question, pqa.answer, pqa.date,
+                       p.id AS producer_id, p."producerName", p.photo AS producer_photo, p.username AS producer_username
+                FROM "producersQuestionAnswers" pqa
+                JOIN producers p ON pqa."producerId" = p.id
+                WHERE pqa."userId" = %s
+                AND pqa.answer IS NOT NULL
+                ORDER BY pqa.date DESC
+                LIMIT 20
+            """, (acc_id,))
+            producer_answers = cur.fetchall()
+            
+            for answer in producer_answers:
+                notification = {
+                    'type': 'producer_question_reply',
+                    'title': f"{answer['producerName']} just posted a reply to the question: \"{answer['question']}\"",
+                    'time': answer['date'],
+                    'link': f"/profile/producer/{answer['producer_id']}/{answer['producer_username']}",
+                    'read': False,
+                    'logo': answer['producer_photo']
+                }
+                venues_notifications.append(notification)
+            
+            # Getting events
+            cur.execute("""
+                SELECT e.id, e."eventName", e."eventStartDate", e."eventEndDate", 
+                       e."eventStartTime", e."eventEndTime", e."createdDate",
+                       e."eventOwnerID", e."eventOwnerType",
+                       CASE 
+                           WHEN e."eventOwnerType" = 'producer' THEN 
+                               (SELECT "producerName" FROM producers WHERE id = e."eventOwnerID")
+                           WHEN e."eventOwnerType" = 'venue' THEN 
+                               (SELECT "venueName" FROM venues WHERE id = e."eventOwnerID")
+                       END AS owner_name,
+                       CASE 
+                           WHEN e."eventOwnerType" = 'producer' THEN 
+                               (SELECT photo FROM producers WHERE id = e."eventOwnerID")
+                           WHEN e."eventOwnerType" = 'venue' THEN 
+                               (SELECT photo FROM venues WHERE id = e."eventOwnerID")
+                       END AS owner_photo,
+                       CASE 
+                           WHEN e."eventOwnerType" = 'producer' THEN 
+                               (SELECT username FROM producers WHERE id = e."eventOwnerID")
+                           WHEN e."eventOwnerType" = 'venue' THEN 
+                               (SELECT username FROM venues WHERE id = e."eventOwnerID")
+                       END AS owner_username
+                FROM events e
+                WHERE e."eventOwnerType" IN ('producer', 'venue')
+                ORDER BY e."createdDate" DESC
+                LIMIT 20
+            """)
+            events = cur.fetchall()
+            
+            for event in events:
+                event_date = event['eventStartDate'].strftime('%B %d, %Y')
+                if event['eventStartTime']:
+                    event_date += f" at {event['eventStartTime'].strftime('%I:%M %p')}"
+                
+                notification = {
+                    'type': 'new_event',
+                    'title': f"{event['owner_name']} is hosting a new event: {event['eventName']} on {event_date}",
+                    'time': event['createdDate'],
+                    'link': f"/event/{event['eventName']}/{event['id']}",
+                    'read': False,
+                    'logo': event['owner_photo']
+                }
+                venues_notifications.append(notification)
+            
+            # Getting current time and calculate 24 hours ago
+            now = datetime.now(timezone.utc)
+            twenty_four_hours_ago = now - timedelta(hours=24)
+            
+            cur.execute("""
+                SELECT l.id, l."listingName", l."addedDate", l."producerID",
+                       p."producerName", p.photo AS producer_photo, p.username AS producer_username
+                FROM listings l
+                JOIN producers p ON l."producerID" = p.id
+                WHERE l."addedDate" >= %s
+                ORDER BY l."addedDate" DESC
+            """, (twenty_four_hours_ago,))
+            new_listings = cur.fetchall()
+            
+            # Group by producer and limit to 2 per producer
+            producer_drink_count = {}
+            for listing in new_listings:
+                producer_id = listing['producerID']
+                if producer_id not in producer_drink_count:
+                    producer_drink_count[producer_id] = 0
+                
+                if producer_drink_count[producer_id] < 2:
+                    notification = {
+                        'type': 'new_drink',
+                        'title': f"{listing['producerName']} added a new drink: {listing['listingName']}",
+                        'time': listing['addedDate'],
+                        'link': f"/listing/view/{listing['listingName']}/{listing['id']}",
+                        'read': False,
+                        'logo': listing['producer_photo']
+                    }
+                    venues_notifications.append(notification)
+                    producer_drink_count[producer_id] += 1
+        
+        def normalize_datetime(time_value):
+            if time_value is None:
+                return None
+                
+            if isinstance(time_value, str):
+                try:
+                    return datetime.strptime(time_value, '%Y-%m-%dT%H:%M:%S.%fZ').replace(tzinfo=timezone.utc)
+                except ValueError:
+                    try:
+                        return datetime.strptime(time_value, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
+                    except ValueError:
+                        return datetime.now(timezone.utc)
+            elif isinstance(time_value, date) and not isinstance(time_value, datetime):
+                return datetime.combine(time_value, datetime.min.time()).replace(tzinfo=timezone.utc)
+            elif isinstance(time_value, datetime):
+                if time_value.tzinfo is None:
+                    return time_value.replace(tzinfo=timezone.utc)
+                return time_value
+            
+            return datetime.now(timezone.utc)
+        
+        # Helper function for sorting
+        def get_sort_key(notification):
+            time_value = notification.get('time')
+            if time_value is not None:
+                return normalize_datetime(time_value)
+            return datetime.now(timezone.utc)
+        
+        # Normalize datetime objects in notifications
+        for notification in for_you_notifications:
+            if notification['time'] is not None:
+                notification['time'] = normalize_datetime(notification['time'])
+        
+        for notification in venues_notifications:
+            if notification['time'] is not None:
+                notification['time'] = normalize_datetime(notification['time'])
+        
+        # Sort notifications by time (recent first)
+        for_you_notifications.sort(key=get_sort_key, reverse=True)
+        venues_notifications.sort(key=get_sort_key, reverse=True)
+        
+        # Return the notifications
+        return jsonify({
+            'forYou': for_you_notifications[:10],  # Limit to 10 most recent notifications
+            'venues': venues_notifications[:20]
+        }), 200
+        
+    except Exception as e:
+        print(str(e))
+        return jsonify({
+            'code': 500,
+            'message': 'An error occurred fetching notifications.'
+        }), 500
+    
+    finally:
+        cur.close()

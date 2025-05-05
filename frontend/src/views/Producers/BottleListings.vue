@@ -313,9 +313,9 @@
                           :to="{
                             path:
                               '/profile/producer/' +
-                              slugify(getProducerName(this.producer_id)) +
+                              this.producer_id +
                               '/' +
-                              this.producer_id,
+                              getProducerName(this.producer_id),
                           }"
                           class="default-text-no-background"
                         >
@@ -341,7 +341,7 @@
                       <h6 v-else class="text-body-secondary producer-page">
                         Bottler:
                         <router-link
-                          :to="{ path: '/profile/producer/' + getProducerName(this.bottler_id) + '/' + this.bottler_id }"
+                          :to="{ path: '/profile/producer/' + this.bottler_id }"
                           class="default-text-no-background"
                         >
                           <u style="color: black">
@@ -464,7 +464,7 @@
                                 >
                                   <router-link
                                     :to="{
-                                      path: '/profile/producer/' + slugify(getProducerName(producer)) + '/' + producer,
+                                      path: '/profile/producer/' + producer,
                                     }"
                                     class="reverse-clickable-text"
                                   >
@@ -1127,12 +1127,13 @@
 
             <!-- Bookmark icon -->
             <div class="d-flex align-items-center ms-2 mobile-view-hide">
-              <button class="btn primary-btn-less-round-blue btn-lg" @icon-clicked="handleIconClick">
+              <button class="btn primary-btn-less-round-blue btn-lg">
                 <BookmarkIcon
                   :user="user"
                   :listing="specified_listing"
                   :overlay="false"
                   size="24"
+                  @icon-clicked="handleIconClick"
                 />
               </button>
             </div>
@@ -2174,7 +2175,7 @@
                   <div class="row align-items-center">
                     <!-- Profile Photo -->
                     <div class="col-12 col-lg-1 mobile-col-2 text-start">
-                      <router-link :to="`/profile/user/${getUsernameFromReview(review)}/${review.userID}`">
+                      <router-link :to="`/profile/user/${review.userID}/${review.username}`">
                         <img
                           :src="
                             getPhotoFromReview(review) || defaultProfilePhoto
@@ -2188,7 +2189,7 @@
                     <!-- Username and Rating -->
                     <div class="col-10 pe-0 mobile-fs-6 mobile-ps-4">
                       <router-link
-                        :to="`/profile/user/${getUsernameFromReview(review)}/${review.userID}`"
+                        :to="`/profile/user/${review.userID}/${review.username}`"
                         class="text-decoration-none text-dark"
                       >
                         <b>@{{ getUsernameFromReview(review) }}</b>
@@ -2856,12 +2857,12 @@
                 style="max-height: 100%"
               >
                 <!-- [function] where to buy -->
-                <div v-for="producerId in producerListings" v-bind:key="producerId">
+                <div v-for="producer in producerListings" v-bind:key="producer">
                   <router-link
-                    :to="{ path: '/profile/producer/' + slugify(getProducerName(producerId)) + '/' + producerId }"
+                    :to="{ path: '/profile/producer/' + producer }"
                     class="reverse-clickable-text"
                   >
-                    <p>{{ getProducerName(producerId) }}</p>
+                    <p>{{ getProducerName(producer) }}</p>
                   </router-link>
                 </div>
               </div>
@@ -3019,6 +3020,7 @@
       :user="user"
       :listings="listings"
       :listingID="bookmarkListingID"
+      :key="bookmarkListingID ? 'modal-'+bookmarkListingID : 'modal-default'"
     />
   </div>
   <!-- end of your drinks shelf & brands you follow -->
@@ -3200,7 +3202,7 @@ export default {
       userBookmarks: [],
 
       // for bookmark component
-      bookmarkListingID: {},
+      bookmarkListingID: null,
       defaultPhoto:
         "https://drinkximages.s3.us-east-1.amazonaws.com/images/2d4d94bc-313e-4621-9a15-4bfbf77958de.jpg",
       defaultProfilePhoto:
@@ -3235,6 +3237,8 @@ export default {
         // redirect to page
         this.$router.push("/");
       }
+      // Initialize the bookmarkListingID with the current listing
+      this.bookmarkListingID = this.listing_id;
       // Check if listing exists in database
       this.checkListingExists();
     } catch (error) {
@@ -3257,16 +3261,6 @@ export default {
   methods: {
     // fetch specific listing data
     created() {},
-    slugify(text) {
-                return text
-                    .toString()
-                    .toLowerCase()
-                    .replace(/['’]/g, '')
-                    .replace(/[^\w\s-]/g, '')
-                    .trim()
-                    .replace(/\s+/g, '-')
-                    .replace(/-+/g, '-')
-            },
 
     // load data from database
     async loadData() {
@@ -4556,10 +4550,19 @@ export default {
     },
     // for bookmark component
     handleIconClick(data) {
-      if (data == "login") {
+      console.log("BookmarkIcon clicked with data:", data);
+      if (data === "login") {
         this.$router.push("/login");
       } else {
-        this.bookmarkListingID = data;
+        // Make sure data is not null or undefined
+        if (!data) {
+          console.error("Received empty data in handleIconClick");
+          // Use the current listing ID as fallback
+          this.bookmarkListingID = this.listing_id;
+        } else {
+          this.bookmarkListingID = data;
+        }
+        console.log("bookmarkListingID updated to:", this.bookmarkListingID);
       }
     },
 
@@ -4798,6 +4801,7 @@ export default {
           "Please enter a valid location, if not location will be left empty";
       }
     },
+
   },
 };
 </script>

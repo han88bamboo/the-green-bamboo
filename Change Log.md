@@ -448,61 +448,6 @@ Fixed the error on ListingRowDisplayProducerProfile. that was preventing it from
 Nature of the changes (frontend / backend / database):
 frontend
 
-# Update as of 30 April 
-
-Coder: Candy
-
-Purpose of the changes:
-(1) Update router/index.js URL to 
-    A. listing/view/:listingName(with dash)/:listingId
-    B. "/profile/producer/:username/:producerID"
-
-(2) Update producers/BottleListings.vue URL to listing/view/:listingName(with dash)/:listingId
-    A. Added slugify(text) fn in producers/BottleListings.vue
-    B. Update Where to buy function to fix url link
-    C. User review link to users.
-
-(3) Update landing page trending links to listing/view/:listingName(with dash)/:listingId
-(4) Update ProducerProfile.vue links to other producers page (Most popular/ Most discussed/ Recently added)
-    A. ListingRowDisplay.vue
-    B. ListingRowDisplayProducerProfile.vue
-
-Nature of the changes (frontend / backend / database):
-frontend
-
-# Update as of 30 April (Part 2)
-
-Coder: Candy
-
-Purpose of the changes:
-(1) Update router/index.js URL to 
-    A. "/club/view/:clubName?/:clubID"
-    B. "/profile/user/:username/:userID/"
-
-(2) Update club url in BrowseClubs.vue
-    A. Updated slugify(text) fn 
-
-(3) Update producer/profile url in ClubView.vue
-(4) Update users/UserProfileRefactor.vue user review url
-    A. ListingRowDisplayUserProfile component
-(5) Update NavBar & LandingPageNavBar user profile url
-(6) Update Explore page producer and user URL
-
-Nature of the changes (frontend / backend / database):
-frontend
-
-# Update as of 1 May 
-
-Coder: Candy
-
-Purpose of the changes:
-(1) Update dashboard/user linking URL
-(2) router/index.js - events/view url
-(3) Update Events.vue and SpecificEventPage.vue url
-
-Nature of the changes (frontend / backend / database):
-frontend
-
 # Update as of 1 May 
 
 Coder: Kai
@@ -535,3 +480,25 @@ imported code from LandingPage.vue and rssFeed.py in Group-3A's repository to ge
  
 Nature of the changes (frontend / backend / database):
 frontend, backend
+
+# Update as of 3 May 
+
+Coder: Han
+
+Purpose of the changes:
+fixing bookmarking bug - producer/bottlelistings.vue , bookmarkmodal.vue and bookmarkicon.vue
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 4 May 
+
+Coder: Han
+
+Purpose of the changes:
+imported code from Group-3B's repository to get (1) "Grails, Up & Coming, and GOATs" feature on dashboard and (2) "add a friend" bar working on user profile. 
+also reapplied Danish's notifications code - which still requires some bugfixing
+
+Nature of the changes (frontend / backend / database):
+frontend / backend / database
+
