@@ -3226,12 +3226,12 @@ INSERT INTO "pointSystemRules" ("ruleName", "ruleDesc", "ruleCategory", "proofPo
  
  INSERT INTO "pointsRecorder"("userID", "userType", "currentPoints")
  VALUES
-     (1, 'user', 0),
-     (2, 'user', 0),
-     (3, 'user', 0),
-     (4, 'user', 0),
+     (1, 'user', 802),
+     (2, 'user', 404),
+     (3, 'user', 200),
+     (4, 'user', 800),
      (5, 'user', 100),
-     (6, 'user', 0),
+     (6, 'user', 88),
      (7, 'user', 0),
      (8, 'user', 0),
      (9, 'user', 0),

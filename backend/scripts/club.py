@@ -1082,11 +1082,12 @@ def getRecentActivity(userID, userType):
 
             # Get the club name for each activity
             clubID = activity['clubID']
-            cur.execute('SELECT "clubName" FROM "clubs" WHERE "id" = %s', (clubID,))
+            cur.execute('SELECT "clubName", "clubBanner" FROM "clubs" WHERE "id" = %s', (clubID,))
             club_name = cur.fetchone()
 
-            # Add club name into activity
+            # Add club name and club banner into activity
             activity['clubName'] = club_name['clubName']
+            activity['clubBanner'] = club_name['clubBanner']
 
         return jsonify({
             'recent_activities': recent_activities

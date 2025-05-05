@@ -361,38 +361,38 @@
                 <!-- Column 2: Post Details -->
                 <div class="col-md-11">
                   <!-- Row 1: User name, post date, edit and delete post buttons -->
-                  <div class="row text-start d-flex align-items-center">
-                    <div class="col-md-3">
-                      <router-link
-                        :to="
-                          profileURL(
-                            post.posterInfo.id,
-                            post.posterInfo.userType
-                          )
-                        "
-                        class="text-black"
-                      >
-                        <p
-                          v-if="post.posterInfo.userType == 'user'"
-                          class="fw-bold"
+                  <div class="row text-start align-items-center">
+                    <!-- Name + Rank -->
+                    <div class="col-md-4">
+                      <div class="d-flex align-items-center flex-wrap">
+                        <router-link
+                          :to="profileURL(post.posterInfo.id, post.posterInfo.userType)"
+                          class="text-black text-decoration-none fw-bold me-2"
                         >
-                          {{ post.posterInfo.displayName }}
-                        </p>
-                        <p
-                          v-else-if="post.posterInfo.userType == 'producer'"
-                          class="fw-bold"
-                        >
-                          {{ post.posterInfo.producerName }}
-                        </p>
-                        <p v-else class="fw-bold">
-                          {{ post.posterInfo.venueName }}
-                        </p>
-                      </router-link>
+                          <template v-if="post.posterInfo.userType === 'user'">
+                            {{ post.posterInfo.displayName }}
+                          </template>
+                          <template v-else-if="post.posterInfo.userType === 'producer'">
+                            {{ post.posterInfo.producerName }}
+                          </template>
+                          <template v-else>
+                            {{ post.posterInfo.venueName }}
+                          </template>
+                        </router-link>
+
+                        <span v-if="post.posterInfo.userType === 'user'">
+                          ({{ post.posterInfo.rank }})
+                        </span>
+                      </div>
                     </div>
-                    <div class="col-md-5">
-                      <p>{{ post.postDate }}</p>
+
+                    <!-- Post Date -->
+                    <div class="col-md-4 d-flex align-items-center">
+                      <p class="mb-0">{{ post.postDate }}</p>
                     </div>
-                    <div class="col-md-4 text-end">
+
+                    <!-- Edit/Delete -->
+                    <div class="col-md-4 d-flex justify-content-end align-items-center">
                       <button
                         v-if="isAdmin || post.posterInfo.id == userID"
                         class="btn primary-btn-green btn-sm me-3"
@@ -413,6 +413,7 @@
                       </button>
                     </div>
                   </div>
+
 
                   <!-- Edit post modal start -->
                   <div
@@ -1926,6 +1927,10 @@ export default {
 
           const toast = useToast();
           toast.success("Comment added successfully.");
+
+          // Add 1 to the total comments of the post
+          const post = this.posts.find((post) => post.id == postID);
+          post.totalComments += 1;
         }
       } catch (error) {
         console.log(error);

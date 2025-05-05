@@ -64,7 +64,7 @@
 
           <!-- Column 2: Poster Name and Post Date -->
           <div class="col-11">
-            <h3>{{ poster.displayName }}</h3>
+            <h3>{{ poster.displayName }} ({{ poster.rank }})</h3>
             <p class="text-muted">{{ post.postDate }}</p>
           </div>
         </div>
@@ -289,38 +289,35 @@
 
               <div class="col-11">
                 <!-- Column 2 Row 1: Commenter Name and Comment Date -->
-                <div class="row text-start d-flex align-items-center ps-0">
-                  <div class="col-md-3">
-                    <router-link
-                      :to="
-                        profileURL(
-                          comment.commenterInfo.id,
-                          comment.commenterInfo.userType
-                        )
-                      "
-                      class="text-black"
-                    >
-                      <p
-                        v-if="comment.commenterInfo.userType == 'user'"
-                        class="fw-bold"
+                <div class="row text-start align-items-center ps-0">
+                  <!-- Name and Rank -->
+                  <div class="col-md-4 d-flex align-items-center">
+                    <div class="d-flex align-items-center flex-wrap">
+                      <router-link
+                        :to="profileURL(comment.commenterInfo.id, comment.commenterInfo.userType)"
+                        class="text-black text-decoration-none fw-bold me-2"
                       >
-                        {{ comment.commenterInfo.displayName }}
-                      </p>
-                      <p
-                        v-else-if="comment.commenterInfo.userType == 'producer'"
-                        class="fw-bold"
-                      >
-                        {{ comment.commenterInfo.producerName }}
-                      </p>
-                      <p v-else class="fw-bold">
-                        {{ comment.commenterInfo.venueName }}
-                      </p>
-                    </router-link>
+                        <template v-if="comment.commenterInfo.userType === 'user'">
+                          {{ comment.commenterInfo.displayName }}
+                        </template>
+                        <template v-else-if="comment.commenterInfo.userType === 'producer'">
+                          {{ comment.commenterInfo.producerName }}
+                        </template>
+                        <template v-else>
+                          {{ comment.commenterInfo.venueName }}
+                        </template>
+                      </router-link>
+                      <span>({{ comment.commenterInfo.rank }})</span>
+                    </div>
                   </div>
-                  <div class="col-md-5">
-                    <p>{{ comment.commentDate }}</p>
+
+                  <!-- Comment Date -->
+                  <div class="col-md-4 d-flex align-items-center">
+                    <p class="mb-0">{{ comment.commentDate }}</p>
                   </div>
-                  <div class="col-md-4 text-end">
+
+                  <!-- Edit/Delete Buttons -->
+                  <div class="col-md-4 d-flex justify-content-end align-items-center">
                     <button
                       v-if="comment.commenterID == memberID || isAdmin"
                       class="btn primary-btn-green btn-sm me-3"
@@ -341,6 +338,7 @@
                     </button>
                   </div>
                 </div>
+
 
                 <!-- Column 2 Row 2: Comment -->
                 <div class="row">

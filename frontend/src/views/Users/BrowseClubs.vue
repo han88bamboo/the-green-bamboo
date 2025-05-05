@@ -208,40 +208,68 @@
                             <!-- Recent Activity Information -->
                             <div class="col-md-10 ps-md-2">
                                 <div class="card-body row h-100">
-
-                                    <!-- Column 1: Poster photo -->
-                                    <div class="col-1">
-                                        <div class="d-flex flex-row align-items-center">
-                                            <img :src="post.posterPhoto" class="rounded-circle" alt="..." style="height: 55px; width: 55px; object-fit: cover;">
+            
+                                    <!-- Column 1: Post information -->
+                                    <div class="col-12">
+                                        <!-- Club Photo + Club Name on same row, aligned left -->
+                                        <div class="d-flex flex-row align-items-center justify-content-start">
+                                            <!-- Club Photo -->
+                                            <img v-if="post.clubBanner" :src="post.clubBanner" class="rounded-circle" alt="..." style="height: 55px; width: 55px; object-fit: cover;">
+                                            <img v-else :src="defaultBanner" class="rounded-circle" alt="Default Club Banner" style="height: 55px; width: 55px; object-fit: cover;">
+                                            <!-- Club Name -->
+                                            <h2 class="card-title fw-bold text-start mb-0 ms-3">
+                                                <router-link :to="{ name: 'clubview', params: { clubID: post.clubID, clubName: slugify(post.clubName || 'unknown-club') }}" class="text-dark hover-underline">
+                                                    {{ post.clubName }}
+                                                </router-link>
+                                            </h2>
                                         </div>
-                                    </div>
 
-                                    <!-- Column 2: Post information -->
-                                    <div class="col-11">
-                                        <!-- Club Name -->
-                                        <h2 class="card-title fw-bold text-start">
-                                            <router-link :to="{ name: 'clubview', params: { clubID: post.clubID, clubName: slugify(post.clubName || 'unknown-club') }}" class="text-dark hover-underline">
-                                                {{ post.clubName }}
-                                            </router-link>
-                                        </h2>
 
                                         <div class="text-start d-flex gap-3">
-                                            <!-- Poster name -->
-                                            <p>
-                                                <router-link :to="profileURL(post.posterInfo.id, post.posterInfo.userType)">
-                                                    <p v-if="post.posterInfo.userType == 'user'" class="name-container">{{ post.posterInfo.displayName }}</p>
-                                                    <p v-else-if="post.posterInfo.userType == 'producer'" class="name-container">{{ post.posterInfo.producerName }}</p>
-                                                    <p v-else class="name-container">{{ post.posterInfo.venueName }}</p>
+                                            <!-- Poster name and rank on the same line -->
+                                            <p class="mb-0">
+                                                <router-link :to="profileURL(post.posterInfo.id, post.posterInfo.userType)" class="text-decoration-none">
+                                                    <span class="name-container">
+                                                        <template v-if="post.posterInfo.userType === 'user'">{{ post.posterInfo.displayName }}</template>
+                                                        <template v-else-if="post.posterInfo.userType === 'producer'">{{ post.posterInfo.producerName }}</template>
+                                                        <template v-else>{{ post.posterInfo.venueName }}</template>
+                                                    </span>
                                                 </router-link>
+                                                <span> ({{ post.posterInfo.rank }})</span>
                                             </p>
 
+
                                             <!-- Post date -->
-                                            <p class="card-text text-start">{{ post.postDate }}</p>
+                                            <p class="card-text text-start"> on {{ post.postDate }}</p>
                                         </div>
                                         
 
                                         <!-- Post content -->
-                                        <p class="card-text text-start">{{ post.postContent }}</p>
+                                        <p class="card-text text-start mt-5">{{ post.postContent }}</p>
+
+                                        <!-- Comment input field -->
+                                        <div class="row mt-3">
+                                            <div class="col-12">
+                                                <div class="input-group">
+                                                    <input
+                                                    type="text"
+                                                    class="form-control"
+                                                    placeholder="Write a comment..."
+                                                    aria-label="Write a comment..."
+                                                    aria-describedby="button-addon2"
+                                                    v-model="newComment"
+                                                    />
+                                                    <button
+                                                    class="btn primary-btn"
+                                                    type="button"
+                                                    id="button-addon2"
+                                                    @click="addComment(post.id)"
+                                                    >
+                                                    Comment
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
 
                                         <!-- View Post Button -->
                                         <button type="button" class="btn btn-primary align-self-start" @click="viewPost(post.id)">View Post</button>
@@ -709,6 +737,39 @@ export default {
                 const toast = useToast();
                 toast.error("An error occurred while joining the club. Please try again later!");
             }
+        },
+
+        // Function to add comment on a post
+        async addComment() {
+        try {
+            // Comment on the post
+            const commentData = await this.$axios.post(
+            `${process.env.VUE_APP_API_URL}/club/addComment`,
+            {
+                postID: this.postID,
+                commenterID: this.memberID,
+                commentContent: this.newComment,
+            }
+            );
+
+            // Check if the comment is successful
+            if (commentData.status == 201) {
+            // Add the comment to the front of the comments array
+            this.comments.unshift(commentData.data.comment_obj);
+
+            // Clear the comment input
+            this.newComment = "";
+
+            const toast = useToast();
+            toast.success("Comment added successfully.");
+            }
+        } catch (error) {
+            console.log(error);
+            const toast = useToast();
+            toast.error(
+            "An error occurred while adding the comment. Please try again later."
+            );
+        }
         },
     },
 

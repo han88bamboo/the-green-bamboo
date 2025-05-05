@@ -130,6 +130,16 @@
               </div>
             </div>
 
+            <!-- Rank -->
+            <div class="row">
+              <div class="col-5">
+                <b>Rank</b>
+              </div>
+              <div class="col-7 text-end">
+                <span> {{ displayUser.proofRank }}</span>
+              </div>
+            </div>
+
             <!-- buttons -->
             <div class="row mt-3">
               <button
