@@ -502,3 +502,13 @@ also reapplied Danish's notifications code - which still requires some bugfixing
 Nature of the changes (frontend / backend / database):
 frontend / backend / database
 
+# Update as of 9 May 
+
+Coder: Han
+
+Purpose of the changes:
+added an attempted fix to the AdminDashboard.vue page to fix the bug where you can't approve a new business
+
+Nature of the changes (frontend / backend / database):
+frontend 
+
