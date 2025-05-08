@@ -2194,6 +2194,7 @@
                       >
                         <b>@{{ getUsernameFromReview(review) }}</b>
                       </router-link>
+                      {{ getUserRankFromReview(review) }}
                       &nbsp;rated <span style="color: #f0b358">★</span>
                       <b>{{ review["rating"] }}</b> Stars
 
@@ -2472,6 +2473,7 @@
                                 {{ getUsernameFromReview(detailedReview) }}
                               </span>
                             </router-link>
+                            ({{ getUserRankFromReview(review) }})
                           </b>
                         </div>
                       </div>
@@ -3058,6 +3060,7 @@ export default {
       listings: [],
       producers: [],
       reviews: [],
+      allRelevantUserIDs: [], // to store all userIDs from reviews and only retrieve user data whose IDs are in this array
       users: [],
       venues: [],
       venuesAPI: [],
@@ -3277,10 +3280,21 @@ export default {
       // _id, userID, reviewTarget, date, rating, reviewDesc, taggedUsers, reviewTitle, reviewType, flavorTag, photo
       try {
         const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getReviews`
+          `${process.env.VUE_APP_API_URL}/getData/getReviewByTarget/${this.listing_id}`
         );
         this.reviews = response.data;
+        // what is detailedReview?
         this.detailedReview = this.reviews[0];
+
+        // extract all the userIDs from the reviews (e.g., taggedUsers and userID)
+        this.allRelevantUserIDs = this.reviews.reduce((acc, review) => {
+          acc.push(review.userID);
+          if (review.taggedUsers) {
+            acc.push(...review.taggedUsers);
+          }
+          return acc;
+        }, []);
+
       } catch (error) {
         console.error(error);
         this.dataLoaded = null;
@@ -3445,8 +3459,10 @@ export default {
       // users
       // _id, username, displayName, choiceDrinks, drinkLists, modType, photo
       try {
-        const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getUsers`
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/getData/getUsersFromList`, {
+            userIDs: this.allRelevantUserIDs,
+          }
         );
         this.users = response.data;
         this.user = this.users.find((user) => user.id == this.userID);
@@ -3901,6 +3917,15 @@ export default {
       });
       if (user) {
         return user["username"];
+      }
+    },
+
+    getUserRankFromReview(review) {
+      const user = this.users.find((user) => {
+        return user["id"] == review["userID"];
+      });
+      if (user) {
+        return user["proofRank"];
       }
     },
 

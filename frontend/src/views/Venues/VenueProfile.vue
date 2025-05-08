@@ -1956,6 +1956,7 @@
                                 >
                                     <b> @{{ getUsernameFromReview(review) }} </b>
                                 </router-link>
+                                {{ getUserRankFromReview(review)}}
                                 &nbsp;rated
                                 <span style="color: #f0b358">★</span>
                                 <span style="font-weight: bold">{{ review.rating }}</span> Stars
@@ -3209,6 +3210,16 @@
                 }
                 return "(unknown user)";
             },
+
+            getUserRankFromReview(review) {
+                const user = this.users.find((user) => {
+                    return user["id"] == review["userID"];
+                });
+                if (user) {
+                    return user["proofRank"];
+                }
+            },
+
             clearPhoto() {
                 this.reviewImages64 = [];
                 this.selectedImagesForReview = [];
@@ -3417,12 +3428,7 @@
 
             // Load other data
             async loadData() {
-                try {
-                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUsers`);
-                    this.users = response.data;
-                } catch (error) {
-                    console.error("Error fetching users:", error);
-                }
+                
                 // Get listing data for each item in menu
                 try {
                     for (let section of this.detailedMenu) {
@@ -3680,27 +3686,32 @@
                     this.dataLoaded = true;
                 }
 
-                //calling endpoint for getData/getVenueReviews
+                //calling endpoint for getData/getVenueReviewsByVenueId
+                let allUserIDs = [];
                 try {
                     const response = await this.$axios.get(
-                        `${process.env.VUE_APP_API_URL}/getData/getVenueReviews`
-                );
-                // Assign all fetched reviews to a property
-                this.venueReviews = response.data;
-                // Immediately filter reviews to only include those for the current venue
-                this.filteredVenueReviews = this.venueReviews.filter((review) => {
-                return review.venueID == this.targetVenue.id;
-                });
-
-                this.getFilteredVenueReviewsWithImages();
-                this.filteredVenueReviews = this.getVenueReviews();
-                this.specificReview = this.getLoggedUserReview();
+                        `${process.env.VUE_APP_API_URL}/getData/getVenueReviewsByVenueId/${this.targetVenue.id}`
+                    );
+                    // Assign all fetched reviews to a property
+                    this.filteredVenueReviews = response.data;
+                    allUserIDs = this.filteredVenueReviews.map((review) => review.userID);
+                    this.getFilteredVenueReviewsWithImages();
+                    this.specificReview = this.getLoggedUserReview();
 
                 } catch (error) {
-                console.error("Error fetching venue reviews:", error);
+                    console.error("Error fetching venue reviews:", error);
+                }
+
+                // Get users data
+                try {
+                    const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/getData/getUsersFromList`, {
+                        userIDs: allUserIDs,
+                    });
+                    this.users = response.data;
+                } catch (error) {
+                    console.error("Error fetching users:", error);
                 }
                 
-
             },
             onFilesChange(event) {
                 const files = event.target.files;
@@ -5167,7 +5178,9 @@
                     if (this.deleteReviewCode == 200) {
                         this.successDelete = true;
                         this.deletingReview = false;
-                        this.getVenueReviews();
+
+                        // Remove the deleted review from the venueReviews array
+                        this.filteredVenueReviews = this.filteredVenueReviews.filter((review) => review.id !== this.deleteID);
                     } else {
                         this.errorDelete = true;
                         this.deletingReview = false;
@@ -5184,15 +5197,9 @@
                 }
             },
 
-            getVenueReviews() {
-                const reviews = this.venueReviews.filter((review) => {
-                    return review["venueID"] == this.targetVenue.id;
-                });
-                return reviews;
-            },
 
             getFilteredVenueReviewsWithImages() {
-                let allReviews = this.getVenueReviews();
+                let allReviews = this.filteredVenueReviews;
 
                 let reviewsWithImages = allReviews
                     .filter((review) => review.photos && review.photos.length > 0)
