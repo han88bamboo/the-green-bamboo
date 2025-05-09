@@ -256,3 +256,14 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+/* Add these styles for the user search autocomplete */
+#userSearchContainer .bg-light {
+  background-color: #f0f8ff !important;
+}
+
+#userSearchContainer .border-bottom:last-child {
+  border-bottom: none !important;
+}
+</style>

@@ -512,3 +512,14 @@ added an attempted fix to the AdminDashboard.vue page to fix the bug where you c
 Nature of the changes (frontend / backend / database):
 frontend 
 
+
+# Update as of 9 May 
+
+Coder: Han
+
+Purpose of the changes:
+added searchability of users to follow on own user profile page
+
+Nature of the changes (frontend / backend / database):
+frontend & backend
+

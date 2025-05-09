@@ -1595,9 +1595,65 @@
                             </h1>
                           </div>
                           
+                          <!-- Search bar section -->
                           <div class="px-5 pt-1 pb-2">
-                            <div class="position-relative">
-                              <input type="text" class="form-control rounded-pill" placeholder="Search for friends on Drink-X" aria-label="Search for friends" style="border: 1px solid #ced4da; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                            <div id="userSearchContainer" class="position-relative">
+                              <input
+                                type="text"
+                                class="form-control rounded-pill"
+                                placeholder="Search for friends on Drink-X"
+                                aria-label="Search for friends"
+                                style="border: 1px solid #ced4da; box-shadow: 0 2px 5px rgba(0,0,0,0.05);"
+                                v-model="userSearchInput"
+                                @input="getUserSuggestions"
+                                autocomplete="off"
+                              />
+                              
+                              <!-- Suggestions dropdown -->
+                              <div
+                                class="position-absolute w-100 mt-1 bg-white border rounded shadow-sm"
+                                style="z-index: 1000; max-height: 300px; overflow-y: auto;"
+                                v-if="showUserSuggestions && filteredUserSuggestions.length > 0"
+                              >
+                                <div
+                                  v-for="(user, index) in filteredUserSuggestions"
+                                  :key="user.id"
+                                  class="p-2 border-bottom d-flex align-items-center justify-content-between"
+                                  :class="{ 'bg-light': selectedUserIndex === index }"
+                                  @mouseover="selectedUserIndex = index"
+                                >
+                                  <div class="d-flex align-items-center" style="cursor: pointer;" @click="navigateToUserProfile(user.id, user.username)">
+                                    <img
+                                      :src="user.photo || defaultProfilePhoto"
+                                      class="rounded-circle me-2"
+                                      style="width: 32px; height: 32px; object-fit: cover;"
+                                      alt=""
+                                    />
+                                    <div>
+                                      <div class="fw-bold">{{ user.displayName }}</div>
+                                      <div class="text-muted small">@{{ user.username }}</div>
+                                    </div>
+                                  </div>
+                                  
+                                  <button
+                                    v-if="!isUserFollowed(user.id)"
+                                    @click.stop="followUserFromSearch(user.id)"
+                                    class="btn btn-sm btn-outline-primary"
+                                    style="min-width: 80px;"
+                                  >
+                                    + Follow
+                                  </button>
+                                  <button
+                                    v-else
+                                    @click.stop="unfollowUserFromSearch(user.id)"
+                                    class="btn btn-sm btn-primary"
+                                    style="min-width: 80px;"
+                                  >
+                                    Following
+                                  </button>
+                                </div>
+                              </div>
+                              
                               <div class="position-absolute" style="right: 15px; top: 50%; transform: translateY(-50%);">
                               </div>
                             </div>
@@ -2797,6 +2853,15 @@ export default {
       selectedObservationTags: [],
       flavourTag: [],
       observationTags: [],
+
+      //  new properties for user search
+      userSearchInput: "",
+      allUsernames: [],
+      filteredUserSuggestions: [],
+      showUserSuggestions: false,
+      selectedUserIndex: -1,
+      isUserSearchFetching: false,
+      totalPointsValue: 0, // Assuming this is used elsewhere
     };
   },
   mounted() {
@@ -2841,7 +2906,19 @@ export default {
 
     // load data
     this.loadData();
+
+    // Fetch usernames when component mounts
+    this.fetchAllUsernames(); 
+    
+    // Add event listeners for user search
+    document.addEventListener("click", this.handleUserSearchClickOutside);
+    document.addEventListener("keydown", this.handleUserSearchKeyDown);
   },
+  beforeUnmount() {
+  // Remove event listeners to prevent memory leaks
+  document.removeEventListener("click", this.handleUserSearchClickOutside);
+  document.removeEventListener("keydown", this.handleUserSearchKeyDown);
+},
   methods: {
     // load data from database
     async loadData() {
@@ -4274,6 +4351,196 @@ export default {
       window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
     },
 
+    // Fetch all usernames from backend
+    async fetchAllUsernames() {
+      try {
+        this.isUserSearchFetching = true;
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getAllUsernames`
+        );
+        console.log("API response:", response.data); // See what data is returned
+        this.allUsernames = Array.isArray(response.data) ? response.data : [];
+      } catch (error) {
+        console.error("Error fetching usernames:", error);
+        this.allUsernames = [];
+      } finally {
+        this.isUserSearchFetching = false;
+      }
+    },
+
+    // Filter suggestions based on input
+    getUserSuggestions() {
+      if (this.userSearchInput.trim().length === 0) {
+        this.showUserSuggestions = false;
+        this.filteredUserSuggestions = [];
+        return;
+      }
+
+      const searchTerm = this.userSearchInput.toLowerCase();
+      
+      // First prioritize exact matches at the start
+      const startsWithMatches = this.allUsernames.filter(user => 
+        user.username.toLowerCase().startsWith(searchTerm) || 
+        user.displayName.toLowerCase().startsWith(searchTerm)
+      );
+      
+      // Then add partial matches
+      const containsMatches = this.allUsernames.filter(user => 
+        (user.username.toLowerCase().includes(searchTerm) || 
+        user.displayName.toLowerCase().includes(searchTerm)) && 
+        !user.username.toLowerCase().startsWith(searchTerm) &&
+        !user.displayName.toLowerCase().startsWith(searchTerm)
+      );
+      
+      // Combine matches with priority order and limit to 7
+      this.filteredUserSuggestions = [...startsWithMatches, ...containsMatches].slice(0, 7);
+      this.showUserSuggestions = this.filteredUserSuggestions.length > 0;
+    },
+
+    // Navigate to selected user profile in a new tab
+    navigateToUserProfile(userId, username) {
+      // Use router.resolve to get the full URL with proper base path
+      const routeData = this.$router.resolve(`/profile/user/${userId}/${username}`);
+      window.open(routeData.href, '_blank');
+    },
+
+    // Handle click outside to close suggestions
+    handleUserSearchClickOutside(e) {
+      if (!e.target.closest('#userSearchContainer')) {
+        this.showUserSuggestions = false;
+      }
+    },
+
+    // Handle keyboard navigation for suggestions
+    handleUserSearchKeyDown(e) {
+      if (!this.showUserSuggestions) return;
+      
+      // Down arrow
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        this.selectedUserIndex = Math.min(
+          this.selectedUserIndex + 1, 
+          this.filteredUserSuggestions.length - 1
+        );
+      }
+      // Up arrow
+      else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        this.selectedUserIndex = Math.max(this.selectedUserIndex - 1, 0);
+      }
+      // Enter key
+      else if (e.key === "Enter" && this.selectedUserIndex >= 0) {
+        e.preventDefault();
+        const selectedUser = this.filteredUserSuggestions[this.selectedUserIndex];
+        this.navigateToUserProfile(selectedUser.id, selectedUser.username);
+      }
+      // Escape key
+      else if (e.key === "Escape") {
+        this.showUserSuggestions = false;
+      }
+    },
+    // Check if the current user follows a specific user
+    isUserFollowed(targetUserId) {
+    // Return true if user.followLists.users includes this user ID
+    return this.user && 
+            this.user.followLists && 
+            this.user.followLists.users && 
+            this.user.followLists.users.some(id => String(id) === String(targetUserId));
+    },
+    
+    // Follow a user from search results
+    async followUserFromSearch(targetUserId) {
+      if (!this.user) return; // Only logged-in users can follow
+      
+      try {
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/editProfile/updateFollowLists`,
+          {
+            userID: this.userID,
+            action: "follow",
+            target: "users",
+            followerID: targetUserId,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        // If successful, update the local follow state
+        if (response.data && response.data.code === 201) {
+          this.user.followLists.users.push(targetUserId);
+          // Show a toast notification
+          const toast = useToast();
+          toast.success("Successfully followed user!");
+        }
+      } catch (error) {
+        console.error("Error following user:", error);
+        const toast = useToast();
+        toast.error("Failed to follow user. Please try again.");
+      }
+    },
+    
+    // Unfollow a user from search results
+    async unfollowUserFromSearch(targetUserId) {
+      if (!this.user) return; // Only logged-in users can unfollow
+      
+      try {
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/editProfile/updateFollowLists`,
+          {
+            userID: this.userID,
+            action: "unfollow",
+            target: "users", 
+            followerID: targetUserId,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        // If successful, update the local follow state
+        if (response.data && response.data.code === 201) {
+          const index = this.user.followLists.users.indexOf(targetUserId);
+          if (index > -1) {
+            this.user.followLists.users.splice(index, 1);
+          }
+          // Show a toast notification
+          const toast = useToast();
+          toast.success("Successfully unfollowed user!");
+        }
+      } catch (error) {
+        console.error("Error unfollowing user:", error);
+        const toast = useToast();
+        toast.error("Failed to unfollow user. Please try again.");
+      }
+    },
   },
 };
 </script>
+
+<style scoped>
+/* Add these styles for the user search autocomplete */
+.autocomplete-container {
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+  top: 100%;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+#userSearchContainer .bg-light {
+  background-color: #f0f8ff !important;
+}
+
+#userSearchContainer .border-bottom:last-child {
+  border-bottom: none !important;
+}
+
+/* New styles for follow buttons */
+#userSearchContainer .btn-sm {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+}
+</style>

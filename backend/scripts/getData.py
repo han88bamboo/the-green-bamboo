@@ -2559,31 +2559,20 @@ def getUserFollowList(id):
 @blueprint.route("/getAllUsernames")
 def getAllUsernames():
     conn = g.db
-    cur = conn.cursor()
+    cur = conn.cursor(cursor_factory=RealDictCursor)  # Use RealDictCursor for dictionaries
 
     try:
-        # Step 1: Get all the usernames from the users table
-        cur.execute('SELECT "username" FROM "users"')
-        user_usernames = cur.fetchall()
-
-        if not user_usernames:
-            return jsonify({
-                "message": "No usernames found."
-            }), 404
+        # Get all the required user fields
+        cur.execute('SELECT "id", "username", "displayName", "photo" FROM "users"')
+        users_data = cur.fetchall()
         
-        return jsonify({
-            "usernames": [username['username'] for username in user_usernames]
-        }), 200
-    
+        if not users_data:
+            return jsonify([]), 404
+            
+        return jsonify(users_data)
     except Exception as e:
         print(str(e))
-        return jsonify(
-            {
-                "code": 500,
-                "message": "An error occurred retrieving usernames."
-            }
-        ), 500
-    
+        return jsonify([])
     finally:
         cur.close()
 
