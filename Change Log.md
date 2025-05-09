@@ -502,7 +502,7 @@ also reapplied Danish's notifications code - which still requires some bugfixing
 Nature of the changes (frontend / backend / database):
 frontend / backend / database
 
-# Update as of 9 May 
+# Update as of 8 May 
 
 Coder: Han
 
@@ -513,7 +513,7 @@ Nature of the changes (frontend / backend / database):
 frontend 
 
 
-# Update as of 9 May 
+# Update as of 8 May 
 
 Coder: Han
 
@@ -522,4 +522,15 @@ added searchability of users to follow on own user profile page
 
 Nature of the changes (frontend / backend / database):
 frontend & backend
+
+
+# Update as of 9 May 
+
+Coder: Han
+
+Purpose of the changes:
+fixed upvote / downvote bug for reviews on producer/bottlelistings.vue
+
+Nature of the changes (frontend / backend / database):
+frontend 
 
