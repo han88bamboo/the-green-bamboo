@@ -26,19 +26,19 @@
 
         <!-- Display when data is loaded -->
         <!-- Main content -->
-        <div v-if="dataLoaded" class="container-fluid mt-5 px-5 row">
-
+        <div v-if="dataLoaded" class="container mt-5 px-5">
+            <div class="row">
             <!-- Search, create, upcoming, past, recommended events -->
-            <div class="col-12 col-md-3">
+            <div class="col-12 col-md-4">
                 <!-- Header -->
                 <div>
-                    <h3 class="text-start fw-bold">Find events near you!</h3>
+                    <h5 class="text-start fw-bold">Find events near you!</h5>
                 </div>
 
                 <!-- Search Input -->
                 <div>
                     <div class="input-group mb-3 position-relative">
-                        <input type="text" class="form-control rounded-pill" placeholder="Search for events" aria-label="Search for events" aria-describedby="search-event" v-model="searchQuery" @keyup.enter="searchEvents">
+                        <input type="text" class="form-control rounded-pill" style="border: solid 2px #827c75" placeholder="Search for events" aria-label="Search for events" aria-describedby="search-event" v-model="searchQuery" @keyup.enter="searchEvents">
                         <!-- Search Icon -->
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-search position-absolute" viewBox="0 0 16 16" style="right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; z-index: 5;"
                             @click="searchEvents">
@@ -49,7 +49,7 @@
 
                 <!-- Create Event Button -->
                 <div class="text-start">
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createEventModal">+ Create an Event</button>
+                    <button class="btn primary-btn-less-round-blue btn-lg" style="font-weight:bold" data-bs-toggle="modal" data-bs-target="#createEventModal">+ Create an Event</button>
                 </div>
 
                 <!-- Create Event modal -->
@@ -78,39 +78,50 @@
                     <i class="bi bi-chevron-down"></i> <!-- Bootstrap icon for expand/collapse -->
                 </button>
 
-                <!-- Your Upcoming events -->
-                <div v-if="upcomingEvents.length > 0" class="collapse d-md-block mt-3" id="sidebarContent">
-                    <h3 class="text-start fw-bold">Your Upcoming Events <button v-if="pastEvents.length > 5" type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#upcomingEventsModal">View All</button></h3>
+                <!-- YOUR UPCOMING EVENTS -->
+                <div v-if="upcomingEvents.length > 0" class="collapse d-md-block my-4" id="sidebarContent">
+                    <h5 class="text-start fw-bold my-3">Your Upcoming Events <button v-if="pastEvents.length > 5" type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#upcomingEventsModal">View All</button></h5>
 
-                    <div v-for="event in upcomingEvents" class="mt-3 row" :key="event.eventID">
+                    <div v-for="event in upcomingEvents" class="event-club-box" :key="event.eventID">
                         
                         <!-- Column 1: banner -->
-                        <div class="col-12 col-lg-5 text-start" style="max-height: 150px;">
+                        <div style="flex: 0 0 40%; max-width: 40%; height: 120px;">
                             <img v-if="event.eventBanners" :src="event.eventBanners[0]" class="img-fluid event-banner" alt="Event Banner" style="object-fit: contain; max-height: 100%;">
-                            <img v-else :src="defaultEventBanner" class="img-fluid event-banner" alt="Event Banner" style="object-fit: contain; max-height: 100%;">
+                            <img v-else :src="defaultEventBanner" class="img-fluid event-banner" alt="Event Banner" style="object-fit: cover">
                         </div>
 
                         <!-- Column 2: -->
-                        <div class="col-12 col-lg-7 text-start">
+                        <div class="ps-3 py-3" style="flex: 1 1 0%;">
                             <!-- Event Name -->
-                            <p class="fw-bold">
-                                <router-link :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: event.eventName } }" class="text-black fs-5 event-link">
-                                    {{ event.eventName }}
+                            <p class="text-start mb-1 fw-bold fs-6">
+                                <router-link
+                                :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
+                                class="text-black text-decoration-none"
+                                >
+                                {{ event.eventName }}
                                 </router-link>
                             </p>
-
+                        
                             <!-- Event Details -->
-                            <p class="text-success">
-                               Happening {{ formatDate(event.eventStartDate) }} | {{ formatTime(event.eventStartTime) }} - {{ formatTime(event.eventEndTime) }} | {{ event.eventType }}
-                            </p>
-
+                            <p class="mb-0 text-start me-1" style="color: #00796B;">
+                                <router-link
+                                  :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
+                                  class="text-decoration-none"
+                                  style="color: #00796B;"
+                                >
+                                {{ formatDate(event.eventStartDate) }} |
+                                {{ formatTime(event.eventStartTime) }} -
+                                {{ formatTime(event.eventEndTime) }} |
+                                {{ event.eventType }}
+                                </router-link>
+                              </p>  
                         </div>
                     </div>
                 </div>
 
                 <!-- Error message for error retrieving upcoming events -->
-                <div v-if="upcomingEventsError" class="collapse d-md-block mt-3" id="sidebarContent">
-                    <h2>{{ upcomingEventsError }}</h2>
+                <div v-if="upcomingEventsError" class="text-start collapse d-md-block my-4" id="sidebarContent">
+                    <h5>{{ upcomingEventsError }}</h5>
                 </div>
 
 
@@ -136,38 +147,50 @@
 
                 <hr class="collapse d-md-block" id="sidebarContent"/>
 
-                <!-- Past events -->
-                <div v-if="pastEvents.length > 0" class="collapse d-md-block mt-3" id="sidebarContent">
-                    <h3 class="text-start fw-bold">Past Events <button v-if="pastEvents.length > 5" type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#pastEventsModal">View All</button></h3>
+                <!-- PAST EVENTS -->
+                <div v-if="pastEvents.length > 0" class="collapse d-md-block my-4" id="sidebarContent">
+                    <h5 class="text-start fw-bold my-3">Past Events <button v-if="pastEvents.length > 5" type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#pastEventsModal">View All</button></h5>
                     
-                    <div v-for="event in pastEvents" class="mt-3 row" :key="event.eventID">
+                    <div v-for="event in pastEvents" class="event-club-box"  :key="event.eventID" style="background-color: white; overflow: hidden;">
                         
                         <!-- Column 1: banner -->
-                        <div class="col-12 col-lg-5 text-start" style="max-height: 150px;">
-                            <img v-if="event.eventBanners" :src="event.eventBanners[0]" class="img-fluid event-banner" alt="Event Banner" style="object-fit: contain; max-height: 100%;">
-                            <img v-else :src="defaultEventBanner" class="img-fluid event-banner" alt="Event Banner" style="object-fit: contain; max-height: 100%;">
+                        <div style="flex: 0 0 40%; max-width: 40%; height: 120px;">
+                            <img v-if="event.eventBanners" :src="event.eventBanners[0]" class="img-fluid event-banner" alt="Event Banner" style="object-fit: cover;">
+                            <img v-else :src="defaultEventBanner" class="w-100 h-100" alt="Event Banner" style="object-fit: cover;">
                         </div>  
 
                         <!-- Column 2: -->
-                        <div class="col-12 col-lg-7 text-start">
+                        <div class="ps-3 py-3" style="flex: 1;">
                             <!-- Event Name -->
-                            <p class="fw-bold">
-                                <router-link :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }" class="text-black fs-5 event-link">
-                                    {{ event.eventName }}
+                            <p class="text-start mb-1 fw-bold fs-6">
+                                <router-link
+                                  :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
+                                  class="text-black text-decoration-none"
+                                >
+                                  {{ event.eventName }}
                                 </router-link>
-                            </p>
+                              </p>
 
                             <!-- Event Details -->
-                            <p class="text-success">
-                                Happened on {{ formatDate(event.eventStartDate) }} | {{ formatTime(event.eventStartTime) }} - {{ formatTime(event.eventEndTime) }} | {{ event.eventType }}
-                            </p>    
+                            <p class="mb-0 text-start me-1" style="color: #00796B;">
+                                <router-link
+                                  :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
+                                  class="text-decoration-none"
+                                  style="color: #00796B;"
+                                >
+                                {{ formatDate(event.eventStartDate) }} |
+                                {{ formatTime(event.eventStartTime) }} -
+                                {{ formatTime(event.eventEndTime) }} |
+                                {{ event.eventType }}
+                                </router-link>
+                              </p>  
                         </div>  
                     </div>
                 </div>
 
                 <!-- Error message for error retrieving past events -->
-                <div v-if="pastEventsError" class="collapse d-md-block mt-3" id="sidebarContent">
-                    <h2>{{ pastEventsError }}</h2>
+                <div v-if="pastEventsError" class="collapse d-md-block my-4" id="sidebarContent">
+                    <h5>{{ pastEventsError }}</h5>
                 </div>
 
                 <!-- Past events modal -->
@@ -192,43 +215,55 @@
 
                 <hr>
 
-                <!-- Recommended Events -->
-                <h3 class="text-start fw-bold mt-3 collapse d-md-block" id="sidebarContent">Recommended Events </h3>
+                <!-- RECOMMENDED EVENTS  -->
+                <h5 class="text-start fw-bold my-3 collapse d-md-block" id="sidebarContent">Recommended Events </h5>
                 <div v-if="recommendedEvents.length > 0" class="collapse d-md-block" id="sidebarContent">
 
-                    <div v-for="event in recommendedEvents" class="row mt-3" :key="event.eventID">
+                    <div v-for="event in recommendedEvents" class="event-club-box"  :key="event.eventID">
                         
                         <!-- Column 1: banner -->
-                        <div class="col-12 col-lg-5 text-start" style="max-height: 150px;">
+                        <div style="flex: 0 0 40%; max-width: 40%; height: 120px;">
                             <img v-if="event.eventBanners" :src="event.eventBanners[0]" class="img-fluid event-banner" alt="Event Banner" style="object-fit: contain; max-height: 100%;">
-                            <img v-else :src="defaultEventBanner" class="img-fluid event-banner" alt="Event Banner" style="object-fit: contain; max-height: 100%;">
+                            <img v-else :src="defaultEventBanner" class="img-fluid event-banner" alt="Event Banner" style="object-fit: cover">
                         </div>
 
                         <!-- Column 2: -->
-                        <div class="col-12 col-lg-7 text-start">
+                        <div class="ps-3 py-3" style="flex: 1;">
                             <!-- Event Name -->
-                            <p class="fw-bold">
-                                <router-link :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName)} }" class="text-black fs-5 event-link">
-                                    {{ event.eventName }}   
+                            <p class="text-start mb-1 fw-bold fs-6">
+                                <router-link
+                                :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
+                                class="text-black text-decoration-none"
+                                >
+                                {{ event.eventName }}
                                 </router-link>
                             </p>
-
+                        
                             <!-- Event Details -->
-                            <p class="text-success mb-0">
-                                Happening {{ formatDate(event.eventStartDate) }} | {{ formatTime(event.eventStartTime) }} - {{ formatTime(event.eventEndTime) }} | {{ event.eventType }}
-                            </p>
+                            <p class="mb-0 text-start me-1" style="color: #00796B;">
+                                <router-link
+                                  :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
+                                  class="text-decoration-none"
+                                  style="color: #00796B;"
+                                >
+                                {{ formatDate(event.eventStartDate) }} |
+                                {{ formatTime(event.eventStartTime) }} -
+                                {{ formatTime(event.eventEndTime) }} |
+                                {{ event.eventType }}
+                                </router-link>
+                              </p>  
                         </div>
                     </div>  
                 </div>
 
                 <!-- Error message for error retrieving recommended events -->
-                <div v-if="recommendedEventsError" class="collapse d-md-block mt-3" id="sidebarContent">
-                    <h2>{{ recommendedEventsError }}</h2>
+                <div v-if="recommendedEventsError" class="collapse d-md-block my-4" id="sidebarContent">
+                    <h5>{{ recommendedEventsError }}</h5>
                 </div>
             </div>
 
             <!-- Search Results, Trending events and events from brands/venues you follow -->
-            <div class="col-12 col-md-9">
+            <div class="col-12 col-md-8 ps-3 ps-md-5">
 
                 <!-- Search Term -->
                 <div v-if="searchMessage" class="mt-3 text-start">
@@ -279,35 +314,68 @@
                 </div> 
 
                 <!-- Trending events -->
-                <h3 class="text-start fw-bold text-decoration-underline">Trending Events</h3>
+                <h4 class="text-start fw-bold" style="font-weight:bold">Trending Events</h4>
                 <div v-if="trendingEvents.length > 0" id="trendingEventsCarousel" class="carousel slide" data-bs-ride="true">
                     <div class="carousel-inner">
-                        <div v-for="(event, index) in trendingEvents" :key="event.eventID" :class="['carousel-item px-5', index == 0 ? 'active' : '']" style="height: 350px">
-                            <div class="text-center row" style="height: 150px;">
-                                <img v-if="event.eventBanners" :src="event.eventBanners[0]" class="img-fluid event-banner" alt="Event Banner" style="object-fit: cover; max-height: 100%; width: 100%;">
-                                <img v-else :src="defaultEventBanner" class="img-fluid event-banner" alt="Event Banner" style="object-fit: cover; max-height: 100%; width: 100%;">
-                            </div>
+                        <div
+                            v-for="(chunk, chunkIndex) in trendingEvents.reduce((acc, cur, i) => {
+                                if (i % 2 === 0) acc.push([cur]);
+                                else acc[acc.length - 1].push(cur);
+                                return acc;
+                            }, [])"
+                            :key="chunkIndex"
+                            :class="['carousel-item', chunkIndex === 0 ? 'active' : '']"
+                            >
+                            <div class="row px-5 py-4 justify-content-center">
+                                <div
+                                v-for="event in chunk"
+                                :key="event.eventID"
+                                class="col-md-6 px-3"
+                                >
+                                <div class="rounded-4 shadow-sm p-3 h-100" style="background-color: white;">
+                                    <!-- Event Image -->
+                                    <img
+                                    :src="event.eventBanners?.[0] || defaultEventBanner"
+                                    class="img-fluid w-100 mb-3"
+                                    style="height: 160px; object-fit: cover; border-radius: 0.5rem;"
+                                    alt="Event Banner"
+                                    />
 
-                            <div class="text-start row mt-3">
-                                <!-- Event Name -->
-                                <p class="fw-bold">
-                                    <router-link :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }" class="text-black fs-5 event-link">
-                                        {{ event.eventName }}   
+                                    <!-- Event Name -->
+                                    <p class="fw-bold mb-1">
+                                    <router-link
+                                        :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
+                                        class="text-black fs-6 text-decoration-none"
+                                    >
+                                        {{ event.eventName }}
                                     </router-link>
-                                </p>
+                                    </p>
 
-                                <!-- Event Details -->
-                                <p class="text-success">
-                                    {{ formatDate(event.eventStartDate) }} | {{ formatTime(event.eventStartTime) }} - {{ formatTime(event.eventEndTime) }} | {{ event.eventType }}
-                                </p>
+                                    <!-- Event Details -->
+                                    <p class="text-success small mb-2">
+                                    {{ formatDate(event.eventStartDate) }} |
+                                    {{ formatTime(event.eventStartTime) }} -
+                                    {{ formatTime(event.eventEndTime) }} |
+                                    {{ event.eventType }}
+                                    </p>
 
-                                <!-- Number of attendees -->
-                                <p class="text-muted">Number of Attendees: {{ event.numAttendees }}</p>
+                                    <!-- Description -->
+                                    <p class="text-muted small mb-3" style="min-height: 60px;">
+                                    {{ event.eventDesc }}
+                                    </p>
 
-                                <!-- Event description -->
-                                <p class="text-muted event-desc">{{ event.eventDesc }}</p>
+                                    <!-- CTA -->
+                                    <router-link
+                                    :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
+                                    class="btn btn-read-more btn-sm fw-bold rounded-pill mobile-pb-1 mobile-pt-1 mobile-mb-2 mobile-fs-7"
+                                    >
+                                    View Event
+                                    </router-link>
+                                </div>
+                                </div>
                             </div>
-                        </div>  
+                            </div>
+ 
                     </div>
                     <button class="carousel-control-prev" type="button" data-bs-target="#trendingEventsCarousel" data-bs-slide="prev">
                         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -326,35 +394,68 @@
                 </div>
 
                 <!-- Events from Brands/Venues You Follow  --> 
-                <h3 class="text-start fw-bold text-decoration-underline">Events from Brands / Venues You Follow</h3>
+                <h4 class="text-start fw-bold" style="font-weight:bold">Events from Brands & Venues You Follow</h4>
                 <div v-if="followedEvents.length > 0" id="followedEventsCarousel" class="carousel slide" data-bs-ride="true">
                     <div class="carousel-inner">
-                        <div v-for="(event, index) in followedEvents" :key="event.eventID" :class="['carousel-item px-5', index == 0 ? 'active' : '']" style="height: 350px">
-                            <div class="text-center row" style="height: 150px;">
-                                <img v-if="event.eventBanners" :src="event.eventBanners[0]" class="img-fluid event-banner" alt="Event Banner" style="object-fit: cover; max-height: 100%; width: 100%;">
-                                <img v-else :src="defaultEventBanner" class="img-fluid event-banner" alt="Event Banner" style="object-fit: cover; max-height: 100%; width: 100%;">
-                            </div>
+                        <div
+                            v-for="(chunk, chunkIndex) in followedEvents.reduce((acc, cur, i) => {
+                                if (i % 2 === 0) acc.push([cur]);
+                                else acc[acc.length - 1].push(cur);
+                                return acc;
+                            }, [])"
+                            :key="chunkIndex"
+                            :class="['carousel-item', chunkIndex === 0 ? 'active' : '']"
+                            >
+                            <div class="row px-5 py-4 justify-content-center">
+                                <div
+                                v-for="event in chunk"
+                                :key="event.eventID"
+                                class="col-md-6 px-3"
+                                >
+                                <div class="rounded-4 shadow-sm p-3 h-100" style="background-color: white;">
+                                    <!-- Banner -->
+                                    <img
+                                    :src="event.eventBanners?.[0] || defaultEventBanner"
+                                    class="img-fluid w-100 mb-3"
+                                    style="height: 160px; object-fit: cover; border-radius: 0.5rem;"
+                                    alt="Event Banner"
+                                    />
 
-                            <div class="text-start row mt-3">
-                                <!-- Event Name -->
-                                <p class="fw-bold">
-                                    <router-link :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }" class="text-black fs-5 event-link">
+                                    <!-- Event Name -->
+                                    <p class="fw-bold mb-1">
+                                    <router-link
+                                        :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
+                                        class="text-black fs-6 text-decoration-none"
+                                    >
                                         {{ event.eventName }}
                                     </router-link>
-                                </p>
-                                
-                                <!-- Event Details -->
-                                <p class="text-success">
-                                    {{ formatDate(event.eventStartDate) }} | {{ formatTime(event.eventStartTime) }} - {{ formatTime(event.eventEndTime) }} | {{ event.eventType }}
-                                </p>
+                                    </p>
 
-                                <!-- Number of attendees -->
-                                <p class="text-muted">Number of Attendees: {{ event.numAttendees }}</p>
-                                
-                                <!-- Event description -->
-                                <p class="text-muted event-desc">{{ event.eventDesc }}</p>
+                                    <!-- Event Details -->
+                                    <p class="text-success small mb-2">
+                                    {{ formatDate(event.eventStartDate) }} |
+                                    {{ formatTime(event.eventStartTime) }} -
+                                    {{ formatTime(event.eventEndTime) }} |
+                                    {{ event.eventType }}
+                                    </p>
+
+                                    <!-- Description -->
+                                    <p class="text-muted small mb-3" style="min-height: 60px;">
+                                    {{ event.eventDesc }}
+                                    </p>
+
+                                    <!-- CTA -->
+                                    <router-link
+                                    :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
+                                    class="btn btn-read-more btn-sm fw-bold rounded-pill mobile-pb-1 mobile-pt-1 mobile-mb-2 mobile-fs-7"
+                                    >
+                                    View Event
+                                    </router-link>
+                                </div>
+                                </div>
                             </div>
-                        </div>
+                            </div>
+
                     </div>
 
                     <button class="carousel-control-prev" type="button" data-bs-target="#followedEventsCarousel" data-bs-slide="prev">
@@ -369,10 +470,11 @@
                 </div>
 
                 <!-- Error message for error retrieving followed events -->
-                <div v-if="followedEventsError" class="mt-3">
-                    <h2>{{ followedEventsError }}</h2>
+                <div v-if="followedEventsError" class="mt-3 text-start">
+                    <h5>{{ followedEventsError }}</h5>
                 </div>
             </div>
+        </div>
         </div>
 
     </div>

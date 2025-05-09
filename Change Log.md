@@ -534,3 +534,13 @@ fixed upvote / downvote bug for reviews on producer/bottlelistings.vue
 Nature of the changes (frontend / backend / database):
 frontend 
 
+
+# Update as of 9 May 
+
+Coder: Kai
+
+Purpose of the changes:
+cleaned up spacing / sizing / Events cards for the events landing page. created new global css components to simplify Events / Clubs display card designs. 
+
+Nature of the changes (frontend / backend / database):
+frontend 
