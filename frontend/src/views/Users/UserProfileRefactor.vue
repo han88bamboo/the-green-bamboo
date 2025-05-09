@@ -1349,7 +1349,7 @@
         <!-- Welcome section and Reviews/Lists -->
         <div class="col-12 col-md-8">
           <!-- Welcome Section -->
-          <div
+          <div v-if="ownProfile"
             style="
               border: 1px solid #e0e0e0;
               border-radius: 8px;
@@ -1757,7 +1757,7 @@
           </div>
 
           <!-- reviews and lists -->
-          <div class="mt-4">
+          <div :class="{ 'mt-4': ownProfile }">
             <!-- reviews button -->
             <button
               class="btn mx-1 fw-bold no-hover"

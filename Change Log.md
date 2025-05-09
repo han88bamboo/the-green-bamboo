@@ -544,3 +544,16 @@ cleaned up spacing / sizing / Events cards for the events landing page. created 
 
 Nature of the changes (frontend / backend / database):
 frontend 
+
+
+# Update as of 9 May 
+
+Coder: Han
+
+Purpose of the changes:
+fixed incorrectly appearing "welcome" message on user profile page
+added FooterBar to landing and random explore page
+replaced landing page's navbar with correct navbar with search bar
+
+Nature of the changes (frontend / backend / database):
+frontend 
