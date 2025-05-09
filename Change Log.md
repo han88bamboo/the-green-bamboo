@@ -547,3 +547,13 @@ replaced landing page's navbar with correct navbar with search bar
 
 Nature of the changes (frontend / backend / database):
 frontend 
+
+# Update as of 9 May (shifted to present day)
+
+Coder: Han
+
+Purpose of the changes:
+added an attempted fix to the AdminDashboard.vue page to fix the bug where you can't approve a new business 
+
+Nature of the changes (frontend / backend / database):
+frontend 
