@@ -2929,7 +2929,7 @@ def getNotifications(acc_type, acc_id):
                         'type': 'review_upvote',
                         'title': f"Your review on {review['listingName']} got upvoted!",
                         'time': upvote['date'],
-                        'link': f"/listing/view/{review['listingName']}/{review['reviewTarget']}",
+                        'link': f"/listing/view/{review['reviewTarget']}/{review['listingName']}",
                         'read': False
                     }
                     for_you_notifications.append(notification)
@@ -3009,7 +3009,7 @@ def getNotifications(acc_type, acc_id):
                     'type': 'tagged_in_review',
                     'title': f"@{review['tagger_username']} just tagged you in their review of {review['listingName']}!",
                     'time': review['createdDate'],
-                    'link': f"/listing/view/{review['listingName']}/{review['reviewTarget']}",
+                    'link': f"/listing/view/{review['reviewTarget']}/{review['listingName']}",
                     'read': False
                 }
                 for_you_notifications.append(notification)
@@ -3135,7 +3135,7 @@ def getNotifications(acc_type, acc_id):
                     'type': 'event_join',
                     'title': f"@{join['attendee_username']} is attending your event: {join['eventName']}",
                     'time': join['eventDate'],
-                    'link': f"/event/{join['eventName']}/{join['event_id']}",
+                    'link': f"/event/{join['event_id']}/{join['eventName']}",
                     'read': False
                 }
                 for_you_notifications.append(notification)
@@ -3182,7 +3182,7 @@ def getNotifications(acc_type, acc_id):
                     'type': 'venue_tagged_review',
                     'title': f"@{review['reviewer_username']} mentioned your venue in their review of {review['listingName']}",
                     'time': review['createdDate'],
-                    'link': f"/listing/view/{review['listingName']}/{review['reviewTarget']}",
+                    'link': f"/listing/view/{review['reviewTarget']}/{review['listingName']}",
                     'read': False
                 }
                 for_you_notifications.append(notification)
@@ -3237,7 +3237,7 @@ def getNotifications(acc_type, acc_id):
                     'type': 'event_join',
                     'title': f"@{join['attendee_username']} is attending your event: {join['eventName']}",
                     'time': join['eventDate'],
-                    'link': f"/event/{join['eventName']}/{join['event_id']}",
+                    'link': f"/event/{join['event_id']}/{join['eventName']}",
                     'read': False
                 }
                 for_you_notifications.append(notification)
@@ -3375,7 +3375,7 @@ def getNotifications(acc_type, acc_id):
                     'type': 'new_event',
                     'title': f"{event['owner_name']} is hosting a new event: {event['eventName']} on {event_date}",
                     'time': event['createdDate'],
-                    'link': f"/event/{event['eventName']}/{event['id']}",
+                    'link': f"/event/{event['id']}/{event['eventName']}",
                     'read': False,
                     'logo': event['owner_photo']
                 }
@@ -3407,7 +3407,7 @@ def getNotifications(acc_type, acc_id):
                         'type': 'new_drink',
                         'title': f"{listing['producerName']} added a new drink: {listing['listingName']}",
                         'time': listing['addedDate'],
-                        'link': f"/listing/view/{listing['listingName']}/{listing['id']}",
+                        'link': f"/listing/view/{listing['id']}/{listing['listingName']}",
                         'read': False,
                         'logo': listing['producer_photo']
                     }
