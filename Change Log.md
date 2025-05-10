@@ -548,7 +548,7 @@ replaced landing page's navbar with correct navbar with search bar
 Nature of the changes (frontend / backend / database):
 frontend 
 
-# Update as of 9 May (shifted to present day)
+# Update as of 9 May (shifted to present day) - point of deployment with no major issues, apart from needing to fix bug on BillingSecurity.vue page where user cannot proceed past that page
 
 Coder: Han
 
