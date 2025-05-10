@@ -557,3 +557,14 @@ added an attempted fix to the AdminDashboard.vue page to fix the bug where you c
 
 Nature of the changes (frontend / backend / database):
 frontend 
+
+
+# Update as of 10 May 
+
+Coder: Han (Danish)
+
+Purpose of the changes:
+added Danish's bug fix to notification feature
+
+Nature of the changes (frontend / backend / database):
+backend
