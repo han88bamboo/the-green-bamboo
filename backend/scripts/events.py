@@ -3,6 +3,7 @@
 #   [events]    /getEvents (GET), /getSpecificEvent (GET), /getUserEvents (GET), 
 #               /getTop6Events (GET), /getUpcomingFollowingEvents (GET), /getUserPastEvents (GET),
 #               /getUserUpcomingEvents (GET), /getRecentlyAddedEvents (GET), /searchEvents (GET),
+#               /canCreateEvents (GET),
 #               /createEvent (POST), 
 #               /updateEvent (PUT), 
 #               /deleteEvent (DELETE)
@@ -22,7 +23,6 @@ file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
 
 
-# Helper function
 # Helper function to retrieve user's information using the user's id and user type
 def getUserInfoByID(cur, user_id, user_type):
     
@@ -49,6 +49,30 @@ def getUserInfoByID(cur, user_id, user_type):
     user_info['userType'] = user_type
 
     return user_info
+
+# Helper function to check if user can create more events
+def canCreateMoreEvents(cur, user_id, user_type):
+
+    max_events = 0
+
+    # Determine the max events based on user type
+    if user_type == 'user':
+        max_events = 1 # Per month for users
+
+    else:
+        max_events = 3 # Per month for producers and venues
+
+
+    # Check if the user has created any events this month
+    cur.execute('SELECT COUNT(*) FROM events WHERE "eventOwnerID" = %s AND "eventOwnerType" = %s AND "createdDate" >= date_trunc(\'month\', CURRENT_DATE)', (user_id, user_type,))
+    event_count = cur.fetchone()
+
+    print(event_count)
+
+    if event_count and event_count['count'] >= max_events:
+        return (False, max_events)
+    else:
+        return (True, max_events)
 
 
 # -----------------------------------------------------------------------------------------
@@ -574,6 +598,38 @@ def searchEvents(search_query, offset):
     finally:
         cursor.close()
 
+
+# -----------------------------------------------------------------------------------------
+# [GET] Check if user can create more events
+# Purpose: Check if user can create more events
+# Used: 
+# Output: Possible return codes [200 - User can create more events, 400 - User cannot create more events, 500 - Internal server error]
+@blueprint.route('/canCreateEvents/<user_id>/<user_type>', methods=['GET'])
+def canCreateEvents(user_id, user_type):
+    conn = g.db
+    cursor = conn.cursor()
+
+    try:
+        # Step 1: Check if the user can create more events
+        can_create = canCreateMoreEvents(cursor, user_id, user_type)
+
+        if not can_create[0]:
+            return jsonify({
+                'canCreate': False,
+                'message': 'User cannot create more events as per the limit',
+                'limit': can_create[1]
+            }), 400
+
+        return jsonify({
+            'canCreate': True,
+            'message': 'User can create more events as per the limit'
+        }), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
 
 
 # -----------------------------------------------------------------------------------------

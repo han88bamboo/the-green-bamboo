@@ -578,7 +578,9 @@ CREATE TABLE "clubs" (
     "clubLink" VARCHAR(255),
     "clubBanner" TEXT,
     "dateCreated" TIMESTAMP,
-    "totalMembers" INTEGER
+    "totalMembers" INTEGER,
+    "createdByID" INTEGER, -- [!] "producers" or "venues" or "users" id in their respective tables
+    "createdByType" VARCHAR(255) -- [!] "producers" or "venues" or "users"
 );
 
 -- ========= "clubMembers" =========

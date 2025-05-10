@@ -2,15 +2,18 @@
 #         /getClubPosts (GET), /getClubPostDetails (GET), /checkUserMembership (GET),
 #         /getUserLikesDislikesPost (GET), /getUserLikesDislikesComments (GET), /getUserClubs (GET),
 #         /getClubMembers (GET), /getFirstFewClubMembers (GET), /getAllClubMembers (GET),
-#         /getClubRequests (GET), /getUserClubRequests (GET),
-#         /getUserInvitedClubs (GET), /getRecentActivity (GET),
+#         /getClubRequests (GET), /getUserClubRequests (GET), /getUserInvitedClubs (GET),
+#         /getRecentActivity (GET), /canCreate (GET)
+
 #         /createClubs (POST), /addClubMembers (POST), /joinClub (POST), 
 #         /addPost (POST), /addComment (POST), /requestToJoinClub (POST),
 #         /acceptClubRequest (POST), /acceptClubInvite (POST),
+
 #         /editPost (PUT), /editComment (PUT),
 #         /dislikeUndislikePost (PUT), /dislikeUndislikeComment (PUT),
 #         /likeUnlikePost (PUT), /likeUnlikeComment (PUT), /makeAdmin (PUT), 
 #         /revokeAdmin (PUT), /updateClubInfo (PUT),
+
 #         /removeMembers (DELETE), /removePost (DELETE), /removeComment (DELETE),
 #         /leaveClub (DELETE), /deleteClub (DELETE), /rejectClubRequests (DELETE),
 #         /declineClubInvites (DELETE)
@@ -1115,6 +1118,82 @@ def getRecentActivity(userID, userType):
 
 
 # -----------------------------------------------------------------------------------------
+# [GET] canCreate
+# Purpose: Check if a user can create a club 
+# Used: 
+# Output: Possible return codes [200 - User can create a club, 400 - User cannot create a club, 500 - An error occurred retrieving the request]
+@blueprint.route('/canCreate/<userID>/<userType>', methods=['GET'])
+def canCreate(userID, userType):
+    conn = g.db
+    cur = conn.cursor()
+
+    try:
+        # Step 1: Check if the user is a valid type user
+        if userType not in ['user', 'producer', 'venue']:
+            return jsonify({
+                'error': 'User type is not valid'
+            }), 400
+        
+        # Check for user type: user 
+        if userType == 'user':
+
+            canCreateTuple = pointsHelperFunc.check_user_can_create_club(userID)
+
+            if not canCreateTuple[0]:
+
+                if canCreateTuple[1] == 'insufficient points':
+                    return jsonify({
+                        'canCreate': False,
+                        'message': 'User does not have enough points to create a club',
+                        'pointsNeeded': canCreateTuple[2]
+                    }), 400
+                
+                else:
+                    return jsonify({
+                        'canCreate': False,
+                        'message': 'User already created the max number of clubs',
+                        'numClubsCreated': canCreateTuple[2]
+                    }), 400
+            
+            
+            # Else, user can create a club
+            return jsonify({
+                'canCreate': True
+            }), 200
+
+        # Check for user type: producer or venue
+        max_num_clubs = 2 # Max club for producer and venue is 2
+
+        cur.execute('SELECT * FROM "clubs" WHERE "createdByID" = %s AND "createdByType" = %s', (userID, userType,))
+        club = cur.fetchall()
+
+        if club and len(club) == max_num_clubs:
+            return jsonify({
+                'canCreate': False,
+                'message': 'User already exceeded the max number of clubs',
+                'clubID': club['id'], 
+                'maxClubs': max_num_clubs
+            }), 400
+        
+        # Else, user can create a club
+        return jsonify({
+            'canCreate': True
+        }), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred retrieving the request."
+            }
+        ), 500
+    
+    finally:
+        cur.close()
+
+
+# -----------------------------------------------------------------------------------------
 # [POST] createClubs
 # Purpose: Create a new club
 # Used: CreateClub.vue [views folder inside Users folder]
@@ -1157,8 +1236,8 @@ def createClub():
             image64 = None
 
         # Step 3: Insert the new club into the database
-        cur.execute('INSERT INTO "clubs" ("clubName", "clubDesc", "isInviteOnly", "clubLink", "clubBanner", "dateCreated", "totalMembers") VALUES (%s, %s, %s, %s, %s, %s, 1) RETURNING id', 
-                    (club_name, club_desc, is_invite_only, '', image64, date_created,))
+        cur.execute('INSERT INTO "clubs" ("clubName", "clubDesc", "isInviteOnly", "clubLink", "clubBanner", "dateCreated", "totalMembers", "createdByID", "createdByType") VALUES (%s, %s, %s, %s, %s, %s, 1, %s, %s) RETURNING id', 
+                    (club_name, club_desc, is_invite_only, '', image64, date_created, creator_id, creator_type,))
         club_id = cur.fetchone()['id']
 
         # Step 4: Insert the club admin into the clubMembers table

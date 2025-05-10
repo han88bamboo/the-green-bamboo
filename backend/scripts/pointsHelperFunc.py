@@ -95,4 +95,42 @@ def check_max_proof_points(user_id):
 ###############################################################################################################
 
 
+# Check if user has achieved the minumum proof points to create a club 
+max_number_of_clubs = 1
+min_points = 200
+
+def check_user_can_create_club(user_id):
+    """
+    Check if the user has achieved the minimum proof points to create a club.
+
+    Args:
+        user_id (int): The ID of the user.
+
+    Returns:
+        bool: True if the user can create a club, False otherwise.
+    """
+
+    # Retrieve the minimum proof points from the database
+    conn = g.db
+    cur = conn.cursor()
+
+    # Retrieve the user's current proof points from the database
+    cur.execute('SELECT "currentPoints" FROM "pointsRecorder" WHERE "userID" = %s AND "userType" = %s', (user_id, 'user',))
+    current_points = cur.fetchone()
+
+    # Check if the user has reached the minimum proof points to create a club
+    if current_points['currentPoints'] >= min_points:
+        
+        # Check if the user has reached the maximum number of clubs they can create
+        cur.execute('SELECT COUNT(*) FROM "clubs" WHERE "createdByID" = %s AND "createdByType" = %s', (user_id, 'user',))
+        club_count = cur.fetchone()
+
+        if not club_count and club_count['count'] < max_number_of_clubs:
+            return (True)
+        else:
+            return (False, 'max clubs reached', max_number_of_clubs)
+    else:
+        return (False, 'insufficient points', min_points)
+
+
 
