@@ -564,7 +564,7 @@ frontend
 Coder: Han (Danish)
 
 Purpose of the changes:
-added Danish's bug fix to notification feature
+added Danish's bug fix to notification feature - fix not satisfactory because the red notifications number does not go down when we view or click on the notif messages. we also want to apply a shading to notifications that have newly appeared.
 
 Nature of the changes (frontend / backend / database):
 backend
@@ -579,3 +579,14 @@ cleaned up spacing, buttons, margins, and design on front end.
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 10 May - to deploy and test
+
+Coder: Han
+
+Purpose of the changes:
+attempted fix to get Stripe fully working . made tweak to payment.py file
+
+Nature of the changes (frontend / backend / database):
+backend 
+

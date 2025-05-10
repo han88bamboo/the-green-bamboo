@@ -4,6 +4,9 @@ import json
 from flask import Blueprint, g, request, jsonify
 from datetime import datetime
 
+# Add this line to initialize Stripe with your API key
+stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
+
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
 
