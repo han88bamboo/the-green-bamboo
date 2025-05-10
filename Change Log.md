@@ -568,3 +568,14 @@ added Danish's bug fix to notification feature
 
 Nature of the changes (frontend / backend / database):
 backend
+
+# Update as of 10 May 
+
+Coder: Kai
+
+Purpose of the changes:
+front-end changes to individual profile page 
+cleaned up spacing, buttons, margins, and design on front end. 
+
+Nature of the changes (frontend / backend / database):
+frontend
