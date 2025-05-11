@@ -580,7 +580,7 @@ cleaned up spacing, buttons, margins, and design on front end.
 Nature of the changes (frontend / backend / database):
 frontend
 
-# Update as of 10 May - to deploy and test
+# Update as of 10 May 
 
 Coder: Han
 
@@ -590,3 +590,11 @@ attempted fix to get Stripe fully working . made tweak to payment.py file
 Nature of the changes (frontend / backend / database):
 backend 
 
+# Update as of 11 May - deployed
+Coder: Han
+
+Purpose of the changes:
+fix to get Stripe working with fields to fill in payment information on BillingSecurity.vue page. made tweak to payment.py and  BillingSecurity.vue files
+
+Nature of the changes (frontend / backend / database):
+backend mostly, frontend 

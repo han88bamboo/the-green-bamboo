@@ -203,6 +203,9 @@
             this.token = this.$route.query.token;
             
             this.stripe = await loadStripe(process.env.VUE_APP_STRIPE_PUBLISHABLE_KEY);
+            
+            // Add this line to check environment variables
+            await this.checkEnvironment();
 
             async function initiateProcess() {
                 await this.verifyToken();
@@ -307,6 +310,12 @@
                             'Content-Type': 'application/json'
                         }
                     });
+
+                    // Display debug message from backend
+                    if (response.data.debug_message) {
+                        console.log("BACKEND LOG:", response.data.debug_message);
+                    }
+
                     console.log(response.data);
                     this.customerId = response.data.customerId;
 
@@ -324,6 +333,10 @@
                     console.log(response2.data);
 
                 } catch (error) {
+                    // Show any backend error messages
+                    if (error.response && error.response.data && error.response.data.error) {
+                        console.error("BACKEND ERROR:", error.response.data.error.debug_message);
+                    }
                     console.error(error);
                 }
             },
@@ -344,9 +357,22 @@
                             'Content-Type': 'application/json'
                         }
                     });
+
+                    // Display debug message from backend
+                    if (response.data.debug_message) {
+                        console.log("BACKEND LOG:", response.data.debug_message);
+                    }
+
                     console.log(response.data);
                     this.clientSecret = response.data.clientSecret;
                 } catch (error) {
+                    // Show backend error messages
+                    if (error.response && error.response.data && error.response.data.error) {
+                        console.error("BACKEND ERROR:", error.response.data.error.debug_message);
+                        if (error.response.data.error.detailed_error) {
+                            console.error("DETAILED ERROR:", error.response.data.error.detailed_error);
+                        }
+                    }
                     console.error(error);
                 }
             },
@@ -625,6 +651,18 @@
                 return hash;
             },
 
+            // Add this method in the "methods" section of BillingSecurity.vue
+            async checkEnvironment() {
+                try {
+                    console.log("Checking environment variables on server...");
+                    const response = await this.$axios.get(
+                        `${process.env.VUE_APP_API_URL}/payment/check-env`,
+                    );
+                    console.log("Environment check results:", response.data);
+                } catch (error) {
+                    console.error("Error checking environment:", error.response?.data || error.message);
+                }
+            },
         
         }
     }
