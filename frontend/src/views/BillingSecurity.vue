@@ -398,26 +398,28 @@
             },
 
             async processPayment() {
-
                 const stripe = this.stripe;
                 const elements = this.elements;
-
-                const { error, paymentIntent } = await stripe.confirmPayment({
+            
+                // Use confirmSetup instead of confirmPayment
+                const { error, setupIntent } = await stripe.confirmSetup({
                     elements,
-                    redirect: 'if_required' // Prevents automatic redirection
-
+                    redirect: 'if_required',
+                    confirmParams: {
+                        return_url: window.location.origin,
+                    }
                 });
-
+            
                 if (error) {
                     if (error.type === "card_error" || error.type === "validation_error") {
                         console.log(error.message);
                     } else {
                         console.log("An unexpected error occurred.");
                     }
-
-                } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-                    // sucessful payment -> business is now verified
-
+                    return false;
+                } else if (setupIntent && setupIntent.status === 'succeeded') {
+                    // successful payment -> business is now verified
+            
                     // update account request
                     try {
                         await this.$axios.post(`${process.env.VUE_APP_API_URL}/createAccount/updateAccountRequest`, 
@@ -448,14 +450,12 @@
                     } catch (error) {
                         console.error(error);
                     }
-
+            
                     return true;
-
-
                 } else {
                     console.log("Payment processing...");
+                    return false;
                 }
-
             },
 
             async deleteToken() {
