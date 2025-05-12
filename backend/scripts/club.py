@@ -1144,16 +1144,18 @@ def canCreate(userID, userType):
                 if canCreateTuple[1] == 'insufficient points':
                     return jsonify({
                         'canCreate': False,
-                        'message': 'User does not have enough points to create a club',
+                        'reason': 'insufficient points',
+                        'message': 'You do not have enough points to create a club',
                         'pointsNeeded': canCreateTuple[2]
-                    }), 400
+                    }), 200
                 
                 else:
                     return jsonify({
                         'canCreate': False,
-                        'message': 'User already created the max number of clubs',
+                        'reason': 'max clubs created',
+                        'message': 'You have already created the max number of clubs',
                         'numClubsCreated': canCreateTuple[2]
-                    }), 400
+                    }), 200
             
             
             # Else, user can create a club
@@ -1170,10 +1172,10 @@ def canCreate(userID, userType):
         if club and len(club) == max_num_clubs:
             return jsonify({
                 'canCreate': False,
-                'message': 'User already exceeded the max number of clubs',
+                'message': 'You have already created the max number of clubs',
                 'clubID': club['id'], 
                 'maxClubs': max_num_clubs
-            }), 400
+            }), 200
         
         # Else, user can create a club
         return jsonify({

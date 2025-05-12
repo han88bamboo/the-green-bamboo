@@ -49,7 +49,12 @@
 
                 <!-- Create Event Button -->
                 <div class="text-start">
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createEventModal">+ Create an Event</button>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createEventModal" :disabled="!canCreateEvent">+ Create an Event</button>
+                </div>
+
+                <!-- Cannot create event message -->
+                <div v-if="!canCreateEvent && userType != null" class="alert alert-danger mt-3" role="alert">
+                    {{ canCreateEventMessage }}
                 </div>
 
                 <!-- Create Event modal -->
@@ -446,6 +451,9 @@ export default {
 
             followedEvents: [],
             followedEventsError: null,
+
+            canCreateEvent: false,
+            canCreateEventMessage: "",
         }
     },
     methods: {
@@ -542,6 +550,20 @@ export default {
                 else {
                     this.followedEventsError = "Failed to retrieve followed events.";
                 }
+                console.error(error);
+            }
+        },
+
+        // Function to get create event status
+        async getCreateEventStatus() {
+            try {
+                let response;
+                response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/events/canCreateEvents/` + this.userID + "/" + this.userType);
+                this.canCreateEvent = response.data.canCreate;
+                console.log(this.canCreateEvent);
+                this.canCreateEventMessage = response.data.message;
+            }
+            catch (error) {
                 console.error(error);
             }
         },
@@ -700,6 +722,9 @@ export default {
 
         if (userType) {
             this.userType = userType;
+
+            // Get create event status
+            this.getCreateEventStatus();
         }
 
         this.getUpcomingEvents();

@@ -47,8 +47,13 @@
                 </div> 
 
                 <!-- Create Club Button -->
-                <div v-if="!(userType == 'user' && isUnderMax)" class="text-start">
+                <div class="text-start">
                     <button class="btn btn-primary" @click="createClub">+ Create a Club</button>
+                </div>
+
+                <!-- Message for why user cannot create club -->
+                <div v-if="userType != 'defaultUser'" class="alert alert-danger mt-3" role="alert">
+                    <p class="text-danger">{{ cannotCreateClubMsg }}</p>
                 </div>
 
                 <!-- Club Invite-->
@@ -427,7 +432,12 @@ export default {
             maxProofPoints: localStorage.getItem("88B_maxProofPoints") ? localStorage.getItem("88B_maxProofPoints") : null,
 
             // new comment variable
-            newComments: {}  // key: post.id, value: comment string
+            newComments: {}, // key: post.id, value: comment string
+
+            // Variable for can create club status
+            canCreateClub: false,
+            cannotCreateClubMsg: "",
+            disableCreateClubBtn: false,
 
         }
     },
@@ -473,6 +483,36 @@ export default {
                 else {
                     this.dataLoaded = null;
                 }   
+            }
+        },
+
+        // Function to get create club status
+        async getCanCreateClubStatus() {
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/canCreate/${this.userID}/${this.userType}`);
+                this.canCreateClub = response.data.canCreate;
+
+                // cannot create 
+                if (!this.canCreateClub) {
+                    this.disableCreateClubBtn = true;
+
+                    if (this.userType == "user") {
+
+                        if (response.data.reason == "insufficient points") {
+                            this.cannotCreateClubMsg = response.data.message + ". You need a minimum of " + response.data.pointsNeeded + " proof points to create a club.";
+                        } else {
+                            this.cannotCreateClubMsg = response.data.message;
+                        }
+                    } 
+                    else {
+                        this.cannotCreateClubMsg = response.data.message;
+                    }
+                } else {
+                    this.disableCreateClubBtn = false;
+                }
+                
+            } catch (error) {
+                console.log(error);
             }
         },
 
@@ -791,9 +831,6 @@ export default {
         filteredClubs() {
             return this.clubs.filter(club => !this.userClubs.includes(club.id));
         },
-        isUnderMax() {
-            return Number(this.proofPoint) < Number(this.maxProofPoints);
-        }
     },
 
     mounted() {
@@ -810,6 +847,9 @@ export default {
         }
 
         if (this.userID && this.userType !== "defaultUser") {
+
+            // Get the create club status 
+            this.getCanCreateClubStatus();
             // Get the list of clubs the user is a member of
             this.getMemberClubs();
             // Get the list of clubs the user has requested to join
@@ -818,7 +858,6 @@ export default {
             this.getInvitedClubs();
         }
 
-        console.log(localStorage.getItem("88B_proofPoints"));
     }
 }
 

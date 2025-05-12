@@ -67,8 +67,6 @@ def canCreateMoreEvents(cur, user_id, user_type):
     cur.execute('SELECT COUNT(*) FROM events WHERE "eventOwnerID" = %s AND "eventOwnerType" = %s AND "createdDate" >= date_trunc(\'month\', CURRENT_DATE)', (user_id, user_type,))
     event_count = cur.fetchone()
 
-    print(event_count)
-
     if event_count and event_count['count'] >= max_events:
         return (False, max_events)
     else:
@@ -616,9 +614,9 @@ def canCreateEvents(user_id, user_type):
         if not can_create[0]:
             return jsonify({
                 'canCreate': False,
-                'message': 'User cannot create more events as per the limit',
+                'message': 'You have reached the limit of events you can create this month',
                 'limit': can_create[1]
-            }), 400
+            }), 200
 
         return jsonify({
             'canCreate': True,
