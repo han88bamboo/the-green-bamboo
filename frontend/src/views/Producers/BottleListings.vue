@@ -3295,6 +3295,11 @@ export default {
           return acc;
         }, []);
 
+        // Add current userID to the list of relevant user IDs
+        if (this.userID) {
+          this.allRelevantUserIDs.push(this.userID);
+        }
+
       } catch (error) {
         console.error(error);
         this.dataLoaded = null;
@@ -3456,6 +3461,7 @@ export default {
         console.error(error);
         this.dataLoaded = null;
       }
+
       // users
       // _id, username, displayName, choiceDrinks, drinkLists, modType, photo
       try {
@@ -3520,7 +3526,7 @@ export default {
         }
       } catch (error) {
         console.error(error);
-        this.dataLoaded = null;
+        // this.dataLoaded = null;
       }
 
       // venuesAPI

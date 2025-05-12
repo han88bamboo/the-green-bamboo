@@ -1617,9 +1617,7 @@ def addComment():
                 "commenterInfo": commenter_info,
                 "id": comment_id,
                 "likedMembers": [],
-                "postID": post_id,
-                "pointsEarned": points['proofPoints'],
-                "rule": points['ruleName']
+                "postID": post_id
             }
         }), 201
 

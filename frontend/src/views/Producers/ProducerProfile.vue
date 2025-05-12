@@ -4031,20 +4031,25 @@ export default {
         console.error(error);
       }
 
+
       // users
       // _id, username, displayName, choiceDrinks, drinkLists, modType, photo
-      try {
-        const response = await this.$axios.post(
-          `${process.env.VUE_APP_API_URL}/getData/getUsersFromList`, 
-          {
-            userIDs: this.allUserIDs,
-          }
-        );
-        this.users = response.data;
-      } catch (error) {
-        console.error("Error fetching users data:", error);
-        this.dataLoaded = null;
+
+      if (this.allUserIDs.length > 0) {
+        try {
+          const response = await this.$axios.post(
+            `${process.env.VUE_APP_API_URL}/getData/getUsersFromList`, 
+            {
+              userIDs: this.allUserIDs,
+            }
+          );
+          this.users = response.data;
+        } catch (error) {
+          console.error("Error fetching users data:", error);
+          this.dataLoaded = null;
+        }
       }
+      
 
       // check whether mod can edit any listing at all in the producer page
       if (this.user_id != "" && this.userType == "user") {

@@ -48,11 +48,11 @@
 
                 <!-- Create Club Button -->
                 <div class="text-start">
-                    <button class="btn btn-primary" @click="createClub">+ Create a Club</button>
+                    <button class="btn btn-primary" @click="createClub" :disabled="!canCreateClub">+ Create a Club</button>
                 </div>
 
                 <!-- Message for why user cannot create club -->
-                <div v-if="userType != 'defaultUser'" class="alert alert-danger mt-3" role="alert">
+                <div v-if="userType != 'defaultUser' && !canCreateClub" class="alert alert-danger mt-3" role="alert">
                     <p class="text-danger">{{ cannotCreateClubMsg }}</p>
                 </div>
 
@@ -807,14 +807,14 @@ export default {
 
                 // Check if the comment is successful
                 if (commentData.status == 201) {
-                // Add the comment to the front of the comments array
-                this.comments.unshift(commentData.data.comment_obj);
+                    // Add the comment to the front of the comments array
+                    // this.comments.unshift(commentData.data.comment_obj); 
 
-                // Clear the comment input
-                this.newComment = "";
+                    // Clear the comment input
+                    this.newComment = "";
 
-                const toast = useToast();
-                toast.success("Comment added successfully.");
+                    const toast = useToast();
+                    toast.success("Comment added successfully.");
                 }
             } catch (error) {
                 console.log(error);

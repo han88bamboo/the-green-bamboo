@@ -220,6 +220,7 @@
               >
                 + Follow User
               </button>
+            </div>
             <!-- buttons (DESKTOP ONLY) -->
             <div class="row mt-0">
               <router-link
