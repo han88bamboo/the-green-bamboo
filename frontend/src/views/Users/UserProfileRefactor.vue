@@ -69,11 +69,62 @@
                   "
                   data-bs-toggle="modal"
                   data-bs-target="#moderatormodal"
-                  class="btn btn-warning hover-button p-1"
+                  class="btn btn-warning hover-button mt-1 px-3 mobile-view-hide"
                   style="border-radius: 20px; font-size: 0.8rem"
                 >
                   ★ Certified Moderator
                 </button>
+                <button
+                  v-if="
+                    displayUser &&
+                    displayUser.modType &&
+                    displayUser.modType.length > 0
+                  "
+                  data-bs-toggle="modal"
+                  data-bs-target="#moderatormodal"
+                  class="btn btn-warning hover-button mt-1 px-3 me-3 mobile-view-show"
+                  style="border-radius: 20px; font-size: 0.8rem"
+                >
+                  ★ Moderator
+                </button>
+                <br class="mobile-view-hide"/>
+                <button
+                v-if="ownProfile && user"
+                type="button"
+                class="mt-2 btn tertiary-btn-blue-outline xprimary-btn-outline-not-round"
+                data-bs-toggle="modal"
+                data-bs-target="#editProfileModal"
+                style="font-weight: bold"
+              >
+                Edit Profile
+              </button>
+              <button
+                v-else-if="following && user"
+                type="button"
+                class="mt-2 btn primary-btn-less-round-blue"
+                @click="editFollow('unfollow')"
+                style="font-weight: bold"
+              >
+                Following
+              </button>
+              <button
+                v-else-if="user"
+                type="button"
+                class="mt-2 btn primary-btn-less-round-blue" 
+                @click="editFollow('follow')"
+                style="font-weight: bold"
+              >
+                + Follow User
+              </button>
+              <button
+                v-if="ownProfile && user"
+                type="button"
+                class="mt-2 btn tertiary-btn-blue-outline xprimary-btn-outline-not-round ms-1"
+                data-bs-toggle="modal"
+                data-bs-target="#changePasswordModal"
+              >
+                <i class="bi bi-shield-lock-fill"></i>
+              </button>
               </div>
             </div>
 
@@ -96,8 +147,8 @@
                   <span v-else>{{ displayUserDrinkChoice }}</span>
                 </div>
               </div>
-              <!-- Display Chosen Flavour Tags Start -->
-              <div class="row">
+              <!-- Display Chosen Flavour Tags Start  (NOT ON MOBILE)-->
+              <div class="row mobile-view-hide">
                 <div class="col-5">
                   <b>Flavour Choice</b>
                 </div>
@@ -107,8 +158,8 @@
                 </div>
               </div>
               <!-- Display Chosen Flavour Tag End -->
-              <!-- Display Chosen Observation Tag Start -->
-              <div class="row">
+              <!-- Display Chosen Observation Tag Start (NOT ON MOBILE) -->
+              <div class="row mobile-view-hide">
                 <div class="col-5">
                   <b>Observation Tags</b>
                 </div>
@@ -169,13 +220,15 @@
               >
                 + Follow User
               </button>
+            <!-- buttons (DESKTOP ONLY) -->
+            <div class="row mt-0">
               <router-link
                 v-if="ownProfile && user"
                 :to="{ path: '/dashboard/user' }"
-                class="btn primary-btn-less-round-blue xsecondary-btn-not-rounded rounded-0 mt-3"
+                class="btn primary-btn-less-round-blue btn-lg mt-3"
                 style="font-weight: bold"
               >
-                View My Analytics
+                View My Stats
               </router-link>
               <span
                 style="position: relative; display: inline-block"
@@ -191,26 +244,19 @@
                       : "None"
                   }}
                 </div>
-                <button
+                <!--<button
                   v-if="user && user.isAdmin"
-                  class="btn tertiary-btn-blue reverse-clickable-text mt-3"
+                  class="btn primary-btn-outline-less-round reverse-clickable-text mt-3"
                   style="width: 100%"
                   type="button"
                   data-bs-toggle="modal"
                   data-bs-target="#addModeratorModal"
                 >
-                  Add/Remove Moderator Rights
-                </button>
+                  Edit Moderators
+                </button>-->
               </span>
-              <button
-                v-if="ownProfile && user"
-                type="button"
-                class="btn secondary-btn-less-round mt-3"
-                data-bs-toggle="modal"
-                data-bs-target="#changePasswordModal"
-              >
-                Change/Reset Password
-              </button>
+              
+              
             </div>
 
             <!-- editProfileModal start -->
@@ -1249,8 +1295,8 @@
             <!-- Change password end -->
 
             <!-- badges -->
-            <div class="mt-3">
-              <h3 class="mobile-view-hide">Badges Unlocked</h3>
+            <div class="mt-4 mobile-view-hide">
+              <h5 class="mobile-view-hide" style="font-weight:bold">Badges Unlocked</h5>
               <p class="mobile-view-show"><strong>Badges Unlocked</strong></p>
               <hr />
               <div
@@ -1346,7 +1392,7 @@
             </div>
 
             <!-- Events-->
-            <div class="mt-3">
+            <div class="mt-3 mobile-view-hide">
               <EventBox
                 :selfView="ownProfile"
                 :targetUserID="displayUserID"
@@ -1359,16 +1405,17 @@
         <!-- Welcome section and Reviews/Lists -->
         <div class="col-12 col-md-8">
           <!-- Welcome Section -->
-          <div
+          <div v-if="ownProfile"
             style="
               border: 1px solid #e0e0e0;
               border-radius: 8px;
               padding: 16px;
               background-color: #ffffff;
             "
-          >
+            class="mobile-view-hide"
+            >
             <!-- Welcome section -->
-            <div style="margin-bottom: 24px">
+            <div style="margin-bottom: 24px" >
               <div
                 style="
                   position: relative;
@@ -1605,9 +1652,65 @@
                             </h1>
                           </div>
                           
+                          <!-- Search bar section -->
                           <div class="px-5 pt-1 pb-2">
-                            <div class="position-relative">
-                              <input type="text" class="form-control rounded-pill" placeholder="Search for friends on Drink-X" aria-label="Search for friends" style="border: 1px solid #ced4da; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                            <div id="userSearchContainer" class="position-relative">
+                              <input
+                                type="text"
+                                class="form-control rounded-pill"
+                                placeholder="Search for friends on Drink-X"
+                                aria-label="Search for friends"
+                                style="border: 1px solid #ced4da; box-shadow: 0 2px 5px rgba(0,0,0,0.05);"
+                                v-model="userSearchInput"
+                                @input="getUserSuggestions"
+                                autocomplete="off"
+                              />
+                              
+                              <!-- Suggestions dropdown -->
+                              <div
+                                class="position-absolute w-100 mt-1 bg-white border rounded shadow-sm"
+                                style="z-index: 1000; max-height: 300px; overflow-y: auto;"
+                                v-if="showUserSuggestions && filteredUserSuggestions.length > 0"
+                              >
+                                <div
+                                  v-for="(user, index) in filteredUserSuggestions"
+                                  :key="user.id"
+                                  class="p-2 border-bottom d-flex align-items-center justify-content-between"
+                                  :class="{ 'bg-light': selectedUserIndex === index }"
+                                  @mouseover="selectedUserIndex = index"
+                                >
+                                  <div class="d-flex align-items-center" style="cursor: pointer;" @click="navigateToUserProfile(user.id, user.username)">
+                                    <img
+                                      :src="user.photo || defaultProfilePhoto"
+                                      class="rounded-circle me-2"
+                                      style="width: 32px; height: 32px; object-fit: cover;"
+                                      alt=""
+                                    />
+                                    <div>
+                                      <div class="fw-bold">{{ user.displayName }}</div>
+                                      <div class="text-muted small">@{{ user.username }}</div>
+                                    </div>
+                                  </div>
+                                  
+                                  <button
+                                    v-if="!isUserFollowed(user.id)"
+                                    @click.stop="followUserFromSearch(user.id)"
+                                    class="btn btn-sm btn-outline-primary"
+                                    style="min-width: 80px;"
+                                  >
+                                    + Follow
+                                  </button>
+                                  <button
+                                    v-else
+                                    @click.stop="unfollowUserFromSearch(user.id)"
+                                    class="btn btn-sm btn-primary"
+                                    style="min-width: 80px;"
+                                  >
+                                    Following
+                                  </button>
+                                </div>
+                              </div>
+                              
                               <div class="position-absolute" style="right: 15px; top: 50%; transform: translateY(-50%);">
                               </div>
                             </div>
@@ -1711,7 +1814,7 @@
           </div>
 
           <!-- reviews and lists -->
-          <div class="mt-4">
+          <div :class="{ 'mt-2': ownProfile }">
             <!-- reviews button -->
             <button
               class="btn mx-1 fw-bold no-hover"
@@ -1742,12 +1845,12 @@
             </button>
 
             <!-- Tab Section -->
-            <div class="tab-content container mt-2 mobile-px-0">
+            <div class="tab-content container mt-2 mobile-py-2">
               <!-- reviews tab -->
               <div v-if="activeTab == 'reviews'" id="reviews">
-                <h3 class="text-body-secondary text-start pt-4">
+                <h5 class="text-body-secondary text-start py-2">
                   <b> Recent Reviews </b>
-                </h3>
+                </h5>
                 <div v-if="recentReviews && recentReviews.length > 0">
                   <div v-for="review in recentReviews" :key="review.id">
                     <div style="display: flex" class="row mb-2">
@@ -1764,7 +1867,7 @@
                           :href="'/listing/view/' + review.reviewTarget"
                           style="text-decoration: none; color: #223957"
                         >
-                          <p class="fs-5 mobile-fs-7 mb-1 mobile-mb-0_5">
+                          <p class="fs-5 mobile-fs-6 mb-1 mobile-mb-0_5 default-clickable-text">
                             <b>{{ getListingName(review.reviewTarget) }}</b>
                           </p>
                         </a>
@@ -1818,7 +1921,7 @@
                     </div>
                   </div>
                 </div>
-                <div v-else class="container">
+                <div v-else class="container ">
                   No reviews yet. To explore more drinks in the home page,
                   <router-link to="/" style="color: inherit"
                     >click here</router-link
@@ -1938,7 +2041,7 @@
                   style="display: flex"
                   class="row mb-3"
                 >
-                  <div class="col-3 mobile-col-4 mobile-pe-0">
+                  <div class="col-3 mobile-col-4 mobile-pe-2">
                     <!-- <img :src=" 'data:image/png;base64,' + ( getListingFromID(bookmarkList.listItems[0]).photo || defaultDrinkImage )" alt="" class="bottle-img me-3"> xyz -->
                     <img
                       :src="
@@ -1949,15 +2052,15 @@
                           : defaultDrinkImage
                       "
                       alt=""
-                      class="bottle-img me-3"
+                      class="bottle-img rounded me-3"
                     />
                   </div>
                   <div class="col-9 mobile-col-8 mobile-ps-1">
                     <!-- style="height: 150px; display: flex; flex-direction: column;" -->
                     <h5
-                      class="mt-1"
+                      class="mt-1 mobile-fs-6"
                       @click="viewList(name)"
-                      style="cursor: pointer"
+                      style="cursor: pointer; font-weight:bold"
                     >
                       {{ name }}
                     </h5>
@@ -1979,17 +2082,19 @@
                     <div style="display: flex; margin-top: auto" class="mb-1">
                       <b
                         ><a
-                          class="me-4 mobile-view-hide"
+                          class="me-2 mt-2 mobile-view-hide"
                           @click="viewList(name)"
                           href="#"
+                          style="color: #027562"
                           >View List</a
                         ></b
                       >
                       <b
                         ><a
-                          class="me-4 mobile-view-show"
+                          class="me-2 mobile-view-show"
                           @click="viewList(name)"
                           href="#"
+                          style="color: #027562"
                           >View</a
                         ></b
                       >
@@ -2003,6 +2108,7 @@
                             )
                           "
                           class="mobile-view-hide me-2"
+                          style="color: #027562"
                           href="#"
                           data-bs-toggle="modal"
                           :data-bs-target="`#editListModal${index}`"
@@ -2021,6 +2127,7 @@
                           "
                           class="mobile-view-hide"
                           href="#"
+                          style="color: #027562"
                           data-bs-toggle="modal"
                           :data-bs-target="`#deleteListModal${index}`"
                           >Delete List</a
@@ -2038,6 +2145,7 @@
                           class="mobile-view-show me-2"
                           href="#"
                           data-bs-toggle="modal"
+                          style="color: #027562"
                           :data-bs-target="`#editListModal${index}`"
                           @click="resetEditList(name, bookmarkList.listDesc)"
                           >Edit</a
@@ -2054,6 +2162,7 @@
                           "
                           class="mobile-view-show"
                           href="#"
+                          style="color: #027562"
                           data-bs-toggle="modal"
                           :data-bs-target="`#deleteListModal${index}`"
                           >Delete</a
@@ -2209,24 +2318,28 @@
                 id="list"
               >
                 <!-- list name, back to lists & add drink to list & share button -->
-                <div class="row mb-4 mobile-mt-4">
+                <div class="row mb-4 mobile-mt-2">
                   <div class="col-5 mobile-col-7">
-                    <h3>{{ currentList }}</h3>
+                    <h5 class="mobile-fs-5">
+                      <b>{{ currentList }}</b>
+                    </h5>
                   </div>
                   <div
-                    class="col-7 mobile-col-5 text-end d-flex justify-content-end"
+                    class="col-7 mobile-col-5 text-end d-flex gap-2 justify-content-end"
                   >
                     <button
                       v-if="ownProfile"
                       type="button"
-                      class="btn primary-btn-outline-less-round drinklist"
+                      class="btn btn tertiary-btn-blue drinklist"
                       data-bs-toggle="modal"
                       data-bs-target="#exampleModal"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="currentColor"
-                        class="bi bi-plus-square mb-1 me-1 funnel-svg-dimensions"
+                        class="bi bi-plus"
+                        width="16"
+                        height="16"
                         viewBox="0 0 16 16"
                       >
                         <path
@@ -2236,19 +2349,21 @@
                           d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"
                         />
                       </svg>
-                      <span class="mobile-view-hide">Add Drink</span>
+                      <span class="mobile-view-hide">&nbsp; Add Drink</span>
                     </button>
                     <button
                       @click="updateCurrentURL"
                       type="button"
-                      class="btn primary-btn-outline-less-round ms-3 drinklist"
+                      class="btn btn tertiary-btn-blue drinklist"
                       data-bs-toggle="modal"
                       data-bs-target="#shareListModal"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="currentColor"
-                        class="bi bi-share mb-1 me-1 funnel-svg-dimensions"
+                        class="bi bi-share"
+                        width="16"
+                        height="16"
                         viewBox="0 0 30 30"
                       >
                         <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
@@ -2263,17 +2378,19 @@
                           ></path>
                         </g>
                       </svg>
-                      <span class="mobile-view-hide">Share List</span>
+                      <span class="mobile-view-hide">&nbsp;Share List</span>
                     </button>
                     <button
                       @click="viewList('lists')"
                       type="button"
-                      class="btn primary-btn-outline-less-round ms-3 drinklist"
+                      class="btn btn tertiary-btn-blue drinklist"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="currentColor"
-                        class="bi bi-arrow-left-circle mb-1 me-1 funnel-svg-dimensions"
+                        class="bi bi-arrow-left-circle"
+                        width="16"
+                        height="16"
                         viewBox="0 0 16 16"
                       >
                         <path
@@ -2281,7 +2398,7 @@
                           d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8m15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-4.5-.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5z"
                         />
                       </svg>
-                      <span class="mobile-view-hide">Back to Lists</span>
+                      <span class="mobile-view-hide">&nbsp;Back to Lists</span>
                     </button>
 
                     <!-- Share Menu Modal (QR Code) -->
@@ -2458,7 +2575,7 @@
 
                 <!-- list details -->
                 <div
-                  class="row mb-3"
+                  class="row"
                   v-for="(listing, index) in displayUser.drinkLists[currentList]
                     .listItems"
                   :key="index"
@@ -2471,12 +2588,12 @@
                         defaultDrinkImage
                       "
                       alt=""
-                      style="width: 130px; height: 130px"
-                      class="bottle-img me-3"
+                      style="width: 100px; height: 100px"
+                      class="bottle-img rounded me-3"
                     />
                     <div
                       style="
-                        min-height: 150px;
+                        min-height: 130px;
                         display: flex;
                         flex-direction: column;
                       "
@@ -2485,13 +2602,14 @@
                         :href="'/listing/view/' + listing?.drinkId"
                         style="text-decoration: none; color: inherit"
                       >
-                        <h4>
+                        <h5 class="mobile-fs-6"><b>
                           {{
                             bookedMarkedListings[listing?.drinkId]?.listingName
                           }}
-                        </h4>
+                        </b></h5>
                       </a>
                       <p
+                        class="mobile-rating-smaller-text-2"
                         style="
                           display: -webkit-box;
                           -webkit-line-clamp: 3;
@@ -2506,11 +2624,12 @@
                       <div
                         v-if="ownProfile"
                         style="display: flex; margin-top: auto"
-                        class="mb-0"
+                        class="my-0"
                       >
                         <a
                           href="#"
-                          style="text-decoration: none; color: #535c72"
+                          style="text-decoration: none; color: #FF3E31"
+                          class="mobile-rating-smaller-text-2"
                           data-bs-toggle="modal"
                           :data-bs-target="`#deleteFromListModal${index}`"
                         >
@@ -2521,6 +2640,7 @@
                             height="16"
                             width="12"
                             viewBox="0 0 384 512"
+                            style="fill: #FF3E31"
                           >
                             <!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc. -->
                             <path
@@ -2530,9 +2650,10 @@
                           Delete from list
                         </a>
                       </div>
+                      
                     </div>
                   </div>
-                  <div class="col-2 text-center ps-0">
+                  <div class="col-2 text-center ps-0" style="color:rgb(240, 179, 88)">
                     <h2>
                       {{
                         bookedMarkedListings[listing?.drinkId]?.avgRating !==
@@ -2541,23 +2662,13 @@
                           undefined
                           ? parseFloat(
                               bookedMarkedListings[listing?.drinkId]?.avgRating
-                            ).toFixed(2)
+                            ).toFixed(1)
                           : "-"
                       }}
-                      <svg
-                        class="mb-2"
-                        xmlns="http://www.w3.org/2000/svg"
-                        height="18"
-                        width="20.25"
-                        viewBox="0 0 576 512"
-                      >
-                        <!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc. -->
-                        <path
-                          d="M287.9 0c9.2 0 17.6 5.2 21.6 13.5l68.6 141.3 153.2 22.6c9 1.3 16.5 7.6 19.3 16.3s.5 18.1-5.9 24.5L433.6 328.4l26.2 155.6c1.5 9-2.2 18.1-9.7 23.5s-17.3 6-25.3 1.7l-137-73.2L151 509.1c-8.1 4.3-17.9 3.7-25.3-1.7s-11.2-14.5-9.7-23.5l26.2-155.6L31.1 218.2c-6.5-6.4-8.7-15.9-5.9-24.5s10.3-14.9 19.3-16.3l153.2-22.6L266.3 13.5C270.4 5.2 278.7 0 287.9 0zm0 79L235.4 187.2c-3.5 7.1-10.2 12.1-18.1 13.3L99 217.9 184.9 303c5.5 5.5 8.1 13.3 6.8 21L171.4 443.7l105.2-56.2c7.1-3.8 15.6-3.8 22.6 0l105.2 56.2L384.2 324.1c-1.3-7.7 1.2-15.5 6.8-21l85.9-85.1L358.6 200.5c-7.8-1.2-14.6-6.1-18.1-13.3L287.9 79z"
-                        />
-                      </svg>
+                      ★
                     </h2>
                   </div>
+                  <hr>
 
                   <!-- delete from list modal start -->
                   <div
@@ -2808,6 +2919,15 @@ export default {
       selectedObservationTags: [],
       flavourTag: [],
       observationTags: [],
+
+      //  new properties for user search
+      userSearchInput: "",
+      allUsernames: [],
+      filteredUserSuggestions: [],
+      showUserSuggestions: false,
+      selectedUserIndex: -1,
+      isUserSearchFetching: false,
+      totalPointsValue: 0, // Assuming this is used elsewhere
     };
   },
   mounted() {
@@ -2852,7 +2972,19 @@ export default {
 
     // load data
     this.loadData();
+
+    // Fetch usernames when component mounts
+    this.fetchAllUsernames(); 
+    
+    // Add event listeners for user search
+    document.addEventListener("click", this.handleUserSearchClickOutside);
+    document.addEventListener("keydown", this.handleUserSearchKeyDown);
   },
+  beforeUnmount() {
+  // Remove event listeners to prevent memory leaks
+  document.removeEventListener("click", this.handleUserSearchClickOutside);
+  document.removeEventListener("keydown", this.handleUserSearchKeyDown);
+},
   methods: {
     // load data from database
     async loadData() {
@@ -2969,11 +3101,9 @@ export default {
 
         // format join data
         const dateString = this.displayUser.joinDate;
-        const dateParts = dateString.split("-");
-        const year = dateParts[0];
-        const month = new Date(dateString).toLocaleString("default", {
-          month: "long",
-        });
+        const date = new Date(dateString);
+        const month = date.toLocaleString('default', { month: 'short' }); // e.g., 'Aug'
+        const year = date.getFullYear(); // e.g., 2020
         this.joinDate = `${month} ${year}`;
 
         if (
@@ -4308,6 +4438,196 @@ export default {
       window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
     },
 
+    // Fetch all usernames from backend
+    async fetchAllUsernames() {
+      try {
+        this.isUserSearchFetching = true;
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getAllUsernames`
+        );
+        console.log("API response:", response.data); // See what data is returned
+        this.allUsernames = Array.isArray(response.data) ? response.data : [];
+      } catch (error) {
+        console.error("Error fetching usernames:", error);
+        this.allUsernames = [];
+      } finally {
+        this.isUserSearchFetching = false;
+      }
+    },
+
+    // Filter suggestions based on input
+    getUserSuggestions() {
+      if (this.userSearchInput.trim().length === 0) {
+        this.showUserSuggestions = false;
+        this.filteredUserSuggestions = [];
+        return;
+      }
+
+      const searchTerm = this.userSearchInput.toLowerCase();
+      
+      // First prioritize exact matches at the start
+      const startsWithMatches = this.allUsernames.filter(user => 
+        user.username.toLowerCase().startsWith(searchTerm) || 
+        user.displayName.toLowerCase().startsWith(searchTerm)
+      );
+      
+      // Then add partial matches
+      const containsMatches = this.allUsernames.filter(user => 
+        (user.username.toLowerCase().includes(searchTerm) || 
+        user.displayName.toLowerCase().includes(searchTerm)) && 
+        !user.username.toLowerCase().startsWith(searchTerm) &&
+        !user.displayName.toLowerCase().startsWith(searchTerm)
+      );
+      
+      // Combine matches with priority order and limit to 7
+      this.filteredUserSuggestions = [...startsWithMatches, ...containsMatches].slice(0, 7);
+      this.showUserSuggestions = this.filteredUserSuggestions.length > 0;
+    },
+
+    // Navigate to selected user profile in a new tab
+    navigateToUserProfile(userId, username) {
+      // Use router.resolve to get the full URL with proper base path
+      const routeData = this.$router.resolve(`/profile/user/${userId}/${username}`);
+      window.open(routeData.href, '_blank');
+    },
+
+    // Handle click outside to close suggestions
+    handleUserSearchClickOutside(e) {
+      if (!e.target.closest('#userSearchContainer')) {
+        this.showUserSuggestions = false;
+      }
+    },
+
+    // Handle keyboard navigation for suggestions
+    handleUserSearchKeyDown(e) {
+      if (!this.showUserSuggestions) return;
+      
+      // Down arrow
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        this.selectedUserIndex = Math.min(
+          this.selectedUserIndex + 1, 
+          this.filteredUserSuggestions.length - 1
+        );
+      }
+      // Up arrow
+      else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        this.selectedUserIndex = Math.max(this.selectedUserIndex - 1, 0);
+      }
+      // Enter key
+      else if (e.key === "Enter" && this.selectedUserIndex >= 0) {
+        e.preventDefault();
+        const selectedUser = this.filteredUserSuggestions[this.selectedUserIndex];
+        this.navigateToUserProfile(selectedUser.id, selectedUser.username);
+      }
+      // Escape key
+      else if (e.key === "Escape") {
+        this.showUserSuggestions = false;
+      }
+    },
+    // Check if the current user follows a specific user
+    isUserFollowed(targetUserId) {
+    // Return true if user.followLists.users includes this user ID
+    return this.user && 
+            this.user.followLists && 
+            this.user.followLists.users && 
+            this.user.followLists.users.some(id => String(id) === String(targetUserId));
+    },
+    
+    // Follow a user from search results
+    async followUserFromSearch(targetUserId) {
+      if (!this.user) return; // Only logged-in users can follow
+      
+      try {
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/editProfile/updateFollowLists`,
+          {
+            userID: this.userID,
+            action: "follow",
+            target: "users",
+            followerID: targetUserId,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        // If successful, update the local follow state
+        if (response.data && response.data.code === 201) {
+          this.user.followLists.users.push(targetUserId);
+          // Show a toast notification
+          const toast = useToast();
+          toast.success("Successfully followed user!");
+        }
+      } catch (error) {
+        console.error("Error following user:", error);
+        const toast = useToast();
+        toast.error("Failed to follow user. Please try again.");
+      }
+    },
+    
+    // Unfollow a user from search results
+    async unfollowUserFromSearch(targetUserId) {
+      if (!this.user) return; // Only logged-in users can unfollow
+      
+      try {
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/editProfile/updateFollowLists`,
+          {
+            userID: this.userID,
+            action: "unfollow",
+            target: "users", 
+            followerID: targetUserId,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        // If successful, update the local follow state
+        if (response.data && response.data.code === 201) {
+          const index = this.user.followLists.users.indexOf(targetUserId);
+          if (index > -1) {
+            this.user.followLists.users.splice(index, 1);
+          }
+          // Show a toast notification
+          const toast = useToast();
+          toast.success("Successfully unfollowed user!");
+        }
+      } catch (error) {
+        console.error("Error unfollowing user:", error);
+        const toast = useToast();
+        toast.error("Failed to unfollow user. Please try again.");
+      }
+    },
   },
 };
 </script>
+
+<style scoped>
+/* Add these styles for the user search autocomplete */
+.autocomplete-container {
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+  top: 100%;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+#userSearchContainer .bg-light {
+  background-color: #f0f8ff !important;
+}
+
+#userSearchContainer .border-bottom:last-child {
+  border-bottom: none !important;
+}
+
+/* New styles for follow buttons */
+#userSearchContainer .btn-sm {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+}
+</style>

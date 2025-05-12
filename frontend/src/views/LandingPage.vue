@@ -1,5 +1,5 @@
 <template>
-    <LandingPageNavBar />
+    <NavBar />
 
     <!-- Hero Section with Search -->
     <div class="hero-section position-relative text-center py-5">
@@ -889,16 +889,19 @@
         </div>
     </footer>
     <!-- Footer End -->
+    <FooterBar />
 </template>
 
 <script>
-import LandingPageNavBar from "@/components/LandingPageNavBar.vue";
+import NavBar from "@/components/NavBar.vue";
 import SearchBar from "@/components/SearchBar.vue";
+import FooterBar from "@/components/FooterBar.vue";
 
 export default {
     components: {
-        LandingPageNavBar,
-        SearchBar
+        NavBar,
+        SearchBar,
+        FooterBar
     },
     data() {
         return {

@@ -282,6 +282,21 @@ body {
   background-color: #02594b; /* added by tzh for submit action buttons */
 }
 
+.event-club-box {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;         /* ~Bootstrap's mb-3 */
+  border-radius: 0.75rem;         /* ~Bootstrap's rounded-4 */
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);  /* ~Bootstrap's shadow */
+  background-color: white;
+  overflow: hidden;
+  transition: transform 0.4s ease;
+}
+
+.event-club-box:hover {
+  transform: scale(1.02)
+}
+
 .primary-light-dropdown {
   color: whitesmoke;
   background-color: #747d92;
@@ -2206,6 +2221,42 @@ nav a.router-link-exact-active.dropdown-item {
   .footer-col {
     max-width: none;
   }
+}
+
+/* carousel styles */
+
+.carousel-nav-arrows {
+  position: absolute;
+  top: 0.5rem;
+  right: 1rem;
+  z-index: 10;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.carousel-nav-arrows .custom-arrow {
+  position: static !important; /* remove default absolute centering */
+  width: 2rem;
+  height: 2rem;
+  background: white;
+  border-radius: 50%;
+  border: 1px solid #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.carousel-nav-arrows .carousel-control-prev-icon,
+.carousel-nav-arrows .carousel-control-next-icon {
+  filter: invert(0.4); /* makes them dark grey */
+  width: 0.8rem;
+  height: 0.8rem;
+}
+
+#trendingEventsCarousel {
+  position: relative;
 }
 
 /* Notification styles */

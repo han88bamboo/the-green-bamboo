@@ -1,9 +1,9 @@
 <!-- Component for drinks display. Used in all profile pages. -->
 
 <template>
-    <h3 class="text-body-secondary text-start pt-1"> 
+    <h5 class="text-body-secondary text-start pt-1"> 
         <b> {{ displayName }} </b> 
-    </h3>
+    </h5>
     <div class=""> <!-- container pe-lg-0-->
         <div v-if="listingArr.length > 0">
         <div v-for="(listing, index) in listingArr" :key="index"  class="row mb-3" :style="{ display: 'flex' }" > <!--    , flexDirection: 'column' , width: columnWidth -->
@@ -26,14 +26,29 @@
 
             </div>
             <div class="col-9 mobile-col-9 mobile-ps-2" v-if="listing?.id">
-                <router-link :to="{ path: '/listing/view/' +listing.id }" class="default-clickable-text scrollable mt-2 " style="text-decoration: none; color: rgb(34, 57, 87);">
+                <router-link :to="{ path: '/listing/view/' +listing.id }" class="default-clickable-text scrollable mt-2 mobile-fs-7" style="text-decoration: none">
                     <p v-if="listing.listingName.length > 63" class="fs-5 mobile-fs-6 mb-1" > 
                         <b>{{ listing.listingName.slice(0,63) + (listing.listingName.length > 63 ? '...' : '') }}</b>
                     </p>
                     <p v-else class="fs-5 mobile-fs-6 mb-1" > 
                         <b>{{ listing.listingName }}</b>
                     </p>    
-                </router-link>                
+                </router-link>
+                <p class="mobile-fs-7 mb-1" style="font-weight:bold; color: #2a6959;">
+                    {{ 
+                        listing.producerName?.length > 40
+                          ? listing.producerName.slice(0, 40) + '...'
+                          : listing.producerName || 'Unknown Producer'
+                      }}
+                </p>
+                <p class="mobile-fs-7 mb-0" style="color: #333">
+                    {{
+                      listing.officialDesc?.length > 100
+                        ? listing.officialDesc.slice(0, 100) + "..."
+                        : listing.officialDesc
+                    }}
+                  </p>
+                                  
             </div>
         </div>
         </div>
@@ -41,34 +56,48 @@
             No {{ displayName.toLowerCase() }} yet. To explore more drinks in the home page, 
             <router-link to="/" style="color: inherit;">click here</router-link>. 
         </div>
+        
     </div>
 
 </template>
 
 <script>
-/*import BookmarkIcon from '@/components/BookmarkIcon.vue';*/
-
+    /*import BookmarkIcon from '@/components/BookmarkIcon.vue';*/
+    
     export default {
-        name: "ListingRowDisplay",
-         /*components: {
-            BookmarkIcon,
-            // BookmarkModal,
-        },*/
-        props: {
-            displayName: String,
-            listingArr: Array,
-            // user: Object,
-            // listing: Object,
-            columnWidth: {
-                type: String,
-                default: '195px'
-            }
-},
-        // methods: {
-        //     handleIconClick(data) {
-        //         this.$emit('icon-clicked', data);
-        //     },
-
-        // }
+      name: "ListingRowDisplay",
+      /*components: {
+        BookmarkIcon,
+        // BookmarkModal,
+      },*/
+      props: {
+        displayName: String,
+        listingArr: Array,
+        // user: Object,
+        // listing: Object,
+        columnWidth: {
+          type: String,
+          default: '195px'
+        },
+    producers: {
+      type: Array,
+      default: () => []
     }
-</script>
+        
+      },
+      methods: {
+    getProducerName(listing) {
+      if (!this.producers || !listing.producerID) {
+        console.log('Producers or producerID is missing:', this.producers, listing.producerID);
+        return null;
+      }
+      const producer = this.producers.find(
+        (producer) => producer.id === listing.producerID
+      );
+      console.log('Matching producer:', producer); // Debug log
+      return producer ? producer.producerName : null;
+    },
+  },    
+    }
+    </script>
+    

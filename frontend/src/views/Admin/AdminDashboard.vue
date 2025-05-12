@@ -998,7 +998,7 @@
 
                     // create business
                     businessType: "",
-                    isIndependentBottler: false,
+                    independentBottler: false,
                     businessName: "",
                     businessDesc: "",
                     businessCountry: "",
@@ -1473,18 +1473,25 @@
                         if (businessExist) {
                             const businessID = request.businessLink.split("/").pop()
                             this.businessName = request.businessName;
-                            this.tempPassword = this.hashPassword(request.businessName).toString();
+                            this.tempPassword = "admin1234" // TZH removed this.hashPassword(request.businessName).toString();
                             this.tempPassword = this.tempPassword.replace(/-/g, '');
                             const hashedPassword = this.hashPassword(request.businessName, this.tempPassword);
     
                             const newBusinessData = {
-                                businessName: request.businessName,
-                                businessDesc: request.businessDesc,
-                                isIndependentBottler: request.isIndependentBottler,
-                                country: request.country,
+                                producerName: request.businessName,
+                                producerDesc: request.businessDesc,
+                                originCountry: request.country,
+                                isIndependentBottler: request.isIndependentBottler === "true" || request.isIndependentBottler === true,
+                                statusOB: "",
+                                mainDrinks: [],
+                                photo: "",
                                 hashedPassword: hashedPassword,
-                                claimStatus: false,
-                                requestId: requestID,
+                                questionsAnswers: [],
+                                updates: [],
+                                username: request.businessName,
+                                producerLink: "",
+                                claimStatus: request.claimStatus !== undefined ? request.claimStatus : false,
+                                requestId: requestID
                             }
                             let apiURL = '';
     
@@ -1499,22 +1506,20 @@
     
                             if (apiURL != '') {
                                 try {
-                                    const response = await this.$axios.post(apiURL, 
-                                        {
-                                            businessID: businessID,
-                                            newBusinessData: newBusinessData,
-                                        }, {
-                                        headers: {
-                                            'Content-Type': 'application/json'
-                                        }
+                                    const response = await this.$axios.post(apiURL, {
+                                        businessID: businessID,
+                                        newBusinessData: newBusinessData,
+                                    }, {
+                                        headers: {'Content-Type': 'application/json'}
                                     });
-    
+                                    
                                     if (response.data.code == 201) {
                                         this.createBusinessSuccess = true;
-                                    } 
-    
+                                    }
                                 } catch (error) {
-                                    console.error(error);
+                                    console.error("Error details:", error.response ? error.response.data : error);
+                                    // You could also add UI feedback here
+                                    // this.createBusinessError = "Failed to create business: " + (error.response?.data?.message || "Unknown error");
                                 }
                             }
 
@@ -1639,7 +1644,7 @@
                                 producerName: this.businessName,
                                 producerDesc: this.businessDesc,
                                 originCountry: this.businessCountry,
-                                isIndependentBottler: this.isIndependentBottler,
+                                isIndependentBottler: this.independentBottler === "true" || this.independentBottler === true,
                                 statusOB: "",
                                 mainDrinks: [],
                                 photo: "",
@@ -1660,17 +1665,15 @@
                                         'Content-Type': 'application/json'
                                     }
                                 });
-
+                            
                                 if (response.data.code == 201) {
                                     this.createBusinessSuccess = true;
                                     return response.data.data
                                 } 
                             } catch (error) {
-                                console.error(error);
-                                if (error.response.data.code == 400) {
-                                    this.createBusinessError = "Business name already exists";
-                                    return false;
-                                }
+                                console.error("Error details:", error.response ? error.response.data : error);
+                                this.createBusinessError = "Failed to create business: " + (error.response?.data?.message || "Unknown error");
+                                return false;
                             }
                         }
                         else if (this.businessType == "venue") {

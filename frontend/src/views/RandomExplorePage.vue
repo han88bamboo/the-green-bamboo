@@ -1371,7 +1371,7 @@
                 </div>
 
                 <div
-                  class="d-grid justify-content-center align-content-center mt-5"
+                  class="d-grid justify-content-center align-content-center mt-5 mb-3"
                 >
                   <button
                     v-if="moreListings"
@@ -1404,6 +1404,7 @@
       :listingID="bookmarkListingID"
     />
   </div>
+  <FooterBar />
 </template>
 
 <!-- ---------------------------------------------------------------------------------------------------------------------------------------------------------- -->
@@ -1413,12 +1414,14 @@
 import NavBar from "@/components/NavBar.vue";
 // import BookmarkIcon from "@/components/BookmarkIcon.vue";
 import BookmarkModal from "@/components/BookmarkModal.vue";
+import FooterBar from "@/components/FooterBar.vue";
 
 export default {
   components: {
     NavBar,
     // BookmarkIcon,
     BookmarkModal,
+    FooterBar
   },
 
   data() {

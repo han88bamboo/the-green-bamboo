@@ -502,3 +502,99 @@ also reapplied Danish's notifications code - which still requires some bugfixing
 Nature of the changes (frontend / backend / database):
 frontend / backend / database
 
+
+# Update as of 8 May 
+
+Coder: Han
+
+Purpose of the changes:
+added searchability of users to follow on own user profile page
+
+Nature of the changes (frontend / backend / database):
+frontend & backend
+
+
+# Update as of 9 May 
+
+Coder: Han
+
+Purpose of the changes:
+fixed upvote / downvote bug for reviews on producer/bottlelistings.vue
+
+Nature of the changes (frontend / backend / database):
+frontend 
+
+
+# Update as of 9 May 
+
+Coder: Kai
+
+Purpose of the changes:
+cleaned up spacing / sizing / Events cards for the events landing page. created new global css components to simplify Events / Clubs display card designs. 
+
+Nature of the changes (frontend / backend / database):
+frontend 
+
+
+# Update as of 9 May 
+
+Coder: Han
+
+Purpose of the changes:
+fixed incorrectly appearing "welcome" message on user profile page
+added FooterBar to landing and random explore page
+replaced landing page's navbar with correct navbar with search bar
+
+Nature of the changes (frontend / backend / database):
+frontend 
+
+# Update as of 9 May (shifted to present day) - point of deployment with no major issues, apart from needing to fix bug on BillingSecurity.vue page where user cannot proceed past that page
+
+Coder: Han
+
+Purpose of the changes:
+added an attempted fix to the AdminDashboard.vue page to fix the bug where you can't approve a new business 
+
+Nature of the changes (frontend / backend / database):
+frontend 
+
+
+# Update as of 10 May 
+
+Coder: Han (Danish)
+
+Purpose of the changes:
+added Danish's bug fix to notification feature - fix not satisfactory because the red notifications number does not go down when we view or click on the notif messages. we also want to apply a shading to notifications that have newly appeared.
+
+Nature of the changes (frontend / backend / database):
+backend
+
+# Update as of 10 May 
+
+Coder: Kai
+
+Purpose of the changes:
+front-end changes to individual profile page 
+cleaned up spacing, buttons, margins, and design on front end. 
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 10 May 
+
+Coder: Han
+
+Purpose of the changes:
+attempted fix to get Stripe fully working . made tweak to payment.py file
+
+Nature of the changes (frontend / backend / database):
+backend 
+
+# Update as of 11 May - deployed
+Coder: Han
+
+Purpose of the changes:
+fix to get Stripe working with fields to fill in payment information on BillingSecurity.vue page. made tweak to payment.py and  BillingSecurity.vue files
+
+Nature of the changes (frontend / backend / database):
+backend mostly, frontend 
