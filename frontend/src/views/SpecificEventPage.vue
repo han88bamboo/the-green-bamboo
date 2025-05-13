@@ -31,100 +31,224 @@
             </div>
 
             <!-- Event banner -->
-            <div class="container-fluid">
-                <div class="row d-flex justify-content-center align-items-center">
-                    
-                    <div v-if="event.eventBanners.length > 0" class="d-flex justify-content-center align-items-center">
-                        <!-- Display single event banner if only 1 event banner provided -->
-                        <img v-if="event.eventBanners.length == 1" :src="event.eventBanners[0]" style="height: 500px; width: 600px" class="img-fluid event-banner" alt="Event Banner">
-                        
-                        <!-- Banner carousel if there are more than 1 event banner provided -->
-                        <div v-else id="eventBannerCarousel" chan class="carousel slide" data-bs-ride="carousel" style="height: 500px; width: 600px">
-                            <div class="carousel-inner h-100">
-                                <div v-for="(banner, index) in event.eventBanners" :key="index" class="carousel-item" :class="{ active: index == 0 }">
-                                    <div class="d-flex justify-content-center align-items-center h-100">
-                                        <img :src="banner" class="d-block event-banner" alt="Event Banner">
-                                    </div>
-                                </div>
-                            </div>
-                            <button class="carousel-control-prev" type="button" data-bs-target="#eventBannerCarousel" data-bs-slide="prev">
-                                <span class="carousel-control-prev-icon custom-carousel-color" aria-hidden="true"></span>
-                                <span class="visually-hidden">Previous</span>
+            <!-- Full-width Hero Carousel -->
+            <div id="eventHeroCarousel" class="carousel slide position-relative mb-4" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                <div
+                v-for="(banner, index) in event.eventBanners.length > 0 ? event.eventBanners : [defaultEventBanner]"
+                :key="index"
+                :class="['carousel-item', index === 0 ? 'active' : '']"
+                >
+                <div
+                    class="d-flex align-items-center justify-content-center event-hero"
+                    :style="{ backgroundImage: `url(${banner})` }"
+                >
+                    <!-- Overlay Content 
+                    <div class="event-hero-overlay text-white text-center">
+                    <h2 class="fw-bold">{{ event.eventName }}</h2>
+                    <p class="mt-2 text-light">{{ formatDate(event.eventStartDate) }} | {{ formatTime(event.eventStartTime) }}</p>
+                    <div class="mt-3">
+                        <button class="btn btn-danger me-2">RSVP</button>
+                        <button class="btn btn-warning text-dark">Invite your friends!</button>
+                    </div>
+                    </div>-->
+                </div>
+                </div>
+            </div>
+
+            <!-- Carousel Controls -->
+            <button
+                class="carousel-control-prev"
+                type="button"
+                data-bs-target="#eventHeroCarousel"
+                data-bs-slide="prev"
+            >
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button
+                class="carousel-control-next"
+                type="button"
+                data-bs-target="#eventHeroCarousel"
+                data-bs-slide="next"
+            >
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+            </div>
+
+            
+
+            <div class="container">
+            <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-start mt-2">
+                    <div class="flex-shrink-0 me-3 text-start mb-0" style="min-width: 0;">
+                        <!-- Event Name -->
+                        <h4 class="fw-bold mobile-fs-5">{{ event.eventName }}</h4>
+                                
+                        <!-- Same Start and End Date -->
+                        <div v-if="event.eventStartDate == event.eventEndDate" class="m-0 p-0" style="color:#027562">
+                            <p class="fw-bold mobile-fs-7 p-0">{{ formatDate(event.eventStartDate) }}, {{ formatTime(event.eventStartTime)}} - {{ formatTime(event.eventEndTime) }}</p>
+                        </div>
+
+                        <!-- Different Start and End Dates -->
+                        <div v-else class="m-0 p-0" style="color:#027562">
+                            <p class="fw-bold mobile-fs-7 p-0">{{ formatDate(event.eventStartDate) }} - {{ formatDate(event.eventEndDate) }}, {{ formatTime(event.eventStartTime)}} - {{ formatTime(event.eventEndTime) }}</p>
+                        </div>
+                    </div>
+                    <!-- Spacer that shrinks -->
+                    <div class="flex-grow-1"></div>
+                    <!-- Buttons: RSVP + Invite -->
+                    <div class="d-flex gap-1 flex-shrink-0 mobile-view-hide">
+                    <!-- RSVP Button -->
+                        <div>
+                            <div v-if="event.paidEvent == false">
+                            <button v-if="attendees.length <= event.eventLimit && !rsvpStatus"
+                                    class="btn primary-btn-less-round-blue fw-bold"
+                                    @click="rsvpEvent"
+                                    :disabled="rsvpButtonStatus">
+                                I'm interested
                             </button>
-                            <button class="carousel-control-next" type="button" data-bs-target="#eventBannerCarousel" data-bs-slide="next">
-                                <span class="carousel-control-next-icon custom-carousel-color" aria-hidden="true"></span>
-                                <span class="visually-hidden">Next</span>
+                            </div>
+                            <div v-else>
+                            <a :href="event.paymentLink"
+                                target="_blank"
+                                class="btn primary-btn-less-round-blue fw-bold">
+                                I'm Interested
+                            </a>
+                            </div>
+                        </div>
+                        
+
+                        <!-- Invite Button -->
+                        <div>
+                            <button class="btn primary-btn-less-round-blue d-flex align-items-center fw-bold" style="background-color: rgb(240, 179, 88); border: none;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2">
+                            <path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7" />
+                            <polyline points="16 6 12 2 8 6" />
+                            <line x1="12" y1="2" x2="12" y2="15" />
+                            </svg>
+                            <span>Invite your friends!</span>
                             </button>
                         </div>
                     </div>
-
-                    <!-- Display default event banner if no event banner provided -->
-                    <img v-else :src="defaultEventBanner" style="height: 500px; width: 600px" class="img-fluid event-banner" alt="Event Banner">
                 </div>
+                <div class="d-flex gap-1 flex-shrink-0 mobile-view-show mb-3 mt-0">
+                    <!-- RSVP Button -->
+                        <div>
+                            <div v-if="event.paidEvent == false">
+                            <button v-if="attendees.length <= event.eventLimit && !rsvpStatus"
+                                    class="btn primary-btn-less-round-blue fw-bold"
+                                    @click="rsvpEvent"
+                                    :disabled="rsvpButtonStatus">
+                                RSVP
+                            </button>
+                            </div>
+                            <div v-else>
+                            <a :href="event.paymentLink"
+                                target="_blank"
+                                class="btn primary-btn-less-round-blue fw-bold">
+                                RSVP
+                            </a>
+                            </div>
+                        </div>
+                    
+
+                        <!-- Invite Button -->
+                        <div>
+                            <button class="btn primary-btn-less-round-blue d-flex align-items-center fw-bold py-2" style="background-color: rgb(240, 179, 88); border: none;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="22" viewBox="0 0 24 24" fill="none"
+                                stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7" />
+                            <polyline points="16 6 12 2 8 6" />
+                            <line x1="12" y1="2" x2="12" y2="15" />
+                            </svg>
+                            </button>
+                        </div>
+                    </div>
             </div>
+            </div>
+            </div>
+            
+            <hr style="color:black" class="mt-0">
 
             <!-- Event Details -->
             <div class="container mt-3">
                 <div class="row text-start">
                     <!-- Column 1 -->
-                    <div class="col-12 col-md-8">
-                        <!-- Event Start Date, End Date, Start Time and End Time -->
-                        <div v-if="event.eventStartDate = event.eventEndDate" class="row m-0 p-0">
-                            <p class="fw-bold p-0">{{ formatDate(event.eventStartDate) }}, {{ formatTime(event.eventStartTime )}} - {{ formatTime(event.eventEndTime )}}</p>
-                        </div>
-
-                        <div v-else class="row m-0 p-0">
-                            <p class="fw-bold p-0">{{ formatDate(event.eventStartDate) }} - {{ formatDate(event.eventEndDate) }}, {{ formatTime(event.eventStartTime )}} - {{ formatTime(event.eventEndTime )}}</p>
-                        </div>
-
-                        <!-- Event Name -->
-                        <h4 class="fw-bold">{{ event.eventName }}</h4>
+                    <div class="col-12 col-md-9">
 
                         <!-- Organizer Info -->
-                        <div class="d-flex justify-content-between align-items-center p-3 mt-3" style="background-color: #83A9E8;">
-                            <div class="ms-5 fw-bold d-flex align-items-center"> 
-                                <p v-if="event.eventOwnerType =='venue'" class="m-0">Organized by: 
-                                    <router-link :to="profileURL(event.ownerInfo.id, event.ownerInfo.userType)">
-                                        <span class="text-decoration-underline" >{{ event.ownerInfo.venueName }}</span>
-                                    </router-link>
-                                </p>
-                                <p v-if="event.eventOwnerType =='producer'" class="m-0">Organized by: 
-                                    <router-link :to="profileURL(event.ownerInfo.id, event.ownerInfo.userType)">
-                                        <span class="text-decoration-underline" >{{ event.ownerInfo.producerName }}</span>
-                                    </router-link>
-                                </p>
-                                <p v-if="event.eventOwnerType =='user'" class="m-0">Organized by: 
-                                    <router-link :to="profileURL(event.ownerInfo.id, event.ownerInfo.userType)">
-                                        <span class="text-decoration-underline" >{{ event.ownerInfo.displayName }}</span>
-                                    </router-link>
-                                </p>
-                            </div>
-                            
-                            <div v-if="!followStatus && !selfView" class="d-grid gap-2">
-                                <button  class="btn primary-btn-green mx-1 mobile-view-show fs-6" @click="editFollow('follow')" style="font-weight: bold;" >+ Follow</button>  <!--tzh added -blue-->
-                                <button  class="btn primary-btn-green mx-1 mobile-view-hide" @click="editFollow('follow')" style="font-weight: bold;" >+ Follow {{ event.eventOwnerType}}</button> <!--tzh added -blue-->
-                            </div>
-                            <div v-else class="d-grid gap-2">
-                                <button class="btn primary-btn-green mx-1" @click="editFollow('unfollow')" style="font-weight: bold;" >Following</button> <!--tzh changed primary-btn-outline-less-round to primary-btn-less-round-blue -->
-                            </div>  
-
+                        <!-- Organizer Card (Clean Version) -->
+                        <div class="text-white py-3 px-4 mb-4 d-flex justify-content-between align-items-center" style="background-color: #83a9e8">
+                        <div>
+                            Organized by 
+                            <router-link :to="profileURL(event.ownerInfo.id, event.ownerInfo.userType)" class="text-white fw-bold ms-1 text-decoration-underline">
+                            {{ event.ownerInfo.venueName || event.ownerInfo.producerName || event.ownerInfo.displayName }}
+                            </router-link>
                         </div>
 
-                        <!-- Event Description -->
-                        <h4 class="fw-bold mt-5">About This Event:</h4>
-                        <p id="eventDescriptionContainer" v-html="event.eventDesc"></p>
+                        <div v-if="!followStatus && !selfView">
+                            <button class="btn btn-outline-light btn-md" style="font-weight: bold" @click="editFollow('follow')">Follow</button>
+                        </div>
+                        <div v-else-if="!selfView">
+                            <button class="btn btn-outline-light btn-md" style="font-weight: bold" @click="editFollow('unfollow')">Following</button>
+                        </div>
+                        </div>
 
-                        <!-- Event attendees -->
-                        <div class="d-flex flex-row justify-content-between align-items-center mt-5">
-                            <h4 class="fw-bold">Who's Going?</h4>
+
+                        <!-- Event Description -->
+                        <h5 class="fw-bold mt-3 mobile-fs-6 mx-1" style="color:#027562">About This Event:</h5>
+                        <p class="mobile-rating-smaller-text-2 mx-1 " id="eventDescriptionContainer" v-html="event.eventDesc"></p>
+
+                        <!-- MOBILE VIEW OF Events Location and Get Tickets -->
+
+                        <!-- Event Location -->
+                        <h5 class="fw-bold mobile-fs-6 mx-1 mobile-view-show" style="color:#027562">Event Location</h5>
+                        <p class="mobile-rating-smaller-text-2 mx-1 mobile-view-show">{{ event.eventLocation }}</p>
+
+                        <!-- Get Event Tickets -->
+                        <h5 class="fw-bold mobile-fs-6 mx-1 mobile-view-show" style="color:#027562">Get Tickets</h5>
+
+                        <!-- No tickets require -->
+                        <p v-if="event.ticketed == false" class="fw-bold mobile-rating-smaller-text-2 mx-1 mobile-view-show">This event is not ticketed. Walk ins welcome!</p>
+                        <div v-else class=" mobile-view-show">
+
+                            <!-- Ticketed but free of charge -->
+                            <div v-if="event.paidEvent == false">
+                                <p class="mobile-rating-smaller-text-2 mx-1 mobile-view-show">This event is ticketed. Entry is free but click below to RSVP and save your spot!</p>
+                                <!-- button to RSVP -->
+                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="rsvpEvent" :disabled="rsvpButtonStatus">I'm interested</button>
+                                <p v-if="attendees.length >= event.eventlimit && !rsvpStatus" class="text-danger mobile-rating-smaller-text-2">Event is full. No more RSVPs allowed.</p>
+                                <p v-if="rsvpStatus" class="text-danger mobile-rating-smaller-text-2">You have already RSVPed for this event.</p>
+                            </div>
+
+                            <!-- Ticketed and require payment -->
+                            <div v-else> 
+                                <p class="mobile-rating-smaller-text-2 mx-1 mobile-view-show">This event is ticketed. Click below to purchase your ticket!</p>
+                                <!-- button to purchase ticket -->
+                                <a :href="event.paymentLink" target="_blank" class="btn primary-btn-less-round-blue" style="font-weight:bold">I'm Interested</a>
+                            </div>
+                            
+                        </div>
+
+
+                        <!-- Event Attendees -->
+                        <div class="d-flex flex-row justify-content-between align-items-center mt-2">
+                            <h5 class="fw-bold mt-3 mobile-fs-6 mx-1" style="color:#027562">Who's Going?</h5>
                             <!-- Invite button -->
-                            <button class="ps-0 btn d-flex flex-row align-items-center hover-underline ">
+                            <button class="ps-0 btn d-flex flex-row align-items-center hover-underline mobile-rating-smaller-text-2 ">
                                 <!-- Invite icon -->
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-share" viewBox="0 0 16 16">
-                                    <path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.5 2.5 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5m-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3"/>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                    stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2">
+                                <path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7" />
+                                <polyline points="16 6 12 2 8 6" />
+                                <line x1="12" y1="2" x2="12" y2="15" />
                                 </svg>
                                 <!-- Invite text -->
-                                <span class="ms-2">Invite your friends!</span>
+                                <span class="fw-bold">Invite your friends!</span>
                             </button>
                         </div>
 
@@ -146,9 +270,9 @@
 
                                     <!-- Profile link -->
                                     <router-link :to="profileURL(attendee.id, attendee.userType)">
-                                        <p v-if="attendee.userType == 'user'" class="ms-2">{{ attendee.displayName }}</p>
-                                        <p v-if="attendee.userType == 'venue'" class="ms-2">{{ attendee.venueName }}</p>
-                                        <p v-if="attendee.userType == 'producer'" class="ms-2">{{ attendee.producerName }}</p>
+                                        <p v-if="attendee.userType == 'user'" class="mt-2 fw-bold mobile-rating-smaller-text-2" style="color:#83a9e8">{{ attendee.displayName }}</p>
+                                        <p v-if="attendee.userType == 'venue'" class="mt-2 fw-bold mobile-rating-smaller-text-2" style="color:#83a9e8">{{ attendee.venueName }}</p>
+                                        <p v-if="attendee.userType == 'producer'" class="mt-2 fw-bold mobile-rating-smaller-text-2" style="color:#83a9e8">{{ attendee.producerName }}</p>
                                     </router-link>
 
                                     <!-- Button to remove the attendee -->
@@ -165,7 +289,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-plus-circle-dotted" viewBox="0 0 16 16">
                                     <path d="M8 0q-.264 0-.523.017l.064.998a7 7 0 0 1 .918 0l.064-.998A8 8 0 0 0 8 0M6.44.152q-.52.104-1.012.27l.321.948q.43-.147.884-.237L6.44.153zm4.132.271a8 8 0 0 0-1.011-.27l-.194.98q.453.09.884.237zm1.873.925a8 8 0 0 0-.906-.524l-.443.896q.413.205.793.459zM4.46.824q-.471.233-.905.524l.556.83a7 7 0 0 1 .793-.458zM2.725 1.985q-.394.346-.74.74l.752.66q.303-.345.648-.648zm11.29.74a8 8 0 0 0-.74-.74l-.66.752q.346.303.648.648zm1.161 1.735a8 8 0 0 0-.524-.905l-.83.556q.254.38.458.793l.896-.443zM1.348 3.555q-.292.433-.524.906l.896.443q.205-.413.459-.793zM.423 5.428a8 8 0 0 0-.27 1.011l.98.194q.09-.453.237-.884zM15.848 6.44a8 8 0 0 0-.27-1.012l-.948.321q.147.43.237.884zM.017 7.477a8 8 0 0 0 0 1.046l.998-.064a7 7 0 0 1 0-.918zM16 8a8 8 0 0 0-.017-.523l-.998.064a7 7 0 0 1 0 .918l.998.064A8 8 0 0 0 16 8M.152 9.56q.104.52.27 1.012l.948-.321a7 7 0 0 1-.237-.884l-.98.194zm15.425 1.012q.168-.493.27-1.011l-.98-.194q-.09.453-.237.884zM.824 11.54a8 8 0 0 0 .524.905l.83-.556a7 7 0 0 1-.458-.793zm13.828.905q.292-.434.524-.906l-.896-.443q-.205.413-.459.793zm-12.667.83q.346.394.74.74l.66-.752a7 7 0 0 1-.648-.648zm11.29.74q.394-.346.74-.74l-.752-.66q-.302.346-.648.648zm-1.735 1.161q.471-.233.905-.524l-.556-.83a7 7 0 0 1-.793.458zm-7.985-.524q.434.292.906.524l.443-.896a7 7 0 0 1-.793-.459zm1.873.925q.493.168 1.011.27l.194-.98a7 7 0 0 1-.884-.237zm4.132.271a8 8 0 0 0 1.012-.27l-.321-.948a7 7 0 0 1-.884.237l.194.98zm-2.083.135a8 8 0 0 0 1.046 0l-.064-.998a7 7 0 0 1-.918 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3z"/>
                                 </svg>
-                                <span class="ms-2 hover-underline">See more</span>
+                                <span class="ms-2 hover-underline fw-bold">See more</span>
                             </div>
 
                             <!-- Start of list of attendees Modal -->
@@ -233,38 +357,38 @@
                         </div>
 
                         <!-- No attendees yet message -->
-                        <p v-else class="mt-3">No attendees yet.</p>
+                        <p v-else class="mobile-rating-smaller-text-2 mx-1 ">No attendees yet.</p>
                         
                     </div>
 
                     <!-- Column 2 -->
-                    <div class="cold 12 col-md-4">
+                    <div class="square primary-square-green-outline mobile-col-12 col-md-3 p-4 mobile-mx-0 mobile-view-hide" style="border:1px solid grey">
 
                         <!-- Event Location -->
-                        <h4 class="fw-bold mt-5">Event Location</h4>
-                        <p>{{ event.eventLocation }}</p>
+                        <h5 class="fw-bold mobile-fs-6" style="color:#027562">Event Location</h5>
+                        <p class="mobile-rating-smaller-text-2">{{ event.eventLocation }}</p>
 
                         <!-- Get Event Tickets -->
-                        <h4 class="fw-bold mt-5">Get Tickets</h4>
+                        <h5 class="fw-bold mobile-fs-6" style="color:#027562">Get Tickets</h5>
 
                         <!-- No tickets require -->
-                        <p v-if="event.ticketed == false" class="fw-bold">This event is not ticketed. Walk ins welcome!</p>
+                        <p v-if="event.ticketed == false" class="fw-bold mobile-rating-smaller-text-2">This event is not ticketed. Walk ins welcome!</p>
                         <div v-else>
 
                             <!-- Ticketed but free of charge -->
                             <div v-if="event.paidEvent == false">
-                                <p class="fw-bold">This event is ticketed. Entry is free but click below to RSVP and save your spot!</p>
+                                <p class="fw-bold mobile-rating-smaller-text-2">This event is ticketed. Entry is free but click below to RSVP and save your spot!</p>
                                 <!-- button to RSVP -->
-                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus" class="btn primary-btn-green" @click="rsvpEvent" :disabled="rsvpButtonStatus">I'm interested</button>
-                                <p v-if="attendees.length >= event.eventlimit && !rsvpStatus" class="text-danger">Event is full. No more RSVPs allowed.</p>
-                                <p v-if="rsvpStatus" class="text-danger">You have already RSVPed for this event.</p>
+                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="rsvpEvent" :disabled="rsvpButtonStatus">I'm interested</button>
+                                <p v-if="attendees.length >= event.eventlimit && !rsvpStatus" class="text-danger mobile-rating-smaller-text-2">Event is full. No more RSVPs allowed.</p>
+                                <p v-if="rsvpStatus" class="text-danger mobile-rating-smaller-text-2">You have already RSVPed for this event.</p>
                             </div>
 
                             <!-- Ticketed and require payment -->
                             <div v-else> 
-                                <p class="fw-bold">This event is ticketed. Click below to purchase your ticket!</p>
+                                <p class="fw-bold mobile-rating-smaller-text-2">This event is ticketed. Click below to purchase your ticket!</p>
                                 <!-- button to purchase ticket -->
-                                <a :href="event.paymentLink" target="_blank" class="btn primary-btn-green">I'm Interested</a>
+                                <a :href="event.paymentLink" target="_blank" class="btn primary-btn-less-round-blue" style="font-weight:bold">I'm Interested</a>
                             </div>
                             
                         </div>
@@ -273,10 +397,10 @@
 
                 <!-- Other events list -->
                 <!-- More events by organiser -->
-                <div class="mt-5 text-start">
-                    <h4 v-if="event.eventOwnerType == 'venue'" class="fw-bold">More Events by {{ event.ownerInfo.venueName }}</h4>
-                    <h4 v-if="event.eventOwnerType == 'producer'" class="fw-bold">More Events by {{ event.ownerInfo.producerName }}</h4>
-                    <h4 v-if="event.eventOwnerType == 'user'" class="fw-bold">More Events by {{ event.ownerInfo.displayName }}</h4>
+                <div class="mt-3 text-start mx-1">
+                    <h5 v-if="event.eventOwnerType == 'venue'" class="fw-bold mobile-fs-6" style="color:#027562">More Events by {{ event.ownerInfo.venueName }}</h5>
+                    <h5 v-if="event.eventOwnerType == 'producer'" class="fw-bold mobile-fs-6" style="color:#027562">More Events by {{ event.ownerInfo.producerName }}</h5>
+                    <h5 v-if="event.eventOwnerType == 'user'" class="fw-bold mobile-fs-6" style="color:#027562">More Events by {{ event.ownerInfo.displayName }}</h5>
                 </div>
 
                 <!-- Display other events by the organiser -->
@@ -472,6 +596,32 @@
     width: 20px;
     height: 20px;
     }
+
+.event-hero {
+  width: 100%;
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  padding-bottom: 50%; /* Default: 4:6 on mobile */
+}
+
+@media (min-width: 768px) {
+  .event-hero {
+    padding-bottom: 33.333%; /* 2:6 on desktop */
+  }
+}
+
+.event-hero-overlay {
+  background: rgba(0, 0, 0, 0.4);
+  padding: 40px;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
 </style>
 
 <script>

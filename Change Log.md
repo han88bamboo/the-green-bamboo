@@ -598,3 +598,14 @@ fix to get Stripe working with fields to fill in payment information on BillingS
 
 Nature of the changes (frontend / backend / database):
 backend mostly, frontend 
+
+# Update as of 13 May - deployed
+Coder: Kai
+
+Purpose of the changes:
+Front end changes to individual event page
+- Changed the spacing and the sizing of the event elements 
+- added new buttons and adjusted mobile compatability
+
+Nature of the changes (frontend / backend / database):
+Front end
