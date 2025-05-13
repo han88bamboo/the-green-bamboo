@@ -2,8 +2,10 @@
 DROP TABLE IF EXISTS "eventAttendees" CASCADE;
 DROP TABLE IF EXISTS "events" CASCADE;
 DROP TABLE IF EXISTs "clubPostCommentsLikes" CASCADE;
+DROP TABLE IF EXISTS "clubPostCommentsDislikes" CASCADE;
 DROP TABLE IF EXISTS "clubPostComments" CASCADE;
 DROP TABLE IF EXISTS "clubPostsLikes" CASCADE;
+DROP TABLE IF EXISTS "clubPostsDislikes" CASCADE;
 DROP TABLE IF EXISTS "clubPosts" CASCADE;
 DROP TABLE IF EXISTS "clubRequests" CASCADE;
 DROP TABLE IF EXISTS "clubInvites" CASCADE;
@@ -576,7 +578,9 @@ CREATE TABLE "clubs" (
     "clubLink" VARCHAR(255),
     "clubBanner" TEXT,
     "dateCreated" TIMESTAMP,
-    "totalMembers" INTEGER
+    "totalMembers" INTEGER,
+    "createdByID" INTEGER, -- [!] "producers" or "venues" or "users" id in their respective tables
+    "createdByType" VARCHAR(255) -- [!] "producers" or "venues" or "users"
 );
 
 -- ========= "clubMembers" =========
@@ -627,6 +631,14 @@ CREATE TABLE "clubPostsLikes" (
     "memberID" INTEGER REFERENCES "clubMembers"("id") ON DELETE SET NULL -- [!] References clubMembers FK
 );
 
+-- ========= "clubPostsDislikes" =========
+ CREATE TABLE "clubPostsDislikes" (
+     "id" SERIAL PRIMARY KEY,
+     "clubID" INTEGER REFERENCES "clubs"("id") ON DELETE SET NULL, -- [!] References clubs FK
+     "postID" INTEGER REFERENCES "clubPosts"("id") ON DELETE SET NULL, -- [!] References clubPOsts FK
+     "memberID" INTEGER REFERENCES "clubMembers"("id") ON DELETE SET NULL -- [!] References clubMembers FK
+ );
+
 -- ========= "clubPostComments" =========
 CREATE TABLE "clubPostComments" (
     "id" SERIAL PRIMARY KEY,
@@ -639,10 +651,17 @@ CREATE TABLE "clubPostComments" (
 -- ========= "clubPostCommentsLikes" =========
 CREATE TABLE "clubPostCommentsLikes" (
     "id" SERIAL PRIMARY KEY,
-    "postID" INTEGER REFERENCES "clubPosts"("id") ON DELETE SET NULL, -- [!] References clubPosts FK
-    "commentID" INTEGER REFERENCES "clubPostComments"("id") ON DELETE SET NULL, -- [!] References clubPostComments FK
-    "memberID" INTEGER REFERENCES "clubMembers"("id") ON DELETE SET NULL, -- [!] References clubMembers FK
-    "likeDate" TIMESTAMP
+    "postID" INTEGER REFERENCES "clubPosts"("id") ON DELETE CASCADE, -- Automatically delete when clubPosts record is deleted
+    "commentID" INTEGER REFERENCES "clubPostComments"("id") ON DELETE SET NULL, -- Keep as SET NULL if needed
+    "memberID" INTEGER REFERENCES "clubMembers"("id") ON DELETE SET NULL -- Keep as SET NULL if needed
+);
+
+-- ========= "clubPostCommentsDislikes" =========
+CREATE TABLE "clubPostCommentsDislikes" (
+    "id" SERIAL PRIMARY KEY,
+    "postID" INTEGER REFERENCES "clubPosts"("id") ON DELETE CASCADE, -- Automatically delete when clubPosts record is deleted
+    "commentID" INTEGER REFERENCES "clubPostComments"("id") ON DELETE SET NULL, -- Keep as SET NULL if needed
+    "memberID" INTEGER REFERENCES "clubMembers"("id") ON DELETE SET NULL -- Keep as SET NULL if needed
 );
 
 -- ========= "events" =========

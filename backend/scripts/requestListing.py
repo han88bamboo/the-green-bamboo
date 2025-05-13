@@ -6,12 +6,11 @@
 import os
 import json
 import pytz
-import data
 import s3Images
 from bson import json_util
 from flask import Blueprint, g, request, jsonify
-from bson.objectid import ObjectId
 from datetime import datetime
+from scripts import pointsHelperFunc
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -431,12 +430,50 @@ def requestReviewStatus(requestID):
             (status, requestID)
         )
 
-        conn.commit()
+        # Add proof points to the user if the review status is true
+    
+        # Step 1: Get the userID from the requestID
+        cur.execute(
+            f'SELECT "userID" FROM "{targetCollection}" WHERE id = %s;',
+            (requestID,)
+        )
+        userID = cur.fetchone()
+
+        if pointsHelperFunc.check_max_proof_points(userID['userID']):
+            return jsonify(
+                {
+                    "code": 201,
+                    "data": requestID
+                }
+            ), 201
+
+        # Step 2: Get the proof points for successful add drink listings
+        if (targetCollection == "requestListings" and status == True):
+            cur.execute(
+                'SELECT "proofPoints" FROM "pointSystemRules" WHERE id = 12;'
+            )
+            proofPoints = cur.fetchone()
+
+        elif (targetCollection == "requestEdits" and status == True):
+            cur.execute(
+                'SELECT "proofPoints" FROM "pointSystemRules" WHERE id = 13;'
+            )
+            proofPoints = cur.fetchone()
+        
+        if (proofPoints is not None and userID is not None):
+
+            # Step 3: Update the user's proof points
+            cur.execute(
+                'UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s AND "userType" = %s;',
+                (proofPoints['proofPoints'], userID['userID'], 'user')
+            )
+            conn.commit()
 
         return jsonify(
             {
                 "code": 201,
-                "data": requestID
+                "data": requestID,
+                "proofPoints added": proofPoints['proofPoints'] if proofPoints else 0,
             }
         ), 201
     

@@ -176,11 +176,51 @@
                   <b> Points Earned </b>
                 </div>
                 <div class="col-7 text-end">
-                  <span> {{ totalPoints }} pts </span>
+                  <span> {{ proofPoints }} pts </span>
                 </div>
               </div>
             </div>
 
+            <!-- Rank -->
+            <div class="row">
+              <div class="col-5">
+                <b>Rank</b>
+              </div>
+              <div class="col-7 text-end">
+                <span> {{ displayUser.proofRank }}</span>
+              </div>
+            </div>
+
+            <!-- buttons -->
+            <div class="row mt-3">
+              <button
+                v-if="ownProfile && user"
+                type="button"
+                class="btn tertiary-btn-blue-outline xprimary-btn-outline-not-round"
+                data-bs-toggle="modal"
+                data-bs-target="#editProfileModal"
+                style="font-weight: bold"
+              >
+                Edit Profile
+              </button>
+              <button
+                v-else-if="following && user"
+                type="button"
+                class="btn primary-btn-outline-less-round"
+                @click="editFollow('unfollow')"
+              >
+                Following
+              </button>
+              <button
+                v-else-if="user"
+                type="button"
+                class="btn primary-btn-less-round-blue"
+                @click="editFollow('follow')"
+                style="font-weight: bold"
+              >
+                + Follow User
+              </button>
+            </div>
             <!-- buttons (DESKTOP ONLY) -->
             <div class="row mt-0">
               <router-link
@@ -2783,6 +2823,7 @@ export default {
       drinkType: [],
       drinkTypes: [],
       bookedMarkedListings: {},
+      proofPoints: 0,
 
       // Reviews information
       subTags: [],
@@ -2965,10 +3006,15 @@ export default {
               );
               // const response  = await this.$axios.get(`http://127.0.0.1:5000/getData/getUser/${this.userID}`);
               this.user = response.data;
+
             } catch (error) {
               console.error(error);
             }
           }
+
+          // Get proof points
+          this.getProofPoints();
+
           // check if current user is following the user being viewed
           if (this.userType === "user") {
             this.following = this.user.followLists.users.includes(
@@ -3419,6 +3465,24 @@ export default {
         }
       } else {
         return "#" + "030303";
+      }
+    },
+
+    async getProofPoints() {
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/proofPoints/getPointsForUser/${this.displayUserID}/user` 
+        );
+        this.proofPoints = response.data.totalPoints;
+
+        // put in local storage
+        if (this.ownProfile) {
+          localStorage.setItem("88B_proofPoints", response.data.totalPoints);
+        }
+        localStorage.setItem("88B_maxProofPoints", response.data.maxPoints);
+
+      } catch (error) {
+        console.error(error);
       }
     },
 

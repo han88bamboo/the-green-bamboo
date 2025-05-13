@@ -39,6 +39,7 @@
                     <button class="nav-link active flex-grow-1" id="nav-tag-tab" data-bs-toggle="tab" data-bs-target="#nav-tag" type="button" role="tab" aria-controls="nav-tag" aria-selected="true"> Tag Controls </button>
                     <button class="nav-link flex-grow-1" id="nav-moderator-tab" data-bs-toggle="tab" data-bs-target="#nav-moderator" type="button" role="tab" aria-controls="nav-moderator" aria-selected="false"> Moderators </button>
                     <button class="nav-link flex-grow-1" id="nav-business-tab" data-bs-toggle="tab" data-bs-target="#nav-business" type="button" role="tab" aria-controls="nav-business" aria-selected="false"> Business Accounts </button>
+                    <button class="nav-link flex-grow-1" id="nav-proofpoints-tab" data-bs-toggle="tab" data-bs-target="#nav-proofpoints" type="button" role="tab" aria-controls="nav-proofpoints" aria-selected="false"> Proof Points </button>
                 </div>
             </nav>
 
@@ -873,6 +874,11 @@
                     <!-- business account request end -->
                 </div>
 
+                <!-- proof points navtabs -->
+                <div class="tab-pane fade" id="nav-proofpoints" role="tabpanel" aria-labelledby="nav-proofpoints-tab">
+                    <ProofPointsDashboard :userType="adminString"></ProofPointsDashboard>
+                </div>
+
             </div>
             <!-- navtabs end -->
             
@@ -882,11 +888,13 @@
 
 <script>
     import NavBar from '@/components/NavBar.vue';
+    import ProofPointsDashboard from '@/components/ProofPointsDashboard.vue';
 
         export default {
             name: 'adminDashboard',
             components: {
-                NavBar
+                NavBar,
+                ProofPointsDashboard,
             },
             data() {
                 return {
@@ -921,6 +929,7 @@
                     selectedRemoveType:null,
                     removableDrinkType:[],
                     addableDrinkType:[],
+                    adminString: null,
 
                     // Flavour tag functions
                     newFamily:'',
@@ -1048,6 +1057,7 @@
                             if(!this.user.isAdmin){
                                 this.$router.push('/');
                             }
+                            this.adminString = 'admin';
                         }else{
                             this.$router.push('/');
                         }

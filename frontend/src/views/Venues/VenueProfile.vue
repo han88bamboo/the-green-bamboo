@@ -1956,6 +1956,7 @@
                                 >
                                     <b> @{{ getUsernameFromReview(review) }} </b>
                                 </router-link>
+                                {{ getUserRankFromReview(review)}}
                                 &nbsp;rated
                                 <span style="color: #f0b358">★</span>
                                 <span style="font-weight: bold">{{ review.rating }}</span> Stars
@@ -3209,6 +3210,16 @@
                 }
                 return "(unknown user)";
             },
+
+            getUserRankFromReview(review) {
+                const user = this.users.find((user) => {
+                    return user["id"] == review["userID"];
+                });
+                if (user) {
+                    return user["proofRank"];
+                }
+            },
+
             clearPhoto() {
                 this.reviewImages64 = [];
                 this.selectedImagesForReview = [];
@@ -3417,12 +3428,7 @@
 
             // Load other data
             async loadData() {
-                try {
-                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUsers`);
-                    this.users = response.data;
-                } catch (error) {
-                    console.error("Error fetching users:", error);
-                }
+                
                 // Get listing data for each item in menu
                 try {
                     for (let section of this.detailedMenu) {
@@ -3680,27 +3686,32 @@
                     this.dataLoaded = true;
                 }
 
-                //calling endpoint for getData/getVenueReviews
+                //calling endpoint for getData/getVenueReviewsByVenueId
+                let allUserIDs = [];
                 try {
                     const response = await this.$axios.get(
-                        `${process.env.VUE_APP_API_URL}/getData/getVenueReviews`
-                );
-                // Assign all fetched reviews to a property
-                this.venueReviews = response.data;
-                // Immediately filter reviews to only include those for the current venue
-                this.filteredVenueReviews = this.venueReviews.filter((review) => {
-                return review.venueID == this.targetVenue.id;
-                });
-
-                this.getFilteredVenueReviewsWithImages();
-                this.filteredVenueReviews = this.getVenueReviews();
-                this.specificReview = this.getLoggedUserReview();
+                        `${process.env.VUE_APP_API_URL}/getData/getVenueReviewsByVenueId/${this.targetVenue.id}`
+                    );
+                    // Assign all fetched reviews to a property
+                    this.filteredVenueReviews = response.data;
+                    allUserIDs = this.filteredVenueReviews.map((review) => review.userID);
+                    this.getFilteredVenueReviewsWithImages();
+                    this.specificReview = this.getLoggedUserReview();
 
                 } catch (error) {
-                console.error("Error fetching venue reviews:", error);
+                    console.error("Error fetching venue reviews:", error);
+                }
+
+                // Get users data
+                try {
+                    const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/getData/getUsersFromList`, {
+                        userIDs: allUserIDs,
+                    });
+                    this.users = response.data;
+                } catch (error) {
+                    console.error("Error fetching users:", error);
                 }
                 
-
             },
             onFilesChange(event) {
                 const files = event.target.files;
@@ -5017,22 +5028,22 @@
                 }
             },
 
-                // get average venue ratings
-                getAverageVenueRatings() {
+            // get average venue ratings
+            getAverageVenueRatings() {
                 const ratings = this.filteredVenueReviews.map((review) => parseFloat(review.rating));
                 if (ratings.length === 0) return "-";
                 const avg = ratings.reduce((sum, val) => sum + val, 0) / ratings.length;
                 return avg.toFixed(1);
-                },
+            },
 
-                addVenueReview() {
+            addVenueReview() {
                 if (this.reviewDesc.length < 20) {
-                this.reviewDescError = 
-                    "Character count is less than 20, please write more for a detailed review.";
-                alert("Submission error, please fill in the fields properly");
-                return;
+                    this.reviewDescError = 
+                        "Character count is less than 20, please write more for a detailed review.";
+                    alert("Submission error, please fill in the fields properly");
+                    return;
                 } else {
-                this.reviewDescError = "";
+                    this.reviewDescError = "";
                 }
 
                 let createdDate = new Date().toISOString();
@@ -5056,21 +5067,21 @@
 
             editVenueReview() {
                 if (this.reviewDesc.length < 20) {
-                this.reviewDescError = 
-                    "Character count is less than 20, please write more for a detailed review.";
-                alert("Submission error, please fill in the fields properly");
-                return;
+                    this.reviewDescError = 
+                        "Character count is less than 20, please write more for a detailed review.";
+                    alert("Submission error, please fill in the fields properly");
+                    return;
                 }
 
                 let submitAPI = 
                 `${process.env.VUE_APP_API_URL}/editReview/updateVenueReview/` + this.specificReview[0].id;
                 let submitData = {
-                userID: parseInt(this.user_id),
-                venueID: this.targetVenue.id,
-                rating: this.rating,
-                reviewDesc: this.reviewDesc.trim(),
-                photos: this.reviewImages64,
-                createdDate: this.specificReview[0].createdDate,
+                    userID: parseInt(this.user_id),
+                    venueID: this.targetVenue.id,
+                    rating: this.rating,
+                    reviewDesc: this.reviewDesc.trim(),
+                    photos: this.reviewImages64,
+                    createdDate: this.specificReview[0].createdDate,
                 };
 
                 this.updateReview(submitAPI, submitData);
@@ -5121,6 +5132,7 @@
                     }
                 }
             },
+
             async voteReview(review, vote) {
                 if (vote === "upvote") {
                     review.userVotes.upvotes.push(this.user_id);
@@ -5155,6 +5167,7 @@
                     console.error(error);
                 }
             },
+
             async deleteReview() {
                 let deleteAPI = `${process.env.VUE_APP_API_URL}/deleteReview/deleteVenueReview/` + this.deleteID;
                 
@@ -5163,11 +5176,14 @@
                     this.deleteReviewCode = response.data.code;
                     
                     if (this.deleteReviewCode == 200) {
-                    this.successDelete = true;
-                    this.deletingReview = false;
+                        this.successDelete = true;
+                        this.deletingReview = false;
+
+                        // Remove the deleted review from the venueReviews array
+                        this.filteredVenueReviews = this.filteredVenueReviews.filter((review) => review.id !== this.deleteID);
                     } else {
-                    this.errorDelete = true;
-                    this.deletingReview = false;
+                        this.errorDelete = true;
+                        this.deletingReview = false;
                     if (this.deleteReviewCode == 400) {
                         this.notExist = true;
                     } else {
@@ -5180,14 +5196,10 @@
                     this.deletingReview = false;
                 }
             },
-            getVenueReviews() {
-                const reviews = this.venueReviews.filter((review) => {
-                    return review["venueID"] == this.targetVenue.id;
-                });
-                return reviews;
-            },
+
+
             getFilteredVenueReviewsWithImages() {
-                let allReviews = this.getVenueReviews();
+                let allReviews = this.filteredVenueReviews;
 
                 let reviewsWithImages = allReviews
                     .filter((review) => review.photos && review.photos.length > 0)
@@ -5201,6 +5213,7 @@
                     });
                 });
             },
+
             getLoggedUserReview() {
                 const specificReview = this.filteredVenueReviews.filter((review) => {
                     return review.userID == parseInt(this.user_id);
@@ -5212,7 +5225,7 @@
                     this.reviewImages64 = specificReview[0].photos || [];
                 }
                 return specificReview;
-                },
+            },
 
 
         }

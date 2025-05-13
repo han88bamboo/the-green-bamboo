@@ -2257,7 +2257,7 @@
                       >
                         <b> @{{ getUsernameFromReview(review) }} </b>
                       </router-link>
-
+                      ({{ getUserRankFromReview(review) }})
                       &nbsp;rated <span style="color: #f0b358">★</span>
                       <span style="font-weight: bold">{{
                         review["rating"]
@@ -3464,6 +3464,7 @@ import ListingRowDisplayProducerProfile from "@/components/ListingRowDisplayProd
 import BookmarkIcon from "@/components/BookmarkIcon.vue";
 import BookmarkModal from "@/components/BookmarkModal.vue";
 import FooterBar from "@/components/FooterBar.vue";
+import { useToast } from "vue-toastification";
 
 export default {
   components: {
@@ -3501,6 +3502,7 @@ export default {
 
       // all drinks that producer has
       allDrinks: [],
+      allDrinksIDs: [], // to store all drink IDs to retrieve related reviews
       allDrinksCount: 0,
       drinkCounts: {},
       sortedDrinksCounts: {},
@@ -3509,6 +3511,7 @@ export default {
 
       // all reviews for producer's drinks
       allReviews: [],
+      allUserIDs: [], // to store all user IDs for the reviews
       allReviewsCount: 0,
       drinkRatings: {},
       sortedAverageRatings: {},
@@ -3786,10 +3789,10 @@ export default {
       // _id, userID, producerID, date, rating, reviewDesc, photo
       try {
         const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getProducerTourReviews`
+          `${process.env.VUE_APP_API_URL}/getData/getProducerReviewsByProducerId/${this.producer_id}`
         );
-        this.tourReviews = response.data;
-        this.detailedReview = this.tourReviews[0];
+        this.filteredTourReviews = response.data;
+        this.detailedReview = this.filteredTourReviews[0];
       } catch (error) {
         console.error(error);
         this.dataLoaded = null;
@@ -3952,6 +3955,7 @@ export default {
         this.listings = response.data;
         this.allDrinks = response.data;
         this.allDrinksCount = response.data.length;
+        this.allDrinksIDs = response.data.map((listing) => listing.id);
 
         // this.getAllDrinks()
         this.getCountsByType();
@@ -3959,7 +3963,6 @@ export default {
         this.getMostDiscussed();
         this.getRecentlyAdded();
         this.getFilteredReviewsWithImages();
-        this.filteredTourReviews = this.getProducerTourReviews();
         this.specificReview = this.getLoggedUserReview();
       } catch (error) {
         console.error("Error fetching producer listings:", error);
@@ -3968,10 +3971,14 @@ export default {
       // reviews
       // _id, userID, reviewTarget, date, rating, reviewDesc, taggedUsers, reviewTitle, reviewType, flavorTag, photo
       try {
-        const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getReviews`
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/getData/getReviewsByListingIDs`, 
+          {
+            listingIDs: this.allDrinksIDs,
+          }
         );
         this.reviews = response.data;
+        this.allUserIDs = this.reviews.map((review) => review.userID);
         // get all reviews
         this.getAllReviews();
         this.getRatingsByType();
@@ -4002,17 +4009,7 @@ export default {
         }
       }
 
-      // users
-      // _id, username, displayName, choiceDrinks, drinkLists, modType, photo
-      try {
-        const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getUsers`
-        );
-        this.users = response.data;
-      } catch (error) {
-        console.error("Error fetching users data:", error);
-        this.dataLoaded = null;
-      }
+      
       // producersProfileViews
       // _id, producerID, views
       try {
@@ -4033,6 +4030,26 @@ export default {
       } catch (error) {
         console.error(error);
       }
+
+
+      // users
+      // _id, username, displayName, choiceDrinks, drinkLists, modType, photo
+
+      if (this.allUserIDs.length > 0) {
+        try {
+          const response = await this.$axios.post(
+            `${process.env.VUE_APP_API_URL}/getData/getUsersFromList`, 
+            {
+              userIDs: this.allUserIDs,
+            }
+          );
+          this.users = response.data;
+        } catch (error) {
+          console.error("Error fetching users data:", error);
+          this.dataLoaded = null;
+        }
+      }
+      
 
       // check whether mod can edit any listing at all in the producer page
       if (this.user_id != "" && this.userType == "user") {
@@ -4238,6 +4255,15 @@ export default {
       });
       if (user) {
         return user["username"];
+      }
+    },
+
+    getUserRankFromReview(review) {
+      const user = this.users.find((user) => {
+        return user["id"] == review["userID"];
+      });
+      if (user) {
+        return user["proofRank"];
       }
     },
 
@@ -4499,15 +4525,8 @@ export default {
       this.showListings = false;
     },
 
-    getProducerTourReviews() {
-      const reviews = this.tourReviews.filter((review) => {
-        return review["producerID"] == this.producer_id;
-      });
-      return reviews;
-    },
-
     getFilteredReviewsWithImages() {
-      let allReviews = this.getProducerTourReviews();
+      let allReviews = this.filteredTourReviews
 
       let reviewsWithImages = allReviews
         .filter((review) => review.photos && review.photos.length > 0)
@@ -4721,7 +4740,8 @@ export default {
             },
           }
         );
-        alert("Your question has been successfully sent!");
+        const toast = useToast();
+        toast.success("Your question has been successfully sent!");
         console.log(response.data);
       } catch (error) {
         console.error(error);

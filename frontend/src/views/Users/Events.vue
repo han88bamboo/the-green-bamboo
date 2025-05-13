@@ -47,12 +47,11 @@
                     </div>
                 </div> 
 
-                <!-- Create Event Button -->
-                
+                        
 
                 <div class="d-flex flex-wrap gap-2">
                     <!-- Create Event Button (Triggers Modal) -->
-                    <button class="btn primary-btn-less-round-blue btn-lg mobile-rating-smaller-text-2" style="font-weight:bold" data-bs-toggle="modal" data-bs-target="#createEventModal">
+                    <button class="btn primary-btn-less-round-blue btn-lg mobile-rating-smaller-text-2" style="font-weight:bold" data-bs-toggle="modal" data-bs-target="#createEventModal" :disabled="!canCreateEvent">
                         + Create Event
                     </button>
                   
@@ -68,6 +67,11 @@
                     >
                       View My Events! &#8595;
                     </button>
+                </div>
+
+                <!-- Cannot create event message -->
+                <div v-if="!canCreateEvent && userType != null" class="alert alert-danger mt-3" role="alert">
+                    {{ canCreateEventMessage }}
                 </div>
 
                 <!-- Create Event modal -->
@@ -621,6 +625,9 @@ export default {
 
             followedEvents: [],
             followedEventsError: null,
+
+            canCreateEvent: false,
+            canCreateEventMessage: "",
         }
     },
     methods: {
@@ -717,6 +724,20 @@ export default {
                 else {
                     this.followedEventsError = "Failed to retrieve followed events.";
                 }
+                console.error(error);
+            }
+        },
+
+        // Function to get create event status
+        async getCreateEventStatus() {
+            try {
+                let response;
+                response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/events/canCreateEvents/` + this.userID + "/" + this.userType);
+                this.canCreateEvent = response.data.canCreate;
+                console.log(this.canCreateEvent);
+                this.canCreateEventMessage = response.data.message;
+            }
+            catch (error) {
                 console.error(error);
             }
         },
@@ -875,6 +896,9 @@ export default {
 
         if (userType) {
             this.userType = userType;
+
+            // Get create event status
+            this.getCreateEventStatus();
         }
 
         this.getUpcomingEvents();

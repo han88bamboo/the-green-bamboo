@@ -4,14 +4,24 @@
         <!-- Title if current user is profile owner -->
         <div v-if="selfView" class="d-flex flex-row justify-content-between align-items-center">
             <h3 class="m-0">Your Events</h3>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16" data-bs-toggle="modal" data-bs-target="#createEventModal" style="cursor: pointer;">
+
+            <!-- Create event button -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16" data-bs-toggle="modal" data-bs-target="#createEventModal" 
+             :style="{cursor: disableCreateButton ? 'not-allowed' : 'pointer', pointerEvents: disableCreateButton ? 'none' : 'auto'}">
                 <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
             </svg>
+
         </div>
+
 
         <!-- Title if not current user -->
         <div v-else>
             <h3>Upcoming Events</h3>
+        </div>
+
+        <!-- Cannot create event message -->
+        <div v-if="!canCreateEvent" class="alert alert-danger" role="alert">
+            {{ canCreateEventMessage }}
         </div>
 
         <!-- List of events -->
@@ -126,6 +136,12 @@ export default {
 
             // Variable to store default event banner
             defaultEventBanner: require("@/assets/defaultEventBanner.jpg"),
+
+            // Variable to store can create event status and message 
+            canCreateEvent: false,
+            canCreateEventMessage: "",
+            disableCreateButton: false
+
         }
     },
     methods: {
@@ -137,6 +153,27 @@ export default {
                 this.events = response.data;
                 this.events = response.data.events;
                 console.log(this.events);
+            }
+            catch (error) {
+                console.error(error);
+            }
+        },
+
+        // Function to get create event status
+        async getCreateEventStatus() {
+            try {
+                let response;
+                response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/events/canCreateEvents/` + this.userID + "/" + this.userType);
+                this.canCreateEvent = response.data.canCreate;
+
+                if (this.canCreateEvent) {
+                    this.disableCreateButton = false;
+                }
+                else {
+                    this.disableCreateButton = true;
+                }
+
+                this.canCreateEventMessage = response.data.message;
             }
             catch (error) {
                 console.error(error);
@@ -247,6 +284,9 @@ export default {
 
         if (userType) {
             this.userType = userType;
+
+            // Get create event status
+            this.getCreateEventStatus();
         }
         else {
             this.userType = "defaultUser";

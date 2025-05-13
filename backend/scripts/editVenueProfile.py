@@ -8,8 +8,9 @@
 import os
 import s3Images
 from flask import Blueprint, g, request, jsonify
-from bson.objectid import ObjectId
 from datetime import datetime
+from scripts import pointsHelperFunc
+
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -185,10 +186,31 @@ def sendQuestions():
         )
         conn.commit()
 
+        # Award points to user for asking a question
+        if pointsHelperFunc.check_max_proof_points(userID):
+            return jsonify(
+                {
+                    "code": 201,
+                    "message": "Question sent successfully!",
+                }
+            ), 201
+        
+        # get points for asking a question
+        cur.execute('SELECT "proofPoints", "ruleName" FROM "pointSystemRules" WHERE id = %s', (15,))
+        points = cur.fetchone()
+
+        # Update user's points
+        cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s', (points['proofPoints'], userID))
+        conn.commit()
+
+        print("Points awarded to user: ", points['proofPoints'])
+
         return jsonify(
             {
                 "code": 201,
-                "message": "Question sent successfully!"
+                "message": "Question sent successfully!",
+                "pointsEarned": points['proofPoints'],
+                "rule": points['ruleName']
             }
         ), 201
     
@@ -962,13 +984,31 @@ def deleteQA():
     questionsAnswersID = int(data['questionsAnswersID'])
 
     try:
+        # get the user id of the user who asked the question
+        cur.execute('SELECT "userId" FROM "venuesQuestionAnswers" WHERE "venueId" = %s AND "id" = %s', (venueID, questionsAnswersID))
+        userId = cur.fetchone()['userId'] 
+
         cur.execute('DELETE FROM "venuesQuestionAnswers" WHERE "venueId" = %s AND "id" = %s', (venueID, questionsAnswersID))
         conn.commit()
 
+        # Deduct points from user for deleting a question
+ 
+        # get points for deleting a question
+        cur.execute('SELECT "proofPoints", "ruleName" FROM "pointSystemRules" WHERE id = %s', (15,))
+        points = cur.fetchone()
+
+        # Update user's points
+        cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" - %s WHERE "userID" = %s', (points['proofPoints'], userId,))
+        conn.commit()
+
+        print("Points deducted from user: ", points['proofPoints'])
+        
         return jsonify(
             {
                 "code": 201,
-                "message": "Deleted venue's Q&A!"
+                "message": "Deleted venue's Q&A!",
+                "pointsDeducted": points['proofPoints'],
+                "rule": points['rule']
             }
         ), 201
     

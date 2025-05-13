@@ -48,7 +48,12 @@
 
                 <!-- Create Club Button -->
                 <div class="text-start">
-                    <button class="btn btn-primary" @click="createClub">+ Create a Club</button>
+                    <button class="btn btn-primary" @click="createClub" :disabled="!canCreateClub">+ Create a Club</button>
+                </div>
+
+                <!-- Message for why user cannot create club -->
+                <div v-if="userType != 'defaultUser' && !canCreateClub" class="alert alert-danger mt-3" role="alert">
+                    <p class="text-danger">{{ cannotCreateClubMsg }}</p>
                 </div>
 
                 <!-- Club Invite-->
@@ -57,30 +62,42 @@
 
                     <div v-for="club in invitedClubs.slice(0, 5)" class="d-flex gap-3" :key="club.id">
 
-                        <div class="row w-100 align-items-center">
-                            <div class="col-7 text-start">
-                                <!-- CLub title -->
-                                <router-link v-if="club.clubID && club.clubName" :to="{ name: 'clubview', params: { clubID: club.clubID, clubName: slugify(club.clubName || 'unknown-club') }}" class="text-dark hover-underline fw-bold">
+                        <div class="row w-100 align-items-start mb-3">
+                            <!-- First row (club info) -->
+                            <div class="col-12 col-lg-7 mb-2 mb-md-0 text-start">
+                                <!-- Club title -->
+                                <router-link
+                                    v-if="club.clubID && club.clubName"
+                                    :to="{ name: 'clubview', params: { clubID: club.clubID, clubName: slugify(club.clubName || 'unknown-club') }}"
+                                    class="text-dark hover-underline fw-bold d-block"
+                                >
                                     {{ club.clubName }}
                                 </router-link>
 
                                 <!-- Invited by -->
-                                <p class="text-start">Invited by: {{ club.inviterInfo.displayName }}</p>
+                                <p class="mb-0">Invited by: {{ club.inviterInfo.displayName }}</p>
                             </div>
 
-                            <div class="col-5">
+                            <!-- Second row (buttons) -->
+                            <div class="col-12 col-lg-5 d-flex justify-content-start justify-content-lg-end">
                                 <!-- Decline Button -->
-                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="red" class="bi bi-x-circle me-3" viewBox="0 0 16 16" style="cursor: pointer;" @click="declineInvite(club.clubID)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="red"
+                                    class="bi bi-x-circle me-3" viewBox="0 0 16 16"
+                                    style="cursor: pointer;" @click="declineInvite(club.clubID)">
                                     <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
                                     <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
                                 </svg>
+
                                 <!-- Accept Button -->
-                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="green" class="bi bi-check-circle" viewBox="0 0 16 16" style="cursor: pointer;" @click="acceptInvite(club.clubID)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="green"
+                                    class="bi bi-check-circle" viewBox="0 0 16 16"
+                                    style="cursor: pointer;" @click="acceptInvite(club.clubID)">
                                     <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
                                     <path d="m10.97 4.97-.02.022-3.473 4.425-2.093-2.094a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05"/>
                                 </svg>
                             </div>
-                            <hr>
+
+                            <hr class="w-100 mt-3">
                         </div>
                     </div>
                 </div>
@@ -196,40 +213,68 @@
                             <!-- Recent Activity Information -->
                             <div class="col-md-10 ps-md-2">
                                 <div class="card-body row h-100">
-
-                                    <!-- Column 1: Poster photo -->
-                                    <div class="col-1">
-                                        <div class="d-flex flex-row align-items-center">
-                                            <img :src="post.posterPhoto" class="rounded-circle" alt="..." style="height: 55px; width: 55px; object-fit: cover;">
+            
+                                    <!-- Column 1: Post information -->
+                                    <div class="col-12">
+                                        <!-- Club Photo + Club Name on same row, aligned left -->
+                                        <div class="d-flex flex-row align-items-center justify-content-start">
+                                            <!-- Club Photo -->
+                                            <img v-if="post.clubBanner" :src="post.clubBanner" class="rounded-circle" alt="..." style="height: 55px; width: 55px; object-fit: cover;">
+                                            <img v-else :src="defaultBanner" class="rounded-circle" alt="Default Club Banner" style="height: 55px; width: 55px; object-fit: cover;">
+                                            <!-- Club Name -->
+                                            <h2 class="card-title fw-bold text-start mb-0 ms-3">
+                                                <router-link :to="{ name: 'clubview', params: { clubID: post.clubID, clubName: slugify(post.clubName || 'unknown-club') }}" class="text-dark hover-underline">
+                                                    {{ post.clubName }}
+                                                </router-link>
+                                            </h2>
                                         </div>
-                                    </div>
 
-                                    <!-- Column 2: Post information -->
-                                    <div class="col-11">
-                                        <!-- Club Name -->
-                                        <h2 class="card-title fw-bold text-start">
-                                            <router-link :to="{ name: 'clubview', params: { clubID: post.clubID, clubName: slugify(post.clubName || 'unknown-club') }}" class="text-dark hover-underline">
-                                                {{ post.clubName }}
-                                            </router-link>
-                                        </h2>
 
                                         <div class="text-start d-flex gap-3">
-                                            <!-- Poster name -->
-                                            <p>
-                                                <router-link :to="profileURL(post.posterInfo.id, post.posterInfo.userType)">
-                                                    <p v-if="post.posterInfo.userType == 'user'" class="name-container">{{ post.posterInfo.displayName }}</p>
-                                                    <p v-else-if="post.posterInfo.userType == 'producer'" class="name-container">{{ post.posterInfo.producerName }}</p>
-                                                    <p v-else class="name-container">{{ post.posterInfo.venueName }}</p>
+                                            <!-- Poster name and rank on the same line -->
+                                            <p class="mb-0">
+                                                <router-link :to="profileURL(post.posterInfo.id, post.posterInfo.userType)" class="text-decoration-none">
+                                                    <span class="name-container">
+                                                        <template v-if="post.posterInfo.userType === 'user'">{{ post.posterInfo.displayName }}</template>
+                                                        <template v-else-if="post.posterInfo.userType === 'producer'">{{ post.posterInfo.producerName }}</template>
+                                                        <template v-else>{{ post.posterInfo.venueName }}</template>
+                                                    </span>
                                                 </router-link>
+                                                <span> ({{ post.posterInfo.rank }})</span>
                                             </p>
 
+
                                             <!-- Post date -->
-                                            <p class="card-text text-start">{{ post.postDate }}</p>
+                                            <p class="card-text text-start"> on {{ post.postDate }}</p>
                                         </div>
                                         
 
                                         <!-- Post content -->
-                                        <p class="card-text text-start">{{ post.postContent }}</p>
+                                        <p class="card-text text-start mt-5">{{ post.postContent }}</p>
+
+                                        <!-- Comment input field -->
+                                        <div class="row mt-3">
+                                            <div class="col-12">
+                                                <div class="input-group">
+                                                    <input
+                                                    type="text"
+                                                    class="form-control"
+                                                    placeholder="Write a comment..."
+                                                    aria-label="Write a comment..."
+                                                    aria-describedby="button-addon2"
+                                                     v-model="newComments[post.id]"
+                                                    />
+                                                    <button
+                                                    class="btn primary-btn"
+                                                    type="button"
+                                                    id="button-addon2"
+                                                    @click="addComment(post.id, post.memberID)"
+                                                    >
+                                                    Comment
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
 
                                         <!-- View Post Button -->
                                         <button type="button" class="btn btn-primary align-self-start" @click="viewPost(post.id)">View Post</button>
@@ -287,7 +332,7 @@
 
                             <!-- Club Name-->
                             <h2 class="card-title fw-bold text-start">
-                                <router-link v-if="club.clubID && club.clubName" :to="{ name: 'clubview', params: { clubID: club.id, clubName: slugify(club.clubName) }}" class="text-dark hover-underline">
+                                <router-link v-if="club.id && club.clubName" :to="{ name: 'clubview', params: { clubID: club.id, clubName: slugify(club.clubName) }}" class="text-dark hover-underline">
                                     {{ club.clubName }}
                                 </router-link>
                             </h2>
@@ -381,6 +426,19 @@ export default {
 
             // Variable to store error message
             latestPostsError: null,
+
+            // Variable to store user proof point
+            proofPoint: localStorage.getItem("88B_proofPoints") ? localStorage.getItem("88B_proofPoints") : null,
+            maxProofPoints: localStorage.getItem("88B_maxProofPoints") ? localStorage.getItem("88B_maxProofPoints") : null,
+
+            // new comment variable
+            newComments: {}, // key: post.id, value: comment string
+
+            // Variable for can create club status
+            canCreateClub: false,
+            cannotCreateClubMsg: "",
+            disableCreateClubBtn: false,
+
         }
     },
 
@@ -425,6 +483,36 @@ export default {
                 else {
                     this.dataLoaded = null;
                 }   
+            }
+        },
+
+        // Function to get create club status
+        async getCanCreateClubStatus() {
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/canCreate/${this.userID}/${this.userType}`);
+                this.canCreateClub = response.data.canCreate;
+
+                // cannot create 
+                if (!this.canCreateClub) {
+                    this.disableCreateClubBtn = true;
+
+                    if (this.userType == "user") {
+
+                        if (response.data.reason == "insufficient points") {
+                            this.cannotCreateClubMsg = response.data.message + ". You need a minimum of " + response.data.pointsNeeded + " proof points to create a club.";
+                        } else {
+                            this.cannotCreateClubMsg = response.data.message;
+                        }
+                    } 
+                    else {
+                        this.cannotCreateClubMsg = response.data.message;
+                    }
+                } else {
+                    this.disableCreateClubBtn = false;
+                }
+                
+            } catch (error) {
+                console.log(error);
             }
         },
 
@@ -539,7 +627,7 @@ export default {
                     toast.success("You have successfully joined the club!");
                     // Redirect to the club page
                     this.$router.push({ name: 'clubview', params: { clubID: clubId, clubName: this.slugify(clubName) 
-} });
+                    } });
                 }
 
             } catch (error) {
@@ -694,13 +782,55 @@ export default {
                 toast.error("An error occurred while joining the club. Please try again later!");
             }
         },
+
+        // Function to add comment on a post
+        async addComment(id, memberID) {
+
+            const comment = this.newComments[id];
+
+            // Check if the comment is empty
+            if (!comment || comment.trim() === "") {
+                const toast = useToast();
+                toast.error("Please enter a comment before submitting.");
+                return;
+            }
+            try {
+                // Comment on the post
+                const commentData = await this.$axios.post(
+                    `${process.env.VUE_APP_API_URL}/club/addComment`,
+                    {
+                        postID: id,
+                        commenterID: memberID,
+                        commentContent: comment
+                    }
+                );
+
+                // Check if the comment is successful
+                if (commentData.status == 201) {
+                    // Add the comment to the front of the comments array
+                    // this.comments.unshift(commentData.data.comment_obj); 
+
+                    // Clear the comment input
+                    this.newComment = "";
+
+                    const toast = useToast();
+                    toast.success("Comment added successfully.");
+                }
+            } catch (error) {
+                console.log(error);
+                const toast = useToast();
+                toast.error(
+                "An error occurred while adding the comment. Please try again later."
+                );
+            }
+        },
     },
 
     computed: {
         // Function to filter clubs by excluding the clubs the user is already a member of
         filteredClubs() {
             return this.clubs.filter(club => !this.userClubs.includes(club.id));
-        }
+        },
     },
 
     mounted() {
@@ -717,6 +847,9 @@ export default {
         }
 
         if (this.userID && this.userType !== "defaultUser") {
+
+            // Get the create club status 
+            this.getCanCreateClubStatus();
             // Get the list of clubs the user is a member of
             this.getMemberClubs();
             // Get the list of clubs the user has requested to join
@@ -724,6 +857,7 @@ export default {
             // Get the list of clubs the user has been invited to join
             this.getInvitedClubs();
         }
+
     }
 }
 

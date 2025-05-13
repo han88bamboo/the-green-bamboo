@@ -3,11 +3,9 @@
 # -----------------------------------------------------------------------------------------
 
 import os
-import pytz
 import s3Images
 from flask import Blueprint, g, request, jsonify
-from bson.objectid import ObjectId
-from datetime import datetime
+from scripts import pointsHelperFunc
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -98,10 +96,17 @@ def updateBookmark():
         bookmark_list_names = set(bookmark.keys())
         existing_list_names = set(existing_lists.keys())
 
+        # Counter to track the number of lists to delete
+        num_lists_to_delete_count = 0
+
+        # Counter to track the number of lists to add
+        num_lists_to_add_count = 0
+
         # Identify lists to delete (if not in new bookmark)
         lists_to_delete = existing_list_names - bookmark_list_names
         for listName in lists_to_delete:
             cursor.execute('DELETE FROM "usersDrinkLists" WHERE "userId" = %s AND "listName" = %s', (userID, listName))
+            num_lists_to_delete_count += 1
 
         for listName, listData in bookmark.items():
             listItems = listData["listItems"]
@@ -115,6 +120,7 @@ def updateBookmark():
                     (userID, listName)
                 )
                 list_id = cursor.fetchone()["id"]
+                num_lists_to_add_count += 1
 
             # Delete existing items in the list (to avoid duplicates)
             cursor.execute('DELETE FROM "usersDrinkListItems" WHERE "listId" = %s', (list_id,))
@@ -134,7 +140,40 @@ def updateBookmark():
                     )
 
         conn.commit()
-        cursor.close()
+
+        # Update proofPoints with user actions
+
+        if (num_lists_to_delete_count > 0 or num_lists_to_add_count > 0) and (num_lists_to_delete_count - num_lists_to_add_count) != 0:
+            
+            # Get the proofPoints for creating a new list
+            cursor.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE "id" = 14')
+            proofPoints = cursor.fetchone()
+
+            if proofPoints:
+
+                # Update the proofPoints for the user
+                pointsEarned = (num_lists_to_add_count - num_lists_to_delete_count) * proofPoints['proofPoints']
+
+                if pointsEarned > 0: 
+                    
+                    if pointsHelperFunc.check_max_proof_points(userID):
+                        return jsonify(
+                            {
+                                "code": 201,
+                                "data": {
+                                    "userID": userID,
+                                    "bookmark": bookmark
+                                },
+                                "message": "Max points reached."
+                            }
+                        ), 201
+
+                cursor.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s AND "userType" = %s', (pointsEarned, userID, 'user',))
+                conn.commit()
+
+                print(f"User {userID} earned {pointsEarned} points for editing the number of lists.")
+
+                cursor.close()
 
         return jsonify(
             {   

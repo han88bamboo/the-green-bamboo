@@ -15,6 +15,12 @@ from scripts.createReview import create_username
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
 
+def is_empty_photo(value):
+    return value in (None, '', [])
+
+def is_non_empty_photo(value):
+    return not is_empty_photo(value)
+
 # -----------------------------------------------------------------------------------------
 # [POST] Vote review
 # - Update review with new votes
@@ -120,6 +126,73 @@ def updateReview(id):
             },
             "message": "Review does not exist."
         }), 400
+    
+    # Get proof points from pointSystemRules (id 2 to 6)
+    cur.execute("""SELECT * FROM "pointSystemRules" WHERE "id" BETWEEN 2 AND 6""")
+    point_system_rules = cur.fetchall()
+
+
+    # Check the difference between the new review and the existing review
+    remove_component = []
+    added_component = []
+
+    # [1] Check if text review was removed
+    if (data['reviewDesc'] == '' and data['reviewDesc'] is None) and (existing_review['reviewDesc'] != '' and existing_review['reviewDesc'] is not None):
+        remove_component.append(2)
+    elif (data['reviewDesc'] != '') and (existing_review['reviewDesc'] == '' and existing_review['reviewDesc'] is None):
+        added_component.append(2)
+
+    # [2] Check if extensive review was removed or added
+    updated_review_ext_color = bool(data.get('colour'))
+    updated_review_ext_aroma = bool(data.get('aroma'))
+    updated_review_ext_taste = bool(data.get('taste'))
+    updated_review_ext_finish = bool(data.get('finish'))
+
+    current_review_ext_color = bool(existing_review.get('colour'))
+    current_review_ext_aroma = bool(existing_review.get('aroma'))
+    current_review_ext_taste = bool(existing_review.get('taste'))
+    current_review_ext_finish = bool(existing_review.get('finish'))
+
+   # Count how many fields exist in current and updated review
+    current_count = sum([
+        current_review_ext_color,
+        current_review_ext_aroma,
+        current_review_ext_taste,
+        current_review_ext_finish
+    ])
+
+    updated_count = sum([
+        updated_review_ext_color,
+        updated_review_ext_aroma,
+        updated_review_ext_taste,
+        updated_review_ext_finish
+    ])
+
+    # Check if anything was removed or added
+    if updated_count > 0 and current_count == 0:
+        added_component.append(3)
+    elif updated_count == 0 and current_count > 0:
+        remove_component.append(3)
+    
+
+    # [3] Check if photo was removed or added - not working
+    if is_empty_photo(data['photo']) and is_non_empty_photo(existing_review['photo']):
+        remove_component.append(4)
+    # Check if photo was added
+    elif is_non_empty_photo(data['photo']) and is_empty_photo(existing_review['photo']):
+        added_component.append(4)
+
+    # [4] Check if location was removed or added
+    if (data['location'] == '' and data['location'] is None) and (existing_review['location'] != '' and existing_review['location'] is not None):
+        remove_component.append(5)
+    elif (data['location'] != '') and (existing_review['location'] == '' and existing_review['location'] is None):
+        added_component.append(5)
+
+    # [5] Check if tagged users were removed or added
+    if (data['taggedUsers'] == []) and (existing_review['taggedUsers'] != []):
+        remove_component.append(6)
+    elif (data['taggedUsers'] != []) and (existing_review['taggedUsers'] == []):
+        added_component.append(6)
 
     # Insert or find the venue
     venue_id = None
@@ -173,9 +246,28 @@ def updateReview(id):
         cur.execute(update_review_sql, review_values)
         conn.commit()
 
+        # Update user points 
+        modify_point = 0
+        if remove_component or added_component:
+            for rule in point_system_rules:
+                if rule['id'] in remove_component:
+                    modify_point -= rule['proofPoints']
+                elif rule['id'] in added_component:
+                    modify_point += rule['proofPoints']
+
+            cur.execute("""
+                UPDATE "pointsRecorder"
+                SET "currentPoints" = "currentPoints" + %s
+                WHERE "id" = %s
+            """, (modify_point, data.get('userID')))
+            conn.commit()
+
+            print("Additional points: ", modify_point)
+
         return jsonify({
             "code": 200,
-            "data": data.get('reviewDesc', '')
+            "data": data.get('reviewDesc', ''),
+            "pointsChange": modify_point,
         }), 200
 
     except Exception as e:
@@ -286,9 +378,52 @@ def updateProducerReview(id):
         created_date, new_photos, id
     )
 
+    # Get the existing review 
+    cur.execute("""SELECT * FROM "producerReviews" WHERE id = %s""", (id,))
+    existing_review = cur.fetchone()
+
+    # Get proof points from pointSystemRules (id 2 and 4)
+    cur.execute("""SELECT * FROM "pointSystemRules" WHERE "id" IN (2, 4)""")
+    point_system_rules = cur.fetchall()
+
+    # Check the difference between the new review and the existing review
+    remove_component = []
+    added_component = []
+
+    print("New data: ", data)
+    print("Old Data: ", existing_review)
+
+    # ===== Need to edit this part =====
+    # [1] Check if photo was removed or added  
+    if data['photos'] == [] and existing_review['photos'] != []:
+        remove_component.append(4)
+    elif data.get('photos') and existing_review['photos'] == []:
+        added_component.append(4)
+
+    # =========================================
+
     try:
         cur.execute(update_review_sql, review_values)
         conn.commit()
+
+        # Update user points
+        modify_point = 0
+        if remove_component or added_component:
+            for rule in point_system_rules:
+                if rule['id'] in remove_component:
+                    modify_point -= rule['proofPoints']
+                elif rule['id'] in added_component:
+                    modify_point += rule['proofPoints']
+
+            cur.execute("""
+                UPDATE "pointsRecorder"
+                SET "currentPoints" = "currentPoints" + %s
+                WHERE "id" = %s
+            """, (modify_point, data.get('userID')))
+            conn.commit()
+
+            print("Additional points: ", modify_point)
+
         return jsonify({"code": 200, "data": data.get('reviewDesc', '')}), 200
 
     except Exception as e:
