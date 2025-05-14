@@ -942,7 +942,7 @@ body {
   height: 30px;
   border-radius: 50%;
   color: whitesmoke;
-  background-color: #747d92;
+  background-color:rgb(104, 99, 99);
 }
 
 .rounded-circle-no-bg {
@@ -974,7 +974,7 @@ body {
     height: 25px;
     border-radius: 50%;
     color: whitesmoke;
-    background-color: #747d92;
+    background-color: rgb(104, 99, 99);
   }
 
   .rounded-circle-no-bg {
