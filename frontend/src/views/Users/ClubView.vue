@@ -380,8 +380,8 @@
                           </template>
                         </router-link>
 
-                        <span v-if="post.posterInfo.userType === 'user'">
-                          ({{ post.posterInfo.rank }})
+                        <span v-if="post.posterInfo.userType === 'user'" :style="{ color: post.posterInfo.rankColor }">
+                          {{ post.posterInfo.rank }}
                         </span>
                       </div>
                     </div>

@@ -2021,6 +2021,7 @@
             },
             async saveSelectionsToDatabase() {
                 try {
+                    
                     // Replace with your actual API endpoint
                     const response = await this.$axios.post(
                         `${process.env.VUE_APP_API_URL}/editDashboard/editTop3`,

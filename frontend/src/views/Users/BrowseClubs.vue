@@ -240,7 +240,7 @@
                                                         <template v-else>{{ post.posterInfo.venueName }}</template>
                                                     </span>
                                                 </router-link>
-                                                <span> ({{ post.posterInfo.rank }})</span>
+                                                <span :style="{ color: post.posterInfo.rankColor }"> {{ post.posterInfo.rank }}</span>
                                             </p>
 
 

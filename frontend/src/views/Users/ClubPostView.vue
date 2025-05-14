@@ -64,7 +64,7 @@
 
           <!-- Column 2: Poster Name and Post Date -->
           <div class="col-11">
-            <h3>{{ poster.displayName }} ({{ poster.rank }})</h3>
+            <h3>{{ poster.displayName }} <span  :style="{ color: poster.rankColor }">{{ poster.rank }} </span></h3>
             <p class="text-muted">{{ post.postDate }}</p>
           </div>
         </div>
@@ -307,7 +307,7 @@
                           {{ comment.commenterInfo.venueName }}
                         </template>
                       </router-link>
-                      <span>({{ comment.commenterInfo.rank }})</span>
+                      <span  :style="{ color: comment.commenterInfo.rankColor }">{{ comment.commenterInfo.rank }}</span>
                     </div>
                   </div>
 
