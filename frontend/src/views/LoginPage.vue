@@ -402,7 +402,9 @@ export default {
       }
       // [Venue]
       if (this.role == "venue") {
-        this.$router.push({ path: `/profile/venue` });
+        this.$router.push({ 
+          path: `/profile/venue/${this.accountID}/${this.ID}` 
+        });
       }
     },
 

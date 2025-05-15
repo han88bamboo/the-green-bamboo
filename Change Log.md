@@ -631,3 +631,13 @@ Front end changes to login / sign up / business account sign up / Landing Page:
 
 Nature of the changes (frontend / backend / database):
 Front end
+
+
+# Update as of 16 May - Deployed, but with bugs on Stripe **
+Coder: Han
+
+Purpose of the changes:
+attempted fix to get Stripe working. Able to submit form but payment does not go through to Stripe "paymentintent" error
+
+Nature of the changes (frontend / backend / database):
+Front end / backend
