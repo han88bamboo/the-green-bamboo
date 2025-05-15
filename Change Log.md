@@ -641,3 +641,12 @@ attempted fix to get Stripe working. Able to submit form but payment does not go
 
 Nature of the changes (frontend / backend / database):
 Front end / backend
+
+# Update as of 16 May 
+Coder: Han
+
+Purpose of the changes:
+fixed successfully bug where ordinary users who sign up aren't directed to onboarding flow / profile page 
+
+Nature of the changes (frontend / backend / database):
+backend

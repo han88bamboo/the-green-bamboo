@@ -95,27 +95,21 @@ def createAccount():
             """, (user_id, "Drinks I Have Tried"))
             have_tried_list_id = cursor.fetchone()["id"]
 
-        for drink in rawAccount['drinkLists']['Drinks I Want To Try']['listItems']:
-            cursor.execute("""
-                INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate")
-                VALUES (%s, %s, NOW())
-            """, (want_to_try_list_id, drink["drinkId"]))
-
-        for drink in rawAccount['drinkLists']['Drinks I Have Tried']['listItems']:
-            cursor.execute("""
-                INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate")
-                VALUES (%s, %s, NOW())
-            """, (have_tried_list_id, drink["drinkId"]))
-
-        db_conn.commit()
+        with db_conn.cursor() as cursor:
+            for drink in rawAccount['drinkLists']['Drinks I Have Tried']['listItems']:
+                cursor.execute("""
+                    INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate")
+                    VALUES (%s, %s, NOW())
+                """, (have_tried_list_id, drink["drinkId"]))
+            db_conn.commit()
 
         # Create proof point record for the new user
-        cursor.execute("""
-            INSERT INTO "pointsRecorder" ("userID", "userType", "currentPoints")
-            VALUES (%s, %s, %s)""",
-            (user_id, "user", 0))
-        
-        db_conn.commit()
+        with db_conn.cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO "pointsRecorder" ("userID", "userType", "currentPoints")
+                VALUES (%s, %s, %s)""",
+                (user_id, "user", 0))
+            db_conn.commit()
 
         
         return jsonify(
