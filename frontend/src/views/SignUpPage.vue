@@ -564,7 +564,7 @@ export default {
           `${process.env.VUE_APP_API_URL}/getData/getDrinkTypes`
         ); // comment out for local
         // const response = await this.$axios.get(
-        //     `http://127.0.0.1:5050/getData/getDrinkTypes`
+        //     `http://127.0.0.1:5000/getData/getDrinkTypes`
         // ); // comment out for deployment
         // Set drinkType dynamically based on the API response
         this.drinkType = response.data.map((item) => item.drinkType);
@@ -579,7 +579,7 @@ export default {
       try {
         // const response =  `${process.env.VUE_APP_API_URL}/getData/getFlavourTags`  // comment out for local
         // const response = await this.$axios.get(
-        //     `http://127.0.0.1:5050/getData/getFlavourTags`
+        //     `http://127.0.0.1:5000/getData/getFlavourTags`
         // ); // comment out for deployment
         const response = await this.$axios.get(
           `${process.env.VUE_APP_API_URL}/getData/getFlavourTags`
@@ -597,7 +597,7 @@ export default {
       try {
         // const response =  `${process.env.VUE_APP_API_URL}/getData/getObservationTags`  // comment out for local
         // const response = await this.$axios.get(
-        //     `http://127.0.0.1:5050/getData/getObservationTags`
+        //     `http://127.0.0.1:5000/getData/getObservationTags`
         // ); // comment out for deployment
         const response = await this.$axios.get(
           `${process.env.VUE_APP_API_URL}/getData/getObservationTags`
@@ -721,7 +721,7 @@ export default {
       let hashedPassword = this.hashPassword(this.username, this.password);
       let joinDate = new Date().toISOString();
       let submitAPI = `${process.env.VUE_APP_API_URL}/createAccount/createAccount`; // comment out for local
-      // let submitAPI = "http://127.0.0.1:5050/createAccount/createAccount"; // comment our for deployment
+      // let submitAPI = "http://127.0.0.1:5000/createAccount/createAccount"; // comment our for deployment
       let submitData = {
         // pass in first name, last name, email, isadmin
         username: this.username,
@@ -830,7 +830,7 @@ export default {
         preferences: this.selectedPreferences,
       };
       try {
-        // let submitAPI = `http://127.0.0.1:5050/createAccount/addPreferences/${this.username}`; // comment out for deployment
+        // let submitAPI = `http://127.0.0.1:5000/createAccount/addPreferences/${this.username}`; // comment out for deployment
         let submitAPI = `${process.env.VUE_APP_API_URL}/createAccount/addPreferences/${this.username}`; // comment out for local
         const response = await this.$axios.post(submitAPI, submitData);
 
@@ -923,7 +923,7 @@ export default {
     async checkUsername(username) {
       try {
         // const response = await this.$axios.get(
-        //     `http://127.0.0.1:5050/getData/getUsers`
+        //     `http://127.0.0.1:5000/getData/getUsers`
         // );
         const response = await this.$axios.get(
           `${process.env.VUE_APP_API_URL}/getData/getUsers`
@@ -946,7 +946,7 @@ export default {
       // Get specific user by username and set local storage then redirect
       try {
         // const submitURL =
-        //     `http://127.0.0.1:5050/getData/getUserByUsername/` +
+        //     `http://127.0.0.1:5000/getData/getUserByUsername/` +
         //     this.username;
         const submitURL =
           `${process.env.VUE_APP_API_URL}/getData/getUserByUsername/` +
@@ -979,7 +979,7 @@ export default {
     },
     async goSearch(searchInput) {
       // const submitURL =
-      //         `http://127.0.0.1:5050/getData/getUserByUsername/` +
+      //         `http://127.0.0.1:5000/getData/getUserByUsername/` +
       //         this.username;
       const submitURL =
         `${process.env.VUE_APP_API_URL}/getData/getUserByUsername/` +
