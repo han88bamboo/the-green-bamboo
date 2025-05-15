@@ -40,25 +40,21 @@
     </div>
   </div>
 
-  <!-- Display when bottle listing is successfully submitted -->
-  <div class="text-success fst-italic fw-bold fs-3" v-if="successSubmission">
-    <span>The account has successfully been created!</span>
-    <!-- for user -->
-    <br />
-    <!-- <button class="btn primary-btn btn-sm">
-                <router-link :to="{ path: '/login' }" class="primary-clickable-text">
-                    <span class="fs-5 fst-italic" style="color: white;"> Click to login here! </span>
-                </router-link>
-            </button> -->
-    <button class="btn primary-btn btn-sm" @click="loginUser">
-      <span class="fs-5 fst-italic" style="color: white">
-        Click to get login-ed!
+  <!-- Display when sign up is successful -->
+  <div class="text-success fw-bold fs-5" v-if="successSubmission">
+    <div class="login-header-banner mb-3">
+      <img src="@/assets/signup-error.jpg" alt="Banner" />
+    </div>
+    <span class="pt-3 fw-bold mobile-rating-smaller-text-2">Your account has successfully been created!</span>
+    <button class="btn primary-btn btn-sm mt-0 mb-3" @click="loginUser">
+      <span class="fs-6">
+        Let the good times roll!
       </span>
     </button>
   </div>
 
   <!-- Display when login encounters an error -->
-  <div class="text-danger fst-italic fw-bold fs-3" v-if="loginError">
+  <div class="text-danger fw-bold fs-5 mt-2" v-if="loginError">
     <span>An error occurred while attempting to login!</span>
     <br />
     <button class="btn primary-btn btn-sm" @click="reset">
@@ -70,28 +66,32 @@
     </button>
   </div>
 
-  <!-- Display when bottle listing submission encounters an error -->
-  <div class="text-danger fst-italic fw-bold fs-3" v-if="errorSubmission">
-    <span v-if="errorMessage"
-      >An error occurred while attempting to create account, please try
-      again!</span
-    >
-    <span v-if="duplicateEntry">The account has already been created.</span>
-    <br />
-    <button class="btn primary-btn btn-sm" @click="reset">
-      <span class="fs-5 fst-italic"> Retry sign up again! </span>
+  <!-- Display when sign up encounters an error -->
+  <div class="text-danger fw-bold fs-5" v-if="errorSubmission">
+    <div class="login-header-banner mb-3">
+      <img src="@/assets/signup-error.jpg" alt="Banner" />
+    </div>
+    <h5 class="pt-3 fw-bold mobile-rating-smaller-text-2" v-if="errorMessage"
+      >Oops! An error occured while creating account, please try
+      again!</h5>
+    <h5 class="pt-3 fw-bold mobile-rating-smaller-text-2" v-if="duplicateEntry">The account has already been created.</h5>
+    <button class="btn primary-btn btn-sm mt-0 mb-3" @click="reset">
+      <span class="fs-6"> Retry sign up again! </span>
     </button>
   </div>
-
-  <div class="body-login" v-if="fillForm && dataLoaded">
+  
+  
+  <div class="body-login background-login" v-if="fillForm && dataLoaded">
+    <div class="login-header-banner mobile-view-show">
+      <img src="@/assets/login-bg.jpg" alt="Banner" />
+  </div>
     <div class="container rounded mobile-ps-0 mobile-pe-0">
       <div class="row">
         <div class="col-12 col-sm-10 col-md-8 m-auto">
           <div class="py-5 mobile-pt-0">
             <div>
               <div
-                class="container rounded pt-3 pb-5"
-                style="background-color: #ddc8a9"
+                class="login-form-box"
               >
                 <div class="d-grid gap-2" style="position: relative">
                   <svg
@@ -101,7 +101,7 @@
                     fill="currentColor"
                     class="ms-5 bi bi-arrow-left-circle mobile-view-hide"
                     viewBox="0 0 16 16"
-                    style="position: absolute; top: 10; left: 0"
+                    style="position: absolute; top: 25; left: 10"
                     v-on:click="goBack"
                   >
                     <path
@@ -110,13 +110,12 @@
                     />
                   </svg>
                   <p
-                    class="fw-bold fs-1 mobile-fs-4 mobile-mb-1"
-                    style="font-style: italic"
+                    class="fw-bold fs-3 pt-4 mx-3 mobile-fs-5 mb-1"
                   >
-                    Create an Account
+                    Create Your Account
                   </p>
                   <p
-                    class="fw-bold mx-4 mobile-fs-6 mobile-view-show"
+                    class="fw-bold mx-4 fs-6 mobile-fs-7"
                     style="font-style: italic"
                   >
                     Discover new juice and log your tasting notes!
@@ -135,7 +134,7 @@
                 <!-- Start of form -->
                 <form v-on:submit.prevent="submitListing" id="frm">
                   <!-- Input: Username -->
-                  <div class="row pt-4">
+                  <div class="row pt-2">
                     <div class="d-grid gap-2 col-xl-5 col-md-7 col-9 mx-auto">
                       <div class="form-floating">
                         <input
@@ -346,7 +345,7 @@
                     </div>
                   </div>
 
-                  <div class="text-center mt-3 col mx-3">
+                  <div class="text-center mt-3 col mx-3 mobile-fs-7">
                     <div class="form-check form-check-inline">
                       <label class="form-check-label"
                         >I verify I am above legal drinking age in my country of
@@ -367,7 +366,7 @@
 
                   <button
                     type="submit"
-                    class="btn secondary-btn mx-1 mb-3"
+                    class="btn secondary-btn btn-sm px-5 fw-bold"
                     @click="signUp"
                   >
                     Sign Up
@@ -377,7 +376,7 @@
                 <div class="col mx-3">
                   <b>
                     <i>
-                      <p class="mb-2">
+                      <p class="fw-bold m-4 fs-6 mobile-fs-7">
                         If you are a drinks brand, bottler or venue owner trying
                         to create an account,
                         <router-link
@@ -388,7 +387,7 @@
                           >click here</router-link
                         >.
                       </p>
-                      <p>
+                      <p class="fw-bold m-4 fs-6 mobile-fs-7 pb-5">
                         If you already have an account and would like to login,
                         <router-link
                           :to="{ path: '/login' }"
@@ -565,7 +564,7 @@ export default {
           `${process.env.VUE_APP_API_URL}/getData/getDrinkTypes`
         ); // comment out for local
         // const response = await this.$axios.get(
-        //     `http://127.0.0.1:5000/getData/getDrinkTypes`
+        //     `http://127.0.0.1:5050/getData/getDrinkTypes`
         // ); // comment out for deployment
         // Set drinkType dynamically based on the API response
         this.drinkType = response.data.map((item) => item.drinkType);
@@ -580,7 +579,7 @@ export default {
       try {
         // const response =  `${process.env.VUE_APP_API_URL}/getData/getFlavourTags`  // comment out for local
         // const response = await this.$axios.get(
-        //     `http://127.0.0.1:5000/getData/getFlavourTags`
+        //     `http://127.0.0.1:5050/getData/getFlavourTags`
         // ); // comment out for deployment
         const response = await this.$axios.get(
           `${process.env.VUE_APP_API_URL}/getData/getFlavourTags`
@@ -598,7 +597,7 @@ export default {
       try {
         // const response =  `${process.env.VUE_APP_API_URL}/getData/getObservationTags`  // comment out for local
         // const response = await this.$axios.get(
-        //     `http://127.0.0.1:5000/getData/getObservationTags`
+        //     `http://127.0.0.1:5050/getData/getObservationTags`
         // ); // comment out for deployment
         const response = await this.$axios.get(
           `${process.env.VUE_APP_API_URL}/getData/getObservationTags`
@@ -722,7 +721,7 @@ export default {
       let hashedPassword = this.hashPassword(this.username, this.password);
       let joinDate = new Date().toISOString();
       let submitAPI = `${process.env.VUE_APP_API_URL}/createAccount/createAccount`; // comment out for local
-      // let submitAPI = "http://127.0.0.1:5000/createAccount/createAccount"; // comment our for deployment
+      // let submitAPI = "http://127.0.0.1:5050/createAccount/createAccount"; // comment our for deployment
       let submitData = {
         // pass in first name, last name, email, isadmin
         username: this.username,
@@ -831,7 +830,7 @@ export default {
         preferences: this.selectedPreferences,
       };
       try {
-        // let submitAPI = `http://127.0.0.1:5000/createAccount/addPreferences/${this.username}`; // comment out for deployment
+        // let submitAPI = `http://127.0.0.1:5050/createAccount/addPreferences/${this.username}`; // comment out for deployment
         let submitAPI = `${process.env.VUE_APP_API_URL}/createAccount/addPreferences/${this.username}`; // comment out for local
         const response = await this.$axios.post(submitAPI, submitData);
 
@@ -924,7 +923,7 @@ export default {
     async checkUsername(username) {
       try {
         // const response = await this.$axios.get(
-        //     `http://127.0.0.1:5000/getData/getUsers`
+        //     `http://127.0.0.1:5050/getData/getUsers`
         // );
         const response = await this.$axios.get(
           `${process.env.VUE_APP_API_URL}/getData/getUsers`
@@ -947,7 +946,7 @@ export default {
       // Get specific user by username and set local storage then redirect
       try {
         // const submitURL =
-        //     `http://127.0.0.1:5000/getData/getUserByUsername/` +
+        //     `http://127.0.0.1:5050/getData/getUserByUsername/` +
         //     this.username;
         const submitURL =
           `${process.env.VUE_APP_API_URL}/getData/getUserByUsername/` +
@@ -980,7 +979,7 @@ export default {
     },
     async goSearch(searchInput) {
       // const submitURL =
-      //         `http://127.0.0.1:5000/getData/getUserByUsername/` +
+      //         `http://127.0.0.1:5050/getData/getUserByUsername/` +
       //         this.username;
       const submitURL =
         `${process.env.VUE_APP_API_URL}/getData/getUserByUsername/` +
@@ -1006,3 +1005,54 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.login-header-banner {
+  position: relative;
+  width: 100%;
+  padding-top: calc(3 / 6 * 100%); /* 2:6 aspect ratio = 33.33% */
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .login-header-banner {
+    padding-top: 16.67%; /* 1:6 ratio for tablets and up */
+  }
+}
+
+.login-header-banner img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.login-form-box {
+  background-color: wheat;
+  opacity: 0.97;
+}
+
+@media (max-width: 991px) {
+  .login-form-box {
+    background-color: white;
+  }
+}
+
+.background-login {
+  background-image: url('@/assets/login-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+}
+
+@media (max-width: 991px) {
+  .background-login {
+    background-image: none;
+    background-color: white;
+  }
+}
+</style>

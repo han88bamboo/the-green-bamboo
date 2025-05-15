@@ -29,6 +29,7 @@
             <div class="w-100 position-relative">
               <input
                 class="form-control fst-italic"
+                style="border: none;"
                 type="text"
                 placeholder="What are you drinking today?"
                 v-model="searchInput"
@@ -431,7 +432,7 @@
         <div class="search-bar d-flex align-items-center col-12 position-relative">
           <div class="w-100 position-relative">
             <input
-              class="form-control fst-italic"
+              class="form-control fst-italic border-0"
               type="text"
               placeholder="What are you drinking today?"
               style="width: calc(100% - 40px); "
@@ -951,7 +952,7 @@ export default {
   color: white;
 }
 input.form-control {
-  border: none;
+  border: solid 1px grey;
   box-shadow: none !important;
   outline: none;
 }

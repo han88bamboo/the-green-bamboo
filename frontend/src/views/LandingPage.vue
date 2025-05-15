@@ -2,20 +2,21 @@
     <NavBar />
 
     <!-- Hero Section with Search -->
-    <div class="hero-section position-relative text-center py-5">
-        <img src="../../Images/Background/Landing Page Hero Image.png"
-            class="hero-bg position-absolute w-100 h-100 top-0 start-0"
-            style="object-fit: cover; z-index: -1; filter: brightness(0.7)" alt="Background" />
-        <div class="container py-5 pt-7">
-            <!-- Center the heading text with additional spacing -->
-            <h1 class="text-white mb-4 text-center font-bold text-4xl" style="margin-top: 200px;">
-                A World of Drinks. Just Look It Up.
+    <div class="hero-section text-center">
+        <img
+            src="../../Images/Background/Landing Page Hero Image.png"
+            class="hero-bg"
+            style="filter: brightness(0.7);"
+            alt="Background"
+        />
+        <div class="container position-absolute top-50 start-50 translate-middle text-white d-flex flex-column align-items-center px-3">
+            <h1 class="mb-4 fw-bold display-5 mobile-fs-4">
+            A World of Drinks. Just Look It Up.
             </h1>
-            <!-- This centers the SearchBar component on the page -->
-            <div class="row justify-content-center">
-                <div class="col-12 col-md-8 col-lg-6">
-                    <SearchBar />
-                </div>
+            <div class="row justify-content-center w-100">
+            <div class="col-12 col-md-8 col-lg-6">
+                <SearchBar />
+            </div>
             </div>
         </div>
     </div>
@@ -24,28 +25,28 @@
 
     <!-- Icon Section -->
     <div class="container py-4">
-        <div class="row g-4">
+        <div class="row g-2">
             <!-- Desktop View -->
             <div class="d-none d-md-flex align-items-start gap-3 mb-3">
-                <h2 class="h3 fw-bold mb-0" style="color: #027562;">Our Features</h2>
+                <h3 class="fw-bold mb-0" style="color: #027562;">Our Features</h3>
             </div>
             <!-- Mobile View -->
             <div class="d-md-none">
-                <h2 class="fw-bold mb-2 text-start" style="color: #027562;">Our Features</h2>
+                <h2 class="fw-bold mobile-fs-5 m-2 text-start" style="color: #027562;">Our Features</h2>
             </div>
             <!-- Feature 1 -->
             <div class="col-lg-2 col-md-4 col-6 mb-4">
                 <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                     <router-link :to="'/login'">
                         <button class="btn border-0 fw-bold tilt-hover" type="button">
-                            <div class="mb-lg-3 me-3 me-lg-0 icon-container">
+                            <div class="mb-lg-3 icon-container">
                                 <img src="../../Images/Landing Page/Layer1.png" alt="Log Reviews" class="img-fluid" />
                             </div>
                         </button>
                     </router-link>
                     <router-link :to="'/login'" class="text-link">
                         <h6
-                            class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
+                            class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height">
                             Log Your Drink Reviews and Share Your Favorites
                         </h6>
                     </router-link>
@@ -57,7 +58,7 @@
                 <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                     <router-link :to="'/clubs/view'">
                         <button class="btn border-0 fw-bold tilt-hover" type="button">
-                            <div class="mb-lg-3 me-3 me-lg-0 icon-container">
+                            <div class="mb-lg-3 icon-container">
                                 <img src="../../Images/Landing Page/Layer2.png" alt="Find Communities"
                                     class="img-fluid" />
                             </div>
@@ -65,7 +66,7 @@
                     </router-link>
                     <router-link :to="'/clubs/view'" class="text-link">
                         <h6
-                            class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
+                            class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height">
                             Find Your Communities and Join Events
                         </h6>
                     </router-link>
@@ -77,7 +78,7 @@
                 <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                     <router-link :to="'/explore'">
                         <button class="btn border-0 fw-bold tilt-hover" type="button">
-                            <div class="mb-lg-3 me-3 me-lg-0 icon-container">
+                            <div class="mb-lg-3 icon-container">
                                 <img src="../../Images/Landing Page/Layer3.png" alt="Discover Drinks"
                                     class="img-fluid" />
                             </div>
@@ -85,7 +86,7 @@
                     </router-link>
                     <router-link :to="'/explore'" class="text-link">
                         <h6
-                            class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
+                            class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height">
                             Discover New Drinks and Find Crowdsourced Reviews
                         </h6>
                     </router-link>
@@ -97,14 +98,14 @@
                 <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                     <router-link :to="'/clubs/view'">
                         <button class="btn border-0 fw-bold tilt-hover" type="button">
-                            <div class="mb-lg-3 me-3 me-lg-0 icon-container">
+                            <div class="mb-lg-3 icon-container">
                                 <img src="../../Images/Landing Page/Layer4.png" alt="Connect" class="img-fluid" />
                             </div>
                         </button>
                     </router-link>
                     <router-link :to="'/clubs/view'" class="text-link">
                         <h6
-                            class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
+                            class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height">
                             Connect With Your Favorite Bars and Brands
                         </h6>
                     </router-link>
@@ -116,14 +117,14 @@
                 <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                     <router-link :to="'/clubs/view'">
                         <button class="btn border-0 fw-bold tilt-hover" type="button">
-                            <div class="mb-lg-3 me-3 me-lg-0 icon-container">
+                            <div class="mb-lg-3 icon-container">
                                 <img src="../../Images/Landing Page/Layer5.png" alt="Connect" class="img-fluid" />
                             </div>
                         </button>
                     </router-link>
                     <router-link :to="'/clubs/view'" class="text-link">
                         <h6
-                            class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
+                            class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height">
                             Find Nearby Producers and Venues
                         </h6>
                     </router-link>
@@ -135,14 +136,14 @@
                 <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                     <router-link :to="safeProfileRoute">
                         <button class="btn border-0 fw-bold tilt-hover" type="button">
-                            <div class="mb-lg-3 me-3 me-lg-0 icon-container">
+                            <div class="mb-lg-3 icon-container">
                                 <img src="../../Images/Landing Page/Layer6.png" alt="Connect" class="img-fluid" />
                             </div>
                         </button>
                     </router-link>
                     <router-link :to="safeProfileRoute" class="text-link">
                         <h6
-                            class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
+                            class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height">
                             Start Collecting Points and Badges From Your First Review
                         </h6>
                     </router-link>
@@ -153,23 +154,15 @@
     <!-- Icon End -->
 
     <!-- Trending Section -->
-    <div style="background-color: #FEE5BF;">
+    <div style="background-color: wheat;">
         <div class="container p-4">
             <div class="container pb-0">
-                <!-- Desktop View: Trending and Description in One Row -->
-                <div class="d-none d-md-flex align-items-start gap-3 mb-3">
-                    <h2 class="h3 fw-bold mb-0" style="color: #027562;">Trending</h2>
-                    <h4 class="mb-0 fst-italic" style="color: black;">
-                        "Who is saying what now?"
-                    </h4>
+                <!-- Trending and Description in One Row -->
+                <div class="d-md-flex text-start gap-3 mb-3">
+                    <h3 class="mobile-fs-4 fw-bold mb-1" style="color: #027562;">Trending</h3>
+                    <h5 class="mt-2 mobile-fs-6 fw-bold fst-italic" style="color: black;">"Who is saying what now?" </h5>
                 </div>
-                <!-- Mobile View: Trending and Description in Separate Rows -->
-                <div class="d-md-none">
-                    <h2 class="fw-bold mb-2 text-start" style="color: #027562;">Trending</h2>
-                    <h4 class="mb-0 fst-italic text-start" style="color: black;">
-                        "Who is saying what now?"
-                    </h4>
-                </div>
+                
                 <!-- Trending Observation Tags -->
                 <div class="d-none d-md-flex flex-wrap justify-content-start">
                     <button v-for="tag in tags" :key="tag" class="btn btn-warning rounded-pill m-2"
@@ -178,26 +171,33 @@
                     </button>
                 </div>
 
-                <div id="badgeCarousel" class="carousel slide d-md-none" data-bs-ride="carousel"
+                <div id="badgeCarousel" class="carousel slide d-md-none mb-4" data-bs-ride="carousel"
                     data-bs-interval="3000">
                     <div class="carousel-inner">
                         <div class="carousel-item active">
-                            <div class="row flex-nowrap overflow-visible" style="min-height: 80px">
-                                <div v-for="(tag, index) in tags.slice(0, 3)" :key="index" class="col-5 tag-container">
-                                    <button class="btn btn-warning rounded-pill w-90 m-2"
-                                        :class="{ selected: tag === selectedTag }" @click="goSearchTag(tag)"
-                                        style="min-height: 40px">
+                             <div class="d-flex flex-row overflow-visible gap-1">
+                                <div
+                                v-for="(tag, index) in tags.slice(0, 3)"
+                                :key="index"
+                                class="tag-container"
+                                >
+                                    <button
+                                        class="btn btn-warning rounded-pill"
+                                        :class="{ selected: tag === selectedTag }"
+                                        @click="goSearchTag(tag)"
+                                        style="min-height: 20px"
+                                    >
                                         {{ tag }}
                                     </button>
                                 </div>
                             </div>
                         </div>
                         <div class="carousel-item">
-                            <div class="row flex-nowrap overflow-visible" style="min-height: 80px">
-                                <div v-for="(tag, index) in tags.slice(2, 5)" :key="index" class="col-5 tag-container">
+                            <div class="d-flex flex-row overflow-visible gap-1">
+                                <div v-for="(tag, index) in tags.slice(2, 5)" :key="index" class="tag-container">
                                     <button class="btn btn-warning rounded-pill w-90 m-2"
                                         :class="{ selected: tag === selectedTag }" @click="goSearchTag(tag)"
-                                        style="min-height: 40px">
+                                        style="min-height: 20px">
                                         {{ tag }}
                                     </button>
                                 </div>
@@ -219,13 +219,13 @@
                 <!-- Trending Drink Listings -->
                 <!-- Mobile View -->
                 <div class="d-md-none">
-                    <div class="row row-cols-2 g-3">
-                        <div v-for="listing in listings" :key="listing.id" class="col">
-                            <div class="text-center listing-item" @click="goSearchListing(listing)">
+                    <div class="d-flex flex-row flex-wrap justify-content-center w-100">
+                        <div v-for="listing in listings.slice(0,4)" :key="listing.id" class="d-flex flex-column align-items-center">
+                            <div class="drink-photo-container-row image-container-150 mb-2" style="width: 150px; height: 150px" @click="goSearchListing(listing)">
                                 <img v-if="listing['photo']" :src="listing['photo']" class="img-fluid rounded mb-2"
-                                    style="max-height: 160px; object-fit: contain;" />
+                                    style="max-height: 100px; object-fit: contain;" />
                                 <img v-else src="../../Images/Drinks/Placeholder.png" class="img-fluid rounded mb-2"
-                                    style="max-height: 160px; object-fit: contain;" />
+                                    style="max-height: 100px; object-fit: contain;" />
                                 <div class="fw-semibold small listing-text">{{ listing['listingName'] }}</div>
                             </div>
                         </div>
@@ -235,23 +235,23 @@
                 <!-- Desktop View -->
                 <div class="d-none d-md-flex justify-content-center flex-wrap pb-2 pt-4">
                 <div
-                    v-for="listing in listings"
+                    v-for="listing in listings.slice(0,5)"
                     :key="listing.id"
-                    class="text-center mx-3 listing-item"
-                    style="width: 160px;"
+                    class="text-center mx-1 listing-item"
+                    style="width: 120px;"
                     @click="goSearchListing(listing)"
                 >
                     <img
                     v-if="listing['photo']"
                     :src="listing['photo']"
                     class="img-fluid rounded mb-2"
-                    style="max-height: 160px; object-fit: contain;"
+                    style="max-height: 120px; object-fit: contain;"
                     />
                     <img
                     v-else
                     src="../../Images/Drinks/Placeholder.png"
                     class="img-fluid rounded mb-2"
-                    style="max-height: 160px; object-fit: contain;"
+                    style="max-height: 120px; object-fit: contain;"
                     />
                     <div class="fw-semibold small listing-text">{{ listing['listingName'] }}</div>
                 </div>
@@ -261,10 +261,10 @@
     </div>
     <!-- Trending End -->
 
-    <!-- News Section -->
-    <div class="container p-4">
+    <!-- Editorial Section -->
+    <div class="container p-4 pb-2">
         <div class="d-sm-none border-0 mb-3">
-            <h2 class="fw-bold mb-0" style="text-align: left; padding-left: 10px; color: #027562;">
+            <h2 class="mobile-fs-4 fw-bold mb-1" style="text-align: left; padding-left: 10px; color: #027562;">
                 Latest Drink Buzz
             </h2>
         </div>
@@ -281,24 +281,25 @@
             <template v-else>
                 <!-- Latest News Section -->
                 <template v-for="(category, index) in articles" :key="index">
-                    <div class="mb-4" v-if="Object.keys(category)[0] === 'latest_news'">
+                    <div class="mb-4 mobile-mb-0" v-if="Object.keys(category)[0] === 'latest_news'">
                         <div class="d-none d-md-flex align-items-start gap-3 mb-3">
                             <h2 class="h3 fw-bold mb-0" style="color: #027562;">
                                 {{ sectionTitles[Object.keys(category)[0]] }}
                             </h2>
                         </div>
                         <div class="row">
-                            <div class="col-12 col-sm-6 col-lg-3 mb-3"
+                            <!-- Desktop view (latest 4 news articles) -->
+                            <div class="col-12 col-sm-6 col-lg-3 mb-3 mobile-view-hide"
                                 v-for="(article, artIndex) in category.latest_news.slice(0, 4)"
                                 :key="'latest-' + artIndex">
                                 <div class="card h-100 shadow" style="background-color: transparent">
-                                    <!-- Desktop view (sm and up) -->
-                                    <div class="d-none d-sm-block">
+                                    
+                                    <div class="d-sm-block">
                                         <img :src="article.image_url" class="card-img-top" alt="News Image"
                                             style="height: 180px; object-fit: cover" />
                                         <div class="card-body d-flex flex-column justify-content-between"
                                             style="height: 100px">
-                                            <h6 class="fst-italic text-muted text-start">
+                                            <h6 class="text-muted text-start">
                                                 {{
                                                     article.title
                                                         .split(" ")
@@ -313,27 +314,33 @@
                                             <a :href="article.link" target="_blank" class="stretched-link"></a>
                                         </div>
                                     </div>
-
-                                    <!-- Mobile view (xs only) -->
-                                    <div class="d-sm-none border-0">
+                                </div>
+                            </div>
+                            <!-- Mobile view (latest 2 news articles) -->
+                            <div class="d-sm-none col-12 col-sm-6 col-lg-3 mb-3"
+                                v-for="(article, artIndex) in category.latest_news.slice(0, 2)"
+                                :key="'latest-' + artIndex">
+                                <div class="card h-100 shadow" style="background-color: transparent">
+                                    <div class=" border-0">
                                         <div class="row g-0">
                                             <div class="col-4">
-                                                <div style="width: 120px; height: 110px; overflow: hidden;">
-                                                    <img :src="article.image_url" class="img-fluid" alt="News Image"
-                                                        style="height: 120px; object-fit: cover;" />
-                                                </div>
+                                                <div style="width: 110px; height: 110px; overflow: hidden;">
+                                                        <img :src="article.image_url" class="img-fluid w-100 h-100" alt="News Image"
+                                                            style="object-fit: cover;" />
+                                                    </div>
                                             </div>
-                                            <div class="col-8 ps-2">
-                                                <div class="card-body px-0 d-flex justify-content-center"
+                                            <div class="col-8 px-2">
+                                                    <h6 class="ps-1 pt-2 d-flex fw-bold" style="color: rgb(2, 117, 98)">New Releases</h6>
+                                                    <div class="p-0 ps-1 d-flex justify-content-center"
                                                     style="height: 100%">
-                                                    <h6 class="fst-italic text-muted text-start mb-0">
+                                                    <h6 class=" text-muted text-start mb-0">
                                                         {{
                                                             article.title
                                                                 .split(" ")
-                                                                .slice(0, 20)
+                                                                .slice(0, 9)
                                                                 .join(" ") +
                                                             (article.title.split(" ")
-                                                                .length > 20
+                                                                .length > 9
                                                                 ? "..."
                                                                 : "")
                                                         }}
@@ -343,8 +350,8 @@
                                         </div>
                                     </div>
                                     <a :href="article.link" target="_blank" class="stretched-link"></a>
-                                </div>
-                            </div>
+                                </div>   
+                            </div>   
                         </div>
                     </div>
                 </template>
@@ -390,22 +397,24 @@
                                         <div class="d-sm-none border-0">
                                             <div class="row g-0">
                                                 <div class="col-4">
-                                                    <div style="width: 120px; height: 110px; overflow: hidden;">
-                                                        <img :src="article.image_url" class="img-fluid" alt="News Image"
-                                                            style="height: 120px; object-fit: cover;" />
+                                                    <div style="width: 110px; height: 110px; overflow: hidden;">
+                                                        <img :src="article.image_url" class="img-fluid w-100 h-100" alt="News Image"
+                                                            style="object-fit: cover;" />
                                                     </div>
+                                                    
                                                 </div>
-                                                <div class="col-8 ps-2">
-                                                    <div class="card-body px-0 d-flex justify-content-center"
+                                                <div class="col-8 px-2">
+                                                    <h6 class="ps-1 pt-2 d-flex fw-bold" style="color: rgb(2, 117, 98)">Deepdive</h6>
+                                                    <div class="p-0 ps-1 d-flex justify-content-center"
                                                         style="height: 100%">
                                                         <h6 class="fst-italic text-muted text-start mb-0">
                                                             {{
                                                                 article.title
                                                                     .split(" ")
-                                                                    .slice(0, 20)
+                                                                    .slice(0, 9)
                                                                     .join(" ") +
                                                                 (article.title.split(" ")
-                                                                    .length > 20
+                                                                    .length > 9
                                                                     ? "..."
                                                                     : "")
                                                             }}
@@ -430,11 +439,11 @@
                                 </h2>
                             </div>
                             <div class="row">
-                                <div class="col-12 col-lg-4 col-sm-6 mb-3"
+                                <!-- Desktop view: 3 latest reviews -->
+                                <div class="mobile-view-hide col-12 col-lg-4 col-sm-6 mb-3"
                                     v-for="(article, artIndex) in reviews.slice(0, 3)"
                                     :key="'review-' + artIndex">
                                     <div class="card h-100 shadow" style="background-color: transparent">
-                                        <!-- Desktop view -->
                                         <div class="d-none d-sm-block">
                                             <img :src="article.image_url" class="card-img-top" alt="News Image"
                                                 style="height: 180px; object-fit: cover;" />
@@ -455,27 +464,33 @@
                                                 <a :href="article.link" target="_blank" class="stretched-link"></a>
                                             </div>
                                         </div>
-
-                                        <!-- Mobile view -->
+                                    </div>
+                                </div>
+                                <!-- Mobile view: only 1 latest review -->
+                                <div class="mobile-view-show col-12 col-lg-4 col-sm-6 mb-3"
+                                    v-for="(article, artIndex) in reviews.slice(0, 1)"
+                                    :key="'review-' + artIndex">
+                                    <div class="card h-100 shadow" style="background-color: transparent">
                                         <div class="d-sm-none border-0">
                                             <div class="row g-0">
                                                 <div class="col-4">
-                                                    <div style="width: 120px; height: 110px; overflow: hidden;">
+                                                    <div style="width: 110px; height: 110px; overflow: hidden;">
                                                         <img :src="article.image_url" class="img-fluid" alt="News Image"
                                                             style="height: 120px; object-fit: cover;" />
                                                     </div>
                                                 </div>
-                                                <div class="col-8 ps-2">
-                                                    <div class="card-body px-0 d-flex justify-content-center"
+                                                <div class="col-8 px-2">
+                                                    <h6 class="ps-1 pt-2 d-flex fw-bold" style="color: rgb(2, 117, 98)">Taste Test</h6>
+                                                    <div class="p-0 ps-1 d-flex justify-content-center"
                                                         style="height: 100%">
                                                         <h6 class="fst-italic text-muted text-start mb-0">
                                                             {{
                                                                 article.title
                                                                     .split(" ")
-                                                                    .slice(0, 20)
+                                                                    .slice(0, 9)
                                                                     .join(" ") +
                                                                 (article.title.split(" ")
-                                                                    .length > 20
+                                                                    .length > 9
                                                                     ? "..."
                                                                     : "")
                                                             }}
@@ -533,22 +548,23 @@
                                         <div class="d-sm-none border-0">
                                             <div class="row g-0">
                                                 <div class="col-4">
-                                                    <div style="width: 120px; height: 110px; overflow: hidden;">
+                                                    <div style="width: 110px; height: 110px; overflow: hidden;">
                                                         <img :src="article.image_url" class="img-fluid" alt="News Image"
                                                             style="height: 120px; object-fit: cover;" />
                                                     </div>
                                                 </div>
-                                                <div class="col-8 ps-2">
-                                                    <div class="card-body px-0 d-flex justify-content-center"
+                                                <div class="col-8 px-2">
+                                                    <h6 class="ps-1 pt-2 d-flex fw-bold" style="color: rgb(2, 117, 98)">Features</h6>
+                                                    <div class="p-0 ps-1 d-flex justify-content-center"
                                                         style="height: 100%">
-                                                        <h6 class="fst-italic text-muted text-start mb-0">
+                                                        <h6 class="text-muted text-start mb-0">
                                                             {{
                                                                 article.title
                                                                     .split(" ")
-                                                                    .slice(0, 20)
+                                                                    .slice(0, 9)
                                                                     .join(" ") +
                                                                 (article.title.split(" ")
-                                                                    .length > 20
+                                                                    .length > 9
                                                                     ? "..."
                                                                     : "")
                                                             }}
@@ -602,22 +618,23 @@
                                         <div class="d-sm-none border-0">
                                             <div class="row g-0">
                                                 <div class="col-4">
-                                                    <div style="width: 120px; height: 110px; overflow: hidden;">
+                                                    <div style="width: 110px; height: 110px; overflow: hidden;">
                                                         <img :src="article.image_url" class="img-fluid" alt="News Image"
                                                             style="height: 120px; object-fit: cover;" />
                                                     </div>
                                                 </div>
-                                                <div class="col-8 ps-2">
-                                                    <div class="card-body px-0 d-flex justify-content-center"
+                                                <div class="col-8 px-2">
+                                                    <h6 class="ps-1 pt-2 d-flex fw-bold" style="color: rgb(2, 117, 98)">Interview</h6>
+                                                    <div class="p-0 ps-1 d-flex justify-content-center"
                                                         style="height: 100%">
-                                                        <h6 class="fst-italic text-muted text-start mb-0">
+                                                        <h6 class="text-muted text-start mb-0">
                                                             {{
                                                                 article.title
                                                                     .split(" ")
-                                                                    .slice(0, 20)
+                                                                    .slice(0, 12)
                                                                     .join(" ") +
                                                                 (article.title.split(" ")
-                                                                    .length > 20
+                                                                    .length > 12
                                                                     ? "..."
                                                                     : "")
                                                             }}
@@ -671,22 +688,23 @@
                                         <div class="d-sm-none border-0">
                                             <div class="row g-0">
                                                 <div class="col-4">
-                                                    <div style="width: 120px; height: 110px; overflow: hidden;">
+                                                    <div style="width: 110px; height: 110px; overflow: hidden;">
                                                         <img :src="article.image_url" class="img-fluid" alt="News Image"
                                                             style="height: 120px; object-fit: cover;" />
                                                     </div>
                                                 </div>
-                                                <div class="col-8 ps-2">
-                                                    <div class="card-body px-0 d-flex justify-content-center"
+                                                <div class="col-8 px-2">
+                                                    <h6 class="ps-1 pt-2 d-flex fw-bold" style="color: rgb(2, 117, 98)">Escapades</h6>
+                                                    <div class="p-0 ps-1 d-flex justify-content-center"
                                                         style="height: 100%">
-                                                        <h6 class="fst-italic text-muted text-start mb-0">
+                                                        <h6 class="text-muted text-start mb-0">
                                                             {{
                                                                 article.title
                                                                     .split(" ")
-                                                                    .slice(0, 20)
+                                                                    .slice(0, 11)
                                                                     .join(" ") +
                                                                 (article.title.split(" ")
-                                                                    .length > 20
+                                                                    .length >11
                                                                     ? "..."
                                                                     : "")
                                                             }}
@@ -709,7 +727,7 @@
                                     {{ sectionTitles[Object.keys(category)[0]] }}
                                 </h2>
                             </div>
-                            <div class="row">
+                            <div class="row mobile-view-hide">
                                 <div class="col-12 col-lg-12 col-sm-6 mb-3"
                                     v-for="(article, artIndex) in category.whats_on.slice(0, 1)"
                                     :key="'whats_on-' + artIndex">
@@ -736,7 +754,7 @@
                                             </div>
                                         </div>
 
-                                        <!-- Mobile view -->
+                                        <!-- Mobile view: Removed What's Hapenning for Now
                                         <div class="d-sm-none border-0">
                                             <div class="row g-0">
                                                 <div class="col-4">
@@ -763,8 +781,8 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <a :href="article.link" target="_blank" class="stretched-link"></a>
+                                        </div> 
+                                        <a :href="article.link" target="_blank" class="stretched-link"></a>-->
                                     </div>
                                 </div>
                             </div>
@@ -774,19 +792,22 @@
             </template>
         </div>
     </div>
-    <!-- News End -->
+    <!-- Editorial End -->
 
-    <!-- Footer Section -->
-    <footer class="text-white py-4" style="background-color: #BAC9E5;">
+    <!-- Business Account Section -->
+    <footer class="text-white" style="background-color: #BAC9E5;">
         <div class="container py-4">
-            <h1 class="text-black mb-4">Are you a business owner?</h1>
-            <div class="row g-4">
+            <h2 class="my-3 fw-bold display-5 mobile-fs-4" style="color:black">Are you a business owner?</h2>
+            <div class="row g-2">
+                <!-- Desktop Spacer -->
+                <div class="col-1 mobile-view-hide"></div>
                 <!-- Feature 1 -->
-                <div class="custom-col-lg-5th col-md-6 col-6 mb-4">
+                <div class="col-lg-2 col-md-4 col-6 mb-4">
+                <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                     <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                         <router-link :to="'/login'">
                             <button class="btn border-0 fw-bold tilt-hover" type="button">
-                                <div class="mb-lg-3 me-3 me-lg-0 icon-container">
+                                <div class="mb-lg-3 icon-container">
                                     <img src="../../Images/Landing Page/footer1.png" alt="Log Reviews"
                                         class="img-fluid" />
                                 </div>
@@ -794,19 +815,20 @@
                         </router-link>
                         <router-link :to="'/login'" class="text-link">
                             <h6
-                                class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
+                                class="mb-0 mobile-rating-smaller-text-2 text-lg-center text-start d-flex align-items-center caption-height">
                                 Boost Your Discoverability to New Customers
                             </h6>
                         </router-link>
                     </div>
                 </div>
-
+                </div>
                 <!-- Feature 2 -->
-                <div class="custom-col-lg-5th col-md-6 col-6 mb-4">
+                <div class="col-lg-2 col-md-4 col-6 mb-4">
+                <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                     <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                         <router-link :to="'/clubs/view'">
                             <button class="btn border-0 fw-bold tilt-hover" type="button">
-                                <div class="mb-lg-3 me-3 me-lg-0 icon-container">
+                                <div class="mb-lg-3 icon-container">
                                     <img src="../../Images/Landing Page/Layer2.png" alt="Find Communities"
                                         class="img-fluid" />
                                 </div>
@@ -814,19 +836,20 @@
                         </router-link>
                         <router-link :to="'/clubs/view'" class="text-link">
                             <h6
-                                class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
+                                class="mb-0 mobile-rating-smaller-text-2 text-lg-center text-start d-flex align-items-center caption-height">
                                 Engage Your Existing Fans with Direct Chat
                             </h6>
                         </router-link>
                     </div>
                 </div>
-
+                </div>
                 <!-- Feature 3 -->
-                <div class="custom-col-lg-5th col-md-6 col-6 mb-4">
+                <div class="col-lg-2 col-md-4 col-6 mb-4">
+                <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                     <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                         <router-link :to="'/explore'">
                             <button class="btn border-0 fw-bold tilt-hover" type="button">
-                                <div class="mb-lg-3 me-3 me-lg-0 icon-container">
+                                <div class="mb-lg-3 icon-container">
                                     <img src="../../Images/Landing Page/footer3.png" alt="Discover Drinks"
                                         class="img-fluid" />
                                 </div>
@@ -834,54 +857,61 @@
                         </router-link>
                         <router-link :to="'/explore'" class="text-link">
                             <h6
-                                class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
+                                class="mb-0 mobile-rating-smaller-text-2 text-lg-center text-start d-flex align-items-center caption-height">
                                 Create Live Menus Accessible from Anywhere via QR Code
                             </h6>
                         </router-link>
                     </div>
                 </div>
+                </div>
 
                 <!-- Feature 4 -->
-                <div class="custom-col-lg-5th col-md-6 col-6 mb-4">
+                <div class="col-lg-2 col-md-4 col-6 mb-4">
+                <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                     <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                         <router-link :to="'/clubs/view'">
                             <button class="btn border-0 fw-bold tilt-hover" type="button">
-                                <div class="mb-lg-3 me-3 me-lg-0 icon-container">
+                                <div class="mb-lg-3 icon-container">
                                     <img src="../../Images/Landing Page/footer4.png" alt="Connect" class="img-fluid" />
                                 </div>
                             </button>
                         </router-link>
                         <router-link :to="'/clubs/view'" class="text-link">
                             <h6
-                                class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
-                                Enhance Customer Self-Service with Drink Listings Aggregating What Flavours to Expect
+                                class="mb-0 mobile-rating-smaller-text-2 text-lg-center text-start d-flex align-items-center caption-height">
+                                Enhance Customer Self-Service with Drink Listings Aggregating Flavours to Expect
                             </h6>
                         </router-link>
                     </div>
                 </div>
+                </div>
 
                 <!-- Feature 5 -->
-                <div class="custom-col-lg-5th col-md-6 col-6 mb-4">
+                <div class="col-lg-2 col-md-4 col-6 mb-4">
+                <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                     <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                         <router-link :to="'/clubs/view'">
                             <button class="btn border-0 fw-bold tilt-hover" type="button">
-                                <div class="mb-lg-3 me-3 me-lg-0 icon-container">
+                                <div class="mb-lg-3 icon-container">
                                     <img src="../../Images/Landing Page/footer5.png" alt="Connect" class="img-fluid" />
                                 </div>
                             </button>
                         </router-link>
                         <router-link :to="'/clubs/view'" class="text-link">
                             <h6
-                                class="mb-0 text-lg-center text-start fs-6 fs-sm-6 small-sm d-flex align-items-center caption-height">
+                                class="mb-0 mobile-rating-smaller-text-2 text-lg-center text-start d-flex align-items-center caption-height">
                                 Broadcast New Events & Create Your Own Club for Customers to Join
                             </h6>
                         </router-link>
                     </div>
                 </div>
+                </div>
+                <!-- Desktop Spacer -->
+                <div class="col-1 mobile-view-hide"></div>
 
             </div>
             <router-link :to="'/businessSignup'">
-                <button class="btn btn-warning text-white" style="background-color: #83a9e8; margin-top: 20px"
+                <button class="btn btn-warning fw-bold text-white" style="background-color: #83a9e8; margin-top: 20px"
                     aria-label="Try Out Your Drink-X Business Account">
                     Try Out Your Drink-X Business Account
                 </button>
@@ -1072,7 +1102,7 @@ export default {
         async fetchRSS() {
             this.loading = true; // Show loading spinner
             try {
-                // const response = await this.$axios.get(`http://127.0.0.1:5000/rssFeed/rssfeed`); [Comment out for deployed site]
+                // const response = await this.$axios.get(`http://127.0.0.1:5050/rssFeed/rssfeed`); [Comment out for deployed site]
                 const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/rssFeed/rssfeed`);
                 this.articles = response.data;
             } catch (error) {
@@ -1239,4 +1269,30 @@ button.btn.selected {
         max-width: 20%;
     }
 }
+
+.hero-section {
+  position: relative;
+  width: 100%;
+  padding-top: 70%; /* mobile default: 3:6 = 1:2 */
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .hero-section {
+    padding-top: 28%; /* desktop: 2:6 = 1:3 */
+  }
+}
+
+.hero-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.7);
+  z-index: -1;
+}
+
+
 </style>
