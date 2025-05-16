@@ -324,25 +324,69 @@ def createProducerAccount():
                 """,
                 (update['date'], update['text'], update['photo'], newProducerId)
             )
-        conn.commit()
+        # Add debug information about what we created
+        print(f"DEBUG: Successfully created producer with ID {newProducerId}")
+        print(f"DEBUG: Producer name: {newBusinessData['producerName']}")
+        print(f"DEBUG: Added {len(questions_answers)} question/answer entries")
+        print(f"DEBUG: Added {len(updates)} updates")
+        
+        # Initialize empty tables that the profile page needs
+        try:
+            # Create an empty reviews entry for this producer
+            cur.execute("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'producerReviews')")
+            if cur.fetchone()[0]:
+                print("DEBUG: Creating empty review record for new producer")
+                # Check if this producer already has reviews
+                cur.execute("SELECT COUNT(*) FROM \"producerReviews\" WHERE \"producerID\" = %s", (newProducerId,))
+                if cur.fetchone()[0] == 0:
+                    # Create an empty review record
+                    cur.execute("INSERT INTO \"producerReviews\" (\"producerID\") VALUES (%s)", (newProducerId,))
+                    print(f"DEBUG: Created empty review record for producer {newProducerId}")
+            
+            # Create empty profile views table
+            cur.execute("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'producersProfileViews')")
+            if cur.fetchone()[0]:
+                print("DEBUG: Creating profile view record for new producer")
+                # Check if this producer already has profile views
+                cur.execute("SELECT COUNT(*) FROM \"producersProfileViews\" WHERE \"producerId\" = %s", (newProducerId,))
+                if cur.fetchone()[0] == 0:
+                    # Create empty profile views record
+                    cur.execute("INSERT INTO \"producersProfileViews\" (\"producerId\", \"date\", \"count\") VALUES (%s, CURRENT_DATE, 0)", (newProducerId,))
+                    print(f"DEBUG: Created profile views record for producer {newProducerId}")
+            
+            conn.commit()
+            print("DEBUG: Successfully initialized related tables")
+        except Exception as init_error:
+            print(f"DEBUG ERROR: Failed to initialize related tables: {str(init_error)}")
+            # Don't fail the whole operation if this initialization fails
+            pass
 
         return jsonify( 
             {   
                 "code": 201,
-                "data": newProducerId
+                "data": newProducerId,
+                "debug_info": {
+                    "producerName": newBusinessData['producerName'],
+                    "hasQA": len(questions_answers) > 0,
+                    "hasUpdates": len(updates) > 0
+                }
             }
         ), 201
 
     except Exception as e:
         conn.rollback()
-        print(str(e))
+        print(f"DEBUG ERROR: Failed to create producer account: {str(e)}")
+        # Print the full stack trace to help with debugging
+        import traceback
+        print(f"DEBUG TRACE: {traceback.format_exc()}")
         return jsonify(
             {
                 "code": 500,
                 "data": {
                     "producerName": newBusinessData['producerName']
                 },
-                "message": "An error occurred creating the producer account."
+                "message": "An error occurred creating the producer account.",
+                "error_details": str(e)
             }
         ), 500
 

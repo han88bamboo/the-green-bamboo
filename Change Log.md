@@ -650,3 +650,12 @@ fixed successfully bug where ordinary users who sign up aren't directed to onboa
 
 Nature of the changes (frontend / backend / database):
 backend
+
+# Update as of 16 May 
+Coder: Han
+
+Purpose of the changes:
+added a ton of debugging logs to createAccount.py and producerProfile.vue
+
+Nature of the changes (frontend / backend / database):
+frontend /backend 

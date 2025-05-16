@@ -3788,25 +3788,48 @@ export default {
       // reviews
       // _id, userID, producerID, date, rating, reviewDesc, photo
       try {
+        console.log(`DEBUG: Fetching producer reviews for producerId=${this.producer_id}`);
         const response = await this.$axios.get(
           `${process.env.VUE_APP_API_URL}/getData/getProducerReviewsByProducerId/${this.producer_id}`
         );
+        console.log("DEBUG: Producer reviews API response:", response.status, response.statusText);
+        console.log("DEBUG: Producer reviews data:", response.data);
         this.filteredTourReviews = response.data;
         this.detailedReview = this.filteredTourReviews[0];
       } catch (error) {
-        console.error(error);
+        console.error("ERROR FETCHING REVIEWS: Failed to load producer reviews");
+        if (error.response) {
+          console.error("ERROR DETAILS: Status:", error.response.status);
+          console.error("ERROR DETAILS: Data:", error.response.data);
+        } else if (error.request) {
+          console.error("ERROR DETAILS: No response received from server");
+          console.error("ERROR DETAILS: Request:", error.request);
+        } else {
+          console.error("ERROR DETAILS:", error.message);
+        }
         this.dataLoaded = null;
       }
       // producers
       // _id, producerName, producerDesc, originCountry, statusOB, mainDrinks
       try {
+        console.log(`DEBUG: Fetching producer data for producerId=${this.producer_id}`);
         const response = await this.$axios.get(
           `${process.env.VUE_APP_API_URL}/getData/getProducer/${this.producer_id}`
         );
-        console.log("producerData", response.data);
+        console.log("DEBUG: Producer API response status:", response.status, response.statusText);
+        console.log("DEBUG: Producer data:", response.data);
+        
+        // Check for critical properties
+        if (!response.data) {
+          console.error("ERROR: Empty producer data received");
+        } else {
+          console.log("DEBUG: Producer exists with name:", response.data.producerName);
+          console.log("DEBUG: Producer has updates:", response.data.updates ? response.data.updates.length : "none");
+          console.log("DEBUG: Producer has QA:", response.data.questionsAnswers ? response.data.questionsAnswers.length : "none");
+        }
+        
         this.specified_producer = response.data;
-        this.specified_producer_original_photo =
-          this.specified_producer["photo"];
+        this.specified_producer_original_photo = this.specified_producer["photo"];
         this.newAddress = this.specified_producer["location"];
         this.openingHours = this.specified_producer["openingHours"];
         const dayOrder = [
@@ -4918,12 +4941,19 @@ export default {
     },
 
     // get producer's latest updates
+    // get producer's latest updates
     getLatestUpdates() {
+      console.log("DEBUG: Starting getLatestUpdates method");
       let updatesList = this.specified_producer["updates"];
+      
+      console.log("DEBUG: Updates list type:", typeof updatesList);
+      console.log("DEBUG: Updates list:", updatesList);
 
-      if (updatesList.length > 0) {
+      if (updatesList && updatesList.length > 0) {
+        console.log(`DEBUG: Producer has ${updatesList.length} updates`);
         this.hasUpdates = true;
         let latestUpdate = updatesList[updatesList.length - 1];
+        console.log("DEBUG: Latest update:", latestUpdate);
 
         // check that there is more than 1 update
         if (updatesList.length > 1) {
@@ -4960,11 +4990,19 @@ export default {
     },
 
     // get producer's answered questions (to be displayed to the users/venues)
+    // get producer's answered questions (to be displayed to the users/venues)
     checkProducerAnswered() {
+      console.log("DEBUG: Starting checkProducerAnswered method");
       let answeredQuestions = this.specified_producer["questionsAnswers"];
-      if (answeredQuestions.length > 0) {
+      
+      console.log("DEBUG: Q&A list type:", typeof answeredQuestions);
+      console.log("DEBUG: Q&A list:", answeredQuestions);
+      
+      if (answeredQuestions && answeredQuestions.length > 0) {
+        console.log(`DEBUG: Producer has ${answeredQuestions.length} Q&As`);
         for (let qa in answeredQuestions) {
           let answer = answeredQuestions[qa]["answer"];
+          console.log(`DEBUG: Q&A ${qa} has answer:`, answer ? "yes" : "no");
           if (answer != "") {
             this.answeredQuestions.push(answeredQuestions[qa]);
           } else {
@@ -5270,11 +5308,22 @@ export default {
     },
 
     // for producer to track page views
-    getProfileViews() {
+    async getProfileViews() {
+      console.log("DEBUG: Starting getProfileViews method");
+      console.log(`DEBUG: Profile view info:`, this.producerProfileViewInfo);
+      
       // ensure that it is not the producer viewing their own page
       if (this.user_id != this.producer_id) {
         // get current date
         let currDate = this.currDate;
+        console.log(`DEBUG: Current date for views: ${currDate}`);
+        
+        // check if the profileViewInfo exists
+        if (!this.producerProfileViewInfo) {
+          console.log("DEBUG: No profile view record exists for this producer");
+        } else {
+          console.log(`DEBUG: Found profile view record with ID: ${this.producerProfileViewInfo.id}`);
+        }
 
         // check if currDate exists in the producerProfileViewInfo
         let dateExists =
@@ -5285,7 +5334,7 @@ export default {
           // get current view
           let viewsID = this.producerProfileViewInfo.id;
           try {
-            const response = this.$axios.post(
+            const response = await this.$axios.post(
               `${process.env.VUE_APP_API_URL}/editProducerProfile/addProfileCount`,
               {
                 producerID: this.producerProfileID,
@@ -5297,16 +5346,16 @@ export default {
                 },
               }
             );
-            console.log(response.data);
+            console.log("DEBUG: Profile view count updated:", response.data);
           } catch (error) {
-            console.error(error);
+            console.error("ERROR: Failed to update profile count:", error);
           }
         }
 
         // if current date does not exist, add a new view
         else {
           try {
-            this.$axios.post(
+            const response = await this.$axios.post(
               `${process.env.VUE_APP_API_URL}/editProducerProfile/addNewProfileCount`,
               {
                 producerID: this.producer_id,
@@ -5318,8 +5367,9 @@ export default {
                 },
               }
             );
+            console.log("DEBUG: New profile view added:", response.data);
           } catch (error) {
-            console.error(error);
+            console.error("ERROR: Failed to add new profile view:", error);
           }
         }
       }
