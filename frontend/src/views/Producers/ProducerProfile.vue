@@ -3765,23 +3765,36 @@ export default {
           let params = {
             businessType: this.userType,
           };
+          console.log("SETTINGS BUTTON DEBUG: Starting account request check for producer ID:", this.producer_id);
           try {
             let response = await this.$axios.get(
               `${process.env.VUE_APP_API_URL}/getData/getAccountRequest/${this.producer_id}`,
               { params }
             );
+            console.log("SETTINGS BUTTON DEBUG: Account request API response:", response.data);
+
             if (response.data.length === 0) {
+              console.log("SETTINGS BUTTON DEBUG: CONDITION 1 MET - No account request data found (response.data.length === 0)");
               this.adminCreated = true;
             } else if (!response.data["isApproved"]) {
-              this.adminCreated = true;
-            }
-          } catch (error) {
-            if (error.response && error.response.status === 404) {
+              console.log("SETTINGS BUTTON DEBUG: CONDITION 2 MET - Account request exists but is not approved (!response.data[\"isApproved\"])");
+              console.log("SETTINGS BUTTON DEBUG: Value of isApproved:", response.data["isApproved"]);
               this.adminCreated = true;
             } else {
+              console.log("SETTINGS BUTTON DEBUG: No conditions met in the try block, adminCreated unchanged");
+            }
+          } catch (error) {
+            console.log("SETTINGS BUTTON DEBUG: Error caught in account request check");
+ 
+            if (error.response && error.response.status === 404) {
+              console.log("SETTINGS BUTTON DEBUG: CONDITION 3 MET - 404 error (no account request found)");
+              this.adminCreated = true;
+            } else {
+              console.log("SETTINGS BUTTON DEBUG: Other error type:", error.message);
               console.error("An unexpected error occurred:", error);
             }
           }
+          console.log("SETTINGS BUTTON DEBUG: Final adminCreated value after account request check:", this.adminCreated);
         }
       }
 

@@ -678,3 +678,12 @@ Edit clubs.py and events.py to change the error message.
 
 Nature of the changes (frontend / backend / database):
 frontend 
+
+# Update as of 17 May - deployed with no major issues
+Coder: Han
+
+Purpose of the changes:
+adding a ton of debugging logs to producerProfile.vue to diagnose settings button error
+
+Nature of the changes (frontend / backend / database):
+frontend 
