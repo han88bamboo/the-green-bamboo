@@ -659,3 +659,13 @@ added a ton of debugging logs to createAccount.py and producerProfile.vue
 
 Nature of the changes (frontend / backend / database):
 frontend /backend 
+
+# Update as of 17 May 
+Coder: Kai 
+
+Purpose of the changes:
+Changing front end of the clubs and events page: fixed spacing, buttons, margins
+Edit clubs.py and events.py to change the error message. 
+
+Nature of the changes (frontend / backend / database):
+frontend 
