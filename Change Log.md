@@ -661,6 +661,15 @@ Nature of the changes (frontend / backend / database):
 frontend /backend 
 
 # Update as of 17 May 
+Coder: Han
+
+Purpose of the changes:
+fixed bug where newly-created producer accounts cannot see their profile page - createAccount.py and producerProfile.vue. however, Settings button still does not work
+
+Nature of the changes (frontend / backend / database):
+frontend /backend 
+
+# Update as of 17 May 
 Coder: Kai 
 
 Purpose of the changes:

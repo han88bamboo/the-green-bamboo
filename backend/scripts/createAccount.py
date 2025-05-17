@@ -332,6 +332,18 @@ def createProducerAccount():
         
         # Initialize empty tables that the profile page needs
         try:
+            # Ensure location has a default value if not provided
+            if not newBusinessData.get('location') or newBusinessData.get('location').strip() == '':
+                print("DEBUG: Setting default location since none was provided")
+                cur.execute(
+                    """
+                    UPDATE producers
+                    SET "location" = %s
+                    WHERE id = %s
+                    """,
+                    ("Location not specified", newProducerId)
+                )
+                
             # Create an empty reviews entry for this producer
             cur.execute("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'producerReviews')")
             if cur.fetchone()[0]:
@@ -350,14 +362,31 @@ def createProducerAccount():
                 # Check if this producer already has profile views
                 cur.execute("SELECT COUNT(*) FROM \"producersProfileViews\" WHERE \"producerId\" = %s", (newProducerId,))
                 if cur.fetchone()[0] == 0:
-                    # Create empty profile views record
-                    cur.execute("INSERT INTO \"producersProfileViews\" (\"producerId\", \"date\", \"count\") VALUES (%s, CURRENT_DATE, 0)", (newProducerId,))
+                    # Create empty profile views record with current date
+                    cur.execute(
+                        """
+                        INSERT INTO "producersProfileViews" ("producerId", "date", "count") 
+                        VALUES (%s, CURRENT_DATE, 0)
+                        """, 
+                        (newProducerId,)
+                    )
                     print(f"DEBUG: Created profile views record for producer {newProducerId}")
+            
+            # Initialize arrays as empty if they don't exist already
+            if len(questions_answers) == 0:
+                print("DEBUG: No questions/answers provided, ensuring field exists")
+                newBusinessData['questionsAnswers'] = []
+                
+            if len(updates) == 0:
+                print("DEBUG: No updates provided, ensuring field exists")
+                newBusinessData['updates'] = []
             
             conn.commit()
             print("DEBUG: Successfully initialized related tables")
         except Exception as init_error:
             print(f"DEBUG ERROR: Failed to initialize related tables: {str(init_error)}")
+            import traceback
+            print(f"DEBUG TRACE: {traceback.format_exc()}")
             # Don't fail the whole operation if this initialization fails
             pass
 
