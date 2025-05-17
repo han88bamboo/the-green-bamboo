@@ -9,6 +9,7 @@ from psycopg2.extras import RealDictCursor
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
 
+# -----------------------------------------------------------------------------------------
 
 # Helper function to update database 
 def update_user_listings(cursor, user_id, category_name, selected_listings):
@@ -126,9 +127,9 @@ def remove_listing_from_table(cursor, table_name, listing_name):
 # Helper function to get top 5 Grails, Up & Coming, and GOATs
 def fetch_top_5(cursor, table, drink_type=None):
     try:
-        if drink_type and drink_type != "all":
+        if drink_type and drink_type != "Show All Types":
             cursor.execute(f'''
-                SELECT "listingName", "drinkType", "typeCategory", "counter"
+                SELECT "listingID", "listingName", "drinkType", "typeCategory", "counter"
                 FROM "{table}"
                 WHERE "drinkType" = %s
                 ORDER BY "counter" DESC
@@ -136,24 +137,44 @@ def fetch_top_5(cursor, table, drink_type=None):
             ''', (drink_type,))
         else:
             cursor.execute(f'''
-                SELECT "listingName", "drinkType", "typeCategory", "counter"
+                SELECT "listingID", "listingName", "drinkType", "typeCategory", "counter"
                 FROM "{table}"
                 ORDER BY "counter" DESC
                 LIMIT 5
             ''')
         rows = cursor.fetchall()
-        return [
-            {
-                "listingName": row[0],
-                "drinkType": row[1],
-                "typeCategory": row[2],
-                "counter": row[3]
-            }
-            for row in rows
-        ]
+        
+        # Loop through the rows and get the rating for each listing
+        for row in rows:
+            cursor.execute('''
+                SELECT reviews.rating, "listings"."producerID", listings.photo
+                FROM reviews
+                JOIN listings ON "reviews"."reviewTarget" = listings.id
+                WHERE listings.id = %s
+            ''', (row['listingID'],))
+
+            details = cursor.fetchone()
+            row['rating'] = details['rating'] if details else None
+            row['producerID'] = details['producerID'] if details else None
+            row['photo'] = details['photo'] if details else None
+
+            # Get the producer name
+            cursor.execute('''
+                SELECT "producerName"
+                FROM producers
+                WHERE id = %s
+            ''', (row['producerID'],))
+
+            producer = cursor.fetchone()
+            row['producerName'] = producer['producerName'] if producer else None
+
+        return rows
+    
     except Exception as e:
         raise Exception(f"Error fetching top 5 for {table}: {e}")
 
+
+# ==========================================================================================
 
 # [POST] Update user's Grails, Up & Coming, and GOATs selections
 @blueprint.route("/editTop3", methods=['POST'])
@@ -229,7 +250,7 @@ def editTop3():
     
 
 # [GET] Get top 5 Grails, Up & Coming, and GOATs based on drink type
-@blueprint.route("/getTop5/drink_type", methods=['GET'])
+@blueprint.route("/getTop5/<drink_type>", methods=['GET'])
 def getTop5(drink_type):
     conn = g.db
     cursor = conn.cursor()

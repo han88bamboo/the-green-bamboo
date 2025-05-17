@@ -322,7 +322,7 @@ const routes = [
     component: () => import("../views/zToBeDeleted/AboutView.vue"),
   },
 
-  // ----------------- Best Of (Latest News)-----------------
+  // ----------------- Latest News-----------------
 
   {
     path: "/Latest-News",
@@ -330,7 +330,13 @@ const routes = [
     component: () => import("../views/Users/LatestNews.vue"),
   },
 
-  // -------------------------------------------------------------------------------------
+  // ----------------- Best Of --------------------
+
+  {
+    path: "/best-of",
+    name: "bestof",
+    component: () => import("../views/BestOfView.vue"),
+  }, 
 ];
 
 const router = createRouter({
