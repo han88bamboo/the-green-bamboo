@@ -125,16 +125,20 @@ def remove_listing_from_table(cursor, table_name, listing_name):
 
 
 # Helper function to get top 5 Grails, Up & Coming, and GOATs
-def fetch_top_5(cursor, table, drink_type=None):
+def fetch_top_5(cursor, table, drink_type=None, type_category=None):
+
+    if drink_type in ['Whisky', 'Whiskey']:
+        drink_type = ['Whisky', 'Whiskey']  
+
     try:
         if drink_type and drink_type != "Show All Types":
             cursor.execute(f'''
                 SELECT "listingID", "listingName", "drinkType", "typeCategory", "counter"
                 FROM "{table}"
-                WHERE "drinkType" = %s
+                WHERE "drinkType" IN %s AND "typeCategory" = %s
                 ORDER BY "counter" DESC
                 LIMIT 5
-            ''', (drink_type,))
+            ''', (tuple(drink_type), type_category,))
         else:
             cursor.execute(f'''
                 SELECT "listingID", "listingName", "drinkType", "typeCategory", "counter"
@@ -146,17 +150,19 @@ def fetch_top_5(cursor, table, drink_type=None):
         
         # Loop through the rows and get the rating for each listing
         for row in rows:
+
+            # Get the listing details
             cursor.execute('''
-                SELECT reviews.rating, "listings"."producerID", listings.photo
-                FROM reviews
-                JOIN listings ON "reviews"."reviewTarget" = listings.id
+                SELECT "producerID", photo
+                FROM listings
                 WHERE listings.id = %s
             ''', (row['listingID'],))
 
-            details = cursor.fetchone()
-            row['rating'] = details['rating'] if details else None
-            row['producerID'] = details['producerID'] if details else None
-            row['photo'] = details['photo'] if details else None
+            listing_details = cursor.fetchone()
+             
+
+            row['producerID'] = listing_details['producerID'] if listing_details else None
+            row['photo'] =listing_details['photo'] if listing_details else None
 
             # Get the producer name
             cursor.execute('''
@@ -167,6 +173,20 @@ def fetch_top_5(cursor, table, drink_type=None):
 
             producer = cursor.fetchone()
             row['producerName'] = producer['producerName'] if producer else None
+
+            # Get the rating
+            cursor.execute('''
+                SELECT AVG("rating") AS "averageRating"
+                FROM "reviews"
+                WHERE "reviewTarget" = %s
+            ''', (row['listingID'],))
+
+            rating = cursor.fetchone()
+
+            if rating and rating['averageRating'] is not None:
+                row['averageRating'] = round(rating['averageRating'], 2)
+            else:
+                row['averageRating'] = None
 
         return rows
     
@@ -250,15 +270,15 @@ def editTop3():
     
 
 # [GET] Get top 5 Grails, Up & Coming, and GOATs based on drink type
-@blueprint.route("/getTop5/<drink_type>", methods=['GET'])
-def getTop5(drink_type):
+@blueprint.route("/getTop5/<drink_type>/<type_category>", methods=['GET'])
+def getTop5(drink_type, type_category):
     conn = g.db
     cursor = conn.cursor()
 
     try:
-        grails_data = fetch_top_5(cursor, "grails", drink_type)
-        up_and_coming_data = fetch_top_5(cursor, "upAndComing", drink_type)
-        goats_data = fetch_top_5(cursor, "goats", drink_type)
+        grails_data = fetch_top_5(cursor, "grails", drink_type, type_category)
+        up_and_coming_data = fetch_top_5(cursor, "upAndComing", drink_type, type_category)
+        goats_data = fetch_top_5(cursor, "goats", drink_type, type_category)
 
         return jsonify({
             "code": 200,
