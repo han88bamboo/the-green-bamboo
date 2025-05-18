@@ -221,12 +221,12 @@
                 <div class="d-md-none">
                     <div class="d-flex flex-row flex-wrap justify-content-center w-100">
                         <div v-for="listing in listings.slice(0,4)" :key="listing.id" class="d-flex flex-column align-items-center">
-                            <div class="drink-photo-container-row image-container-150 mb-2" style="width: 150px; height: 150px" @click="goSearchListing(listing)">
+                            <div class="drink-photo-container-row image-container-150 mb-2" style="width: 150px" @click="goSearchListing(listing)">
                                 <img v-if="listing['photo']" :src="listing['photo']" class="img-fluid rounded mb-2"
                                     style="max-height: 100px; object-fit: contain;" />
                                 <img v-else src="../../Images/Drinks/Placeholder.png" class="img-fluid rounded mb-2"
                                     style="max-height: 100px; object-fit: contain;" />
-                                <div class="fw-semibold small listing-text">{{ listing['listingName'] }}</div>
+                                <div class="fw-semibold mobile-rating-smaller-text-2 listing-text">{{ listing['listingName'] }}</div>
                             </div>
                         </div>
                     </div>
@@ -911,7 +911,7 @@
 
             </div>
             <router-link :to="'/businessSignup'">
-                <button class="btn btn-warning fw-bold text-white" style="background-color: #83a9e8; margin-top: 20px"
+                <button class="btn btn-warning fw-bold btn-lg text-white" style="background-color: #83a9e8; margin-top: 20px"
                     aria-label="Try Out Your Drink-X Business Account">
                     Try Out Your Drink-X Business Account
                 </button>

@@ -14,7 +14,8 @@
                         <input
                             class="form-control fst-italic"
                             type="text"
-                            placeholder="What are you drinking today?"
+                            style="border: none; height: 100%; line-height: 50px; padding: 0 1rem;"
+                            placeholder="Go for it!"
                             v-model="searchInput"
                             v-on:keyup.enter="goSearch"
                             v-on:input="getSuggestions"
@@ -46,8 +47,8 @@
                     <img
                         src="../../Images/Others/search-green.png"
                         style="
-                            width: 30px;
-                            height: 30px;
+                            width: 25px;
+                            height: 25px;
                             margin: 0px 10px;
                             align-self: center;
                         "

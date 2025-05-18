@@ -32,11 +32,14 @@
     <!-- Main content -->
     <div v-if="dataLoaded == true">
       <!-- Display the post -->
-      <div class="container mt-3 text-start">
+      <div class="container mt-4" >
+      <div class="row justify-content-center gap-1">
+      <!-- Post Info and Comment Box -->
+        <div class="card container col-6 mobile-col-11 mt-3 mobile-mt-0 mobile-p-1 p-4 text-start" >
         <!-- Row 1: Poster Photo, Poster Name, Post Date -->
-        <div class="row">
+        <div class="row ">
           <!-- Column 1: Poster Photo -->
-          <div class="col-12 col-md-1 d-flex align-items-center">
+          <div class="col-1 mobile-col-2 flex-column justify-content-center me-3">
             <img
               v-if="poster.profile_photo"
               :src="poster.profile_photo"
@@ -44,6 +47,7 @@
               alt="Profile Photo"
               width="50"
               height="50"
+              style="object-fit: cover;"
             />
             <svg
               v-else
@@ -53,6 +57,7 @@
               fill="currentColor"
               class="bi bi-person-circle"
               viewBox="0 0 16 16"
+              style="object-fit: cover;"
             >
               <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
               <path
@@ -63,9 +68,12 @@
           </div>
 
           <!-- Column 2: Poster Name and Post Date -->
-          <div class="col-11">
-            <h3>{{ poster.displayName }} ({{ poster.rank }})</h3>
-            <p class="text-muted">{{ post.postDate }}</p>
+          <div class="row col-11 mobile-col-10 d-flex flex-wrap align-items-center text-start">
+            <h5 class="mobile-view-hide fw-bold align-items-center " style="color: rgb(2, 117, 98);">{{ poster.displayName }} ({{ poster.rank }})</h5>
+            <p class="mobile-view-hide text-muted align-items-center">posted on {{ post.postDate }}</p>
+            <p class="mobile-rating-smaller-text-2 align-items-center mobile-view-show">
+             <span class="fw-bold"><span style="color: rgb(2, 117, 98)">{{ poster.displayName }} </span> ({{ poster.rank }}) </span> posted on {{ post.postDate }}
+            </p>
           </div>
         </div>
 
@@ -94,51 +102,47 @@
                 >
                   <img
                     :src="photo"
-                    class="d-block mx-auto w-auto"
+                    class="d-block mx-auto w-auto rounded"
                     style="height: 250px"
                     :alt="'Slide ' + (index + 1)"
                   />
                 </div>
               </div>
               <button
-                class="carousel-control-prev"
-                type="button"
-                data-bs-target="#postPhotosCarousel"
-                data-bs-slide="prev"
-              >
-                <span
-                  class="carousel-control-prev-icon"
-                  aria-hidden="true"
-                  style="background-color: black"
-                ></span>
-                <span class="visually-hidden">Previous</span>
-              </button>
-              <button
-                class="carousel-control-next"
-                type="button"
-                data-bs-target="#postPhotosCarousel"
-                data-bs-slide="next"
-              >
-                <span
-                  class="carousel-control-next-icon"
-                  aria-hidden="true"
-                  style="background-color: black"
-                ></span>
-                <span class="visually-hidden">Next</span>
-              </button>
+                          class="carousel-control-prev"
+                          type="button"
+                          data-bs-target="#postPhotosCarousel"
+                          data-bs-slide="prev"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="black" class="bi bi-chevron-left" viewBox="0 0 16 16">
+                             <path fill-rule="evenodd" d="M11.354 1.354a.5.5 0 0 1 0 .708L6.707 6.707l4.647 4.646a.5.5 0 0 1-.708.708l-5-5a.5.5 0 0 1 0-.708l5-5a.5.5 0 0 1 .708 0z"/>
+                            </svg>
+                          <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button
+                          class="carousel-control-next"
+                          type="button"
+                          data-bs-target="#postPhotosCarousel"
+                          data-bs-slide="next"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="black" class="bi bi-chevron-right" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M4.646 1.354a.5.5 0 0 1 .708 0l5 5a.5.5 0 0 1 0 .708l-5 5a.5.5 0 0 1-.708-.708L9.293 6.707 4.646 2.06a.5.5 0 0 1 0-.708z"/>
+                          </svg>
+                          <span class="visually-hidden">Next</span>
+                        </button>
             </div>
           </div>
         </div>
 
         <!-- Row 3: Post Content -->
-        <div class="row mt-3">
-          <div class="col-12">
-            <p>{{ post.postContent }}</p>
-          </div>
-        </div>
+        <div class="row mt-3 text-start px-0 mobile-rating-smaller-text-2">
+                    <div class="col-md-12">
+                      <p>{{ post.postContent }}</p>
+                    </div>
+                  </div>
         <!-- Row 4: Like Button -->
         <div v-if="isMember" class="row text-start">
-          <div class="col-12 d-flex gap-4">
+          <div class="col-12 d-flex gap-2">
             <!-- Black arrow up if user already like post (aka upvote) -->
             <p
               v-if="post.likedMembers.includes(memberID)"
@@ -237,31 +241,45 @@
             <div class="input-group">
               <input
                 type="text"
-                class="form-control"
+                class="form-control me-2 rounded mobile-rating-smaller-text-2"
                 placeholder="Write a comment..."
                 aria-label="Write a comment..."
                 aria-describedby="button-addon2"
                 v-model="newComment"
               />
               <button
-                class="btn primary-btn"
+                class="btn primary-btn-less-round-blue fw-bold rounded mobile-view-hide"
                 type="button"
                 id="button-addon2"
                 @click="addComment"
               >
                 Comment
               </button>
+              <button
+                class="btn primary-btn-less-round-blue btn-sm rounded mobile-view-show"
+                type="button "
+                id="button-addon2"
+                @click="addComment(post.id)"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
+                  <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
+                </svg>
+              </button> 
             </div>
           </div>
         </div>
-
-        <!-- Row 6: Comments -->
-        <div class="row mt-3">
-          <h5 class="text-decoration-underline">Comments:</h5>
+      </div>
+      
+      <!-- Comments / Post Discussion-->
+      <div class=" container col-5 mobile-col-12 mt-1 text-start ms-0" style="padding: 20px">
+        <h5 class="fw-bold mb-3 mobile-fs-6" >Post Discussion</h5>
+        <!-- Row: Comments -->
+        <div class="row">
+          
           <div v-if="comments.length > 0">
-            <div v-for="comment in comments" :key="comment.id" class="row mt-3">
+            <div v-for="comment in comments" :key="comment.id" class="row">
               <!-- Column 1: Commenter Photo -->
-              <div class="col-12 col-md-1 d-flex flex-column align-items-start">
+              <div class="col-1 d-flex flex-column align-items-start me-2">
                 <img
                   v-if="comment.commenterInfo.photo"
                   :src="comment.commenterInfo.photo"
@@ -286,16 +304,15 @@
                   />
                 </svg>
               </div>
-
-              <div class="col-11">
-                <!-- Column 2 Row 1: Commenter Name and Comment Date -->
-                <div class="row text-start align-items-center ps-0">
+              <div class="col-10">
+                <!-- Column 2: Commenter Name and Comment Date -->
+                <div class="row mobile-rating-smaller-text-2 align-items-center ps-3">
                   <!-- Name and Rank -->
-                  <div class="col-md-4 d-flex align-items-center">
                     <div class="d-flex align-items-center flex-wrap">
                       <router-link
                         :to="profileURL(comment.commenterInfo.id, comment.commenterInfo.userType)"
-                        class="text-black text-decoration-none fw-bold me-2"
+                        class="fw-bold me-2 hover-underline"
+                        style="color: rgb(2, 117, 98);"
                       >
                         <template v-if="comment.commenterInfo.userType === 'user'">
                           {{ comment.commenterInfo.displayName }}
@@ -309,18 +326,17 @@
                       </router-link>
                       <span>({{ comment.commenterInfo.rank }})</span>
                     </div>
-                  </div>
-
                   <!-- Comment Date -->
-                  <div class="col-md-4 d-flex align-items-center">
-                    <p class="mb-0">{{ comment.commentDate }}</p>
-                  </div>
-
-                  <!-- Edit/Delete Buttons -->
-                  <div class="col-md-4 d-flex justify-content-end align-items-center">
+                  <p class="mb-0">{{ comment.commentDate }}</p>
+                  
+                </div>
+              </div>
+              <div class="col-12 mt-2">
+                <!-- Edit/Delete Buttons -->
+                  <div class="d-flex text-start align-items-center mb-1">
                     <button
                       v-if="comment.commenterID == memberID || isAdmin"
-                      class="btn primary-btn-green btn-sm me-3"
+                      class="btn primary-btn-green rounded btn-sm me-3"
                       data-bs-toggle="modal"
                       data-bs-target="#editCommentModal"
                       @click="selectedComment = deepCopy(comment)"
@@ -329,7 +345,7 @@
                     </button>
                     <button
                       v-if="comment.commenterID == memberID || isAdmin"
-                      class="btn primary-btn-red btn-sm"
+                      class="btn primary-btn-red rounded btn-sm"
                       data-bs-toggle="modal"
                       data-bs-target="#deleteCommentModal"
                       @click="selectedCommentDelete = deepCopy(comment)"
@@ -337,15 +353,11 @@
                       Delete
                     </button>
                   </div>
-                </div>
-
-
-                <!-- Column 2 Row 2: Comment -->
+                <!-- Row 2: Comment -->
                 <div class="row">
-                  <p>{{ comment.commentContent }}</p>
+                  <p class="mobile-rating-smaller-text-2">{{ comment.commentContent }}</p>
                 </div>
-
-                <!-- Column 2 Row 3: Comment's like button and total likes -->
+                <!-- Row 3: Comment's like button and total likes -->
                 <div class="row d-flex align-items-center">
                   <div class="col-12 d-flex gap-4" >
 
@@ -441,6 +453,7 @@
                   </div>
                 </div>
               </div>
+              <hr>
 
               <!--Edit Comment Modal start -->
               <div
@@ -545,18 +558,20 @@
           </div>
 
           <div v-else>
-            <p>No comments yet.</p>
+            <p class="mobile-rating-smaller-text-2">No comments yet.</p>
           </div>
         </div>
 
         <!-- Row 7: Load more comments button -->
         <div class="row mt-3">
           <div v-if="showButton" class="col-12 d-flex justify-content-center">
-            <button class="btn primary-btn" @click="getMoreComments()">
+            <button class="btn primary-btn btn-sm fw-bold" @click="getMoreComments()">
               Load more comments
             </button>
           </div>
         </div>
+      </div>
+      </div>
       </div>
     </div>
   </div>

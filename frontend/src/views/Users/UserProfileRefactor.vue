@@ -193,16 +193,14 @@
 
             <!-- buttons -->
             <div class="row mt-3">
-              <button
+              <router-link
                 v-if="ownProfile && user"
-                type="button"
-                class="btn tertiary-btn-blue-outline xprimary-btn-outline-not-round"
-                data-bs-toggle="modal"
-                data-bs-target="#editProfileModal"
+                :to="{ path: '/dashboard/user' }"
+                class="btn primary-btn-less-round-blue btn-lg mt-3"
                 style="font-weight: bold"
               >
-                Edit Profile
-              </button>
+                View My Stats
+              </router-link>
               <button
                 v-else-if="following && user"
                 type="button"
@@ -223,14 +221,7 @@
             </div>
             <!-- buttons (DESKTOP ONLY) -->
             <div class="row mt-0">
-              <router-link
-                v-if="ownProfile && user"
-                :to="{ path: '/dashboard/user' }"
-                class="btn primary-btn-less-round-blue btn-lg mt-3"
-                style="font-weight: bold"
-              >
-                View My Stats
-              </router-link>
+              
               <span
                 style="position: relative; display: inline-block"
                 class="m-0 p-0"
@@ -1413,7 +1404,7 @@
               padding: 16px;
               background-color: #ffffff;
             "
-            class="mobile-view-hide"
+            class="mb-4 mobile-view-hide"
             >
             <!-- Welcome section -->
             <div style="margin-bottom: 24px" >
@@ -1441,16 +1432,16 @@
               </div>
             </div>
 
-            <h2
+            <h3
               style="
                 font-size: 24px;
-                font-weight: normal;
+                font-weight: bold;
                 border-bottom: 1px solid #e0e0e0;
                 padding-bottom: 16px;
               "
             >
               Welcome to Drink-X. Let's get started!
-            </h2>
+            </h3>
 
             <div>
               <div
@@ -1472,19 +1463,12 @@
                   alt="Review your first drink"
                 />
                 <div>
-                  <p style="font-size: 18px; margin-bottom: 8px">
+                  <p class="mobile-rating-smaller-text-2 mb-2">
                     Review your first drink.
                   </p>
                   <router-link :to="'/explore'">
                     <button
-                      style="
-                        padding: 8px 16px;
-                        background-color: #f0b358;
-                        border: none;
-                        color: black;
-                        border-radius: 4px;
-                        cursor: pointer;
-                      "
+                      class="btn btn-warning btn-sm rounded fw-bold"
                       @mouseover="hoverButton($event)"
                       @mouseleave="leaveButton($event)"
                     >
@@ -1493,15 +1477,15 @@
                   </router-link>
                 </div>
               </div>
-
+             
               <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px;">
-                <img src="/address-book.png" 
+                <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Layer_1.png?v=1747585016" 
                   style="width: 64px; height: 64px; object-fit: contain; border-radius: 4px;" 
                   alt="Invite two friends" />
                 <div>
-                  <p style="font-size: 18px; margin-bottom: 8px;">Invite two friends.</p>
+                  <p class="mobile-rating-smaller-text-2 mb-2">Invite two friends.</p>
                   <button
-                    style="padding: 8px 16px; background-color: #F0B358; border: none; color: black; border-radius: 4px; cursor: pointer;"
+                    class="btn btn-warning btn-sm rounded fw-bold"
                     @mouseover="hoverButton($event)"
                     @mouseleave="leaveButton($event)"
                     data-bs-toggle="modal"
@@ -1532,18 +1516,11 @@
                   alt="Curate a list to share"
                 />
                 <div>
-                  <p style="font-size: 18px; margin-bottom: 8px">
+                  <p class="mobile-rating-smaller-text-2 mb-2">
                     Curate a list to share.
                   </p>
                   <button
-                    style="
-                      padding: 8px 16px;
-                      background-color: #f0b358;
-                      border: none;
-                      color: black;
-                      border-radius: 4px;
-                      cursor: pointer;
-                    "
+                    class="btn btn-warning btn-sm rounded fw-bold"
                     @mouseover="hoverButton($event)"
                     @mouseleave="leaveButton($event)"
                     data-bs-toggle="modal"
@@ -1790,19 +1767,12 @@
                   alt="Explore and join a club!"
                 />
                 <div>
-                  <p style="font-size: 18px; margin-bottom: 8px">
+                  <p class="mobile-rating-smaller-text-2 mb-2">
                     Explore and join a club!
                   </p>
                   <router-link :to="'/clubs/view'">
                     <button
-                      style="
-                        padding: 8px 16px;
-                        background-color: #f0b358;
-                        border: none;
-                        color: black;
-                        border-radius: 4px;
-                        cursor: pointer;
-                      "
+                      class="btn btn-warning btn-sm rounded fw-bold"
                       @mouseover="hoverButton($event)"
                       @mouseleave="leaveButton($event)"
                     >
@@ -1922,7 +1892,7 @@
                     </div>
                   </div>
                 </div>
-                <div v-else class="container ">
+                <div v-else class="mb-2 mobile-rating-smaller-text-2">
                   No reviews yet. To explore more drinks in the home page,
                   <router-link to="/" style="color: inherit"
                     >click here</router-link
@@ -1972,7 +1942,7 @@
                           type="button"
                           class="btn-close"
                           data-bs-dismiss="modal"
-                          aria-label="Close"
+                          aria-label="Close"              
                         ></button>
                       </div>
                       <div class="modal-body">

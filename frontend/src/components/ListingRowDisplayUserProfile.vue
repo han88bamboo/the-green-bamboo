@@ -52,7 +52,7 @@
             </div>
         </div>
         </div>
-        <div v-else class="m-2 text-start">
+        <div v-else class="mb-2 mobile-rating-smaller-text-2">
             No {{ displayName.toLowerCase() }} yet. To explore more drinks in the home page, 
             <router-link to="/" style="color: inherit;">click here</router-link>. 
         </div>

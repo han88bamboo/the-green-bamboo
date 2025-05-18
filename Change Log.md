@@ -687,3 +687,15 @@ adding a ton of debugging logs to producerProfile.vue to diagnose settings butto
 
 Nature of the changes (frontend / backend / database):
 frontend 
+
+# Update as of 19 May - deployed with no major issues
+Coder: Kai
+
+Purpose of the changes:
+Alot of front-end changes, mainly to clubs / events to align spacing, margins, colors, sizings 
+This also involved editing other components like EventBox.vue
+Also cleaned up margin issues with the Landing page and on the User Profile 
+Cleaned up some misalignment in search boxes 
+
+Nature of the changes (frontend / backend / database):
+frontend 

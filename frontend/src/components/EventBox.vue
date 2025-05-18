@@ -3,7 +3,7 @@
 
         <!-- Title if current user is profile owner -->
         <div v-if="selfView" class="d-flex flex-row justify-content-between align-items-center">
-            <h3 class="m-0">Your Events</h3>
+            <h4 class="fw-bold text-start">Your Events</h4>
 
             <!-- Create event button -->
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16" data-bs-toggle="modal" data-bs-target="#createEventModal" 
@@ -16,7 +16,7 @@
 
         <!-- Title if not current user -->
         <div v-else>
-            <h3>Upcoming Events</h3>
+            <h4 class="fw-bold text-start">Upcoming Events</h4>
         </div>
 
         <!-- Cannot create event message -->
@@ -25,7 +25,7 @@
         </div>
 
         <!-- List of events -->
-        <div class="row mt-3">
+        <div class="row mt-1">
             <!-- No events added yet message -->
             <div v-if="events.length === 0" class="col-12">
                 <p>No events added yet.</p>
@@ -37,19 +37,19 @@
                 <!-- Event details-->
                 <div v-for="event in events" :key="event.id" class="text-start">
                     <!-- Banner -->
-                    <div class="row" style="height: 100px; width: auto; cursor: pointer;" @click="this.$router.push({ name: 'eventview', params: { eventID: event.id } })">
-                        <img v-if="event.eventBanners" :src="event.eventBanners[0]" class="img-fluid event-banner" alt="Event Banner">
-                        <img v-else :src="defaultEventBanner" class="img-fluid event-banner" alt="Event Banner">
+                    <div class="row rounded" style="height: 100px; width: auto; cursor: pointer;" @click="this.$router.push({ name: 'eventview', params: { eventID: event.id } })">
+                        <img v-if="event.eventBanners" :src="event.eventBanners[0]" class="rounded img-fluid event-banner" alt="Event Banner">
+                        <img v-else :src="defaultEventBanner" class="rounded img-fluid event-banner" alt="Event Banner">
                     </div>
 
                     <!-- Event name -->
                     <div class="row">
-                        <p class="m-0" style="cursor: pointer;" @click="this.$router.push({ name: 'eventview', params: { eventID: event.id } })">{{ event.eventName }}</p>
+                        <p class="m-0 mt-2 hover-underline mobile-rating-smaller-text-2" style="cursor: pointer; " @click="this.$router.push({ name: 'eventview', params: { eventID: event.id } })">{{ event.eventName }}</p>
                     </div>
 
                     <!-- Event date and time -->
                     <div class="row mt-0 pt-0">
-                        <p class=" fw-normal small-text">{{ formatDate(event.eventStartDate) }} , {{ formatTime(event.eventStartTime) }} - {{ formatTime(event.eventEndTime) }}</p>
+                        <p class="fw-normal small-text mobile-rating-smaller-text-2" style="color: #027562">{{ formatDate(event.eventStartDate) }} , {{ formatTime(event.eventStartTime) }} - {{ formatTime(event.eventEndTime) }}</p>
                     </div>
                 </div>
             </div>

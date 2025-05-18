@@ -78,9 +78,9 @@
                     <div v-if="invitedClubs.length > 0" class="collapse d-md-block my-4" id="sidebarContent">
                         <h5 class="text-start fw-bold my-3 collapse d-md-block">Clubs You Are Invited To</h5>
 
-                        <div v-for="club in invitedClubs.slice(0, 5)" class="event-club-box" :key="club.id">
+                        <div v-for="club in invitedClubs.slice(0, 5)" class="event-club-box p-3" :key="club.id">
 
-                            <div class="row w-100 align-items-start mb-3">
+                            <div class="row w-100 align-items-start">
                                 <!-- First row (club info) -->
                                 <div class="col-12 col-lg-7 mb-2 mb-md-0 text-start">
                                     <!-- Club title -->
@@ -114,8 +114,6 @@
                                         <path d="m10.97 4.97-.02.022-3.473 4.425-2.093-2.094a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05"/>
                                     </svg>
                                 </div>
-
-                                <hr class="w-100 mt-3">
                             </div>
                         </div>
                     </div>
@@ -340,8 +338,8 @@
                     </div>
 
                     <!--- Error message for error retrieving recent activity or no recent activtiy found -->
-                    <div v-if="latestPostsError" class="mt-3">
-                        <h2>{{ latestPostsError }}</h2>
+                    <div v-if="latestPostsError" class="mt-3" style="color:#027562">
+                        <h6 class="mobile-rating-smaller-text-2 fw-bold text-start">{{ latestPostsError }}</h6>
                         <hr>
                     </div>
                     
@@ -514,7 +512,7 @@ export default {
                 this.latestPosts = response.data.recent_activities;
             } catch (error) {
                 if (error.response.status == 404) {
-                    this.latestPostsError = "No recent activities found!";
+                    this.latestPostsError = "No recent activities in your joined clubs yet!";
                 }
                 else
                 this.latestPostsError = "An error occurred while loading recent activities. Please try again later!";
