@@ -72,7 +72,7 @@
             <h5 class="mobile-view-hide fw-bold align-items-center " style="color: rgb(2, 117, 98);">{{ poster.displayName }} ({{ poster.rank }})</h5>
             <p class="mobile-view-hide text-muted align-items-center">posted on {{ post.postDate }}</p>
             <p class="mobile-rating-smaller-text-2 align-items-center mobile-view-show">
-             <span class="fw-bold" style="color: rgb(2, 117, 98)">{{ poster.displayName }} </span><span :style="{ color: poster.rankColor }" class="fw-bold"> ({{ poster.rank }}) </span> posted on {{ post.postDate }}
+             <span class="fw-bold" style="color: rgb(2, 117, 98)">{{ poster.displayName }} </span><span :style="{ color: poster.rankColor }" class="fw-bold"> {{ poster.rank }} </span> posted on {{ post.postDate }}
             </p>
           </div>
         </div>

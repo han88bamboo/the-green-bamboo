@@ -27,7 +27,7 @@
         <!-- Display when data is loaded -->
          <div class="event-club-banner mobile-view-show">
             <img src="@/assets/defaultEventBanner.jpg" alt="Banner" />
-            </div>
+        </div>
         <!-- Main content -->
         <div v-if="dataLoaded" class="container mt-5 mobile-mt-3 mobile-px-4 px-5">
             <div class="row">
@@ -102,7 +102,7 @@
                             </div>
                         </div>
                     </div>
-                    </div>
+                </div>
 
                   
 
@@ -113,37 +113,38 @@
                     <div v-if="upcomingEvents.length > 0">
                         <div v-for="event in upcomingEvents" class="event-club-box" :key="event.eventID">
                         
-                        <!-- Column 1: banner -->
-                        <div style="flex: 0 0 40%; max-width: 40%; height: 100px;">
-                            <img v-if="event.eventBanners" :src="event.eventBanners[0]" class="img-fluid event-banner" alt="Event Banner" style="object-fit: contain; max-height: 100%;">
-                            <img v-else :src="defaultEventBanner" class="img-fluid event-banner" alt="Event Banner" style="object-fit: cover">
-                        </div>
+                            <!-- Column 1: banner -->
+                            <div style="flex: 0 0 40%; max-width: 40%; height: 100px;">
+                                <img v-if="event.eventBanners" :src="event.eventBanners[0]" class="img-fluid event-banner" alt="Event Banner" style="object-fit: contain; max-height: 100%;">
+                                <img v-else :src="defaultEventBanner" class="img-fluid event-banner" alt="Event Banner" style="object-fit: cover">
+                            </div>
 
-                        <!-- Column 2: -->
-                        <div class="container text-start">
-                            <!-- Event Name -->
-                            <p class="text-start mb-1 fw-bold fs-6">
-                                <router-link
-                                :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
-                                class="text-black text-decoration-none"
-                                >
-                                {{ event.eventName }}
-                                </router-link>
-                            </p>
-                        
-                            <!-- Event Details -->
-                            <p class="text-success text-start small" style="color: #00796B;">
-                                <router-link
-                                  :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
-                                  class="text-decoration-none"
-                                  style="color: #00796B;"
-                                >
-                                {{ formatDate(event.eventStartDate) }} |
-                                {{ formatTime(event.eventStartTime) }} -
-                                {{ formatTime(event.eventEndTime) }} |
-                                {{ event.eventType }}
-                                </router-link>
-                              </p>  
+                            <!-- Column 2: -->
+                            <div class="container text-start">
+                                <!-- Event Name -->
+                                <p class="text-start mb-1 fw-bold fs-6">
+                                    <router-link
+                                    :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
+                                    class="text-black text-decoration-none"
+                                    >
+                                    {{ event.eventName }}
+                                    </router-link>
+                                </p>
+                            
+                                <!-- Event Details -->
+                                <p class="text-success text-start small" style="color: #00796B;">
+                                    <router-link
+                                    :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
+                                    class="text-decoration-none"
+                                    style="color: #00796B;"
+                                    >
+                                    {{ formatDate(event.eventStartDate) }} |
+                                    {{ formatTime(event.eventStartTime) }} -
+                                    {{ formatTime(event.eventEndTime) }} |
+                                    {{ event.eventType }}
+                                    </router-link>
+                                </p>  
+                            </div>
                         </div>
                     </div>
                 </div>
