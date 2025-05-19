@@ -27,7 +27,7 @@
         <!-- Display when data is loaded -->
          <div class="event-club-banner mobile-view-show">
             <img src="@/assets/defaultEventBanner.jpg" alt="Banner" />
-            </div>
+        </div>
         <!-- Main content -->
         <div v-if="dataLoaded" class="container mt-5 mobile-mt-3 mobile-px-4 px-5">
             <div class="row">
@@ -93,54 +93,58 @@
                             <CreateEventPage @new-event="updateNewEvent" />
                         </div>
 
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" @click="showCreateEventModal = false" :disabled="disableButton">Close</button>
-                            <button type="button" class="btn primary-btn-green" @click="createEvent" :disabled="disableButton">Create</button>
-                        </div>
-
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" :disabled="disableButton">Close</button>
+                                <button type="button" class="btn primary-btn-green" @click="createEvent" :disabled="disableButton">
+                                    <span v-if="disableButton">Creating Event...</span>
+                                    <span v-else>Create Event</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
-                    </div>
+                </div>
 
                   
 
                 <!-- YOUR UPCOMING EVENTS -->
-                <div v-if="upcomingEvents.length > 0" class="collapse d-md-block my-4" id="sidebarContent">
+                <div class="collapse d-md-block my-4" id="sidebarContent">
                     <h5 class="text-start fw-bold my-3">Your Upcoming Events <button v-if="pastEvents.length > 5" type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#upcomingEventsModal">View All</button></h5>
 
-                    <div v-for="event in upcomingEvents" class="event-club-box" :key="event.eventID">
+                    <div v-if="upcomingEvents.length > 0">
+                        <div v-for="event in upcomingEvents" class="event-club-box" :key="event.eventID">
                         
-                        <!-- Column 1: banner -->
-                        <div style="flex: 0 0 40%; max-width: 40%; height: 100px;">
-                            <img v-if="event.eventBanners" :src="event.eventBanners[0]" class="img-fluid event-banner" alt="Event Banner" style="object-fit: contain; max-height: 100%;">
-                            <img v-else :src="defaultEventBanner" class="img-fluid event-banner" alt="Event Banner" style="object-fit: cover">
-                        </div>
+                            <!-- Column 1: banner -->
+                            <div style="flex: 0 0 40%; max-width: 40%; height: 100px;">
+                                <img v-if="event.eventBanners" :src="event.eventBanners[0]" class="img-fluid event-banner" alt="Event Banner" style="object-fit: contain; max-height: 100%;">
+                                <img v-else :src="defaultEventBanner" class="img-fluid event-banner" alt="Event Banner" style="object-fit: cover">
+                            </div>
 
-                        <!-- Column 2: -->
-                        <div class="container text-start">
-                            <!-- Event Name -->
-                            <p class="text-start mb-1 fw-bold fs-6">
-                                <router-link
-                                :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
-                                class="text-black text-decoration-none"
-                                >
-                                {{ event.eventName }}
-                                </router-link>
-                            </p>
-                        
-                            <!-- Event Details -->
-                            <p class="text-success text-start small" style="color: #00796B;">
-                                <router-link
-                                  :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
-                                  class="text-decoration-none"
-                                  style="color: #00796B;"
-                                >
-                                {{ formatDate(event.eventStartDate) }} |
-                                {{ formatTime(event.eventStartTime) }} -
-                                {{ formatTime(event.eventEndTime) }} |
-                                {{ event.eventType }}
-                                </router-link>
-                              </p>  
+                            <!-- Column 2: -->
+                            <div class="container text-start">
+                                <!-- Event Name -->
+                                <p class="text-start mb-1 fw-bold fs-6">
+                                    <router-link
+                                    :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
+                                    class="text-black text-decoration-none"
+                                    >
+                                    {{ event.eventName }}
+                                    </router-link>
+                                </p>
+                            
+                                <!-- Event Details -->
+                                <p class="text-success text-start small" style="color: #00796B;">
+                                    <router-link
+                                    :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
+                                    class="text-decoration-none"
+                                    style="color: #00796B;"
+                                    >
+                                    {{ formatDate(event.eventStartDate) }} |
+                                    {{ formatTime(event.eventStartTime) }} -
+                                    {{ formatTime(event.eventEndTime) }} |
+                                    {{ event.eventType }}
+                                    </router-link>
+                                </p>  
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -151,6 +155,8 @@
                     <h6 class="mobile-fs-7">{{ upcomingEventsError }}</h6>
                     </a>
                 </div>
+
+                
 
 
                 <!-- Upcoming events modal -->
@@ -176,7 +182,7 @@
                 <hr class="collapse d-md-block" id="sidebarContent"/>
 
                 <!-- PAST EVENTS -->
-                <div v-if="pastEvents.length > 0" class="collapse d-md-block my-4" id="sidebarContent">
+                <div class="collapse d-md-block my-4" id="sidebarContent">
                     <h5 class="text-start fw-bold my-3">Past Events <button v-if="pastEvents.length > 5" type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#pastEventsModal">View All</button></h5>
                     
                     <div v-for="event in pastEvents" class="event-club-box"  :key="event.eventID" style="background-color: white; overflow: hidden;">
@@ -390,7 +396,7 @@
                     </div>
                   </div>
                   
-                  
+                <!-- Trending Events Carousel --> 
                 <div v-if="trendingEvents.length > 0" id="trendingEventsCarousel" class="carousel slide" data-bs-ride="true">
                     <div class="carousel-inner">
                         <div
@@ -493,7 +499,8 @@
                       </button>
                     </div>
                   </div>
-                  
+                
+                
                 <div v-if="followedEvents.length > 0" id="followedEventsCarousel" class="carousel slide" data-bs-ride="true">
                     <div class="carousel-inner">
                         <div
@@ -553,8 +560,12 @@
                                 </div>
                                 </div>
                             </div>
-                            </div>
+                        </div>
                     </div>
+                </div>
+
+                <div v-if="followedEvents.length == 0 && !followedEventsError" class="mt-3 text-start" >
+                    <h5 class="mobile-fs-6">Login to view events from brands/venues you follow.</h5>
                 </div>
 
                 <!-- Error message for error retrieving followed events -->
@@ -655,7 +666,7 @@ export default {
         // Function to get upcoming events 
         async getUpcomingEvents() {
             try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/events/getUserUpcomingEvents/${this.userID}/${this.upcomingOffset}`);
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/events/getUserUpcomingEvents/${this.userID}/${this.userType}/${this.upcomingOffset}`);
                 this.upcomingEvents = response.data.events;
                 this.dataLoaded = true;
             }
@@ -678,6 +689,7 @@ export default {
                 this.dataLoaded = true;
             }
             catch (error) {
+
                 if (error.response.status == 404) {
                     this.pastEventsError = "No past events found.";
                 }
@@ -732,7 +744,7 @@ export default {
                 this.dataLoaded = true;
             }
             catch (error) {
-                if (error.response.status == 404) {
+                 if (error.response.status == 404) {
                     this.followedEventsError = "No followed events found.";
                 }
                 else {
@@ -830,9 +842,10 @@ export default {
 
             this.disableButton = true;
             try {
+                console.log(this.newEvent);
 
                 // Check if all fields are filled
-                if (!this.newEvent.eventName || !this.newEvent.eventDescription || !this.newEvent.eventType || !this.newEvent.eventStartDate || !this.newEvent.eventEndDate || !this.newEvent.eventStartTime || !this.newEvent.eventEndTime || !this.newEvent.ticketed || !this.newEvent.eventLocation) {
+                if (!this.newEvent.eventName || !this.newEvent.eventDescription || !this.newEvent.eventType || !this.newEvent.eventStartDate || !this.newEvent.eventEndDate || this.newEvent.ticketed == null) {
                     alert("Please fill in all fields.");
                     this.disableButton = false;
                     return;
@@ -841,20 +854,28 @@ export default {
                 // Check if the start time is after the current time if the start date is today
                 let todayDate = new Date().toISOString().split('T')[0];
                 let currentTime = new Date().toTimeString().split(' ')[0];
+
+                // Check if allDay is true
+                if (this.newEvent.allDay) {
+                    this.newEvent.eventStartTime = "00:00";
+                    this.newEvent.eventEndTime = "23:59";
+                }
+                else {
+                    if (this.newEvent.eventStartDate == todayDate && this.newEvent.eventStartTime <= currentTime) {
+                        alert("Start time must be after the current time.");
+                        this.disableButton = false;
+                        return;
+                    }
+
+                    // Check if the end time is after the start time
+                    if (this.newEvent.eventEndDate == this.newEvent.eventStartDate && this.newEvent.eventEndTime <= this.newEvent.eventStartTime) {
+                        alert("End time must be after start time.");
+                        this.disableButton = false;
+                        return;
+                    }
+                }
                 
-                if (this.newEvent.eventStartDate == todayDate && this.newEvent.eventStartTime <= currentTime) {
-                    alert("Start time must be after the current time.");
-                    this.disableButton = false;
-                    return;
-                }
-
-                // Check if the end time is after the start time
-                if (this.newEvent.eventEndDate == this.newEvent.eventStartDate && this.newEvent.eventEndTime <= this.newEvent.eventStartTime) {
-                    alert("End time must be after start time.");
-                    this.disableButton = false;
-                    return;
-                }
-
+                
                 // Set boolean variables to true or false from string
                 this.newEvent.ticketed = this.newEvent.ticketed == 'true';
                 this.newEvent.paidEvent = this.newEvent.paidEvent == 'true';
@@ -897,6 +918,7 @@ export default {
                 console.error(error);
                 const toast = useToast();
                 toast.error("Failed to create event.");
+                this.disableButton = false;
             }
         },
 
@@ -920,11 +942,13 @@ export default {
 
             // Get create event status
             this.getCreateEventStatus();
+
+            this.getUpcomingEvents();
+            this.getPastEvents();
+            this.getFollowedEvents();
         }
 
-        this.getUpcomingEvents();
-        this.getPastEvents();
-        this.getFollowedEvents();
+        
     }
 }
 </script>

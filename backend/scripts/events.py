@@ -330,13 +330,11 @@ def getUpcomingFollowingEvents(user_id, user_type):
         if not follow_list:
             return jsonify({'error': 'No events'}), 404
 
-        # Step 2: Get the top 5 upcoming events by brands/venues/users that the user is following
-        today_date = datetime.now().date()
-
         follow_users = follow_list['users']
         follow_producers = follow_list['producers']
         follow_venues = follow_list['venues'] 
 
+        # Step 2: Get the upcoming events by the brands/venues/users that the user is following
         cursor.execute('''
             SELECT * FROM events 
             WHERE 
@@ -368,7 +366,7 @@ def getUpcomingFollowingEvents(user_id, user_type):
             event_details['eventBanners'] = event['eventBanners']
         
             return_data.append(event_details)
-        
+
         return jsonify({
             'events': return_data
         }), 200
@@ -446,8 +444,8 @@ def getUserPastEvents(user_id, offset):
 # Purpose: Get upcoming events by the user
 # Used: Events.vue (inside views/Users folder)
 # Output: Possible return codes [200 - Retrieval success, 404 - No events, 500 - Internal server error]
-@blueprint.route('/getUserUpcomingEvents/<user_id>/<offset>', methods=['GET'])
-def getUserUpcomingEvents(user_id, offset):
+@blueprint.route('/getUserUpcomingEvents/<user_id>/<user_type>/<offset>', methods=['GET'])
+def getUserUpcomingEvents(user_id, user_type, offset):
     conn = g.db
     cursor = conn.cursor()
 
@@ -460,9 +458,39 @@ def getUserUpcomingEvents(user_id, offset):
         # Get today's date
         today_date = datetime.now().date()
 
-        # Step 1: Get the upcoming events by the user
-        cursor.execute('SELECT * FROM "eventAttendees" WHERE "userID" = %s AND "eventDate" >= %s ORDER BY "eventDate" ASC, "eventStartTime" ASC LIMIT %s OFFSET %s', (user_id, today_date, limit, offset,))
+        # First select query is to get the events that the user is attending
+        # Second select query is to get the events that the user is the owner of
+        query = '''
+            SELECT 
+                e.*,
+                'attending' AS role
+            FROM "eventAttendees" ea
+            JOIN "events" e ON ea."eventID" = e."id"
+            WHERE ea."userID" = %s 
+            AND ea."attendeeType" = %s
+            AND e."eventStartDate" >= %s
+
+            UNION
+
+            SELECT 
+                e.*,
+                'owner' AS role
+            FROM "events" e
+            WHERE e."eventOwnerID" = %s
+            AND e."eventOwnerType" = %s
+            AND e."eventStartDate" >= %s
+
+            ORDER BY "eventStartDate" ASC, "eventStartTime" ASC
+            LIMIT %s OFFSET %s
+        '''
+
+        cursor.execute(query, (
+            user_id, user_type, today_date,         # For attendee query
+            user_id, user_type, today_date, # For owner query
+            limit, offset                # LIMIT and OFFSET
+        ))
         events = cursor.fetchall()
+
 
         if not events:
             return jsonify({'error': 'No events'}), 404
@@ -470,7 +498,7 @@ def getUserUpcomingEvents(user_id, offset):
         # Step 2: Get the event information
         for event in events:
 
-            cursor.execute('SELECT * FROM events WHERE id = %s', (event['eventID'],))
+            cursor.execute('SELECT * FROM events WHERE id = %s', (event['id'],))
             event_info = cursor.fetchone()
 
             if not event_info:
@@ -660,7 +688,7 @@ def createEvent():
         # Step 1: Get the input data
         data = request.json
 
-        required_fields = ['eventName', 'eventDesc', 'eventType', 'eventStartDate', 'eventEndDate', 'eventStartTime', 'eventEndTime', 'eventLimit', 'ticketed', 'eventLocation', 'eventOwnerID', 'eventOwnerType']
+        required_fields = ['eventName', 'eventDesc', 'eventType', 'eventStartDate', 'eventEndDate', 'eventStartTime', 'eventEndTime', 'ticketed', 'eventOwnerID', 'eventOwnerType']
 
         # Check if the required fields are present and not empty
         for field in required_fields:
@@ -699,8 +727,12 @@ def createEvent():
         else:
             payment_link = data['paymentLink']
 
-        # Convert eventLimit to integer
-        data['eventLimit'] = int(data['eventLimit'])
+        # Set the default value for eventLimit if not provided
+        if data['eventLimit'] != '' and data['eventLimit'] is None:
+            data['eventLimit'] = 1000000
+        # If eventLimit is provided, convert it to int
+        else:
+            data['eventLimit'] = int(data['eventLimit'])
 
         # Get today's date as the createdDate
         created_date = datetime.now().date()

@@ -558,8 +558,8 @@
                               {{ post.posterInfo.venueName }}&nbsp;
                             </template>
                           </router-link>
-                          <span v-if="post.posterInfo.userType === 'user'" class="mobile-rating-smaller-text-2">
-                            ({{ post.posterInfo.rank }}) &nbsp; 
+                          <span v-if="post.posterInfo.userType === 'user'" class="mobile-rating-smaller-text-2" :style="{ color: post.posterInfo.rankColor }">
+                            {{ post.posterInfo.rank }} &nbsp; 
                           </span>
                           <p class="mb-0 mobile-rating-smaller-text-2">posted on {{ new Date(post.postDate).toLocaleDateString() }}.</p>
                   </div>

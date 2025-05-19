@@ -757,3 +757,33 @@ CREATE TABLE "pointSystemRules" (
     "ruleCategory" VARCHAR(255),
     "proofPoints" INTEGER
 );
+
+-- ========= [NEW!] "grails" ==========
+CREATE TABLE "grails" (
+    "id" SERIAL PRIMARY KEY,
+    "listingName" VARCHAR(255),
+    "listingID" INTEGER REFERENCES "listings"("id") ON DELETE SET NULL, -- [!] References listings FK
+    "drinkType" VARCHAR(255),
+    "typeCategory" VARCHAR(255),
+    "counter" INTEGER
+);
+
+-- ========= [NEW!] "upAndComing" ==========
+CREATE TABLE "upAndComing" (
+    "id" SERIAL PRIMARY KEY,
+    "listingName" VARCHAR(255),
+    "listingID" INTEGER REFERENCES "listings"("id") ON DELETE SET NULL, -- [!] References listings FK
+    "drinkType" VARCHAR(255),
+    "typeCategory" VARCHAR(255),
+    "counter" INTEGER
+);
+
+-- ========= [NEW!] "goats" ==========
+CREATE TABLE "goats" (
+    "id" SERIAL PRIMARY KEY,
+    "listingName" VARCHAR(255),
+    "listingID" INTEGER REFERENCES "listings"("id") ON DELETE SET NULL, -- [!] References listings FK
+    "drinkType" VARCHAR(255),
+    "typeCategory" VARCHAR(255),
+    "counter" INTEGER
+);

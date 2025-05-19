@@ -187,7 +187,7 @@
                 <b>Rank</b>
               </div>
               <div class="col-7 text-end">
-                <span> {{ displayUser.proofRank }}</span>
+                <span  :style="{ color: displayUser.proofRank[1] }"> {{ displayUser.proofRank[0] }}</span>
               </div>
             </div>
 

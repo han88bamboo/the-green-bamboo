@@ -263,7 +263,7 @@
                                                             <template v-else>{{ post.posterInfo.venueName }}</template>
                                                         </span>
                                                     </router-link>
-                                                    <span class="fw-bold fst-italic"> ({{ post.posterInfo.rank }})</span>
+                                                    <span class="fw-bold fst-italic" :style="{color: post.posterInfo.rankColor}"> {{ post.posterInfo.rank }}</span>
                                                     posted in
                                                     <router-link :to="{ name: 'clubview', params: { clubID: post.clubID, clubName: slugify(post.clubName || 'unknown-club') }}" class="fw-bold text-decoration-none hover-underline" style="color:#027562">
                                                         {{ post.clubName }}

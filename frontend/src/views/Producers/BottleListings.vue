@@ -2194,7 +2194,9 @@
                       >
                         <b>@{{ getUsernameFromReview(review) }}</b>
                       </router-link>
-                      {{ getUserRankFromReview(review) }}
+                      <span :style="{ color: getUserRankColor(review) }">
+                        {{ getUserRankFromReview(review) }}
+                      </span>
                       &nbsp;rated <span style="color: #f0b358">★</span>
                       <b>{{ review["rating"] }}</b> Stars
 
@@ -2473,7 +2475,9 @@
                                 {{ getUsernameFromReview(detailedReview) }}
                               </span>
                             </router-link>
-                            ({{ getUserRankFromReview(review) }})
+                            <span :style="{ color: getUserRankColor(review) }">
+                              {{ getUserRankFromReview(review) }}
+                            </span>
                           </b>
                         </div>
                       </div>
@@ -3931,7 +3935,16 @@ export default {
         return user["id"] == review["userID"];
       });
       if (user) {
-        return user["proofRank"];
+        return user["proofRank"][0];
+      }
+    },
+
+    getUserRankColor(review) {
+      const user = this.users.find((user) => {
+        return user["id"] == review["userID"];
+      });
+      if (user) {
+        return user["proofRank"][1];
       }
     },
 

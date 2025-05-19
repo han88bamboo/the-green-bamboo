@@ -5,7 +5,7 @@
 #           /getVenueReviewsByVenueId/<id> (GET), /getProducerReviewsByProducerId/<id> (GET),
 #           /getUsers (GET), /getUsersFromList (POST), /getUser/<id> (GET), 
 #           /getUserPhoto/<id>/<userType> (GET), /getUserByUsername/<username> (GET), /getVenues (GET), 
-#           /getVenue/<id> (GET), /getVenuesAPI (GET), /getDrinkTypes (GET), /getRequestListings (GET), /getRequestListing/<id> (GET), /getRequestEdits (GET), 
+#           /getVenue/<id> (GET), /getVenuesAPI (GET), /getDrinkTypes (GET), /getTypeCategories (GET), /getRequestListings (GET), /getRequestListing/<id> (GET), /getRequestEdits (GET), 
 #           /getRequestEdit/<id> (GET), /getModRequests (GET), /getFlavourTags (GET), /getSubTags (GET), /getObservationTags (GET), /getColours (GET), 
 #           /getSpecialColours (GET), /getLanguages (GET), /getServingTypes (GET), /getProducersProfileViews (GET), /getVenuesProfileViewsByVenue/<id> (GET), /getRequestInaccuracyByVenue/<id> (GET)
 #           /getUserFollowList/<id> (GET), /getUserNames (GET), /checkFollowing/<userId>/<userType>/<followId>/<followType> (GET) /getLatestNews (GET)
@@ -108,7 +108,11 @@ def parse_json(data):
 # Helper function to fetch user data from the database
 def fetch_user_data(cursor, user_id):
     cursor.execute('SELECT * FROM "users" WHERE "id" = %s', (user_id,))
-    return cursor.fetchone()
+
+    # Remove unnecessary fields
+    user_data = cursor.fetchone()
+
+    return user_data
 
 # Helper function to fetch drink lists for a user
 def fetch_drink_lists(cursor, user_id):
@@ -1452,6 +1456,10 @@ def getUserByUsername(username):
                 return jsonify([]), 404
 
             user_id = user_data['id']
+
+            # Remove unnecessary fields
+            del user_data["hashedPassword"]
+            del user_data["pin"]
 
             user_data["drinkLists"] = fetch_drink_lists(cursor, user_id)
             user_data["followLists"] = fetch_follow_lists(cursor, user_id)

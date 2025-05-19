@@ -17,15 +17,15 @@ def get_rank(proof_points):
     emoji = "🧃 "
 
     if proof_points >= 800:
-        return emoji + "Imperial"
+        return (emoji + "Imperial", "#027562")
     elif proof_points >= 400:
-        return  emoji + "Over Proof"
+        return (emoji + "Over Proof", "#83A9E8")
     elif proof_points >= 200:
-        return  emoji + "Full Proof"
+        return (emoji + "Full Proof", "#F0B358")
     elif proof_points >= 101:
-        return  emoji + "Aperitif"
+        return (emoji + "Aperitif", "#6C348B")
     else:
-        return  emoji + "Highball"
+        return (emoji + "Highball", "#B40138")
 
 
 #############################################################################################################
@@ -90,6 +90,12 @@ def check_max_proof_points(user_id):
     # Retrieve the user's proof points from the database
     cur.execute('SELECT "currentPoints" FROM "pointsRecorder" WHERE "userID" = %s AND "userType" = %s', (user_id, 'user',))
     current_points = cur.fetchone()
+
+    # Check if the user has reached the max proof points
+    if current_points['currentPoints'] >= max_points['proofPoints']:
+        return True
+    else:
+        return False
 
 
 ###############################################################################################################
