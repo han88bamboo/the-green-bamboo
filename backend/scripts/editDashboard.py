@@ -298,4 +298,7 @@ def getTop5(drink_type, type_category):
         }), 500
 
     finally:
-        cursor.close()   
+        cursor.close() 
+
+
+
