@@ -10,7 +10,7 @@ import s3Images
 from bson import json_util
 from flask import Blueprint, g, request, jsonify
 from datetime import datetime
-from scripts import pointsHelperFunc
+from scripts import pointsHelperFunc, badge_helpers
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -430,16 +430,20 @@ def requestReviewStatus(requestID):
             (status, requestID)
         )
 
-        # Add proof points to the user if the review status is true
-    
-        # Step 1: Get the userID from the requestID
+        # Get the userID from the requestID
         cur.execute(
             f'SELECT "userID" FROM "{targetCollection}" WHERE id = %s;',
             (requestID,)
         )
-        userID = cur.fetchone()
-
-        if pointsHelperFunc.check_max_proof_points(userID['userID']):
+        userID_result = cur.fetchone()
+        
+        if not userID_result:
+            raise Exception(f"No user ID found for request ID {requestID}")
+            
+        user_id = userID_result['userID']
+        
+        # Check if user has reached maximum proof points
+        if pointsHelperFunc.check_max_proof_points(user_id):
             return jsonify(
                 {
                     "code": 201,
@@ -447,35 +451,49 @@ def requestReviewStatus(requestID):
                 }
             ), 201
 
-        # Step 2: Get the proof points for successful add drink listings
-        if (targetCollection == "requestListings" and status == True):
+        # Initialize variables
+        proofPoints = None
+        badge_result = None
+
+        # Process based on the target collection and status
+        if targetCollection == "requestListings" and status == True:
             cur.execute(
                 'SELECT "proofPoints" FROM "pointSystemRules" WHERE id = 12;'
             )
             proofPoints = cur.fetchone()
+            
+            badge_result = badge_helpers.process_new_drink_badge(conn, cur, user_id)
 
-        elif (targetCollection == "requestEdits" and status == True):
+        elif targetCollection == "requestEdits" and status == True:
+            # Get the proof points for successful edit suggestions
             cur.execute(
                 'SELECT "proofPoints" FROM "pointSystemRules" WHERE id = 13;'
             )
             proofPoints = cur.fetchone()
+            
+            # Process the "Brew-tiful Mind" badge for edit suggestions
+            badge_result = badge_helpers.process_new_drink_badge(conn, cur, user_id)
         
-        if (proofPoints is not None and userID is not None):
-
-            # Step 3: Update the user's proof points
+        # Update user's proof points if applicable
+        if proofPoints is not None:
+            # Update the user's proof points
             cur.execute(
                 'UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s AND "userType" = %s;',
-                (proofPoints['proofPoints'], userID['userID'], 'user')
+                (proofPoints['proofPoints'], user_id, 'user')
             )
             conn.commit()
 
-        return jsonify(
-            {
-                "code": 201,
-                "data": requestID,
-                "proofPoints added": proofPoints['proofPoints'] if proofPoints else 0,
-            }
-        ), 201
+        # Prepare the response
+        response_data = {
+            "code": 201,
+            "data": requestID,
+            "proofPointsAdded": proofPoints['proofPoints'] if proofPoints else 0,
+        }
+        
+        if badge_result:
+            response_data["badgeAwarded"] = badge_result
+        
+        return jsonify(response_data), 201
     
     except Exception as e:
         conn.rollback()

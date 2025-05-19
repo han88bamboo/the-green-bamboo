@@ -2392,6 +2392,29 @@ def getBadges():
 
     return jsonify(badges_data)
 
+# [GET] User Badges
+@blueprint.route("/getUserBadges/<int:user_id>")
+def getUserBadges(user_id):
+    conn = g.db
+    with conn.cursor() as cursor:
+        # Get user badges with details
+        cursor.execute('''
+            SELECT ub.*, b.*, 
+                   ub."dateEarned", ub."currentLevel", ub."currentProgress",
+                   br."actionsRequired" as "nextLevelRequirement"
+            FROM "userBadges" ub
+            JOIN "badges" b ON ub."badgeId" = b.id
+            LEFT JOIN "badgeRules" br ON 
+                b."relatedEntity" = br."actionType" AND 
+                ub."currentLevel" + 1 BETWEEN br."levelStart" AND br."levelEnd"
+            WHERE ub."userId" = %s
+            ORDER BY ub."dateEarned" DESC
+        ''', (user_id,))
+        
+        user_badges = cursor.fetchall()
+    
+    return jsonify(user_badges)
+
 # -----------------------------------------------------------------------------------------
 # [GET] Specific Token
 @blueprint.route("/getToken/<token>")
