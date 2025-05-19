@@ -2,35 +2,36 @@
 <template>
   <NavBar />
 
-  <div class="body-login">
+  <div class="body-login background-login">
     <!-- select buttons -->
     <!-- <div class="container row" style="width: 50%"> -->
-    <div class="container">
+    <div class="login-header-banner mobile-view-show">
+      <img src="@/assets/login-bg.jpg" alt="Banner" />
+    </div>
+      <div class="container mb-5 mobile-mb-0">
       <div class="row">
-        <div class="col-12 col-sm-10 col-md-8 m-auto mobile-ps-0 mobile-pe-0">
+        <div class="mobile-col-12 col-8 m-auto mobile-ps-0 mobile-pe-0">
           <div class="pt-5 mobile-pt-0">
             <form
               id="login"
               v-if="!showResetPWForm"
               v-on:submit.prevent="checkLogin"
-              style="background-color: #ddc8a9"
-              class="rounded"
+              class="login-form-box"
             >
               <!-- login header text -->
               <p
-                class="fw-bold fs-1 pt-4 mx-3 mobile-fs-4 mobile-mb-1"
-                style="font-style: italic"
+                class="fw-bold fs-3 pt-4 mx-3 mobile-fs-5 mb-1"
               >
-                Join a community of drink lovers.
+                A World of Drinks Awaits.
               </p>
               <p
-                class="fw-bold mx-4 mobile-fs-6 mobile-view-show"
+                class="fw-bold mx-4 fs-6 mobile-fs-7"
                 style="font-style: italic"
               >
-                Discover new juice and log your tasting notes!
+                Discover new juice, find friends and log your tasting notes!
               </p>
               <!-- username -->
-              <div class="row pt-5 mobile-pt-2">
+              <div class="row pt-2">
                 <div class="d-grid gap-2 col-xl-5 col-md-7 col-9 mx-auto">
                   <div class="form-floating">
                     <input
@@ -69,9 +70,9 @@
                       <input
                         type="checkbox"
                         v-on:click="showPassword()"
-                        class="form-check-input"
+                        class="form-check-input "
                       />
-                      <label for="password" class="form-check-label">
+                      <label for="password" class="form-check-label mobile-rating-smaller-text-2">
                         &nbsp; Show password
                       </label>
                     </div>
@@ -79,7 +80,7 @@
                     <!-- Column for forget password link -->
                     <div class="col text-end">
                       <p
-                        class="default-body-text-no-background hover-text-primary text-decoration-underline"
+                        class="default-body-text-no-background mobile-rating-smaller-text-2 hover-text-primary text-decoration-underline"
                         role="button"
                         @click="showResetPWForm = true"
                       >
@@ -115,12 +116,12 @@
                 </div>
               </div>
               <!-- Confirm Selection -->
-              <div class="row pt-3">
+              <div class="row">
                 <div class="col">
                   <button
                     v-if="authPending"
                     type="submit"
-                    class="btn secondary-btn-border-thick btn-lg"
+                    class="btn secondary-btn btn-sm px-5 fw-bold"
                     disabled
                   >
                     Loading...
@@ -128,7 +129,7 @@
                   <button
                     v-else
                     type="submit"
-                    class="btn secondary-btn-border-thick btn-lg px-5"
+                    class="btn secondary-btn btn-sm px-5 fw-bold"
                   >
                     Log In
                   </button>
@@ -136,15 +137,18 @@
                 </div>
               </div>
 
-              <div class="row py-2">
-                <div class="col-6 mx-auto">
-                  <hr class="darker-hr" />
+              <div class="row py-1">
+                <div class="col-9 mx-auto">
+                  <hr>
                 </div>
               </div>
 
               <!-- Prompt sign up -->
-              <p class="mt-2 fw-bold fs-3" style="font-style: italic">
+              <p class=" fw-bold fs-4 mobile-fs-5 mb-1">
                 Don't have an account?
+              </p>
+              <p class="fw-bold fst-italic fs-6 mobile-fs-7">
+                Get Started! It's Free!
               </p>
               <div class="row">
                 <div class="col">
@@ -152,7 +156,7 @@
                     :to="{ path: '/signup' }"
                     class="default-text-no-background"
                   >
-                    <button class="btn secondary-btn-border-thick btn-lg px-5">
+                    <button class="btn secondary-btn btn-sm px-5 fw-bold">
                       Sign Up
                     </button>
                   </router-link>
@@ -160,10 +164,10 @@
               </div>
 
               <!-- Business sign up -->
-              <div class="row pt-5 pb-3 mx-3">
+              <div class="row pt-4 pb-3 mx-3">
                 <div class="col">
-                  <p>
-                    <b>
+                  <p class="fs-6 mobile-fs-7 fw-bold">
+                    
                       <i>
                         If you are a drinks brand, bottler or venue owner trying
                         to create an account,
@@ -173,7 +177,7 @@
                           >click here</router-link
                         >.
                       </i>
-                    </b>
+                    
                   </p>
                 </div>
               </div>
@@ -197,8 +201,52 @@
 
 <!-- CSS -->
 <style scoped>
+.login-header-banner {
+  position: relative;
+  width: 100%;
+  padding-top: calc(3 / 6 * 100%); /* 2:6 aspect ratio = 33.33% */
+  overflow: hidden;
+}
+
+.login-header-banner img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.login-form-box {
+  background-color: wheat;
+  opacity: 0.97;
+}
+
+
+@media (max-width: 991px) {
+  .login-form-box {
+    background-color: white;
+  }
+}
+
 .hover-text-primary:hover {
   color: var(--bs-primary);
+}
+
+.background-login {
+  background-image: url('@/assets/login-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+}
+
+@media (max-width: 991px) {
+  .background-login {
+    background-image: none;
+    background-color: white;
+  }
 }
 </style>
 
@@ -354,7 +402,9 @@ export default {
       }
       // [Venue]
       if (this.role == "venue") {
-        this.$router.push({ path: `/profile/venue` });
+        this.$router.push({ 
+          path: `/profile/venue/${this.accountID}/${this.ID}` 
+        });
       }
     },
 

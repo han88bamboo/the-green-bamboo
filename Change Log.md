@@ -599,7 +599,7 @@ fix to get Stripe working with fields to fill in payment information on BillingS
 Nature of the changes (frontend / backend / database):
 backend mostly, frontend 
 
-# Update as of 13 May - deployed
+# Update as of 13 May 
 Coder: Kai
 
 Purpose of the changes:
@@ -609,3 +609,93 @@ Front end changes to individual event page
 
 Nature of the changes (frontend / backend / database):
 Front end
+
+# Update as of 14 May 
+Coder: Kai
+
+Purpose of the changes:
+Front end changes to search bar results 
+- Changed the spacing and the sizing of the search bar elements 
+- add new fields that shows up in search results 
+
+Nature of the changes (frontend / backend / database):
+Front end
+
+# Update as of 14 May 
+Coder: Kai
+
+Purpose of the changes:
+Front end changes to login / sign up / business account sign up / Landing Page:
+- Made mobile responsive 
+- Cleaned up margins, spacings, sizings
+
+Nature of the changes (frontend / backend / database):
+Front end
+
+
+# Update as of 16 May - Deployed, but with bugs on Stripe **
+Coder: Han
+
+Purpose of the changes:
+attempted fix to get Stripe working. Able to submit form but payment does not go through to Stripe "paymentintent" error
+
+Nature of the changes (frontend / backend / database):
+Front end / backend
+
+# Update as of 16 May 
+Coder: Han
+
+Purpose of the changes:
+fixed successfully bug where ordinary users who sign up aren't directed to onboarding flow / profile page 
+
+Nature of the changes (frontend / backend / database):
+backend
+
+# Update as of 16 May 
+Coder: Han
+
+Purpose of the changes:
+added a ton of debugging logs to createAccount.py and producerProfile.vue
+
+Nature of the changes (frontend / backend / database):
+frontend /backend 
+
+# Update as of 17 May 
+Coder: Han
+
+Purpose of the changes:
+fixed bug where newly-created producer accounts cannot see their profile page - createAccount.py and producerProfile.vue. however, Settings button still does not work
+
+Nature of the changes (frontend / backend / database):
+frontend /backend 
+
+# Update as of 17 May 
+Coder: Kai 
+
+Purpose of the changes:
+Changing front end of the clubs and events page: fixed spacing, buttons, margins
+Edit clubs.py and events.py to change the error message. 
+
+Nature of the changes (frontend / backend / database):
+frontend 
+
+# Update as of 17 May - deployed with no major issues
+Coder: Han
+
+Purpose of the changes:
+adding a ton of debugging logs to producerProfile.vue to diagnose settings button error
+
+Nature of the changes (frontend / backend / database):
+frontend 
+
+# Update as of 19 May - deployed with no major issues
+Coder: Kai
+
+Purpose of the changes:
+Alot of front-end changes, mainly to clubs / events to align spacing, margins, colors, sizings 
+This also involved editing other components like EventBox.vue
+Also cleaned up margin issues with the Landing page and on the User Profile 
+Cleaned up some misalignment in search boxes 
+
+Nature of the changes (frontend / backend / database):
+frontend 

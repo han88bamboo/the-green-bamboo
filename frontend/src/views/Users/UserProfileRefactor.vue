@@ -193,16 +193,14 @@
 
             <!-- buttons -->
             <div class="row mt-3">
-              <button
+              <router-link
                 v-if="ownProfile && user"
-                type="button"
-                class="btn tertiary-btn-blue-outline xprimary-btn-outline-not-round"
-                data-bs-toggle="modal"
-                data-bs-target="#editProfileModal"
+                :to="{ path: '/dashboard/user' }"
+                class="btn primary-btn-less-round-blue btn-lg mt-3"
                 style="font-weight: bold"
               >
-                Edit Profile
-              </button>
+                View My Stats
+              </router-link>
               <button
                 v-else-if="following && user"
                 type="button"
@@ -223,14 +221,7 @@
             </div>
             <!-- buttons (DESKTOP ONLY) -->
             <div class="row mt-0">
-              <router-link
-                v-if="ownProfile && user"
-                :to="{ path: '/dashboard/user' }"
-                class="btn primary-btn-less-round-blue btn-lg mt-3"
-                style="font-weight: bold"
-              >
-                View My Stats
-              </router-link>
+              
               <span
                 style="position: relative; display: inline-block"
                 class="m-0 p-0"
@@ -1300,95 +1291,35 @@
               <h5 class="mobile-view-hide" style="font-weight:bold">Badges Unlocked</h5>
               <p class="mobile-view-show"><strong>Badges Unlocked</strong></p>
               <hr />
-              <div
-                v-if="
-                  topCategoriesReviewed.length == 0 && otherBadges.length == 0
-                "
-              >
+              <div v-if="!userBadges || userBadges.length === 0">
                 You have no badges yet.
               </div>
 
               <div v-else class="container text-center mb-3">
-                <!-- badges for different drink types -->
-                <div class="row" v-if="matchedDrinkTypes.length > 0">
-                  <div
-                    class="mobile-col-3 col-12 col-sm-4 col-md-6 col-xl-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2"
-                    v-for="(drinkTypeDetails, index) in matchedDrinkTypes"
-                    :key="drinkTypeDetails.id || index"
-                  >
-                    <!-- image of actual badge  style="width: 100px; height: 100px;"  -->
-                    <!-- <img :src="'data:image/png;base64,'+ (drinkTypeDetails.badgePhoto || defaultProfilePhoto)" 
-                                           alt="" class="rounded-circle-white-bg border border-dark badge-img">  -->
-                    <img
-                      :src="drinkTypeDetails.badgePhoto || defaultProfilePhoto"
-                      alt=""
-                      class="rounded-circle-white-bg border border-dark badge-img"
-                    />
-                    <!-- badge description -->
-                    <div class="pt-1" style="line-height: 1">
-                      <small>
-                        <b>
-                          {{ drinkTypeDetails.drinkType }}
-                          {{ categoryBadges[drinkTypeDetails.drinkType] }}
-                        </b>
-                      </small>
-                      <br />
-                      <small
-                        class="xs-text"
-                        v-for="(
-                          subcategory, category
-                        ) of topSubcategoriesReviewed"
-                        :key="category"
-                      >
-                        <span v-if="category === drinkTypeDetails.drinkType">
-                          <i>
-                            (Power:
-                            <span v-for="item in subcategory" :key="item">
-                              {{ item
-                              }}<span
-                                v-if="
-                                  subcategory.indexOf(item) !==
-                                  subcategory.length - 1
-                                "
-                                >,
-                              </span> </span
-                            >)
-                          </i>
-                        </span>
-                      </small>
-                    </div>
-                  </div>
-                </div>
-                <!-- badges based on other user activities -->
                 <div class="row">
-                  <div
-                    class="mobile-col-3 col-12 col-sm-4 col-md-6 col-xl-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2"
-                    v-for="badge in otherBadges"
-                    :key="badge"
+                  <div 
+                    class="mobile-col-3 col-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2"
+                    v-for="(badge, index) in userBadges.slice(0, 9)" 
+                    :key="badge.id"
                   >
-                    <!-- image of actual badge style="width: 100px; height: 100px;" -->
-                    <!-- <img :src="'data:image/png;base64,'+ (getBadgeInfo(badge).badgePhoto)" 
-                                           alt="" class="rounded-circle-white-bg border border-dark badge-img"> -->
-                    <img
-                      :src="
-                        getBadgeInfo(badge)?.badgePhoto || defaultProfilePhoto
-                      "
-                      style="width: 100px; height: 100px"
-                      alt=""
-                      class="rounded-circle-white-bg border border-dark badge-img"
-                    />
-                    <!-- badge description -->
-                    <p class="pt-1" style="line-height: 1">
-                      <small>
-                        <b> {{ getBadgeInfo(badge)?.badgeDesc }} </b>
-                      </small>
-                    </p>
+                    <!-- Badge image with hover effect -->
+                    <div class="position-relative badge-container" :key="index">
+                      <img
+                        :src="badge.badgePhoto || defaultProfilePhoto"
+                        alt="badge image"
+                        class="rounded-circle-white-bg border border-dark badge-img"
+                        style="width: 100%; max-width: 80px; height: auto;"
+                      />
+                      <div class="badge-hover-text">
+                        {{ badge.badgeName }} (Level {{ badge.currentLevel }})
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
 
               <div>
-                <a href="#" style="color: black">Learn more about badges.</a>
+                <a href="#" @click.prevent="switchTab('badges')" style="color: black">View all badges</a>
               </div>
             </div>
 
@@ -1413,7 +1344,7 @@
               padding: 16px;
               background-color: #ffffff;
             "
-            class="mobile-view-hide"
+            class="mb-4 mobile-view-hide"
             >
             <!-- Welcome section -->
             <div style="margin-bottom: 24px" >
@@ -1441,16 +1372,16 @@
               </div>
             </div>
 
-            <h2
+            <h3
               style="
                 font-size: 24px;
-                font-weight: normal;
+                font-weight: bold;
                 border-bottom: 1px solid #e0e0e0;
                 padding-bottom: 16px;
               "
             >
               Welcome to Drink-X. Let's get started!
-            </h2>
+            </h3>
 
             <div>
               <div
@@ -1472,19 +1403,12 @@
                   alt="Review your first drink"
                 />
                 <div>
-                  <p style="font-size: 18px; margin-bottom: 8px">
+                  <p class="mobile-rating-smaller-text-2 mb-2">
                     Review your first drink.
                   </p>
                   <router-link :to="'/explore'">
                     <button
-                      style="
-                        padding: 8px 16px;
-                        background-color: #f0b358;
-                        border: none;
-                        color: black;
-                        border-radius: 4px;
-                        cursor: pointer;
-                      "
+                      class="btn btn-warning btn-sm rounded fw-bold"
                       @mouseover="hoverButton($event)"
                       @mouseleave="leaveButton($event)"
                     >
@@ -1493,15 +1417,15 @@
                   </router-link>
                 </div>
               </div>
-
+             
               <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px;">
-                <img src="/address-book.png" 
+                <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Layer_1.png?v=1747585016" 
                   style="width: 64px; height: 64px; object-fit: contain; border-radius: 4px;" 
                   alt="Invite two friends" />
                 <div>
-                  <p style="font-size: 18px; margin-bottom: 8px;">Invite two friends.</p>
+                  <p class="mobile-rating-smaller-text-2 mb-2">Invite two friends.</p>
                   <button
-                    style="padding: 8px 16px; background-color: #F0B358; border: none; color: black; border-radius: 4px; cursor: pointer;"
+                    class="btn btn-warning btn-sm rounded fw-bold"
                     @mouseover="hoverButton($event)"
                     @mouseleave="leaveButton($event)"
                     data-bs-toggle="modal"
@@ -1532,18 +1456,11 @@
                   alt="Curate a list to share"
                 />
                 <div>
-                  <p style="font-size: 18px; margin-bottom: 8px">
+                  <p class="mobile-rating-smaller-text-2 mb-2">
                     Curate a list to share.
                   </p>
                   <button
-                    style="
-                      padding: 8px 16px;
-                      background-color: #f0b358;
-                      border: none;
-                      color: black;
-                      border-radius: 4px;
-                      cursor: pointer;
-                    "
+                    class="btn btn-warning btn-sm rounded fw-bold"
                     @mouseover="hoverButton($event)"
                     @mouseleave="leaveButton($event)"
                     data-bs-toggle="modal"
@@ -1790,19 +1707,12 @@
                   alt="Explore and join a club!"
                 />
                 <div>
-                  <p style="font-size: 18px; margin-bottom: 8px">
+                  <p class="mobile-rating-smaller-text-2 mb-2">
                     Explore and join a club!
                   </p>
                   <router-link :to="'/clubs/view'">
                     <button
-                      style="
-                        padding: 8px 16px;
-                        background-color: #f0b358;
-                        border: none;
-                        color: black;
-                        border-radius: 4px;
-                        cursor: pointer;
-                      "
+                      class="btn btn-warning btn-sm rounded fw-bold"
                       @mouseover="hoverButton($event)"
                       @mouseleave="leaveButton($event)"
                     >
@@ -1843,6 +1753,20 @@
             >
               <span v-if="ownProfile">My Drink List</span>
               <span v-if="!ownProfile">Drink List</span>
+            </button>
+
+            <!-- My Badges button -->
+            <button
+              class="btn mx-1 fw-bold no-hover"
+              :class="{
+                'primary-btn-green active-toggle-button-user-profile':
+                  activeTab === 'badges',
+                'primary-btn-green-thin-outline inactive-toggle-button-user-profile':
+                  activeTab !== 'badges',
+              }"
+              @click="switchTab('badges')"
+            >
+              <span>My Badges</span>
             </button>
 
             <!-- Tab Section -->
@@ -1922,7 +1846,7 @@
                     </div>
                   </div>
                 </div>
-                <div v-else class="container ">
+                <div v-else class="mb-2 mobile-rating-smaller-text-2">
                   No reviews yet. To explore more drinks in the home page,
                   <router-link to="/" style="color: inherit"
                     >click here</router-link
@@ -1972,7 +1896,7 @@
                           type="button"
                           class="btn-close"
                           data-bs-dismiss="modal"
-                          aria-label="Close"
+                          aria-label="Close"              
                         ></button>
                       </div>
                       <div class="modal-body">
@@ -2738,6 +2662,64 @@
                   <!-- modal end -->
                 </div>
               </div>
+
+              <!-- badges tab -->
+              <div v-if="activeTab == 'badges'" id="badges">
+                <h5 class="text-body-secondary text-start py-2">
+                  <b>My Badges</b>
+                </h5>
+                
+                <div v-if="!userBadges || userBadges.length === 0" class="container">
+                  No badges unlocked yet. Keep reviewing drinks and participating to earn badges!
+                </div>
+                
+                <div v-else class="container">
+                  <div class="row">
+                    <!-- Display 4 badges per row -->
+                    <div class="col-6 col-sm-4 col-md-3 mb-4" v-for="badge in userBadges" :key="badge.id">
+                      <div class="badge-card text-center">
+                        <!-- Badge image -->
+                        <img 
+                          :src="badge.badgePhoto || defaultProfilePhoto"
+                          alt=""
+                          class="rounded-circle-white-bg border border-dark badge-img mb-2"
+                          style="width: 100px; height: 100px;"
+                        />
+                        
+                        <!-- Badge name -->
+                        <p class="badge-name mb-1"><strong>{{ badge.badgeName }}</strong></p>
+                        
+                        <!-- Date acquired -->
+                        <p class="badge-date text-muted small mb-2">{{ new Date(badge.dateEarned).toLocaleDateString() }}</p>
+                        
+                        <!-- Progress bar -->
+                        <div v-if="badge.nextLevelRequirement" class="progress mb-1" style="height: 8px;">
+                          <div 
+                            class="progress-bar"
+                            style="background-color: #3498db;" 
+                            role="progressbar"
+                            :style="{width: (badge.currentProgress / badge.nextLevelRequirement * 100) + '%'}"
+                            :aria-valuenow="badge.currentProgress"
+                            aria-valuemin="0"
+                            :aria-valuemax="badge.nextLevelRequirement"
+                          ></div>
+                        </div>
+                        
+                        <!-- Progress text -->
+                        <p class="progress-text small mb-0" v-if="badge.nextLevelRequirement">
+                          <span v-if="badge.badgeType === 'Action'">
+                            {{ badge.nextLevelRequirement - badge.currentProgress }} More Actions To<br>Reach The Next Level!
+                          </span>
+                          <span v-else>
+                            {{ badge.nextLevelRequirement - badge.currentProgress }} More Reviews To<br>Reach The Next Level!
+                          </span>
+                        </p>
+                        <p class="progress-text small mb-0" v-else>Maximum level reached!</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -2807,6 +2789,8 @@ export default {
       following: false,
       userBookmarks: {},
       selectedDrinks: [],
+      userBadges: [],
+      userBadgesLoaded: false,
 
       // Display User Data
 
@@ -3040,6 +3024,7 @@ export default {
           this.getSubTags(),
           this.getFlavourTag(), // added by group 3 edit profile
           this.getObservationTags(), // added by group 3 for the edit profile
+          this.getUserBadges()
         ]);
 
         await this.getReviewsSummary();
@@ -3274,6 +3259,19 @@ export default {
         } else {
           this.badgesDataLoaded = false;
         }
+      }
+    },
+
+    async getUserBadges() {
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getUserBadges/${this.userID}`
+        );
+        this.userBadges = response.data;
+        this.userBadgesLoaded = true;
+      } catch (error) {
+        console.error("Error fetching user badges:", error);
+        this.userBadgesLoaded = false;
       }
     },
 
@@ -4101,7 +4099,7 @@ export default {
         Object.keys(this.categoryBadges).length + this.otherBadges.length;
     },
 
-    // ------------------- Switch Tabs  between Reviews and Drink Lists -------------------
+    // ------------------- Switch Tabs between Reviews, Drink Lists, and Badges -------------------
     switchTab(tab) {
       this.activeTab = tab;
       this.$router.push(

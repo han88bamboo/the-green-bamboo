@@ -32,9 +32,10 @@
     <!-- Display when data is loaded -->
     <div v-if="dataLoaded == true">
       <!-- Club Banner -->
+      <div style="background-color:white">
       <div
-        class="container-fluid p-0 border-bottom"
-        style="background-color: white"
+        class="align-items-center justify-content-center event-hero"
+        
       >
         <img
           v-if="clubInfo.clubBanner != ''"
@@ -45,12 +46,194 @@
         <img v-else :src="defaultBanner" class="img-fluid" alt="Club Banner" />
       </div>
 
+      <div class="container">
+        <div class="row">
+          <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mt-4" >
+              <div class="flex-shrink-0 me-3 text-start mb-0" style="min-width: 0; background-color:white">
+                <!-- Club Name -->
+                <h4 class="fw-bold mobile-fs-5">{{ clubInfo.clubName }}</h4>
+                <!-- Club type and number of members -->
+                  <p class="text-start fw-bold mobile-fs-7 p-0" style="color: rgb(2, 117, 98);">
+                    <span v-if="clubInfo.isInviteOnly" class="fw-bold">
+                      Private Group
+                    </span>
+                    <span v-else class="fw-bold"> Public Group </span>
+                    <span> | </span>
+                    <span class="fw-bold">Number of Members:</span>
+                    {{ clubInfo.totalMembers }}
+                    <!--Number of members with joinStatus = True (members who have been invited but not yet accepted will not be included)-->
+                  </p>
+              </div>
+                <!-- Spacer that shrinks -->
+                <div class="flex-grow-1"></div>
+                <!-- Buttons: RSVP + Invite DESKTOP -->
+              <div class="col-6 text-end justify-content-center mobile-view-hide">
+                      <button
+                        v-if="isMember"
+                        class="btn primary-btn-green rounded me-2 "
+                        data-bs-toggle="modal"
+                        data-bs-target="#addPostModal"
+                      >
+                        Add Post
+                      </button>
+                      <button
+                        v-if="
+                          isMember == null &&
+                          !clubInfo.isInviteOnly &&
+                          !hasRequested &&
+                          !isInvited
+                        "
+                        class="btn primary-btn-less-round-blue rounded me-2 fw-bold"
+                        @click="joinClub"
+                        :disabled="disableButton"
+                      >
+                        Join Club
+                      </button>
+                      <button
+                        v-if="
+                          isMember == null &&
+                          clubInfo.isInviteOnly &&
+                          !hasRequested &&
+                          !isInvited
+                        "
+                        class="btn primary-btn-less-round-blue rounded me-2 fw-bold"
+                        @click="requestToJoin"
+                        :disabled="disableButton"
+                      >
+                        Request to Join
+                      </button>
+                      <button
+                        v-if="isInvited"
+                        class="btn primary-btn-less-round-blue rounded me-2 fw-bold"
+                        @click="acceptInvite"
+                        :disabled="disableButton"
+                      >
+                        Accept Invite
+                      </button>
+                      <button
+                        v-if="hasRequested"
+                        class="btn primary-btn-less-round-blue rounded ms-2 fw-bold"
+                        disabled
+                      >
+                        Request Sent
+                      </button>
+                      <button
+                        class="px-2 btn btn-warning"
+                      >
+                        <!-- Invite icon -->
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          fill="white"
+                          class="bi bi-share fw-bold"
+                          viewBox="0 0 16 16"
+                        >
+                          <path
+                            d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.5 2.5 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5m-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3"
+                          />
+                        </svg>
+                        <!-- Invite text -->
+                        <span class="ms-2 fw-bold mobile-view-hide" style="color: white">Invite your friends!</span>
+                      </button>
+                    </div>
+            </div>
+            <!-- Buttons: RSVP + Invite MOBILE -->
+              <div class="d-flex gap-1 flex-shrink-0 mobile-view-show mb-3 mt-0">
+                      <button
+                        v-if="isMember"
+                        class="btn primary-btn-green rounded btn-sm me-2 "
+                        data-bs-toggle="modal"
+                        data-bs-target="#addPostModal"
+                      >
+                        Add Post
+                      </button>
+                      <button
+                        v-if="
+                          isMember == null &&
+                          !clubInfo.isInviteOnly &&
+                          !hasRequested &&
+                          !isInvited
+                        "
+                        class="btn primary-btn-less-round-blue btn-sm rounded me-2 fw-bold"
+                        @click="joinClub"
+                        :disabled="disableButton"
+                      >
+                        Join Club
+                      </button>
+                      <button
+                        v-if="
+                          isMember == null &&
+                          clubInfo.isInviteOnly &&
+                          !hasRequested &&
+                          !isInvited
+                        "
+                        class="btn primary-btn-less-round-blue btn-sm rounded me-2 fw-bold"
+                        @click="requestToJoin"
+                        :disabled="disableButton"
+                      >
+                        Request to Join
+                      </button>
+                      <button
+                        v-if="isInvited"
+                        class="btn primary-btn-less-round-blue btn-sm rounded me-2 fw-bold"
+                        @click="acceptInvite"
+                        :disabled="disableButton"
+                      >
+                        Accept Invite
+                      </button>
+                      <button
+                        v-if="hasRequested"
+                        class="btn primary-btn-less-round-blue btn-sm rounded me-2 fw-bold"
+                        disabled
+                      >
+                        Request Sent
+                      </button>
+                      <button
+                        class="px-3 btn btn-warning"
+                      >
+                        <!-- Invite icon -->
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          fill="white"
+                          class="bi bi-share fw-bold btn-sm"
+                          viewBox="0 0 16 16"
+                        >
+                          <path
+                            d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.5 2.5 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5m-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3"
+                          />
+                        </svg>
+                        <!-- Invite text -->
+                        <span class="ms-2 fw-bold mobile-view-hide" style="color: white">Invite your friends!</span>
+                      </button>
+                      <!-- View My Clubs Toggle Button -->
+                        <button 
+                        class="ms-2 secondary-btn rounded d-md-none mobile-rating-smaller-text-2" 
+                        style="font-weight: bold; background-color:white"
+                        type="button" 
+                        data-bs-toggle="collapse" 
+                        data-bs-target="#sidebarContent" 
+                        aria-expanded="false" 
+                        aria-controls="sidebarContent"
+                        >
+                        Club Info &#8595;
+                        </button>
+                    </div>
+          </div>
+        </div>
+      </div>
+      <hr style="color:black" class="mt-0">
+      </div>
+
       <!-- Main content -->
-      <div v-if="!editClub" class="container mt-5">
+      <div v-if="!editClub" class="container mt-4">
         <div class="row">
           <!-- Column 1: Club name, join button / add post button, posts-->
           <div class="col-md-9 order-md-1 order-2">
-            <!-- Row 1: Club name, join button / add post button -->
+            <!-- Row 1: Club name, join button / add post button 
             <div class="row">
               <div class="col-md-6">
                 <h1 class="fw-bold text-start">{{ clubInfo.clubName }}</h1>
@@ -114,7 +297,7 @@
                   Leave Club
                 </button>
               </div>
-            </div>
+            </div>-->
 
             <!-- Add post modal start -->
             <div
@@ -301,101 +484,92 @@
             <!-- end of confirm leave club modal -->
 
             <!-- Post header -->
-            <h4 class="fst-italic text-start mt-3">Latest Posts</h4>
+            <h5 class="text-start fw-bold pb-2 mobile-fs-6 mobile-ps-1">Latest Posts</h5>
 
             <!-- Row 2: Posts section -->
-            <div v-if="posts.length == 0" class="text-center mt-5">
+            <div v-if="posts.length == 0" class="text-center mt-1">
               <!-- If user is not a member, it will show the message below -->
-              <h3 v-if="!isMember && clubInfo.isInviteOnly" class="fw-bold">
+              <h6 v-if="!isMember && clubInfo.isInviteOnly" class="fw-bold">
                 Request to join the club to see posts!
-              </h3>
+              </h6>
               <!-- If user is a member and club has no post yet, it will show the message below -->
-              <h3 v-else class="fw-bold">No posts available yet!</h3>
+              <h6 v-else class="fw-bold">No posts available yet! Get the ball rolling!</h6>
             </div>
 
-            <div v-else>
+            <div v-else class="text-center ms-3 mt-1">
               <!-- Each Post -->
               <div
                 v-for="post in posts"
                 :key="post.id"
-                class="row mb-4"
+                class="row mb-4 me-4 justify-content-center"
                 style="
                   background-color: white;
-                  border-radius: 10px;
+                  border-radius: 5px;
                   padding: 20px;
                   border: 1px solid black;
                 "
               >
                 <!-- Column 1: Poster Photo -->
-                <div class="col-md-1 d-flex flex-column align-items-start">
-                  <router-link
-                    :to="
-                      profileURL(post.posterInfo.id, post.posterInfo.userType)
-                    "
-                  >
-                    <p class="fw-bold">{{ post.posterName }}</p>
-                  </router-link>
-                  <img
-                    v-if="post.posterPhoto"
-                    :src="post.posterPhoto"
-                    class="img-fluid rounded-circle"
-                    alt="Poster Photo"
-                  />
-                  <svg
-                    v-else
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="45"
-                    height="45"
-                    fill="currentColor"
-                    class="bi bi-person-circle"
-                    viewBox="0 0 16 16"
-                  >
-                    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
-                    <path
-                      fill-rule="evenodd"
-                      d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"
+                <div class="row mb-2 mx-0 px-0 justify-content-center">
+                  <div class="col-1 mobile-col-2 d-flex flex-column justify-content-center align-items-center">
+
+                    <router-link
+                      :to="
+                        profileURL(post.posterInfo.id, post.posterInfo.userType)
+                      "
+                    >
+                      <p class="fw-bold mb-1 mobile-rating-smaller-text-2">{{ post.posterName }}</p>
+                    </router-link>
+                    <img
+                      v-if="post.posterPhoto"
+                      :src="post.posterPhoto"
+                      class="img-fluid rounded-circle"
+                      alt="Poster Photo"
                     />
-                  </svg>
+                    <svg
+                      v-else
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="40"
+                      height="40"
+                      fill="currentColor"
+                      class="bi bi-person-circle"
+                      viewBox="0 0 16 16"
+                    >
+                      <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
+                      <path
+                        fill-rule="evenodd"
+                        d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"
+                      />
+                    </svg>
+                  </div>
+                  <!-- Column 2: Post Details -->
+                  <div class="col-11 mobile-col-10 d-flex flex-wrap align-items-center text-start">
+                          <router-link
+                            :to="profileURL(post.posterInfo.id, post.posterInfo.userType)"
+                            class="text-black text-decoration-none fw-bold mobile-rating-smaller-text-2"
+                          >
+                            <template v-if="post.posterInfo.userType === 'user'">
+                              {{ post.posterInfo.displayName }}&nbsp;
+                            </template>
+                            <template v-else-if="post.posterInfo.userType === 'producer'">
+                              {{ post.posterInfo.producerName }}&nbsp;
+                            </template>
+                            <template v-else>
+                              {{ post.posterInfo.venueName }}&nbsp;
+                            </template>
+                          </router-link>
+                          <span v-if="post.posterInfo.userType === 'user'" class="mobile-rating-smaller-text-2" :style="{ color: post.posterInfo.rankColor }">
+                            {{ post.posterInfo.rank }} &nbsp; 
+                          </span>
+                          <p class="mb-0 mobile-rating-smaller-text-2">posted on {{ new Date(post.postDate).toLocaleDateString() }}.</p>
+                  </div>
                 </div>
-
-                <!-- Column 2: Post Details -->
-                <div class="col-md-11">
-                  <!-- Row 1: User name, post date, edit and delete post buttons -->
-                  <div class="row text-start align-items-center">
-                    <!-- Name + Rank -->
-                    <div class="col-md-4">
-                      <div class="d-flex align-items-center flex-wrap">
-                        <router-link
-                          :to="profileURL(post.posterInfo.id, post.posterInfo.userType)"
-                          class="text-black text-decoration-none fw-bold me-2"
-                        >
-                          <template v-if="post.posterInfo.userType === 'user'">
-                            {{ post.posterInfo.displayName }}
-                          </template>
-                          <template v-else-if="post.posterInfo.userType === 'producer'">
-                            {{ post.posterInfo.producerName }}
-                          </template>
-                          <template v-else>
-                            {{ post.posterInfo.venueName }}
-                          </template>
-                        </router-link>
-
-                        <span v-if="post.posterInfo.userType === 'user'" :style="{ color: post.posterInfo.rankColor }">
-                          {{ post.posterInfo.rank }}
-                        </span>
-                      </div>
-                    </div>
-
-                    <!-- Post Date -->
-                    <div class="col-md-4 d-flex align-items-center">
-                      <p class="mb-0">{{ post.postDate }}</p>
-                    </div>
-
-                    <!-- Edit/Delete -->
-                    <div class="col-md-4 d-flex justify-content-end align-items-center">
+                <div class="row text-start ms-3 mx-0 px-0">
+                  <!-- Edit + Delete Buttons -->
+                  <div class="d-flex text-start align-items-center">
                       <button
                         v-if="isAdmin || post.posterInfo.id == userID"
-                        class="btn primary-btn-green btn-sm me-3"
+                        class="btn primary-btn rounded btn-sm py-1 me-2"
                         data-bs-toggle="modal"
                         data-bs-target="#editPostModal"
                         @click="selectedPostEdit = post"
@@ -404,16 +578,15 @@
                       </button>
                       <button
                         v-if="isAdmin || post.posterInfo.id == userID"
-                        class="btn primary-btn-red btn-sm"
+                        class="btn primary-btn rounded btn-sm py-1 me-2"    
+                        style="background-color: #ae3e3e; border: 4px solid #ae3e3e; color:white;"
                         data-bs-toggle="modal"
                         data-bs-target="#deletePostModal"
                         @click="selectedPostDelete = post"
                       >
                         Delete
                       </button>
-                    </div>
                   </div>
-
 
                   <!-- Edit post modal start -->
                   <div
@@ -639,7 +812,7 @@
                   <!-- Delete post modal end -->
 
                   <!-- Row 2: Post photo -->
-                  <div class="row mb-3" v-if="post.postPhotos.length > 0">
+                  <div class="row mt-3 mx-0 px-0 " v-if="post.postPhotos.length > 0">
                     <div class="col-md-12">
                       <div id="postPhotosCarousel" class="carousel slide">
                         <div class="carousel-indicators">
@@ -664,7 +837,7 @@
                             <img
                               :src="photo"
                               class="d-block mx-auto w-auto"
-                              style="height: 250px"
+                              style="height: 200px"
                               :alt="'Slide ' + (index + 1)"
                             />
                           </div>
@@ -675,11 +848,9 @@
                           data-bs-target="#postPhotosCarousel"
                           data-bs-slide="prev"
                         >
-                          <span
-                            class="carousel-control-prev-icon"
-                            aria-hidden="true"
-                            style="background-color: black"
-                          ></span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="black" class="bi bi-chevron-left" viewBox="0 0 16 16">
+                             <path fill-rule="evenodd" d="M11.354 1.354a.5.5 0 0 1 0 .708L6.707 6.707l4.647 4.646a.5.5 0 0 1-.708.708l-5-5a.5.5 0 0 1 0-.708l5-5a.5.5 0 0 1 .708 0z"/>
+                            </svg>
                           <span class="visually-hidden">Previous</span>
                         </button>
                         <button
@@ -688,11 +859,9 @@
                           data-bs-target="#postPhotosCarousel"
                           data-bs-slide="next"
                         >
-                          <span
-                            class="carousel-control-next-icon"
-                            aria-hidden="true"
-                            style="background-color: black"
-                          ></span>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="black" class="bi bi-chevron-right" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M4.646 1.354a.5.5 0 0 1 .708 0l5 5a.5.5 0 0 1 0 .708l-5 5a.5.5 0 0 1-.708-.708L9.293 6.707 4.646 2.06a.5.5 0 0 1 0-.708z"/>
+                          </svg>
                           <span class="visually-hidden">Next</span>
                         </button>
                       </div>
@@ -700,26 +869,16 @@
                   </div>
 
                   <!-- Row 3: Post content -->
-                  <div class="row text-start">
+                  <div class="row mt-3 text-start px-0 mobile-rating-smaller-text-2">
                     <div class="col-md-12">
                       <p>{{ post.postContent }}</p>
                     </div>
                   </div>
 
-                  <!-- Row 4: Post info such as total likes, total comments -->
-                  <div class="row text-start">
-                    <div class="col-md-12 d-flex gap-4">
-                      <p class="fw-bold">Net Votes: {{ post.totalLikes - post.totalDislikes }}</p>
-                      <p class="fw-bold">
-                        Total Comments: {{ post.totalComments }}
-                      </p>
-                    </div>
-                  </div>
-
-                  <!-- Row 5: Up vote and downvote and view all comment button -->
-                  <div v-if="isMember" class="row text-start">
+                  <!-- Row 4: Up vote and downvote and view all comment button -->
+                  <div v-if="isMember" class="row text-start mx-0 px-0 ">
                     <div class="col-12 d-flex">
-                      <div v-if="postLikes !== null && postDislikes !== null" class="d-flex gap-4">
+                      <div v-if="postLikes !== null && postDislikes !== null" class="d-flex gap-1">
                         <!-- Black up arrow if user already like post (aka upvote) -->
                         <p
                           v-if="postLikes.includes(post.id)"
@@ -733,7 +892,7 @@
                             width="24"
                             height="24"
                             fill="currentColor"
-                            class="bi bi-caret-up-fill"
+                            class="bi bi-caret-up-fill me-1"
                             viewBox="0 0 16 16"
                             style="cursor: pointer"
                             @click="likePost(post.id)"
@@ -741,7 +900,6 @@
                             <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z"/>
                           </svg>
                         </p>
-
                         <!-- Black hollow arrow up if user have yet to like (aka upvote) -->
                         <p
                           v-else
@@ -755,7 +913,7 @@
                             width="24"
                             height="24"
                             fill="currentColor"
-                            class="bi bi-caret-up"
+                            class="bi bi-caret-up me-1"
                             viewBox="0 0 16 16"
                             style="cursor: pointer"
                             @click="likePost(post.id)"
@@ -763,7 +921,7 @@
                             <path d="M3.204 11h9.592L8 5.519zm-.753-.659 4.796-5.48a1 1 0 0 1 1.506 0l4.796 5.48c.566.647.106 1.659-.753 1.659H3.204a1 1 0 0 1-.753-1.659"/>
                           </svg>
                         </p>
-
+                        <p class="fw-bold mobile-rating-smaller-text-2">{{ post.totalLikes - post.totalDislikes }}</p>
                         <!-- Black arrow down if user already dislike post (aka downvote) -->
                         <p
                           v-if="postDislikes.includes(post.id)"
@@ -777,7 +935,7 @@
                             width="24" 
                             height="24" 
                             fill="currentColor" 
-                            class="bi bi-caret-down-fill me-3"
+                            class="bi bi-caret-down-fill mx-1"
                             viewBox="0 0 16 16"
                             style="cursor: pointer"
                             @click="dislikePost(post.id)">
@@ -786,7 +944,6 @@
                             />
                           </svg>
                         </p>
-
                         <!-- Black thumbs down with no fill if user has not disliked the post -->
                         <p
                           v-else
@@ -800,7 +957,7 @@
                             width="24" 
                             height="24" 
                             fill="currentColor" 
-                            class="bi bi-caret-down me-3"
+                            class="bi bi-caret-down mx-1"
                             viewBox="0 0 16 16"
                             style="cursor: pointer"
                             @click="dislikePost(post.id)">
@@ -810,11 +967,12 @@
                       </div>
                       
                       <!-- Comment icon -->
+                     
                       <span
                         data-bs-toggle="tooltip"
                         data-bs-placement="top"
                         title="View all Comments"
-                        class="cursor-pointer ps-4"
+                        class="cursor-pointer px-2"
                         @click="openPost(post.id)"
                       >
                         <svg
@@ -822,7 +980,7 @@
                           width="24"
                           height="24"
                           fill="currentColor"
-                          class="bi bi-chat-dots"
+                          class="bi bi-chat-dots "
                           viewBox="0 0 16 16"
                           style="cursor: pointer"
                         >
@@ -834,28 +992,41 @@
                           />
                         </svg>
                       </span>
+                       <p class="fw-bold mobile-rating-smaller-text-2">
+                        {{ post.totalComments }} Comments
+                      </p>
                     </div>
                   </div>
 
-                  <!-- Row 6: Comment bar -->
-                  <div v-if="isMember" class="row mt-3">
-                    <div class="col-12">
+                  <!-- Row 5: Comment bar -->
+                  <div v-if="isMember" class="row mt-1 mx-0 px-0 ">
+                    <div class="col-12 gap-1">
                       <div class="input-group">
                         <input
                           type="text"
-                          class="form-control"
+                          class="form-control rounded me-2 mobile-rating-smaller-text-2"
                           placeholder="Write a comment..."
                           aria-label="Write a comment..."
                           aria-describedby="button-addon2"
                           v-model="newComment"
                         />
                         <button
-                          class="btn primary-btn"
-                          type="button"
+                          class="btn primary-btn-less-round-blue btn-sm rounded fw-bold mobile-view-hide"
+                          type="button "
                           id="button-addon2"
                           @click="addComment(post.id)"
                         >
                           Comment
+                        </button>
+                        <button
+                          class="btn primary-btn-less-round-blue  btn-sm rounded mobile-view-show"
+                          type="button "
+                          id="button-addon2"
+                          @click="addComment(post.id)"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
+                            <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
+                          </svg>
                         </button>
                       </div>
                     </div>
@@ -867,7 +1038,7 @@
               <div v-if="showButton" class="d-flex justify-content-center my-3">
                 <button
                   type="button"
-                  class="btn secondary-btn btn-md"
+                  class="btn secondary-btn btn-md fw-bold"
                   @click="loadMorePosts"
                 >
                   Load More
@@ -877,25 +1048,18 @@
           </div>
 
           <!-- Column 2: Club type, number of members, club description, invite button and settings button -->
-          <div class="col-md-3 order-md-2 order-1 ps-md-3">
+          <div class="col-md-3 order-md-2 mb-3 mobile-px-4 collapse d-md-block" id="sidebarContent">
             <!-- Club type and number of members -->
-            <p class="text-start">
-              <span v-if="clubInfo.isInviteOnly" class="fw-bold">
-                Private Group
-              </span>
-              <span v-else class="fw-bold"> Public Group </span>
-              <span> | </span>
-              <span class="fw-bold">Number of Members:</span>
-              {{ clubInfo.totalMembers }}
-              <!--Number of members with joinStatus = True (members who have been invited but not yet accepted will not be included)-->
-            </p>
+            <h5 class="text-start fw-bold mobile-fs-6">
+              About This Club
+            </h5>
 
             <!-- Club description -->
-            <p class="text-start">{{ clubInfo.clubDesc }}</p>
+            <p class="text-start mobile-rating-smaller-text-2">{{ clubInfo.clubDesc }}</p>
 
             <!-- Invite button -->
             <button
-              class="ps-0 btn btn-warning ps-2 d-flex flex-row align-items-center"
+              class="ps-0 btn btn-warning ps-2 d-flex flex-row align-items-center btn-sm"
             >
               <!-- Invite icon -->
               <svg
@@ -903,7 +1067,7 @@
                 width="16"
                 height="16"
                 fill="currentColor"
-                class="bi bi-share"
+                class="bi bi-share fw-bold"
                 viewBox="0 0 16 16"
               >
                 <path
@@ -911,7 +1075,7 @@
                 />
               </svg>
               <!-- Invite text -->
-              <span class="ms-2">Invite your friends!</span>
+              <span class="ms-2 fw-bold">Invite your friends!</span>
             </button>
 
             <!-- Settings button -->
@@ -941,13 +1105,13 @@
             </button>
 
             <!-- Admin Details -->
-            <div class="mt-5 text-start row">
+            <div class="mt-3 text-start ">
               <p class="fw-bold">Admins</p>
-
+              <div class="row">
               <div
                 v-for="admin in admins.slice(0, 3)"
                 :key="admin.id"
-                class="d-flex flex-column align-items-center col-sm-3 col-md-4 col-lg-3 mt-3"
+                class="d-flex flex-column align-items-center col-4"
               >
                 <!-- Admin photo -->
                 <img
@@ -959,8 +1123,8 @@
                 <svg
                   v-else
                   xmlns="http://www.w3.org/2000/svg"
-                  width="45"
-                  height="45"
+                  width="50"
+                  height="50"
                   fill="currentColor"
                   class="bi bi-person-circle"
                   viewBox="0 0 16 16"
@@ -974,23 +1138,24 @@
 
                 <!-- Admin name -->
                 <router-link :to="profileURL(admin.id, admin.userType)">
-                  <p v-if="admin.userType == 'user'">{{ admin.displayName }}</p>
-                  <p v-else-if="admin.userType == 'producer'">
+                  <p v-if="admin.userType == 'user'" class="mt-2 fw-bold mobile-rating-smaller-text-2" style="color: rgb(131, 169, 232);">{{ admin.displayName }}</p>
+                  <p v-else-if="admin.userType == 'producer'" class="mt-2 fw-bold mobile-rating-smaller-text-2" style="color: rgb(131, 169, 232);">
                     {{ admin.producerName }}
                   </p>
-                  <p v-else>{{ admin.venueName }}</p>
+                  <p v-else class="mt-2 fw-bold mobile-rating-smaller-text-2" style="color: rgb(131, 169, 232);">{{ admin.venueName }}</p>
                 </router-link>
 
                 <!-- Show all admins button -->
                 <button
                   v-if="admins.length > 3"
                   type="button"
-                  class="btn secondary-btn btn-sm mt-3"
+                  class="btn secondary-btn btn-sm mt-3 fw-bold"
                   data-bs-toggle="modal"
                   data-bs-target="#showAllAdminsModal"
                 >
                   View All Admins
                 </button>
+              </div>
               </div>
             </div>
 
@@ -1023,7 +1188,7 @@
                       <div
                         v-for="admin in admins"
                         :key="admin.id"
-                        class="d-flex flex-column align-items-center col-sm-3 col-md-4 col-lg-3 mt-3"
+                        class="d-flex flex-column align-items-center col-sm-3 col-md-4 col-lg-3 mt-2"
                       >
                         <!-- Admin photo -->
                         <img
@@ -1035,8 +1200,8 @@
                         <svg
                           v-else
                           xmlns="http://www.w3.org/2000/svg"
-                          width="45"
-                          height="45"
+                          width="50"
+                          height="50"
                           fill="currentColor"
                           class="bi bi-person-circle"
                           viewBox="0 0 16 16"
@@ -1078,13 +1243,25 @@
             <!-- View all admins modal end -->
 
             <!-- Club Members -->
-            <div class="mt-5 text-start row">
-              <p class="fw-bold">Members ({{ clubInfo.totalMembers }})</p>
-
+            <div class="text-start">
+              <div class="d-flex align-items-start">
+              <p class="fw-bold me-3">Members ({{ clubInfo.totalMembers }})</p>
+              <span
+                v-if="isMember"
+                class="text-danger fst-italic hover-underline mobile-rating-smaller-text-2"
+                role="button"
+                style="cursor: pointer;"
+                data-bs-toggle="modal"
+                data-bs-target="#leaveClubModal"
+              >
+                Leave Club
+              </span>
+            </div>
+            <div class="row">
               <div
                 v-for="member in members.slice(0, 3)"
                 :key="member.id"
-                class="d-flex flex-column align-items-center col-sm-3 col-md-6 col-lg-4 mt-3"
+                class="d-flex flex-column align-items-center col-4"
               >
                 <!-- Member photo -->
                 <img
@@ -1096,8 +1273,8 @@
                 <svg
                   v-else
                   xmlns="http://www.w3.org/2000/svg"
-                  width="45"
-                  height="45"
+                  width="50"
+                  height="50"
                   fill="currentColor"
                   class="bi bi-person-circle"
                   viewBox="0 0 16 16"
@@ -1111,24 +1288,25 @@
 
                 <!-- Member name -->
                 <router-link :to="profileURL(member.id, member.userType)">
-                  <p v-if="member.userType == 'user'" class="name-container">
+                  <p v-if="member.userType == 'user'" class="mt-2 fw-bold mobile-rating-smaller-text-2" style="color: rgb(131, 169, 232);">
                     {{ member.displayName }}
                   </p>
                   <p
                     v-else-if="member.userType == 'producer'"
-                    class="name-container"
+                    class="mt-2 fw-bold mobile-rating-smaller-text-2" style="color: rgb(131, 169, 232);"
                   >
                     {{ member.producerName }}
                   </p>
-                  <p v-else class="name-container">{{ member.venueName }}</p>
+                  <p v-else class="mt-2 fw-bold mobile-rating-smaller-text-2" style="color: rgb(131, 169, 232);">{{ member.venueName }}</p>
                 </router-link>
               </div>
-
+            </div>
+            
               <!-- Show more members button -->
               <button
                 v-if="members.length > 3"
                 type="button"
-                class="btn secondary-btn btn-sm mt-3 ms-3"
+                class="btn secondary-btn btn-sm my-2 text-center fw-bold"
                 data-bs-toggle="modal"
                 data-bs-target="#showAllMembersModal"
                 @click="loadAllMembers"
@@ -1187,8 +1365,8 @@
                         <svg
                           v-else
                           xmlns="http://www.w3.org/2000/svg"
-                          width="45"
-                          height="45"
+                          width="50"
+                          height="50"
                           fill="currentColor"
                           class="bi bi-person-circle"
                           viewBox="0 0 16 16"
@@ -1206,17 +1384,17 @@
                         >
                           <p
                             v-if="member.userType == 'user'"
-                            class="name-container"
+                            class="mt-2 fw-bold mobile-rating-smaller-text-2" style="color: rgb(131, 169, 232);"
                           >
                             {{ member.displayName }}
                           </p>
                           <p
                             v-else-if="member.userType == 'producer'"
-                            class="name-container"
+                            class="mt-2 fw-bold mobile-rating-smaller-text-2" style="color: rgb(131, 169, 232);"
                           >
                             {{ member.producerName }}
                           </p>
-                          <p v-else class="name-container">
+                          <p v-else class="mt-2 fw-bold mobile-rating-smaller-text-2" style="color: rgb(131, 169, 232);">
                             {{ member.venueName }}
                           </p>
                         </router-link>
@@ -1993,4 +2171,28 @@ export default {
   text-overflow: ellipsis;
   text-align: center;
 }
+
+.event-hero {
+  width: 100%;
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  padding-bottom: 50%; /* Default: 4:6 on mobile */
+}
+
+@media (min-width: 768px) {
+  .event-hero {
+    padding-bottom: 25%; /* 1:4 on desktop */
+  }
+}
+
+.event-hero img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+
 </style>

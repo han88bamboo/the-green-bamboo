@@ -401,61 +401,120 @@
                 const stripe = this.stripe;
                 const elements = this.elements;
             
-                // Use confirmSetup instead of confirmPayment
-                const { error, setupIntent } = await stripe.confirmSetup({
-                    elements,
-                    redirect: 'if_required',
-                    confirmParams: {
-                        return_url: window.location.origin,
-                    }
-                });
-            
-                if (error) {
-                    if (error.type === "card_error" || error.type === "validation_error") {
-                        console.log(error.message);
-                    } else {
-                        console.log("An unexpected error occurred.");
-                    }
-                    return false;
-                } else if (setupIntent && setupIntent.status === 'succeeded') {
-                    // successful payment -> business is now verified
-            
-                    // update account request
-                    try {
-                        await this.$axios.post(`${process.env.VUE_APP_API_URL}/createAccount/updateAccountRequest`, 
-                            {
-                                requestID: this.requestId,
-                                isPending: false,
-                                isApproved: true,
-                            }, {
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
-                        });
-                    } catch (error) {
-                        console.error(error);
-                    }
+                // Check what type of client secret we have
+                // SetupIntent secret starts with "seti_", PaymentIntent starts with "pi_"
+                if (this.clientSecret.startsWith('seti_')) {
+                    // This is a SetupIntent
+                    console.log("Using SetupIntent confirmation");
+                    const { error, setupIntent } = await stripe.confirmSetup({
+                        elements,
+                        redirect: 'if_required',
+                        confirmParams: {
+                            return_url: window.location.origin,
+                        }
+                    });
                     
-                    // update business claim status
-                    try {
-                        await this.$axios.post(`${process.env.VUE_APP_API_URL}/edit${this.businessType.charAt(0).toUpperCase()}${this.businessType.slice(1)}Profile/update${this.businessType.charAt(0).toUpperCase()}${this.businessType.slice(1)}ClaimStatus`, 
-                            {
-                                businessId: this.businessId,
-                                claimStatus: true,
-                            }, {
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
-                        });
-                    } catch (error) {
-                        console.error(error);
+                    if (error) {
+                        if (error.type === "card_error" || error.type === "validation_error") {
+                            console.log(error.message);
+                        } else {
+                            console.log("An unexpected error occurred.");
+                        }
+                        return false;
+                    } else if (setupIntent && setupIntent.status === 'succeeded') {
+                        // successful payment -> business is now verified
+                
+                        // update account request
+                        try {
+                            await this.$axios.post(`${process.env.VUE_APP_API_URL}/createAccount/updateAccountRequest`, 
+                                {
+                                    requestID: this.requestId,
+                                    isPending: false,
+                                    isApproved: true,
+                                }, {
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+                        } catch (error) {
+                            console.error(error);
+                        }
+                        
+                        // update business claim status
+                        try {
+                            await this.$axios.post(`${process.env.VUE_APP_API_URL}/edit${this.businessType.charAt(0).toUpperCase()}${this.businessType.slice(1)}Profile/update${this.businessType.charAt(0).toUpperCase()}${this.businessType.slice(1)}ClaimStatus`, 
+                                {
+                                    businessId: this.businessId,
+                                    claimStatus: true,
+                                }, {
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+                        } catch (error) {
+                            console.error(error);
+                        }
+                
+                        return true;
                     }
-            
-                    return true;
                 } else {
-                    console.log("Payment processing...");
-                    return false;
+                    // This is a PaymentIntent
+                    console.log("Using PaymentIntent confirmation");
+                    const { error, paymentIntent } = await stripe.confirmPayment({
+                        elements,
+                        redirect: 'if_required',
+                        confirmParams: {
+                            return_url: window.location.origin,
+                        }
+                    });
+                    
+                    if (error) {
+                        if (error.type === "card_error" || error.type === "validation_error") {
+                            console.log(error.message);
+                        } else {
+                            console.log("An unexpected error occurred.");
+                        }
+                        return false;
+                    } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+                        // successful payment -> business is now verified
+                
+                        // update account request
+                        try {
+                            await this.$axios.post(`${process.env.VUE_APP_API_URL}/createAccount/updateAccountRequest`, 
+                                {
+                                    requestID: this.requestId,
+                                    isPending: false,
+                                    isApproved: true,
+                                }, {
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+                        } catch (error) {
+                            console.error(error);
+                        }
+                        
+                        // update business claim status
+                        try {
+                            await this.$axios.post(`${process.env.VUE_APP_API_URL}/edit${this.businessType.charAt(0).toUpperCase()}${this.businessType.slice(1)}Profile/update${this.businessType.charAt(0).toUpperCase()}${this.businessType.slice(1)}ClaimStatus`, 
+                                {
+                                    businessId: this.businessId,
+                                    claimStatus: true,
+                                }, {
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+                        } catch (error) {
+                            console.error(error);
+                        }
+                
+                        return true;
+                    }
                 }
+                
+                console.log("Payment processing...");
+                return false;
             },
 
             async deleteToken() {
@@ -507,8 +566,9 @@
                     // save details to local storage 
                     localStorage.setItem("88B_accID", this.businessId);
                     localStorage.setItem("88B_accType", this.businessType);
+                    localStorage.setItem("88B_accUsername", this.username); // Add this line to save username
                     // redirect to profile page
-                    this.$router.push(`/profile/${this.businessType}/${this.businessId}`)
+                    this.$router.push(`/profile/${this.businessType}/${this.businessId}/${this.username}`)
                 }
                 
             }, 

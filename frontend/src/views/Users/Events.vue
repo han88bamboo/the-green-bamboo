@@ -25,8 +25,11 @@
         </div>
 
         <!-- Display when data is loaded -->
+         <div class="event-club-banner mobile-view-show">
+            <img src="@/assets/defaultEventBanner.jpg" alt="Banner" />
+            </div>
         <!-- Main content -->
-        <div v-if="dataLoaded" class="container mt-5 px-5">
+        <div v-if="dataLoaded" class="container mt-5 mobile-mt-3 mobile-px-4 px-5">
             <div class="row">
             <!-- Search, create, upcoming, past, recommended events -->
             <div class="col-12 col-md-4">
@@ -45,16 +48,14 @@
                             <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
                         </svg>
                     </div>
-                </div> 
-
-                        
+                </div>     
 
                 <div class="d-flex flex-wrap gap-2">
                     <!-- Create Event Button (Triggers Modal) -->
-                    <button class="btn primary-btn-less-round-blue btn-lg mobile-rating-smaller-text-2" style="font-weight:bold" data-bs-toggle="modal" data-bs-target="#createEventModal" :disabled="!canCreateEvent">
+                    <button class="btn primary-btn-less-round-blue btn-lg mobile-rating-smaller-text-2 fw-bold"
+                    @click="handleCreateEventClick">
                         + Create Event
                     </button>
-                  
                     <!-- View Upcoming Events Toggle Button -->
                     <button 
                       class="btn primary-btn-less-round-blue d-md-none mobile-rating-smaller-text-2" 
@@ -70,23 +71,27 @@
                 </div>
 
                 <!-- Cannot create event message -->
-                <div v-if="!canCreateEvent && userType != null" class="alert alert-danger mt-3" role="alert">
+                <div v-if="!canCreateEvent && createEventClicked && userType != null"  class="alert alert-danger mt-3" role="alert">
                     {{ canCreateEventMessage }}
                 </div>
 
                 <!-- Create Event modal -->
-                <div class="modal fade" id="createEventModal" tabindex="-1" aria-labelledby="createEventModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-lg">
+                <div 
+                    v-if="showCreateEventModal" 
+                    class="modal d-block" 
+                    style="background-color: rgba(0, 0, 0, 0.5); position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1050;"
+                    >
+                    <div class="modal-dialog modal-lg" style="margin: 10vh auto;">
                         <div class="modal-content">
 
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="createEventModalLabel">+ Create Event</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="createEventModalLabel">+ Create Event</h5>
+                            <button type="button" class="btn-close" @click="showCreateEventModal = false" aria-label="Close"></button>
+                        </div>
 
-                            <div class="modal-body text-start">
-                                <CreateEventPage @new-event="updateNewEvent"/>
-                            </div>
+                        <div class="modal-body text-start">
+                            <CreateEventPage @new-event="updateNewEvent" />
+                        </div>
 
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" :disabled="disableButton">Close</button>
@@ -96,8 +101,9 @@
                                 </button>
                             </div>
                         </div>
-                    </div>  
-                </div>
+                    </div>
+                    </div>
+
                   
 
                 <!-- YOUR UPCOMING EVENTS -->
@@ -107,50 +113,46 @@
                     <div v-if="upcomingEvents.length > 0">
                         <div v-for="event in upcomingEvents" class="event-club-box" :key="event.eventID">
                         
-                            <!-- Column 1: banner -->
-                            <div style="flex: 0 0 40%; max-width: 40%; height: 120px;">
-                                <img v-if="event.eventBanners" :src="event.eventBanners[0]" class="img-fluid event-banner" alt="Event Banner" style="object-fit: contain; max-height: 100%;">
-                                <img v-else :src="defaultEventBanner" class="img-fluid event-banner" alt="Event Banner" style="object-fit: cover">
-                            </div>
-
-                            <!-- Column 2: -->
-                            <div class="ps-3 py-3" style="flex: 1 1 0%;">
-                                <!-- Event Name -->
-                                <p class="text-start mb-1 fw-bold fs-6">
-                                    <router-link
-                                    :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
-                                    class="text-black text-decoration-none"
-                                    >
-                                    {{ event.eventName }}
-                                    </router-link>
-                                </p>
-                            
-                                <!-- Event Details -->
-                                <p class="mb-0 text-start me-1" style="color: #00796B;">
-                                    <router-link
-                                    :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
-                                    class="text-decoration-none"
-                                    style="color: #00796B;"
-                                    >
-                                    {{ formatDate(event.eventStartDate) }} |
-                                    {{ formatTime(event.eventStartTime) }} -
-                                    {{ formatTime(event.eventEndTime) }} |
-                                    {{ event.eventType }}
-                                    </router-link>
-                                </p>  
-                            </div>
+                        <!-- Column 1: banner -->
+                        <div style="flex: 0 0 40%; max-width: 40%; height: 100px;">
+                            <img v-if="event.eventBanners" :src="event.eventBanners[0]" class="img-fluid event-banner" alt="Event Banner" style="object-fit: contain; max-height: 100%;">
+                            <img v-else :src="defaultEventBanner" class="img-fluid event-banner" alt="Event Banner" style="object-fit: cover">
                         </div>
-                    </div>
-                    
 
-                    <div v-if="upcomingEvents.length == 0 && !upcomingEventsError" class="text-start collapse d-md-block my-4" id="sidebarContent">
-                        <h5 class="mobile-fs-6">Login to view upcoming events.</h5>
+                        <!-- Column 2: -->
+                        <div class="container text-start">
+                            <!-- Event Name -->
+                            <p class="text-start mb-1 fw-bold fs-6">
+                                <router-link
+                                :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
+                                class="text-black text-decoration-none"
+                                >
+                                {{ event.eventName }}
+                                </router-link>
+                            </p>
+                        
+                            <!-- Event Details -->
+                            <p class="text-success text-start small" style="color: #00796B;">
+                                <router-link
+                                  :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
+                                  class="text-decoration-none"
+                                  style="color: #00796B;"
+                                >
+                                {{ formatDate(event.eventStartDate) }} |
+                                {{ formatTime(event.eventStartTime) }} -
+                                {{ formatTime(event.eventEndTime) }} |
+                                {{ event.eventType }}
+                                </router-link>
+                              </p>  
+                        </div>
                     </div>
                 </div>
 
                 <!-- Error message for error retrieving upcoming events -->
-                <div v-if="upcomingEventsError" class="text-start collapse d-md-block my-4" id="sidebarContent">
-                    <h5 class="mobile-fs-6">{{ upcomingEventsError }}</h5>
+                <div v-if="upcomingEventsError" class="text-start collapse d-md-block my-4 mobile-mb-0" id="sidebarContent">
+                    <a href="https://drink-x.com/login" target="_blank" rel="noopener noreferrer" class="text-decoration-none" style="color:#00796B">
+                    <h6 class="mobile-fs-7">{{ upcomingEventsError }}</h6>
+                    </a>
                 </div>
 
                 
@@ -182,53 +184,48 @@
                 <div class="collapse d-md-block my-4" id="sidebarContent">
                     <h5 class="text-start fw-bold my-3">Past Events <button v-if="pastEvents.length > 5" type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#pastEventsModal">View All</button></h5>
                     
-                    <div v-if="pastEvents.length > 0">
-                        <div v-for="event in pastEvents" class="event-club-box"  :key="event.eventID" style="background-color: white; overflow: hidden;">
-                            
-                            <!-- Column 1: banner -->
-                            <div style="flex: 0 0 40%; max-width: 40%; height: 120px;">
-                                <img v-if="event.eventBanners" :src="event.eventBanners[0]" class="img-fluid event-banner" alt="Event Banner" style="object-fit: cover;">
-                                <img v-else :src="defaultEventBanner" class="w-100 h-100" alt="Event Banner" style="object-fit: cover;">
-                            </div>  
+                    <div v-for="event in pastEvents" class="event-club-box"  :key="event.eventID" style="background-color: white; overflow: hidden;">
+                        
+                        <!-- Column 1: banner -->
+                        <div style="flex: 0 0 40%; max-width: 40%; height: 100px;">
+                            <img v-if="event.eventBanners" :src="event.eventBanners[0]" class="img-fluid event-banner;" alt="Event Banner" style="object-fit: cover;">
+                            <img v-else :src="defaultEventBanner" class="img-fluid event-banner;" alt="Event Banner" style="object-fit: cover;">
+                        </div>  
 
-                            <!-- Column 2: -->
-                            <div class="ps-3 py-3" style="flex: 1;">
-                                <!-- Event Name -->
-                                <p class="text-start mb-1 fw-bold fs-6">
-                                    <router-link
-                                    :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
-                                    class="text-black text-decoration-none"
-                                    >
-                                    {{ event.eventName }}
-                                    </router-link>
-                                </p>
+                        <!-- Column 2: -->
+                        <div class="container text-start ">
+                            <!-- Event Name -->
+                            <p class="text-start mb-1 fw-bold fs-6">
+                                <router-link
+                                  :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
+                                  class="text-black text-decoration-none"
+                                >
+                                  {{ event.eventName }}
+                                </router-link>
+                              </p>
 
-                                <!-- Event Details -->
-                                <p class="mb-0 text-start me-1" style="color: #00796B;">
-                                    <router-link
-                                    :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
-                                    class="text-decoration-none"
-                                    style="color: #00796B;"
-                                    >
-                                    {{ formatDate(event.eventStartDate) }} |
-                                    {{ formatTime(event.eventStartTime) }} -
-                                    {{ formatTime(event.eventEndTime) }} |
-                                    {{ event.eventType }}
-                                    </router-link>
-                                </p>  
-                            </div>  
-                        </div>
+                            <!-- Event Details -->
+                            <p class="text-success text-start small" style="color: #00796B;">
+                                <router-link
+                                  :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
+                                  class="text-decoration-none text-start small"
+                                  style="color: #00796B;"
+                                >
+                                {{ formatDate(event.eventStartDate) }} |
+                                {{ formatTime(event.eventStartTime) }} -
+                                {{ formatTime(event.eventEndTime) }} |
+                                {{ event.eventType }}
+                                </router-link>
+                              </p>  
+                        </div>  
                     </div>
-
-                    <div v-if="pastEvents.length == 0 && !pastEventsError" class="text-start collapse d-md-block my-4" id="sidebarContent">
-                        <h5 class="mobile-fs-6">Login to view past events.</h5>
-                    </div>
-                    
                 </div>
 
                 <!-- Error message for error retrieving past events -->
-                <div v-if="pastEventsError" class="collapse d-md-block my-4" id="sidebarContent">
-                    <h5 class="mobile-fs-6">{{ pastEventsError }}</h5>
+                <div v-if="pastEventsError" class="collapse d-md-block my-4 text-start mobile-mb-0" id="sidebarContent">
+                    <a href="https://drink-x.com/login" target="_blank" rel="noopener noreferrer" class="text-decoration-none" style="color:#00796B">
+                    <h6 class="mobile-fs-7">{{ pastEventsError }}</h6>
+                    </a>
                 </div>
 
                 <!-- Past events modal -->
@@ -260,13 +257,13 @@
                     <div v-for="event in recommendedEvents" class="event-club-box"  :key="event.eventID">
                         
                         <!-- Column 1: banner -->
-                        <div style="flex: 0 0 40%; max-width: 40%; height: 120px;">
+                        <div style="flex: 0 0 40%; max-width: 40%; height: 100px;">
                             <img v-if="event.eventBanners" :src="event.eventBanners[0]" class="img-fluid event-banner" alt="Event Banner" style="object-fit: contain; max-height: 100%;">
                             <img v-else :src="defaultEventBanner" class="img-fluid event-banner" alt="Event Banner" style="object-fit: cover">
                         </div>
 
                         <!-- Column 2: -->
-                        <div class="ps-3 py-3" style="flex: 1;">
+                        <div class="container text-start">
                             <!-- Event Name -->
                             <p class="text-start mb-1 fw-bold fs-6">
                                 <router-link
@@ -278,7 +275,7 @@
                             </p>
                         
                             <!-- Event Details -->
-                            <p class="mb-0 text-start me-1" style="color: #00796B;">
+                            <p class="text-success text-start small" style="color: #00796B;">
                                 <router-link
                                   :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
                                   class="text-decoration-none"
@@ -572,7 +569,7 @@
 
                 <!-- Error message for error retrieving followed events -->
                 <div v-if="followedEventsError" class="mt-3 text-start">
-                    <h5>{{ followedEventsError }}</h5>
+                    <h6 mobile-fs-7>{{ followedEventsError }}</h6>
                 </div>
             </div>
         </div>
@@ -652,6 +649,9 @@ export default {
 
             canCreateEvent: false,
             canCreateEventMessage: "",
+
+            createEventClicked: false,         // tracks button click for error
+            showCreateEventModal: false,       // toggles modal visibility
         }
     },
     methods: {
@@ -674,7 +674,7 @@ export default {
                     this.upcomingEventsError = "No upcoming events found.";
                 }
                 else {
-                    this.upcomingEventsError = "Failed to retrieve upcoming events.";
+                    this.upcomingEventsError = "Sign up or log in to register yourself for events.";
                 }
                 console.error(error);
             }
@@ -693,7 +693,7 @@ export default {
                     this.pastEventsError = "No past events found.";
                 }
                 else {
-                    this.pastEventsError = "Failed to retrieve past events.";
+                    this.pastEventsError = "Sign up or log in to view your event history!";
                 }
                 console.error(error);
             }
@@ -729,7 +729,7 @@ export default {
                     this.trendingEventsError = "No trending events found.";
                 }
                 else {
-                    this.trendingEventsError = "Failed to retrieve trending events.";
+                    this.trendingEventsError = "Error retrieving trending events";
                 }
                 console.error(error);
             }
@@ -747,7 +747,7 @@ export default {
                     this.followedEventsError = "No followed events found.";
                 }
                 else {
-                    this.followedEventsError = "Failed to retrieve followed events.";
+                    this.followedEventsError = "Sign up or log in to view events from brands and venues you follow!";
                 }
                 console.error(error);
             }
@@ -919,8 +919,15 @@ export default {
                 toast.error("Failed to create event.");
                 this.disableButton = false;
             }
-        }
+        },
 
+        // Function to check if a user is trying to create event when they've reaced the limit. This prompts error message to display
+        handleCreateEventClick() {
+        this.createEventClicked = true;
+        if (this.canCreateEvent) {
+            this.showCreateEventModal = true;
+            }
+        },
     },
     mounted() {
         this.getRecommendEvents();

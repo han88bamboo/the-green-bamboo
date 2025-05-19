@@ -29,8 +29,9 @@
             <div class="w-100 position-relative">
               <input
                 class="form-control fst-italic"
+                 style="border: none; height: 100%; line-height: 50px; padding: 0 1rem;"
                 type="text"
-                placeholder="What are you drinking today?"
+                placeholder="Go for it!"
                 v-model="searchInput"
                 v-on:keyup.enter="goSearch"
                 v-on:input="getSuggestions"
@@ -57,8 +58,8 @@
             <img
               src="../../Images/Others/search-green.png"
               style="
-                width: 30px;
-                height: 30px;
+                width: 25px;
+                height: 25px;
                 margin: 0px 10px;
                 align-self: center;
               "
@@ -431,9 +432,9 @@
         <div class="search-bar d-flex align-items-center col-12 position-relative">
           <div class="w-100 position-relative">
             <input
-              class="form-control fst-italic"
+              class="form-control fst-italic border-0"
               type="text"
-              placeholder="What are you drinking today?"
+              placeholder="Go for it!"
               style="width: calc(100% - 40px); "
               v-model="searchInput"
               v-on:keyup.enter="goSearch"
@@ -461,8 +462,8 @@
           <img
             src="../../Images/Others/search-green.png"
             style="
-              width: 30px;
-              height: 30px;
+              width: 25px;
+              height: 25px;
               margin: 0px 10px;
               align-self: center;
             "
@@ -951,7 +952,7 @@ export default {
   color: white;
 }
 input.form-control {
-  border: none;
+  border: solid 1px grey;
   box-shadow: none !important;
   outline: none;
 }

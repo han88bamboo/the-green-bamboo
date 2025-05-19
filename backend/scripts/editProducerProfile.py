@@ -7,7 +7,7 @@ import s3Images
 from flask import Blueprint, g, request, jsonify
 from bson.objectid import ObjectId
 from datetime import datetime
-from scripts import pointsHelperFunc
+from scripts import pointsHelperFunc, badge_helpers
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -169,43 +169,53 @@ def sendQuestions():
         )
         conn.commit()
 
+        # Initialize variables for points and badge processing
+        points_earned = 0
+        badge_result = None
+
         # Award points to user for asking a question
-        if pointsHelperFunc.check_max_proof_points(userID):
-            return jsonify(
-                {
-                    "code": 201,
-                    "message": "Question sent successfully!"
-                }
-            ), 201
- 
-        # get points for asking a question
-        cur.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = %s', (15,))
-        points = cur.fetchone()
-
-        # Update user's points
-        cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s', (points['proofPoints'], userID))
-        conn.commit()
-
-        print(f" {points['proofPoints']} points awarded to user {userID} for asking a question")
-
-        return jsonify(
-            {
-                "code": 201,
-                "message": "Question sent successfully!",
-                "pointsEarned": points['proofPoints']
-            }
-        ), 201
+        if not pointsHelperFunc.check_max_proof_points(userID):
+            # Get points for asking a question
+            cur.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = %s', (15,))
+            points_rule = cur.fetchone()
+            
+            if points_rule:
+                points_earned = points_rule['proofPoints']
+                
+                # Update user's points
+                cur.execute(
+                    'UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s',
+                    (points_earned, userID)
+                )
+                conn.commit()
+                
+                print(f"{points_earned} points awarded to user {userID} for asking a question")
+            
+            # Process the Question badge
+            badge_result = badge_helpers.process_question_badge(conn, cur, userID)
+        
+        # Prepare the response
+        response_data = {
+            "code": 201,
+            "message": "Question sent successfully!"
+        }
+        
+        if points_earned > 0:
+            response_data["pointsEarned"] = points_earned
+            
+        if badge_result:
+            response_data["badgeAwarded"] = badge_result
+            
+        return jsonify(response_data), 201
     
     except Exception as e:
         conn.rollback()
         print(str(e))
-        return jsonify(
-            {
-                "code": 500,
-                "data": data,
-                "message": "An error occurred sending the question!"
-            }
-        ), 500
+        return jsonify({
+            "code": 500,
+            "data": data,
+            "message": "An error occurred sending the question!"
+        }), 500
     
     finally:
         cur.close()

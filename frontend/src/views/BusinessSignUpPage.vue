@@ -11,7 +11,7 @@
     </div>
 
     <!-- Display when data fails to load -->
-    <div class="text-danger fst-italic fw-bold fs-3 pt-5" v-if="dataLoaded == null"> 
+    <div class="text-danger fst-italic fw-bold fs-5 pt-5" v-if="dataLoaded == null"> 
         <span>An error occurred while loading this page, please try again!</span>
         <br>
         <button class="btn primary-btn btn-sm" @click="this.$router.go(-1)">
@@ -34,7 +34,7 @@
     </div>
 
     <!-- Display when bottle listing is successfully submitted -->
-    <div class="text-success fst-italic fw-bold fs-3"  v-if="successSubmission"> 
+    <div class="text-success fst-italic fw-bold fs-5"  v-if="successSubmission"> 
         <span>The sign up details has successfully been submitted to our admins for approval!</span> <!-- for user -->
         <br>
         <button class="btn primary-btn btn-sm">
@@ -45,7 +45,7 @@
     </div>
     
     <!-- Display when bottle listing submission encounters an error -->
-    <div class="text-danger fst-italic fw-bold fs-3" v-if="errorSubmission"> 
+    <div class="text-danger fst-italic fw-bold fs-5" v-if="errorSubmission"> 
         <span v-if="errorMessage">An error occurred while attempting to send sign up details, please try again!</span>
         <span v-if="duplicateEntry">The sign up details have already been sent.</span>
         <br>
@@ -53,26 +53,51 @@
             <span class="fs-5 fst-italic"> Retry sign up again! </span>
         </button>
     </div>
-
-    <div class="body-login" v-if="dataLoaded">
+    <div class="login-header-banner mobile-view-show">
+      <img src="@/assets/business-signup.jpg" alt="Banner" />
+    </div>
+    <div class="body-login background-login" v-if="dataLoaded">
         <div class="container py-5 mobile-ps-0 mobile-pe-0 mobile-pt-0">
 
-            <div class="rounded px-5 py-2 mobile-px-4" v-if="fillForm" style="background-color: #DDC8A9;">
+            <div class="rounded px-5 py-2 mobile-px-4" v-if="fillForm" style="background-color: wheat; opacity:0.95;">
 
                 <div class="row">
 
                     <!-- start of the elements -->
-                    <div class="col-lg-8 col-md-12" style="background-color:#DDC8A9;">
+                    <div class="col-lg-8 col-md-12" style="background-color:wheat;">
 
-                        <div class="d-grid gap-2" style="position: relative;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="ms-1 mt-2 bi bi-arrow-left-circle mobile-view-hide" viewBox="0 0 16 16" style="position: absolute; top: 10; left: 0;" v-on:click="goBack">
-                                <path fill-rule="evenodd" d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8m15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-4.5-.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5z"/>
-                            </svg>
-                            <p class="fw-bold fs-3 mb-0 mx-5 mt-2 mobile-mx-0 mobile-text-align-left" style="font-style: italic; ">Are you a distiller, brewery or bar owner?</p>
+                        <div class="d-grid gap-1" style="position: relative;">
+                            <p class="fw-bold fs-4 pt-4 mobile-fs-5 mb-1 text-start" style="font-style: italic; ">
+                                <span @click="goBack" style="cursor: pointer; font-size: 1.5rem;" class="mobile-view-hide">↩</span> Are you a brand or venue owner?
+                            </p>
                         </div>
+                        <h5 class="text-start mt-2 mb-3 mobile-fs-6">Apply for a Business Account to connect to a community of drink lovers and grow your business!</h5>
 
-                        <h3 class="text-start my-3">Apply for a Business Account to connect to a community of drink lovers!</h3>
-
+                        <div class="row justify-content-center mobile-view-show">
+                            <button class="btn rounded p-3 text-start mx-0 mb-3 col-5 me-2" @click="toggleMonthlyPricing" :style="{ backgroundColor: selectedMonthlyPricing ? '#DD9E54' :'white', 
+                                                                                                                                color: selectedMonthlyPricing ? 'white' :'black', 
+                                                                                                                                borderColor: '#DD9E54', 
+                                                                                                                                borderWidth:'3px' }">
+                                <span>
+                                    <h6> <b> Monthly plan </b> </h6>
+                                    <p class="m-0"> $65 / Month </p> 
+                                    <small class="fst-italic p-0"> Billed monthly </small>
+                                    <h6 class="mt-2" style="color: green;"><b>Cancel anytime.</b></h6>
+                                </span>
+                            </button>
+                            <button class="btn rounded p-3 text-start mx-0 mb-3 col-5" @click="toggleYearlyPricing" :style="{ backgroundColor: selectedYearlyPricing ? '#DD9E54' :'white', 
+                                                                                                                                color: selectedYearlyPricing ? 'white' :'black', 
+                                                                                                                                borderColor: '#DD9E54', 
+                                                                                                                                borderWidth:'3px' }">
+                                <span>
+                                    <h6> <b> Yearly plan </b> </h6> 
+                                    <p class="m-0"> $50 / Month </p> 
+                                    <small class="fst-italic p-0"> $600 Billed annually </small>
+                                    <h5 class="mt-2" style="color: green;"><b>Save 23%!</b></h5>
+                                </span>
+                            
+                            </button>
+                        </div> 
 
                         <!-- Start of form -->
                         <form v-on:submit.prevent="submitListing" id="frm">
@@ -84,11 +109,11 @@
                                 <div class="col-md-12 justify-content-between">
                                     <div class="form-check form-check-inline">
                                         <input class="form-check-input" type="radio" id="inlineCheckbox1" v-model="businessType" value="producer" name="business">
-                                        <label class="form-check-label text-start fw-bold" for="inlineCheckbox1">Brand/Producer</label>
+                                        <label class="form-check-label text-start" for="inlineCheckbox1">Brand/Producer</label>
                                     </div>
                                     <div class="form-check form-check-inline">
                                         <input class="form-check-input" type="radio" id="inlineCheckbox2" v-model="businessType" value="venue" name="business">
-                                        <label class="form-check-label text-start fw-bold" for="inlineCheckbox2">Venue</label>
+                                        <label class="form-check-label text-start" for="inlineCheckbox2">Venue</label>
                                     </div>                                                                                                   
                                 </div>   
                                 <span v-if="missingBusinessType" class="text-danger">Please choose your business type.</span>                                      
@@ -215,9 +240,9 @@
                     </div>
 
                     <!-- right side of elements -->
-                    <div class="col-lg-4 col-md-12" style="background-color:#DDC8A9;">
-                        <div class="d-grid gap-2 mt-3">
-                            <p class="fs-3">Subscribe to a Business Account to connect directly with your fans and grow your business.</p>
+                    <div class="col-lg-4 col-md-12" style="background-color: wheat;">
+                        <div class="d-grid gap-2 mt-4">
+                            <p class="fs-6 fw-bold px-4 mobile-view-hide">Subscribe to a Business Account to connect directly with your fans and grow your business.</p>
                         </div>
                         <div class="row justify-content-center mobile-view-hide">
                             <!-- <div class="col-xl-2 col-lg-1 col-md-1"></div> -->
@@ -250,35 +275,7 @@
                                 </span>
                             
                             </button>
-                        </div>
-                        <div class="row justify-content-center mobile-view-show">
-                            <button class="btn rounded p-3 text-start mx-0 mb-3 col-6" @click="toggleMonthlyPricing" :style="{ backgroundColor: selectedMonthlyPricing ? '#DD9E54' :'white', 
-                                                                                                                                color: selectedMonthlyPricing ? 'white' :'black', 
-                                                                                                                                borderColor: '#DD9E54', 
-                                                                                                                                borderWidth:'3px' }">
-                                <span>
-                                    <h6> <b> Monthly plan </b> </h6>
-                                    <p class="m-0"> $65 / Month </p> 
-                                    <small class="fst-italic p-0"> Billed monthly </small>
-                                    <h6 class="mt-2" style="color: green;"><b>Cancel anytime.</b></h6>
-                                </span>
-                            </button>
-                            <button class="btn rounded p-3 text-start mx-0 mb-3 col-6" @click="toggleYearlyPricing" :style="{ backgroundColor: selectedYearlyPricing ? '#DD9E54' :'white', 
-                                                                                                                                color: selectedYearlyPricing ? 'white' :'black', 
-                                                                                                                                borderColor: '#DD9E54', 
-                                                                                                                                borderWidth:'3px' }">
-                                <div class="row">
-                                    <div class="col-7"> <h6> <b> Yearly plan </b> </h6> </div> 
-                                    
-                                </div>
-                                <span>
-                                    <p class="m-0"> $50 / Month </p> 
-                                    <small class="fst-italic p-0"> $600 Billed annually </small>
-                                    <h5 class="mt-2" style="color: green;"><b>Save 23%!</b></h5>
-                                </span>
-                            
-                            </button>
-                        </div>    
+                        </div>  
                         <span v-if="missingPlan" class="text-danger">Please select a plan.</span>
                     </div>
 
@@ -286,7 +283,7 @@
 
                 <div class="row">
                     <div class="col-lg-8 col-md-12">
-                        <button type="submit" class="btn btn-lg secondary-btn-border-thick mx-auto mb-3" @click="signUp">Register for Account</button>
+                        <button type="submit" class="btn fw-bold btn-md secondary-btn mx-auto mb-3" @click="signUp">Register for Account</button>
                     </div>
                 </div>
 
@@ -637,3 +634,38 @@
     }
 
 </script>
+
+<style scoped>
+
+.login-header-banner {
+  position: relative;
+  width: 100%;
+  padding-top: calc(3 / 6 * 100%); /* 2:6 aspect ratio = 33.33% */
+  overflow: hidden;
+}
+
+.login-header-banner img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.background-login {
+  background-image: url('@/assets/business-signup.jpg');
+  background-size: cover;
+  background-position: center;
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+}
+
+@media (max-width: 991px) {
+  .background-login {
+    background-image: none;
+    background-color: wheat;
+  }
+}
+</style>

@@ -25,10 +25,7 @@
 
         <!-- Main Content -->
         <div v-if="dataLoaded">
-            <div v-if="selfView" class="container mt-3 mb-3">
-                <button class="btn primary-btn me-3" data-bs-toggle="modal" data-bs-target="#editEventModal">Edit Event</button>
-                <button class="btn primary-btn-red" data-bs-toggle="modal" data-bs-target="#deleteEventModal">Delete Event</button>
-            </div>
+            
 
             <!-- Event banner -->
             <!-- Full-width Hero Carousel -->
@@ -189,7 +186,11 @@
                             {{ event.ownerInfo.venueName || event.ownerInfo.producerName || event.ownerInfo.displayName }}
                             </router-link>
                         </div>
-
+                        <!-- Edit Event and Delete Event Buttons -->
+                        <div v-if="selfView">
+                            <button class="btn primary-btn btn-sm me-3" data-bs-toggle="modal" data-bs-target="#editEventModal">Edit Event</button>
+                            <button class="btn primary-btn-red btn-sm " data-bs-toggle="modal" data-bs-target="#deleteEventModal">Delete Event</button>
+                        </div>
                         <div v-if="!followStatus && !selfView">
                             <button class="btn btn-outline-light btn-md" style="font-weight: bold" @click="editFollow('follow')">Follow</button>
                         </div>
@@ -198,6 +199,7 @@
                         </div>
                         </div>
 
+                        
 
                         <!-- Event Description -->
                         <h5 class="fw-bold mt-3 mobile-fs-6 mx-1" style="color:#027562">About This Event:</h5>
@@ -410,18 +412,30 @@
                             <div class="d-flex flex-column justify-content-start align-items-center">
 
                                 <!-- Banner -->
-                                <div class="row" style="height: 150px; width: auto; cursor: pointer;">
-                                    <img v-if="otherEvent.eventBanners" :src="otherEvent.eventBanners[0]" class="img-fluid event-banner" alt="Event Banner">
-                                    <img v-else :src="defaultEventBanner" class="img-fluid event-banner" alt="Event Banner">
+                                <div class="row" style="cursor: pointer; aspect-ratio: 2 / 1; overflow: hidden; ">
+                                <img
+                                    v-if="otherEvent.eventBanners"
+                                    :src="otherEvent.eventBanners[0]"
+                                    alt="Event Banner"
+                                    class="w-100 h-100 rounded mb-2"
+                                    style="object-fit: cover;"
+                                />
+                                <img
+                                    v-else
+                                    :src="defaultEventBanner"
+                                    alt="Event Banner"
+                                    class="w-100 h-100 rounded mb-2"
+                                    style="object-fit: cover;"
+                                />
                                 </div>
                                 
                                 <!-- Event Name -->
-                                <router-link :to="{ name: 'eventview', params: { eventID: otherEvent.id, eventName: slugify(otherEvent.eventName) } }">
-                                    <p class="m-0">{{ otherEvent.eventName }}</p>
+                                <router-link class="text-decoration-none" :to="{ name: 'eventview', params: { eventID: otherEvent.id, eventName: slugify(otherEvent.eventName) } }">
+                                    <p class="m-0 my-2 fw-semibold mobile-rating-smaller-text-2" style="color:black;">{{ otherEvent.eventName }}</p>
                                 </router-link>
 
                                 <!-- Event date and time -->
-                                <p class="fw-normal small-text">{{ formatDate(otherEvent.eventStartDate) }}, {{ formatTime(otherEvent.eventStartTime) }} - {{ formatTime(otherEvent.eventEndTime) }}</p>
+                                <p class="fw-normal mobile-rating-smaller-text-2" style="color:#027562">{{ formatDate(otherEvent.eventStartDate) }}, {{ formatTime(otherEvent.eventStartTime) }} - {{ formatTime(otherEvent.eventEndTime) }}</p>
                             </div>
                         </div>
                     </div>
@@ -607,7 +621,7 @@
 
 @media (min-width: 768px) {
   .event-hero {
-    padding-bottom: 33.333%; /* 2:6 on desktop */
+    padding-bottom: 25%; /* 1:4 on desktop */
   }
 }
 

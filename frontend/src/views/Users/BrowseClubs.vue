@@ -24,346 +24,399 @@
         </div>
 
         <!-- Display when data is loaded -->
-        <!-- Main content -->
-        <div v-if="dataLoaded" class="container-fluid mt-5 px-5 row">
-
-            <!-- Search, create, clubs you manage and in-->
-            <div class="col-12 col-md-3">
-                <!-- Header -->
-                <div>
-                    <h3 class="text-start fw-bold">Find your drinking buddies!</h3>
-                </div>
-
-                <!-- Search Input -->
-                <div>
-                    <div class="input-group mb-3 position-relative">
-                        <input type="text" class="form-control rounded-pill" placeholder="Search for clubs" aria-label="Search for clubs" aria-describedby="search-club" v-model="searchQuery" @keyup.enter="searchClubs">
-                        <!-- Search Icon -->
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-search position-absolute" viewBox="0 0 16 16" style="right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; z-index: 5;"
-                            @click="searchClubs">
-                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
-                        </svg>
-                    </div>
-                </div> 
-
-                <!-- Create Club Button -->
-                <div class="text-start">
-                    <button class="btn btn-primary" @click="createClub" :disabled="!canCreateClub">+ Create a Club</button>
-                </div>
-
-                <!-- Message for why user cannot create club -->
-                <div v-if="userType != 'defaultUser' && !canCreateClub" class="alert alert-danger mt-3" role="alert">
-                    <p class="text-danger">{{ cannotCreateClubMsg }}</p>
-                </div>
-
-                <!-- Club Invite-->
-                <div v-if="invitedClubs.length > 0" class="mt-3">
-                    <h3 class="text-start fw-bold">Clubs You Are Invited To</h3>
-
-                    <div v-for="club in invitedClubs.slice(0, 5)" class="d-flex gap-3" :key="club.id">
-
-                        <div class="row w-100 align-items-start mb-3">
-                            <!-- First row (club info) -->
-                            <div class="col-12 col-lg-7 mb-2 mb-md-0 text-start">
-                                <!-- Club title -->
-                                <router-link
-                                    v-if="club.clubID && club.clubName"
-                                    :to="{ name: 'clubview', params: { clubID: club.clubID, clubName: slugify(club.clubName || 'unknown-club') }}"
-                                    class="text-dark hover-underline fw-bold d-block"
-                                >
-                                    {{ club.clubName }}
-                                </router-link>
-
-                                <!-- Invited by -->
-                                <p class="mb-0">Invited by: {{ club.inviterInfo.displayName }}</p>
-                            </div>
-
-                            <!-- Second row (buttons) -->
-                            <div class="col-12 col-lg-5 d-flex justify-content-start justify-content-lg-end">
-                                <!-- Decline Button -->
-                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="red"
-                                    class="bi bi-x-circle me-3" viewBox="0 0 16 16"
-                                    style="cursor: pointer;" @click="declineInvite(club.clubID)">
-                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
-                                </svg>
-
-                                <!-- Accept Button -->
-                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="green"
-                                    class="bi bi-check-circle" viewBox="0 0 16 16"
-                                    style="cursor: pointer;" @click="acceptInvite(club.clubID)">
-                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                                    <path d="m10.97 4.97-.02.022-3.473 4.425-2.093-2.094a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05"/>
-                                </svg>
-                            </div>
-
-                            <hr class="w-100 mt-3">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Clubs you manage -->
-                <div v-if="userClubs.length > 0 && adminClubs.length > 0" class="mt-3">
-                    <h3 class="text-start fw-bold">Clubs You Manage <button v-if="adminClubs.length > 5" type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#showAllManagedClubs">View All</button></h3>
-
-                    <div v-for="club in adminClubs.slice(0, 5)" class="d-flex gap-3" :key="club.id">
-
-                        <!-- Club Banner Image -->
-                        <div style="width: 100px; height: 150px;">
-                            <img v-if="club.clubInfo.clubBanner" :src="club.clubInfo.clubBanner" class="img-fluid w-100 border" alt="..." style="object-fit: cover;">
-                            <img v-else :src="defaultBanner" class="img-fluid w-100 border" alt="..." style="object-fit: cover;">
-                        </div>
-                        <!-- CLub title -->
-                        <router-link v-if="club.clubID && club.clubInfo?.clubName" :to="{ name: 'clubview', params: { clubID: club.clubID, clubName: slugify(club.clubInfo?.clubName || 'unknown-club') }}" class="text-dark hover-underline">
-                            {{ club.clubInfo?.clubName }}
-                        </router-link>
-                    </div>
-                </div>
-
-                <!-- Clubs you managed modal -->
-                <div class="modal fade" id="showAllManagedClubs" tabindex="-1" aria-labelledby="showAllManagedClubsLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-scrollable modal-xl">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="showAllManagedClubsLabel">Clubs You Manage</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="row">
-                                    <div v-for="club in adminClubs" class="col-12 col-md-4 d-flex gap-3 mb-3" :key="club.id">
-                                        <!-- Club Banner Image -->
-                                        <div style="width: 100px; height: 150px;">
-                                            <img v-if="club.clubInfo.clubBanner" :src="club.clubInfo.clubBanner" class="img-fluid w-100 border" alt="..." style="object-fit: cover;">
-                                            <img v-else :src="defaultBanner" class="img-fluid w-100 border" alt="..." style="object-fit: cover;">
-                                        </div>
-                                        <!-- CLub title -->
-                                        <router-link :to="{ name: 'clubview', params: { clubID: club.clubID }}" class="text-dark hover-underline">
-                                            {{ club.clubInfo.clubName }}
-                                        </router-link>
-                                    </div>
-                                </div>
-                                
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Clubs you are in -->
-                <div v-if="userClubs.length > 0 && memberClubs.length > 0" class="mt-3">
-                    <h3 class="text-start fw-bold">Clubs You Are In <button v-if="memberClubs.length > 5" type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#showAllJoinedClubs">View all</button></h3>
-
-                    <div v-for="club in memberClubs.slice(0, 5)" class="d-flex gap-3 mb-3" :key="club.id">
-
-                        <!-- Club Banner Image -->
-                        <div style="width: 100px; height: 150px;">
-                            <img v-if="club.clubInfo.clubBanner" :src="club.clubInfo.clubBanner" class="img-fluid w-100 border" alt="..." style="object-fit: cover;">
-                            <img v-else :src="defaultBanner" class="img-fluid w-100 border" alt="..." style="object-fit: cover;">
-                        </div>
-                        <!-- CLub title -->
-                        <router-link :to="{ name: 'clubview', params: { clubID: club.clubID, clubName: slugify(club.clubInfo.clubName) }}" class="text-dark hover-underline">
-                            {{ club.clubInfo.clubName }}
-                        </router-link>
-                    </div>
-                </div>
-
-                <!-- Clubs you are in modal -->
-                <div class="modal fade" id="showAllJoinedClubs" tabindex="-1" aria-labelledby="showAllJoinedClubsLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-scrollable modal-xl">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="showAllJoinedClubsLabel">Clubs You Are In</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="row">
-                                    <div v-for="club in memberClubs" class="col-12 col-md-4 d-flex gap-3 mb-3" :key="club.id">
-                                        <!-- Club Banner Image -->
-                                        <div style="width: 100px; height: 150px;">
-                                            <img v-if="club.clubInfo.clubBanner" :src="club.clubInfo.clubBanner" class="img-fluid w-100 border" alt="..." style="object-fit: cover;">
-                                            <img v-else :src="defaultBanner" class="img-fluid w-100 border" alt="..." style="object-fit: cover;">
-                                        </div>
-                                        <!-- CLub title -->
-                                        <router-link :to="{ name: 'clubview', params: { clubID: club.clubID }}" class="text-dark hover-underline">
-                                            {{ club.clubInfo.clubName }}
-                                        </router-link>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>  
-                    </div>  
-                </div>
+        <div class="event-club-banner mobile-view-show">
+            <img src="@/assets/defaultGroupBanner.png" alt="Banner" />
             </div>
+        <!-- Main content -->
+        <div v-if="dataLoaded" class="container mobile-mt-3 mobile-px-4 mt-5 px-5">
+            <div class="row">
+                <!-- Search, create, clubs you manage and in-->
+                <div class="col-12 col-md-4">
+                    <!-- Header -->
+                    <div>
+                        <h5 class="text-start fw-bold">Find your drinking buddies!</h5>
+                    </div>
 
-            <!-- Recent activity [has joined club(s)] or browse club [not yet joined club]-->
-            <div class="col-12 col-md-9">
+                    <!-- Search Input -->
+                    <div>
+                        <div class="input-group mb-3 position-relative">
+                            <input type="text" class="form-control rounded-pill" style="border: solid 2px #827c75" placeholder="Search for clubs" aria-label="Search for clubs" aria-describedby="search-club" v-model="searchQuery" @keyup.enter="searchClubs">
+                            <!-- Search Icon -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-search position-absolute" viewBox="0 0 16 16" style="right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; z-index: 5;"
+                                @click="searchClubs">
+                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                            </svg>
+                        </div>
+                    </div> 
 
-                <!-- Recent activity [there is recent activity]-->
-                <div v-if="latestPosts.length > 0 && !searchQuery">
+                    <div class="d-flex flex-wrap gap-2 pb-3">
+                        <!-- Create Club Button -->
+                        <button
+                        class="btn primary-btn-less-round-blue btn-lg mobile-rating-smaller-text-2 fw-bold"
+                        @click="canCreateClub ? createClub() : showClubLimitError = true"
+                        >+ Create Club</button>
+                        <!-- View My Clubs Toggle Button -->
+                        <button 
+                        class="btn primary-btn-less-round-blue d-md-none mobile-rating-smaller-text-2" 
+                        style="font-weight: bold;"
+                        type="button" 
+                        data-bs-toggle="collapse" 
+                        data-bs-target="#sidebarContent" 
+                        aria-expanded="false" 
+                        aria-controls="sidebarContent"
+                        >
+                        View My Clubs! &#8595;
+                        </button>
+                    </div>
 
-                    <!-- Recent Activity Header -->
-                    <h3 class="text-start fw-bold">Recent Activity in Your Clubs</h3>
+                    <!-- Message for why user cannot create club -->
+                    <div v-if="userType != 'defaultUser' && !canCreateClub && showClubLimitError" class="alert alert-danger mt-3" role="alert">
+                        <p class="text-danger">{{ cannotCreateClubMsg }}</p>
+                    </div>
+                    
+                    <!-- Club Invite-->
+                    <div v-if="invitedClubs.length > 0" class="collapse d-md-block my-4" id="sidebarContent">
+                        <h5 class="text-start fw-bold my-3 collapse d-md-block">Clubs You Are Invited To</h5>
 
-                    <!-- Bootstrap Horizontal Card for each recent activity -->
-                    <div v-for="post in latestPosts" :key="post.id" class="card mb-3">
-                        <div class="row g-0">
+                        <div v-for="club in invitedClubs.slice(0, 5)" class="event-club-box p-3" :key="club.id">
 
-                            <!-- Recent Activity Information -->
-                            <div class="col-md-10 ps-md-2">
-                                <div class="card-body row h-100">
-            
-                                    <!-- Column 1: Post information -->
-                                    <div class="col-12">
-                                        <!-- Club Photo + Club Name on same row, aligned left -->
-                                        <div class="d-flex flex-row align-items-center justify-content-start">
-                                            <!-- Club Photo -->
-                                            <img v-if="post.clubBanner" :src="post.clubBanner" class="rounded-circle" alt="..." style="height: 55px; width: 55px; object-fit: cover;">
-                                            <img v-else :src="defaultBanner" class="rounded-circle" alt="Default Club Banner" style="height: 55px; width: 55px; object-fit: cover;">
-                                            <!-- Club Name -->
-                                            <h2 class="card-title fw-bold text-start mb-0 ms-3">
-                                                <router-link :to="{ name: 'clubview', params: { clubID: post.clubID, clubName: slugify(post.clubName || 'unknown-club') }}" class="text-dark hover-underline">
-                                                    {{ post.clubName }}
-                                                </router-link>
-                                            </h2>
-                                        </div>
+                            <div class="row w-100 align-items-start">
+                                <!-- First row (club info) -->
+                                <div class="col-12 col-lg-7 mb-2 mb-md-0 text-start">
+                                    <!-- Club title -->
+                                    <router-link
+                                        v-if="club.clubID && club.clubName"
+                                        :to="{ name: 'clubview', params: { clubID: club.clubID, clubName: slugify(club.clubName || 'unknown-club') }}"
+                                        class="text-dark hover-underline fw-bold d-block"
+                                    >
+                                        {{ club.clubName }}
+                                    </router-link>
 
+                                    <!-- Invited by -->
+                                    <p class="mb-0">Invited by: {{ club.inviterInfo.displayName }}</p>
+                                </div>
 
-                                        <div class="text-start d-flex gap-3">
-                                            <!-- Poster name and rank on the same line -->
-                                            <p class="mb-0">
-                                                <router-link :to="profileURL(post.posterInfo.id, post.posterInfo.userType)" class="text-decoration-none">
-                                                    <span class="name-container">
-                                                        <template v-if="post.posterInfo.userType === 'user'">{{ post.posterInfo.displayName }}</template>
-                                                        <template v-else-if="post.posterInfo.userType === 'producer'">{{ post.posterInfo.producerName }}</template>
-                                                        <template v-else>{{ post.posterInfo.venueName }}</template>
-                                                    </span>
-                                                </router-link>
-                                                <span :style="{ color: post.posterInfo.rankColor }"> {{ post.posterInfo.rank }}</span>
-                                            </p>
+                                <!-- Second row (buttons) -->
+                                <div class="col-12 col-lg-5 d-flex justify-content-start justify-content-lg-end">
+                                    <!-- Decline Button -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="red"
+                                        class="bi bi-x-circle me-3" viewBox="0 0 16 16"
+                                        style="cursor: pointer;" @click="declineInvite(club.clubID)">
+                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                                        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                                    </svg>
 
+                                    <!-- Accept Button -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="green"
+                                        class="bi bi-check-circle" viewBox="0 0 16 16"
+                                        style="cursor: pointer;" @click="acceptInvite(club.clubID)">
+                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                                        <path d="m10.97 4.97-.02.022-3.473 4.425-2.093-2.094a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                                            <!-- Post date -->
-                                            <p class="card-text text-start"> on {{ post.postDate }}</p>
-                                        </div>
-                                        
+                    <!-- Clubs you manage -->
+                    <div v-if="userClubs.length > 0 && adminClubs.length > 0" class="collapse d-md-block my-4" id="sidebarContent">
+                        <h5 class="text-start fw-bold my-3 collapse d-md-block">Clubs You Manage <button v-if="adminClubs.length > 5" type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#showAllManagedClubs">View All</button></h5>
 
-                                        <!-- Post content -->
-                                        <p class="card-text text-start mt-5">{{ post.postContent }}</p>
+                        <div v-for="club in adminClubs.slice(0, 5)" class="event-club-box" :key="club.id">
 
-                                        <!-- Comment input field -->
-                                        <div class="row mt-3">
-                                            <div class="col-12">
-                                                <div class="input-group">
-                                                    <input
-                                                    type="text"
-                                                    class="form-control"
-                                                    placeholder="Write a comment..."
-                                                    aria-label="Write a comment..."
-                                                    aria-describedby="button-addon2"
-                                                     v-model="newComments[post.id]"
-                                                    />
-                                                    <button
-                                                    class="btn primary-btn"
-                                                    type="button"
-                                                    id="button-addon2"
-                                                    @click="addComment(post.id, post.memberID)"
-                                                    >
-                                                    Comment
-                                                    </button>
-                                                </div>
+                            <!-- Club Banner Image -->
+                            <div style="flex: 0 0 40%; max-width: 40%; height: 100px;">
+                                <img v-if="club.clubInfo.clubBanner" :src="club.clubInfo.clubBanner" class="img-fluid event-banner;" alt="..." style="object-fit: cover;">
+                                <img v-else :src="defaultBanner" class="img-fluid event-banner;" alt="..." style="object-fit: cover;">
+                            </div>
+                            <!-- Club title -->
+                                <div class="container text-start ">
+                                <router-link v-if="club.clubID && club.clubInfo?.clubName" :to="{ name: 'clubview', params: { clubID: club.clubID, clubName: slugify(club.clubInfo?.clubName || 'unknown-club') }}" class="fw-bold text-black hover-underline">
+                                    {{ club.clubInfo?.clubName }}
+                                </router-link>
+                                <!-- Club details -->
+                                <p class="text-success text-start small">
+                                        <span v-if="club.isInviteOnly == false">Public Group | </span>
+                                        <span v-else>Private Group | </span>
+                                        <span>{{ club.totalMembers }} Members</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Clubs you managed modal -->
+                    <div class="modal fade" id="showAllManagedClubs" tabindex="-1" aria-labelledby="showAllManagedClubsLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-scrollable modal-xl">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="showAllManagedClubsLabel">Clubs You Manage</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="row">
+                                        <div v-for="club in adminClubs" class="col-12 col-md-4 d-flex gap-3 mb-3" :key="club.id">
+                                            <!-- Club Banner Image -->
+                                            <div style="width: 100px; height: 150px;">
+                                                <img v-if="club.clubInfo.clubBanner" :src="club.clubInfo.clubBanner" class="img-fluid w-100 border" alt="..." style="object-fit: cover;">
+                                                <img v-else :src="defaultBanner" class="img-fluid w-100 border" alt="..." style="object-fit: cover;">
                                             </div>
+                                            <!-- CLub title -->
+                                            <router-link :to="{ name: 'clubview', params: { clubID: club.clubID }}" class="text-dark hover-underline">
+                                                {{ club.clubInfo.clubName }}
+                                            </router-link>
                                         </div>
-
-                                        <!-- View Post Button -->
-                                        <button type="button" class="btn btn-primary align-self-start" @click="viewPost(post.id)">View Post</button>
                                     </div>
                                     
                                 </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Clubs you are in -->
+                    <div v-if="userClubs.length > 0 && memberClubs.length > 0" class="collapse d-md-block my-4" id="sidebarContent">
+                        <h5 class="text-start fw-bold my-3 collapse d-md-block">Clubs You Are In <button v-if="memberClubs.length > 5" type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#showAllJoinedClubs">View all</button></h5>
+
+                        <div v-for="club in memberClubs.slice(0, 5)" class="event-club-box" :key="club.id">
+
+                            <!-- Club Banner Image -->
+                            <div style="flex: 0 0 40%; max-width: 40%; height: 100px;">
+                                <img v-if="club.clubInfo.clubBanner" :src="club.clubInfo.clubBanner" class="img-fluid event-banner;" alt="..." style="object-fit: cover;">
+                                <img v-else :src="defaultBanner" class="img-fluid event-banner;" alt="..." style="object-fit: cover;">
+                            </div>
+                            <!-- CLub title -->
+                            <div class="container text-start ">
+                                <router-link :to="{ name: 'clubview', params: { clubID: club.clubID, clubName: slugify(club.clubInfo.clubName) }}" class="fw-bold text-black hover-underline">
+                                    {{ club.clubInfo.clubName }}
+                                </router-link>
+                                <!-- Club details -->
+                                <p class="text-success text-start small">
+                                        <span v-if="club.isInviteOnly == false">Public Group | </span>
+                                        <span v-else>Private Group | </span>
+                                        <span>{{ club.totalMembers }} Members</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Clubs you are in modal -->
+                    <div class="modal fade" id="showAllJoinedClubs" tabindex="-1" aria-labelledby="showAllJoinedClubsLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-scrollable modal-xl">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="showAllJoinedClubsLabel">Clubs You Are In</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="row">
+                                        <div v-for="club in memberClubs" class="col-12 col-md-4 d-flex gap-3 mb-3" :key="club.id">
+                                            <!-- Club Banner Image -->
+                                            <div style="width: 100px; height: 150px;">
+                                                <img v-if="club.clubInfo.clubBanner" :src="club.clubInfo.clubBanner" class="img-fluid w-100 border" alt="..." style="object-fit: cover;">
+                                                <img v-else :src="defaultBanner" class="img-fluid w-100 border" alt="..." style="object-fit: cover;">
+                                            </div>
+                                            <!-- CLub title -->
+                                            <router-link :to="{ name: 'clubview', params: { clubID: club.clubID }}" class="text-dark hover-underline">
+                                                {{ club.clubInfo.clubName }}
+                                            </router-link>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>  
                         </div>  
                     </div>
                 </div>
 
-                <!--- Error message for error retrieving recent activity or no recent activtiy found -->
-                <div v-if="latestPostsError" class="mt-3">
-                    <h2>{{ latestPostsError }}</h2>
-                    <hr>
-                </div>
+                <!-- Recent activity [has joined club(s)] or browse club [not yet joined club]-->
+                <div class="col-12 col-md-8 ps-3 ps-md-5">
+
+                    <!-- Recent activity [there is recent activity]-->
+                    <div v-if="latestPosts.length > 0 && !searchQuery">
+
+                        <!-- Recent Activity Header -->
+                        <h5 class="fw-bold mb-3 text-start mobile-fs-5">Recent Activity in Your Clubs</h5>
+
+                        <!-- Bootstrap Horizontal Card for each recent activity -->
+                        <div v-for="post in latestPosts" :key="post.id" class="card mb-3">
+                            <div class="row g-0">
+
+                                <!-- Recent Activity Information -->
+                                <div class="col-12">
+                                    <div class="card-body row h-100 mobile-pb-1">
                 
-                <!-- browse club [not yet joined club]-->
-                <div v-if="userClubs.length == 0" class="mt-3">
-                    <p class="text-center fw-bold">You haven't joined a club yet!</p>
-                    <p class="text-center fw-bold">Get on it! Here are some we'd like to recommend!</p>
-                </div>
+                                        <!-- Column 1: Post information -->
+                                        <div class="col-12">
+                                            <!-- Club Photo + Club Name on same row, aligned left -->
+                                            <div class="d-flex flex-row align-items-center justify-content-start">
+                                                <!-- Club Photo -->
+                                                <img v-if="post.clubBanner" :src="post.clubBanner" class="rounded-circle" alt="..." style="height: 50px; width: 50px; object-fit: cover;">
+                                                <img v-else :src="defaultBanner" class="rounded-circle" alt="Default Club Banner" style="height: 50px; width: 50px; object-fit: cover;">
+                                                <!-- Poster name and rank on the same line -->
+                                                <div class="row">
+                                                   <h6 class="ms-2 text-start">
+                                                    <router-link :to="profileURL(post.posterInfo.id, post.posterInfo.userType)" class="text-decoration-none hover-underline" style="color:#027562">
+                                                        <span class="name-container fw-bold">
+                                                            <template v-if="post.posterInfo.userType === 'user'">{{ post.posterInfo.displayName }}</template>
+                                                            <template v-else-if="post.posterInfo.userType === 'producer'">{{ post.posterInfo.producerName }}</template>
+                                                            <template v-else>{{ post.posterInfo.venueName }}</template>
+                                                        </span>
+                                                    </router-link>
+                                                    <span class="fw-bold fst-italic"> ({{ post.posterInfo.rank }})</span>
+                                                    posted in
+                                                    <router-link :to="{ name: 'clubview', params: { clubID: post.clubID, clubName: slugify(post.clubName || 'unknown-club') }}" class="fw-bold text-decoration-none hover-underline" style="color:#027562">
+                                                        {{ post.clubName }}
+                                                    </router-link>
+                                                    </h6>
+                                                    <!-- Post date -->
+                                                    <p class="card-text text-start ms-2 mobile-view-hide">on {{ post.postDate }}
+                                                    </p>
+                                                </div>
+                                            </div>
 
-                <div v-if="searchResults == ''">
-                    <h3 class="fw-bold text-start text-decoration-underline">Browse clubs here</h3>
-                </div>
+                                            <div class="text-start d-flex gap-3 mobile-view-show">
+                                                <!-- Post date -->
+                                                    <p class="card-text text-start mobile-rating-smaller-text-2">on {{ post.postDate }}
+                                                    </p>
+                                            </div>
+                                            
+                                            <!-- Post content -->
+                                            <p class="card-text text-start mt-2 mobile-rating-smaller-text-2">{{ post.postContent }}</p>
+                                            
+                                            <!-- Comment input field -->
+                                            <div class="row mt-3 pt-3" style="border-top: solid 1px lightgrey;">
+                                                <div class="col-12 mb-0">
+                                                    <div class="input-group gap-2">
+                                                        <input
+                                                        type="text"
+                                                        class="form-control rounded"
+                                                        placeholder="Write a comment..."
+                                                        aria-label="Write a comment..."
+                                                        aria-describedby="button-addon2"
+                                                        v-model="newComments[post.id]"
+                                                        />
+                                                        <button
+                                                        class="mobile-view-hide btn primary-btn-less-round-blue rounded fw-bold"
+                                                        type="button"
+                                                        id="button-addon2"
+                                                        @click="addComment(post.id, post.memberID)"
+                                                        >
+                                                        Comment
+                                                        </button>
+                                                        <button
+                                                        class="mobile-view-show btn primary-btn-less-round-blue rounded fw-bold"
+                                                        type="button"
+                                                        id="button-addon2"
+                                                        @click="addComment(post.id, post.memberID)"
+                                                        >
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
+                                                            <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
+                                                            </svg>
+                                                        </button>
+                                                        <!-- View Post Button -->
+                                                        <button 
+                                                        type="button" 
+                                                        class="mobile-view-hide btn primary-btn rounded" 
+                                                        @click="viewPost(post.id)">
+                                                        View Post
+                                                        </button>
+                                                    
+                                                    </div>
+                                                    <span @click="viewPost(post.id)" style="cursor: pointer; text-decoration: underline;" class="mt-1 fst-italic mobile-rating-smaller-text-2 mobile-view-show">
+                                                        View Post
+                                                        </span>
+                                                </div>
+                                            </div>
 
-                <!-- Display no results found if search term does not exist in any of the clubs -->
-                <div v-if="searchResults && searchQuery" class="mt-3 text-start">
-                    <p class="fw-bold">{{ searchResults }} 
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="red" class="bi bi-x-lg" viewBox="0 0 16 16" style="cursor: pointer;" @click="resetSearch">
-                        <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
-                    </svg>
-                    </p>
-                </div>
-
-                <!-- Club Lists --> 
-                <!-- Bootstrap Horizontal Card for each club -->
-                <div class="row mt-3">
-                    <div v-for="club in filteredClubs" :key="club.id" class="col-md-6 mb-3 justify-content-center p-3">
-                        <div class="row g-0">
-
-                            <!-- Club Banner Image -->
-                            <div class="col-md-2 text-start w-100" style="width: 400px; height: 150px;">
-                                <img v-if="club.clubBanner" :src="club.clubBanner" 
-                                    class="img-fluid border" 
-                                    alt="..." 
-                                    style="height: 150px; object-fit: contain;">
-                                
-                                <img v-else :src="defaultBanner" 
-                                    class="img-fluid w-100 border" 
-                                    alt="..." 
-                                    style="height: 150px; object-fit: contain;">
-                            </div>
-
-                            <!-- Club Name-->
-                            <h2 class="card-title fw-bold text-start">
-                                <router-link v-if="club.id && club.clubName" :to="{ name: 'clubview', params: { clubID: club.id, clubName: slugify(club.clubName) }}" class="text-dark hover-underline">
-                                    {{ club.clubName }}
-                                </router-link>
-                            </h2>
-
-                            <!-- Club type and number of members -->
-                            <p class="text-start text-success">
-                                <span v-if="club.isInviteOnly == false">Public Group | </span>
-                                <span v-else>Private Group | </span>
-                                <span>{{ club.totalMembers }} Members</span>
-                            </p>
-
-                            <!-- Club Description -->
-                            <p class="card-text text-start">{{ club.clubDesc }}</p>
-
-                            <!-- Join Club Button -->
-                            <!-- <button v-if="userClubs.includes(club.id)" type="button" class="btn btn-primary mt-auto align-self-start" disabled>Joined</button> -->
-                            <button v-if="requestedClubs.includes(club.id)" type="button" class="btn btn-primary mt-auto align-self-start w-md-25" disabled>Request Sent</button>
-                            <button v-if="!userClubs.includes(club.id) && club.isInviteOnly == false" type="button" class="btn btn-primary mt-auto align-self-start w-md-25" @click="joinClub(club.id, club.clubName)">+Join This Club</button>
-                            <button v-if="!userClubs.includes(club.id) && club.isInviteOnly == true && !requestedClubs.includes(club.id)" type="button" class="btn btn-primary mt-auto align-self-start w-md-25" @click="requestJoin(club.id, club.clubName)">Request to Join</button>
+                                        </div>
+                                        
+                                    </div>
+                                </div>
+                            </div>  
                         </div>
                     </div>
-                </div>
 
-                <!-- Load More Button -->
-                <div v-if="showButton" class="d-flex justify-content-center mt-3">
-                    <button type="button" class="btn secondary-btn btn-md" @click="loadMoreClubs">Load More</button>
-                </div>    
-                
-                <!--Display no clubs yet message -->
-                <div v-if="clubs.length == 0" class="mt-3">
-                    <h2>No clubs yet!</h2>
+                    <!--- Error message for error retrieving recent activity or no recent activtiy found -->
+                    <div v-if="latestPostsError" class="mt-3" style="color:#027562">
+                        <h6 class="mobile-rating-smaller-text-2 fw-bold text-start">{{ latestPostsError }}</h6>
+                        <hr>
+                    </div>
+                    
+                    <!-- browse club [not yet joined club]-->
+                    <div v-if="userClubs.length == 0" class="mt-3 mobile-view-hide">
+                        <h3 class="text-center fw-bold">You haven't joined a club yet!</h3>
+                        <p class="text-center fw-bold">Get on it! Here are some we'd like to recommend!</p>
+                    </div>
+
+                    <div v-if="searchResults == ''">
+                        <h5 class="fw-bold my-3 text-start mobile-fs-5 mobile-mb-1">Join A New Club!</h5>
+                        <p class="text-start small fw-bold mobile-view-show">Get on it! Here are some we'd like to recommend!</p>
+                    </div>
+
+                    <!-- Display no results found if search term does not exist in any of the clubs -->
+                    <div v-if="searchResults && searchQuery" class="mt-3 text-start">
+                        <p class="fw-bold">{{ searchResults }} 
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="red" class="bi bi-x-lg" viewBox="0 0 16 16" style="cursor: pointer;" @click="resetSearch">
+                            <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
+                        </svg>
+                        </p>
+                    </div>
+
+                    <!-- Club Lists --> 
+                    <!-- Bootstrap Horizontal Card for each club -->
+                    <div class="row mt-3">
+                        <div v-for="club in filteredClubs" :key="club.id" class="col-md-6 mb-3 justify-content-center">
+                            <div class="rounded-4 shadow-sm p-3 h-100">
+
+                                <!-- Club Banner Image -->
+                                <div class="col-md-2 text-start w-100 mb-3" style="width: 400px; height: 150px;">
+                                    <img v-if="club.clubBanner" :src="club.clubBanner" 
+                                        class="img-fluid border" 
+                                        alt="..." 
+                                        style="height: 160px; object-fit: cover; border-radius: 0.5rem;"/>
+                                    
+                                    <img v-else :src="defaultBanner" 
+                                        class="img-fluid w-100 border" 
+                                        alt="..." 
+                                        style="height: 160px; object-fit: cover; border-radius: 0.5rem;"/>
+                                </div>
+
+                                <!-- Club Name-->
+                                <p class="card-title fw-bold">
+                                    <router-link v-if="club.id && club.clubName" :to="{ name: 'clubview', params: { clubID: club.id, clubName: slugify(club.clubName) }}" class="text-dark hover-underline">
+                                        {{ club.clubName }}
+                                    </router-link>
+                                </p>
+
+                                <!-- Club type and number of members -->
+                                <p class="text-success small mb-2">
+                                    <span v-if="club.isInviteOnly == false">Public Group | </span>
+                                    <span v-else>Private Group | </span>
+                                    <span>{{ club.totalMembers }} Members</span>
+                                </p>
+
+                                <!-- Club Description -->
+                                <p class="text-muted small mb-3">{{ club.clubDesc }}</p>
+
+                                <!-- Join Club Button -->
+                                <!-- <button v-if="userClubs.includes(club.id)" type="button" class="btn primary-btn-less-round-blue mt-auto align-self-start" disabled>Joined</button> -->
+                                <button v-if="requestedClubs.includes(club.id)" type="button" class="btn primary-btn-less-round-blue mt-auto align-self-start w-md-25 fw-bold" disabled>Request Sent!</button>
+                                <button v-if="!userClubs.includes(club.id) && club.isInviteOnly == false" type="button" class="btn primary-btn-less-round-blue mt-auto align-self-start w-md-25 fw-bold" @click="joinClub(club.id, club.clubName)">Join Club</button>
+                                <button v-if="!userClubs.includes(club.id) && club.isInviteOnly == true && !requestedClubs.includes(club.id)" type="button" class="btn primary-btn-less-round-blue mt-auto align-self-start w-md-25 fw-bold" @click="requestJoin(club.id, club.clubName)">Request to Join</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Load More Button -->
+                    <div v-if="showButton" class="d-flex justify-content-center mt-3">
+                        <button type="button" class="btn secondary-btn btn-md" @click="loadMoreClubs">Load More</button>
+                    </div>    
+                    
+                    <!--Display no clubs yet message -->
+                    <div v-if="clubs.length == 0" class="mt-3">
+                        <h3>No clubs yet!</h3>
+                    </div>
                 </div>
             </div>
         </div>
@@ -439,6 +492,8 @@ export default {
             cannotCreateClubMsg: "",
             disableCreateClubBtn: false,
 
+             showClubLimitError: false
+
         }
     },
 
@@ -457,7 +512,7 @@ export default {
                 this.latestPosts = response.data.recent_activities;
             } catch (error) {
                 if (error.response.status == 404) {
-                    this.latestPostsError = "No recent activities found!";
+                    this.latestPostsError = "No recent activities in your joined clubs yet!";
                 }
                 else
                 this.latestPostsError = "An error occurred while loading recent activities. Please try again later!";

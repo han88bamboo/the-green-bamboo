@@ -14,7 +14,8 @@
                         <input
                             class="form-control fst-italic"
                             type="text"
-                            placeholder="What are you drinking today?"
+                            style="border: none; height: 100%; line-height: 50px; padding: 0 1rem;"
+                            placeholder="Go for it!"
                             v-model="searchInput"
                             v-on:keyup.enter="goSearch"
                             v-on:input="getSuggestions"
@@ -46,8 +47,8 @@
                     <img
                         src="../../Images/Others/search-green.png"
                         style="
-                            width: 30px;
-                            height: 30px;
+                            width: 25px;
+                            height: 25px;
                             margin: 0px 10px;
                             align-self: center;
                         "
@@ -61,8 +62,8 @@
                 class="col-6 col-md-4 d-none d-md-block d-flex justify-content-center"
             >
                 <button
-                    class="btn primary-btn-less-round-green d-flex align-items-center"
-                    style="height: 50px; padding: 0px 15px"
+                    class="btn d-flex align-items-center fw-bold"
+                    style="background-color: #027562; color: white; height: 50px; padding: 0px 15px"
                     v-on:click="imageSearch"
                 >
                     <span>Scan bottle</span>
@@ -79,14 +80,15 @@
             <!-- Scan bottle button - Only visible on mobile in this row -->
             <div class="col-6 d-md-none d-flex justify-content-center">
                 <button
-                    class="btn primary-btn-less-round-green d-flex align-items-center"
-                    style="height: 50px; padding: 0px 15px"
+                    class="btn d-flex align-items-center fw-bold"
+                    style="background-color: #027562; color: white"
                     v-on:click="imageSearch"
                 >
                     <span>Scan bottle</span>
                     <img
                         src="../../Images/Others/camera-white.png"
-                        style="width: 30px; height: 30px; margin-left: 10px"
+                        style="width: 20px; height: 20px; margin-left: 10px"
+                        class="fw-bold"
                     />
                 </button>
             </div>
@@ -95,7 +97,7 @@
             <div class="col-6 col-md-12 d-flex justify-content-center">
                 <router-link :to="'/explore'">
                     <button
-                        class="btn btn-lg text-white"
+                        class="btn btn-md text-white fw-bold"
                         style="background-color: #83a9e8"
                         aria-label="Surprise Me!"
                     >

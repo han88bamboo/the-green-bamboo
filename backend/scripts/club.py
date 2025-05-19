@@ -21,8 +21,8 @@
 
 import os
 from flask import Blueprint, g, jsonify, request
-from datetime import datetime
-from scripts import pointsHelperFunc
+from datetime import datetime, timedelta
+from scripts import pointsHelperFunc, badge_helpers
 
 # Use to upload image to S3
 import s3Images
@@ -1146,7 +1146,7 @@ def canCreate(userID, userType):
                     return jsonify({
                         'canCreate': False,
                         'reason': 'insufficient points',
-                        'message': 'You do not have enough points to create a club',
+                        'message': 'Almost there! Earn a few more points to unlock club creation.',
                         'pointsNeeded': canCreateTuple[2]
                     }), 200
                 
@@ -1154,7 +1154,7 @@ def canCreate(userID, userType):
                     return jsonify({
                         'canCreate': False,
                         'reason': 'max clubs created',
-                        'message': 'You have already created the max number of clubs',
+                        'message': 'You have reached your club creation limit for the month. This will reset once again next month!',
                         'numClubsCreated': canCreateTuple[2]
                     }), 200
             
@@ -1173,7 +1173,7 @@ def canCreate(userID, userType):
         if club and len(club) == max_num_clubs:
             return jsonify({
                 'canCreate': False,
-                'message': 'You have already created the max number of clubs',
+                'message': 'You have reached your club creation limit for the month. This will reset once again next month!',
                 'clubID': club['id'], 
                 'maxClubs': max_num_clubs
             }), 200
@@ -1449,14 +1449,15 @@ def addPost():
         data = request.get_json()
 
         # Get all the required data
-        poster_id = data['posterID'] # The member's ID in the clubMembers table
+        poster_id = data['posterID']  # The member's ID in the clubMembers table
         club_id = data['clubID']
         post_content = data['postContent']
 
         # Check if all the required data is provided
         if not poster_id or not club_id or not post_content:
             return jsonify({
-                'error': 'Missing required data'
+                'code': 400,
+                'message': 'Missing required data'
             }), 400
 
         # Step 1: Get today's date
@@ -1467,7 +1468,6 @@ def addPost():
 
         # Step 2: Check if the post has images
         if 'images' in data:
-
             # Loop through the images and upload them to S3
             for image in data['images']:
                 if not image:
@@ -1481,50 +1481,67 @@ def addPost():
             post_photos = '{}'
 
         # Step 3: Insert the new post into the database
-        cur.execute('INSERT INTO "clubPosts" ("clubID", "postDate", "postContent", "postPhotos", "posterID") VALUES (%s, %s, %s, %s, %s) RETURNING id', 
-                    (club_id, post_date, post_content, post_photos, poster_id,))
+        cur.execute(
+            'INSERT INTO "clubPosts" ("clubID", "postDate", "postContent", "postPhotos", "posterID") VALUES (%s, %s, %s, %s, %s) RETURNING id',
+            (club_id, post_date, post_content, post_photos, poster_id)
+        )
         post_id = cur.fetchone()['id']
         conn.commit()
 
-        # Step 4: Add proofPoints to the user for adding a post
-    
-        # get the user id and user type from the poster id
+        # Get user information from club member
         cur.execute('SELECT "userID", "userType" FROM "clubMembers" WHERE id = %s', (poster_id,))
         user = cur.fetchone()
+        
+        points_earned = 0
+        badge_result = None
 
-        if (user['userType'] == 'user'):
+        # Only award points and badges for regular users
+        if user and user['userType'] == 'user':
+            user_id = user['userID']
+            
+            # Check if user has reached maximum proof points
+            if not pointsHelperFunc.check_max_proof_points(user_id):
+                # Award points for the post
+                cur.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = %s', (7,))
+                points_rule = cur.fetchone()
+                
+                if points_rule:
+                    points_earned = points_rule['proofPoints']
+                    
+                    # Update user's points
+                    cur.execute(
+                        'UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s AND "userType" = %s',
+                        (points_earned, user_id, 'user')
+                    )
+                    conn.commit()
+                    
+                    print(f"Added {points_earned} points to user {user_id} for adding a post")
+                
+                # Process the ClubPost badge
+                badge_result = badge_helpers.process_club_post_badge(conn, cur, user_id)
 
-            if pointsHelperFunc.check_max_proof_points(user['userID']):
-                return jsonify({
-                    'message': 'Post added successfully',
-                    'postID': post_id
-                }), 201
-
-            # Get the current points for posting
-            cur.execute('SELECT "proofPoints", "ruleName" FROM "pointSystemRules" WHERE id = %s', (7,))
-            points = cur.fetchone()
-
-            cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s AND "userType" = %s', (points['proofPoints'], user['userID'], 'user',))
-            conn.commit()
-
-            print(f"Added {points['proofPoints']} points to user {user['userID']} for adding a post")
-
-        return jsonify({
+        # Prepare the response
+        response_data = {
+            'code': 201,
             'message': 'Post added successfully',
-            'postID': post_id,
-            'pointsEarned': points['proofPoints']
-        }), 201
+            'postID': post_id
+        }
+        
+        if points_earned > 0:
+            response_data['pointsEarned'] = points_earned
+            
+        if badge_result:
+            response_data['badgeAwarded'] = badge_result
+            
+        return jsonify(response_data), 201
 
     except Exception as e:
-        print(str(e))
-        # Rollback the transaction if an error occurred
+        print(f"Error adding post: {str(e)}")
         conn.rollback()
-        return jsonify(
-            {
-                "code": 500,
-                "message": "An error occurred adding the post."
-            }
-        ), 500
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred adding the post."
+        }), 500
     
     finally:
         cur.close()
@@ -1555,19 +1572,21 @@ def addComment():
         # Check if all the required data is provided
         if not commenter_id or not post_id or not comment_content:
             return jsonify({
-                'error': 'Missing required data'
+                'code': 400,
+                'message': 'Missing required data'
             }), 400
 
         # Step 1: Get today's date
         comment_date = datetime.now()
 
-        # Step 2: Check if the post exist
+        # Step 2: Check if the post exists
         cur.execute('SELECT * FROM "clubPosts" WHERE id = %s', (post_id,))
         post = cur.fetchone()
 
         if not post:
             return jsonify({
-                'error': 'No such post exist'
+                'code': 404,
+                'message': 'No such post exists'
             }), 404
 
         # Step 3: Insert the new comment into the database
@@ -1579,37 +1598,40 @@ def addComment():
         # Step 4: Get the commenter's information
         commenter_info = getUserInfo(cur, commenter_id)
 
-        # Step 5: Award points to the user for adding a comment
-        # get the user id and user type from the commenter id
+        # Step 5: Get user info and process points and badges
         cur.execute('SELECT "userID", "userType" FROM "clubMembers" WHERE id = %s', (commenter_id,))
         user = cur.fetchone()
+        
+        points_earned = 0
+        badge_result = None
 
-        if (user['userType'] == 'user'):
+        if user and user['userType'] == 'user':
+            user_id = user['userID']
             
-            if pointsHelperFunc.check_max_proof_points(user['userID']):
-                return jsonify({
-                    'message': 'Comment added successfully',
-                    'comment_obj': {
-                        "commentContent": comment_content,
-                        "commentDate": comment_date,
-                        "commenterID": commenter_id,
-                        "commenterInfo": commenter_info,
-                        "id": comment_id,
-                        "likedMembers": [],
-                        "postID": post_id
-                    }
-                }), 201
+            # Check if user has reached maximum proof points
+            if not pointsHelperFunc.check_max_proof_points(user_id):
+                # Award points for the comment
+                cur.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = %s', (10,))
+                points_rule = cur.fetchone()
+                
+                if points_rule:
+                    points_earned = points_rule['proofPoints']
+                    
+                    # Update user's points
+                    cur.execute(
+                        'UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s AND "userType" = %s',
+                        (points_earned, user_id, 'user')
+                    )
+                    conn.commit()
+                    
+                    print(f"Added {points_earned} points to user {user_id} for adding a comment")
+                
+                # Process the Comment badge
+                badge_result = badge_helpers.process_comment_badge(conn, cur, user_id)
 
-            # Get the current points for commenting
-            cur.execute('SELECT "proofPoints", "ruleName" FROM "pointSystemRules" WHERE id = %s', (10,))
-            points = cur.fetchone()
-
-            cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s AND "userType" = %s', (points['proofPoints'], user['userID'], 'user',))
-            conn.commit()
-
-            print(f"Added {points['proofPoints']} points to user {user['userID']} for adding a comment")
-
-        return jsonify({
+        # Prepare the response
+        response_data = {
+            'code': 201,
             'message': 'Comment added successfully',
             'comment_obj': {
                 "commentContent": comment_content,
@@ -1620,18 +1642,23 @@ def addComment():
                 "likedMembers": [],
                 "postID": post_id
             }
-        }), 201
+        }
+        
+        if points_earned > 0:
+            response_data['pointsEarned'] = points_earned
+            
+        if badge_result:
+            response_data['badgeAwarded'] = badge_result
+            
+        return jsonify(response_data), 201
 
     except Exception as e:
-        print(str(e))
-        # Rollback the transaction if an error occurred
+        print(f"Error adding comment: {str(e)}")
         conn.rollback()
-        return jsonify(
-            {
-                "code": 500,
-                "message": "An error occurred adding the comment."
-            }
-        ), 500
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred adding the comment."
+        }), 500
     
     finally:
         cur.close()
@@ -2334,60 +2361,97 @@ def likeUnlikeComment():
         # Check if all the required data is provided
         if not post_id or not comment_id or not member_id:
             return jsonify({
-                'error': 'Missing required data'
+                'code': 400,
+                'message': 'Missing required data'
             }), 400
 
-        # Step 1: Check if the member exist
+        # Step 1: Check if the member exists
         cur.execute('SELECT * FROM "clubMembers" WHERE id = %s', (member_id,))
         member = cur.fetchone()
 
         if not member:
             return jsonify({
-                'error': 'No such member exist'
+                'code': 404,
+                'message': 'No such member exists'
             }), 404
 
-        # Step 2: Check if the comment exist
+        # Step 2: Check if the comment exists
         cur.execute('SELECT * FROM "clubPostComments" WHERE id = %s', (comment_id,))
         comment = cur.fetchone()
 
         if not comment:
             return jsonify({
-                'error': 'No such comment exist'
+                'code': 404,
+                'message': 'No such comment exists'
             }), 404
         
+        # Get the comment owner and creation date before processing the like action
+        commenter_id = comment['commenterID']
+        comment_date = comment['commentDate']
+        
         # Step 3: Check if the member has already liked the comment
-        cur.execute('SELECT * FROM "clubPostCommentsLikes" WHERE "postID" = %s AND "memberID" = %s AND "commentID" = %s', (post_id, member_id, comment_id,))
+        cur.execute('SELECT * FROM "clubPostCommentsLikes" WHERE "postID" = %s AND "memberID" = %s AND "commentID" = %s', 
+                   (post_id, member_id, comment_id))
         liked = cur.fetchone()
 
+        # Track badge-related changes
+        is_new_like = False
+        is_removed_like = False
+        badge_result = None
+        
         if liked:
             # Unlike the comment
-            cur.execute('DELETE FROM "clubPostCommentsLikes" WHERE "postID" = %s AND "memberID" = %s AND "commentID" = %s', (post_id, member_id, comment_id,))
+            cur.execute('DELETE FROM "clubPostCommentsLikes" WHERE "postID" = %s AND "memberID" = %s AND "commentID" = %s', 
+                       (post_id, member_id, comment_id))
             conn.commit()
-
-            return jsonify({
-                'message': 'Comment unliked successfully',
-                'liked': False
-            }), 200
-
-        # Step 4: Insert the like into the clubPostCommentsLikes table
-        cur.execute('INSERT INTO "clubPostCommentsLikes" ("postID", "memberID", "commentID") VALUES (%s, %s, %s)', (post_id, member_id, comment_id,))
-        conn.commit()
-
-        return jsonify({
-            'message': 'Comment liked successfully',
-            'liked': True
-        }), 200
+            is_removed_like = True
+            action_result = {'liked': False, 'message': 'Comment unliked successfully'}
+        else:
+            # Like the comment
+            cur.execute('INSERT INTO "clubPostCommentsLikes" ("postID", "memberID", "commentID") VALUES (%s, %s, %s)', 
+                       (post_id, member_id, comment_id))
+            conn.commit()
+            is_new_like = True
+            action_result = {'liked': True, 'message': 'Comment liked successfully'}
+        
+        # Get user ID from commenter_id (club member ID)
+        cur.execute('SELECT "userID", "userType" FROM "clubMembers" WHERE id = %s', (commenter_id,))
+        commenter_info = cur.fetchone()
+        
+        if commenter_info and commenter_info['userType'] == 'user':
+            user_id = commenter_info['userID']
+            
+            # Check if the like/unlike is within one week of the comment posting
+            current_time = datetime.now()
+            within_one_week = (comment_date and (current_time - comment_date) <= timedelta(weeks=1))
+            
+            # Process badge only if within one week
+            if (is_new_like and within_one_week) or is_removed_like:
+                badge_result = badge_helpers.process_upvote_badge(
+                    conn, cur, user_id, 
+                    is_new_upvote=is_new_like, 
+                    is_removed_upvote=is_removed_like
+                )
+        
+        # Prepare the response
+        response_data = {
+            'code': 200,
+            'message': action_result['message'],
+            'liked': action_result['liked']
+        }
+        
+        if badge_result:
+            response_data['badgeUpdate'] = badge_result
+            
+        return jsonify(response_data), 200
 
     except Exception as e:
-        print(str(e))
-        # Rollback the transaction if an error occurred
+        print(f"Error in likeUnlikeComment: {str(e)}")
         conn.rollback()
-        return jsonify(
-            {
-                "code": 500,
-                "message": "An error occurred liking the comment."
-            }
-        ), 500
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred processing the comment like/unlike action."
+        }), 500
     
     finally:
         cur.close()

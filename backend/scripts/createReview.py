@@ -7,7 +7,7 @@ import os
 import s3Images
 from flask import Blueprint, g, request, jsonify
 from datetime import datetime
-from scripts import pointsHelperFunc
+from scripts import pointsHelperFunc, badge_helpers
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -133,21 +133,29 @@ def createReviews():
             rule_fulfiled_id.append(2)
         
         # Extended review: color, aroma, taste, finish
+        is_extensive_review = False
         if (raw_review['finish'] != None or raw_review['colour'] != None or raw_review['aroma'] != None or raw_review['taste'] != None) and \
             (raw_review['finish'] != '' or raw_review['colour'] != '' or raw_review['aroma'] != '' or raw_review['taste'] != ''):
             rule_fulfiled_id.append(3)
+            is_extensive_review = True
 
         # Attach image
+        has_photo = False
         if (raw_review['photo'] != None):
             rule_fulfiled_id.append(4)
+            has_photo = True
 
         # Tag location
+        has_location = False
         if (venue_id != None):
             rule_fulfiled_id.append(5)
+            has_location = True
 
         # Tag friends
+        has_tagged_friends = False
         if (tagged_users != []):
             rule_fulfiled_id.append(6)
+            has_tagged_friends = True
 
         # Get total proof points earned 
         cur.execute('SELECT SUM("proofPoints") FROM "pointSystemRules" WHERE id IN %s', (tuple(rule_fulfiled_id),))
@@ -161,13 +169,101 @@ def createReviews():
 
             print(f"Awarded points: {total_points}")
 
-        return jsonify({
-            "code": 201,
-            "data": raw_review['reviewDesc'],
-            "proofPointsEarned": total_points
-        }), 201
+        # Badge Processing
+        badges_awarded = []
+
+        # Fetch the listing details to get drinkType, typeCategory and originCountry
+        cur.execute("""
+            SELECT "drinkType", "typeCategory", "originCountry" 
+            FROM "listings" 
+            WHERE id = %s
+        """, (review_target,))
+
+        listing_info = cur.fetchone()
+
+        if listing_info:
+            drink_type = listing_info['drinkType']
+            type_category = listing_info['typeCategory']
+            origin_country = listing_info['originCountry']
+
+            # Track which badge triggers were activated in this review
+            badge_triggers = []
+
+            if origin_country:
+                badge_triggers.append({
+                    'actionType': 'Review',
+                    'mappingType': 'Country',
+                    'primaryValue': origin_country,
+                    'secondaryValue': None
+                })
+
+            if drink_type:
+                badge_triggers.append({
+                    'actionType': 'Review',
+                    'mappingType': 'DrinkType',
+                    'primaryValue': drink_type,
+                    'secondaryValue': None
+                })
+
+            if drink_type and type_category:
+                badge_triggers.append({
+                    'actionType': 'Review',
+                    'mappingType': 'Category',
+                    'primaryValue': drink_type,
+                    'secondaryValue': type_category
+                })
+
+            if is_extensive_review:
+                badge_triggers.append({
+                    'actionType': 'ExtensiveReview',
+                    'mappingType': 'Action',
+                    'primaryValue': 'ExtensiveReview',
+                    'secondaryValue': None
+                })
+
+            if has_photo:
+                badge_triggers.append({
+                    'actionType': 'PhotoAttached',
+                    'mappingType': 'Action', 
+                    'primaryValue': 'PhotoAttached',
+                    'secondaryValue': None
+                })
+
+            if has_location:
+                badge_triggers.append({
+                    'actionType': 'LocationTagged',
+                    'mappingType': 'Action',
+                    'primaryValue': 'LocationTagged',
+                    'secondaryValue': None
+                })
+
+            if has_tagged_friends:
+                badge_triggers.append({
+                    'actionType': 'FriendTagged',
+                    'mappingType': 'Action',
+                    'primaryValue': 'FriendTagged',
+                    'secondaryValue': None
+                })
+
+            badges_awarded = badge_helpers.process_badges(conn, cur, user_id, badge_triggers)
+
+            return jsonify({
+                "code": 201,
+                "data": raw_review['reviewDesc'],
+                "proofPointsEarned": total_points,
+                "badgesAwarded": badges_awarded,
+            }), 201
+        
+        else:
+            # No listing found, just return without badge processing
+            return jsonify({
+                "code": 201,
+                "data": raw_review['reviewDesc'],
+                "proofPointsEarned": total_points,
+            }), 201
     except Exception as e:
         print(str(e))
+        conn.rollback()
         return jsonify({
             "code": 500,
             "data": {
@@ -299,4 +395,3 @@ def createVenueReviews():
     except Exception as e:
         print(str(e))
         return jsonify({"code": 500, "message": "An error occurred creating the review."}), 500
-

@@ -95,27 +95,21 @@ def createAccount():
             """, (user_id, "Drinks I Have Tried"))
             have_tried_list_id = cursor.fetchone()["id"]
 
-        for drink in rawAccount['drinkLists']['Drinks I Want To Try']['listItems']:
-            cursor.execute("""
-                INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate")
-                VALUES (%s, %s, NOW())
-            """, (want_to_try_list_id, drink["drinkId"]))
-
-        for drink in rawAccount['drinkLists']['Drinks I Have Tried']['listItems']:
-            cursor.execute("""
-                INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate")
-                VALUES (%s, %s, NOW())
-            """, (have_tried_list_id, drink["drinkId"]))
-
-        db_conn.commit()
+        with db_conn.cursor() as cursor:
+            for drink in rawAccount['drinkLists']['Drinks I Have Tried']['listItems']:
+                cursor.execute("""
+                    INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate")
+                    VALUES (%s, %s, NOW())
+                """, (have_tried_list_id, drink["drinkId"]))
+            db_conn.commit()
 
         # Create proof point record for the new user
-        cursor.execute("""
-            INSERT INTO "pointsRecorder" ("userID", "userType", "currentPoints")
-            VALUES (%s, %s, %s)""",
-            (user_id, "user", 0))
-        
-        db_conn.commit()
+        with db_conn.cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO "pointsRecorder" ("userID", "userType", "currentPoints")
+                VALUES (%s, %s, %s)""",
+                (user_id, "user", 0))
+            db_conn.commit()
 
         
         return jsonify(
@@ -330,25 +324,98 @@ def createProducerAccount():
                 """,
                 (update['date'], update['text'], update['photo'], newProducerId)
             )
-        conn.commit()
+        # Add debug information about what we created
+        print(f"DEBUG: Successfully created producer with ID {newProducerId}")
+        print(f"DEBUG: Producer name: {newBusinessData['producerName']}")
+        print(f"DEBUG: Added {len(questions_answers)} question/answer entries")
+        print(f"DEBUG: Added {len(updates)} updates")
+        
+        # Initialize empty tables that the profile page needs
+        try:
+            # Ensure location has a default value if not provided
+            if not newBusinessData.get('location') or newBusinessData.get('location').strip() == '':
+                print("DEBUG: Setting default location since none was provided")
+                cur.execute(
+                    """
+                    UPDATE producers
+                    SET "location" = %s
+                    WHERE id = %s
+                    """,
+                    ("Location not specified", newProducerId)
+                )
+                
+            # Create an empty reviews entry for this producer
+            cur.execute("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'producerReviews')")
+            if cur.fetchone()[0]:
+                print("DEBUG: Creating empty review record for new producer")
+                # Check if this producer already has reviews
+                cur.execute("SELECT COUNT(*) FROM \"producerReviews\" WHERE \"producerID\" = %s", (newProducerId,))
+                if cur.fetchone()[0] == 0:
+                    # Create an empty review record
+                    cur.execute("INSERT INTO \"producerReviews\" (\"producerID\") VALUES (%s)", (newProducerId,))
+                    print(f"DEBUG: Created empty review record for producer {newProducerId}")
+            
+            # Create empty profile views table
+            cur.execute("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'producersProfileViews')")
+            if cur.fetchone()[0]:
+                print("DEBUG: Creating profile view record for new producer")
+                # Check if this producer already has profile views
+                cur.execute("SELECT COUNT(*) FROM \"producersProfileViews\" WHERE \"producerId\" = %s", (newProducerId,))
+                if cur.fetchone()[0] == 0:
+                    # Create empty profile views record with current date
+                    cur.execute(
+                        """
+                        INSERT INTO "producersProfileViews" ("producerId", "date", "count") 
+                        VALUES (%s, CURRENT_DATE, 0)
+                        """, 
+                        (newProducerId,)
+                    )
+                    print(f"DEBUG: Created profile views record for producer {newProducerId}")
+            
+            # Initialize arrays as empty if they don't exist already
+            if len(questions_answers) == 0:
+                print("DEBUG: No questions/answers provided, ensuring field exists")
+                newBusinessData['questionsAnswers'] = []
+                
+            if len(updates) == 0:
+                print("DEBUG: No updates provided, ensuring field exists")
+                newBusinessData['updates'] = []
+            
+            conn.commit()
+            print("DEBUG: Successfully initialized related tables")
+        except Exception as init_error:
+            print(f"DEBUG ERROR: Failed to initialize related tables: {str(init_error)}")
+            import traceback
+            print(f"DEBUG TRACE: {traceback.format_exc()}")
+            # Don't fail the whole operation if this initialization fails
+            pass
 
         return jsonify( 
             {   
                 "code": 201,
-                "data": newProducerId
+                "data": newProducerId,
+                "debug_info": {
+                    "producerName": newBusinessData['producerName'],
+                    "hasQA": len(questions_answers) > 0,
+                    "hasUpdates": len(updates) > 0
+                }
             }
         ), 201
 
     except Exception as e:
         conn.rollback()
-        print(str(e))
+        print(f"DEBUG ERROR: Failed to create producer account: {str(e)}")
+        # Print the full stack trace to help with debugging
+        import traceback
+        print(f"DEBUG TRACE: {traceback.format_exc()}")
         return jsonify(
             {
                 "code": 500,
                 "data": {
                     "producerName": newBusinessData['producerName']
                 },
-                "message": "An error occurred creating the producer account."
+                "message": "An error occurred creating the producer account.",
+                "error_details": str(e)
             }
         ), 500
 

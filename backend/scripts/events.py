@@ -642,7 +642,7 @@ def canCreateEvents(user_id, user_type):
         if not can_create[0]:
             return jsonify({
                 'canCreate': False,
-                'message': 'You have reached the limit of events you can create this month',
+                'message': 'You have reached the limit of events you can create this month. This will reset again next month!',
                 'limit': can_create[1]
             }), 200
 

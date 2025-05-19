@@ -3767,48 +3767,87 @@ export default {
           let params = {
             businessType: this.userType,
           };
+          console.log("SETTINGS BUTTON DEBUG: Starting account request check for producer ID:", this.producer_id);
           try {
             let response = await this.$axios.get(
               `${process.env.VUE_APP_API_URL}/getData/getAccountRequest/${this.producer_id}`,
               { params }
             );
+            console.log("SETTINGS BUTTON DEBUG: Account request API response:", response.data);
+
             if (response.data.length === 0) {
+              console.log("SETTINGS BUTTON DEBUG: CONDITION 1 MET - No account request data found (response.data.length === 0)");
               this.adminCreated = true;
             } else if (!response.data["isApproved"]) {
-              this.adminCreated = true;
-            }
-          } catch (error) {
-            if (error.response && error.response.status === 404) {
+              console.log("SETTINGS BUTTON DEBUG: CONDITION 2 MET - Account request exists but is not approved (!response.data[\"isApproved\"])");
+              console.log("SETTINGS BUTTON DEBUG: Value of isApproved:", response.data["isApproved"]);
               this.adminCreated = true;
             } else {
+              console.log("SETTINGS BUTTON DEBUG: No conditions met in the try block, adminCreated unchanged");
+            }
+          } catch (error) {
+            console.log("SETTINGS BUTTON DEBUG: Error caught in account request check");
+ 
+            if (error.response && error.response.status === 404) {
+              console.log("SETTINGS BUTTON DEBUG: CONDITION 3 MET - 404 error (no account request found)");
+              this.adminCreated = true;
+            } else {
+              console.log("SETTINGS BUTTON DEBUG: Other error type:", error.message);
               console.error("An unexpected error occurred:", error);
             }
           }
+          console.log("SETTINGS BUTTON DEBUG: Final adminCreated value after account request check:", this.adminCreated);
         }
       }
 
       // reviews
       // _id, userID, producerID, date, rating, reviewDesc, photo
       try {
+        console.log(`DEBUG: Fetching producer reviews for producerId=${this.producer_id}`);
         const response = await this.$axios.get(
           `${process.env.VUE_APP_API_URL}/getData/getProducerReviewsByProducerId/${this.producer_id}`
         );
-        this.filteredTourReviews = response.data;
-        this.detailedReview = this.filteredTourReviews[0];
+        console.log("DEBUG: Producer reviews API response:", response.status, response.statusText);
+        console.log("DEBUG: Producer reviews data:", response.data);
+        this.filteredTourReviews = response.data || [];
+        this.detailedReview = this.filteredTourReviews[0] || null;
       } catch (error) {
-        console.error(error);
-        this.dataLoaded = null;
+        console.error("ERROR FETCHING REVIEWS: Failed to load producer reviews");
+        if (error.response) {
+          console.error("ERROR DETAILS: Status:", error.response.status);
+          console.error("ERROR DETAILS: Data:", error.response.data);
+        } else if (error.request) {
+          console.error("ERROR DETAILS: No response received from server");
+          console.error("ERROR DETAILS: Request:", error.request);
+        } else {
+          console.error("ERROR DETAILS:", error.message);
+        }
+        console.log("DEBUG: Initializing empty reviews array to continue loading");
+        this.filteredTourReviews = [];
+        this.detailedReview = null;
+        // Don't set dataLoaded to null, continue loading the page
       }
       // producers
       // _id, producerName, producerDesc, originCountry, statusOB, mainDrinks
       try {
+        console.log(`DEBUG: Fetching producer data for producerId=${this.producer_id}`);
         const response = await this.$axios.get(
           `${process.env.VUE_APP_API_URL}/getData/getProducer/${this.producer_id}`
         );
-        console.log("producerData", response.data);
+        console.log("DEBUG: Producer API response status:", response.status, response.statusText);
+        console.log("DEBUG: Producer data:", response.data);
+        
+        // Check for critical properties
+        if (!response.data) {
+          console.error("ERROR: Empty producer data received");
+        } else {
+          console.log("DEBUG: Producer exists with name:", response.data.producerName);
+          console.log("DEBUG: Producer has updates:", response.data.updates ? response.data.updates.length : "none");
+          console.log("DEBUG: Producer has QA:", response.data.questionsAnswers ? response.data.questionsAnswers.length : "none");
+        }
+        
         this.specified_producer = response.data;
-        this.specified_producer_original_photo =
-          this.specified_producer["photo"];
+        this.specified_producer_original_photo = this.specified_producer["photo"];
         this.newAddress = this.specified_producer["location"];
         this.openingHours = this.specified_producer["openingHours"];
         const dayOrder = [
@@ -3973,22 +4012,43 @@ export default {
       // reviews
       // _id, userID, reviewTarget, date, rating, reviewDesc, taggedUsers, reviewTitle, reviewType, flavorTag, photo
       try {
-        const response = await this.$axios.post(
-          `${process.env.VUE_APP_API_URL}/getData/getReviewsByListingIDs`, 
-          {
-            listingIDs: this.allDrinksIDs,
-          }
-        );
-        this.reviews = response.data;
-        this.allUserIDs = this.reviews.map((review) => review.userID);
-        // get all reviews
-        this.getAllReviews();
-        this.getRatingsByType();
-        this.getAverageRatings();
-        this.getMostPopular();
+        console.log("DEBUG: Checking for listings to fetch reviews");
+        
+        // Make sure allDrinksIDs is not empty 
+        if (this.allDrinksIDs && this.allDrinksIDs.length > 0) {
+          console.log(`DEBUG: Found ${this.allDrinksIDs.length} listings to fetch reviews for`);
+          const response = await this.$axios.post(
+            `${process.env.VUE_APP_API_URL}/getData/getReviewsByListingIDs`, 
+            {
+              listingIDs: this.allDrinksIDs,
+            }
+          );
+          this.reviews = response.data;
+          this.allUserIDs = this.reviews.map((review) => review.userID);
+          // get all reviews
+          this.getAllReviews();
+          this.getRatingsByType();
+          this.getAverageRatings();
+          this.getMostPopular();
+        } else {
+          console.log("DEBUG: No listings found, initializing empty reviews");
+          this.reviews = [];
+          this.allUserIDs = [];
+          this.allReviews = [];
+          this.drinkRatings = {};
+          this.sortedAverageRatings = {};
+          this.mostPopular = [];
+        }
       } catch (error) {
         console.error("Error fetching producer reviews:", error);
-        this.dataLoaded = null;
+        console.log("DEBUG: Initializing empty reviews after error");
+        this.reviews = [];
+        this.allUserIDs = [];
+        this.allReviews = [];
+        this.drinkRatings = {};
+        this.sortedAverageRatings = {};
+        this.mostPopular = [];
+        // Don't set dataLoaded to null, continue loading the page
       }
       // user
       // _id, username, displayName, choiceDrinks, drinkLists, modType, photo
@@ -4930,13 +4990,27 @@ export default {
     },
 
     // get producer's latest updates
+    // get producer's latest updates
     getLatestUpdates() {
+      console.log("DEBUG: Starting getLatestUpdates method");
       let updatesList = this.specified_producer["updates"];
-
+      
+      console.log("DEBUG: Updates list type:", typeof updatesList);
+      console.log("DEBUG: Updates list:", updatesList);
+    
+      // If updatesList is undefined (for new accounts), initialize as empty array
+      if (!updatesList) {
+        console.log("DEBUG: Updates list is undefined, initializing as empty array");
+        updatesList = [];
+        this.specified_producer["updates"] = [];
+      }
+    
       if (updatesList.length > 0) {
+        console.log(`DEBUG: Producer has ${updatesList.length} updates`);
         this.hasUpdates = true;
         let latestUpdate = updatesList[updatesList.length - 1];
-
+        console.log("DEBUG: Latest update:", latestUpdate);
+    
         // check that there is more than 1 update
         if (updatesList.length > 1) {
           // for remaining updates
@@ -4957,32 +5031,63 @@ export default {
             this.checkLiked("remaining");
           }
         }
-
+    
         // for latest update ONLY
         this.latestUpdate = latestUpdate;
         // add likes
-        this.updateLikes = latestUpdate["likes"];
+        this.updateLikes = latestUpdate["likes"] || [];
         try {
           this.updateLikesCount = this.updateLikes.length;
         } catch {
           this.updateLikesCount = 0;
         }
         this.checkLiked("latest");
+      } else {
+        console.log("DEBUG: Producer has no updates");
+        this.hasUpdates = false;
+        this.latestUpdate = {};
+        this.updateLikes = [];
+        this.updateLikesCount = 0;
       }
     },
 
     // get producer's answered questions (to be displayed to the users/venues)
+    // get producer's answered questions (to be displayed to the users/venues)
     checkProducerAnswered() {
+      console.log("DEBUG: Starting checkProducerAnswered method");
       let answeredQuestions = this.specified_producer["questionsAnswers"];
+      
+      console.log("DEBUG: Q&A list type:", typeof answeredQuestions);
+      console.log("DEBUG: Q&A list:", answeredQuestions);
+      
+      // Initialize arrays to prevent errors
+      this.answeredQuestions = [];
+      this.unansweredQuestions = [];
+      
+      // If answeredQuestions is undefined (for new accounts), initialize as empty array
+      if (!answeredQuestions) {
+        console.log("DEBUG: Q&A list is undefined, initializing as empty array");
+        answeredQuestions = [];
+        this.specified_producer["questionsAnswers"] = [];
+      }
+      
       if (answeredQuestions.length > 0) {
+        console.log(`DEBUG: Producer has ${answeredQuestions.length} Q&As`);
         for (let qa in answeredQuestions) {
-          let answer = answeredQuestions[qa]["answer"];
-          if (answer != "") {
-            this.answeredQuestions.push(answeredQuestions[qa]);
-          } else {
-            this.unansweredQuestions.push(answeredQuestions[qa]);
+          try {
+            let answer = answeredQuestions[qa]["answer"];
+            console.log(`DEBUG: Q&A ${qa} has answer:`, answer ? "yes" : "no");
+            if (answer && answer !== "") {
+              this.answeredQuestions.push(answeredQuestions[qa]);
+            } else {
+              this.unansweredQuestions.push(answeredQuestions[qa]);
+            }
+          } catch (error) {
+            console.error(`DEBUG: Error processing Q&A item ${qa}:`, error);
           }
         }
+      } else {
+        console.log("DEBUG: Producer has no Q&As");
       }
     },
 
@@ -5282,58 +5387,98 @@ export default {
     },
 
     // for producer to track page views
-    getProfileViews() {
-      // ensure that it is not the producer viewing their own page
-      if (this.user_id != this.producer_id) {
-        // get current date
-        let currDate = this.currDate;
-
-        // check if currDate exists in the producerProfileViewInfo
-        let dateExists =
-          this.producerProfileViewInfo?.date == currDate || false;
-
-        // if current date already exists, increment the count
-        if (dateExists) {
-          // get current view
-          let viewsID = this.producerProfileViewInfo.id;
-          try {
-            const response = this.$axios.post(
-              `${process.env.VUE_APP_API_URL}/editProducerProfile/addProfileCount`,
-              {
-                producerID: this.producerProfileID,
-                viewsID: viewsID,
-              },
-              {
-                headers: {
-                  "Content-Type": "application/json",
+    async getProfileViews() {
+      console.log("DEBUG: Starting getProfileViews method");
+      console.log(`DEBUG: Profile view info:`, this.producerProfileViewInfo);
+      
+      try {
+        // ensure that it is not the producer viewing their own page
+        if (this.user_id != this.producer_id) {
+          // get current date
+          let currDate = this.currDate;
+          console.log(`DEBUG: Current date for views: ${currDate}`);
+          
+          // Skip API calls if producer ID is undefined or invalid
+          if (!this.producer_id) {
+            console.log("DEBUG: Producer ID is undefined, skipping profile views update");
+            return;
+          }
+          
+          // check if the profileViewInfo exists
+          if (!this.producerProfileViewInfo) {
+            console.log("DEBUG: No profile view record exists for this producer");
+            
+            // Create new profile view since none exists
+            try {
+              console.log("DEBUG: Creating new profile view record");
+              const response = await this.$axios.post(
+                `${process.env.VUE_APP_API_URL}/editProducerProfile/addNewProfileCount`,
+                {
+                  producerID: this.producer_id,
+                  date: currDate,
                 },
+                {
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                }
+              );
+              console.log("DEBUG: New profile view record created:", response.data);
+            } catch (error) {
+              console.error("ERROR: Failed to create new profile view record:", error);
+            }
+          } else {
+            console.log(`DEBUG: Found profile view record with ID: ${this.producerProfileViewInfo.id}`);
+    
+            // check if currDate exists in the producerProfileViewInfo
+            let dateExists = this.producerProfileViewInfo?.date == currDate || false;
+    
+            // if current date already exists, increment the count
+            if (dateExists && this.producerProfileViewInfo.id) {
+              // get current view
+              let viewsID = this.producerProfileViewInfo.id;
+              try {
+                const response = await this.$axios.post(
+                  `${process.env.VUE_APP_API_URL}/editProducerProfile/addProfileCount`,
+                  {
+                    producerID: this.producerProfileID,
+                    viewsID: viewsID,
+                  },
+                  {
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                  }
+                );
+                console.log("DEBUG: Profile view count updated:", response.data);
+              } catch (error) {
+                console.error("ERROR: Failed to update profile count:", error);
               }
-            );
-            console.log(response.data);
-          } catch (error) {
-            console.error(error);
+            }
+            // if current date does not exist, add a new view
+            else {
+              try {
+                const response = await this.$axios.post(
+                  `${process.env.VUE_APP_API_URL}/editProducerProfile/addNewProfileCount`,
+                  {
+                    producerID: this.producer_id,
+                    date: currDate,
+                  },
+                  {
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                  }
+                );
+                console.log("DEBUG: New profile view added:", response.data);
+              } catch (error) {
+                console.error("ERROR: Failed to add new profile view:", error);
+              }
+            }
           }
         }
-
-        // if current date does not exist, add a new view
-        else {
-          try {
-            this.$axios.post(
-              `${process.env.VUE_APP_API_URL}/editProducerProfile/addNewProfileCount`,
-              {
-                producerID: this.producer_id,
-                date: currDate,
-              },
-              {
-                headers: {
-                  "Content-Type": "application/json",
-                },
-              }
-            );
-          } catch (error) {
-            console.error(error);
-          }
-        }
+      } catch (error) {
+        console.error("ERROR: Unexpected error in getProfileViews:", error);
       }
     },
 
