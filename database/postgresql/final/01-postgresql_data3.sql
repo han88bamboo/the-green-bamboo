@@ -125,18 +125,6 @@ CREATE TABLE "badges" (
     "relatedEntity" VARCHAR(255) NULL
 );
 
--- ========= "userBadges" =========
-CREATE TABLE "userBadges" (
-    "id" SERIAL PRIMARY KEY,
-    "userId" INTEGER REFERENCES "users"("id") ON DELETE CASCADE,
-    "badgeId" INTEGER REFERENCES "badges"("id") ON DELETE CASCADE,
-    "currentLevel" INTEGER DEFAULT 1,
-    "currentProgress" INTEGER DEFAULT 0, -- Progress toward next level
-    "dateEarned" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    "lastUpdated" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE("userId", "badgeId")
-);
-
 -- ========= "badgeRules" =========
 CREATE TABLE "badgeRules" (
     "id" SERIAL PRIMARY KEY,
@@ -274,6 +262,19 @@ CREATE TABLE "users" (
     "upAndComing" TEXT[], -- SMU Group 3 added in "upAndComing"
     "goats" TEXT[] -- SMU Group 3 added in "goats"
 );
+
+-- ========= "userBadges" =========
+CREATE TABLE "userBadges" (
+    "id" SERIAL PRIMARY KEY,
+    "userId" INTEGER REFERENCES "users"("id") ON DELETE CASCADE,
+    "badgeId" INTEGER REFERENCES "badges"("id") ON DELETE CASCADE,
+    "currentLevel" INTEGER DEFAULT 1,
+    "currentProgress" INTEGER DEFAULT 0, -- Progress toward next level
+    "dateEarned" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "lastUpdated" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE("userId", "badgeId")
+);
+
 
 -- ========= [NEW!] "producersQuestionAnswers" =========
 CREATE TABLE "producersQuestionAnswers" (
