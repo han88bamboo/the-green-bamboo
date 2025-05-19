@@ -6,7 +6,7 @@ import os
 import s3Images
 from flask import Blueprint, g, request, jsonify
 from bson.objectid import ObjectId
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 
 from scripts.adminFunctions import hash_password
@@ -34,10 +34,20 @@ def voteReview():
     review_id = data['reviewID']
     user_id = data['userID']
     action = data['action']
-    current_time = data.get('voteDate', datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    
+    # Handle vote date
+    if 'voteDate' in data:
+        try:
+            vote_datetime = datetime.fromisoformat(data['voteDate'].replace('Z', '+00:00'))
+            current_time = vote_datetime.strftime("%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    else:
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     with conn.cursor() as cur:
         try:
+            # Get current votes
             cur.execute("SELECT id, upvotes, downvotes FROM \"reviewsUserVotes\" WHERE \"reviewId\" = %s", (review_id,))
             result = cur.fetchone()
 
@@ -48,20 +58,50 @@ def voteReview():
             upvotes = json.loads(upvotes) if isinstance(upvotes, str) else upvotes
             downvotes = json.loads(downvotes) if isinstance(downvotes, str) else downvotes
 
+            # Track vote changes
+            is_new_upvote = False
+            is_removed_upvote = False
+            had_upvote = False
+            
+            # Process the vote action
             if action == "upvote":
-                upvotes.append({"userId": user_id, "date": current_time})
+                # Check if user already upvoted
+                already_upvoted = any(vote['userId'] == user_id for vote in upvotes)
+                if not already_upvoted:
+                    upvotes.append({"userId": user_id, "date": current_time})
+                    is_new_upvote = True
+                
+                # Remove any downvote from this user
                 downvotes = [vote for vote in downvotes if vote['userId'] != user_id]
 
             elif action == "downvote":
-                downvotes.append({"userId": user_id, "date": current_time})
+                # Check if user already downvoted
+                already_downvoted = any(vote['userId'] == user_id for vote in downvotes)
+                if not already_downvoted:
+                    downvotes.append({"userId": user_id, "date": current_time})
+                
+                # Check if user had an upvote
+                had_upvote = any(vote['userId'] == user_id for vote in upvotes)
+                if had_upvote:
+                    is_removed_upvote = True
+                
+                # Remove any upvote from this user
                 upvotes = [vote for vote in upvotes if vote['userId'] != user_id]
 
             elif action == "unupvote":
+                # Check if user had an upvote
+                had_upvote = any(vote['userId'] == user_id for vote in upvotes)
+                if had_upvote:
+                    is_removed_upvote = True
+                
+                # Remove the upvote
                 upvotes = [vote for vote in upvotes if vote['userId'] != user_id]
 
             elif action == "undownvote":
+                # Remove the downvote
                 downvotes = [vote for vote in downvotes if vote['userId'] != user_id]
 
+            # Update or insert vote record
             if result:
                 cur.execute("""
                     UPDATE "reviewsUserVotes"
@@ -74,18 +114,50 @@ def voteReview():
                     VALUES (%s, %s, %s);
                 """, (review_id, json.dumps(upvotes), json.dumps(downvotes)))
 
-            conn.commit()
-
-            return jsonify({
+            # Get the review owner and creation date
+            cur.execute(
+                'SELECT "userID", "createdDate" FROM "reviews" WHERE id = %s',
+                (review_id,)
+            )
+            review_row = cur.fetchone()
+            
+            badge_result = None
+            
+            if review_row:
+                review_owner_id = review_row["userID"]
+                review_created = review_row["createdDate"]
+                
+                # Convert the vote time to datetime object
+                upvote_dt = datetime.strptime(current_time, "%Y-%m-%d %H:%M:%S")
+                
+                # Check if the vote is within one week of review creation
+                within_one_week = (review_created is not None and 
+                                   (upvote_dt - review_created) <= timedelta(weeks=1))
+                
+                # Process badge if there's an upvote change within one week
+                if (is_new_upvote and within_one_week) or is_removed_upvote:
+                    badge_result = badge_helpers.process_upvote_badge(
+                        conn, cur, review_owner_id, 
+                        is_new_upvote=is_new_upvote, 
+                        is_removed_upvote=is_removed_upvote
+                    )
+            
+            # Prepare the response
+            response_data = {
                 "code": 201,
                 "data": {
                     "upvotes": upvotes,
                     "downvotes": downvotes
                 }
-            }), 201
+            }
+            
+            if badge_result:
+                response_data["badgeUpdate"] = badge_result
+                
+            return jsonify(response_data), 201
 
         except Exception as e:
-            print(str(e))
+            print(f"Error in voteReview: {str(e)}")
             conn.rollback()
             return jsonify({
                 "code": 500,
