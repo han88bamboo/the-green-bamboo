@@ -673,6 +673,7 @@
 
                             this.populateForm(previousData);
                             this.form["brandRelation"] = previousData.brandRelation;
+                            this.form[""]
                         }
                         catch (error) {
                             console.error(error);
@@ -1095,6 +1096,10 @@
                         // Listing Creation Mode
                         if (this.formMode == "new") {
                             submitAPI = `${process.env.VUE_APP_API_URL}/createListing/createListing`
+
+                            if (this.$route.params.requestID && this.$route.params.requestID !== "") {
+                                submitAPI += `?requestId=${this.$route.params.requestID}`
+                            }
                         }
 
                         // Listing Edit Mode

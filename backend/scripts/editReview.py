@@ -6,11 +6,12 @@ import os
 import s3Images
 from flask import Blueprint, g, request, jsonify
 from bson.objectid import ObjectId
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 
 from scripts.adminFunctions import hash_password
 from scripts.createReview import create_username
+from scripts import badge_helpers
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -33,10 +34,20 @@ def voteReview():
     review_id = data['reviewID']
     user_id = data['userID']
     action = data['action']
-    current_time = data.get('voteDate', datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    
+    # Handle vote date
+    if 'voteDate' in data:
+        try:
+            vote_datetime = datetime.fromisoformat(data['voteDate'].replace('Z', '+00:00'))
+            current_time = vote_datetime.strftime("%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    else:
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     with conn.cursor() as cur:
         try:
+            # Get current votes
             cur.execute("SELECT id, upvotes, downvotes FROM \"reviewsUserVotes\" WHERE \"reviewId\" = %s", (review_id,))
             result = cur.fetchone()
 
@@ -47,20 +58,50 @@ def voteReview():
             upvotes = json.loads(upvotes) if isinstance(upvotes, str) else upvotes
             downvotes = json.loads(downvotes) if isinstance(downvotes, str) else downvotes
 
+            # Track vote changes
+            is_new_upvote = False
+            is_removed_upvote = False
+            had_upvote = False
+            
+            # Process the vote action
             if action == "upvote":
-                upvotes.append({"userId": user_id, "date": current_time})
+                # Check if user already upvoted
+                already_upvoted = any(vote['userId'] == user_id for vote in upvotes)
+                if not already_upvoted:
+                    upvotes.append({"userId": user_id, "date": current_time})
+                    is_new_upvote = True
+                
+                # Remove any downvote from this user
                 downvotes = [vote for vote in downvotes if vote['userId'] != user_id]
 
             elif action == "downvote":
-                downvotes.append({"userId": user_id, "date": current_time})
+                # Check if user already downvoted
+                already_downvoted = any(vote['userId'] == user_id for vote in downvotes)
+                if not already_downvoted:
+                    downvotes.append({"userId": user_id, "date": current_time})
+                
+                # Check if user had an upvote
+                had_upvote = any(vote['userId'] == user_id for vote in upvotes)
+                if had_upvote:
+                    is_removed_upvote = True
+                
+                # Remove any upvote from this user
                 upvotes = [vote for vote in upvotes if vote['userId'] != user_id]
 
             elif action == "unupvote":
+                # Check if user had an upvote
+                had_upvote = any(vote['userId'] == user_id for vote in upvotes)
+                if had_upvote:
+                    is_removed_upvote = True
+                
+                # Remove the upvote
                 upvotes = [vote for vote in upvotes if vote['userId'] != user_id]
 
             elif action == "undownvote":
+                # Remove the downvote
                 downvotes = [vote for vote in downvotes if vote['userId'] != user_id]
 
+            # Update or insert vote record
             if result:
                 cur.execute("""
                     UPDATE "reviewsUserVotes"
@@ -73,18 +114,50 @@ def voteReview():
                     VALUES (%s, %s, %s);
                 """, (review_id, json.dumps(upvotes), json.dumps(downvotes)))
 
-            conn.commit()
-
-            return jsonify({
+            # Get the review owner and creation date
+            cur.execute(
+                'SELECT "userID", "createdDate" FROM "reviews" WHERE id = %s',
+                (review_id,)
+            )
+            review_row = cur.fetchone()
+            
+            badge_result = None
+            
+            if review_row:
+                review_owner_id = review_row["userID"]
+                review_created = review_row["createdDate"]
+                
+                # Convert the vote time to datetime object
+                upvote_dt = datetime.strptime(current_time, "%Y-%m-%d %H:%M:%S")
+                
+                # Check if the vote is within one week of review creation
+                within_one_week = (review_created is not None and 
+                                   (upvote_dt - review_created) <= timedelta(weeks=1))
+                
+                # Process badge if there's an upvote change within one week
+                if (is_new_upvote and within_one_week) or is_removed_upvote:
+                    badge_result = badge_helpers.process_upvote_badge(
+                        conn, cur, review_owner_id, 
+                        is_new_upvote=is_new_upvote, 
+                        is_removed_upvote=is_removed_upvote
+                    )
+            
+            # Prepare the response
+            response_data = {
                 "code": 201,
                 "data": {
                     "upvotes": upvotes,
                     "downvotes": downvotes
                 }
-            }), 201
+            }
+            
+            if badge_result:
+                response_data["badgeUpdate"] = badge_result
+                
+            return jsonify(response_data), 201
 
         except Exception as e:
-            print(str(e))
+            print(f"Error in voteReview: {str(e)}")
             conn.rollback()
             return jsonify({
                 "code": 500,
@@ -131,15 +204,14 @@ def updateReview(id):
     cur.execute("""SELECT * FROM "pointSystemRules" WHERE "id" BETWEEN 2 AND 6""")
     point_system_rules = cur.fetchall()
 
-
     # Check the difference between the new review and the existing review
     remove_component = []
     added_component = []
 
     # [1] Check if text review was removed
-    if (data['reviewDesc'] == '' and data['reviewDesc'] is None) and (existing_review['reviewDesc'] != '' and existing_review['reviewDesc'] is not None):
+    if (data['reviewDesc'] == '' or data['reviewDesc'] is None) and (existing_review['reviewDesc'] != '' and existing_review['reviewDesc'] is not None):
         remove_component.append(2)
-    elif (data['reviewDesc'] != '') and (existing_review['reviewDesc'] == '' and existing_review['reviewDesc'] is None):
+    elif (data['reviewDesc'] != '' and data['reviewDesc'] is not None) and (existing_review['reviewDesc'] == '' or existing_review['reviewDesc'] is None):
         added_component.append(2)
 
     # [2] Check if extensive review was removed or added
@@ -153,7 +225,7 @@ def updateReview(id):
     current_review_ext_taste = bool(existing_review.get('taste'))
     current_review_ext_finish = bool(existing_review.get('finish'))
 
-   # Count how many fields exist in current and updated review
+    # Count how many fields exist in current and updated review
     current_count = sum([
         current_review_ext_color,
         current_review_ext_aroma,
@@ -168,30 +240,41 @@ def updateReview(id):
         updated_review_ext_finish
     ])
 
+    # Track if extensive review was added or removed
+    is_extensive_review_before = current_count > 0
+    is_extensive_review_after = updated_count > 0
+
     # Check if anything was removed or added
-    if updated_count > 0 and current_count == 0:
+    if is_extensive_review_after and not is_extensive_review_before:
         added_component.append(3)
-    elif updated_count == 0 and current_count > 0:
+    elif not is_extensive_review_after and is_extensive_review_before:
         remove_component.append(3)
     
-
-    # [3] Check if photo was removed or added - not working
-    if is_empty_photo(data['photo']) and is_non_empty_photo(existing_review['photo']):
+    # [3] Check if photo was removed or added
+    has_photo_before = is_non_empty_photo(existing_review['photo'])
+    has_photo_after = is_non_empty_photo(data['photo'])
+    
+    if not has_photo_after and has_photo_before:
         remove_component.append(4)
-    # Check if photo was added
-    elif is_non_empty_photo(data['photo']) and is_empty_photo(existing_review['photo']):
+    elif has_photo_after and not has_photo_before:
         added_component.append(4)
 
     # [4] Check if location was removed or added
-    if (data['location'] == '' and data['location'] is None) and (existing_review['location'] != '' and existing_review['location'] is not None):
+    has_location_before = existing_review['location'] is not None and existing_review['location'] != ''
+    has_location_after = data['location'] is not None and data['location'] != ''
+    
+    if not has_location_after and has_location_before:
         remove_component.append(5)
-    elif (data['location'] != '') and (existing_review['location'] == '' and existing_review['location'] is None):
+    elif has_location_after and not has_location_before:
         added_component.append(5)
 
     # [5] Check if tagged users were removed or added
-    if (data['taggedUsers'] == []) and (existing_review['taggedUsers'] != []):
+    has_tagged_friends_before = existing_review['taggedUsers'] != []
+    has_tagged_friends_after = data['taggedUsers'] != []
+    
+    if not has_tagged_friends_after and has_tagged_friends_before:
         remove_component.append(6)
-    elif (data['taggedUsers'] != []) and (existing_review['taggedUsers'] == []):
+    elif has_tagged_friends_after and not has_tagged_friends_before:
         added_component.append(6)
 
     # Insert or find the venue
@@ -217,9 +300,9 @@ def updateReview(id):
             conn.commit()
 
     # Update review photo
-    if existing_review['photo']:
+    if existing_review['photo'] and data['photo'] != existing_review['photo']:
         s3Images.deleteImageFromS3(existing_review['photo'])
-    if data['photo']:
+    if data['photo'] and data['photo'] != existing_review['photo']:
         data['photo'] = s3Images.uploadBase64ImageToS3(data['photo'])
 
     tagged_users = data.get('taggedUsers', [])
@@ -263,15 +346,78 @@ def updateReview(id):
             conn.commit()
 
             print("Additional points: ", modify_point)
-
+            
+        user_id = data.get('userID')
+        badges_updated = []
+        
+        # Fetch listing info to get drink type, category and country data
+        cur.execute("""
+            SELECT "drinkType", "typeCategory", "originCountry" 
+            FROM "listings" 
+            WHERE id = %s
+        """, (data.get('reviewTarget'),))
+        
+        listing_info = cur.fetchone()
+        
+        if listing_info and (added_component or remove_component):
+            
+            if 3 in added_component:
+                # ExtensiveReview added - increase badge progress
+                badge_updated = badge_helpers.update_badge_progress(conn, cur, user_id, 'ExtensiveReview', 'Action', 1)
+                if badge_updated:
+                    badges_updated.append(badge_updated)
+            elif 3 in remove_component:
+                # ExtensiveReview removed - decrease badge progress
+                badge_updated = badge_helpers.update_badge_progress(conn, cur, user_id, 'ExtensiveReview', 'Action', -1)
+                if badge_updated:
+                    badges_updated.append(badge_updated)
+                    
+            # 2. Process PhotoAttached badge
+            if 4 in added_component:
+                # Photo added - increase badge progress
+                badge_updated = badge_helpers.update_badge_progress(conn, cur, user_id, 'PhotoAttached', 'Action', 1)
+                if badge_updated:
+                    badges_updated.append(badge_updated)
+            elif 4 in remove_component:
+                # Photo removed - decrease badge progress
+                badge_updated = badge_helpers.update_badge_progress(conn, cur, user_id, 'PhotoAttached', 'Action', -1)
+                if badge_updated:
+                    badges_updated.append(badge_updated)
+                    
+            # 3. Process LocationTagged badge
+            if 5 in added_component:
+                # Location added - increase badge progress
+                badge_updated = badge_helpers.update_badge_progress(conn, cur, user_id, 'LocationTagged', 'Action', 1)
+                if badge_updated:
+                    badges_updated.append(badge_updated)
+            elif 5 in remove_component:
+                # Location removed - decrease badge progress
+                badge_updated = badge_helpers.update_badge_progress(conn, cur, user_id, 'LocationTagged', 'Action', -1)
+                if badge_updated:
+                    badges_updated.append(badge_updated)
+                    
+            # 4. Process FriendTagged badge
+            if 6 in added_component:
+                # Friends tagged - increase badge progress
+                badge_updated = badge_helpers.update_badge_progress(conn, cur, user_id, 'FriendTagged', 'Action', 1)
+                if badge_updated:
+                    badges_updated.append(badge_updated)
+            elif 6 in remove_component:
+                # Friends untagged - decrease badge progress
+                badge_updated = badge_helpers.update_badge_progress(conn, cur, user_id, 'FriendTagged', 'Action', -1)
+                if badge_updated:
+                    badges_updated.append(badge_updated)
+        
         return jsonify({
             "code": 200,
             "data": data.get('reviewDesc', ''),
             "pointsChange": modify_point,
+            "badgesUpdated": badges_updated
         }), 200
 
     except Exception as e:
         print(str(e))
+        conn.rollback()
         return jsonify({
             "code": 500,
             "data": {

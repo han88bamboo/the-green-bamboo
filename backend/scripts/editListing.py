@@ -31,6 +31,11 @@ def updateListing(id):
     updatedListing = request.get_json()
     updatedListing['producerID'] = int(updatedListing['producerID'])
 
+    if 'bottlerID' in updatedListing and updatedListing['bottlerID'] == '':
+        updatedListing['bottlerID'] = None
+    elif 'bottlerID' in updatedListing and updatedListing['bottlerID']:
+        updatedListing['bottlerID'] = int(updatedListing['bottlerID'])
+
     if 'abv' in updatedListing:
         abv_value = updatedListing['abv'].replace('%', '')
         updatedListing['abv'] = float(abv_value)
