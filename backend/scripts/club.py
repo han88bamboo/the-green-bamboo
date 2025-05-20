@@ -673,6 +673,11 @@ def getUserClubs(userID, userType):
             # Add club info into club
             club['clubInfo'] = club_info
 
+            # Get the club's total members
+            cur.execute('SELECT COUNT(*) AS "totalMembers" FROM "clubMembers" WHERE "clubID" = %s', (club['clubID'],))
+            total_members = cur.fetchone()
+            club['totalMembers'] = total_members['totalMembers']
+
             if club['isAdmin']:
                 user_club_admin.append(club)
             else:
