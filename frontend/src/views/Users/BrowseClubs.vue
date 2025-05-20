@@ -735,7 +735,6 @@ export default {
         async getMemberClubs() {
             try {
                 const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getUserClubs/${this.userID}/${this.userType}`);
-                console.log(response.data);
                 this.userClubs = response.data.user_clubs;
                 this.adminClubs = response.data.user_club_admin;
                 this.memberClubs = response.data.user_club_member;

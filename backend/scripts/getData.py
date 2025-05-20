@@ -2786,12 +2786,17 @@ def checkUserInFollowList(userId, userType, followId, followType):
                 }
             ), 404
         
+        key = None
+        
         # Step 2: Retrieve the follow list of the user
         if followType == 'venue':
+            key = 'venues'
             cur.execute('SELECT venues FROM "usersFollowLists" WHERE "userId" = %s', (userId,))
         elif followType == 'producer':
+            key = 'producers'
             cur.execute('SELECT producers FROM "usersFollowLists" WHERE "userId" = %s', (userId,))
         else:
+            key = 'users'
             cur.execute('SELECT users FROM "usersFollowLists" WHERE "userId" = %s', (userId,))
         follow_list = cur.fetchone()
 
@@ -2804,7 +2809,7 @@ def checkUserInFollowList(userId, userType, followId, followType):
             ), 404
         
         # Step 3: Check if the followId is in the follow list of the userId
-        if followId in follow_list['venues']:
+        if followId in follow_list[key]:
             return jsonify(
                 {
                     "code": 200,

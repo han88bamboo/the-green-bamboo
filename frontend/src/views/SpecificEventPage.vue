@@ -26,147 +26,146 @@
         <!-- Main Content -->
         <div v-if="dataLoaded">
             
-
             <!-- Event banner -->
             <!-- Full-width Hero Carousel -->
             <div id="eventHeroCarousel" class="carousel slide position-relative mb-4" data-bs-ride="carousel">
-            <div class="carousel-inner">
-                <div
-                v-for="(banner, index) in event.eventBanners.length > 0 ? event.eventBanners : [defaultEventBanner]"
-                :key="index"
-                :class="['carousel-item', index === 0 ? 'active' : '']"
-                >
-                <div
-                    class="d-flex align-items-center justify-content-center event-hero"
-                    :style="{ backgroundImage: `url(${banner})` }"
-                >
-                    <!-- Overlay Content 
-                    <div class="event-hero-overlay text-white text-center">
-                    <h2 class="fw-bold">{{ event.eventName }}</h2>
-                    <p class="mt-2 text-light">{{ formatDate(event.eventStartDate) }} | {{ formatTime(event.eventStartTime) }}</p>
-                    <div class="mt-3">
-                        <button class="btn btn-danger me-2">RSVP</button>
-                        <button class="btn btn-warning text-dark">Invite your friends!</button>
+                <div class="carousel-inner">
+                    <div
+                    v-for="(banner, index) in event.eventBanners.length > 0 ? event.eventBanners : [defaultEventBanner]"
+                    :key="index"
+                    :class="['carousel-item', index === 0 ? 'active' : '']"
+                    >
+                    <div
+                        class="d-flex align-items-center justify-content-center event-hero"
+                        :style="{ backgroundImage: `url(${banner})` }"
+                    >
+                        <!-- Overlay Content 
+                        <div class="event-hero-overlay text-white text-center">
+                        <h2 class="fw-bold">{{ event.eventName }}</h2>
+                        <p class="mt-2 text-light">{{ formatDate(event.eventStartDate) }} | {{ formatTime(event.eventStartTime) }}</p>
+                        <div class="mt-3">
+                            <button class="btn btn-danger me-2">RSVP</button>
+                            <button class="btn btn-warning text-dark">Invite your friends!</button>
+                        </div>
+                        </div>-->
                     </div>
-                    </div>-->
+                    </div>
                 </div>
-                </div>
-            </div>
 
-            <!-- Carousel Controls -->
-            <button
-                class="carousel-control-prev"
-                type="button"
-                data-bs-target="#eventHeroCarousel"
-                data-bs-slide="prev"
-            >
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Previous</span>
-            </button>
-            <button
-                class="carousel-control-next"
-                type="button"
-                data-bs-target="#eventHeroCarousel"
-                data-bs-slide="next"
-            >
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Next</span>
-            </button>
+                <!-- Carousel Controls -->
+                <button
+                    class="carousel-control-prev"
+                    type="button"
+                    data-bs-target="#eventHeroCarousel"
+                    data-bs-slide="prev"
+                >
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button
+                    class="carousel-control-next"
+                    type="button"
+                    data-bs-target="#eventHeroCarousel"
+                    data-bs-slide="next"
+                >
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
             </div>
 
             
 
             <div class="container">
-            <div class="row">
-            <div class="col-12">
-                <div class="d-flex justify-content-between align-items-start mt-2">
-                    <div class="flex-shrink-0 me-3 text-start mb-0" style="min-width: 0;">
-                        <!-- Event Name -->
-                        <h4 class="fw-bold mobile-fs-5">{{ event.eventName }}</h4>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-start mt-2">
+                            <div class="flex-shrink-0 me-3 text-start mb-0" style="min-width: 0;">
+                                <!-- Event Name -->
+                                <h4 class="fw-bold mobile-fs-5">{{ event.eventName }}</h4>
+                                        
+                                <!-- Same Start and End Date -->
+                                <div v-if="event.eventStartDate == event.eventEndDate" class="m-0 p-0" style="color:#027562">
+                                    <p class="fw-bold mobile-fs-7 p-0">{{ formatDate(event.eventStartDate) }}, {{ formatTime(event.eventStartTime)}} - {{ formatTime(event.eventEndTime) }}</p>
+                                </div>
+
+                                <!-- Different Start and End Dates -->
+                                <div v-else class="m-0 p-0" style="color:#027562">
+                                    <p class="fw-bold mobile-fs-7 p-0">{{ formatDate(event.eventStartDate) }} - {{ formatDate(event.eventEndDate) }}, {{ formatTime(event.eventStartTime)}} - {{ formatTime(event.eventEndTime) }}</p>
+                                </div>
+                            </div>
+                            <!-- Spacer that shrinks -->
+                            <div class="flex-grow-1"></div>
+                            <!-- Buttons: RSVP + Invite -->
+                            <div class="d-flex gap-1 flex-shrink-0 mobile-view-hide">
+                            <!-- RSVP Button -->
+                                <div>
+                                    <div v-if="event.paidEvent == false">
+                                    <button v-if="attendees.length <= event.eventLimit && !rsvpStatus"
+                                            class="btn primary-btn-less-round-blue fw-bold"
+                                            @click="rsvpEvent"
+                                            :disabled="rsvpButtonStatus">
+                                        I'm interested
+                                    </button>
+                                    </div>
+                                    <div v-else>
+                                    <a :href="event.paymentLink"
+                                        target="_blank"
+                                        class="btn primary-btn-less-round-blue fw-bold">
+                                        I'm Interested
+                                    </a>
+                                    </div>
+                                </div>
                                 
-                        <!-- Same Start and End Date -->
-                        <div v-if="event.eventStartDate == event.eventEndDate" class="m-0 p-0" style="color:#027562">
-                            <p class="fw-bold mobile-fs-7 p-0">{{ formatDate(event.eventStartDate) }}, {{ formatTime(event.eventStartTime)}} - {{ formatTime(event.eventEndTime) }}</p>
-                        </div>
 
-                        <!-- Different Start and End Dates -->
-                        <div v-else class="m-0 p-0" style="color:#027562">
-                            <p class="fw-bold mobile-fs-7 p-0">{{ formatDate(event.eventStartDate) }} - {{ formatDate(event.eventEndDate) }}, {{ formatTime(event.eventStartTime)}} - {{ formatTime(event.eventEndTime) }}</p>
-                        </div>
-                    </div>
-                    <!-- Spacer that shrinks -->
-                    <div class="flex-grow-1"></div>
-                    <!-- Buttons: RSVP + Invite -->
-                    <div class="d-flex gap-1 flex-shrink-0 mobile-view-hide">
-                    <!-- RSVP Button -->
-                        <div>
-                            <div v-if="event.paidEvent == false">
-                            <button v-if="attendees.length <= event.eventLimit && !rsvpStatus"
-                                    class="btn primary-btn-less-round-blue fw-bold"
-                                    @click="rsvpEvent"
-                                    :disabled="rsvpButtonStatus">
-                                I'm interested
-                            </button>
-                            </div>
-                            <div v-else>
-                            <a :href="event.paymentLink"
-                                target="_blank"
-                                class="btn primary-btn-less-round-blue fw-bold">
-                                I'm Interested
-                            </a>
+                                <!-- Invite Button -->
+                                <div>
+                                    <button class="btn primary-btn-less-round-blue d-flex align-items-center fw-bold" style="background-color: rgb(240, 179, 88); border: none;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                        stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2">
+                                    <path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7" />
+                                    <polyline points="16 6 12 2 8 6" />
+                                    <line x1="12" y1="2" x2="12" y2="15" />
+                                    </svg>
+                                    <span>Invite your friends!</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                        
+                        <div class="d-flex gap-1 flex-shrink-0 mobile-view-show mb-3 mt-0">
+                            <!-- RSVP Button -->
+                                <div>
+                                    <div v-if="event.paidEvent == false">
+                                    <button v-if="attendees.length <= event.eventLimit && !rsvpStatus"
+                                            class="btn primary-btn-less-round-blue fw-bold"
+                                            @click="rsvpEvent"
+                                            :disabled="rsvpButtonStatus">
+                                        RSVP
+                                    </button>
+                                    </div>
+                                    <div v-else>
+                                    <a :href="event.paymentLink"
+                                        target="_blank"
+                                        class="btn primary-btn-less-round-blue fw-bold">
+                                        RSVP
+                                    </a>
+                                    </div>
+                                </div>
+                            
 
-                        <!-- Invite Button -->
-                        <div>
-                            <button class="btn primary-btn-less-round-blue d-flex align-items-center fw-bold" style="background-color: rgb(240, 179, 88); border: none;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                                stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2">
-                            <path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7" />
-                            <polyline points="16 6 12 2 8 6" />
-                            <line x1="12" y1="2" x2="12" y2="15" />
-                            </svg>
-                            <span>Invite your friends!</span>
-                            </button>
-                        </div>
+                                <!-- Invite Button -->
+                                <div>
+                                    <button class="btn primary-btn-less-round-blue d-flex align-items-center fw-bold py-2" style="background-color: rgb(240, 179, 88); border: none;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="22" viewBox="0 0 24 24" fill="none"
+                                        stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7" />
+                                    <polyline points="16 6 12 2 8 6" />
+                                    <line x1="12" y1="2" x2="12" y2="15" />
+                                    </svg>
+                                    </button>
+                                </div>
+                            </div>
                     </div>
                 </div>
-                <div class="d-flex gap-1 flex-shrink-0 mobile-view-show mb-3 mt-0">
-                    <!-- RSVP Button -->
-                        <div>
-                            <div v-if="event.paidEvent == false">
-                            <button v-if="attendees.length <= event.eventLimit && !rsvpStatus"
-                                    class="btn primary-btn-less-round-blue fw-bold"
-                                    @click="rsvpEvent"
-                                    :disabled="rsvpButtonStatus">
-                                RSVP
-                            </button>
-                            </div>
-                            <div v-else>
-                            <a :href="event.paymentLink"
-                                target="_blank"
-                                class="btn primary-btn-less-round-blue fw-bold">
-                                RSVP
-                            </a>
-                            </div>
-                        </div>
-                    
-
-                        <!-- Invite Button -->
-                        <div>
-                            <button class="btn primary-btn-less-round-blue d-flex align-items-center fw-bold py-2" style="background-color: rgb(240, 179, 88); border: none;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="22" viewBox="0 0 24 24" fill="none"
-                                stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7" />
-                            <polyline points="16 6 12 2 8 6" />
-                            <line x1="12" y1="2" x2="12" y2="15" />
-                            </svg>
-                            </button>
-                        </div>
-                    </div>
-            </div>
-            </div>
             </div>
             
             <hr style="color:black" class="mt-0">
@@ -180,23 +179,23 @@
                         <!-- Organizer Info -->
                         <!-- Organizer Card (Clean Version) -->
                         <div class="text-white py-3 px-4 mb-4 d-flex justify-content-between align-items-center" style="background-color: #83a9e8">
-                        <div>
-                            Organized by 
-                            <router-link :to="profileURL(event.ownerInfo.id, event.ownerInfo.userType)" class="text-white fw-bold ms-1 text-decoration-underline">
-                            {{ event.ownerInfo.venueName || event.ownerInfo.producerName || event.ownerInfo.displayName }}
-                            </router-link>
-                        </div>
-                        <!-- Edit Event and Delete Event Buttons -->
-                        <div v-if="selfView">
-                            <button class="btn primary-btn btn-sm me-3" data-bs-toggle="modal" data-bs-target="#editEventModal">Edit Event</button>
-                            <button class="btn primary-btn-red btn-sm " data-bs-toggle="modal" data-bs-target="#deleteEventModal">Delete Event</button>
-                        </div>
-                        <div v-if="!followStatus && !selfView">
-                            <button class="btn btn-outline-light btn-md" style="font-weight: bold" @click="editFollow('follow')">Follow</button>
-                        </div>
-                        <div v-else-if="!selfView">
-                            <button class="btn btn-outline-light btn-md" style="font-weight: bold" @click="editFollow('unfollow')">Following</button>
-                        </div>
+                            <div>
+                                Organized by 
+                                <router-link :to="profileURL(event.ownerInfo.id, event.ownerInfo.userType)" class="text-white fw-bold ms-1 text-decoration-underline">
+                                {{ event.ownerInfo.venueName || event.ownerInfo.producerName || event.ownerInfo.displayName }}
+                                </router-link>
+                            </div>
+                            <!-- Edit Event and Delete Event Buttons -->
+                            <div v-if="selfView">
+                                <button class="btn primary-btn btn-sm me-3" data-bs-toggle="modal" data-bs-target="#editEventModal">Edit Event</button>
+                                <button class="btn primary-btn-red btn-sm " data-bs-toggle="modal" data-bs-target="#deleteEventModal">Delete Event</button>
+                            </div>
+                            <div v-if="!followStatus && !selfView">
+                                <button class="btn btn-outline-light btn-md" style="font-weight: bold" @click="editFollow('follow')">Follow</button>
+                            </div>
+                            <div v-else-if="!selfView">
+                                <button class="btn btn-outline-light btn-md" style="font-weight: bold" @click="editFollow('unfollow')">Following</button>
+                            </div>
                         </div>
 
                         
@@ -365,9 +364,11 @@
 
                     <!-- Column 2 -->
                     <div class="square primary-square-green-outline mobile-col-12 col-md-3 p-4 mobile-mx-0 mobile-view-hide" style="border:1px solid grey">
-
                         <!-- Event Location -->
-                        <h5 class="fw-bold mobile-fs-6" style="color:#027562">Event Location</h5>
+                        <h5 class="fw-bold mobile-fs-6" style="color:#027562">
+                            <span v-if="event.eventType == 'Location'">Event Location</span>
+                            <span v-else>Event Link</span>
+                        </h5>
                         <p class="mobile-rating-smaller-text-2">{{ event.eventLocation }}</p>
 
                         <!-- Get Event Tickets -->
@@ -761,7 +762,12 @@ export default {
                 this.otherEvents = this.otherEvents.filter(event => event.id != this.event.id);
             }
             catch (error) {
-                this.otherEventsError = "An error occurred while loading other events, please try again!";
+                if (error.response.status == 404) {
+                    this.otherEventsError = "No other events yet.";
+                }
+                else {
+                    this.otherEventsError = "An error occurred while loading other events, please try again!";
+                }
                 console.log(error);
             }
         },

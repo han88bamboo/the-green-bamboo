@@ -57,7 +57,7 @@ def canCreateMoreEvents(cur, user_id, user_type):
 
     # Determine the max events based on user type
     if user_type == 'user':
-        max_events = 1 # Per month for users
+        max_events = 5 # Per month for users
 
     else:
         max_events = 3 # Per month for producers and venues
@@ -545,7 +545,7 @@ def getRecentlyAddedEvents():
 
     try:
         # Step 1: Get the recently added events
-        cursor.execute('SELECT * FROM events ORDER BY "createdDate" DESC LIMIT 5')
+        cursor.execute('SELECT * FROM events WHERE "eventEndDate" >= CURRENT_DATE ORDER BY "createdDate"  DESC LIMIT 5')
         events = cursor.fetchall()
 
         if not events:
