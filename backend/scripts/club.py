@@ -2,6 +2,7 @@
 #         /getClubPosts (GET), /getClubPostDetails (GET), /checkUserMembership (GET),
 #         /getUserLikesDislikesPost (GET), /getUserLikesDislikesComments (GET), /getUserClubs (GET),
 #         /getClubMembers (GET), /getFirstFewClubMembers (GET), /getAllClubMembers (GET),
+#         /getInvitedMembers (GET),
 #         /getClubRequests (GET), /getUserClubRequests (GET), /getUserInvitedClubs (GET),
 #         /getRecentActivity (GET), /canCreate (GET)
 
@@ -872,6 +873,73 @@ def getAllClubMembers(clubID):
         cur.close()
 
 
+
+# -----------------------------------------------------------------------------------------
+# [GET] getInvitedMembers
+# Purpose: Get the members who have been invited to join a specific club
+# Used: ClubSettings.vue [components folder inside frontend folder]
+# Output: Possible return codes [200 - Retrieval success, 404 - No members found, 500 - An error occurred retrieving the request]
+@blueprint.route('/getInvitedMembers/<clubID>/<last_seen_id>', methods=['GET'])
+def getInvitedMembers(clubID, last_seen_id):
+
+    # Set the limit here
+    limit = 1
+
+    conn = g.db
+    cur = conn.cursor()
+
+    try:
+        # Step 1: Get the requests of the club
+        if last_seen_id == '0':
+            cur.execute('SELECT * FROM "clubInvites" WHERE "clubID" = %s ORDER BY "id" DESC LIMIT %s', (clubID, limit,))
+        elif last_seen_id == '1':
+            cur.execute('SELECT * FROM "clubInvites" WHERE "clubID" = %s LIMIT %s', (clubID, limit,))
+        else:
+            cur.execute('SELECT * FROM "clubInvites" WHERE "clubID" = %s AND "id" < %s ORDER BY "id" DESC LIMIT %s', (clubID, last_seen_id, limit,))
+        invitees = cur.fetchall()
+
+        if not invitees:
+            return jsonify({
+                'error': 'No invites found'
+            }), 404
+        
+        # Step 2: Get the user information for each member
+        for member in invitees:
+
+            user_id = member['inviteeID']
+            user_type = member['inviteeUserType']
+            
+            user_info = getUserInfoByID(cur, user_id, user_type)
+
+            if not user_info:
+                # Skip to the next member if the member info is not found
+                continue
+
+            # Add member info into members
+            member.update(user_info)
+
+            # Remove the id from the member
+            member.pop('clubID')
+            member.pop('inviterID')
+            member.pop('inviterUserType')
+
+        return jsonify({
+            'invitees': invitees
+        }), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred retrieving the request."
+            }
+        ), 500
+    
+    finally:
+        cur.close()
+
+
 # -----------------------------------------------------------------------------------------
 # [GET] getClubRequests
 # Purpose: Get the requests of users who want to join a specific club
@@ -1224,7 +1292,7 @@ def createClub():
         is_invite_only = data['isInviteOnly']
 
         # Check if all the required data is provided
-        if not creator_id or not creator_type or not club_name or not club_desc or not is_invite_only:
+        if not creator_id or not creator_type or not club_name or not club_desc or is_invite_only == None:
             return jsonify({
                 'error': 'Missing required data'
             }), 400
@@ -2641,7 +2709,7 @@ def updateClubInfo():
         editor_id = data['editorID']
 
         # Check if all the required data is provided
-        if not club_id or not club_name or not club_desc or not is_invite_only or not editor_id:
+        if not club_id or not club_name or is_invite_only == None or not editor_id:
             return jsonify({
                 'error': 'Missing required data'
             }), 400

@@ -41,8 +41,8 @@
           <!-- Column 1: Poster Photo -->
           <div class="col-1 mobile-col-2 flex-column justify-content-center me-3">
             <img
-              v-if="poster.profile_photo"
-              :src="poster.profile_photo"
+              v-if="poster.photo"
+              :src="poster.photo"
               class="rounded-circle"
               alt="Profile Photo"
               width="50"
@@ -109,27 +109,27 @@
                 </div>
               </div>
               <button
-                          class="carousel-control-prev"
-                          type="button"
-                          data-bs-target="#postPhotosCarousel"
-                          data-bs-slide="prev"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="black" class="bi bi-chevron-left" viewBox="0 0 16 16">
-                             <path fill-rule="evenodd" d="M11.354 1.354a.5.5 0 0 1 0 .708L6.707 6.707l4.647 4.646a.5.5 0 0 1-.708.708l-5-5a.5.5 0 0 1 0-.708l5-5a.5.5 0 0 1 .708 0z"/>
-                            </svg>
-                          <span class="visually-hidden">Previous</span>
-                        </button>
-                        <button
-                          class="carousel-control-next"
-                          type="button"
-                          data-bs-target="#postPhotosCarousel"
-                          data-bs-slide="next"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="black" class="bi bi-chevron-right" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M4.646 1.354a.5.5 0 0 1 .708 0l5 5a.5.5 0 0 1 0 .708l-5 5a.5.5 0 0 1-.708-.708L9.293 6.707 4.646 2.06a.5.5 0 0 1 0-.708z"/>
-                          </svg>
-                          <span class="visually-hidden">Next</span>
-                        </button>
+                class="carousel-control-prev"
+                type="button"
+                data-bs-target="#postPhotosCarousel"
+                data-bs-slide="prev"
+              >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="black" class="bi bi-chevron-left" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M11.354 1.354a.5.5 0 0 1 0 .708L6.707 6.707l4.647 4.646a.5.5 0 0 1-.708.708l-5-5a.5.5 0 0 1 0-.708l5-5a.5.5 0 0 1 .708 0z"/>
+                  </svg>
+                <span class="visually-hidden">Previous</span>
+              </button>
+              <button
+                class="carousel-control-next"
+                type="button"
+                data-bs-target="#postPhotosCarousel"
+                data-bs-slide="next"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="black" class="bi bi-chevron-right" viewBox="0 0 16 16">
+                  <path fill-rule="evenodd" d="M4.646 1.354a.5.5 0 0 1 .708 0l5 5a.5.5 0 0 1 0 .708l-5 5a.5.5 0 0 1-.708-.708L9.293 6.707 4.646 2.06a.5.5 0 0 1 0-.708z"/>
+                </svg>
+                <span class="visually-hidden">Next</span>
+              </button>
             </div>
           </div>
         </div>
@@ -650,6 +650,7 @@ export default {
         );
         this.post = response.data.post_info;
         this.poster = response.data.poster_info;
+        console.log("Poster Info:", this.poster);
         this.comments = response.data.comments;
 
         // Set the dataLoaded variable to true
