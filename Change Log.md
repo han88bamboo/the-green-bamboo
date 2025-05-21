@@ -699,3 +699,12 @@ Cleaned up some misalignment in search boxes
 
 Nature of the changes (frontend / backend / database):
 frontend 
+
+# Update as of 21 May 
+Coder: Han
+
+Purpose of the changes:
+reverted BillingSecurity.vue and Payment.py files back to original version to fix bug where Stripe payment does not go through. added debugging logs
+
+Nature of the changes (frontend / backend / database):
+frontend, backend
