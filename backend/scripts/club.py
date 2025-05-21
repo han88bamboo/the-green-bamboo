@@ -24,6 +24,7 @@ import os
 from flask import Blueprint, g, jsonify, request
 from datetime import datetime, timedelta
 from scripts import pointsHelperFunc, badge_helpers
+import re
 
 # Use to upload image to S3
 import s3Images
@@ -663,7 +664,7 @@ def getUserClubs(userID, userType):
             user_clubs_ids.append(club['clubID'])
 
             # Get the club id, clubName, clubBanner
-            cur.execute('SELECT "id", "clubName", "clubBanner" FROM "clubs" WHERE id = %s', (club['clubID'],))
+            cur.execute('SELECT "id", "clubName", "clubBanner", "isInviteOnly" FROM "clubs" WHERE id = %s', (club['clubID'],))
             club_info = cur.fetchone()
 
             if not club_info:
@@ -1307,7 +1308,8 @@ def createClub():
 
         # Step 2: Check if the banner image is provided
         if 'image64' in data and data['image64']:
-            image64 = s3Images.uploadBase64ImageToS3(data['image64'])
+            base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', data['image64'])
+            image64 = s3Images.uploadBase64ImageToS3(base64_string)
         else:
             image64 = None
 
@@ -1545,7 +1547,9 @@ def addPost():
             for image in data['images']:
                 if not image:
                     continue
-                image64 = s3Images.uploadBase64ImageToS3(image)
+
+                base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', image)
+                image64 = s3Images.uploadBase64ImageToS3(base64_string)
                 image_urls.append(image64)
 
             # Make the postPhotos as a text string starting with { and ending with }
@@ -2039,6 +2043,16 @@ def editPost():
                 'error': 'No such post exist'
             }), 404
         
+        # Check if post photo that is already in S3 is still in the post photos
+        # If not, delete it from S3
+        if 'postPhotos' in post and post['postPhotos'] != '{}':
+            post_photos = post['postPhotos']
+
+            for url in post_photos:
+                if url not in data['images']:
+                    # Delete the image from S3
+                    s3Images.deleteImageFromS3(url)
+        
         # Step 4: Check if the post photo is provided
         if len(data['images']) > 0:
 
@@ -2052,7 +2066,8 @@ def editPost():
                     image_urls.append(image)
                     continue
                 else:
-                    image64 = s3Images.uploadBase64ImageToS3(image)
+                    base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', image)
+                    image64 = s3Images.uploadBase64ImageToS3(base64_string)
                     image_urls.append(image64)
 
             # Make the postPhotos as a text string starting with { and ending with }
@@ -2736,10 +2751,17 @@ def updateClubInfo():
             return jsonify({
                 'error': 'You do not have the permission to edit the club information'
             }), 403
+        
+        # Check if the club banner has changed 
+        club_banner = club['clubBanner']
+        if club_banner in data['image64']:
+            # Delete the image from S3
+            s3Images.deleteImageFromS3(club_banner)
 
         # Step 3: Check if the club banner is provided
         if 'image64' in data and data['image64']:
-            image64 = s3Images.uploadBase64ImageToS3(data['image64'])
+            base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', data['image64'])
+            image64 = s3Images.uploadBase64ImageToS3(base64_string)
 
             # Update the club banner
             cur.execute('UPDATE "clubs" SET "clubBanner" = %s WHERE id = %s', (image64, club_id,))

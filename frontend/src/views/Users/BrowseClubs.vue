@@ -123,7 +123,7 @@
                         <h5 class="text-start fw-bold my-3 collapse d-md-block">Clubs You Manage <button v-if="adminClubs.length > 5" type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#showAllManagedClubs">View All</button></h5>
 
                         <div v-for="club in adminClubs.slice(0, 5)" class="event-club-box" :key="club.id">
-
+                            
                             <!-- Club Banner Image -->
                             <div style="flex: 0 0 40%; max-width: 40%; height: 100px;">
                                 <img v-if="club.clubInfo.clubBanner" :src="club.clubInfo.clubBanner" class="img-fluid event-banner;" alt="..." style="object-fit: cover;">
@@ -136,7 +136,7 @@
                                 </router-link>
                                 <!-- Club details -->
                                 <p class="text-success text-start small">
-                                    <span v-if="club.isInviteOnly == false">Public Group | </span>
+                                    <span v-if="club.clubInfo.isInviteOnly == false">Public Group | </span>
                                     <span v-else>Private Group | </span>
                                     <span>{{ club.totalMembers }} Members</span>
                                 </p>

@@ -474,6 +474,8 @@
                         <p class="fw-bold">New Event Description (Input the new description here, leave blank if there is no changes.):</p>
                         <div id="editor-container" style="height: 300px;" class="mb-3"></div>
 
+                        <hr>
+
                         <div class="mb-3 row">
                             <!-- Event start date -->
                             <div class="col">
@@ -484,7 +486,7 @@
                             <!-- Event start time -->
                             <div class="col">
                                 <label for="eventStartTime" class="form-label fw-bold">Event Start Time:</label>
-                                <input type="time" class="form-control" id="eventStartTime" required v-model="eventCopy.eventStartTime">
+                                <input type="time" class="form-control" id="eventStartTime" v-model="eventCopy.eventStartTime">
                             </div>
                         </div>
 
@@ -498,9 +500,20 @@
                             <!-- Event end time -->
                             <div class="col">
                                 <label for="eventEndTime" class="form-label fw-bold">Event End Time:</label>
-                                <input type="time" class="form-control" id="eventEndTime" required v-model="eventCopy.eventEndTime">
+                                <input type="time" class="form-control" id="eventEndTime" v-model="eventCopy.eventEndTime">
                             </div>
                         </div>
+
+                        <!-- All Day Checkbox -->
+                        <div class="mb-3">
+                            <input class="form-check-input" type="checkbox" id="allDay" 
+                                v-model="eventCopy.allDay">
+                            <label class="form-check-label" for="allDay">
+                                All Day Event
+                            </label>
+                        </div>
+
+                        <hr>
 
                         <!-- Event wallpaper upload -->
                         <div class="mb-3">
@@ -563,8 +576,11 @@
 
                         <!-- Event location -->
                         <div class="mb-3">
-                            <label for="eventLocation" class="form-label fw-bold">Event Location:</label>
-                            <input type="text" class="form-control" id="eventLocation" required v-model="eventCopy.eventLocation">
+                            <label for="eventLocation" class="form-label fw-bold">
+                                <span v-if="eventCopy.eventType == 'Location'">Event Location:</span>
+                                <span v-else>Event Link:</span>
+                            </label>
+                            <input type="text" class="form-control" id="eventLocation" v-model="eventCopy.eventLocation">
                         </div>
                         
                     </div>
@@ -913,19 +929,27 @@ export default {
                 // Get current time
                 let currentTime = new Date().toTimeString().split(' ')[0];
 
-                // Check if the event time is valid
-                if (this.eventCopy.eventStartTime <= currentTime) {
-                    const toast = useToast();
-                    toast.error('Event start time cannot be earlier than current time.');
-                    return;
+                // Get current date
+                let currentDate = new Date().toISOString().split('T')[0];
+
+                if (this.eventCopy.allDay == true) {
+                    this.eventCopy.eventStartTime = '00:00';
+                    this.eventCopy.eventEndTime = '23:59';
+                } else {
+                    // Check if the event time is valid
+                    if (this.eventCopy.eventStartDate == currentDate && this.eventCopy.eventStartTime <= currentTime) {
+                        const toast = useToast();
+                        toast.error('Event start time cannot be earlier than current time.');
+                        return;
+                    }
+
+                    if (this.eventCopy.eventStartDate == this.eventCopy.eventEndDate && this.eventCopy.eventStartTime >= this.eventCopy.eventEndTime) {
+                        const toast = useToast();
+                        toast.error('Event end time cannot be earlier than event start time.');
+                        return;
+                    }
                 }
 
-                if (this.eventCopy.eventStartDate == this.eventCopy.eventEndDate && this.eventCopy.eventStartTime >= this.eventCopy.eventEndTime) {
-                    const toast = useToast();
-                    toast.error('Event end time cannot be earlier than event start time.');
-                    return;
-                }
-                
 
                 // Check which fields have been changed
                 let changedFields = {};
@@ -937,16 +961,7 @@ export default {
                             continue;
                         }
 
-                        if (key == 'eventBanners') {
-                            // Check if the event banners have been changed
-                            if (this.event[key].length != value.length) {
-                                changedFields[key] = value;
-                            }
-                        }
-                        else {
-                            changedFields[key] = value;
-                        }
-
+                        changedFields[key] = value;
                     }
                 }
 
@@ -1063,16 +1078,12 @@ export default {
                 return;
             }
 
-            // Loop through the files
             for (let i = 0; i < files.length; i++) {
-
                 // Check if the file is an image
                 if (files[i].type.match('image.*')) {
 
-                    // Create a file reader
                     const reader = new FileReader();
 
-                    // Read the file
                     reader.readAsDataURL(files[i]);
 
                     // When the file is read
