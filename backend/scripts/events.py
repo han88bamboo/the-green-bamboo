@@ -15,6 +15,7 @@
 import os
 from flask import Blueprint, g, jsonify, request
 from datetime import datetime
+import re
 
 # Use to upload image to S3
 import s3Images
@@ -57,7 +58,7 @@ def canCreateMoreEvents(cur, user_id, user_type):
 
     # Determine the max events based on user type
     if user_type == 'user':
-        max_events = 1 # Per month for users
+        max_events = 5 # Per month for users
 
     else:
         max_events = 3 # Per month for producers and venues
@@ -545,7 +546,7 @@ def getRecentlyAddedEvents():
 
     try:
         # Step 1: Get the recently added events
-        cursor.execute('SELECT * FROM events ORDER BY "createdDate" DESC LIMIT 5')
+        cursor.execute('SELECT * FROM events WHERE "eventEndDate" >= CURRENT_DATE ORDER BY "createdDate"  DESC LIMIT 5')
         events = cursor.fetchall()
 
         if not events:
@@ -841,11 +842,19 @@ def updateEvent():
             if len(data['eventBanners']) == 0:
                 update_fields.append('"eventBanners" = %s')
                 update_values.append(None)
+            
+            # Loop through current eventBanners and check if they are not in the new eventBanners
+            # If not, remove them from the eventBanners
+            current_event_banners = event['eventBanners']
+            for current_banner in current_event_banners:
+                if current_banner not in data['eventBanners']:
+                    # Remove the banner from S3
+                    s3Images.deleteImageFromS3(current_banner)
 
-            # Upload each image (base64Image) to S3
+            # Upload each image (base64Image) to S3 in the new eventBanners
             event_banner = []
             for image in data['eventBanners']:
-
+                
                 if not image:
                     continue
 
@@ -854,7 +863,10 @@ def updateEvent():
                     event_banner.append(image)
                     continue
                 else:
-                    url = s3Images.uploadBase64ImageToS3(image)
+
+                    # Remove the base64 prefix if it exists
+                    base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', image)
+                    url = s3Images.uploadBase64ImageToS3(base64_string)
                     if url:
                         event_banner.append(url)
 

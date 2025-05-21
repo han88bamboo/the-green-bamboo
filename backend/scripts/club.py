@@ -2,6 +2,7 @@
 #         /getClubPosts (GET), /getClubPostDetails (GET), /checkUserMembership (GET),
 #         /getUserLikesDislikesPost (GET), /getUserLikesDislikesComments (GET), /getUserClubs (GET),
 #         /getClubMembers (GET), /getFirstFewClubMembers (GET), /getAllClubMembers (GET),
+#         /getInvitedMembers (GET),
 #         /getClubRequests (GET), /getUserClubRequests (GET), /getUserInvitedClubs (GET),
 #         /getRecentActivity (GET), /canCreate (GET)
 
@@ -23,6 +24,7 @@ import os
 from flask import Blueprint, g, jsonify, request
 from datetime import datetime, timedelta
 from scripts import pointsHelperFunc, badge_helpers
+import re
 
 # Use to upload image to S3
 import s3Images
@@ -662,7 +664,7 @@ def getUserClubs(userID, userType):
             user_clubs_ids.append(club['clubID'])
 
             # Get the club id, clubName, clubBanner
-            cur.execute('SELECT "id", "clubName", "clubBanner" FROM "clubs" WHERE id = %s', (club['clubID'],))
+            cur.execute('SELECT "id", "clubName", "clubBanner", "isInviteOnly" FROM "clubs" WHERE id = %s', (club['clubID'],))
             club_info = cur.fetchone()
 
             if not club_info:
@@ -671,6 +673,11 @@ def getUserClubs(userID, userType):
 
             # Add club info into club
             club['clubInfo'] = club_info
+
+            # Get the club's total members
+            cur.execute('SELECT COUNT(*) AS "totalMembers" FROM "clubMembers" WHERE "clubID" = %s', (club['clubID'],))
+            total_members = cur.fetchone()
+            club['totalMembers'] = total_members['totalMembers']
 
             if club['isAdmin']:
                 user_club_admin.append(club)
@@ -857,6 +864,73 @@ def getAllClubMembers(clubID):
 
         return jsonify({
             'members': members
+        }), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred retrieving the request."
+            }
+        ), 500
+    
+    finally:
+        cur.close()
+
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] getInvitedMembers
+# Purpose: Get the members who have been invited to join a specific club
+# Used: ClubSettings.vue [components folder inside frontend folder]
+# Output: Possible return codes [200 - Retrieval success, 404 - No members found, 500 - An error occurred retrieving the request]
+@blueprint.route('/getInvitedMembers/<clubID>/<last_seen_id>', methods=['GET'])
+def getInvitedMembers(clubID, last_seen_id):
+
+    # Set the limit here
+    limit = 1
+
+    conn = g.db
+    cur = conn.cursor()
+
+    try:
+        # Step 1: Get the requests of the club
+        if last_seen_id == '0':
+            cur.execute('SELECT * FROM "clubInvites" WHERE "clubID" = %s ORDER BY "id" DESC LIMIT %s', (clubID, limit,))
+        elif last_seen_id == '1':
+            cur.execute('SELECT * FROM "clubInvites" WHERE "clubID" = %s LIMIT %s', (clubID, limit,))
+        else:
+            cur.execute('SELECT * FROM "clubInvites" WHERE "clubID" = %s AND "id" < %s ORDER BY "id" DESC LIMIT %s', (clubID, last_seen_id, limit,))
+        invitees = cur.fetchall()
+
+        if not invitees:
+            return jsonify({
+                'error': 'No invites found'
+            }), 404
+        
+        # Step 2: Get the user information for each member
+        for member in invitees:
+
+            user_id = member['inviteeID']
+            user_type = member['inviteeUserType']
+            
+            user_info = getUserInfoByID(cur, user_id, user_type)
+
+            if not user_info:
+                # Skip to the next member if the member info is not found
+                continue
+
+            # Add member info into members
+            member.update(user_info)
+
+            # Remove the id from the member
+            member.pop('clubID')
+            member.pop('inviterID')
+            member.pop('inviterUserType')
+
+        return jsonify({
+            'invitees': invitees
         }), 200
 
     except Exception as e:
@@ -1224,7 +1298,7 @@ def createClub():
         is_invite_only = data['isInviteOnly']
 
         # Check if all the required data is provided
-        if not creator_id or not creator_type or not club_name or not club_desc or not is_invite_only:
+        if not creator_id or not creator_type or not club_name or not club_desc or is_invite_only == None:
             return jsonify({
                 'error': 'Missing required data'
             }), 400
@@ -1234,7 +1308,8 @@ def createClub():
 
         # Step 2: Check if the banner image is provided
         if 'image64' in data and data['image64']:
-            image64 = s3Images.uploadBase64ImageToS3(data['image64'])
+            base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', data['image64'])
+            image64 = s3Images.uploadBase64ImageToS3(base64_string)
         else:
             image64 = None
 
@@ -1472,7 +1547,9 @@ def addPost():
             for image in data['images']:
                 if not image:
                     continue
-                image64 = s3Images.uploadBase64ImageToS3(image)
+
+                base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', image)
+                image64 = s3Images.uploadBase64ImageToS3(base64_string)
                 image_urls.append(image64)
 
             # Make the postPhotos as a text string starting with { and ending with }
@@ -1966,6 +2043,16 @@ def editPost():
                 'error': 'No such post exist'
             }), 404
         
+        # Check if post photo that is already in S3 is still in the post photos
+        # If not, delete it from S3
+        if 'postPhotos' in post and post['postPhotos'] != '{}':
+            post_photos = post['postPhotos']
+
+            for url in post_photos:
+                if url not in data['images']:
+                    # Delete the image from S3
+                    s3Images.deleteImageFromS3(url)
+        
         # Step 4: Check if the post photo is provided
         if len(data['images']) > 0:
 
@@ -1979,7 +2066,8 @@ def editPost():
                     image_urls.append(image)
                     continue
                 else:
-                    image64 = s3Images.uploadBase64ImageToS3(image)
+                    base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', image)
+                    image64 = s3Images.uploadBase64ImageToS3(base64_string)
                     image_urls.append(image64)
 
             # Make the postPhotos as a text string starting with { and ending with }
@@ -2641,7 +2729,7 @@ def updateClubInfo():
         editor_id = data['editorID']
 
         # Check if all the required data is provided
-        if not club_id or not club_name or not club_desc or not is_invite_only or not editor_id:
+        if not club_id or not club_name or is_invite_only == None or not editor_id:
             return jsonify({
                 'error': 'Missing required data'
             }), 400
@@ -2663,10 +2751,17 @@ def updateClubInfo():
             return jsonify({
                 'error': 'You do not have the permission to edit the club information'
             }), 403
+        
+        # Check if the club banner has changed 
+        club_banner = club['clubBanner']
+        if club_banner in data['image64']:
+            # Delete the image from S3
+            s3Images.deleteImageFromS3(club_banner)
 
         # Step 3: Check if the club banner is provided
         if 'image64' in data and data['image64']:
-            image64 = s3Images.uploadBase64ImageToS3(data['image64'])
+            base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', data['image64'])
+            image64 = s3Images.uploadBase64ImageToS3(base64_string)
 
             # Update the club banner
             cur.execute('UPDATE "clubs" SET "clubBanner" = %s WHERE id = %s', (image64, club_id,))

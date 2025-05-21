@@ -94,7 +94,7 @@
                         </div>
 
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" :disabled="disableButton">Close</button>
+                                <button type="button" class="btn btn-secondary" @click="showCreateEventModal = false" :disabled="disableButton">Close</button>
                                 <button type="button" class="btn primary-btn-green" @click="createEvent" :disabled="disableButton">
                                     <span v-if="disableButton">Creating Event...</span>
                                     <span v-else>Create Event</span>

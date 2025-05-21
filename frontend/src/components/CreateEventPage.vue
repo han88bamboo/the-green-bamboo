@@ -61,7 +61,7 @@
             </div>
 
             <!-- All Day Checkbox -->
-            <div class="form-check mb-3">
+            <div class="mb-3">
                 <input class="form-check-input" type="checkbox" id="allDay" 
                     v-model="newEvent.allDay" 
                     @change="emitNewEvent">
