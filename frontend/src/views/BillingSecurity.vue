@@ -203,9 +203,6 @@
             this.token = this.$route.query.token;
             
             this.stripe = await loadStripe(process.env.VUE_APP_STRIPE_PUBLISHABLE_KEY);
-            
-            // Add this line to check environment variables
-            await this.checkEnvironment();
 
             async function initiateProcess() {
                 await this.verifyToken();
@@ -310,13 +307,8 @@
                             'Content-Type': 'application/json'
                         }
                     });
-
-                    // Display debug message from backend
-                    if (response.data.debug_message) {
-                        console.log("BACKEND LOG:", response.data.debug_message);
-                    }
-
                     console.log(response.data);
+                    this.displayDebugInfo(response); // ADD THIS LINE HERE
                     this.customerId = response.data.customerId;
 
                     // update business with customerId
@@ -331,12 +323,8 @@
                         }
                     });
                     console.log(response2.data);
-
+                    this.displayDebugInfo(response2);
                 } catch (error) {
-                    // Show any backend error messages
-                    if (error.response && error.response.data && error.response.data.error) {
-                        console.error("BACKEND ERROR:", error.response.data.error.debug_message);
-                    }
                     console.error(error);
                 }
             },
@@ -347,6 +335,12 @@
                 } else {
                     this.priceId = this.yearlyPriceId;
                 }
+                
+                console.log('🔍 Creating subscription with:', {
+                    priceId: this.priceId,
+                    customerId: this.customerId
+                });
+
                 try {
                     const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/payment/create-subscription`,
                         {
@@ -357,23 +351,13 @@
                             'Content-Type': 'application/json'
                         }
                     });
+                    this.displayDebugInfo(response);
+                    console.log('🔍 Subscription response:', response.data);
 
-                    // Display debug message from backend
-                    if (response.data.debug_message) {
-                        console.log("BACKEND LOG:", response.data.debug_message);
-                    }
-
-                    console.log(response.data);
                     this.clientSecret = response.data.clientSecret;
                 } catch (error) {
-                    // Show backend error messages
-                    if (error.response && error.response.data && error.response.data.error) {
-                        console.error("BACKEND ERROR:", error.response.data.error.debug_message);
-                        if (error.response.data.error.detailed_error) {
-                            console.error("DETAILED ERROR:", error.response.data.error.detailed_error);
-                        }
-                    }
-                    console.error(error);
+                    console.error('🔍 Subscription creation error:', error.response ? error.response.data : error);
+                    return null;
                 }
             },
 
@@ -398,123 +382,70 @@
             },
 
             async processPayment() {
+                console.log('🔍 PAYMENT INFO:', {
+                    clientSecret: this.clientSecret ? this.clientSecret.substring(0, 10) + '...' : 'not set'
+                });
                 const stripe = this.stripe;
                 const elements = this.elements;
-            
-                // Check what type of client secret we have
-                // SetupIntent secret starts with "seti_", PaymentIntent starts with "pi_"
-                if (this.clientSecret.startsWith('seti_')) {
-                    // This is a SetupIntent
-                    console.log("Using SetupIntent confirmation");
-                    const { error, setupIntent } = await stripe.confirmSetup({
-                        elements,
-                        redirect: 'if_required',
-                        confirmParams: {
-                            return_url: window.location.origin,
-                        }
-                    });
-                    
-                    if (error) {
-                        if (error.type === "card_error" || error.type === "validation_error") {
-                            console.log(error.message);
-                        } else {
-                            console.log("An unexpected error occurred.");
-                        }
-                        return false;
-                    } else if (setupIntent && setupIntent.status === 'succeeded') {
-                        // successful payment -> business is now verified
-                
-                        // update account request
-                        try {
-                            await this.$axios.post(`${process.env.VUE_APP_API_URL}/createAccount/updateAccountRequest`, 
-                                {
-                                    requestID: this.requestId,
-                                    isPending: false,
-                                    isApproved: true,
-                                }, {
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                }
-                            });
-                        } catch (error) {
-                            console.error(error);
-                        }
-                        
-                        // update business claim status
-                        try {
-                            await this.$axios.post(`${process.env.VUE_APP_API_URL}/edit${this.businessType.charAt(0).toUpperCase()}${this.businessType.slice(1)}Profile/update${this.businessType.charAt(0).toUpperCase()}${this.businessType.slice(1)}ClaimStatus`, 
-                                {
-                                    businessId: this.businessId,
-                                    claimStatus: true,
-                                }, {
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                }
-                            });
-                        } catch (error) {
-                            console.error(error);
-                        }
-                
-                        return true;
+
+                const { error, paymentIntent } = await stripe.confirmPayment({
+                    elements,
+                    redirect: 'if_required' // Prevents automatic redirection
+
+                });
+
+                if (error) {
+                    if (error.type === "card_error" || error.type === "validation_error") {
+                        console.log(error.message);
+                    } else {
+                        console.log("An unexpected error occurred.");
                     }
+
+                } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+                    // sucessful payment -> business is now verified
+
+                    // update account request
+                    try {
+                        const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/createAccount/updateAccountRequest`, 
+                            {
+                                requestID: this.requestId,
+                                isPending: false,
+                                isApproved: true,
+                            }, {
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        console.log(response.data);
+                        this.displayDebugInfo(response);
+                    } catch (error) {
+                        console.error(error);
+                    }
+                    
+                    // update business claim status
+                    try {
+                        const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/edit${this.businessType.charAt(0).toUpperCase()}${this.businessType.slice(1)}Profile/update${this.businessType.charAt(0).toUpperCase()}${this.businessType.slice(1)}ClaimStatus`, 
+                            {
+                                businessId: this.businessId,
+                                claimStatus: true,
+                            }, {
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        console.log(response.data);
+                        this.displayDebugInfo(response);
+                    } catch (error) {
+                        console.error(error);
+                    }
+
+                    return true;
+
+
                 } else {
-                    // This is a PaymentIntent
-                    console.log("Using PaymentIntent confirmation");
-                    const { error, paymentIntent } = await stripe.confirmPayment({
-                        elements,
-                        redirect: 'if_required',
-                        confirmParams: {
-                            return_url: window.location.origin,
-                        }
-                    });
-                    
-                    if (error) {
-                        if (error.type === "card_error" || error.type === "validation_error") {
-                            console.log(error.message);
-                        } else {
-                            console.log("An unexpected error occurred.");
-                        }
-                        return false;
-                    } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-                        // successful payment -> business is now verified
-                
-                        // update account request
-                        try {
-                            await this.$axios.post(`${process.env.VUE_APP_API_URL}/createAccount/updateAccountRequest`, 
-                                {
-                                    requestID: this.requestId,
-                                    isPending: false,
-                                    isApproved: true,
-                                }, {
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                }
-                            });
-                        } catch (error) {
-                            console.error(error);
-                        }
-                        
-                        // update business claim status
-                        try {
-                            await this.$axios.post(`${process.env.VUE_APP_API_URL}/edit${this.businessType.charAt(0).toUpperCase()}${this.businessType.slice(1)}Profile/update${this.businessType.charAt(0).toUpperCase()}${this.businessType.slice(1)}ClaimStatus`, 
-                                {
-                                    businessId: this.businessId,
-                                    claimStatus: true,
-                                }, {
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                }
-                            });
-                        } catch (error) {
-                            console.error(error);
-                        }
-                
-                        return true;
-                    }
+                    console.log("Payment processing...");
                 }
-                
-                console.log("Payment processing...");
-                return false;
+
             },
 
             async deleteToken() {
@@ -528,7 +459,7 @@
                         }
                     });
                     console.log(response.data);
-
+                    this.displayDebugInfo(response);
                 } catch (error) {
                     console.error(error);
                 }
@@ -566,9 +497,8 @@
                     // save details to local storage 
                     localStorage.setItem("88B_accID", this.businessId);
                     localStorage.setItem("88B_accType", this.businessType);
-                    localStorage.setItem("88B_accUsername", this.username); // Add this line to save username
                     // redirect to profile page
-                    this.$router.push(`/profile/${this.businessType}/${this.businessId}/${this.username}`)
+                    this.$router.push(`/profile/${this.businessType}/${this.businessId}`)
                 }
                 
             }, 
@@ -711,16 +641,12 @@
                 return hash;
             },
 
-            // Add this method in the "methods" section of BillingSecurity.vue
-            async checkEnvironment() {
-                try {
-                    console.log("Checking environment variables on server...");
-                    const response = await this.$axios.get(
-                        `${process.env.VUE_APP_API_URL}/payment/check-env`,
-                    );
-                    console.log("Environment check results:", response.data);
-                } catch (error) {
-                    console.error("Error checking environment:", error.response?.data || error.message);
+            displayDebugInfo(response) {
+                if (response && response.data && response.data.debug_info) {
+                    console.log('🔍 STRIPE DEBUG INFO:', response.data.debug_info);
+                    if (response.data.debug_info.debug_data) {
+                        console.log('🔍 STRIPE DEBUG DATA:', response.data.debug_info.debug_data);
+                    }
                 }
             },
         
