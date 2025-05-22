@@ -338,10 +338,15 @@
                 
                 console.log('🔍 Creating subscription with:', {
                     priceId: this.priceId,
-                    customerId: this.customerId
+                    customerId: this.customerId,
+                    stripeKey: process.env.VUE_APP_STRIPE_PUBLISHABLE_KEY ? 
+                            process.env.VUE_APP_STRIPE_PUBLISHABLE_KEY.substring(0, 10) + '...' : 'Not set'
                 });
 
                 try {
+                    console.log('🔍 Sending request to:', `${process.env.VUE_APP_API_URL}/payment/create-subscription`);
+                    
+                    const startTime = new Date().getTime();
                     const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/payment/create-subscription`,
                         {
                             priceId: this.priceId,
@@ -351,10 +356,29 @@
                             'Content-Type': 'application/json'
                         }
                     });
+                    const endTime = new Date().getTime();
+                    
+                    console.log(`🔍 Request completed in ${endTime - startTime}ms`);
                     this.displayDebugInfo(response);
-                    console.log('🔍 Subscription response:', response.data);
-
-                    this.clientSecret = response.data.clientSecret;
+                    
+                    if (response.data.clientSecret) {
+                        this.clientSecret = response.data.clientSecret;
+                        this.isSetupIntent = response.data.isSetupIntent === true;
+                        this.isManualPaymentIntent = response.data.isManualPaymentIntent === true;
+                        
+                        console.log('🔍 Client secret received:', {
+                            prefix: this.clientSecret.substring(0, 10) + '...',
+                            type: this.clientSecret.startsWith('pi_') ? 'PaymentIntent' : 
+                                this.clientSecret.startsWith('seti_') ? 'SetupIntent' : 'Unknown',
+                            isSetupIntent: this.isSetupIntent,
+                            isManualPaymentIntent: this.isManualPaymentIntent
+                        });
+                        
+                        return response.data;
+                    } else {
+                        console.error('🔍 No client_secret in response!', response.data);
+                        return null;
+                    }
                 } catch (error) {
                     console.error('🔍 Subscription creation error:', error.response ? error.response.data : error);
                     return null;
@@ -642,10 +666,52 @@
             },
 
             displayDebugInfo(response) {
-                if (response && response.data && response.data.debug_info) {
-                    console.log('🔍 STRIPE DEBUG INFO:', response.data.debug_info);
-                    if (response.data.debug_info.debug_data) {
-                        console.log('🔍 STRIPE DEBUG DATA:', response.data.debug_info.debug_data);
+                if (response && response.data) {
+                    // Log entire response data for thorough debugging
+                    console.log('🔍 FULL RESPONSE DATA:', response.data);
+                    
+                    if (response.data.debug_info) {
+                        console.log('🔍 STRIPE DEBUG INFO:', response.data.debug_info);
+                        
+                        // Log specific important debug sections
+                        if (response.data.debug_info.customer_check) {
+                            console.log('🔍 CUSTOMER CHECK:', response.data.debug_info.customer_check);
+                        }
+                        
+                        if (response.data.debug_info.price_check) {
+                            console.log('🔍 PRICE CHECK:', response.data.debug_info.price_check);
+                        }
+                        
+                        if (response.data.debug_info.has_latest_invoice !== undefined) {
+                            console.log('🔍 INVOICE CHECK:', {
+                                hasInvoice: response.data.debug_info.has_latest_invoice,
+                                invoiceDetails: response.data.debug_info.latest_invoice || 'No invoice details'
+                            });
+                        }
+                        
+                        if (response.data.debug_info.has_payment_intent !== undefined) {
+                            console.log('🔍 PAYMENT INTENT CHECK:', {
+                                hasPaymentIntent: response.data.debug_info.has_payment_intent,
+                                paymentIntentDetails: response.data.debug_info.payment_intent || 'No payment intent details'
+                            });
+                        }
+                        
+                        if (response.data.debug_info.error) {
+                            console.error('🔍 ERROR DETAILS:', response.data.debug_info.error);
+                        }
+                    }
+                    
+                    // Check for critical Stripe-specific fields
+                    if (response.data.clientSecret) {
+                        console.log('🔍 CLIENT SECRET RECEIVED:', {
+                            prefix: response.data.clientSecret.substring(0, 10) + '...',
+                            type: response.data.clientSecret.startsWith('pi_') ? 'PaymentIntent' : 
+                                response.data.clientSecret.startsWith('seti_') ? 'SetupIntent' : 'Unknown',
+                            isSetupIntent: response.data.isSetupIntent || false,
+                            isManualPaymentIntent: response.data.isManualPaymentIntent || false
+                        });
+                    } else {
+                        console.warn('🔍 NO CLIENT SECRET IN RESPONSE!');
                     }
                 }
             },
