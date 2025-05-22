@@ -708,3 +708,12 @@ reverted BillingSecurity.vue and Payment.py files back to original version to fi
 
 Nature of the changes (frontend / backend / database):
 frontend, backend
+
+# Update as of 22 May 
+Coder: Han
+
+Purpose of the changes:
+commented out the Scan Bottle feature from landing page.
+
+Nature of the changes (frontend / backend / database):
+frontend

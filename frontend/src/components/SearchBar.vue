@@ -4,7 +4,7 @@
         <div class="row">
             <!-- Search bar - full width on mobile, partial width on desktop -->
             <div
-                class="col-12 col-md-8 d-flex align-items-center justify-content-center"
+                class="col-12 col-md-12 d-flex align-items-center justify-content-center"
             >
                 <div
                     class="col-8 position-relative search-bar d-flex w-100"
@@ -57,7 +57,7 @@
                 </div>
             </div>
 
-            <!-- Scan bottle - beside search on desktop, moves to second row on mobile -->
+            <!-- Scan bottle - beside search on desktop, moves to second row on mobile 
             <div
                 class="col-6 col-md-4 d-none d-md-block d-flex justify-content-center"
             >
@@ -72,7 +72,7 @@
                         style="width: 30px; height: 30px; margin-left: 10px"
                     />
                 </button>
-            </div>
+            </div>-->
         </div>
 
         <!-- Row 2: Surprise Me on desktop, Scan bottle + Surprise Me on mobile -->
