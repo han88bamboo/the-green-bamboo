@@ -736,3 +736,12 @@ also fixed producer error message and added new method to get producers on getda
 
 Nature of the changes (frontend / backend / database):
 frontend, backend
+
+# Update as of 22 May 
+Coder: Han
+
+Purpose of the changes:
+fixed broken links to drinks listings on userdashboard.vue
+
+Nature of the changes (frontend / backend / database):
+frontend

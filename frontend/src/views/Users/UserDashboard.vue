@@ -162,7 +162,7 @@
                                                     @<b> {{ getUserFromID(activity.userID).username }} </b>
                                                 </router-link> 
                                                 tagged you in a review on 
-                                                <router-link :to="{ path: '/listing/view/' + activity.listingID }" class="reverse-clickable-text">
+                                                <router-link :to="{ path: '/listing/view/' + activity.listingID + '/' + getListingFromID(activity.listingID).listingName.replace(/[^a-zA-Z0-9]/g, '') }" class="reverse-clickable-text">
                                                     <u> {{ getListingFromID(activity.listingID).listingName }} </u>
                                                 </router-link>
                                                 {{ getTimeDifference(activity.date) }}
@@ -201,7 +201,7 @@
                                                     @<b> {{ getUserFromID(activity.userID).username }} </b>
                                                 </router-link> 
                                                 tagged you in a review on 
-                                                <router-link :to="{ path: '/listing/view/' + activity.listingID }" class="reverse-clickable-text">
+                                                <router-link :to="{ path: '/listing/view/' + activity.listingID + '/' + getListingFromID(activity.listingID).listingName.replace(/[^a-zA-Z0-9]/g, '') }" class="reverse-clickable-text">
                                                     <u> {{ getListingFromID(activity.listingID).listingName }} </u>
                                                 </router-link>
                                                 {{ getTimeDifference(activity.date) }}
@@ -254,7 +254,7 @@
                                             <i> 
                                                 You rated 
                                                 <b>
-                                                    <router-link :to="{ path: '/listing/view/' + activity.listingID }" class="reverse-clickable-text">
+                                                    <router-link :to="{ path: '/listing/view/' + activity.listingID + '/' + getListingFromID(activity.listingID).listingName.replace(/[^a-zA-Z0-9]/g, '') }" class="reverse-clickable-text">
                                                         <u> {{ getListingFromID(activity.listingID).listingName }} </u>
                                                     </router-link>
                                                     &nbsp;<span style="color: #F0B358">{{ activity.rating }} stars</span>
@@ -266,7 +266,7 @@
                                             <i>
                                                 You added
                                                 <b>
-                                                    <router-link :to="{ path: '/listing/view/' + activity.listingID }" class="reverse-clickable-text">
+                                                    <router-link :to="{ path: '/listing/view/' + activity.listingID + '/' + getListingFromID(activity.listingID).listingName.replace(/[^a-zA-Z0-9]/g, '') }" class="reverse-clickable-text">
                                                         <u> {{ getListingFromID(activity.listingID).listingName }} </u>
                                                     </router-link>
                                                 </b>
@@ -366,7 +366,7 @@
                                             <svg v-if="activity.type == 'downvote'" fill="#ffffff" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="m20.901 10.566c-.167-.345-.516-.566-.901-.566h-2-2v-3-4c0-.553-.447-1-1-1h-6c-.553 0-1 .447-1 1v5 2h-1-3c-.385 0-.734.221-.901.566-.166.347-.12.758.12 1.059l8 10c.19.237.477.375.781.375s.591-.138.781-.375l8-10c.24-.301.286-.712.12-1.059z"/></svg>
                                             <i> 
                                                 Someone <span :style="{ color: activity.type === 'upvote' ? '#90ee90' : '#ff7f7f' }">{{ activity.type }}d</span> your review on 
-                                                <router-link :to="{ path: '/listing/view/' + activity.reviewTarget }" class="reverse-clickable-text">
+                                                <router-link :to="{ path: '/listing/view/' + activity.reviewTarget + '/' + getListingFromID(activity.reviewTarget).listingName.replace(/[^a-zA-Z0-9]/g, '') }" class="reverse-clickable-text">
                                                     <u> {{ getListingFromID(activity.reviewTarget).listingName }} </u>
                                                 </router-link>
                                                 {{ getTimeDifference(activity.date) }}
@@ -684,7 +684,7 @@
                         <!-- col 1: your best rated drinks -->
                         <div id="BestRatedExpressions" class="tab-pane fade show active col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-3 ps-lg-0 pe-lg-0 mobile-mx-0">
                             <div class="text-start pb-2" v-for="listing in bestRatedListings" v-bind:key="listing.id">
-                                <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
+                                <router-link :to="{ path: '/listing/view/' + listing.id + '/' + listing.listingName.replace(/[^a-zA-Z0-9]/g, '') }" class="reverse-clickable-text">
                                     <div class="d-flex align-items-center">
                                         <!-- <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;"> -->
                                         <img :src="(listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;">
