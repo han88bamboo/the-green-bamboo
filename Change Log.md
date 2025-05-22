@@ -717,3 +717,12 @@ commented out the Scan Bottle feature from landing page.
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 22 May 
+Coder: Han
+
+Purpose of the changes:
+added footer to all the relevant pages
+
+Nature of the changes (frontend / backend / database):
+frontend

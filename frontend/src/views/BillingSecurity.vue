@@ -139,6 +139,8 @@
         
     </div>
 
+    <!-- Footer End -->
+    <FooterBar />
 </template>
 
 <!-- ------------------------------------------------------------------------------ -->
@@ -147,11 +149,13 @@
     // import components used
     import NavBar from '@/components/NavBar.vue';
     import { loadStripe } from '@stripe/stripe-js';
+    import FooterBar from "@/components/FooterBar.vue";
 
     export default {
         name: 'BillingSecurity',
         components: {
-            NavBar
+            NavBar,
+            FooterBar
         },
         data(){
             return{

@@ -421,17 +421,21 @@
             </div>
         </div>
     </div>
+    <!-- Footer End -->
+        <FooterBar />
 </template>
 
 <script>
 // Import the necessary libraries
 import NavBar from '@/components/NavBar.vue';
 import { useToast } from 'vue-toastification';
+import FooterBar from "@/components/FooterBar.vue";
 
 export default {
     name: "BrowseClubs",
     components: {
-        NavBar
+        NavBar,
+        FooterBar
     },
     data() {
         return {

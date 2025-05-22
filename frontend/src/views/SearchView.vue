@@ -530,19 +530,23 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                 :listingID="bookmarkListingID" />
         </div>
     </div>
+    <!-- Footer End -->
+    <FooterBar />
 </template>
 
 <script>
     import NavBar from '@/components/NavBar.vue';
     import BookmarkIcon from '@/components/BookmarkIcon.vue';
     import BookmarkModal from '@/components/BookmarkModal.vue';
+    import FooterBar from "@/components/FooterBar.vue";
 
     export default {
         name: "SearchView",
         components: {
             NavBar,
             BookmarkIcon, 
-            BookmarkModal
+            BookmarkModal,
+            FooterBar
         },
         data() {
             return {

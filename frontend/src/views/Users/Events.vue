@@ -577,21 +577,23 @@
         </div>
 
     </div>
-
+    <!-- Footer End -->
+        <FooterBar />
 </template>
 
 <script>
 import { useToast } from 'vue-toastification';
 import NavBar from '@/components/NavBar.vue';
 import CreateEventPage from '@/components/CreateEventPage.vue';
-6
+import FooterBar from "@/components/FooterBar.vue";
 
 
 export default {
     name: 'EventsPage',
     components: {
         NavBar,
-        CreateEventPage
+        CreateEventPage,
+        FooterBar
     },
     data() {
         return {

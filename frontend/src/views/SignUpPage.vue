@@ -408,7 +408,8 @@
     </div>
   </div>
   <!-- End of display -->
-
+  <!-- Footer End -->
+    <FooterBar />
   <!-- Popup 1 -->
   <ReusablePopup
     v-if="showPopup1"
@@ -476,6 +477,7 @@
 import NavBar from "@/components/NavBar.vue";
 import ReusablePopup from "@/components/ReusablePopup.vue";
 import OnboardPopup from "@/components/OnboardPopup.vue";
+import FooterBar from "@/components/FooterBar.vue";
 
 export default {
   name: "SignUpPage",
@@ -483,6 +485,7 @@ export default {
     NavBar,
     ReusablePopup,
     OnboardPopup,
+    FooterBar
   },
   data() {
     return {
