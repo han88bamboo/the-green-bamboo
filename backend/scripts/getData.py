@@ -671,7 +671,18 @@ def getUniqueProducersNamesID():
         "message": "Producers fetched successfully.",
         "data": producers_list
     })
+# [GET] All producers with basic info needed for listings
+@blueprint.route("/getAllProducers")
+def getAllProducers():
+    conn = g.db
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT "id", "producerName" FROM "producers"')
+        producers_data = cursor.fetchall()
 
+    if not producers_data:
+        return jsonify([])
+    
+    return jsonify(producers_data)
 
 
 

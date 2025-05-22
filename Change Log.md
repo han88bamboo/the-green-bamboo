@@ -726,3 +726,13 @@ added footer to all the relevant pages
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 22 May 
+Coder: Han
+
+Purpose of the changes:
+fixed broken links to drinks listings on UserProfileRefactor.vue and ListingRowDisplayUserProfile.vue components
+also fixed producer error message and added new method to get producers on getdata.py
+
+Nature of the changes (frontend / backend / database):
+frontend, backend

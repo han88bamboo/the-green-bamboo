@@ -1789,7 +1789,7 @@
                       </div>
                       <div class="col-9 mobile-col-9 mobile-ps-2">
                         <a
-                          :href="'/listing/view/' + review.reviewTarget"
+                          :href="'/listing/view/' + review.reviewTarget + '/' + encodeURIComponent(getListingName(review.reviewTarget) || 'unknown-listing')"
                           style="text-decoration: none; color: #223957"
                         >
                           <p class="fs-5 mobile-fs-6 mb-1 mobile-mb-0_5 default-clickable-text">
@@ -1855,12 +1855,14 @@
 
                 <ListingRowDisplayUserProfile
                   :listingArr="top5ListingsData"
+                  :producers="producers"
                   displayName="Favourite Listings"
                   columnWidth="165px"
                 />
 
                 <ListingRowDisplayUserProfile
                   :listingArr="recentActivity"
+                  :producers="producers"
                   displayName="Recent Activity"
                   columnWidth="165px"
                 />
@@ -2524,7 +2526,7 @@
                       "
                     >
                       <a
-                        :href="'/listing/view/' + listing?.drinkId"
+                        :href="'/listing/view/' + listing?.drinkId + '/' + encodeURIComponent(bookedMarkedListings[listing?.drinkId]?.listingName || 'unknown-listing')"
                         style="text-decoration: none; color: inherit"
                       >
                         <h5 class="mobile-fs-6"><b>
@@ -2764,6 +2766,8 @@ export default {
         "https://drinkximages.s3.us-east-1.amazonaws.com/images/27e129b8-2d6e-44a3-8c14-d78c815b8056.jpg",
       defaultDrinkImage:
         "https://drinkximages.s3.us-east-1.amazonaws.com/images/2d4d94bc-313e-4621-9a15-4bfbf77958de.jpg",
+
+      producers: [],
 
       // Data loading variables
       displayUserDataLoaded: false,
@@ -3024,7 +3028,8 @@ export default {
           this.getSubTags(),
           this.getFlavourTag(), // added by group 3 edit profile
           this.getObservationTags(), // added by group 3 for the edit profile
-          this.getUserBadges()
+          this.getUserBadges(),
+          this.getProducers()
         ]);
 
         await this.getReviewsSummary();
@@ -3048,6 +3053,7 @@ export default {
         console.error("An error occurred:", error);
         this.dataLoaded = null;
       }
+    
     },
 
     // ------------------- Get Page Data -------------------
@@ -4147,9 +4153,15 @@ export default {
 
     // ------------------ Format Top 5 Listings Data for Component ------------------
     formatTop5ListingsData() {
-      this.top5ListingsData = this.top5Listings.map((listingID) =>
-        this.listings.find((listing) => listing.id === listingID)
-      );
+      this.top5ListingsData = this.top5Listings.map((listingID) => {
+        const listing = this.listings.find((listing) => listing.id === listingID);
+        // Make sure we have a listing name for the URL
+        if (listing && !listing.listingName) {
+          // If no listing name is found, try to get it from the dictionary or use a default
+          listing.listingName = this.listingIDDictionary[listingID] || "unknown-listing";
+        }
+        return listing;
+      });
     },
 
     // ------------------ View Bookmark List Functions ------------------
@@ -4601,6 +4613,18 @@ export default {
         const toast = useToast();
         toast.error("Failed to unfollow user. Please try again.");
       }
+    },
+    
+    async getProducers() {
+    try {
+      const response = await this.$axios.get(
+        `${process.env.VUE_APP_API_URL}/getData/getAllProducers`
+      );
+      this.producers = response.data;
+      console.log("Producers loaded:", this.producers.length);
+    } catch (error) {
+      console.error("Error fetching producers:", error);
+    }
     },
   },
 };
