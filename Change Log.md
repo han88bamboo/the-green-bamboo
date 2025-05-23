@@ -836,3 +836,14 @@ Purpose of the changes:
 
 Nature of the changes (frontend / backend / database):
 backend mostly, and frontend
+
+
+
+# Update as of 23 May 
+Coder: Kai
+
+Purpose of the changes:
+front-end changes for user dashboard + best of selection module
+
+Nature of the changes (frontend / backend / database):
+frontend
