@@ -54,9 +54,10 @@ def getUserInfo(cur, member_id):
 
         # Add the proof points into the user_info
         if current_points:
-            user_info['currentPoints'] = current_points['currentPoints']
+            user_info['currentPoints'] = pointsHelperFunc.get_current_proof_points(member_info['userID'])
             user_info['rank'] = pointsHelperFunc.get_rank(current_points['currentPoints'])[0]
             user_info['rankColor'] = pointsHelperFunc.get_rank(current_points['currentPoints'])[1]
+
 
     elif member_info['userType'] == 'producer':
         cur.execute('SELECT "id", "producerName", "photo" FROM "producers" WHERE id = %s', (member_info['userID'],))

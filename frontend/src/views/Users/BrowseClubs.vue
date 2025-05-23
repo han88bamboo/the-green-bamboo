@@ -263,6 +263,7 @@
                                                             <template v-else>{{ post.posterInfo.venueName }}</template>
                                                         </span>
                                                     </router-link>
+                                                    <span class="ms-2">{{ post.posterInfo.currentPoints }}</span>
                                                     <span class="fw-bold fst-italic" :style="{color: post.posterInfo.rankColor}"> {{ post.posterInfo.rank }}</span>
                                                     posted in
                                                     <router-link :to="{ name: 'clubview', params: { clubID: post.clubID, clubName: slugify(post.clubName || 'unknown-club') }}" class="fw-bold text-decoration-none hover-underline" style="color:#027562">
@@ -318,12 +319,12 @@
                                                         <button 
                                                         type="button" 
                                                         class="mobile-view-hide btn primary-btn rounded" 
-                                                        @click="viewPost(post.id)">
+                                                        @click="viewPost(post.clubID, post.id)">
                                                         View Post
                                                         </button>
                                                     
                                                     </div>
-                                                    <span @click="viewPost(post.id)" style="cursor: pointer; text-decoration: underline;" class="mt-1 fst-italic mobile-rating-smaller-text-2 mobile-view-show">
+                                                    <span @click="viewPost(post.clubID, post.id)" style="cursor: pointer; text-decoration: underline;" class="mt-1 fst-italic mobile-rating-smaller-text-2 mobile-view-show">
                                                         View Post
                                                         </span>
                                                 </div>
@@ -773,8 +774,8 @@ export default {
         },  
         
         // Function to view a post
-        viewPost(postID) {
-            this.$router.push(`/club/${this.clubId}/post/${postID}`);
+        viewPost(clubID, postID) {
+            this.$router.push(`/club/${clubID}/post/${postID}`);
         },
 
         // Function to redirect to the profile page of the poster

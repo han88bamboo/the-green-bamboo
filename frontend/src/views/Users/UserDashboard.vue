@@ -436,7 +436,7 @@
                         <div class="card rounded p-4 text-white position-relative d-flex flex-column"
                             style="background: #F0B358; height: 260px; border-radius: 16px !important;">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <h5 class="mb-0">Grail 🌱</h5>
+                                <h6 class="mb-0">Desperate to Try 🌱</h6>
                                 <button
                                     class="btn btn-light rounded-circle d-flex align-items-center justify-content-center"
                                     style="width: 36px; height: 36px; font-size: 1.5rem; font-weight: 300; border: none;"
@@ -479,7 +479,7 @@
                         <div class="card rounded p-4 text-white position-relative d-flex flex-column"
                             style="background: #F0B358; height: 260px; border-radius: 16px !important;">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <h5 class="mb-0">Up & Coming 🍷</h5>
+                                <h6 class="mb-0">Up And Coming 🍷</h6>
                                 <button
                                     class="btn btn-light rounded-circle d-flex align-items-center justify-content-center"
                                     style="width: 36px; height: 36px; font-size: 1.5rem; font-weight: 300; border: none;"
@@ -519,7 +519,7 @@
                         <div class="card rounded p-4 text-white position-relative d-flex flex-column"
                             style="background: #F0B358; height: 260px; border-radius: 16px !important;">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <h5 class="mb-0">G.O.A.Ts 🙌</h5>
+                                <h6 class="mb-0">Ride or Die 🙌</h6>
                                 <button
                                     class="btn btn-light rounded-circle d-flex align-items-center justify-content-center"
                                     style="width: 36px; height: 36px; font-size: 1.5rem; font-weight: 300; border: none;"

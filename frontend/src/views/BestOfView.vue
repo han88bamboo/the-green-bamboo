@@ -76,9 +76,9 @@
             </div>
         </div>
         
-        <!-- Grails -->
+        <!-- Desperate to Try - Grails -->
         <div class="mb-5">
-            <h2>Grails</h2>
+            <h2>Desperate to Try</h2>
             <div v-if="top5Listings.grails?.length > 0" class="d-grid" style="grid-template-columns: repeat(5, 1fr); gap: 1rem;">
                 <div
                     v-for="listing in top5Listings['grails']"
@@ -96,7 +96,7 @@
 
         <!-- Up and coming -->
         <div class="mb-5">
-            <h2>Up & Coming</h2>
+            <h2>Up And Coming</h2>
 
             <div v-if="top5Listings.upAndComing?.length > 0" class="d-grid" style="grid-template-columns: repeat(5, 1fr); gap: 1rem;">
                 <div
@@ -113,9 +113,9 @@
         </div>
 
 
-        <!-- Goats -->
+        <!-- Ride Or Die - Goats -->
         <div class="mb-5">
-            <h2>G.O.A.Ts</h2>
+            <h2>Ride Or Die</h2>
 
             <div v-if="top5Listings.goats?.length > 0" class="d-grid" style="grid-template-columns: repeat(5, 1fr); gap: 1rem;">
                 <div

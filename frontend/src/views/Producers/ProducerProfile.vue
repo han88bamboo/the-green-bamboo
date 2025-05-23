@@ -2257,6 +2257,9 @@
                       >
                         <b> @{{ getUsernameFromReview(review) }} </b>
                       </router-link>
+                      <span class="ms-2">
+                        {{ getUserPointsFromReview(review) }}
+                      </span>
                       <span :style="{ color: getUserRankColor(review) }">
                         {{ getUserRankFromReview(review) }}
                       </span>
@@ -4317,6 +4320,15 @@ export default {
       });
       if (user) {
         return user["username"];
+      }
+    },
+    
+    getUserPointsFromReview(review) {
+      const user = this.users.find((user) => {
+        return user["id"] == review["userID"];
+      });
+      if (user) {
+        return user["currentPoints"];
       }
     },
 
