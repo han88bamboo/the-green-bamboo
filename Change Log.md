@@ -700,6 +700,63 @@ Cleaned up some misalignment in search boxes
 Nature of the changes (frontend / backend / database):
 frontend 
 
+# Update as of 20 May 
+Coder: CP
+
+Purpose of the changes:
+bug fix: edited create event form and upcoming events backend endpoint
+- made time and limit and location optional in create event form
+- included all day option in create event from
+- included user's own events when retrieving upcoming events
+- edited error message shown on events page if user did not login
+
+
+Nature of the changes (frontend / backend / database):
+frontend and backend
+
+# Update as of 20 May 
+Coder: CP
+
+Purpose of the changes:
+fix: added rank color due to merge issue previously
+
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 21 May 
+Coder: CP
+
+Purpose of the changes:
+bug fixes for clubs
+[Clubs] Join status is wrongly stated as "Pending" for members who have already successfully joined
+[Clubs] Club can't change from private to public
+[Clubs] Profile picture of users postings in clubs is not showing the user's profile picture, just the default user picture.
+
+Nature of the changes (frontend / backend / database):
+frontend and a bit of backend
+
+# Update as of 21 May 
+Coder: CP
+
+Purpose of the changes:
+bug fix: fix total member not showing on clubs you manage section on browse clubs page
+
+
+Nature of the changes (frontend / backend / database):
+frontend and backend
+
+# Update as of 21 May 
+Coder: CP
+
+Purpose of the changes:
+bug fix: show correct error message on specific event page for more events
+
+
+Nature of the changes (frontend / backend / database):
+frontend and backend
+
+
 # Update as of 21 May 
 Coder: Han
 
@@ -708,6 +765,19 @@ reverted BillingSecurity.vue and Payment.py files back to original version to fi
 
 Nature of the changes (frontend / backend / database):
 frontend, backend
+
+# Update as of 21 May 
+Coder: CP
+
+Purpose of the changes:
+bug fix: fixed club and events bugs
+Fixes:
+- image uploading for club banner, club post and event banners (base64 issue fix)
+- fixed club status on the left menu on browse club page
+
+
+Nature of the changes (frontend / backend / database):
+frontend and backend
 
 # Update as of 22 May 
 Coder: Han
@@ -754,3 +824,15 @@ fixed issue whereby delete button didn't work for announcements on deployed site
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 23 May 
+Coder: Danish
+
+Purpose of the changes:
+•⁠  ⁠Fixed the 'My Drink Lists' button color on badges tab active.
+•⁠  ⁠Fixed progress bar calculation in user badges
+•⁠  ⁠Added Public Lists badge
+•⁠  ⁠Added badge notification in user's notification
+
+Nature of the changes (frontend / backend / database):
+backend mostly, and frontend
