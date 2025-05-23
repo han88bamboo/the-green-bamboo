@@ -5,7 +5,7 @@
 import os
 import s3Images
 from flask import Blueprint, g, request, jsonify
-from scripts import pointsHelperFunc
+from scripts import pointsHelperFunc, badge_helpers
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -141,8 +141,11 @@ def updateBookmark():
 
         conn.commit()
 
-        # Update proofPoints with user actions
+        # Initialize variables for points and badge processing
+        points_earned = 0
+        badge_result = None
 
+        # Update proofPoints and process badges
         if (num_lists_to_delete_count > 0 or num_lists_to_add_count > 0) and (num_lists_to_delete_count - num_lists_to_add_count) != 0:
             
             # Get the proofPoints for creating a new list
@@ -150,53 +153,62 @@ def updateBookmark():
             proofPoints = cursor.fetchone()
 
             if proofPoints:
+                # Calculate net points earned
+                points_earned = (num_lists_to_add_count - num_lists_to_delete_count) * proofPoints['proofPoints']
 
-                # Update the proofPoints for the user
-                pointsEarned = (num_lists_to_add_count - num_lists_to_delete_count) * proofPoints['proofPoints']
-
-                if pointsEarned > 0: 
-                    
+                # Only award points if positive and user hasn't reached max
+                if points_earned > 0:
                     if pointsHelperFunc.check_max_proof_points(userID):
-                        return jsonify(
-                            {
-                                "code": 201,
-                                "data": {
-                                    "userID": userID,
-                                    "bookmark": bookmark
-                                },
-                                "message": "Max points reached."
-                            }
-                        ), 201
+                        return jsonify({
+                            "code": 201,
+                            "data": {
+                                "userID": userID,
+                                "bookmark": bookmark
+                            },
+                            "message": "Max points reached."
+                        }), 201
 
-                cursor.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s AND "userType" = %s', (pointsEarned, userID, 'user',))
+                # Update user points (can be positive or negative)
+                cursor.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s AND "userType" = %s', 
+                               (points_earned, userID, 'user'))
                 conn.commit()
 
-                print(f"User {userID} earned {pointsEarned} points for editing the number of lists.")
+                print(f"User {userID} earned {points_earned} points for editing the number of lists.")
+            
+            # Process PublicList badge based on net list changes
+            net_list_change = num_lists_to_add_count - num_lists_to_delete_count
+            if net_list_change != 0:
+                badge_result = badge_helpers.process_public_list_badge(conn, cursor, userID, net_list_change)
 
-                cursor.close()
-
-        return jsonify(
-            {   
-                "code": 201,
-                "data": {
-                    "userID": userID,
-                    "bookmark": bookmark
-                }
+        # Prepare the response
+        response_data = {
+            "code": 201,
+            "data": {
+                "userID": userID,
+                "bookmark": bookmark
             }
-        ), 201
+        }
+        
+        if points_earned != 0:
+            response_data["pointsEarned"] = points_earned
+            
+        if badge_result:
+            response_data["badgeAwarded"] = badge_result
+
+        cursor.close()
+        return jsonify(response_data), 201
 
     except Exception as e:
         print("Update bookmark error:", str(e))
-        return jsonify(
-            {
-                "code": 500,
-                "data": {
-                    "userID": userID,
-                    "bookmark": bookmark
-                },
-                "message": "An error occurred updating the drink lists."
-            }
-        ), 500
+        conn.rollback()
+        return jsonify({
+            "code": 500,
+            "data": {
+                "userID": userID,
+                "bookmark": bookmark
+            },
+            "message": "An error occurred updating the drink lists."
+        }), 500
 
 # -----------------------------------------------------------------------------------------
 # [POST] Update follow lists

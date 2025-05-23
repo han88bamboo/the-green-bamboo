@@ -94,7 +94,7 @@ def process_badges(conn, cur, user_id, badge_triggers):
                 # User doesn't have this badge yet, create it
                 cur.execute("""
                     INSERT INTO "userBadges" ("userId", "badgeId", "currentLevel", "currentProgress")
-                    VALUES (%s, %s, 1, 1)
+                    VALUES (%s, %s, 1, 0)
                     RETURNING "currentLevel"
                 """, (user_id, badge_id))
                 
@@ -146,7 +146,7 @@ def update_badge_progress(conn, cur, user_id, related_entity, badge_type, change
         # User doesn't have this badge yet and we're adding - create it
         cur.execute("""
             INSERT INTO "userBadges" ("userId", "badgeId", "currentLevel", "currentProgress")
-            VALUES (%s, %s, 1, 1)
+            VALUES (%s, %s, 1, 0)
             RETURNING "currentLevel"
         """, (user_id, badge_id))
         
@@ -297,7 +297,7 @@ def process_new_drink_badge(conn, cur, user_id):
             # User doesn't have this badge yet - create it
             cur.execute("""
                 INSERT INTO "userBadges" ("userId", "badgeId", "currentLevel", "currentProgress")
-                VALUES (%s, %s, 1, 1)
+                VALUES (%s, %s, 1, 0)
                 RETURNING "currentLevel"
             """, (user_id, badge_id))
             
@@ -414,7 +414,7 @@ def process_club_post_badge(conn, cur, user_id):
             # User doesn't have this badge yet - create it
             cur.execute("""
                 INSERT INTO "userBadges" ("userId", "badgeId", "currentLevel", "currentProgress")
-                VALUES (%s, %s, 1, 1)
+                VALUES (%s, %s, 1, 0)
                 RETURNING "currentLevel"
             """, (user_id, badge_id))
             
@@ -520,7 +520,7 @@ def process_comment_badge(conn, cur, user_id):
             # User doesn't have this badge yet - create it
             cur.execute("""
                 INSERT INTO "userBadges" ("userId", "badgeId", "currentLevel", "currentProgress")
-                VALUES (%s, %s, 1, 1)
+                VALUES (%s, %s, 1, 0)
                 RETURNING "currentLevel"
             """, (user_id, badge_id))
             
@@ -626,7 +626,7 @@ def process_question_badge(conn, cur, user_id):
             # User doesn't have this badge yet - create it
             cur.execute("""
                 INSERT INTO "userBadges" ("userId", "badgeId", "currentLevel", "currentProgress")
-                VALUES (%s, %s, 1, 1)
+                VALUES (%s, %s, 1, 0)
                 RETURNING "currentLevel"
             """, (user_id, badge_id))
             
@@ -748,7 +748,7 @@ def process_upvote_badge(conn, cur, user_id, is_new_upvote=False, is_removed_upv
                 # User doesn't have this badge yet - create it
                 cur.execute("""
                     INSERT INTO "userBadges" ("userId", "badgeId", "currentLevel", "currentProgress")
-                    VALUES (%s, %s, 1, 1)
+                    VALUES (%s, %s, 1, 0)
                     RETURNING "currentLevel"
                 """, (user_id, badge_id))
                 
@@ -893,4 +893,192 @@ def process_upvote_badge(conn, cur, user_id, is_new_upvote=False, is_removed_upv
         
     except Exception as e:
         print(f"Error processing Upvote badge: {str(e)}")
+        return None
+    
+def process_public_list_badge(conn, cur, user_id, list_change):
+    try:
+        # Find the "List-o-mania" badge
+        cur.execute("""
+            SELECT * FROM "badges" 
+            WHERE "badgeType" = 'Action' AND "relatedEntity" = 'PublicList'
+        """)
+        
+        badge = cur.fetchone()
+        if not badge:
+            print("No 'PublicList' badge found in the database")
+            return None
+            
+        badge_id = badge['id']
+        
+        # Check if user already has this badge
+        cur.execute("""
+            SELECT * FROM "userBadges" 
+            WHERE "userId" = %s AND "badgeId" = %s
+        """, (user_id, badge_id))
+        
+        user_badge = cur.fetchone()
+        
+        # Handle positive list change (creating lists)
+        if list_change > 0:
+            if not user_badge:
+                # User doesn't have this badge yet - create it
+                # Set progress to the number of lists created
+                #                 
+                cur.execute("""
+                    INSERT INTO "userBadges" ("userId", "badgeId", "currentLevel", "currentProgress")
+                    VALUES (%s, %s, 1, 0)
+                    RETURNING "currentLevel"
+                """, (user_id, badge_id))
+                
+                conn.commit()
+                
+                return {
+                    "badgeId": badge_id,
+                    "badgeName": badge['badgeName'],
+                    "badgeDesc": badge['badgeDesc'], 
+                    "badgePhoto": badge['badgePhoto'],
+                    "newLevel": 1,
+                    "isNewBadge": True
+                }
+                
+            # User already has this badge - update progress
+            current_level = user_badge['currentLevel']
+            current_progress = user_badge['currentProgress'] + list_change
+            
+            # Get rule for this level
+            cur.execute("""
+                SELECT * FROM "badgeRules"
+                WHERE "actionType" = 'PublicList'
+                AND %s BETWEEN "levelStart" AND "levelEnd"
+            """, (current_level,))
+            
+            rule = cur.fetchone()
+            if not rule:
+                print(f"No badge rule found for level {current_level}")
+                return None
+                
+            actions_required = rule['actionsRequired']
+            
+            # Process multiple level ups if many lists were created at once
+            levels_gained = 0
+            while current_progress >= actions_required and current_level < 100:
+                current_progress -= actions_required
+                current_level += 1
+                levels_gained += 1
+                
+                # Get new rule for the next level
+                cur.execute("""
+                    SELECT * FROM "badgeRules"
+                    WHERE "actionType" = 'PublicList'
+                    AND %s BETWEEN "levelStart" AND "levelEnd"
+                """, (current_level,))
+                
+                new_rule = cur.fetchone()
+                if new_rule:
+                    actions_required = new_rule['actionsRequired']
+                else:
+                    break
+            
+            # Update the badge
+            cur.execute("""
+                UPDATE "userBadges"
+                SET "currentLevel" = %s, "currentProgress" = %s, "lastUpdated" = CURRENT_TIMESTAMP
+                WHERE "userId" = %s AND "badgeId" = %s
+                RETURNING "currentLevel"
+            """, (current_level, current_progress, user_id, badge_id))
+            
+            conn.commit()
+            
+            if levels_gained > 0:
+                return {
+                    "badgeId": badge_id,
+                    "badgeName": badge['badgeName'],
+                    "badgeDesc": badge['badgeDesc'],
+                    "badgePhoto": badge['badgePhoto'],
+                    "newLevel": current_level,
+                    "previousLevel": user_badge['currentLevel'],
+                    "levelsGained": levels_gained,
+                    "isNewBadge": False,
+                    "change": "increase"
+                }
+            else:
+                return {
+                    "badgeId": badge_id,
+                    "badgeName": badge['badgeName'],
+                    "badgeDesc": badge['badgeDesc'],
+                    "badgePhoto": badge['badgePhoto'],
+                    "newLevel": current_level,
+                    "newProgress": current_progress,
+                    "isNewBadge": False,
+                    "change": "increase"
+                }
+        
+        # Handle negative list change (deleting lists)
+        elif list_change < 0 and user_badge:
+            current_level = user_badge['currentLevel']
+            current_progress = user_badge['currentProgress'] + list_change  # list_change is negative
+            
+            # Get rules for level calculations
+            cur.execute("""
+                SELECT * FROM "badgeRules"
+                WHERE "actionType" = 'PublicList'
+                ORDER BY "levelStart"
+            """)
+            
+            rules = cur.fetchall()
+            
+            # Helper function to get actions needed for a level
+            def actions_needed_for_level(level):
+                for rule in rules:
+                    if rule['levelStart'] <= level <= rule['levelEnd']:
+                        return rule['actionsRequired']
+                return rules[-1]['actionsRequired'] if rules else 1
+            
+            # If progress goes negative, we need to demote the level
+            while current_progress < 0 and current_level > 1:
+                current_level -= 1
+                current_progress += actions_needed_for_level(current_level)
+            
+            # If at level 1 with negative progress, remove the badge
+            if current_level == 1 and current_progress < 0:
+                cur.execute("""
+                    DELETE FROM "userBadges"
+                    WHERE "userId" = %s AND "badgeId" = %s
+                """, (user_id, badge_id))
+                
+                conn.commit()
+                
+                return {
+                    "badgeId": badge_id,
+                    "badgeName": badge['badgeName'],
+                    "badgeDesc": badge['badgeDesc'],
+                    "badgePhoto": badge['badgePhoto'],
+                    "removed": True,
+                    "change": "decrease"
+                }
+            else:
+                # Update the badge with new level and progress
+                cur.execute("""
+                    UPDATE "userBadges"
+                    SET "currentLevel" = %s, "currentProgress" = %s, "lastUpdated" = CURRENT_TIMESTAMP
+                    WHERE "userId" = %s AND "badgeId" = %s
+                """, (current_level, current_progress, user_id, badge_id))
+                
+                conn.commit()
+                
+                return {
+                    "badgeId": badge_id,
+                    "badgeName": badge['badgeName'],
+                    "badgeDesc": badge['badgeDesc'],
+                    "badgePhoto": badge['badgePhoto'],
+                    "newLevel": current_level,
+                    "newProgress": current_progress,
+                    "isLevelDown": current_level < user_badge['currentLevel'],
+                    "change": "decrease"
+                }
+                
+        return None
+        
+    except Exception as e:
+        print(f"Error processing PublicList badge: {str(e)}")
         return None

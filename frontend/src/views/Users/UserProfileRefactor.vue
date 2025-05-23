@@ -1745,9 +1745,9 @@
               class="btn mx-1 fw-bold no-hover"
               :class="{
                 'primary-btn-green active-toggle-button-user-profile':
-                  activeTab !== 'reviews',
+                  activeTab === 'lists',
                 'primary-btn-green-thin-outline inactive-toggle-button-user-profile':
-                  activeTab === 'reviews',
+                  activeTab !== 'lists',
               }"
               @click="switchTab('lists')"
             >
@@ -2700,7 +2700,11 @@
                             class="progress-bar"
                             style="background-color: #3498db;" 
                             role="progressbar"
-                            :style="{width: (badge.currentProgress / badge.nextLevelRequirement * 100) + '%'}"
+                            :style="{
+                              width: badge.currentProgress >= badge.nextLevelRequirement 
+                                ? '0%' 
+                                : (badge.currentProgress / badge.nextLevelRequirement * 100) + '%'
+                            }"
                             :aria-valuenow="badge.currentProgress"
                             aria-valuemin="0"
                             :aria-valuemax="badge.nextLevelRequirement"
@@ -2709,13 +2713,19 @@
                         
                         <!-- Progress text -->
                         <p class="progress-text small mb-0" v-if="badge.nextLevelRequirement">
-                          <span v-if="badge.badgeType === 'Action'">
-                            {{ badge.nextLevelRequirement - badge.currentProgress }} More Actions To<br>Reach The Next Level!
+                          <span v-if="badge.currentProgress < badge.nextLevelRequirement">
+                            <span v-if="badge.badgeType === 'Action'">
+                              {{ badge.nextLevelRequirement - badge.currentProgress }} More Actions To<br>Reach The Next Level!
+                            </span>
+                            <span v-else>
+                              {{ badge.nextLevelRequirement - badge.currentProgress }} More Reviews To<br>Reach The Next Level!
+                            </span>
                           </span>
                           <span v-else>
-                            {{ badge.nextLevelRequirement - badge.currentProgress }} More Reviews To<br>Reach The Next Level!
+                            Ready to Level Up!
                           </span>
                         </p>
+
                         <p class="progress-text small mb-0" v-else>Maximum level reached!</p>
                       </div>
                     </div>
