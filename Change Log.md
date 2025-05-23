@@ -745,3 +745,12 @@ fixed broken links to drinks listings on userdashboard.vue
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 23 May 
+Coder: Han
+
+Purpose of the changes:
+fixed issue whereby delete button didn't work for announcements on deployed site.
+
+Nature of the changes (frontend / backend / database):
+frontend
