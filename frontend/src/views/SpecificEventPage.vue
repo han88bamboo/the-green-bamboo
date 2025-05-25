@@ -184,7 +184,7 @@
                         <div class="text-white py-3 px-4 mb-4 d-flex justify-content-between align-items-center" style="background-color: #83a9e8">
                             <div>
                                 Organized by 
-                                <router-link :to="profileURL(event.ownerInfo.id, event.ownerInfo.userType)" class="text-white fw-bold ms-1 text-decoration-underline">
+                                <router-link :to="profileURL(event.ownerInfo.id, event.ownerInfo.userType, event.ownerInfo.userType == 'user' ? event.ownerInfo.displayName : event.ownerInfo.userType == 'venue' ? event.ownerInfo.venueName : event.ownerInfo.producerName )" class="text-white fw-bold ms-1 text-decoration-underline">
                                 {{ event.ownerInfo.venueName || event.ownerInfo.producerName || event.ownerInfo.displayName }}
                                 </router-link>
                             </div>
@@ -273,7 +273,7 @@
                                     </svg>
 
                                     <!-- Profile link -->
-                                    <router-link :to="profileURL(attendee.id, attendee.userType)">
+                                    <router-link :to="profileURL(attendee.id, attendee.userType, attendee.userType == 'user' ? attendee.displayName : attendee.userType == 'venue' ? attendee.venueName : attendee.producerName)">
                                         <p v-if="attendee.userType == 'user'" class="mt-2 fw-bold mobile-rating-smaller-text-2" style="color:#83a9e8">{{ attendee.displayName }}</p>
                                         <p v-if="attendee.userType == 'venue'" class="mt-2 fw-bold mobile-rating-smaller-text-2" style="color:#83a9e8">{{ attendee.venueName }}</p>
                                         <p v-if="attendee.userType == 'producer'" class="mt-2 fw-bold mobile-rating-smaller-text-2" style="color:#83a9e8">{{ attendee.producerName }}</p>
@@ -701,6 +701,7 @@ export default {
             // Variable to store current user ID and user type
             userID: null,
             userType: null,
+            userName: null,
 
             // Variable to hold the Quill instance
             quill: null,
@@ -1041,13 +1042,13 @@ export default {
                         const toast = useToast();
                         toast.success('Event deleted successfully!');
                         if (this.userType == 'user') {
-                            this.$router.push('/profile/user/' + this.userID);
+                            this.$router.push('/profile/user/' + this.userID + '/' + this.userName);
                         }
                         else if (this.userType == 'producer') {
-                            this.$router.push('/profile/producer/' + this.userID);
+                            this.$router.push('/profile/producer/' + this.userID + '/' + this.userName);
                         }
                         else {
-                            this.$router.push('/profile/venue/' + this.userID);
+                            this.$router.push('/profile/venue/' + this.userID + '/' + this.userName);
                         }
                     }
                     else {
@@ -1080,15 +1081,15 @@ export default {
         },
 
         // Function to get the profile URL of the poster 
-        profileURL(posterID, userType) {
+        profileURL(posterID, userType, userName) {
             if (userType == 'user') {
-                return `/profile/user/${posterID}`;
+                return `/profile/user/${posterID}/${userName}`;
             }
             else if (userType == 'producer') {
-                return `/profile/producer/${posterID}`;
+                return `/profile/producer/${posterID}/${userName}`;
             }
             else {
-                return `/profile/venue/${posterID}`;
+                return `/profile/venue/${posterID}/${userName}`;
             }
 
         },
@@ -1147,6 +1148,7 @@ export default {
     mounted() {
         // Get the current user's ID and user type
         this.userID = localStorage.getItem("88B_accID");
+        this.userName = localStorage.getItem("88B_accUsername");
         let userType = localStorage.getItem("88B_accType");
 
         if (userType) {
