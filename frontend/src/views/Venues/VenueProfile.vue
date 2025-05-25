@@ -1956,6 +1956,9 @@
                                 >
                                     <b> @{{ getUsernameFromReview(review) }} </b>
                                 </router-link>
+                                <span class="ms-2">
+                                    {{ getUserPointsFromReview(review) }}
+                                </span>
                                 {{ getUserRankFromReview(review)}}
                                 &nbsp;rated
                                 <span style="color: #f0b358">★</span>
@@ -3209,6 +3212,15 @@
                 return user.username;
                 }
                 return "(unknown user)";
+            },
+
+            getUserPointsFromReview(review) {
+                const user = this.users.find((user) => {
+                    return user["id"] == review["userID"];
+                });
+                if (user) {
+                    return user["currentPoints"];
+                }
             },
 
             getUserRankFromReview(review) {

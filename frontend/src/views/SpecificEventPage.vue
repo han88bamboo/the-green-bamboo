@@ -100,19 +100,22 @@
                             <!-- RSVP Button -->
                                 <div>
                                     <div v-if="event.paidEvent == false">
-                                    <button v-if="attendees.length <= event.eventLimit && !rsvpStatus"
-                                            class="btn primary-btn-less-round-blue fw-bold"
-                                            @click="rsvpEvent"
-                                            :disabled="rsvpButtonStatus">
-                                        I'm interested
-                                    </button>
+                                        <button v-if="attendees.length <= event.eventLimit && !rsvpStatus"
+                                                class="btn primary-btn-less-round-blue fw-bold"
+                                                @click="rsvpEvent"
+                                                :disabled="rsvpButtonStatus">
+                                            I'm interested
+                                        </button>
                                     </div>
                                     <div v-else>
-                                    <a :href="event.paymentLink"
-                                        target="_blank"
-                                        class="btn primary-btn-less-round-blue fw-bold">
-                                        I'm Interested
-                                    </a>
+                                        <button v-if="attendees.length <= event.eventLimit && !rsvpStatus" 
+                                            class="btn primary-btn-less-round-blue"  
+                                            style="font-weight:bold" 
+                                            @click="rsvpEvent" 
+                                            :disabled="rsvpButtonStatus" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#promptPurchaseModal">I'm interested
+                                        </button>
                                     </div>
                                 </div>
                                 
@@ -228,9 +231,9 @@
 
                             <!-- Ticketed and require payment -->
                             <div v-else> 
-                                <p class="mobile-rating-smaller-text-2 mx-1 mobile-view-show">This event is ticketed. Click below to purchase your ticket!</p>
+                                <p class="mobile-rating-smaller-text-2 mx-1 mobile-view-show">This event is ticketed. RSVP and purchase your ticket!</p>
                                 <!-- button to purchase ticket -->
-                                <a :href="event.paymentLink" target="_blank" class="btn primary-btn-less-round-blue" style="font-weight:bold">I'm Interested</a>
+                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="rsvpEvent" :disabled="rsvpButtonStatus" data-bs-toggle="modal" data-bs-target="#promptPurchaseModal">I'm interested</button>
                             </div>
                             
                         </div>
@@ -389,9 +392,9 @@
 
                             <!-- Ticketed and require payment -->
                             <div v-else> 
-                                <p class="fw-bold mobile-rating-smaller-text-2">This event is ticketed. Click below to purchase your ticket!</p>
+                                <p class="fw-bold mobile-rating-smaller-text-2">This event is ticketed. RSVP and purchase your ticket!</p>
                                 <!-- button to purchase ticket -->
-                                <a :href="event.paymentLink" target="_blank" class="btn primary-btn-less-round-blue" style="font-weight:bold">I'm Interested</a>
+                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="rsvpEvent" :disabled="rsvpButtonStatus" data-bs-toggle="modal" data-bs-target="#promptPurchaseModal">I'm interested</button>
                             </div>
                             
                         </div>
@@ -449,6 +452,26 @@
             </div>
             
         </div>
+        <!-- Prompt Purchase Modal Start -->
+        <div class="modal fade" id="promptPurchaseModal" tabindex="-1" aria-labelledby="promptPurchaseModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="promptPurchaseModalLabel">Purchase Ticket</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="fw-bold">Thank you for RSVP-ing. As this is a paid ticketed event, remember to click "Buy Tickets" to secure your tickets for the event!.</p>
+                        <a :href="event.paymentLink" target="_blank" class="btn primary-btn-less-round-blue" style="font-weight:bold">Buy Ticket</a>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prompt Purchase Modal End -->
 
         <!-- Edit Event Modal Start -->
         <div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="editEventModalLabel" aria-hidden="true">

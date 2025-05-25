@@ -69,10 +69,14 @@
 
           <!-- Column 2: Poster Name and Post Date -->
           <div class="row col-11 mobile-col-10 d-flex flex-wrap align-items-center text-start">
-            <h5 class="mobile-view-hide fw-bold align-items-center " style="color: rgb(2, 117, 98);">{{ poster.displayName }} ({{ poster.rank }})</h5>
+            <h5 class="mobile-view-hide fw-bold align-items-center " style="color: rgb(2, 117, 98);">{{ poster.displayName }} {{ poster.currentPoints }}
+               {{ poster.rank }}
+            </h5>
             <p class="mobile-view-hide text-muted align-items-center">posted on {{ post.postDate }}</p>
             <p class="mobile-rating-smaller-text-2 align-items-center mobile-view-show">
-             <span class="fw-bold" style="color: rgb(2, 117, 98)">{{ poster.displayName }} </span><span :style="{ color: poster.rankColor }" class="fw-bold"> {{ poster.rank }} </span> posted on {{ post.postDate }}
+             <span class="fw-bold" style="color: rgb(2, 117, 98)">{{ poster.displayName }} </span>
+             <span>{{ poster.currentPoints }}</span>
+             <span :style="{ color: poster.rankColor }" class="fw-bold"> {{ poster.rank }} </span> posted on {{ post.postDate }}
             </p>
           </div>
         </div>
@@ -324,6 +328,7 @@
                           {{ comment.commenterInfo.venueName }}
                         </template>
                       </router-link>
+                      <span>{{ comment.commenterInfo.currentPoints }}</span>
                       <span  :style="{ color: comment.commenterInfo.rankColor }">{{ comment.commenterInfo.rank }}</span>
                     </div>
                   <!-- Comment Date -->
@@ -642,6 +647,20 @@ export default {
     },
   },
   methods: {
+    // Function to get membership details of user 
+    async getMembershipDetails() {
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/club/checkUserMembership/${this.userID}/${this.userType}/${this.clubID}`
+        );
+        this.isMember = response.data.isMember;
+        this.isAdmin = response.data.isAdmin;
+        this.memberID = response.data.memberID;
+      } catch (error) {
+        console.log(error);
+      }
+    },
+
     // Function to retrieve the post data from the backend including the latest 20 comments
     async getPostData() {
       try {
@@ -749,7 +768,7 @@ export default {
       try {
         // Comment on the post
         // Check if the comment is empty
-        if (!this.newCommentomment || this.newComment.trim() === "") {
+        if (!this.newComment || this.newComment.trim() === "") {
                 const toast = useToast();
                 toast.error("Please enter a comment before submitting.");
                 return;
@@ -975,11 +994,13 @@ export default {
     let userID = localStorage.getItem("88B_accID");
     let userType = localStorage.getItem("88B_accType");
 
-    // Get the user's membership data from the localStorage
-    let memberID = localStorage.getItem("memberID");
-    memberID = parseInt(memberID, 10);
-    let isMember = localStorage.getItem("isMember"); // is string
-    let isAdmin = localStorage.getItem("isAdmin"); // is string
+    // Get the user's membership data from the localStorage - varies across clubs, hence, not set in localStorage
+    // let memberID = localStorage.getItem("memberID");
+    // memberID = parseInt(memberID, 10);
+    // let isMember = localStorage.getItem("isMember"); // is string
+    // let isAdmin = localStorage.getItem("isAdmin"); // is string
+
+    
 
     // Check if the user is logged in
     if (userID == null || userType == null) {
@@ -987,11 +1008,9 @@ export default {
     } else {
       this.userID = userID;
       this.userType = userType;
-      this.memberID = memberID;
 
-      // Convert isMember and isAdmin to boolean
-      this.isMember = isMember === "true";
-      this.isAdmin = isAdmin === "true";
+      this.getMembershipDetails();
+      
       // Call the getPostData function to retrieve the post data
       this.getPostData();
     }

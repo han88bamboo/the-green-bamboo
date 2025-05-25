@@ -1381,6 +1381,7 @@ def getUsersFromList():
             user_data["drinkLists"] = fetch_drink_lists(cursor, user_id)
             user_data["followLists"] = fetch_follow_lists(cursor, user_id)
             user_data['proofRank'] = pointsHelperFunc.get_rank_by_user_id(user_id)
+            user_data['currentPoints'] = pointsHelperFunc.get_current_proof_points(user_id)
 
             # Remove unnecessary fields
             del user_data["hashedPassword"]
@@ -1402,6 +1403,7 @@ def getUser(id):
             user_data["drinkLists"] = fetch_drink_lists(cursor, id)
             user_data["followLists"] = fetch_follow_lists(cursor, id)
             user_data['proofRank'] = pointsHelperFunc.get_rank_by_user_id(id)
+            user_data['currentPoints'] = pointsHelperFunc.get_current_proof_points(id)
 
             # Remove unnecessary fields
             del user_data["hashedPassword"]

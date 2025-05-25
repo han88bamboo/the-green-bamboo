@@ -223,7 +223,7 @@
                     <div class="col-12 col-md-4 mb-2 mt-2">
                         <div class="position-relative d-flex flex-column leaderboard-height">
                             <div class="d-flex flex-column align-items-center text-center  mt-2" style="border-bottom: solid 1px rgb(160, 160, 160);">
-                            <h6 class="fw-bold">Grail 🌱</h6>
+                            <h6 class="fw-bold">Desperate To Try 🌱</h6>
                             </div>
                             <div v-if="selectedGrails.length === 0" class="text-center mt-2 small mobile-rating-smaller-text-2">
                                 The one on my bucket list...
@@ -275,7 +275,7 @@
                     <div class="col-12 col-md-4 mb-2 mt-2 border-left-desktop">
                         <div class="position-relative d-flex flex-column leaderboard-height">
                             <div class="d-flex flex-column align-items-center text-center mt-2" style="border-bottom: solid 1px rgb(160, 160, 160);">
-                                <h6 class="fw-bold">Up & Coming 🍷</h6>
+                                <h6 class="fw-bold">Up And Coming 🍷</h6>
                             </div>
                             <div v-if="selectedUpAndComing.length === 0" class="text-center my-2 small mobile-rating-smaller-text-2">
                                 The ones that i drink over and over again...
@@ -315,7 +315,7 @@
                     <div class="col-12 col-md-4 mb-2 mt-2 border-left-desktop">
                         <div class="position-relative d-flex flex-column leaderboard-height">
                             <div class="d-flex flex-column align-items-center text-center  mt-2" style="border-bottom: solid 1px rgb(160, 160, 160);">
-                                <h6 class="fw-bold">G.O.A.Ts 🙌</h6>
+                                <h6 class="fw-bold">Ride Or Die 🙌</h6>
                                
                             </div>
                             <div v-if="selectedGOATs.length === 0" class="text-center my-2 small mobile-rating-smaller-text-2">

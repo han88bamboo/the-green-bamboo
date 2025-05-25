@@ -558,6 +558,9 @@
                               {{ post.posterInfo.venueName }}&nbsp;
                             </template>
                           </router-link>
+                          <span v-if="post.posterInfo.userType === 'user'" class="mobile-rating-smaller-text-2">
+                            {{ post.posterInfo.currentPoints }} {{ memberID }}
+                          </span>
                           <span v-if="post.posterInfo.userType === 'user'" class="mobile-rating-smaller-text-2" :style="{ color: post.posterInfo.rankColor }">
                             {{ post.posterInfo.rank }} &nbsp; 
                           </span>
