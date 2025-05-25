@@ -1,6 +1,6 @@
 <template>
 <div class="d-flex justify-content-between align-items-start flex-wrap px-3">
-    <div class="card p-0" style="width: 200px; height:400px">
+    <div class="card p-0 mobile-view-hide" style="width: 200px; height:400px">
         <img :src="photoURL" class="card-img-top" alt="listing image" style="height: 200px;" />
         <div class="card-body d-flex flex-column p-3">
 
@@ -59,7 +59,60 @@
             </router-link>
         </div>
     </div>
-    
+
+
+    <div class="card d-flex flex-row p-0 mobile-view-show mb-3" style="width:300px;height:100px">
+
+        <img :src="photoURL" class="image-wrapper position-relative d-inline-block" alt="listing image" style="width: 100px;" />
+        <div class="flex-md-row justify-content-between">
+
+            <div class="flex-grow-1 col-12 d-flex flex-column justify-content-between px-3 pt-2 ">
+            <!-- Listing Name -->
+            <router-link
+                :to="{
+                path: '/listing/view/' + listing.listingID + '/' + slugify(listing.listingName),
+                }"
+                class="primary-clickable-text text-decoration-none"
+                style="color: #027562"
+            >
+                <p class="mobile-rating-smaller-text-2 fw-bold text-start mb-1">{{ listing.listingName.slice(0, 22) }}</p>
+            </router-link>
+            </div>
+            
+            <div class="flex-grow-1 col-12 d-flex flex-column justify-content-between px-3 pt-0">
+            <!-- Producer Name -->
+            <router-link
+                :to="{
+                path:
+                    '/profile/producer/' +
+                    listing.producerID +
+                    '/' +
+                    listing.producerName,
+                }"
+                class="mobile-rating-smaller-text-2 primary-clickable-text"
+            >
+                 <p class="card-text fw-bold">{{ listing.producerName.slice(0, 20) }}</p>
+            </router-link>
+            </div>
+
+            <div class="col-12 d-flex flex-column justify-content-between px-3 mt-2">
+            <!--Rating-->
+            <div class="text-start">
+                <h4 class="fw-bold text-warning">
+                    <span v-if="listing.averageRating == null || listing.averageRating == ''">
+                        --
+                    </span>
+                    <span v-else>
+                        {{ listing.averageRating }}
+                    </span>
+                    ★
+                </h4>
+            </div>
+            </div>
+
+            
+        </div>
+    </div>
     
 </div>
 </template>

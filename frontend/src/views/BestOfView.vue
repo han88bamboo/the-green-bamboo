@@ -51,12 +51,12 @@
                             
                         <!-- Select form control to choose drink type and category -->
                         <!-- Drink Type and Category Row -->
-                        <div class="row rounded-3 primary-btn-green py-3 justify-content-between" style="width: 80%; margin: auto;">
+                        <div class="row rounded-3 primary-btn-green py-3 justify-content-between" style="width: 90%; margin: auto;">
                             <!-- Drink Type -->
-                            <div class="col-md-6 d-flex flex-column">
-                                <div class="d-flex align-items-center gap-2">
+                            <div class="col-md-6 d-flex flex-column mb-2">
+                                <div class="d-flex align-items-center gap-2 mobile-rating-smaller-text-2">
                                     <span>Drink Type:</span>
-                                    <select class="form-select" aria-label="Default select example" style="width: 70%" v-model="selectedDrinkType">
+                                    <select class="form-select mobile-rating-smaller-text-2" aria-label="Default select example" style="width: 70%" v-model="selectedDrinkType">
                                         <option v-for="type in drinkTypes" :key="type.id" :value="type.drinkType">
                                             {{ type.drinkType }}
                                         </option>
@@ -67,9 +67,9 @@
                             <div
                                 class="col-md-6 d-flex flex-column"
                             >
-                                <div class="d-flex align-items-center gap-2 w-full">
+                                <div class="d-flex align-items-center gap-2 w-full mobile-rating-smaller-text-2">
                                     <span>Drink Category:</span>
-                                    <select class="form-select" aria-label="Default select example" v-model="selectedDrinkTypeCategory" :disabled="selectedDrinkType == 'Show All Types'" style="width: 60%">
+                                    <select class="form-select mobile-rating-smaller-text-2" aria-label="Default select example" v-model="selectedDrinkTypeCategory" :disabled="selectedDrinkType == 'Show All Types'" style="width: 60%">
                                         <option v-for="category in drinkTypeCategories" :key="category" :value="category">
                                             {{ category }}
                                         </option>
@@ -81,14 +81,16 @@
                     
                    
                 </div>
-                
+                <div class="container mx-lg-5 sm-mx-0">
+                   
                 <!-- Grails -> Change to "DEsperate to Try" -->
-                    <div class="mb-5">
-                        <h5 class="ms-3 mb-3 fw-bold mt-4">Desperate to Try</h5>
-                        <div v-if="top5Listings.grails?.length > 0" class="d-grid" style="grid-template-columns: repeat(5, 1fr); gap: 1rem;">
+                    <div class="mb-3 mb-md-5">
+                        <h5 class="ms-3 mb-3 fw-bold mt-4 mobile-fs-6">Desperate to Try</h5>
+                        <div v-if="top5Listings.grails?.length > 0" class="row gx-3 px-3">
                             <div
                                 v-for="listing in top5Listings['grails']"
                                 :key="listing.listingID"
+                                class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 d-flex justify-content-center"
                             >
                                 <BestOfCard :listing="listing" />
                             </div>
@@ -100,12 +102,13 @@
                     </div>
                 
                 <!-- Up and coming -> Change to "Up And Coming" -->
-                <div class="mb-5">
-                    <h5 class="ms-3 mb-3 fw-bold">Up And Coming</h5>
-                        <div v-if="top5Listings.upAndComing?.length > 0" class="d-grid" style="grid-template-columns: repeat(5, 1fr); gap: 1rem;">
+                <div class="mb-3 mb-md-5">
+                    <h5 class="ms-3 mb-3 fw-bold mobile-fs-6">Up And Coming</h5>
+                        <div v-if="top5Listings.upAndComing?.length > 0" class="row gx-3 px-3">
                             <div
                                 v-for="listing in top5Listings['upAndComing']"
                                 :key="listing.listingID"
+                                class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 d-flex justify-content-center"
                             >
                                 <BestOfCard :listing="listing" />
                             </div>
@@ -116,12 +119,13 @@
                 </div>
 
                 <!-- Goats -> Change to Ride or Die -->
-                <div class="mb-5">
-                    <h5 class="ms-3 mb-3 fw-bold">Ride or Die</h5>
-                        <div v-if="top5Listings.goats?.length > 0" class="d-grid" style="grid-template-columns: repeat(5, 1fr); gap: 1rem;">
+                <div class="mb-3 mb-md-5">
+                    <h5 class="ms-3 mb-3 fw-bold mobile-fs-6">Ride or Die</h5>
+                        <div v-if="top5Listings.goats?.length > 0"  class="row gx-3 px-3">
                             <div
                                 v-for="listing in top5Listings['goats']"
                                 :key="listing.listingID"
+                                class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 d-flex justify-content-center"
                             >
                                 <BestOfCard :listing="listing" />
                             </div>
@@ -129,6 +133,7 @@
                         <div v-else>
                             <p class="ms-3">No Ride or Dies found for the selected drink type and category.</p>
                         </div>
+                </div>
                 </div>
         </div>
     
