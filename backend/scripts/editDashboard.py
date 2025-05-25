@@ -270,10 +270,13 @@ def editTop3():
     
 
 # [GET] Get top 5 Grails, Up & Coming, and GOATs based on drink type
-@blueprint.route("/getTop5/<drink_type>/<type_category>", methods=['GET'])
-def getTop5(drink_type, type_category):
+@blueprint.route("/getTop5", methods=['GET'])
+def getTop5():
     conn = g.db
     cursor = conn.cursor()
+
+    drink_type = request.args.get('type')
+    type_category = request.args.get('typeCat')
 
     try:
         grails_data = fetch_top_5(cursor, "grails", drink_type, type_category)

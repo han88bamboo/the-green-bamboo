@@ -223,8 +223,9 @@ export default {
 
         async fetchTop5() {
             try {
+
                 const response = await this.$axios.get(
-                    `${process.env.VUE_APP_API_URL}/editDashboard/getTop5/${this.selectedDrinkType}/${this.selectedDrinkTypeCategory}`
+                    `${process.env.VUE_APP_API_URL}/editDashboard/getTop5?type=${this.selectedDrinkType}&typeCat=${this.selectedDrinkTypeCategory}`
                 );
 
                 this.top5Listings = response.data.data;
