@@ -1,6 +1,7 @@
 <template>
-    <div class="card p-0" style="width: 18rem;">
-        <img :src="photoURL" class="card-img-top" alt="listing image" style="height: 50%;" />
+<div class="d-flex justify-content-between align-items-start flex-wrap px-3">
+    <div class="card p-0" style="width: 200px; height:400px">
+        <img :src="photoURL" class="card-img-top" alt="listing image" style="height: 200px;" />
         <div class="card-body d-flex flex-column p-3">
 
             <!-- Listing Name -->
@@ -11,9 +12,10 @@
                 class="primary-clickable-text text-decoration-none"
                 style="color: #027562"
             >
-                <h5 class="card-title fw-bold">{{ listing.listingName }}</h5>
+                <h6 class="card-title fw-bold text-start">{{ listing.listingName.slice(0, 40) }}</h6>
             </router-link>
             
+        
 
             <!-- Producer Name -->
             <router-link
@@ -26,12 +28,12 @@
                 }"
                 class="primary-clickable-text"
             >
-                 <p class="card-text">{{ listing.producerName }}</p>
+                 <p class="card-text fw-bold">{{ listing.producerName.slice(0, 40) }}</p>
             </router-link>
            
 
             <!--Rating-->
-            <div class="text-center gap-2">
+            <div class="text-center gap-2  mt-auto">
                 <h4 class="fw-bold text-warning">
                     <span v-if="listing.averageRating == null || listing.averageRating == ''">
                         --
@@ -39,9 +41,7 @@
                     <span v-else>
                         {{ listing.averageRating }}
                     </span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-star-fill ms-2" viewBox="0 0 16 16">
-                        <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                    </svg>
+                    ★
                 </h4>
             </div>
             
@@ -51,14 +51,17 @@
                 :to="{
                 path: '/listing/view/' + listing.listingID + '/' + slugify(listing.listingName),
                 }"
-                class="primary-clickable-text text-center mt-3"
+                class="primary-clickable-text text-center mt-auto"
             >
-                <button class="btn btn-read-more btn-sm fw-bold rounded-pill mobile-pb-1 mobile-pt-1 mobile-mb-2 mobile-fs-7">
+                <button class="btn btn-read-more btn-sm fw-bold">
                     Read More
                 </button>
             </router-link>
         </div>
     </div>
+    
+    
+</div>
 </template>
 
 <script>

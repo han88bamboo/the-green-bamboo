@@ -1,5 +1,5 @@
 <!-- HTML -->
-<template>
+<template >
     <NavBar />
 
     <!-- Display when data is still loading -->
@@ -27,9 +27,10 @@
 
     <!-- main content -->
 
-    <div v-if="user && dataLoaded" class="userprofile mt-5 mobile-mt-3">
-
-        <div class="container text-start">
+    <div v-if="user && dataLoaded" class="userprofile" style="background-color: rgb(238, 238, 238) ">
+        <br>
+        <br>
+        <div class="container text-start" >
 
             <div class="row">
 
@@ -197,12 +198,12 @@
 
                 
                 <!-- Start: BEST OF SELECTION -->
-                <div class=" card container rounded p-4 pt-3 mb-4 mobile-mt-4 mobile-mb-2" >
-                    <div class="row text-center" style="border-bottom: 3px solid rgb(211, 211, 211);">
-                        <h5 class="fw-bold mobile-fs-5"> My Leaderboard 🏆 </h5>
+                <div class=" card col-11 container rounded p-4 pt-3 mb-4 mobile-mt-4 mobile-mb-2" style="border: 2px solid #f0b358; background-color: wheat" >
+                    <div class="row text-center" style="border-bottom: 3px solid #f0b358;">
+                        <h5 class="fw-bold mobile-fs-5" > My Leaderboard 🏆 </h5>
                         <button 
                             class="mobile-view-show mobile-rating-smaller-text-2 mb-2 fw-bold"
-                            style="background-color: white; border: 0px; color: #027562; "
+                            style="background-color: wheat; border: 0px; color: #027562; "
                             type="button" 
                             data-bs-toggle="collapse" 
                             data-bs-target="#sidebarContent" 
@@ -222,7 +223,7 @@
                     <!-- Grail Card -->
                     <div class="col-12 col-md-4 mb-2 mt-2">
                         <div class="position-relative d-flex flex-column leaderboard-height">
-                            <div class="d-flex flex-column align-items-center text-center  mt-2" style="border-bottom: solid 1px rgb(160, 160, 160);">
+                            <div class="d-flex flex-column align-items-center text-center  mt-2" style="border-bottom: solid 1px  #f0b358;">
                             <h6 class="fw-bold">Desperate To Try 🌱</h6>
                             </div>
                             <div v-if="selectedGrails.length === 0" class="text-center mt-2 small mobile-rating-smaller-text-2">
@@ -274,7 +275,7 @@
                     <!-- Up & Coming Card -->
                     <div class="col-12 col-md-4 mb-2 mt-2 border-left-desktop">
                         <div class="position-relative d-flex flex-column leaderboard-height">
-                            <div class="d-flex flex-column align-items-center text-center mt-2" style="border-bottom: solid 1px rgb(160, 160, 160);">
+                            <div class="d-flex flex-column align-items-center text-center mt-2" style="border-bottom:  solid 1px  #f0b358">
                                 <h6 class="fw-bold">Up And Coming 🍷</h6>
                             </div>
                             <div v-if="selectedUpAndComing.length === 0" class="text-center my-2 small mobile-rating-smaller-text-2">
@@ -314,7 +315,7 @@
                     <!-- GOATs Card -->
                     <div class="col-12 col-md-4 mb-2 mt-2 border-left-desktop">
                         <div class="position-relative d-flex flex-column leaderboard-height">
-                            <div class="d-flex flex-column align-items-center text-center  mt-2" style="border-bottom: solid 1px rgb(160, 160, 160);">
+                            <div class="d-flex flex-column align-items-center text-center  mt-2" style="border-bottom:  solid 1px  #f0b358;">
                                 <h6 class="fw-bold">Ride Or Die 🙌</h6>
                                
                             </div>
@@ -605,15 +606,15 @@
                 </ul>
 
                     <!-- row 1: review of your expressions & profile visits -->
-                    <div class="row mobile-view-show tab-content" >
+                    <div class="row mobile-view-show tab-content " >
                     
                         <!-- col 1: review of your expressions -->
-                        <div id="countofreviews" class="tab-pane fade show active col-lg-5 col-md-12 col-sm-12 text-start pt-5 mobile-pt-3 mx-lg-3 ps-lg-0 pe-lg-0" style="color:black;">
+                        <div id="countofreviews" class="card p-3 tab-pane fade show active col-lg-5 col-md-12 col-sm-12 text-start pt-5 mobile-pt-3 mx-lg-3 ps-lg-0 pe-lg-0" style="color:black;">
                             <Line :data="reviewsData" :options="chartOptions"></Line>
                         </div>
 
                         <!-- col 2: profile visits -->
-                        <div id="spreadofratings" class="tab-pane fade col-lg-5 col-md-12 col-sm-12 text-start pt-5 mobile-pt-3 mx-lg-3 ps-lg-0 pe-lg-0" style="color:black;">
+                        <div id="spreadofratings" class="card p-3 tab-pane fade col-lg-5 col-md-12 col-sm-12 text-start pt-5 mobile-pt-3 mx-lg-3 ps-lg-0 pe-lg-0" style="color:black;">
                             
                             <Bar :data="ratingsData" :options="chartOptions" />
                         </div>
@@ -638,7 +639,7 @@
                     <div style="min-height:450px;" class="row mobile-view-show tab-content">
                         <!-- col 1: your best rated drinks -->
                         <div id="BestRatedExpressions" class="tab-pane fade show active col-lg-5 col-md-12 col-sm-12 text-start pt-2 mx-3 ps-lg-0 pe-lg-0 mobile-mx-0">
-                            <div class="text-start pb-2" v-for="listing in bestRatedListings" v-bind:key="listing.id">
+                            <div class="text-start pb-2 card p-3 " v-for="listing in bestRatedListings" v-bind:key="listing.id">
                                 <router-link :to="{ path: '/listing/view/' + listing.id + '/' + listing.listingName.replace(/[^a-zA-Z0-9]/g, '') }" class="reverse-clickable-text">
                                     <div class="d-flex align-items-center">
                                         <!-- <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;"> -->
@@ -659,7 +660,7 @@
                         <!-- col 2: your best rated categories -->
                         <div id="BestRatedCategories" class="tab-pane fade  col-lg-5 col-md-12 col-sm-12 text-start pt-3 mx-3 ps-lg-0 pe-lg-0 mobile-mx-0"> <!-- padding classes added by tzh-->
                         
-                            <div class="text-start pb-2" v-for="(category, index) in bestRatedCategories" v-bind:key="category">
+                            <div class="text-start pb-2 card p-3 " v-for="(category, index) in bestRatedCategories" v-bind:key="category">
                                 <div class="row ms-0 default-clickable-text "> 
                                     <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
                                         <h5 class="my-auto"> {{ index + 1 }} </h5>
@@ -678,7 +679,7 @@
 
                         <!-- col 3: your top venues -->
                         <div id="YourTopVenues" class="tab-pane fade  col-lg-5 col-md-12 col-sm-12 text-start pt-3 mx-3 ps-lg-0 pe-lg-0 mobile-mx-0"> <!-- padding classes added by tzh-->
-                            <div class="text-start pb-2" v-for="venue in topVenues" v-bind:key="venue">
+                            <div class="text-start pb-2 card p-3 " v-for="venue in topVenues" v-bind:key="venue">
                                 <div class="row ms-0 default-clickable-text "> 
                                     <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
                                         <h6 class="my-auto"> {{ topVenues.indexOf(venue) + 1 }} </h6>
@@ -693,7 +694,7 @@
 
                          <!-- col 4: your top brands -->
                         <div id="YourTopBrands" class="tab-pane fade  col-lg-5 col-md-12 col-sm-12 text-start pt-3 mx-3 ps-lg-0 pe-lg-0 mobile-mx-0"> <!-- padding classes added by tzh-->
-                            <div class="text-start pb-2" v-for="producer in topBrands" v-bind:key="producer">
+                            <div class="text-start pb-2 card p-3 " v-for="producer in topBrands" v-bind:key="producer">
                             <div class="row ms-0 default-clickable-text "> 
                                 <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
                                     <h5 class="my-auto"> {{ topBrands.indexOf(producer) + 1 }} </h5>
@@ -709,27 +710,28 @@
                     </div>
 
                 <!-- row 1: review count and spread of ratings -->
-                <div class="row mobile-view-hide">
+                    <div class="row text-start mobile-view-hide  mt-4">
 
-                    <!-- col 1: review count -->
-                    <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0" style="color:black;">
-                        <h6 class="fw-bold"> Review Count </h6>
-                        <Line :data="reviewsData" :options="chartOptions"></Line>
+                        <!-- col 1: review count -->
+                        <div class="card ms-5 p-3 col-5 text-start" style="color:black;">
+                            <h6 class="fw-bold">Review Count</h6>
+                            <Line :data="reviewsData" :options="chartOptions"></Line>
+                        </div>
+                        
+                        
+                        <!-- col 2: spread of ratings -->
+                        <div class="card ms-5 p-3 col-5 text-start" style="color:black;">
+                            <h6 class="fw-bold">Spread of Ratings</h6>
+                            <Bar :data="ratingsData" :options="chartOptions" />
+                        </div>
+
                     </div>
-
-                    <!-- col 2: spread of ratings -->
-                    <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 mx-3 ps-lg-0 pe-lg-0" style="color:black;">
-                        <h6 class="fw-bold"> Spread of Ratings </h6>
-                        <Bar :data="ratingsData" :options="chartOptions" />
-                    </div>
-
-                </div>
 
                 <!-- row 2: your best rated drinks & your best rated categories -->
-                <div class="row mobile-view-hide">
+                <div class="row text-start mobile-view-hide  mt-4">
 
                     <!-- col 1: your best rated drinks -->
-                    <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5  mx-3 ps-lg-0 pe-lg-0" style="color:black;">
+                    <div class="card ms-5 p-3 col-5 text-start" style="color:black;">
                         <h6 class="fw-bold  mb-2">  Best Rated Drinks </h6>
                         <div class="text-start pb-2" v-for="listing in bestRatedListings" v-bind:key="listing.id">
                             <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
@@ -750,7 +752,7 @@
                     </div>
 
                     <!-- col 2: your best rated categories -->
-                    <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-3 ps-lg-0 pe-lg-0" style="color:black;"> <!-- padding classes added by tzh-->
+                    <div class="card ms-5 p-3 col-5 text-start" style="color:black;"> <!-- padding classes added by tzh-->
                         <h6 class="fw-bold mb-2">  Your Best Rated Categories </h6>
                         <div class="text-start pb-2" v-for="(category, index) in bestRatedCategories" v-bind:key="category">
                             <div class="row ms-0 default-clickable-text "> 
@@ -772,10 +774,10 @@
                 </div> <!-- end of row 2-->
 
                 <!-- row 3: your top venues & your top brands -->
-                <div class="row mobile-view-hide">
+                <div class="row text-start mobile-view-hide  mt-4">
 
                     <!-- col 1: your top venues -->
-                    <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5  mx-3 ps-lg-0 pe-lg-0" style="color:black;">
+                    <div class="card ms-5 p-3 col-5 text-start" style="color:black;">
                         <h6 class="fw-bold  mb-2"> Your Top Venues </h6>
                         <div class="text-start pb-2" v-for="venue in topVenues" v-bind:key="venue">
                             <div class="row ms-0 default-clickable-text "> 
@@ -791,7 +793,7 @@
                     </div>
                     
                     <!-- col 2: your top brands -->
-                    <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5  mx-3 ps-lg-0 pe-lg-0" style="color:black;">
+                    <div class="card ms-5 p-3 col-5 text-start" style="color:black;">
                         <h6 class="fw-bold  mb-2">  Your Top Brands </h6>
                         <div class="text-start pb-2" v-for="producer in topBrands" v-bind:key="producer">
                             <div class="row ms-0 default-clickable-text "> 
@@ -808,10 +810,10 @@
                 </div>
 
                 <!-- row 3: your top styles -->
-                <div class="row mobile-view-hide">
+                <div class="row text-start mobile-view-hide mt-4">
 
                     <!-- col 1: your top venues -->
-                    <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5  mx-3 ps-lg-0 pe-lg-0" style="color:black;">
+                    <div class="card ms-5 p-3 col-5 text-start" style="color:black;">
                         <h6 class="fw-bold  mb-2">  Your Top Styles </h6>
                         <div class="text-start pb-2" v-for="listing in topStyles" v-bind:key="listing">
                             <div class="row ms-0 default-clickable-text "> 
@@ -2356,7 +2358,7 @@
 
 @media (min-width: 991px) {
   .border-left-desktop {
-    border-left: solid 1px rgb(211, 211, 211);
+    border-left: solid 1px  #f0b358;; 
   }
 }
 
