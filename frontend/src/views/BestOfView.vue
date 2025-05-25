@@ -32,17 +32,17 @@
     <div v-if="dataLoaded" class="container text-start">
 
         <!-- Header and selection -->
+       <div class="container">
         <div class="text-center mt-5">
             <h2 class="fw-bold">Best Of</h2>
             <p>A round of community favourites, as voted by you!</p>
 
             <!-- Button to cast vote -->
             <button
-                class="btn primary-btn btn-sm primary-btn-less-round-blue mb-3" 
-                style="border: 0cap; font-style: normal;"
-                @click="$router.push('/vote')"
+                class="btn primary-btn-less-round-blue btn-lg mb-3" 
+                @click="$router.push('/dashboard/user')"
             >
-                <span class="fs-5 fst-italic"> Cast your vote! </span>
+                <span class="fw-bold"> Cast your vote! </span>
             </button>
 
             <!-- Select form control to choose drink type and category -->

@@ -35,9 +35,9 @@
 
             <!-- left pane -->
             <div class="col-lg-4 col-md-12 col-sm-12">
-                <div class="container">
+                <div class="container ">
                     <!-- row 1: producer info -->
-                    <div class="row">
+                    <div class="row mobile-my-2">
                         <!-- producer profile photo -->
                         <div class="col-4 text-start pe-0">
                             <!-- <img :src="selectedImage || 'data:image/jpeg;base64,' + (user['photo'] || defaultProfilePhoto)" 
@@ -59,238 +59,19 @@
 
                     <!-- row 2: return to profile -->
                     <div class="row pt-3 mobile-view-hide">
-                        <button type="button" class="btn tertiary-btn-blue-outline rounded-0 default-clickable-text" v-on:click="goBack()"> 
+                        <button type="button " class="btn tertiary-btn-blue-outline rounded-0 default-clickable-text" v-on:click="goBack()"> 
                             Return to profile 
                         </button>
                     </div>
                     
-                    <!-- badges -->
-                    <div class="mt-3">
-                        <h3 class="mobile-view-hide">Badges Unlocked</h3>
-                        <p class="mobile-view-show"><strong>Badges Unlocked</strong></p>
-                        <!--<hr>-->
+                    
 
-                        <div v-if="topCategoriesReviewed.length == 0 && otherBadges.length == 0">
-                            You have no badges yet.
-                        </div>
-
-                        <div v-else class="container text-center mb-3">
-                            <!-- badges for different drink types -->
-                            <div class="row">
-                                <div class="mobile-col-3 col-12 col-sm-4 col-md-6 col-xl-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2 " v-for="drinkTypeDetails in matchedDrinkTypes" :key="drinkTypeDetails.id">
-                                    <!-- image of actual badge  style="width: 100px; height: 100px;"  -->
-                                    <!-- <img :src="'data:image/png;base64,'+ (drinkTypeDetails.badgePhoto || defaultProfilePhoto)" 
-                                        alt="" class="rounded-circle-white-bg border border-dark badge-img"> -->
-                                    <img :src="(drinkTypeDetails.badgePhoto || defaultProfilePhoto)" 
-                                        alt="" class="rounded-circle-white-bg border border-dark badge-img">
-                                    <!-- badge description -->
-                                    <div class="pt-1" style="line-height: 1;"> 
-                                        <small> 
-                                            <b> {{ drinkTypeDetails.drinkType }} {{ categoryBadges[drinkTypeDetails.drinkType] }} </b>
-                                        </small>
-                                        <br>
-                                        <small class="xs-text" v-for="(subcategory, category) of topSubcategoriesReviewed" :key="category">
-                                            <span v-if="category === drinkTypeDetails.drinkType">
-                                                <i>
-                                                    (Power: <span v-for="item in subcategory" :key="item">
-                                                        {{ item }}<span v-if="subcategory.indexOf(item) !== subcategory.length - 1">, </span>
-                                                    </span>)
-                                                </i>
-                                            </span>
-                                        </small>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- badges based on other user activities -->
-                            <div class="row">
-                                <div class="mobile-col-3 col-12 col-sm-4 col-md-6 col-xl-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2" v-for="badge in otherBadges" :key="badge">
-                                    <!-- image of actual badge style="width: 100px; height: 100px;" -->
-                                    <!-- <img :src="'data:image/png;base64,'+ (getBadgeInfo(badge).badgePhoto)" 
-                                        alt="" class="rounded-circle-white-bg border border-dark badge-img"> -->
-                                    <img :src="(getBadgeInfo(badge).badgePhoto)" 
-                                        alt="" class="rounded-circle-white-bg border border-dark badge-img">
-                                    <!-- badge description -->
-                                    <p class="pt-1" style="line-height: 1;"> 
-                                        <small> 
-                                            <b> {{ getBadgeInfo(badge).badgeDesc }} </b>
-                                        </small> 
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <a href="#" style="color: black">Learn more about badges.</a>
-                        </div>
-
-                    </div>
-
-                    <!-- row 3: recent activity from followers mobile -->
-                    <div class="row mobile-view-show ps-2 pe-2 mt-3">
-                        <button v-if="showFollowerActivity"
-                        type="button" 
-                        class="active-toggle-producer-QnA tertiary-text pt-2 pb-2 " 
-                        data-bs-toggle="collapse" 
-                        data-bs-target="#collapseFollowerActivity" 
-                        aria-expanded="false" 
-                        aria-controls="collapseFollowerActivity" 
-                        style="font-weight:bold;"
-                        @click="checkToShowFollowerActivity()">Follower Activity ↑</button>
-                        <button v-else
-                        type="button" 
-                        class="primary-btn-less-round-green tertiary-text pt-2 pb-2 border " 
-                        data-bs-toggle="collapse" 
-                        data-bs-target="#collapseFollowerActivity" 
-                        aria-expanded="false" 
-                        aria-controls="collapseFollowerActivity" 
-                        style="font-weight:bold;"
-                        @click="checkToShowFollowerActivity()">Follower Activity ↓</button>
-                        <div class="collapse pt-3 pe-0 ps-0" id="collapseFollowerActivity">
-                            <div class="square primary-square-green rounded p-3 mb-3 text-start">
-                            <!-- header text -->
-                            <div class="square-inline pb-2">
-                                <h4 class="square-inline text-start mr-auto"> Recent Activity from Your Followers </h4>
-                            </div>
-                            <!-- body -->
-                            <div style="height: 85%;">
-                                <div class="overflow-auto" style="max-height: 100%;">
-                                    <!-- v-for loop here-->
-                                    <div v-for="activity in recentFollowerActivity" v-bind:key="activity.id" class="py-2">
-                                        <div v-if="activity.type === 'tag'">
-                                            <i> 
-                                                <router-link :to="{ path: '/profile/user/' + activity.userID }" class="reverse-clickable-text">
-                                                    @<b> {{ getUserFromID(activity.userID).username }} </b>
-                                                </router-link> 
-                                                tagged you in a review on 
-                                                <router-link :to="{ path: '/listing/view/' + activity.listingID + '/' + getListingFromID(activity.listingID).listingName.replace(/[^a-zA-Z0-9]/g, '') }" class="reverse-clickable-text">
-                                                    <u> {{ getListingFromID(activity.listingID).listingName }} </u>
-                                                </router-link>
-                                                {{ getTimeDifference(activity.date) }}
-                                            </i>
-                                        </div>
-                                        <div v-else-if="activity.type === 'follow'">
-                                            <i> 
-                                                <router-link :to="{ path: '/profile/user/' + activity.userID }" class="reverse-clickable-text">
-                                                    @<b> {{ activity.username }} </b>
-                                                </router-link> 
-                                                started following you
-                                                {{ getTimeDifference(activity.date) }}
-                                            </i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            </div>
-                        </div>    
-                    </div>
-                    <!-- row 3: recent activity from followers desktop -->
+                    <!-- row 3: your recent activity on DESKTOP -->
                     <div class="row pt-3 mobile-view-hide">
                         <div class="square primary-square-green rounded p-3 mb-3 text-start">
                             <!-- header text -->
                             <div class="square-inline pb-2">
-                                <h4 class="square-inline text-start mr-auto"> Recent Activity from Your Followers </h4>
-                            </div>
-                            <!-- body -->
-                            <div style="height: 85%;">
-                                <div class="overflow-auto" style="max-height: 100%;">
-                                    <!-- v-for loop here-->
-                                    <div v-for="activity in recentFollowerActivity" v-bind:key="activity.id" class="py-2">
-                                        <div v-if="activity.type === 'tag'">
-                                            <i> 
-                                                <router-link :to="{ path: '/profile/user/' + activity.userID }" class="reverse-clickable-text">
-                                                    @<b> {{ getUserFromID(activity.userID).username }} </b>
-                                                </router-link> 
-                                                tagged you in a review on 
-                                                <router-link :to="{ path: '/listing/view/' + activity.listingID + '/' + getListingFromID(activity.listingID).listingName.replace(/[^a-zA-Z0-9]/g, '') }" class="reverse-clickable-text">
-                                                    <u> {{ getListingFromID(activity.listingID).listingName }} </u>
-                                                </router-link>
-                                                {{ getTimeDifference(activity.date) }}
-                                            </i>
-                                        </div>
-                                        <div v-else-if="activity.type === 'follow'">
-                                            <i> 
-                                                <router-link :to="{ path: '/profile/user/' + activity.userID }" class="reverse-clickable-text">
-                                                    @<b> {{ activity.username }} </b>
-                                                </router-link> 
-                                                started following you
-                                                {{ getTimeDifference(activity.date) }}
-                                            </i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- row 4: your recent activity on mobile -->
-                    <div class="row pt-3 mobile-view-show ps-2 pe-2">
-                        <button v-if="showRecentActivity"
-                        type="button" 
-                        class="active-toggle-producer-QnA tertiary-text pt-2 pb-2 " 
-                        data-bs-toggle="collapse" 
-                        data-bs-target="#collapseUserActivity" 
-                        aria-expanded="false" 
-                        aria-controls="collapseUserActivity" 
-                        style="font-weight:bold;"
-                        @click="checkToShowRecentActivity()">Your Recent Activity ↑</button>
-                        <button v-else
-                        type="button" 
-                        class="primary-btn-less-round-green tertiary-text pt-2 pb-2 border" 
-                        data-bs-toggle="collapse" 
-                        data-bs-target="#collapseUserActivity" 
-                        aria-expanded="false" 
-                        aria-controls="collapseUserActivity" 
-                        style="font-weight:bold;"
-                        @click="checkToShowRecentActivity()">Your Recent Activity ↓</button>
-                        <div class="mt-3 collapse square primary-square-green rounded p-3 mb-3 text-start" style="height: 325px;" id="collapseUserActivity">
-                            <div class="square-inline pb-2">
-                                <h4 class="square-inline text-start mr-auto"> Your Recent Activity </h4>
-                            </div>
-                            <!-- body -->
-                            <div style="height: 85%;">
-                                <div class="overflow-auto" style="max-height: 100%;">
-                                    <div v-for="activity in recentUserActivity" v-bind:key="activity.date" class="py-2">
-                                        <div v-if="activity.type == 'review'">
-                                            <i> 
-                                                You rated 
-                                                <b>
-                                                    <router-link :to="{ path: '/listing/view/' + activity.listingID + '/' + getListingFromID(activity.listingID).listingName.replace(/[^a-zA-Z0-9]/g, '') }" class="reverse-clickable-text">
-                                                        <u> {{ getListingFromID(activity.listingID).listingName }} </u>
-                                                    </router-link>
-                                                    &nbsp;<span style="color: #F0B358">{{ activity.rating }} stars</span>
-                                                </b>
-                                                {{ getTimeDifference(activity.date) }}
-                                            </i>
-                                        </div>
-                                        <div v-else>
-                                            <i>
-                                                You added
-                                                <b>
-                                                    <router-link :to="{ path: '/listing/view/' + activity.listingID + '/' + getListingFromID(activity.listingID).listingName.replace(/[^a-zA-Z0-9]/g, '') }" class="reverse-clickable-text">
-                                                        <u> {{ getListingFromID(activity.listingID).listingName }} </u>
-                                                    </router-link>
-                                                </b>
-                                                &nbsp;to your list:&nbsp;
-                                                <b>
-                                                    <router-link :to="{ path: `/profile/user/${userID}/${activity.listName}`}" class="reverse-clickable-text">
-                                                        <u><span style="color: #F0B358;">{{ activity.listName }}</span></u>
-                                                    </router-link>
-                                                </b>
-                                                <br />{{ getTimeDifference(activity.date) }}
-                                            </i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- row 4: your recent activity on desktop -->
-                    <div class="row pt-3 mobile-view-hide">
-                        <div class="square primary-square-green rounded p-3 mb-3 text-start">
-                            <!-- header text -->
-                            <div class="square-inline pb-2">
-                                <h4 class="square-inline text-start mr-auto"> Your Recent Activity </h4>
+                                <h5 class="square-inline text-start mr-auto"> Your Recent Activity </h5>
                             </div>
                             <!-- body -->
                             <div style="height: 85%;">
@@ -331,68 +112,12 @@
                         </div>
                     </div>
 
-                    <!-- row 5: recent activity on reviews mobile -->
-                    <div class="row pt-3 mobile-view-show ps-2 pe-2">
-                        <button v-if="showReviewActivity"
-                        type="button" 
-                        class="active-toggle-producer-QnA tertiary-text pt-2 pb-2 " 
-                        data-bs-toggle="collapse" 
-                        data-bs-target="#collapseReviewActivity" 
-                        aria-expanded="false" 
-                        aria-controls="collapseReviewActivity" 
-                        style="font-weight:bold;"
-                        @click="checkToShowReviewActivity()">Activity On Your Reviews ↑</button>
-                        <button v-else
-                        type="button" 
-                        class="primary-btn-less-round-green tertiary-text pt-2 pb-2 border" 
-                        data-bs-toggle="collapse" 
-                        data-bs-target="#collapseReviewActivity" 
-                        aria-expanded="false" 
-                        aria-controls="collapseReviewActivity" 
-                        style="font-weight:bold;"
-                        @click="checkToShowReviewActivity()">Activity On Your Reviews ↓</button>
-                        
-                        <div class="mt-3 collapse square primary-square-green rounded p-3 mb-3 text-start" style="height: 325px;" id="collapseReviewActivity">
-                            <div class="square-inline pb-2">
-                                <h4 class="square-inline text-start mr-auto"> Recent Activity on Your Reviews </h4>
-                            </div>
-                            <!-- body -->
-                            <div style="height: 85%;">
-                                <div class="overflow-auto" style="max-height: 100%;">
-                                    <!-- v-for loop here-->
-                                    <div v-for="activity in recentReviewActivity" v-bind:key="activity.id" class="py-2">
-                                        <div v-if="activity.type === 'upvote' || activity.type === 'downvote'">
-                                            <svg v-if="activity.type == 'upvote'" fill="#ffffff" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="m4 14h2 2v3 4c0 .553.447 1 1 1h6c.553 0 1-.447 1-1v-5-2h1 3c.385 0 .734-.221.901-.566.166-.347.12-.758-.12-1.059l-8-10c-.381-.475-1.181-.475-1.562 0l-8 10c-.24.301-.286.712-.12 1.059.167.345.516.566.901.566z"/></svg>
-                                            <svg v-if="activity.type == 'downvote'" fill="#ffffff" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="m20.901 10.566c-.167-.345-.516-.566-.901-.566h-2-2v-3-4c0-.553-.447-1-1-1h-6c-.553 0-1 .447-1 1v5 2h-1-3c-.385 0-.734.221-.901.566-.166.347-.12.758.12 1.059l8 10c.19.237.477.375.781.375s.591-.138.781-.375l8-10c.24-.301.286-.712.12-1.059z"/></svg>
-                                            <i> 
-                                                Someone <span :style="{ color: activity.type === 'upvote' ? '#90ee90' : '#ff7f7f' }">{{ activity.type }}d</span> your review on 
-                                                <router-link :to="{ path: '/listing/view/' + activity.reviewTarget + '/' + getListingFromID(activity.reviewTarget).listingName.replace(/[^a-zA-Z0-9]/g, '') }" class="reverse-clickable-text">
-                                                    <u> {{ getListingFromID(activity.reviewTarget).listingName }} </u>
-                                                </router-link>
-                                                {{ getTimeDifference(activity.date) }}
-                                            </i>
-                                        </div>
-                                        <div v-else-if="activity.type === 'follow'">
-                                            <i> 
-                                                <router-link :to="{ path: '/profile/user/' + activity.userID }" class="reverse-clickable-text">
-                                                    @<b> {{ activity.username }} </b>
-                                                </router-link> 
-                                                started following you
-                                                {{ getTimeDifference(activity.date) }}
-                                            </i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- row 5: recent activity on reviews desktop -->
+                    <!-- row 4: recent activity on reviews desktop -->
                     <div class="row pt-3 mobile-view-hide">
                         <div class="square primary-square-green rounded p-3 mb-3 text-start">
                             <!-- header text -->
                             <div class="square-inline pb-2">
-                                <h4 class="square-inline text-start mr-auto"> Recent Activity on Your Reviews </h4>
+                                <h5 class="square-inline text-start mr-auto"> Recent Activity on Your Reviews </h5>
                             </div>
                             <!-- body -->
                             <div style="height: 85%;">
@@ -424,36 +149,91 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- row 5: recent activity from followers DESKTOP -->
+                    <div class="row pt-3 mobile-view-hide">
+                        <div class="square primary-square-green rounded p-3 mb-3 text-start">
+                            <!-- header text -->
+                            <div class="square-inline pb-2">
+                                <h5 class="square-inline text-start mr-auto"> Recent Activity from Your Followers </h5>
+                            </div>
+                            <!-- body -->
+                            <div style="height: 85%;">
+                                <div class="overflow-auto" style="max-height: 100%;">
+                                    <!-- v-for loop here-->
+                                    <div v-for="activity in recentFollowerActivity" v-bind:key="activity.id" class="py-2">
+                                        <div v-if="activity.type === 'tag'">
+                                            <i> 
+                                                <router-link :to="{ path: '/profile/user/' + activity.userID }" class="reverse-clickable-text">
+                                                    @<b> {{ getUserFromID(activity.userID).username }} </b>
+                                                </router-link> 
+                                                tagged you in a review on 
+                                                <router-link :to="{ path: '/listing/view/' + activity.listingID + '/' + getListingFromID(activity.listingID).listingName.replace(/[^a-zA-Z0-9]/g, '') }" class="reverse-clickable-text">
+                                                    <u> {{ getListingFromID(activity.listingID).listingName }} </u>
+                                                </router-link>
+                                                {{ getTimeDifference(activity.date) }}
+                                            </i>
+                                        </div>
+                                        <div v-else-if="activity.type === 'follow'">
+                                            <i> 
+                                                <router-link :to="{ path: '/profile/user/' + activity.userID }" class="reverse-clickable-text">
+                                                    @<b> {{ activity.username }} </b>
+                                                </router-link> 
+                                                started following you
+                                                {{ getTimeDifference(activity.date) }}
+                                            </i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- right pane -->
             <div class="col-lg-8 col-md-12 col-sm-12 ps-lg-5">
-                <!-- Start: Added by SMU Group 3: Grails, Up & Coming, GOATS -->
-                <div class="row">
+                <div class="container">
+
+                
+                <!-- Start: BEST OF SELECTION -->
+                <div class=" card container rounded p-4 pt-3 mb-4 mobile-mt-4 mobile-mb-2" >
+                    <div class="row text-center" style="border-bottom: 3px solid rgb(211, 211, 211);">
+                        <h5 class="fw-bold mobile-fs-5"> My Leaderboard 🏆 </h5>
+                        <button 
+                            class="mobile-view-show mobile-rating-smaller-text-2 mb-2 fw-bold"
+                            style="background-color: white; border: 0px; color: #027562; "
+                            type="button" 
+                            data-bs-toggle="collapse" 
+                            data-bs-target="#sidebarContent" 
+                            aria-expanded="false" 
+                            aria-controls="sidebarContent"
+                            >
+                            (click to collapse ↑)
+                            </button>
+                    </div>
+
+                    <!-- View My Clubs Toggle Button -->
+                
+                    
+                
+  
+                 <div class="row" id="sidebarContent">
                     <!-- Grail Card -->
                     <div class="col-12 col-md-4 mb-2 mt-2">
-                        <div class="card rounded p-4 text-white position-relative d-flex flex-column"
-                            style="background: #F0B358; height: 260px; border-radius: 16px !important;">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <h6 class="mb-0">Desperate to Try 🌱</h6>
-                                <button
-                                    class="btn btn-light rounded-circle d-flex align-items-center justify-content-center"
-                                    style="width: 36px; height: 36px; font-size: 1.5rem; font-weight: 300; border: none;"
-                                    @click="openPopup('Grail')">
-                                    +
-                                </button>
+                        <div class="position-relative d-flex flex-column leaderboard-height">
+                            <div class="d-flex flex-column align-items-center text-center  mt-2" style="border-bottom: solid 1px rgb(160, 160, 160);">
+                            <h6 class="fw-bold">Desperate To Try 🌱</h6>
                             </div>
-                            <div v-if="selectedGrails.length === 0" class="text-center mt-2 font-italic"
-                                style="font-size: 16px; font-style: italic;">
-                                the one on my bucket list...
+                            <div v-if="selectedGrails.length === 0" class="text-center mt-2 small mobile-rating-smaller-text-2">
+                                The one on my bucket list...
                             </div>
-                
-                            <div v-else class="d-flex flex-column align-items-center">
-                                <div v-for="(grail, index) in displayGrailsDetails" :key="index" class="d-flex flex-column align-items-center mb-3">
-                                    
+                            <div v-else class="d-flex flex-column flex-grow-1 overflow-auto">
+                                <div v-for="(grail, index) in displayGrailsDetails" :key="index" 
+                                class="d-flex align-items-center mt-2">
+
                                     <!-- Grail Image - Removed me-3 class and added mx-auto -->
-                                    <div class="mx-auto d-flex justify-content-center align-items-center drink-grail">
+                                    <div class="me-3 mobile-col-2 d-flex image-container producer-profile-no-left-padding-large-screen align-items-center" style="width: 100px; height: 100px;">
                                         <img v-if="grail.image" :src="grail.image" alt="Drink image"
                                             style="max-height: 100px; object-fit: contain;" />
                                         <img v-else src="../../../Images/Drinks/Placeholder.png" alt="Image placeholder"
@@ -461,25 +241,66 @@
                                     </div>
                 
                                     <!-- Grail Details -->
-                                    <div class="text-center">
+                                    <div class="flex-grow-1 mobile-col-6 text-start">
                                         <router-link 
-                                            :to="'/listing/view/' + grail.id + '/' + grail.name.replace(/[^a-zA-Z0-9]/g, '')"
-                                            style="color: white; font-weight: bold;">
+                                            :to="'/listing/view/' + grail.id + '/' + grail.name.replace(/[^a-zA-Z0-9]/g, '')" class="default-clickable-text mobile-rating-smaller-text-2 mb-0"
+                                            style="font-weight: bold; text-decoration: underline; display: block;">
                                             {{ grail.name }}
                                         </router-link>
-                                        <div style="font-size: 0.9rem;">{{ grail.bottler }}</div>
+                                        <small class="mobile-rating-smaller-text-2">{{ grail.bottler }}</small>
                                     </div>
                                 </div>
+                                
+                            </div>
+                            <div class="d-flex justify-content-center mt-2 ">
+                                <button
+                                    class="btn d-flex align-items-center justify-content-center mt-3 mobile-view-show"
+                                    style="background-color: #F4B754; border-radius: 50%; width: 36px; height: 36px; font-size: 1.5rem; font-weight: 300; color: white; border: none;"
+                                    @click="openPopup('Grail')">
+                                    +
+                                </button>
+                                </div>
+                            <div class="d-flex justify-content-center mt-auto">
+                                <button
+                                    class="btn d-flex align-items-center justify-content-center mobile-view-hide"
+                                    style="background-color: #F4B754; border-radius: 50%; width: 36px; height: 36px; font-size: 1.5rem; font-weight: 300; color: white; border: none;"
+                                    @click="openPopup('Grail')">
+                                    +
+                                </button>
                             </div>
                         </div>
                     </div>
                 
                     <!-- Up & Coming Card -->
-                    <div class="col-12 col-md-4 mb-2 mt-2">
-                        <div class="card rounded p-4 text-white position-relative d-flex flex-column"
-                            style="background: #F0B358; height: 260px; border-radius: 16px !important;">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <h6 class="mb-0">Up And Coming 🍷</h6>
+                    <div class="col-12 col-md-4 mb-2 mt-2 border-left-desktop">
+                        <div class="position-relative d-flex flex-column leaderboard-height">
+                            <div class="d-flex flex-column align-items-center text-center mt-2" style="border-bottom: solid 1px rgb(160, 160, 160);">
+                                <h6 class="fw-bold">Up And Coming 🍷</h6>
+                            </div>
+                            <div v-if="selectedUpAndComing.length === 0" class="text-center my-2 small mobile-rating-smaller-text-2">
+                                The ones that i drink over and over again...
+                            </div>
+                            <div v-else class="d-flex flex-column flex-grow-1 overflow-auto">
+                                <div v-for="(item, index) in displayUpAndComingDetails" :key="index"
+                                    class="d-flex align-items-center mt-2">
+                                    <div class="col-3 mobile-col-2 image-container me-2 mobile-px-0 producer-profile-no-left-padding-large-screen align-items-center">
+                                        <img v-if="item.image" class="img-fluid "  :src="item.image" alt="Drink image"
+                                            style="width: 100%; height: 100%; object-fit: contain;" />
+                                        <img v-else class="img-fluid " src="../../../Images/Drinks/Placeholder.png" alt="Image placeholder"
+                                            style="width: 100%; height: 100%; object-fit: contain;" />
+                                    </div>
+                                    <div class="col-8 text-start">
+                                        <router-link :to="'/listing/view/' + item.id + '/' + item.name.replace(/[^a-zA-Z0-9]/g, '')"
+                                            style="color: black; font-weight: bold; text-decoration: underline; display: block;">
+                                            <div v-if="item">
+                                               <small class="mobile-rating-smaller-text-2 mb-0 default-clickable-text"> {{ item.name.slice(0, 35) }}</small>
+                                            </div>
+                                        </router-link>
+                                        <small>{{ item.bottler }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-center mt-auto">
                                 <button
                                     class="btn btn-light rounded-circle d-flex align-items-center justify-content-center"
                                     style="width: 36px; height: 36px; font-size: 1.5rem; font-weight: 300; border: none;"
@@ -487,69 +308,46 @@
                                     +
                                 </button>
                             </div>
-                            <div v-if="selectedUpAndComing.length === 0" class="text-center mt-2 font-italic"
-                                style="font-size: 16px; font-style: italic;">
-                                the ones that i drink over and over again...
-                            </div>
-                            <div v-else class="d-flex flex-column flex-grow-1 overflow-auto">
-                                <div v-for="(item, index) in displayUpAndComingDetails" :key="index"
-                                    class="d-flex align-items-center mb-2">
-                                    <div class="drink-img me-2">
-                                        <img v-if="item.image" :src="item.image" alt="Drink image"
-                                            style="width: 100%; height: 100%; object-fit: contain;" />
-                                        <img v-else src="../../../Images/Drinks/Placeholder.png" alt="Image placeholder"
-                                            style="width: 100%; height: 100%; object-fit: contain;" />
-                                    </div>
-                                    <div class="text-start">
-                                        <router-link :to="'/listing/view/' + item.id + '/' + item.name.replace(/[^a-zA-Z0-9]/g, '')"
-                                            style="color: white; font-weight: bold; text-decoration: underline; display: block;">
-                                            <div v-if="item">
-                                                {{ item.name }}
-                                            </div>
-                                        </router-link>
-                                        <div style="font-size: 0.9rem;">{{ item.bottler }}</div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 
                     <!-- GOATs Card -->
-                    <div class="col-12 col-md-4 mb-2 mt-2">
-                        <div class="card rounded p-4 text-white position-relative d-flex flex-column"
-                            style="background: #F0B358; height: 260px; border-radius: 16px !important;">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <h6 class="mb-0">Ride or Die 🙌</h6>
-                                <button
+                    <div class="col-12 col-md-4 mb-2 mt-2 border-left-desktop">
+                        <div class="position-relative d-flex flex-column leaderboard-height">
+                            <div class="d-flex flex-column align-items-center text-center  mt-2" style="border-bottom: solid 1px rgb(160, 160, 160);">
+                                <h6 class="fw-bold">Ride Or Die 🙌</h6>
+                               
+                            </div>
+                            <div v-if="selectedGOATs.length === 0" class="text-center my-2 small mobile-rating-smaller-text-2">
+                                The ones that i still think about...
+                            </div>
+                            <div v-else class="d-flex flex-column flex-grow-1 overflow-auto">
+                                <div v-for="(item, index) in displayGOATsDetails" :key="index"
+                                    class="d-flex align-items-center mt-2">
+                                    <div class="col-3 mobile-col-2 image-container me-2 mobile-px-0 producer-profile-no-left-padding-large-screen align-items-center">
+                                        <img v-if="item.image" class="img-fluid" :src="item.image" alt="Drink image"
+                                            style="width: 100%; height: 100%; object-fit: contain;" />
+                                        <img v-else  class="img-fluid" src="../../../Images/Drinks/Placeholder.png" alt="Image placeholder"
+                                            style="width: 100%; height: 100%; object-fit: contain;" />
+                                    </div>
+                                    <div class="text-start">
+                                        <router-link :to="'/listing/view/' + item.id + '/' + item.name.replace(/[^a-zA-Z0-9]/g, '')"
+                                            style="color: black; font-weight: bold; text-decoration: underline; display: block;">
+                                            <div v-if="item">
+                                                <small class="mobile-rating-smaller-text-2 mb-0 default-clickable-text"> {{ item.name.slice(0, 35) }}</small>
+                                            </div>
+                                        </router-link>
+                                        <small>{{ item.bottler }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-center mt-auto ">
+                                 <button
                                     class="btn btn-light rounded-circle d-flex align-items-center justify-content-center"
                                     style="width: 36px; height: 36px; font-size: 1.5rem; font-weight: 300; border: none;"
                                     @click="openPopup('GOATs')">
                                     +
                                 </button>
-                            </div>
-                            <div v-if="selectedGOATs.length === 0" class="text-center mt-2 font-italic"
-                                style="font-size: 16px; font-style: italic;">
-                                the ones that i still think about...
-                            </div>
-                            <div v-else class="d-flex flex-column flex-grow-1 overflow-auto">
-                                <div v-for="(item, index) in displayGOATsDetails" :key="index"
-                                    class="d-flex align-items-center mb-2">
-                                    <div class="drink-img me-2">
-                                        <img v-if="item.image" :src="item.image" alt="Drink image"
-                                            style="width: 100%; height: 100%; object-fit: contain;" />
-                                        <img v-else src="../../../Images/Drinks/Placeholder.png" alt="Image placeholder"
-                                            style="width: 100%; height: 100%; object-fit: contain;" />
-                                    </div>
-                                    <div class="text-start">
-                                        <router-link :to="'/listing/view/' + item.id + '/' + item.name.replace(/[^a-zA-Z0-9]/g, '')"
-                                            style="color: white; font-weight: bold; text-decoration: underline; display: block;">
-                                            <div v-if="item">
-                                                {{ item.name }}
-                                            </div>
-                                        </router-link>
-                                        <div style="font-size: 0.9rem;">{{ item.bottler }}</div>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -559,7 +357,7 @@
                         <div class="popup-content">
                             <button class="close-btn" @click="closePopup">&times;</button>
                 
-                            <h2 class="mb-1">Select Your {{ selectedCategory }} {{ getCategoryEmoji() }}</h2>
+                            <h5 class="fw-bold mb-1">Select Your {{ selectedCategory }} {{ getCategoryEmoji() }}</h5>
                             <p class="text-muted mb-4 subtitle">{{ getCategorySubtitle() }}</p>
                 
                             <!-- Search Bar -->
@@ -642,16 +440,167 @@
                             </button>
                         </div>
                     </div>
+                 </div>
+
+                 
                 </div>
                 <!-- End: Added by SMU Group 3: Grails, Up & Coming, GOATS -->
-                <!--mobile toggle buttons for graph tzh -->
+
+                <!-- Recent Activity / Follower Activity / Activity on Reviews MOBILE VIEW -->
+
+                <!-- RECENT ACTIVITY TOGGLE TABS FOR MOBILE -->
+                    <ul class="nav nav-pills mobile-view-show pt-2 px-2 mt-3" role="tablist">
+                        <li class="nav-item pe-2 pt-2 " role="presentation">
+                            <button class="nav-link mobile-rating-smaller-text-2 active" id="user-tab" data-bs-toggle="pill" data-bs-target="#userTabContent"
+                            type="button" role="tab" aria-controls="userTabContent" aria-selected="true">
+                            My Activity
+                            </button>
+                        </li>
+                        <li class="nav-item pe-2 pt-2 " role="presentation">
+                            <button class="nav-link mobile-rating-smaller-text-2" id="third-tab" data-bs-toggle="pill" data-bs-target="#thirdTabContent"
+                            type="button" role="tab" aria-controls="thirdTabContent" aria-selected="false">
+                            My Reviews
+                            </button>
+                        </li>
+                        <li class="nav-item pe-2 pt-2 " role="presentation">
+                            <button class="nav-link mobile-rating-smaller-text-2" id="follower-tab" data-bs-toggle="pill" data-bs-target="#followerTabContent"
+                            type="button" role="tab" aria-controls="followerTabContent" aria-selected="false">
+                            Following
+                            </button>
+                        </li>
+                    </ul>
+                    <div class="tab-content px-2 pt-3  mobile-view-show">
+                        <!-- Your Recent Activity MOBILE -->
+                        <div class="tab-pane fade show active" id="userTabContent" role="tabpanel" aria-labelledby="user-tab">
+                            <div class=" card p-3 mb-3 text-start">
+                            <div class="square-inline pb-2">
+                                <h6 class="square-inline text-start mr-auto"> Your Recent Activity </h6>
+                            </div>
+                            <!-- body -->
+                            <div style="height: 85%;">
+                                <div class="overflow-auto mobile-rating-smaller-text-2" style="max-height: 100%;">
+                                    <div v-for="activity in recentUserActivity" v-bind:key="activity.date" class="py-2">
+                                        <div v-if="activity.type == 'review'">
+                                            <i> 
+                                                You rated 
+                                                <b>
+                                                    <router-link :to="{ path: '/listing/view/' + activity.listingID + '/' + getListingFromID(activity.listingID).listingName.replace(/[^a-zA-Z0-9]/g, '') }" class="default-clickable-text">
+                                                        <u> {{ getListingFromID(activity.listingID).listingName }} </u>
+                                                    </router-link>
+                                                    &nbsp;<span style="color: #F0B358">{{ activity.rating }} stars</span>
+                                                </b>
+                                                {{ getTimeDifference(activity.date) }}
+                                            </i>
+                                        </div>
+                                        <div v-else>
+                                            <i>
+                                                You added
+                                                <b>
+                                                    <router-link :to="{ path: '/listing/view/' + activity.listingID + '/' + getListingFromID(activity.listingID).listingName.replace(/[^a-zA-Z0-9]/g, '') }" class="reverse-clickable-text">
+                                                        <u> {{ getListingFromID(activity.listingID).listingName }} </u>
+                                                    </router-link>
+                                                </b>
+                                                &nbsp;to your list:&nbsp;
+                                                <b>
+                                                    <router-link :to="{ path: `/profile/user/${userID}/${activity.listName}`}" class="reverse-clickable-text">
+                                                        <u><span style="color: #F0B358;">{{ activity.listName }}</span></u>
+                                                    </router-link>
+                                                </b>
+                                                <br />{{ getTimeDifference(activity.date) }}
+                                            </i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+
+                        <!--  Recent Activity on Your Reviews MOBILE -->
+                        <div class="tab-pane fade" id="thirdTabContent" role="tabpanel" aria-labelledby="third-tab">
+                            <div class="card rounded p-3 mb-3 text-start">
+                            <div class="square-inline pb-2">
+                                <h6 class="square-inline text-start mr-auto">Activity on Your Reviews </h6>
+                            </div>
+                            <!-- body -->
+                            <div style="height: 85%;">
+                                <div class="overflow-auto mobile-rating-smaller-text-2" style="max-height: 100%;">
+                                    <!-- v-for loop here-->
+                                    <div v-for="activity in recentReviewActivity" v-bind:key="activity.id" class="py-2">
+                                        <div v-if="activity.type === 'upvote' || activity.type === 'downvote'">
+                                            <svg v-if="activity.type == 'upvote'" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="m4 14h2 2v3 4c0 .553.447 1 1 1h6c.553 0 1-.447 1-1v-5-2h1 3c.385 0 .734-.221.901-.566.166-.347.12-.758-.12-1.059l-8-10c-.381-.475-1.181-.475-1.562 0l-8 10c-.24.301-.286.712-.12 1.059.167.345.516.566.901.566z"/></svg>
+                                            <svg v-if="activity.type == 'downvote'" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="m20.901 10.566c-.167-.345-.516-.566-.901-.566h-2-2v-3-4c0-.553-.447-1-1-1h-6c-.553 0-1 .447-1 1v5 2h-1-3c-.385 0-.734.221-.901.566-.166.347-.12.758.12 1.059l8 10c.19.237.477.375.781.375s.591-.138.781-.375l8-10c.24-.301.286-.712.12-1.059z"/></svg>
+                                            <i> 
+                                                Someone <span :style="{ color: activity.type === 'upvote' ? '#90ee90' : '#ff7f7f' }">{{ activity.type }}d</span> your review on 
+                                                <router-link :to="{ path: '/listing/view/' + activity.reviewTarget + '/' + getListingFromID(activity.reviewTarget).listingName.replace(/[^a-zA-Z0-9]/g, '') }" class="default-clickable-text">
+                                                    <u> {{ getListingFromID(activity.reviewTarget).listingName }} </u>
+                                                </router-link>
+                                                {{ getTimeDifference(activity.date) }}
+                                            </i>
+                                        </div>
+                                        <div v-else-if="activity.type === 'follow'">
+                                            <i> 
+                                                <router-link :to="{ path: '/profile/user/' + activity.userID }" class="reverse-clickable-text">
+                                                    @<b> {{ activity.username }} </b>
+                                                </router-link> 
+                                                started following you
+                                                {{ getTimeDifference(activity.date) }}
+                                            </i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+
+                        <!-- Recent Activity From Followers MOBILE-->
+                        <div class="tab-pane fade " id="followerTabContent" role="tabpanel" aria-labelledby="follower-tab">
+                           <div class="card p-3 mb-3 text-start">
+                            <!-- header text -->
+                            <div class="square-inline pb-2">
+                                <h6 class="square-inline text-start mr-auto">Recent Activity from Your Followers </h6>
+                            </div>
+                            <!-- body -->
+                            <div style="height: 85%;">
+                                <div class="overflow-auto mobile-rating-smaller-text-2" style="max-height: 100%;">
+                                    <!-- v-for loop here-->
+                                    <div v-for="activity in recentFollowerActivity" v-bind:key="activity.id" class="py-2">
+                                        <div v-if="activity.type === 'tag'">
+                                            <i> 
+                                                <router-link :to="{ path: '/profile/user/' + activity.userID }" class="default-clickable-text">
+                                                    @<b> {{ getUserFromID(activity.userID).username }} </b>
+                                                </router-link> 
+                                                tagged you in a review on 
+                                                <router-link :to="{ path: '/listing/view/' + activity.listingID + '/' + getListingFromID(activity.listingID).listingName.replace(/[^a-zA-Z0-9]/g, '') }" class="reverse-clickable-text">
+                                                    <u> {{ getListingFromID(activity.listingID).listingName }} </u>
+                                                </router-link>
+                                                {{ getTimeDifference(activity.date) }}
+                                            </i>
+                                        </div>
+                                        <div v-else-if="activity.type === 'follow'">
+                                            <i> 
+                                                <router-link :to="{ path: '/profile/user/' + activity.userID }" class="reverse-clickable-text">
+                                                    @<b> {{ activity.username }} </b>
+                                                </router-link> 
+                                                started following you
+                                                {{ getTimeDifference(activity.date) }}
+                                            </i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            </div> 
+                        </div>
+                        
+                    </div>
+
+                <!--mobile toggle buttons for graph  -->
                 <ul class="nav nav-pills mobile-view-show pt-2"  role="tablist" >
                 <hr>  
                     <li class="nav-item pe-2 pt-2 " role="presentation">
-                        <button class="nav-link active"  data-bs-toggle="pill" data-bs-target="#countofreviews" type="button" role="tab" aria-controls="countofreviews" aria-selected="true">Count of Reviews</button>
+                        <button class="nav-link mobile-rating-smaller-text-2 active"  data-bs-toggle="pill" data-bs-target="#countofreviews" type="button" role="tab" aria-controls="countofreviews" aria-selected="true">Count of Reviews</button>
                     </li>
                     <li class="nav-item pe-2 pt-2 " role="presentation">
-                        <button class="nav-link "  data-bs-toggle="pill" data-bs-target="#spreadofratings" type="button" role="tab" aria-controls="spreadofratings" aria-selected="false">Spread of Ratings</button>
+                        <button class="nav-link mobile-rating-smaller-text-2"  data-bs-toggle="pill" data-bs-target="#spreadofratings" type="button" role="tab" aria-controls="spreadofratings" aria-selected="false">Spread of Ratings</button>
                     </li>
                 </ul>
 
@@ -674,24 +623,30 @@
                 <ul class="nav nav-pills mobile-view-show pt-2"  role="tablist" >
                     <hr>
                 <li class="nav-item pe-2 pt-2 " role="presentation">
-                    <button class="nav-link active"  data-bs-toggle="pill" data-bs-target="#BestRatedExpressions" type="button" role="tab" aria-controls="BestRatedExpressions" aria-selected="true">Best Rated Drinks</button>
+                    <button class="nav-link mobile-rating-smaller-text-2 active"  data-bs-toggle="pill" data-bs-target="#BestRatedExpressions" type="button" role="tab" aria-controls="BestRatedExpressions" aria-selected="true">Best Rated Drinks</button>
                 </li>
                 <li class="nav-item pe-2 pt-2 " role="presentation">
-                    <button class="nav-link "  data-bs-toggle="pill" data-bs-target="#BestRatedCategories" type="button" role="tab" aria-controls="BestRatedCategories" aria-selected="false">Best Rated Categories</button>
+                    <button class="nav-link mobile-rating-smaller-text-2"  data-bs-toggle="pill" data-bs-target="#BestRatedCategories" type="button" role="tab" aria-controls="BestRatedCategories" aria-selected="false">Top Categories</button>
+                </li>
+                <li class="nav-item pe-2 pt-2 " role="presentation">
+                    <button class="nav-link mobile-rating-smaller-text-2"  data-bs-toggle="pill" data-bs-target="#YourTopVenues" type="button" role="tab" aria-controls="YourTopVenues" aria-selected="false">Top Venues</button>
+                </li>
+                <li class="nav-item pe-2 pt-2 " role="presentation">
+                    <button class="nav-link mobile-rating-smaller-text-2"  data-bs-toggle="pill" data-bs-target="#YourTopBrands" type="button" role="tab" aria-controls="YourTopBrands" aria-selected="false">Top Brands</button>
                 </li>
                 </ul>    
                     <div style="min-height:450px;" class="row mobile-view-show tab-content">
                         <!-- col 1: your best rated drinks -->
-                        <div id="BestRatedExpressions" class="tab-pane fade show active col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-3 ps-lg-0 pe-lg-0 mobile-mx-0">
+                        <div id="BestRatedExpressions" class="tab-pane fade show active col-lg-5 col-md-12 col-sm-12 text-start pt-2 mx-3 ps-lg-0 pe-lg-0 mobile-mx-0">
                             <div class="text-start pb-2" v-for="listing in bestRatedListings" v-bind:key="listing.id">
                                 <router-link :to="{ path: '/listing/view/' + listing.id + '/' + listing.listingName.replace(/[^a-zA-Z0-9]/g, '') }" class="reverse-clickable-text">
                                     <div class="d-flex align-items-center">
                                         <!-- <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;"> -->
                                         <img :src="(listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;">
-                                        <p class="ms-3 default-clickable-text"> 
+                                        <p class="ms-3 default-clickable-text mobile-rating-smaller-text-2"> 
                                             <b> {{ listing.listingName }} </b> 
                                             <br>
-                                            {{ listing.rating || "-" }} 
+                                            Your rating: {{ listing.rating || "-" }} 
                                             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
                                                 <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
                                             </svg>
@@ -702,17 +657,17 @@
                         </div>
 
                         <!-- col 2: your best rated categories -->
-                        <div id="BestRatedCategories" class="tab-pane fade  col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-3 ps-lg-0 pe-lg-0 mobile-mx-0"> <!-- padding classes added by tzh-->
+                        <div id="BestRatedCategories" class="tab-pane fade  col-lg-5 col-md-12 col-sm-12 text-start pt-3 mx-3 ps-lg-0 pe-lg-0 mobile-mx-0"> <!-- padding classes added by tzh-->
                         
                             <div class="text-start pb-2" v-for="(category, index) in bestRatedCategories" v-bind:key="category">
                                 <div class="row ms-0 default-clickable-text "> 
                                     <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
                                         <h5 class="my-auto"> {{ index + 1 }} </h5>
                                     </div>
-                                    <div class="col-10 shrink-width-on-dashboard" > <!-- style added by tzh-->
+                                    <div class="col-10 shrink-width-on-dashboard mobile-rating-smaller-text-2" > <!-- style added by tzh-->
                                         <b> {{ category.category }} </b> 
                                         <br>
-                                        {{ category.averageRating.toFixed(1) || "-" }} 
+                                        Average Rating: {{ category.averageRating.toFixed(1) || "-" }} 
                                         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
                                             <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
                                         </svg>
@@ -721,6 +676,36 @@
                             </div>
                         </div>
 
+                        <!-- col 3: your top venues -->
+                        <div id="YourTopVenues" class="tab-pane fade  col-lg-5 col-md-12 col-sm-12 text-start pt-3 mx-3 ps-lg-0 pe-lg-0 mobile-mx-0"> <!-- padding classes added by tzh-->
+                            <div class="text-start pb-2" v-for="venue in topVenues" v-bind:key="venue">
+                                <div class="row ms-0 default-clickable-text "> 
+                                    <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
+                                        <h6 class="my-auto"> {{ topVenues.indexOf(venue) + 1 }} </h6>
+                                    </div>
+                                    <div class="col-10 shrink-width-on-dashboard" >
+                                        <b class="mobile-rating-smaller-text-2"> {{ venue.venueName }} </b> 
+                                        <br>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                         <!-- col 4: your top brands -->
+                        <div id="YourTopBrands" class="tab-pane fade  col-lg-5 col-md-12 col-sm-12 text-start pt-3 mx-3 ps-lg-0 pe-lg-0 mobile-mx-0"> <!-- padding classes added by tzh-->
+                            <div class="text-start pb-2" v-for="producer in topBrands" v-bind:key="producer">
+                            <div class="row ms-0 default-clickable-text "> 
+                                <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
+                                    <h5 class="my-auto"> {{ topBrands.indexOf(producer) + 1 }} </h5>
+                                </div>
+                                <div class="col-10 shrink-width-on-dashboard mobile-rating-smaller-text-2" >
+                                    <b> {{ producer.producerName }} </b> 
+                                    <br>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                        
                     </div>
 
                 <!-- row 1: review count and spread of ratings -->
@@ -728,13 +713,13 @@
 
                     <!-- col 1: review count -->
                     <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0" style="color:black;">
-                        <h3> Review Count </h3>
+                        <h6 class="fw-bold"> Review Count </h6>
                         <Line :data="reviewsData" :options="chartOptions"></Line>
                     </div>
 
                     <!-- col 2: spread of ratings -->
                     <div class="col-lg-5 col-md-12 col-sm-12 text-start mx-3 mx-3 ps-lg-0 pe-lg-0" style="color:black;">
-                        <h3> Spread of Ratings </h3>
+                        <h6 class="fw-bold"> Spread of Ratings </h6>
                         <Bar :data="ratingsData" :options="chartOptions" />
                     </div>
 
@@ -745,7 +730,7 @@
 
                     <!-- col 1: your best rated drinks -->
                     <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5  mx-3 ps-lg-0 pe-lg-0" style="color:black;">
-                        <h3> Your Best Rated Drinks </h3>
+                        <h6 class="fw-bold  mb-2">  Best Rated Drinks </h6>
                         <div class="text-start pb-2" v-for="listing in bestRatedListings" v-bind:key="listing.id">
                             <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
                                 <div class="d-flex align-items-center">
@@ -754,7 +739,7 @@
                                     <p class="ms-3 default-clickable-text"> 
                                         <b> {{ listing.listingName }} </b> 
                                         <br>
-                                        {{ listing.rating || "-" }} 
+                                        Your Rating: {{ listing.rating || "-" }} 
                                         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
                                             <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
                                         </svg>
@@ -766,7 +751,7 @@
 
                     <!-- col 2: your best rated categories -->
                     <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-3 ps-lg-0 pe-lg-0" style="color:black;"> <!-- padding classes added by tzh-->
-                        <h3> Your Best Rated Categories </h3>
+                        <h6 class="fw-bold mb-2">  Your Best Rated Categories </h6>
                         <div class="text-start pb-2" v-for="(category, index) in bestRatedCategories" v-bind:key="category">
                             <div class="row ms-0 default-clickable-text "> 
                                 <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
@@ -775,7 +760,7 @@
                                 <div class="col-10 shrink-width-on-dashboard" > <!-- style added by tzh-->
                                     <b> {{ category.category }} </b> 
                                     <br>
-                                    {{ category.averageRating.toFixed(1) || "-" }} 
+                                    Average Rating: {{ category.averageRating.toFixed(1) || "-" }} 
                                     <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
                                         <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
                                     </svg>
@@ -791,7 +776,7 @@
 
                     <!-- col 1: your top venues -->
                     <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5  mx-3 ps-lg-0 pe-lg-0" style="color:black;">
-                        <h3> Your Top Venues </h3>
+                        <h6 class="fw-bold  mb-2"> Your Top Venues </h6>
                         <div class="text-start pb-2" v-for="venue in topVenues" v-bind:key="venue">
                             <div class="row ms-0 default-clickable-text "> 
                                 <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
@@ -807,7 +792,7 @@
                     
                     <!-- col 2: your top brands -->
                     <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5  mx-3 ps-lg-0 pe-lg-0" style="color:black;">
-                        <h3> Your Top Brands </h3>
+                        <h6 class="fw-bold  mb-2">  Your Top Brands </h6>
                         <div class="text-start pb-2" v-for="producer in topBrands" v-bind:key="producer">
                             <div class="row ms-0 default-clickable-text "> 
                                 <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
@@ -827,7 +812,7 @@
 
                     <!-- col 1: your top venues -->
                     <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5  mx-3 ps-lg-0 pe-lg-0" style="color:black;">
-                        <h3> Your Top Styles </h3>
+                        <h6 class="fw-bold  mb-2">  Your Top Styles </h6>
                         <div class="text-start pb-2" v-for="listing in topStyles" v-bind:key="listing">
                             <div class="row ms-0 default-clickable-text "> 
                                 <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
@@ -843,9 +828,13 @@
                 </div>
 
             </div>
+            <br>
+            <br>
 
-
+            </div>
+            
             </div> <!-- end of row -->
+
         </div>
         <FooterBar />
 
@@ -2360,4 +2349,24 @@
     object-fit: contain;
     padding: 3px; /* Further reduce padding */
 }
+
+.border-left-desktop {
+  border-left: none;
+}
+
+@media (min-width: 991px) {
+  .border-left-desktop {
+    border-left: solid 1px rgb(211, 211, 211);
+  }
+}
+
+.leaderboard-height {
+}
+
+@media (min-width: 991px) {
+  .leaderboard-height {
+    height: 330px;
+  }
+}
+
 </style>

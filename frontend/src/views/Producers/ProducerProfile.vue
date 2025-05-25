@@ -5612,9 +5612,10 @@ export default {
     },
 
     // delete update
-    deleteUpdate(update) {
+    async deleteUpdate(update) {
       try {
-        const response = this.$axios.post(
+        // Wait for the API call to complete
+        const response = await this.$axios.post(
           `${process.env.VUE_APP_API_URL}/editProducerProfile/deleteUpdate`,
           {
             producerID: this.producer_id,
@@ -5624,15 +5625,18 @@ export default {
             headers: {
               "Content-Type": "application/json",
             },
+            timeout: 3000, // Add a 10-second timeout
           }
         );
-        console.log(response.data);
+        
+        console.log("Delete successful:", response.data);
+        
+        // Only reload after successful completion
+        window.location.reload();
       } catch (error) {
-        console.error(error);
+        console.error("Delete failed:", error);
+        alert("Failed to delete update. Please try again.");
       }
-
-      // force page to reload
-      window.location.reload();
     },
 
     // cancel update

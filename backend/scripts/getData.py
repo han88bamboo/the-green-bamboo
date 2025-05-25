@@ -2426,7 +2426,10 @@ def getUserBadges(user_id):
             FROM "userBadges" ub
             JOIN "badges" b ON ub."badgeId" = b.id
             LEFT JOIN "badgeRules" br ON 
-                b."relatedEntity" = br."actionType" AND 
+                (CASE 
+                    WHEN b."badgeType" = 'Action' THEN b."relatedEntity"
+                    ELSE 'Review'
+                END) = br."actionType" AND 
                 ub."currentLevel" + 1 BETWEEN br."levelStart" AND br."levelEnd"
             WHERE ub."userId" = %s
             ORDER BY ub."dateEarned" DESC
@@ -3092,6 +3095,27 @@ def getNotifications(acc_type, acc_id):
         
         for_you_notifications = []
         venues_notifications = []
+
+        def normalize_datetime(time_value):
+            if time_value is None:
+                return None
+                
+            if isinstance(time_value, str):
+                try:
+                    return datetime.strptime(time_value, '%Y-%m-%dT%H:%M:%S.%fZ').replace(tzinfo=timezone.utc)
+                except ValueError:
+                    try:
+                        return datetime.strptime(time_value, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
+                    except ValueError:
+                        return datetime.now(timezone.utc)
+            elif isinstance(time_value, date) and not isinstance(time_value, datetime):
+                return datetime.combine(time_value, datetime.min.time()).replace(tzinfo=timezone.utc)
+            elif isinstance(time_value, datetime):
+                if time_value.tzinfo is None:
+                    return time_value.replace(tzinfo=timezone.utc)
+                return time_value
+            
+            return datetime.now(timezone.utc)
         
         if acc_type == "user":
             # Getting upvoted reviews notifications
@@ -3199,7 +3223,41 @@ def getNotifications(acc_type, acc_id):
                     'read': False
                 }
                 for_you_notifications.append(notification)
+
+            # Getting new badge notifications
+            thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
+            cur.execute("""
+                SELECT ub."badgeId", ub."currentLevel", ub."dateEarned", ub."lastUpdated",
+                       b."badgeName", b."badgePhoto", b."badgeDesc", b."badgeType",
+                       u.username
+                FROM "userBadges" ub
+                JOIN "badges" b ON ub."badgeId" = b.id
+                JOIN "users" u ON ub."userId" = u.id
+                WHERE ub."userId" = %s 
+                ORDER BY ub."lastUpdated" DESC, ub."dateEarned" DESC
+                LIMIT 20
+            """, (acc_id,))
+            
+            recent_badges = cur.fetchall()
+
+            for badge in recent_badges:
+                # Normalize the datetime objects
+                date_earned = normalize_datetime(badge['dateEarned'])
                 
+                # Check if this badge activity is within the last 30 days
+                if date_earned and date_earned >= thirty_days_ago:
+                    # New badge earned
+                    notification = {
+                        'type': 'badge_earned',
+                        'title': f"You just earned a new badge: {badge['badgeName']}!",
+                        'time': date_earned,
+                        'link': f"/profile/user/{acc_id}/{badge['username']}",
+                        'read': False,
+                        'badgePhoto': badge['badgePhoto'],
+                        'badgeLevel': badge['currentLevel']
+                    }
+                    for_you_notifications.append(notification)
+
         elif acc_type == "producer":
             # Getting producer questions notifications
             cur.execute("""
