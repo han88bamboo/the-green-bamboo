@@ -132,14 +132,27 @@ def fetch_top_5(cursor, table, drink_type=None, type_category=None):
 
     try:
         if drink_type and drink_type != "Show All Types":
-            cursor.execute(f'''
-                SELECT "listingID", "listingName", "drinkType", "typeCategory", "counter"
-                FROM "{table}"
-                WHERE "drinkType" IN %s AND "typeCategory" = %s
-                ORDER BY "counter" DESC
-                LIMIT 5
-            ''', (tuple(drink_type), type_category,))
+
+            # If only drink type is provided, filter by drink type
+            if type_category == "Show All":
+                cursor.execute(f'''
+                    SELECT "listingID", "listingName", "drinkType", "typeCategory", "counter"
+                    FROM "{table}"
+                    WHERE "drinkType" IN %s
+                    ORDER BY "counter" DESC
+                    LIMIT 5
+                ''', (tuple(drink_type),))
+            else:
+                # If a specific type category is provided, filter by both drink type and type category
+                cursor.execute(f'''
+                    SELECT "listingID", "listingName", "drinkType", "typeCategory", "counter"
+                    FROM "{table}"
+                    WHERE "drinkType" IN %s AND "typeCategory" = %s
+                    ORDER BY "counter" DESC
+                    LIMIT 5
+                ''', (tuple(drink_type), type_category,))
         else:
+            # If drink type is Show All Types, fetch top 5 without filtering by drink type
             cursor.execute(f'''
                 SELECT "listingID", "listingName", "drinkType", "typeCategory", "counter"
                 FROM "{table}"
