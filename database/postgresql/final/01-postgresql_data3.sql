@@ -732,7 +732,10 @@ CREATE TABLE "eventAttendees" (
     "eventStartTime" TIME,
     "userID" INTEGER,
     "attendeeType" VARCHAR(255),
-    "attendeeStatus" BOOLEAN
+    "attendeeStatus" BOOLEAN,
+    "hasPaid" BOOLEAN DEFAULT FALSE,
+    "attendanceStatus" VARCHAR(50) DEFAULT 'Not Checked In',
+    "rsvpTimestamp" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- ========= [NEW!] "associations" - by SMU GROUP 3 =========

@@ -2663,7 +2663,9 @@
                         />
                         
                         <!-- Badge name -->
-                        <p class="badge-name mb-1"><strong>{{ badge.badgeName }}</strong></p>
+                        <p class="badge-name mb-1 text-center">
+                          <strong>{{ badge.badgeName }} <span style="white-space: nowrap;">(Lvl {{ badge.currentLevel }})</span></strong>
+                        </p>
                         
                         <!-- Date acquired -->
                         <p class="badge-date text-muted small mb-2">{{ new Date(badge.dateEarned).toLocaleDateString() }}</p>
