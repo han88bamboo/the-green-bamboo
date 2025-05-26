@@ -39,9 +39,9 @@
                     <div class="text-center mt-4">
                         <h2 class="fw-bold mobile-fs-4">Best Of</h2>
                         <p class="mobile-rating-smaller-text-2">A round of community favourites, as voted by you!</p>
-
+                        
                         <!-- Button to cast vote -->
-                        <button
+                        <button v-if="userType == 'user'"
                             class="btn primary-btn-less-round-blue btn-lg mb-3 mobile-rating-smaller-text-2" 
                             @click=" userID ? $router.push('/dashboard/user') : $router.push('/login')"
                         >
@@ -259,8 +259,8 @@ export default {
         this.fetchTop5();
 
         // Set userID and userType from localStorage
-        this.userID = localStorage.getItem("userID");
-        this.userType = localStorage.getItem("userType");
+        this.userID = localStorage.getItem("88B_accID");
+        this.userType = localStorage.getItem("88B_accType");
 
     },
 }
