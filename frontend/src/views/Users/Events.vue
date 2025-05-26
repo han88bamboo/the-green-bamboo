@@ -498,7 +498,7 @@
                         </svg>
                       </button>
                     </div>
-                  </div>
+                </div>
                 
                 
                 <div v-if="followedEvents.length > 0" id="followedEventsCarousel" class="carousel slide" data-bs-ride="true">
@@ -571,6 +571,282 @@
                 <!-- Error message for error retrieving followed events -->
                 <div v-if="followedEventsError" class="mt-3 text-start">
                     <h6 mobile-fs-7>{{ followedEventsError }}</h6>
+                </div>
+
+                <!-- Events You're Organising & Attending Section -->
+                <div class="mt-5">
+                    <h4 class="fw-bold mb-3 text-start mobile-fs-5">Your Events</h4>
+                    
+                    <!-- Tab Navigation -->
+                    <div class="d-flex mb-3">
+                        <button
+                            class="btn mx-1 fw-bold no-hover"
+                            :class="{
+                                'primary-btn-green active-toggle-button-user-profile': activeUserEventsTab === 'organising',
+                                'primary-btn-green-thin-outline inactive-toggle-button-user-profile': activeUserEventsTab !== 'organising',
+                            }"
+                            @click="switchUserEventsTab('organising')"
+                        >
+                            Events You're Organising
+                        </button>
+                        
+                        <button
+                            class="btn mx-1 fw-bold no-hover"
+                            :class="{
+                                'primary-btn-green active-toggle-button-user-profile': activeUserEventsTab === 'attending',
+                                'primary-btn-green-thin-outline inactive-toggle-button-user-profile': activeUserEventsTab !== 'attending',
+                            }"
+                            @click="switchUserEventsTab('attending')"
+                        >
+                            Events You're Attending
+                        </button>
+                    </div>
+
+                    <!-- Tab Content -->
+                    <div>
+                        <!-- Events You're Organising Tab -->
+                        <div v-if="activeUserEventsTab === 'organising'">
+                            <div v-if="organisingEvents.length > 0" class="mt-4">
+                                <!-- Upcoming Events You're Organising -->
+                                <div v-if="organisingEvents.filter(event => new Date(event.eventStartDate) >= new Date()).length > 0">
+                                    <h5 class="fw-bold mb-3 text-start">Upcoming</h5>
+                                    <div class="row">
+                                        <div 
+                                            v-for="event in organisingEvents.filter(event => new Date(event.eventStartDate) >= new Date())" 
+                                            :key="`org-upcoming-${event.eventID}`"
+                                            class="col-6 mb-3"
+                                        >
+                                            <div class="rounded-4 shadow-sm p-3 h-100" style="background-color: white;">
+                                                <!-- Event Image -->
+                                                <img
+                                                    :src="event.eventBanners?.[0] || defaultEventBanner"
+                                                    class="img-fluid w-100 mb-3"
+                                                    style="height: 160px; object-fit: cover; border-radius: 0.5rem;"
+                                                    alt="Event Banner"
+                                                />
+                                                
+                                                <!-- Event Name -->
+                                                <p class="fw-bold mb-1">
+                                                    <router-link
+                                                        :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
+                                                        class="text-black fs-6 text-decoration-none"
+                                                    >
+                                                        {{ event.eventName }}
+                                                    </router-link>
+                                                </p>
+
+                                                <!-- Event Details -->
+                                                <p class="text-success small mb-2">
+                                                    {{ formatDate(event.eventStartDate) }} |
+                                                    {{ formatTime(event.eventStartTime) }} -
+                                                    {{ formatTime(event.eventEndTime) }} |
+                                                    {{ event.eventType }}
+                                                </p>
+
+                                                <!-- Description -->
+                                                <p class="text-muted small mb-2">
+                                                    {{ event.eventDesc }}
+                                                </p>
+
+                                                <!-- CTA -->
+                                                <router-link
+                                                    :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
+                                                    class="btn btn-read-more btn-sm fw-bold rounded-pill mobile-pb-1 mobile-pt-1 mobile-mb-2 mobile-fs-7"
+                                                >
+                                                    View Event
+                                                </router-link>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Past Events You're Organising -->
+                                <div v-if="organisingEvents.filter(event => new Date(event.eventStartDate) < new Date()).length > 0" class="mt-4">
+                                    <h5 class="fw-bold mb-3 text-start">Past Events</h5>
+                                    <div class="row">
+                                        <div 
+                                            v-for="event in organisingEvents.filter(event => new Date(event.eventStartDate) < new Date())" 
+                                            :key="`org-past-${event.eventID}`"
+                                            class="col-6 mb-3"
+                                        >
+                                            <div class="rounded-4 shadow-sm p-3 h-100 past-event-card" style="background-color: white;">
+                                                <!-- Event Image with overlay -->
+                                                <div class="position-relative mb-3">
+                                                    <img
+                                                        :src="event.eventBanners?.[0] || defaultEventBanner"
+                                                        class="img-fluid w-100"
+                                                        style="height: 160px; object-fit: cover; border-radius: 0.5rem;"
+                                                        alt="Event Banner"
+                                                    />
+                                                    <div class="past-event-overlay"></div>
+                                                </div>
+                                                
+                                                <!-- Event Name -->
+                                                <p class="fw-bold mb-1">
+                                                    <router-link
+                                                        :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
+                                                        class="text-black fs-6 text-decoration-none"
+                                                    >
+                                                        {{ event.eventName }}
+                                                    </router-link>
+                                                </p>
+
+                                                <!-- Event Details -->
+                                                <p class="text-muted small mb-2">
+                                                    {{ formatDate(event.eventStartDate) }} |
+                                                    {{ formatTime(event.eventStartTime) }} -
+                                                    {{ formatTime(event.eventEndTime) }} |
+                                                    {{ event.eventType }}
+                                                </p>
+
+                                                <!-- Description -->
+                                                <p class="text-muted small mb-2">
+                                                    {{ event.eventDesc }}
+                                                </p>
+
+                                                <!-- CTA -->
+                                                <router-link
+                                                    :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
+                                                    class="btn btn-read-more btn-sm fw-bold rounded-pill mobile-pb-1 mobile-pt-1 mobile-mb-2 mobile-fs-7"
+                                                >
+                                                    View Event
+                                                </router-link>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- No organising events message -->
+                            <div v-else class="mt-4 text-center py-5">
+                                <p class="text-muted">You're not organising any events at the moment.</p>
+                            </div>
+                        </div>
+
+                        <!-- Events You're Attending Tab -->
+                        <div v-else-if="activeUserEventsTab === 'attending'">
+                            <div v-if="attendingEvents.length > 0" class="mt-4">
+                                <!-- Upcoming Events You're Attending -->
+                                <div v-if="attendingEvents.filter(event => new Date(event.eventStartDate) >= new Date()).length > 0">
+                                    <h5 class="fw-bold mb-3 text-start">Upcoming</h5>
+                                    <div class="row">
+                                        <div 
+                                            v-for="event in attendingEvents.filter(event => new Date(event.eventStartDate) >= new Date())" 
+                                            :key="`att-upcoming-${event.eventID}`"
+                                            class="col-6 mb-3"
+                                        >
+                                            <div class="rounded-4 shadow-sm p-3 h-100" style="background-color: white;">
+                                                <!-- Event Image -->
+                                                <img
+                                                    :src="event.eventBanners?.[0] || defaultEventBanner"
+                                                    class="img-fluid w-100 mb-3"
+                                                    style="height: 160px; object-fit: cover; border-radius: 0.5rem;"
+                                                    alt="Event Banner"
+                                                />
+                                                
+                                                <!-- Event Name -->
+                                                <p class="fw-bold mb-1">
+                                                    <router-link
+                                                        :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
+                                                        class="text-black fs-6 text-decoration-none"
+                                                    >
+                                                        {{ event.eventName }}
+                                                    </router-link>
+                                                </p>
+
+                                                <!-- Event Details -->
+                                                <p class="text-success small mb-2">
+                                                    {{ formatDate(event.eventStartDate) }} |
+                                                    {{ formatTime(event.eventStartTime) }} -
+                                                    {{ formatTime(event.eventEndTime) }} |
+                                                    {{ event.eventType }}
+                                                </p>
+
+                                                <!-- Description -->
+                                                <p class="text-muted small mb-2">
+                                                    {{ event.eventDesc }}
+                                                </p>
+
+                                                <!-- CTA -->
+                                                <router-link
+                                                    :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
+                                                    class="btn btn-read-more btn-sm fw-bold rounded-pill mobile-pb-1 mobile-pt-1 mobile-mb-2 mobile-fs-7"
+                                                >
+                                                    View Event
+                                                </router-link>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Past Events You're Attending -->
+                                <div v-if="attendingEvents.filter(event => new Date(event.eventStartDate) < new Date()).length > 0" class="mt-4">
+                                    <h5 class="fw-bold mb-3 text-start">Past Events</h5>
+                                    <div class="row">
+                                        <div 
+                                            v-for="event in attendingEvents.filter(event => new Date(event.eventStartDate) < new Date())" 
+                                            :key="`att-past-${event.eventID}`"
+                                            class="col-6 mb-3"
+                                        >
+                                            <div class="rounded-4 shadow-sm p-3 h-100 past-event-card" style="background-color: white;">
+                                                <!-- Event Image with overlay -->
+                                                <div class="position-relative mb-3">
+                                                    <img
+                                                        :src="event.eventBanners?.[0] || defaultEventBanner"
+                                                        class="img-fluid w-100"
+                                                        style="height: 160px; object-fit: cover; border-radius: 0.5rem;"
+                                                        alt="Event Banner"
+                                                    />
+                                                    <div class="past-event-overlay"></div>
+                                                </div>
+                                                
+                                                <!-- Event Name -->
+                                                <p class="fw-bold mb-1">
+                                                    <router-link
+                                                        :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
+                                                        class="text-black fs-6 text-decoration-none"
+                                                    >
+                                                        {{ event.eventName }}
+                                                    </router-link>
+                                                </p>
+
+                                                <!-- Event Details -->
+                                                <p class="text-muted small mb-2">
+                                                    {{ formatDate(event.eventStartDate) }} |
+                                                    {{ formatTime(event.eventStartTime) }} -
+                                                    {{ formatTime(event.eventEndTime) }} |
+                                                    {{ event.eventType }}
+                                                </p>
+
+                                                <!-- Description -->
+                                                <p class="text-muted small mb-2">
+                                                    {{ event.eventDesc }}
+                                                </p>
+
+                                                <!-- CTA -->
+                                                <router-link
+                                                    :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
+                                                    class="btn btn-read-more btn-sm fw-bold rounded-pill mobile-pb-1 mobile-pt-1 mobile-mb-2 mobile-fs-7"
+                                                >
+                                                    View Event
+                                                </router-link>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- No attending events message -->
+                            <div v-else class="mt-4 text-center py-5">
+                                <p class="text-muted">You're not attending any events at the moment.</p>
+                            </div>
+
+                            <!-- Error message for attending events -->
+                            <div v-if="attendingEventsError" class="mt-4 text-center py-5">
+                                <p class="text-danger">{{ attendingEventsError }}</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -655,6 +931,12 @@ export default {
 
             createEventClicked: false,         // tracks button click for error
             showCreateEventModal: false,       // toggles modal visibility
+
+            organisingEvents: [],
+            organisingEventsError: null,
+            attendingEvents: [],
+            attendingEventsError: null,
+            activeUserEventsTab: 'organising',
         }
     },
     methods: {
@@ -751,6 +1033,45 @@ export default {
                 }
                 else {
                     this.followedEventsError = "Sign up or log in to view events from brands and venues you follow!";
+                }
+                console.error(error);
+            }
+        },
+
+        // Function to switch between user events tabs
+        switchUserEventsTab(tab) {
+            this.activeUserEventsTab = tab;
+        },
+
+        // Function to get events the user is organising
+        async getOrganisingEvents() {
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/events/getUserOrganisingEvents/${this.userID}/${this.userType}`);
+                this.organisingEvents = response.data.events;
+            }
+            catch (error) {
+                if (error.response && error.response.status === 404) {
+                    this.organisingEventsError = "No events found that you're organising.";
+                }
+                else {
+                    this.organisingEventsError = "Failed to retrieve events you're organising.";
+                }
+                console.error(error);
+            }
+        },
+
+        // Function to get events the user is attending
+        async getAttendingEvents() {
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/events/getUserAttendingEvents/${this.userID}/${this.userType}`);
+                this.attendingEvents = response.data.events;
+            }
+            catch (error) {
+                if (error.response && error.response.status === 404) {
+                    this.attendingEventsError = "No events found that you're attending.";
+                }
+                else {
+                    this.attendingEventsError = "Failed to retrieve events you're attending.";
                 }
                 console.error(error);
             }
@@ -948,6 +1269,8 @@ export default {
             this.getUpcomingEvents();
             this.getPastEvents();
             this.getFollowedEvents();
+            this.getOrganisingEvents();
+            this.getAttendingEvents();
         }
 
         
@@ -984,5 +1307,45 @@ export default {
 .carousel-control-prev-icon,
 .carousel-control-next-icon {
     filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(93deg) brightness(103%) contrast(103%);
+}
+
+.past-event-card {
+    opacity: 0.7;
+}
+
+.past-event-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 0.5rem;
+}
+
+/* Tab styling */
+.nav-tabs .nav-link {
+    color: #495057;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background-color: transparent;
+    padding: 0.75rem 1rem;
+}
+
+.nav-tabs .nav-link:hover {
+    border-color: transparent;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.nav-tabs .nav-link.active {
+    color: #00796B;
+    background-color: transparent;
+    border-color: transparent;
+    border-bottom: 2px solid #00796B;
+    font-weight: bold;
+}
+
+.nav-tabs {
+    border-bottom: 1px solid #dee2e6;
 }
 </style>

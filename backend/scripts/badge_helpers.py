@@ -706,20 +706,6 @@ def process_question_badge(conn, cur, user_id):
         return None
     
 def process_upvote_badge(conn, cur, user_id, is_new_upvote=False, is_removed_upvote=False):
-    """
-    Award, update, or reduce the Upvote badge for a user when they receive
-    or lose an upvote/like on their content within a week of posting.
-    
-    Args:
-        conn: Database connection
-        cur: Database cursor
-        user_id: ID of the content owner
-        is_new_upvote: Whether this is a new upvote/like
-        is_removed_upvote: Whether an upvote/like was removed
-        
-    Returns:
-        Dictionary with badge update information or None if no update
-    """
     try:
         # Find the "DrinkGPT" badge
         cur.execute("""
@@ -1081,4 +1067,109 @@ def process_public_list_badge(conn, cur, user_id, list_change):
         
     except Exception as e:
         print(f"Error processing PublicList badge: {str(e)}")
+        return None
+    
+def process_event_attendance_badge(conn, cur, user_id):
+    try:
+        cur.execute("""
+            SELECT * FROM "badges" 
+            WHERE "badgeType" = 'Action' AND "relatedEntity" = 'EventAttendance'
+        """)
+        
+        badge = cur.fetchone()
+        if not badge:
+            print("No 'EventAttendance' badge found in the database")
+            return None
+            
+        badge_id = badge['id']
+        
+        # Check if user already has this badge
+        cur.execute("""
+            SELECT * FROM "userBadges" 
+            WHERE "userId" = %s AND "badgeId" = %s
+        """, (user_id, badge_id))
+        
+        user_badge = cur.fetchone()
+        
+        if not user_badge:
+            # User doesn't have this badge yet - create it
+            cur.execute("""
+                INSERT INTO "userBadges" ("userId", "badgeId", "currentLevel", "currentProgress")
+                VALUES (%s, %s, 1, 0)
+                RETURNING "currentLevel"
+            """, (user_id, badge_id))
+            
+            conn.commit()
+            
+            return {
+                "badgeId": badge_id,
+                "badgeName": badge['badgeName'],
+                "badgeDesc": badge['badgeDesc'], 
+                "badgePhoto": badge['badgePhoto'],
+                "newLevel": 1,
+                "isNewBadge": True
+            }
+            
+        # User already has this badge - update progress
+        current_level = user_badge['currentLevel']
+        current_progress = user_badge['currentProgress']
+        
+        # Get rule for this level
+        cur.execute("""
+            SELECT * FROM "badgeRules"
+            WHERE "actionType" = 'EventAttendance'
+            AND %s BETWEEN "levelStart" AND "levelEnd"
+        """, (current_level,))
+        
+        rule = cur.fetchone()
+        if not rule:
+            print(f"No badge rule found for level {current_level}")
+            return None
+            
+        actions_required = rule['actionsRequired']
+        new_progress = current_progress + 1
+        
+        # Check if user has enough actions to level up
+        if new_progress >= actions_required:
+            # Level up!
+            cur.execute("""
+                UPDATE "userBadges"
+                SET "currentLevel" = %s, "currentProgress" = 0, "lastUpdated" = CURRENT_TIMESTAMP
+                WHERE "userId" = %s AND "badgeId" = %s
+                RETURNING "currentLevel"
+            """, (current_level + 1, user_id, badge_id))
+            
+            conn.commit()
+            new_level = cur.fetchone()['currentLevel']
+            
+            return {
+                "badgeId": badge_id,
+                "badgeName": badge['badgeName'],
+                "badgeDesc": badge['badgeDesc'],
+                "badgePhoto": badge['badgePhoto'],
+                "newLevel": new_level,
+                "previousLevel": current_level,
+                "isNewBadge": False
+            }
+        else:
+            # Just update progress
+            cur.execute("""
+                UPDATE "userBadges"
+                SET "currentProgress" = %s, "lastUpdated" = CURRENT_TIMESTAMP
+                WHERE "userId" = %s AND "badgeId" = %s
+            """, (new_progress, user_id, badge_id))
+            
+            conn.commit()
+            
+            return {
+                "badgeId": badge_id,
+                "badgeName": badge['badgeName'],
+                "badgeDesc": badge['badgeDesc'],
+                "badgePhoto": badge['badgePhoto'],
+                "newLevel": current_level,
+                "newProgress": new_progress,
+                "isNewBadge": False
+            }
+    except Exception as e:
+        print(f"Error processing EventAttendance badge: {str(e)}")
         return None

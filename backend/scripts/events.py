@@ -10,12 +10,14 @@
 #   [attendees] /getAttendees (GET), /checkAttendance (GET), 
 #               /addAttendee (POST), 
 #               /removeAttendee (DELETE)
+#               /updateAttendeeStatus (PUT)
 # -----------------------------------------------------------------------------------------
 
 import os
 from flask import Blueprint, g, jsonify, request
 from datetime import datetime
 import re
+from scripts import badge_helpers
 
 # Use to upload image to S3
 import s3Images
@@ -987,6 +989,13 @@ def getAttendees(event_id):
             if not user_info:
                 continue
 
+            # Adding the new tracking fields
+            user_info['hasPaid'] = attendee.get('hasPaid', False)
+            user_info['attendanceStatus'] = attendee.get('attendanceStatus', 'Not Checked In')
+            user_info['rsvpDate'] = attendee.get('rsvpTimestamp')
+            user_info['eventDate'] = attendee.get('eventDate')
+            user_info['attendeeId'] = attendee['id']
+
             # Append the user information into the return_data
             return_data.append(user_info)
 
@@ -1083,7 +1092,11 @@ def addAttendee():
             return jsonify({'error': 'User is already an attendee'}), 400
 
         # Step 5: Add the attendee to the event
-        cursor.execute('INSERT INTO "eventAttendees" ("eventID", "eventDate", "eventStartTime", "userID", "attendeeType", "attendeeStatus") VALUES (%s, %s, %s, %s, %s, TRUE)', (data['eventID'], event['eventStartDate'], event['eventStartTime'], data['userID'], data['userType'],))
+        cursor.execute('''
+            INSERT INTO "eventAttendees" 
+            ("eventID", "eventDate", "eventStartTime", "userID", "attendeeType", "attendeeStatus", "rsvpTimestamp") 
+            VALUES (%s, %s, %s, %s, %s, TRUE, CURRENT_TIMESTAMP)
+        ''', (data['eventID'], event['eventStartDate'], event['eventStartTime'], data['userID'], data['userType']))
         conn.commit()
 
         # Step 6: Update the number of attendees in the event
@@ -1156,3 +1169,196 @@ def removeAttendee():
     finally:
         cursor.close()
 
+@blueprint.route('/updateAttendeeStatus', methods=['PUT'])
+def updateAttendeeStatus():
+    data = request.get_json()
+    
+    attendee_id = data.get('attendeeId')
+    has_paid = data.get('hasPaid')
+    attendance_status = data.get('attendanceStatus')
+    event_owner_id = data.get('eventOwnerID')
+    event_owner_type = data.get('eventOwnerType')
+    
+    conn = g.db
+    cursor = conn.cursor()
+    
+    try:
+        # Verify the requester is the event owner
+        cursor.execute('''
+            SELECT e.* FROM events e 
+            JOIN "eventAttendees" ea ON e.id = ea."eventID" 
+            WHERE ea.id = %s AND e."eventOwnerID" = %s AND e."eventOwnerType" = %s
+        ''', (attendee_id, event_owner_id, event_owner_type))
+        
+        if not cursor.fetchone():
+            return jsonify({'error': 'Unauthorized'}), 403
+        
+        cursor.execute('''
+            SELECT ea.*, e."eventName"
+            FROM "eventAttendees" ea
+            JOIN events e ON ea."eventID" = e.id
+            WHERE ea.id = %s
+        ''', (attendee_id,))
+        
+        attendee_info = cursor.fetchone()
+        if not attendee_info:
+            return jsonify({'error': 'Attendee not found'}), 404
+        
+        previous_attendance_status = attendee_info.get('attendanceStatus')
+        
+        update_fields = []
+        update_values = []
+        
+        if has_paid is not None:
+            update_fields.append('"hasPaid" = %s')
+            update_values.append(has_paid)
+            
+        if attendance_status is not None:
+            update_fields.append('"attendanceStatus" = %s')
+            update_values.append(attendance_status)
+        
+        badge_result = None
+        
+        if update_fields:
+            update_values.append(attendee_id)
+            cursor.execute(f'''
+                UPDATE "eventAttendees" 
+                SET {", ".join(update_fields)}
+                WHERE id = %s
+            ''', update_values)
+            
+            conn.commit()
+            
+            # Process badge if attendance status changed to "Checked In"
+            if (attendance_status == "Checked In" and 
+                previous_attendance_status != "Checked In" and
+                attendee_info.get('attendeeType') == 'user'):
+                
+                user_id = attendee_info.get('userID')
+                if user_id:
+                    badge_result = badge_helpers.process_event_attendance_badge(conn, cursor, user_id)
+        
+        response_data = {'message': 'Attendee status updated successfully'}
+        
+        if badge_result:
+            response_data['badgeAwarded'] = badge_result
+            
+        return jsonify(response_data), 200
+        
+    except Exception as e:
+        print(f"Error updating attendee status: {str(e)}")
+        conn.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+
+@blueprint.route('/getUserOrganisingEvents/<user_id>/<user_type>', methods=['GET'])
+def getUserOrganisingEvents(user_id, user_type):
+    conn = g.db
+    cursor = conn.cursor()
+
+    return_data = []
+
+    try:
+        # Query to get all events that the user is organizing (both upcoming and past)
+        query = '''
+            SELECT e.*
+            FROM "events" e
+            WHERE e."eventOwnerID" = %s
+            AND e."eventOwnerType" = %s
+            ORDER BY e."eventStartDate" DESC, e."eventStartTime" DESC
+        '''
+
+        cursor.execute(query, (user_id, user_type))
+        events = cursor.fetchall()
+
+        if not events:
+            return jsonify({'error': 'No events found'}), 404
+        
+        for event in events:
+            ev = {}
+            ev['eventID'] = event['id']
+            ev['eventName'] = event['eventName']
+            ev['eventDesc'] = event['eventDesc']
+            ev['eventType'] = event['eventType']
+            ev['eventStartDate'] = event['eventStartDate'].strftime('%Y-%m-%d')
+            ev['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
+            ev['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
+            ev['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+            ev['eventBanners'] = event['eventBanners']
+            ev['eventLocation'] = event['eventLocation']
+            ev['numAttendees'] = event['numAttendees']
+
+            return_data.append(ev)
+
+        return jsonify({
+            'events': return_data
+        }), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+
+
+@blueprint.route('/getUserAttendingEvents/<user_id>/<user_type>', methods=['GET'])
+def getUserAttendingEvents(user_id, user_type):
+    conn = g.db
+    cursor = conn.cursor()
+
+    return_data = []
+
+    try:
+        # Query to get all events that the user is attending (both upcoming and past)
+        # Only include events where attendeeStatus is True (confirmed attendance)
+        query = '''
+            SELECT 
+                e.*,
+                ea."attendeeStatus",
+                ea."hasPaid",
+                ea."attendanceStatus",
+                ea."rsvpTimestamp"
+            FROM "eventAttendees" ea
+            JOIN "events" e ON ea."eventID" = e."id"
+            WHERE ea."userID" = %s 
+            AND ea."attendeeType" = %s
+            AND ea."attendeeStatus" = TRUE
+            ORDER BY e."eventStartDate" DESC, e."eventStartTime" DESC
+        '''
+
+        cursor.execute(query, (user_id, user_type))
+        events = cursor.fetchall()
+
+        if not events:
+            return jsonify({'error': 'No events found'}), 404
+        
+        for event in events:
+            ev = {}
+            ev['eventID'] = event['id']
+            ev['eventName'] = event['eventName']
+            ev['eventDesc'] = event['eventDesc']
+            ev['eventType'] = event['eventType']
+            ev['eventStartDate'] = event['eventStartDate'].strftime('%Y-%m-%d')
+            ev['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
+            ev['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
+            ev['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+            ev['eventBanners'] = event['eventBanners']
+            ev['eventLocation'] = event['eventLocation']
+            ev['numAttendees'] = event['numAttendees']
+            ev['attendeeStatus'] = event['attendeeStatus']
+            ev['hasPaid'] = event['hasPaid']
+            ev['attendanceStatus'] = event['attendanceStatus']
+            ev['rsvpTimestamp'] = event['rsvpTimestamp'].strftime('%Y-%m-%d %H:%M:%S') if event['rsvpTimestamp'] else None
+
+            return_data.append(ev)
+
+        return jsonify({
+            'events': return_data
+        }), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
