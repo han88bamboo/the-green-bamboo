@@ -313,7 +313,7 @@
                     <div class="edit-drink-choice">
                       <div class="row">
                         <div class="col-4 text-start ps-5" style="margin: auto">
-                          Drink Choice
+                          Drink of Choice
                         </div>
                         <div class="col-8 text-start">
                           <!-- checkbox to choose drinks -->
@@ -333,18 +333,14 @@
                             />
                             <label
                               v-if="selectedDrinks.includes(type)"
-                              class="btn primary-btn-less-round"
+                              class="btn primary-btn-less-round btn-sm"
+                              style="background-color: #f0b358;border:1px solid #f0b358;"
                               :for="index"
-                              style="
-                                color: whitesmoke;
-                                background-color: #535c72;
-                                border: 4px solid #535c72;
-                              "
                               >{{ type }}</label
                             >
                             <label
                               v-else
-                              class="btn primary-btn-outline-less-round"
+                              class="btn btn-edit-profile-tags btn-sm"
                               :for="index"
                               >{{ type }}</label
                             >
@@ -375,20 +371,16 @@
                           />
                           <label
                             v-if="selectedFlavours?.includes(tag.familyTag)"
-                            class="btn primary-btn-less-round"
+                            class="btn primary-btn-less-round btn-sm"
+                            style="background-color: #f0b358;border:1px solid #f0b358;"
                             :for="'flavour-' + index"
-                            style="
-                              color: whitesmoke;
-                              background-color: #535c72;
-                              border: 4px solid #535c72;
-                            "
                           >
                             {{ tag.familyTag }}
                           </label>
                           <label
                             v-else
                             :for="'flavour-' + index"
-                            class="btn primary-btn-outline-less-round"
+                            class="btn btn-edit-profile-tags btn-sm"
                           >
                             {{ tag.familyTag }}
                           </label>
@@ -422,20 +414,16 @@
                                 tag.observationTag
                               )
                             "
-                            class="btn primary-btn-less-round"
+                            class="btn primary-btn-less-round btn-sm"
+                            style="background-color: #f0b358;border:1px solid #f0b358;"
                             :for="'tag-' + index"
-                            style="
-                              color: whitesmoke;
-                              background-color: #535c72;
-                              border: 4px solid #535c72;
-                            "
                           >
                             {{ tag.observationTag }}
                           </label>
                           <label
                             v-else
                             :for="'tag-' + index"
-                            class="btn primary-btn-outline-less-round"
+                            class="btn btn-edit-profile-tags btn-sm"
                           >
                             {{ tag.observationTag }}
                           </label>
@@ -445,17 +433,10 @@
                     <!-- Edit Observaiton Tag End -->
                   </div>
                   <div class="modal-footer">
+                    
                     <button
                       type="button"
-                      class="btn btn-secondary"
-                      data-bs-dismiss="modal"
-                      @click="cancelChanges"
-                    >
-                      Close
-                    </button>
-                    <button
-                      type="button"
-                      class="btn btn-primary"
+                      class="btn btn-read-more btn-sm"
                       @click="saveChangesDetails"
                       data-bs-dismiss="modal"
                     >
@@ -1008,7 +989,7 @@
 
             <!-- Change Password start -->
             <div
-              v-if="ownProfile"
+              v-show="ownProfile"
               class="modal fade"
               id="changePasswordModal"
               tabindex="-1"
@@ -1017,7 +998,7 @@
             >
               <div class="modal-dialog">
                 <div class="modal-content">
-                  <div class="modal-header" style="background-color: #535c72">
+                  <div class="modal-header" style="background-color: #f0b358 ">
                     <h1
                       class="modal-title fs-5"
                       id="exampleModalLabel"
@@ -1036,14 +1017,14 @@
                   <!-- Initial select mode, change or reset password -->
                   <div v-if="changingPassword == ''" class="modal-body">
                     <button
-                      class="btn tertiary-btn reverse-clickable-text m-1"
+                      class="btn btn-read-more btn-sm reverse-clickable-text m-1"
                       type="button"
                       @click="changingPassword = 'change'"
                     >
                       Change Password
                     </button>
                     <button
-                      class="btn tertiary-btn reverse-clickable-text m-1"
+                      class="btn btn-read-more btn-sm reverse-clickable-text m-1"
                       type="button"
                       @click="changingPassword = 'reset'"
                     >
@@ -1105,16 +1086,16 @@
                         Click on "Send Pin" and key in the OTP sent to your
                         email:
                       </p>
-                      <div class="input-group">
+                      <div class="input-group gap-2">
                         <input
                           type="text"
-                          class="form-control"
+                          class="form-control rounded"
                           placeholder="Enter OTP"
                           v-model="resetPin"
                         />
                         <button
                           :disabled="isButtonDisabled"
-                          class="btn btn-primary"
+                          class="btn btn-read-more rounded"
                           type="button"
                           id="resendPin"
                           @click="sendResetPin"
@@ -1158,19 +1139,19 @@
                         !(passwordError || passwordSuccess)
                       "
                     >
-                      <b>Please wait while password is being resetted.</b>
+                      <b>Please wait while password is being reset.</b>
                     </div>
 
                     <!-- if password change/reset is successful -->
                     <p
                       v-if="passwordSuccess"
-                      class="text-success fst-italic fw-bold fs-3"
+                      class="text-success  fw-bold fs-5"
                     >
                       Password {{ changingPassword }} is successful!
                     </p>
                     <p
                       v-if="passwordSuccess && confirmResetPassword"
-                      class="text-success fst-italic fw-bold fs-3"
+                      class="text-success fw-bold fs-5"
                     >
                       An email has been sent to you containing the password.
                     </p>
@@ -1178,14 +1159,14 @@
                     <!-- if password change/reset faces error -->
                     <p
                       v-if="passwordError"
-                      class="text-danger fst-italic fw-bold fs-3"
+                      class="text-danger  fw-bold fs-5"
                     >
                       There is an error during password {{ changingPassword }},
                       please try again!
                     </p>
                     <p
                       v-if="passwordMismatch"
-                      class="text-danger fst-italic fw-bold fs-3"
+                      class="text-danger fst-italic fw-bold fs-5"
                     >
                       Old password do not match, please try again
                     </p>
@@ -1201,21 +1182,12 @@
                       "
                       type="button"
                       @click="selectPasswordMode"
-                      class="btn btn-secondary"
+                      class="btn btn-secondary sm"
                     >
                       Return
                     </button>
 
-                    <!-- Close modal-->
-                    <button
-                      v-if="!resettingPassword"
-                      type="button"
-                      @click="resetChangePassword"
-                      class="btn btn-secondary"
-                      data-bs-dismiss="modal"
-                    >
-                      Close
-                    </button>
+                    
 
                     <!-- Change password first confirmation and second confirmation -->
                     <button
@@ -1231,7 +1203,7 @@
                       "
                       type="button"
                       @click="updatePassword"
-                      class="btn btn-primary"
+                      class="btn btn-read-more btn-sm"
                     >
                       Change Password
                     </button>
@@ -1247,7 +1219,7 @@
                       "
                       type="button"
                       @click="confirmUpdatePassword"
-                      class="btn btn-primary"
+                      class="btn btn-read-more btn-sm"
                     >
                       Update Password
                     </button>
@@ -1265,7 +1237,7 @@
                       "
                       type="button"
                       @click="verifyOTP"
-                      class="btn btn-primary"
+                      class="btn btn-read-more btn-sm"
                     >
                       Verify OTP
                     </button>
@@ -1276,7 +1248,7 @@
                       "
                       type="button"
                       @click="resetPassword"
-                      class="btn btn-primary"
+                      class="btn btn-read-more btn-sm"
                     >
                       Reset Password
                     </button>
@@ -1404,7 +1376,7 @@
                 />
                 <div>
                   <p class="mobile-rating-smaller-text-2 mb-2">
-                    Review your first drink.
+                    Quench your thirst! Review your first drink!
                   </p>
                   <router-link :to="'/explore'">
                     <button
@@ -1423,7 +1395,7 @@
                   style="width: 64px; height: 64px; object-fit: contain; border-radius: 4px;" 
                   alt="Invite two friends" />
                 <div>
-                  <p class="mobile-rating-smaller-text-2 mb-2">Invite two friends.</p>
+                  <p class="mobile-rating-smaller-text-2 mb-2">Don't drink alone! Invite your friends!</p>
                   <button
                     class="btn btn-warning btn-sm rounded fw-bold"
                     @mouseover="hoverButton($event)"
@@ -1457,7 +1429,7 @@
                 />
                 <div>
                   <p class="mobile-rating-smaller-text-2 mb-2">
-                    Curate a list to share.
+                    Curate a list to share. You'll want to remember this!
                   </p>
                   <button
                     class="btn btn-warning btn-sm rounded fw-bold"
@@ -1866,6 +1838,7 @@
                   displayName="Recent Activity"
                   columnWidth="165px"
                 />
+                <br>
               </div>
 
               <!-- lists tab -->
@@ -2237,6 +2210,7 @@
                   </div>
                   <!-- modal end -->
                 </div>
+                <br>
               </div>
 
               <!-- individual list tab -->
@@ -2689,7 +2663,9 @@
                         />
                         
                         <!-- Badge name -->
-                        <p class="badge-name mb-1"><strong>{{ badge.badgeName }}</strong></p>
+                        <p class="badge-name mb-1 text-center">
+                          <strong>{{ badge.badgeName }} <span style="white-space: nowrap;">(Lvl {{ badge.currentLevel }})</span></strong>
+                        </p>
                         
                         <!-- Date acquired -->
                         <p class="badge-date text-muted small mb-2">{{ new Date(badge.dateEarned).toLocaleDateString() }}</p>

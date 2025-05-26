@@ -457,8 +457,57 @@
                 <!-- Error message if fail to retrieve other events information -->
                 <p class="text-danger" v-if="otherEventsError">{{ otherEventsError }}</p>
                                 
+                <div v-if="selfView && attendees.length > 0" class="mt-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold mobile-fs-6 mx-1" style="color:#027562">Manage Attendees</h5>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Attendee Name</th>
+                                        <th>RSVP Date</th>
+                                        <th v-if="event.paidEvent">Has Paid?</th>
+                                        <th>Attendance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="attendee in attendeesForManagement" :key="attendee.attendeeId">
+                                        <td>
+                                            {{ attendee.displayName || attendee.venueName || attendee.producerName }}
+                                        </td>
+                                        <td>
+                                            {{ formatRSVPDate(attendee.rsvpDate) }}
+                                        </td>
+                                        <td v-if="event.paidEvent">
+                                            <div class="form-check">
+                                                <input 
+                                                    class="form-check-input" 
+                                                    type="checkbox" 
+                                                    :checked="attendee.hasPaid"
+                                                    @change="updatePaymentStatus(attendee.attendeeId, $event.target.checked)"
+                                                >
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <select 
+                                                class="form-select form-select-sm"
+                                                :value="attendee.attendanceStatus"
+                                                @change="updateAttendanceStatus(attendee.attendeeId, $event.target.value)"
+                                            >
+                                                <option value="Not Checked In">Not Checked In</option>
+                                                <option value="Checked In">Checked In</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
-            
         </div>
         <!-- Prompt Purchase Modal Start -->
         <div class="modal fade" id="promptPurchaseModal" tabindex="-1" aria-labelledby="promptPurchaseModalLabel" aria-hidden="true">
@@ -764,6 +813,7 @@ export default {
             otherEvents: [],
             otherEventsError: null,
 
+            attendeesForManagement: [],
         }
     },
     methods: {
@@ -801,6 +851,8 @@ export default {
                 if (this.userID == this.event.ownerInfo.id && this.userType == this.event.eventOwnerType) {
                     this.selfView = true;
                     this.rsvpButtonStatus = true;
+
+                    this.getAttendeesForManagement();
                 }
             }
             catch (error) {
@@ -1114,6 +1166,14 @@ export default {
             return new Date(date).toLocaleDateString("en-GB", options);
         },
 
+        // Format RSVP timestamp to show just the date
+        formatRSVPDate(timestamp) {
+            if (!timestamp) return 'N/A';
+            const date = new Date(timestamp);
+            const options = { day: 'numeric', month: 'long', year: 'numeric' };
+            return date.toLocaleDateString("en-GB", options);
+        },
+
         // Function to convert 24-hour time to 12-hour time with AM/PM
         formatTime(time) {
             // Check if time is null or undefined
@@ -1173,6 +1233,54 @@ export default {
         removePhotoNew(index) {
             this.eventCopy.eventBanners.splice(index, 1);
         },
+
+        // Get attendees with management data
+        async getAttendeesForManagement() {
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/events/getAttendees/${this.eventID}`);
+                this.attendeesForManagement = response.data.attendees;
+            } catch (error) {
+                console.error('Error fetching attendees for management:', error);
+            }
+        },
+
+        // Update attendee payment status
+        async updatePaymentStatus(attendeeId, hasPaid) {
+            try {
+                await this.$axios.put(`${process.env.VUE_APP_API_URL}/events/updateAttendeeStatus`, {
+                    attendeeId: attendeeId,
+                    hasPaid: hasPaid,
+                    eventOwnerID: this.userID,
+                    eventOwnerType: this.userType
+                });
+                
+                const toast = useToast();
+                toast.success('Payment status updated successfully!');
+            } catch (error) {
+                console.error('Error updating payment status:', error);
+                const toast = useToast();
+                toast.error('Failed to update payment status');
+            }
+        },
+
+        // Update attendee attendance status
+        async updateAttendanceStatus(attendeeId, attendanceStatus) {
+            try {
+                await this.$axios.put(`${process.env.VUE_APP_API_URL}/events/updateAttendeeStatus`, {
+                    attendeeId: attendeeId,
+                    attendanceStatus: attendanceStatus,
+                    eventOwnerID: this.userID,
+                    eventOwnerType: this.userType
+                });
+                
+                const toast = useToast();
+                toast.success('Attendance status updated successfully!');
+            } catch (error) {
+                console.error('Error updating attendance status:', error);
+                const toast = useToast();
+                toast.error('Failed to update attendance status');
+            }
+        }
     },
 
     // Watch for changes in the route ID
@@ -1218,6 +1326,9 @@ export default {
         
         this.getEvent();
         this.getAttendees();
+        if (this.selfView) {
+            this.getAttendeesForManagement();
+        }
     },
 
 }

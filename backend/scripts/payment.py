@@ -163,7 +163,7 @@ def create_subscription():
             }],
             payment_behavior='default_incomplete',
             payment_settings={'save_default_payment_method': 'on_subscription'},
-            expand=['latest_invoice.payment_intent'],
+            #expand=['latest_invoice.payment_intent'],
         )
 
          
@@ -179,6 +179,49 @@ def create_subscription():
         }
         log_debug("Basic subscription properties", debug_collection["subscription_basic"])
         
+        # Retrieve latest_invoice and payment_intent separately
+        log_debug("Retrieving invoice and payment intent separately")
+        client_secret = None
+
+        # Get the latest invoice ID from the subscription
+        if hasattr(subscription, 'latest_invoice') and subscription.latest_invoice:
+            latest_invoice_id = subscription.latest_invoice
+            debug_collection["latest_invoice_id"] = latest_invoice_id
+            
+            try:
+                # Retrieve the full invoice
+                invoice = stripe.Invoice.retrieve(latest_invoice_id)
+                debug_collection["invoice_retrieved"] = {
+                    "id": invoice.id,
+                    "status": invoice.status
+                }
+                
+                # If the invoice has a payment_intent, retrieve it
+                if hasattr(invoice, 'payment_intent') and invoice.payment_intent:
+                    payment_intent_id = invoice.payment_intent
+                    debug_collection["payment_intent_id"] = payment_intent_id
+                    
+                    try:
+                        # Retrieve the full payment intent
+                        payment_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
+                        debug_collection["payment_intent_retrieved"] = {
+                            "id": payment_intent.id,
+                            "status": payment_intent.status
+                        }
+                        
+                        # Get the client secret from the payment intent
+                        if hasattr(payment_intent, 'client_secret'):
+                            client_secret = payment_intent.client_secret
+                            debug_collection["client_secret_retrieved"] = True
+                        
+                    except Exception as e:
+                        debug_collection["payment_intent_retrieval_error"] = str(e)
+                        log_debug("Error retrieving payment intent", str(e))
+            
+            except Exception as e:
+                debug_collection["invoice_retrieval_error"] = str(e)
+                log_debug("Error retrieving invoice", str(e))
+
         # Check if latest_invoice exists
         has_latest_invoice = hasattr(subscription, 'latest_invoice') and subscription.latest_invoice is not None
         debug_collection["has_latest_invoice"] = has_latest_invoice

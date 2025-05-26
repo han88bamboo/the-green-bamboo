@@ -847,3 +847,12 @@ front-end changes for user dashboard + best of selection module
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 26 May 
+Coder: Kai
+
+Purpose of the changes:
+front-end changes for Best Of - mobile responsiveness
+
+Nature of the changes (frontend / backend / database):
+frontend
