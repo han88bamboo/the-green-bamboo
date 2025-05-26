@@ -2053,7 +2053,8 @@ export default {
         }
       } catch (error) {
         console.log(error);
-        alert("An error occurred while editing the post, please try again!");
+        const toast = useToast();
+        toast.error("An error occurred while editing the post, please try again!");
       }
     },
 
@@ -2083,7 +2084,8 @@ export default {
         }
       } catch (error) {
         console.log(error);
-        alert("An error occurred while deleting the post, please try again!");
+        const toast = useToast();
+        toast.error("An error occurred while deleting the post, please try again!");
       }
     },
 

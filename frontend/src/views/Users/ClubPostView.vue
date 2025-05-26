@@ -68,7 +68,7 @@
           </div>
 
           <!-- Column 2: Poster Name and Post Date -->
-          <div class="row col-11 mobile-col-10 d-flex flex-wrap align-items-center text-start">
+          <div class="row col-8 mobile-col-7 d-flex flex-wrap align-items-center text-start">
             <h5 class="mobile-view-hide fw-bold align-items-center " style="color: rgb(2, 117, 98);">{{ poster.displayName }} {{ poster.currentPoints }}
                {{ poster.rank }}
             </h5>
@@ -79,7 +79,251 @@
              <span :style="{ color: poster.rankColor }" class="fw-bold"> {{ poster.rank }} </span> posted on {{ post.postDate }}
             </p>
           </div>
+
+          <!-- Column 3: Edit and Delete Post Button -->
+          <div class="col-2 mobile-col-3 d-flex text-end align-items-center">
+            <button
+              v-if="isAdmin || post.posterID == memberID"
+              class="btn primary-btn rounded btn-sm py-1 me-2"
+              data-bs-toggle="modal"
+              data-bs-target="#editPostModal"
+            >
+              Edit
+            </button>
+            <button
+              v-if="isAdmin || post.posterID == memberID"
+              class="btn primary-btn rounded btn-sm py-1 me-2"    
+              style="background-color: #ae3e3e; border: 4px solid #ae3e3e; color:white;"
+              data-bs-toggle="modal"
+              data-bs-target="#deletePostModal"
+            >
+              Delete
+            </button>
         </div>
+        </div>
+
+        <!-- Edit Post Modal Start-->
+        <div
+          class="modal fade"
+          id="editPostModal"
+          tabindex="-1"
+          aria-labelledby="editPostModalLabel"
+          aria-hidden="true"
+        >
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <!-- Modal header -->
+              <div
+                class="modal-header d-flex justify-content-between"
+              >
+                <h5 class="modal-title" id="editPostModalLabel">
+                  Edit Post
+                </h5>
+                <button
+                  type="button"
+                  class="custom-close-btn"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    fill="currentColor"
+                    class="bi bi-x"
+                    viewBox="0 0 16 16"
+                  >
+                    <path
+                      d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Modal body -->
+              <div class="modal-body">
+                <div class="container">
+                  <!-- Post content -->
+                  <div class="row text-start">
+                    <div class="col-md-12">
+                      <label
+                        for="editPostContent"
+                        class="form-label fw-bold"
+                        >Post content:
+                      </label>
+                      <textarea
+                        class="form-control"
+                        rows="5"
+                        placeholder="Write your post here..."
+                        v-model="editingPost.postContent"
+                      ></textarea>
+                    </div>
+                  </div>
+
+                  <!-- Current post photos -->
+                  <div
+                    v-if="editingPost.postPhotos.length > 0"
+                    class="row mt-3 text-start"
+                  >
+                    <div class="col-md-12">
+                      <label
+                        for="editPostPhotos"
+                        class="form-label fw-bold"
+                        >Current photos:</label
+                      >
+                      <div
+                        v-for="(
+                          photo, index
+                        ) in editingPost.postPhotos"
+                        :key="index"
+                        class="position-relative d-inline-block m-2"
+                      >
+                        <img
+                          :src="photo"
+                          class="img-fluid"
+                          style="height: 300px"
+                          alt="Post Photo"
+                        />
+                        <button
+                          class="btn primary-btn-red btn-sm position-absolute top-0 end-0 mt-3 me-3"
+                          @click="removePhoto(index)"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            fill="currentColor"
+                            class="bi bi-trash-fill"
+                            viewBox="0 0 16 16"
+                          >
+                            <path
+                              d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Add new images -->
+                  <div class="row mt-3 text-start">
+                    <div class="col-md-12">
+                      <label
+                        for="newPostPhotos"
+                        class="form-label fw-bold"
+                        >Add more photos:</label
+                      >
+                      <input
+                        type="file"
+                        class="form-control"
+                        id="editPostPhotoInputField"
+                        accept="image/*"
+                        multiple
+                        @change="imageUploadEdit"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Modal footer -->
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  data-bs-dismiss="modal"
+                  :disabled="disableButton"
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  class="btn primary-btn-green"
+                  :disabled="disableButton"
+                  @click="editPost"
+                  data-bs-dismiss="modal"
+                >
+                  Edit
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Edit Post Modal End -->
+
+        <!-- Delete Post Modal Start-->
+        <div
+          class="modal fade"
+          id="deletePostModal"
+          tabindex="-1"
+          aria-labelledby="deletePostModalLabel"
+          aria-hidden="true"
+        >
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <!-- Modal header -->
+              <div
+                class="modal-header d-flex justify-content-between"
+              >
+                <h5 class="modal-title" id="deletePostModalLabel">
+                  Delete Post
+                </h5>
+                <button
+                  type="button"
+                  class="custom-close-btn"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    fill="currentColor"
+                    class="bi bi-x"
+                    viewBox="0 0 16 16"
+                  >
+                    <path
+                      d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Modal body -->
+              <div class="modal-body">
+                <p class="fw-bold">
+                  Are you sure you want to delete this post?
+                </p>
+                <p>
+                  Deleting this post will delete all the comments and
+                  likes in this post.
+                </p>
+              </div>
+
+              <!-- Modal footer -->
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  data-bs-dismiss="modal"
+                  :disabled="disableButton"
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  class="btn primary-btn-red"
+                  @click="deletePost"
+                  :disabled="disableButton"
+                  data-bs-dismiss="modal"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Delete Post Modal End -->
 
         <!-- Row 2: Post Photo if have -->
         <div v-if="post.postPhotos.length > 0" class="row">
@@ -605,6 +849,7 @@ export default {
       clubID: this.$route.params.clubID,
       postID: this.$route.params.postID,
       post: null,
+      editingPost: null,
       poster: null,
       comments: [],
 
@@ -613,6 +858,9 @@ export default {
 
       // Variable to store the showButton value (to show the load more comments button)
       showButton: true,
+
+      // Variable to disable the edit/delete button
+      disableButton: false,
 
       // Variable to store disabled value for the edit/delete button
       isDisabled: false,
@@ -668,8 +916,8 @@ export default {
           `${process.env.VUE_APP_API_URL}/club/getClubPostDetails/${this.postID}/0`
         );
         this.post = response.data.post_info;
+        this.editingPost = response.data.post_info;
         this.poster = response.data.poster_info;
-        console.log("Poster Info:", this.poster);
         this.comments = response.data.comments;
 
         // Set the dataLoaded variable to true
@@ -760,6 +1008,100 @@ export default {
         }
       } catch (error) {
         console.log(error);
+      }
+    },
+
+    // Function to remove a photo from the selected post
+    removePhoto(index) {
+      this.selectedPostEdit.postPhotos.splice(index, 1);
+    },
+
+    // Function to upload images and convert them to base64String for editing a post
+    imageUploadEdit(event) {
+      // Get the files
+      const files = event.target.files;
+
+      // Loop through the files
+      for (let i = 0; i < files.length; i++) {
+        // Check if the file is an image
+        if (files[i].type.match("image.*")) {
+          // Create a file reader
+          const reader = new FileReader();
+
+          // Read the file
+          reader.readAsDataURL(files[i]);
+
+          // When the file is read
+          reader.onload = () => {
+            // Push the base64 string to the postPhotos array
+            this.editingPost.postPhotos.push(reader.result);
+          };
+        }
+      }
+    },
+
+    // Function to edit a post
+    async editPost() {
+      try {
+        // Format data to be sent
+        let postData = {
+          postID: this.editingPost.id,
+          postContent: this.editingPost.postContent,
+          editorID: this.memberID,
+          images: this.editingPost.postPhotos,
+        };
+
+        // Edit the post
+        const response = await this.$axios.put(
+          `${process.env.VUE_APP_API_URL}/club/editPost`,
+          postData
+        );
+        if (response.status == 200) {
+
+          // Show a success message in a toast
+          const toast = useToast();
+          toast.success("Post edited successfully!");
+        }
+      } catch (error) {
+        console.log(error);
+        const toast = useToast();
+        toast.error(
+          "An error occurred while editing the post. Please try again later."
+        );
+      }
+    },
+
+    // Function to delete a post
+    async deletePost() {
+      try {
+        // Format the data to be sent
+        let deleteData = {
+          postID: this.postID,
+          removerID: this.memberID,
+        };
+
+        // Delete the post
+        const response = await this.$axios.delete(
+          `${process.env.VUE_APP_API_URL}/club/removePost`,
+          {
+            data: deleteData,
+          }
+        );
+        if (response.status == 200) {
+
+          // Show a success message in a toast
+          const toast = useToast();
+          toast.success("Post deleted successfully!");
+
+          // Wait 1.5 seconds before redirecting to the previous page
+          setTimeout(() => {
+            this.$router.go(-1);
+          }, 1500);
+        }
+      } catch (error) {
+        console.log(error);
+        const toast = useToast();
+        toast.error("An error occurred while deleting the post, please try again!");
       }
     },
 
