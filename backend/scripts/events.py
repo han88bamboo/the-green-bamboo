@@ -121,9 +121,15 @@ def getEvents(offset):
 
             # Convert datetime objects to string
             event['eventStartDate'] = event['eventStartDate'].strftime('%Y-%m-%d')
-            event['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
-            event['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
-            event['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+
+            if event['eventEndDate'] is not None:
+                event['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
+            
+            if event['eventStartTime'] is not None:
+                event['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
+
+            if event['eventEndTime'] is not None:
+                event['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
 
             # Append the event into the return_data
             return_data.append(event)
@@ -174,9 +180,15 @@ def getSpecificEvent(event_id):
 
         # Convert datetime objects to string
         event['eventStartDate'] = event['eventStartDate'].strftime('%Y-%m-%d')
-        event['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
-        event['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
-        event['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+
+        if event['eventEndDate'] is not None:
+            event['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
+        
+        if event['eventStartTime'] is not None:
+            event['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
+
+        if event['eventEndTime'] is not None:
+            event['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
 
         return jsonify({
             'event': event
@@ -244,9 +256,14 @@ def getUserEvents(user_id, user_type, offset):
 
             # Convert datetime objects to string
             event['eventStartDate'] = event['eventStartDate'].strftime('%Y-%m-%d')
-            event['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
-            event['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
-            event['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+            if event['eventEndDate'] is not None:
+                event['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
+            
+            if event['eventStartTime'] is not None:
+                event['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
+
+            if event['eventEndTime'] is not None:
+                event['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
 
             # Append the event into the return_data
             return_data.append(event)
@@ -292,9 +309,16 @@ def getTop6Events():
             top_event['eventDesc'] = event['eventDesc']
             top_event['eventType'] = event['eventType']
             top_event['eventStartDate'] = event['eventStartDate'].strftime('%Y-%m-%d')
-            top_event['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
-            top_event['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
-            top_event['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+
+            if event['eventEndDate'] is not None:
+                top_event['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
+            
+            if event['eventStartTime'] is not None:
+                top_event['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
+
+            if event['eventEndTime'] is not None:
+                top_event['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+
             top_event['numAttendees'] = event['numAttendees']
             top_event['eventBanners'] = event['eventBanners']
         
@@ -361,9 +385,14 @@ def getUpcomingFollowingEvents(user_id, user_type):
             event_details['eventDesc'] = event['eventDesc']
             event_details['eventType'] = event['eventType']
             event_details['eventStartDate'] = event['eventStartDate'].strftime('%Y-%m-%d')
-            event_details['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
-            event_details['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
-            event_details['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+
+            if event['eventEndDate'] is not None:
+                event_details['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
+            if event['eventStartTime'] is not None:
+                event_details['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
+            if event['eventEndTime'] is not None:
+                event_details['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+
             event_details['eventBanners'] = event['eventBanners']
         
             return_data.append(event_details)
@@ -420,9 +449,14 @@ def getUserPastEvents(user_id, offset):
             ev['eventDesc'] = event_info['eventDesc']
             ev['eventType'] = event_info['eventType']
             ev['eventStartDate'] = event_info['eventStartDate'].strftime('%Y-%m-%d')
-            ev['eventEndDate'] = event_info['eventEndDate'].strftime('%Y-%m-%d')
-            ev['eventStartTime'] = event_info['eventStartTime'].strftime('%H:%M')
-            ev['eventEndTime'] = event_info['eventEndTime'].strftime('%H:%M')
+
+            if event_info['eventEndDate'] is not None:
+                ev['eventEndDate'] = event_info['eventEndDate'].strftime('%Y-%m-%d')
+            if event_info['eventStartTime'] is not None:
+                ev['eventStartTime'] = event_info['eventStartTime'].strftime('%H:%M')
+            if event_info['eventEndTime'] is not None:
+                ev['eventEndTime'] = event_info['eventEndTime'].strftime('%H:%M')
+                
             ev['eventBanners'] = event_info['eventBanners']
 
             # Append the event into the return_data
@@ -512,9 +546,14 @@ def getUserUpcomingEvents(user_id, user_type, offset):
             ev['eventDesc'] = event_info['eventDesc']
             ev['eventType'] = event_info['eventType']
             ev['eventStartDate'] = event_info['eventStartDate'].strftime('%Y-%m-%d')
-            ev['eventEndDate'] = event_info['eventEndDate'].strftime('%Y-%m-%d')
-            ev['eventStartTime'] = event_info['eventStartTime'].strftime('%H:%M')
-            ev['eventEndTime'] = event_info['eventEndTime'].strftime('%H:%M')
+
+            if event_info['eventEndDate'] is not None:
+                ev['eventEndDate'] = event_info['eventEndDate'].strftime('%Y-%m-%d')
+            if event_info['eventStartTime'] is not None:
+                ev['eventStartTime'] = event_info['eventStartTime'].strftime('%H:%M')
+            if event_info['eventEndTime'] is not None:
+                ev['eventEndTime'] = event_info['eventEndTime'].strftime('%H:%M')
+
             ev['eventBanners'] = event_info['eventBanners']
 
             # Append the event into the return_data
@@ -560,9 +599,14 @@ def getRecentlyAddedEvents():
             event_details['eventDesc'] = event['eventDesc']
             event_details['eventType'] = event['eventType']
             event_details['eventStartDate'] = event['eventStartDate'].strftime('%Y-%m-%d')
-            event_details['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
-            event_details['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
-            event_details['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+
+            if event['eventEndDate'] is not None:
+                event_details['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
+            if event['eventStartTime'] is not None:
+                event_details['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
+            if event['eventEndTime'] is not None:
+                event_details['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+
             event_details['createdDate'] = event['createdDate'].strftime('%Y-%m-%d')
             event_details['eventBanners'] = event['eventBanners']
             
@@ -607,9 +651,14 @@ def searchEvents(search_query, offset):
             event_details['eventDesc'] = event['eventDesc']
             event_details['eventType'] = event['eventType']
             event_details['eventStartDate'] = event['eventStartDate'].strftime('%Y-%m-%d')
-            event_details['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
-            event_details['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
-            event_details['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+
+            if event['eventEndDate'] is not None:
+                event_details['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
+            if event['eventStartTime'] is not None:
+                event_details['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
+            if event['eventEndTime'] is not None:
+                event_details['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+        
             event_details['eventBanners'] = event['eventBanners']
             event_details['numAttendees'] = event['numAttendees']
             
@@ -689,7 +738,7 @@ def createEvent():
         # Step 1: Get the input data
         data = request.json
 
-        required_fields = ['eventName', 'eventDesc', 'eventType', 'eventStartDate', 'eventEndDate', 'eventStartTime', 'eventEndTime', 'ticketed', 'eventOwnerID', 'eventOwnerType']
+        required_fields = ['eventName', 'eventDesc', 'eventType', 'eventStartDate', 'ticketed', 'eventOwnerID', 'eventOwnerType']
 
         # Check if the required fields are present and not empty
         for field in required_fields:
@@ -720,7 +769,18 @@ def createEvent():
         
         # Step 4: Convert datetime values to datetime objects
         data['eventStartDate'] = datetime.strptime(data['eventStartDate'], '%Y-%m-%d')
-        data['eventEndDate'] = datetime.strptime(data['eventEndDate'], '%Y-%m-%d')
+
+        if data['eventEndDate'] != '' and data['eventEndDate'] is not None:
+            data['eventEndDate'] = datetime.strptime(data['eventEndDate'], '%Y-%m-%d')
+        else:
+            data['eventEndDate'] = None
+
+        if data['eventStartTime'] == '' or data['eventStartTime'] is None:
+            data['eventStartTime'] = None
+
+        if data['eventEndTime'] == '' or data['eventEndTime'] is None:
+            data['eventEndTime'] = None
+
 
         # Check if paymentLink is provided
         if 'paymentLink' in data and not data['paymentLink']:
@@ -790,6 +850,7 @@ def updateEvent():
             if field not in data or not data[field]:
                 return jsonify({'error': f'Missing or empty required field: {field}'}), 400
 
+
         # Step 2: Check if the event exist
         cursor.execute('SELECT * FROM events WHERE id = %s', (data['eventID'],))
         event = cursor.fetchone()
@@ -811,6 +872,9 @@ def updateEvent():
         if 'eventDesc' in data and data['eventDesc']:
             update_fields.append('"eventDesc" = %s')
             update_values.append(data['eventDesc'])
+        if 'eventType' in data and data['eventType']:
+            update_fields.append('"eventType" = %s')
+            update_values.append(data['eventType'])
         if 'eventStartDate' in data and data['eventStartDate']:
             update_fields.append('"eventStartDate" = %s')
             update_values.append(datetime.strptime(data['eventStartDate'], '%Y-%m-%d'))
@@ -846,10 +910,12 @@ def updateEvent():
             # Loop through current eventBanners and check if they are not in the new eventBanners
             # If not, remove them from the eventBanners
             current_event_banners = event['eventBanners']
-            for current_banner in current_event_banners:
-                if current_banner not in data['eventBanners']:
-                    # Remove the banner from S3
-                    s3Images.deleteImageFromS3(current_banner)
+
+            if current_event_banners is not None:
+                for current_banner in current_event_banners:
+                    if current_banner not in data['eventBanners']:
+                        # Remove the banner from S3
+                        s3Images.deleteImageFromS3(current_banner)
 
             # Upload each image (base64Image) to S3 in the new eventBanners
             event_banner = []

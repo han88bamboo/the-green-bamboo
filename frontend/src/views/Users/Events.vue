@@ -79,6 +79,7 @@
                 <div 
                     v-if="showCreateEventModal" 
                     class="modal d-block" 
+                    id="createEventModal"
                     style="background-color: rgba(0, 0, 0, 0.5); position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1050;"
                     >
                     <div class="modal-dialog modal-lg" style="margin: 10vh auto;">
@@ -139,8 +140,14 @@
                                     style="color: #00796B;"
                                     >
                                     {{ formatDate(event.eventStartDate) }} |
-                                    {{ formatTime(event.eventStartTime) }} -
-                                    {{ formatTime(event.eventEndTime) }} |
+
+                                    <span v-if="event.eventStartTime && event.eventEndTime">
+                                        {{ formatTime(event.eventStartTime) }} -
+                                        {{ formatTime(event.eventEndTime) }} |
+                                    </span>
+                                    <span v-else-if="event.eventStartTime">
+                                        {{ formatTime(event.eventStartTime) }} | 
+                                    </span>
                                     {{ event.eventType }}
                                     </router-link>
                                 </p>  
@@ -213,8 +220,13 @@
                                   style="color: #00796B;"
                                 >
                                 {{ formatDate(event.eventStartDate) }} |
-                                {{ formatTime(event.eventStartTime) }} -
-                                {{ formatTime(event.eventEndTime) }} |
+                                <span v-if="event.eventStartTime && event.eventEndTime">
+                                    {{ formatTime(event.eventStartTime) }} -
+                                    {{ formatTime(event.eventEndTime) }} |
+                                </span>
+                                <span v-else-if="event.eventStartTime">
+                                    {{ formatTime(event.eventStartTime) }} |
+                                </span>
                                 {{ event.eventType }}
                                 </router-link>
                               </p>  
@@ -283,8 +295,13 @@
                                   style="color: #00796B;"
                                 >
                                 {{ formatDate(event.eventStartDate) }} |
-                                {{ formatTime(event.eventStartTime) }} -
-                                {{ formatTime(event.eventEndTime) }} |
+                                <span v-if="event.eventStartTime && event.eventEndTime">
+                                    {{ formatTime(event.eventStartTime) }} -
+                                    {{ formatTime(event.eventEndTime) }} |
+                                </span>
+                                <span v-else-if="event.eventStartTime">
+                                    {{ formatTime(event.eventStartTime) }} |
+                                </span>
                                 {{ event.eventType }}
                                 </router-link>
                               </p>  
@@ -336,8 +353,13 @@
                             <!-- Event Details -->
                             <p class="text-success small mb-2">
                             {{ formatDate(event.eventStartDate) }} |
-                            {{ formatTime(event.eventStartTime) }} -
-                            {{ formatTime(event.eventEndTime) }} |
+                            <span v-if="event.eventStartTime && event.eventEndTime">
+                                {{ formatTime(event.eventStartTime) }} -
+                                {{ formatTime(event.eventEndTime) }} |
+                            </span>
+                            <span v-else-if="event.eventStartTime">
+                                {{ formatTime(event.eventStartTime) }} |
+                            </span>
                             {{ event.eventType }}
                             </p>
 
@@ -436,8 +458,13 @@
                                     <!-- Event Details -->
                                     <p class="text-success small mb-2">
                                     {{ formatDate(event.eventStartDate) }} |
-                                    {{ formatTime(event.eventStartTime) }} -
-                                    {{ formatTime(event.eventEndTime) }} |
+                                    <span v-if="event.eventStartTime && event.eventEndTime">
+                                        {{ formatTime(event.eventStartTime) }} -
+                                        {{ formatTime(event.eventEndTime) }} |
+                                    </span>
+                                    <span v-else-if="event.eventStartTime">
+                                        {{ formatTime(event.eventStartTime) }} |
+                                    </span>
                                     {{ event.eventType }}
                                     </p>
 
@@ -540,8 +567,13 @@
                                     <!-- Event Details -->
                                     <p class="text-success small mb-2">
                                     {{ formatDate(event.eventStartDate) }} |
-                                    {{ formatTime(event.eventStartTime) }} -
-                                    {{ formatTime(event.eventEndTime) }} |
+                                    <span v-if="event.eventStartTime && event.eventEndTime">
+                                        {{ formatTime(event.eventStartTime) }} -
+                                        {{ formatTime(event.eventEndTime) }} |
+                                    </span>
+                                    <span v-else-if="event.eventStartTime">
+                                        {{ formatTime(event.eventStartTime) }} |
+                                    </span>
                                     {{ event.eventType }}
                                     </p>
 
@@ -667,6 +699,11 @@ export default {
             },
         // Function to get upcoming events 
         async getUpcomingEvents() {
+
+            // Check if user is logged in
+            if (this.userID == null) {
+                this.upcomingEventsError = "Sign up or log in to view your upcoming events!";
+            }
             try {
                 const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/events/getUserUpcomingEvents/${this.userID}/${this.userType}/${this.upcomingOffset}`);
                 this.upcomingEvents = response.data.events;
@@ -677,7 +714,7 @@ export default {
                     this.upcomingEventsError = "No upcoming events found.";
                 }
                 else {
-                    this.upcomingEventsError = "Sign up or log in to register yourself for events.";
+                    this.upcomingEventsError = "Error loading upcoming events.";
                 }
                 console.error(error);
             }
@@ -822,6 +859,7 @@ export default {
 
         // Function to convert 24-hour time to 12-hour time with AM/PM
         formatTime(time) {
+            if (!time) return ''; // Return empty string if time is not provided
             const [hour, minute] = time.split(':');
             const ampm = hour >= 12 ? 'PM' : 'AM';
             const formattedHour = hour % 12 || 12; // Convert 0 to 12 for 12 AM
@@ -847,7 +885,7 @@ export default {
                 console.log(this.newEvent);
 
                 // Check if all fields are filled
-                if (!this.newEvent.eventName || !this.newEvent.eventDescription || !this.newEvent.eventType || !this.newEvent.eventStartDate || !this.newEvent.eventEndDate || this.newEvent.ticketed == null) {
+                if (!this.newEvent.eventName || !this.newEvent.eventDescription || !this.newEvent.eventType || !this.newEvent.eventStartDate || this.newEvent.ticketed == null) {
                     alert("Please fill in all fields.");
                     this.disableButton = false;
                     return;
@@ -870,10 +908,12 @@ export default {
                     }
 
                     // Check if the end time is after the start time
-                    if (this.newEvent.eventEndDate == this.newEvent.eventStartDate && this.newEvent.eventEndTime <= this.newEvent.eventStartTime) {
-                        alert("End time must be after start time.");
-                        this.disableButton = false;
-                        return;
+                    if (this.newEvent.eventEndDate != null) {
+                        if (this.newEvent.eventEndDate == this.newEvent.eventStartDate && this.newEvent.eventEndTime <= this.newEvent.eventStartTime) {
+                            alert("End time must be after start time.");
+                            this.disableButton = false;
+                            return;
+                        }
                     }
                 }
                 
@@ -926,9 +966,15 @@ export default {
 
         // Function to check if a user is trying to create event when they've reaced the limit. This prompts error message to display
         handleCreateEventClick() {
-        this.createEventClicked = true;
-        if (this.canCreateEvent) {
-            this.showCreateEventModal = true;
+            // Check if user is logged in
+            if (this.userType == null) {
+                // Redirect to login page
+                this.$router.push({ name: 'login' });
+                return;
+            }
+            this.createEventClicked = true;
+            if (this.canCreateEvent) {
+                this.showCreateEventModal = true;
             }
         },
     },

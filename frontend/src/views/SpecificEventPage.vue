@@ -85,12 +85,20 @@
                                         
                                 <!-- Same Start and End Date -->
                                 <div v-if="event.eventStartDate == event.eventEndDate" class="m-0 p-0" style="color:#027562">
-                                    <p class="fw-bold mobile-fs-7 p-0">{{ formatDate(event.eventStartDate) }}, {{ formatTime(event.eventStartTime)}} - {{ formatTime(event.eventEndTime) }}</p>
+                                    <p class="fw-bold mobile-fs-7 p-0">{{ formatDate(event.eventStartDate) }}, 
+                                        <span v-if="event.eventStartTime"> {{ formatTime(event.eventStartTime) }}</span>
+                                        <span v-if="event.eventEndTime"> - {{ formatTime(event.eventEndTime) }}</span>
+                                    </p>
                                 </div>
 
                                 <!-- Different Start and End Dates -->
                                 <div v-else class="m-0 p-0" style="color:#027562">
-                                    <p class="fw-bold mobile-fs-7 p-0">{{ formatDate(event.eventStartDate) }} - {{ formatDate(event.eventEndDate) }}, {{ formatTime(event.eventStartTime)}} - {{ formatTime(event.eventEndTime) }}</p>
+                                    <p class="fw-bold mobile-fs-7 p-0">
+                                        {{ formatDate(event.eventStartDate) }} 
+                                        <span v-if="event.eventEndDate">- {{ formatDate(event.eventEndDate) }}</span> 
+                                        <span v-if="event.eventStartTime">, {{ formatTime(event.eventStartTime) }}</span>
+                                        <span v-if="event.eventEndTime"> - {{ formatTime(event.eventEndTime) }}</span>
+                                    </p>
                                 </div>
                             </div>
                             <!-- Spacer that shrinks -->
@@ -485,7 +493,7 @@
 
                         <!-- Event Name Edit Field -->
                         <div class="mb-3">
-                            <label for="eventName" class="form-label fw-bold">Event Name</label>
+                            <label for="eventName" class="form-label fw-bold">Event Name <span style="color: red;">*</span></label>
                             <input type="text" class="form-control" id="eventName" v-model="eventCopy.eventName">
                         </div>
 
@@ -494,21 +502,39 @@
                         <p v-html="eventCopy.eventDesc"></p>
 
                         <!-- Event description input editor -->
-                        <p class="fw-bold">New Event Description (Input the new description here, leave blank if there is no changes.):</p>
+                        <p class="fw-bold">New Event Description (Input the new description here, leave blank if there is no changes.)</p>
                         <div id="editor-container" style="height: 300px;" class="mb-3"></div>
+
+                        <!-- Event type -->
+                        <div class="mb-3 row">
+                            <label for="eventType">Event Type <span style="color: red;">*</span></label>
+                            
+                            <div>
+                                <div class="form-check form-check-inline">
+                                    <!-- Online option -->
+                                    <input type="radio" id="onlineEvent" name="eventType" value="Online" v-model="eventCopy.eventType" class="form-check-input" required>
+                                    <label for="onlineEvent" class="form-check-label">&nbsp;Online</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <!-- In Person option -->
+                                    <input type="radio" id="inPersonEvent" name="eventType" value="Location" v-model="eventCopy.eventType" class="form-check-input">
+                                    <label for="inPersonEvent" class="form-check-label">&nbsp;In Person</label>
+                                </div>
+                            </div>
+                        </div>
 
                         <hr>
 
                         <div class="mb-3 row">
                             <!-- Event start date -->
                             <div class="col">
-                                <label for="eventStartDate" class="form-label fw-bold">Event Start Date:</label>
+                                <label for="eventStartDate" class="form-label fw-bold">Event Start Date <span style="color: red;">*</span></label>
                                 <input type="date" class="form-control" id="eventStartDate" required v-model="eventCopy.eventStartDate" :min="new Date().toISOString().split('T')[0]"> 
                             </div>
 
                             <!-- Event start time -->
                             <div class="col">
-                                <label for="eventStartTime" class="form-label fw-bold">Event Start Time:</label>
+                                <label for="eventStartTime" class="form-label fw-bold">Event Start Time</label>
                                 <input type="time" class="form-control" id="eventStartTime" v-model="eventCopy.eventStartTime">
                             </div>
                         </div>
@@ -516,13 +542,13 @@
                         <div class="mb-3 row">
                             <!-- Event end date -->
                             <div class="col">
-                                <label for="eventEndDate" class="form-label fw-bold">Event End Date:</label>
+                                <label for="eventEndDate" class="form-label fw-bold">Event End Date</label>
                                 <input type="date" class="form-control" id="eventEndDate" required v-model="eventCopy.eventEndDate" :min="eventCopy.eventStartDate">
                             </div>
 
                             <!-- Event end time -->
                             <div class="col">
-                                <label for="eventEndTime" class="form-label fw-bold">Event End Time:</label>
+                                <label for="eventEndTime" class="form-label fw-bold">Event End Time</label>
                                 <input type="time" class="form-control" id="eventEndTime" v-model="eventCopy.eventEndTime">
                             </div>
                         </div>
@@ -540,7 +566,7 @@
 
                         <!-- Event wallpaper upload -->
                         <div class="mb-3">
-                            <label for="eventBanner" class="form-label fw-bold">Add Event Wallpaper (upload up to 3 images):</label>
+                            <label for="eventBanner" class="form-label fw-bold">Add Event Wallpaper (upload up to 3 images)</label>
                             <input type="file" class="form-control" id="eventBanner" multiple accept="image/*" @change="uploadImages" :disabled="eventCopy.eventBanners && eventCopy.eventBanners.length == 3">
                         </div>
 
@@ -558,13 +584,13 @@
 
                         <!-- Event limit -->
                         <div class="mb-3">
-                            <label for="eventLimit" class="form-label fw-bold">Event Limit:</label>
+                            <label for="eventLimit" class="form-label fw-bold">Event Limit</label>
                             <input type="number" class="form-control" min="1" id="eventLimit" required v-model="eventCopy.eventLimit">
                         </div>
 
                         <!-- Ticketed event -->
                         <div class="mb-3">
-                            <label for="ticketedEventYes" class="fw-bold">Is this a ticketed event? (Click yes if this event requires a pre-sign up for entry.)</label>
+                            <label for="ticketedEventYes" class="fw-bold">Is this a ticketed event? (Click yes if this event requires a pre-sign up for entry.) <span style="color: red;">*</span></label>
                             <div>
                                 <div class="form-check form-check-inline">
                                     <!-- Yes Option -->
@@ -600,8 +626,8 @@
                         <!-- Event location -->
                         <div class="mb-3">
                             <label for="eventLocation" class="form-label fw-bold">
-                                <span v-if="eventCopy.eventType == 'Location'">Event Location:</span>
-                                <span v-else>Event Link:</span>
+                                <span v-if="eventCopy.eventType == 'Location'">Event Location</span>
+                                <span v-else>Event Link</span>
                             </label>
                             <input type="text" class="form-control" id="eventLocation" v-model="eventCopy.eventLocation">
                         </div>
@@ -970,11 +996,19 @@ export default {
                         toast.error('Event start time cannot be earlier than current time.');
                         return;
                     }
+                    if (this.eventCopy.eventEndDate != null && this.eventCopy.eventEndDate != '' ) {
 
-                    if (this.eventCopy.eventStartDate == this.eventCopy.eventEndDate && this.eventCopy.eventStartTime >= this.eventCopy.eventEndTime) {
-                        const toast = useToast();
-                        toast.error('Event end time cannot be earlier than event start time.');
-                        return;
+                        if (this.eventCopy.eventEndDate < this.eventCopy.eventStartDate) {
+                            const toast = useToast();
+                            toast.error('Event end date cannot be earlier than event start date.');
+                            return;
+                        }
+
+                        if (this.eventCopy.eventEndDate == this.eventCopy.eventStartDate && this.eventCopy.eventEndTime <= this.eventCopy.eventStartTime) {
+                            const toast = useToast();
+                            toast.error('Event end time cannot be earlier than event start time.');
+                            return;
+                        }
                     }
                 }
 
@@ -982,6 +1016,7 @@ export default {
                 // Check which fields have been changed
                 let changedFields = {};
                 for (const [key, value] of Object.entries(this.eventCopy)) {
+                    
                     if (this.event[key] != value) {
 
                         // Skip ownerInfo
@@ -989,10 +1024,17 @@ export default {
                             continue;
                         }
 
+                        if (key == 'eventBanners') {
+                            console.log(this.eventCopy.eventBanners);
+                            console.log(this.event.eventBanners);   
+                            if (this.eventCopy.eventBanners.length == 0 && this.event.eventBanners.length == 0) {
+                                continue; // Skip if no banners are uploaded
+                            }
+                        }
+
                         changedFields[key] = value;
                     }
                 }
-
                 // Check if there are any changes
                 if (Object.keys(changedFields).length == 0) {
                     const toast = useToast();
@@ -1074,6 +1116,10 @@ export default {
 
         // Function to convert 24-hour time to 12-hour time with AM/PM
         formatTime(time) {
+            // Check if time is null or undefined
+            if (!time) {
+                return '';
+            }
             const [hour, minute] = time.split(':');
             const ampm = hour >= 12 ? 'PM' : 'AM';
             const formattedHour = hour % 12 || 12; // Convert 0 to 12 for 12 AM

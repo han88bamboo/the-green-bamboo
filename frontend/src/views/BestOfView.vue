@@ -40,7 +40,7 @@
                 <!-- Button to cast vote -->
                 <button
                     class="btn primary-btn-less-round-blue btn-lg mb-3" 
-                    @click="$router.push('/dashboard/user')"
+                    @click=" userID ? $router.push('/dashboard/user') : $router.push('/login')"
                 >
                     <span class="fw-bold"> Cast your vote! </span>
                 </button>
@@ -154,6 +154,10 @@ export default {
         return {
             dataLoaded: false,
 
+            // Variabls to store user data
+            userID: null,
+            userType: null,
+
             // Drink type array 
             drinkTypes: [
                 {
@@ -241,6 +245,11 @@ export default {
     mounted() {
         this.fetchDrinkTypes();
         this.fetchTop5();
+
+        // Set userID and userType from localStorage
+        this.userID = localStorage.getItem("userID");
+        this.userType = localStorage.getItem("userType");
+
     },
 }
 </script>
