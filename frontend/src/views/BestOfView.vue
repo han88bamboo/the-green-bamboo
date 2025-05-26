@@ -39,11 +39,11 @@
                     <div class="text-center mt-4">
                         <h2 class="fw-bold mobile-fs-4">Best Of</h2>
                         <p class="mobile-rating-smaller-text-2">A round of community favourites, as voted by you!</p>
-
+                        
                         <!-- Button to cast vote -->
-                        <button
+                        <button v-if="userType == 'user'"
                             class="btn primary-btn-less-round-blue btn-lg mb-3 mobile-rating-smaller-text-2" 
-                            @click="$router.push('/dashboard/user')"
+                            @click=" userID ? $router.push('/dashboard/user') : $router.push('/login')"
                         >
                             <span class="fw-bold "> Cast your vote! </span>
                         </button>
@@ -158,6 +158,10 @@ export default {
         return {
             dataLoaded: false,
 
+            // Variabls to store user data
+            userID: null,
+            userType: null,
+
             // Drink type array 
             drinkTypes: [
                 {
@@ -189,13 +193,15 @@ export default {
 
             // Set selectedDrinkTypeCategory to the first category (if available)
             if (this.drinkTypeCategories.length) {
-            this.selectedDrinkTypeCategory = this.drinkTypeCategories[0];
+                this.selectedDrinkTypeCategory = this.drinkTypeCategories[0];
             } else {
-            this.selectedDrinkTypeCategory = '';
+                this.selectedDrinkTypeCategory = '';
             }
+
+            this.fetchTop5();
         },
         selectedDrinkTypeCategory(newVal, oldVal) {
-            if (newVal !== oldVal && newVal !== null && newVal !== undefined) {
+            if (newVal !== oldVal) {
                 this.fetchTop5();
             }
         }
@@ -209,6 +215,12 @@ export default {
 
                 // Append the response data to the drinkTypes array
                 this.drinkTypes = this.drinkTypes.concat(response.data);
+
+                // Add a default category for "Show All Types" to all drink types
+                this.drinkTypes.forEach(type => {
+                    // Add the default category in the first position
+                    type.typeCategory.unshift('Show All');
+                });
                 this.dataLoaded = true;
 
             } catch (error) {
@@ -245,6 +257,11 @@ export default {
     mounted() {
         this.fetchDrinkTypes();
         this.fetchTop5();
+
+        // Set userID and userType from localStorage
+        this.userID = localStorage.getItem("88B_accID");
+        this.userType = localStorage.getItem("88B_accType");
+
     },
 }
 </script>

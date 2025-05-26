@@ -1718,6 +1718,7 @@ def addComment():
                 "commenterInfo": commenter_info,
                 "id": comment_id,
                 "likedMembers": [],
+                "dislikedMembers": [],
                 "postID": post_id
             }
         }

@@ -1294,13 +1294,17 @@
                 showPopup: false,
                 selectedCategory: '',
                 selectedGrails: [],
+                selectedGrailsID: [],
                 selectedUpAndComing: [],
+                selectedUpAndComingIDs: [],
                 selectedGOATs: [],
+                selectedGOATsIDs: [],
                 searchInput: "",
                 suggestions: [],
                 showSuggestions: false,
                 selectedIndex: -1,
                 selectedDrinks: [], 
+                selectedDrinksIDs: [],
                 selectedDrinkDetails: [], 
                 currentSelectedDrinkDetails: [], 
                 isLoading: false,
@@ -1803,6 +1807,7 @@
                 this.showPopup = false;
                 this.searchInput = "";
                 this.selectedDrinks = [];
+                this.selectedDrinksIDs = [];
                 this.selectedDrinkDetails = [];
             },
             getCategoryEmoji() {
@@ -1882,6 +1887,8 @@
                     // Add to selectedDrinks if not already there
                     if (!this.selectedDrinks.includes(suggestion)) {
                         this.selectedDrinks.push(suggestion);
+                        // Track the ID of the drink selected
+                        this.selectedDrinksIDs.push(response.data.id);
                         this.selectedDrinkDetails.push(response.data);
                     }
             
@@ -1946,6 +1953,7 @@
                         // Add the drink to the selectedDrinks if not already there
                         if (!this.selectedDrinks.includes(drinkToAdd)) {
                             this.selectedDrinks.push(drinkToAdd);
+                        
                         }
             
                         // Reset search input
@@ -2011,6 +2019,7 @@
                 }
             },
             async saveSelectionsToDatabase() {
+                console.log("selected category", this.selectedCategory);
                 try {
                     
                     // Replace with your actual API endpoint
@@ -2020,7 +2029,9 @@
                             userID: this.userID,
                             selectedGrails: this.selectedGrails,
                             selectedUpAndComing: this.selectedUpAndComing,
-                            selectedGOATs: this.selectedGOATs
+                            selectedGOATs: this.selectedGOATs,
+                            selectedCategory: this.selectedCategory,
+                            selectedDrinkIDs: this.selectedDrinksIDs
                         }, {
                         headers: {
                             'Content-Type': 'application/json'
@@ -2081,7 +2092,6 @@
             
                         // Store the details in an array
                         this.displayUpAndComingDetails = detailsList;
-                        console.log("here", this.displayUpAndComingDetails)
                     } catch (error) {
                         console.error("Error fetching drink details:", error);
                     }
