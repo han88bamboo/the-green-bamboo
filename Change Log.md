@@ -856,3 +856,19 @@ front-end changes for Best Of - mobile responsiveness
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 26 May 
+Coder: Han (Danish & CP's work )
+Purpose of the changes:
+– adding rsvp badge, events check in status
+– feat: change in events ui
+– feat: best of page including show all for type category for each drink type
+– bug fixes: fixed best of bugs
+  > only users can see cast your vote button
+  > fixed routing issue for cast your vote button
+  > refactored best of selections to add the exact listing user have selected
+– feat: added edit and delete button on club post page
+
+
+Nature of the changes (frontend / backend / database):
+frontend, backend and DB
