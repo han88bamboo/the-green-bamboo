@@ -256,6 +256,7 @@
                     <!-- body -->
                     <div style="height: 85%">
                       <!-- [if] drinks in drink shelf -->
+                      
                       <div
                         v-if="drinkShelf.length != 0"
                         class="Xoverflow-auto"
@@ -266,6 +267,7 @@
                           v-for="listing in drinkShelf"
                           v-bind:key="listing.id"
                         >
+                          
                           <div class="d-flex align-items-start">
                             <router-link
                               :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName) }"
@@ -1785,7 +1787,7 @@ export default {
     },
 
     // get username of user accessing page
-    getUsername() {
+    async getUsername() {
       let producer = this.producers.find(
         (producer) => producer.id == parseInt(this.userID)
       );
@@ -1795,23 +1797,37 @@ export default {
       if (this.user && this.userType == "user") {
         this.username = this.user.username;
         this.displayName = this.user.displayName;
+
         // drink shelf
-        let allDrinkShelf = Object.values(this.user.drinkLists).flatMap(
-          (obj) => obj.listItems
-        );
-        allDrinkShelf.sort((a, b) => {
-          return new Date(b[0]) - new Date(a[0]);
+        // 1. Loop through all the drink lists
+        let allDrinkShelf = [];
+
+        Object.values(this.user.drinkLists).forEach((value) => {
+          let listItems = value.listItems || [];
+          allDrinkShelf.push(...listItems);
         });
-        let allDrinks = [];
-        for (const item of allDrinkShelf) {
-          const listing = this.listings.find(
-            (listing) => listing.id === parseInt(item)
-          );
-          if (listing) {
-            allDrinks.push(listing);
+
+        // Sort by addedDate (newest first)
+        allDrinkShelf.sort((a, b) => new Date(b.addedDate) - new Date(a.addedDate));
+
+        // Loop through allDrinkShelf to get the drink details and add to drinkShelf
+        if (this.listings && this.listings.length > 0) {
+          for (let drink of allDrinkShelf) {
+            
+            try {
+              const response = await this.$axios.get(
+                `${process.env.VUE_APP_API_URL}/getData/getListing/${drink.drinkId}`
+              );
+
+              this.drinkShelf.push(response.data);
+            } catch (error) {
+              console.error("Error retrieving listing details:", error);
+            }
           }
         }
-        this.drinkShelf = [...new Set(allDrinks)];
+
+
+
       } else if (producer && this.userType == "producer") {
         this.username = producer.producerName;
         // Q&A
