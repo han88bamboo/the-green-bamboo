@@ -310,6 +310,7 @@ def editPassword(id):
                 "message": "An error occurred updating the password."
             }
         ), 500
+
 # -----------------------------------------------------------------------------------------
 # [POST] Reset user password
 # - Sends email with 6 digit PIN
@@ -390,6 +391,7 @@ def sendResetPin(id):
 
         message = 'Subject: Drink-X Reset Password\n\n Your pin is {} and expires in 1 hour, please ignore this message if you did not try to reset your password, alternatively, you can email us'.format(pin)
         
+        
         # The 2 lines below is for local development (comment out for deployment)
         if PURPOSE == 'development':
             server.sendmail(email_address, userRaw["email"], message)
@@ -402,7 +404,7 @@ def sendResetPin(id):
                 recipient=userRaw["email"],
                 body=message,
             )
-            print(email_address)
+            
         print("Success: Email sent!")
         
         return jsonify(
@@ -439,7 +441,6 @@ def verifyPin(id):
     cur = conn.cursor()
 
     data = request.get_json()
-    print(data)
     
     time = datetime.now()
     time = time.strftime("%Y-%m-%d %H:%M:%S")

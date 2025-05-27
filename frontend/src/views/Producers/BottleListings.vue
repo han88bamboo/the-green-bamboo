@@ -1423,7 +1423,6 @@
                           placeholder="Tag friends"
                           v-on:input="updateFriendTag"
                         />
-
                         <datalist id="filteredFollowList">
                           <option
                             v-for="user in filteredUsers"
@@ -3480,12 +3479,20 @@ export default {
             userIDs: this.allRelevantUserIDs,
           }
         );
-        this.users = response.data;
+        this.users = response.data;        
         this.user = this.users.find((user) => user.id == this.userID);
         if (this.user) {
           this.userBookmarks = this.user.drinkLists;
           let triedDrinks = [];
           let wantToTryDrinks = [];
+
+          // Get follow list user details 
+          const response = await this.$axios.post(
+            `${process.env.VUE_APP_API_URL}/getData/getUserFollowListDetails`, {
+              userIDs: this.user.followLists.users,
+            }
+          );
+          this.users = this.users.concat(response.data);
           this.followList = this.users.filter((user) => {
             return this.user.followLists.users.some(
               (item) => parseInt(item) === user.id
@@ -4652,6 +4659,7 @@ export default {
       }
 
       let user = this.users.find((user) => user.username === this.friendTag);
+      
       if (user) {
         this.selectedFriendTag = user;
         friendTagError.innerHTML = "";
