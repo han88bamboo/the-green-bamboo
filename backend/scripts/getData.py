@@ -3,7 +3,7 @@
 #           /getRecentListingReviews/<id> (GET), /getAllListingsNames (GET), /getBookmarkListings (POST), /getUserReviewSummary/<id> (GET),
 #           /getReviews (GET), /getReviewsByListingIDs (POST), /getReviewByTarget/<id> (GET), /getReviewsByUserIds (GET), /getProducerTourReviews (GET), /getVenueReviews (GET), 
 #           /getVenueReviewsByVenueId/<id> (GET), /getProducerReviewsByProducerId/<id> (GET),
-#           /getUsers (GET), /getUsersFromList (POST), /getUser/<id> (GET), 
+#           /getUsers (GET), /getUsersFromList (POST), /getUserFollowListDetails (POST) /getUser/<id> (GET), 
 #           /getUserPhoto/<id>/<userType> (GET), /getUserByUsername/<username> (GET), /getVenues (GET), 
 #           /getVenue/<id> (GET), /getVenuesAPI (GET), /getDrinkTypes (GET), /getTypeCategories (GET), /getRequestListings (GET), /getRequestListing/<id> (GET), /getRequestEdits (GET), 
 #           /getRequestEdit/<id> (GET), /getModRequests (GET), /getFlavourTags (GET), /getSubTags (GET), /getObservationTags (GET), /getColours (GET), 
@@ -118,7 +118,7 @@ def fetch_user_data(cursor, user_id):
 def fetch_drink_lists(cursor, user_id):
     # First, get all drink lists for the user
     cursor.execute("""
-        SELECT "id", "listName"
+        SELECT "id", "listName", "listDesc"
         FROM "usersDrinkLists"
         WHERE "userId" = %s
     """, (user_id,))
@@ -132,7 +132,7 @@ def fetch_drink_lists(cursor, user_id):
 
         # Initialize the list in the result dictionary
         result[list_name] = {
-            "listDesc": "",  # Customize or fetch descriptions if needed
+            "listDesc": row["listDesc"],
             "listItems": [],
         }
 
@@ -1344,6 +1344,7 @@ def getUsers():
                 user_data["drinkLists"] = fetch_drink_lists(cursor, user_id)
                 user_data["followLists"] = fetch_follow_lists(cursor, user_id)
 
+
                 # Remove unnecessary fields
                 del user_data["hashedPassword"]
                 del user_data["pin"]
@@ -1387,7 +1388,46 @@ def getUsersFromList():
             del user_data["hashedPassword"]
             del user_data["pin"]
 
+
     return jsonify(users_data), 200
+
+
+# [POST] A list of users a specific user is following
+@blueprint.route("/getUserFollowListDetails", methods=['POST'])
+def getUserFollowListDetails():
+    conn = g.db
+    user_ids = request.json.get('userIDs', [])
+
+    if not user_ids or len(user_ids) == 0:
+        return jsonify({
+            "code": 404,
+            "message": "At least one user ID is required."
+        }), 404
+    
+    try: 
+        # Retrieve user information based on the provided IDs
+        with conn.cursor() as cursor:
+            cursor.execute('SELECT * FROM "users" WHERE "id" IN %s', (tuple(user_ids),))
+            users_data = cursor.fetchall()
+
+            if not users_data:
+                return jsonify([]), 404
+
+            for user_data in users_data:
+                user_id = user_data['id']
+                user_data['proofRank'] = pointsHelperFunc.get_rank_by_user_id(user_id)
+                user_data['currentPoints'] = pointsHelperFunc.get_current_proof_points(user_id)
+
+                # Remove unnecessary fields
+                del user_data["hashedPassword"]
+                del user_data["pin"]
+                del user_data["email"]
+
+        return jsonify(users_data), 200
+    
+    except Exception as e:
+        print(str(e))
+        return jsonify({"code": 500, "message": "An error occurred while fetching user follow list details."}), 500
 
 # [GET] Specific User by ID
 @blueprint.route("/getUser/<id>")

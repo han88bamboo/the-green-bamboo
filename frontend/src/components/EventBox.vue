@@ -49,7 +49,11 @@
 
                     <!-- Event date and time -->
                     <div class="row mt-0 pt-0">
-                        <p class="fw-normal small-text mobile-rating-smaller-text-2" style="color: #027562">{{ formatDate(event.eventStartDate) }} , {{ formatTime(event.eventStartTime) }} - {{ formatTime(event.eventEndTime) }}</p>
+                        <p class="fw-normal small-text mobile-rating-smaller-text-2" style="color: #027562">
+                            {{ formatDate(event.eventStartDate) }} 
+                            <span v-if="event.eventStartTime"> , {{ formatTime(event.eventStartTime) }}</span>
+                            <span v-if="event.eventEndTime"> - {{ formatTime(event.eventEndTime) }}</span>
+                        </p>
                     </div>
                 </div>
             </div>

@@ -2820,16 +2820,16 @@ INSERT INTO "usersFollowLists" (
 
 
 INSERT INTO "usersDrinkLists" (
-    "userId", "listName")
+    "userId", "listName", "listDesc")
     VALUES 
-    (1, 'Drinks I Have Tried'), 
-    (1, 'Drinks I Want To Try'), 
-    (2, 'Drinks I Have Tried'), 
-    (2, 'Drinks I Want To Try'), 
-    (3, 'Drinks I Have Tried'), 
-    (3, 'Drinks I Want To Try'), 
-    (4, 'Drinks I Have Tried'), 
-    (4, 'Drinks I Want To Try');
+    (1, 'Drinks I Have Tried', ''), 
+    (1, 'Drinks I Want To Try', ''), 
+    (2, 'Drinks I Have Tried', ''), 
+    (2, 'Drinks I Want To Try', ''), 
+    (3, 'Drinks I Have Tried', ''), 
+    (3, 'Drinks I Want To Try', ''), 
+    (4, 'Drinks I Have Tried', ''), 
+    (4, 'Drinks I Want To Try', '');
 
 INSERT INTO "venuesMenu" (
     "sectionName", "sectionOrder","venueId")

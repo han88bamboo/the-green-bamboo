@@ -233,7 +233,7 @@
                             </div>
                         
                             <div class="col-md-4 mb-3">
-                                <p class="text-start mb-1">Drink Category <span class="text-danger">*</span></p>
+                                <p class="text-start mb-1">Drink Category</p>
 
                                 <!-- For drink types that have serveral categories to choose from -->
                                 <div class="input-group" v-if="tempTypeCategoryList.length > 1">
@@ -924,10 +924,10 @@
                         this.errors.push("Drink Type is required.");
                     }
 
-                    // Validate Drink Category
-                    if (!this.tempTypeCategory.trim()) {
-                        this.errors.push("Drink Category is required.");
-                    }
+                    // // Validate Drink Category
+                    // if (!this.tempTypeCategory.trim()) {
+                    //     this.errors.push("Drink Category is required.");
+                    // }
 
 
                     // Validate Independent Bottler Name (if OB, will be handled by database writing method)
@@ -1089,7 +1089,7 @@
                             "photo": this.form["photo"],
 
                             "drinkType": this.tempDrinkType.trim(),
-                            "typeCategory": this.tempTypeCategory.trim(),
+                            "typeCategory": (this.tempTypeCategory || "").trim(),
                             "drinkStyle": this.tempDrinkStyle.trim(),
                         }
 

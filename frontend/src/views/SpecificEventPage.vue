@@ -130,7 +130,7 @@
 
                                 <!-- Invite Button -->
                                 <div>
-                                    <button class="btn primary-btn-less-round-blue d-flex align-items-center fw-bold" style="background-color: rgb(240, 179, 88); border: none;">
+                                    <button class="btn primary-btn-less-round-blue d-flex align-items-center fw-bold" style="background-color: rgb(240, 179, 88); border: none;" data-bs-toggle="modal" data-bs-target="#inviteFriendModal">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                                         stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2">
                                     <path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7" />
@@ -251,7 +251,7 @@
                         <div class="d-flex flex-row justify-content-between align-items-center mt-2">
                             <h5 class="fw-bold mt-3 mobile-fs-6 mx-1" style="color:#027562">Who's Going?</h5>
                             <!-- Invite button -->
-                            <button class="ps-0 btn d-flex flex-row align-items-center hover-underline mobile-rating-smaller-text-2 ">
+                            <button class="ps-0 btn d-flex flex-row align-items-center hover-underline mobile-rating-smaller-text-2 " data-bs-toggle="modal" data-bs-target="#inviteFriendModal">
                                 <!-- Invite icon -->
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                                     stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2">
@@ -710,6 +710,39 @@
             </div>
         </div>
         <!-- Delete Event Modal End -->
+
+        <!-- Invite Friend Modal Start (QR Code) -->
+        <div class="modal fade" id="inviteFriendModal" tabindex="-1" aria-labelledby="inviteFriendModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="shareMenuModalLabel"> Event QR Code </h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="centered">
+                            <qr-code v-bind:text="currentURL" ref="qrCode"></qr-code>
+                        </div>
+                        <div class="input-group pt-3">
+                            <input type="text" class="form-control" aria-label="Link" aria-describedby="button-addon2" v-bind:value="currentURL" disabled>
+                            <button class="btn btn-outline-secondary" type="button" id="button-addon2" @click="copyToClipboard(currentURL)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
+                                    <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/>
+                                    <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <p class="text-start pt-2" v-if="clipboardItem"> 
+                            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16">
+                                <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
+                            </svg>
+                            Copied to clipboard!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Invite Friend Modal End -->
     </div>
     <!-- Footer End -->
     <FooterBar />
@@ -814,6 +847,12 @@ export default {
             otherEventsError: null,
 
             attendeesForManagement: [],
+
+            // Variable to store current page URL 
+            currentURL: window.location.href,
+
+            // Variable to store clipboard item for copy confirmation
+            clipboardItem: null,
         }
     },
     methods: {
@@ -1280,7 +1319,21 @@ export default {
                 const toast = useToast();
                 toast.error('Failed to update attendance status');
             }
-        }
+        },
+
+        // Copy to Clipboard
+        copyToClipboard(text) {
+            navigator.clipboard.writeText(text)
+            .then(() => {
+                this.clipboardItem = true;
+                setTimeout(() => {
+                    this.clipboardItem = false;
+                }, 3000);
+            })
+            .catch(err => {
+                console.error('Failed to copy text: ', err);
+            });
+        },
     },
 
     // Watch for changes in the route ID

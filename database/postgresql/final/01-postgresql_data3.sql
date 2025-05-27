@@ -379,6 +379,7 @@ CREATE TABLE "usersDrinkLists" (
     "id" SERIAL PRIMARY KEY,
     "userId" INTEGER REFERENCES "users"("id") ON DELETE SET NULL,  -- [!] reference "users" FK
     "listName" TEXT,
+    "listDesc" TEXT,
     -- "drinks" TEXT[],-- Contains "listings"("id")s
     UNIQUE ("userId", "listName")
 );
