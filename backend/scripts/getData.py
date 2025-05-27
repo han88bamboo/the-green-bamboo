@@ -118,7 +118,7 @@ def fetch_user_data(cursor, user_id):
 def fetch_drink_lists(cursor, user_id):
     # First, get all drink lists for the user
     cursor.execute("""
-        SELECT "id", "listName"
+        SELECT "id", "listName", "listDesc"
         FROM "usersDrinkLists"
         WHERE "userId" = %s
     """, (user_id,))
@@ -132,7 +132,7 @@ def fetch_drink_lists(cursor, user_id):
 
         # Initialize the list in the result dictionary
         result[list_name] = {
-            "listDesc": "",  # Customize or fetch descriptions if needed
+            "listDesc": row["listDesc"],
             "listItems": [],
         }
 

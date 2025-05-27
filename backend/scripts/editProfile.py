@@ -114,10 +114,16 @@ def updateBookmark():
             # If list exists, use its ID; otherwise, create a new one
             if listName in existing_lists:
                 list_id = existing_lists[listName]
+
+                # Update existing list desc
+                cursor.execute(
+                    'UPDATE "usersDrinkLists" SET "listDesc" = %s WHERE "id" = %s',
+                    (listData["listDesc"], list_id)
+                )
             else:
                 cursor.execute(
-                    'INSERT INTO "usersDrinkLists" ("userId", "listName") VALUES (%s, %s) RETURNING "id"',
-                    (userID, listName)
+                    'INSERT INTO "usersDrinkLists" ("userId", "listName", "listDesc") VALUES (%s, %s, %s) RETURNING "id"',
+                    (userID, listName, listData["listDesc"],)
                 )
                 list_id = cursor.fetchone()["id"]
                 num_lists_to_add_count += 1

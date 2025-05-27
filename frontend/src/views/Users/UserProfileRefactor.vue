@@ -3068,6 +3068,7 @@ export default {
 
         // get display user bookmark lists
         this.displayUserBookmarks = this.displayUser.drinkLists;
+        console.log("Display User Bookmarks:", this.displayUserBookmarks);
 
         // get listings details in bookmark lists
         this.getBookmarkListings();
@@ -3754,7 +3755,7 @@ export default {
         );
       }
 
-      // window.location.reload();
+      window.location.reload();
     },
 
     // reset edit profile form
@@ -4227,7 +4228,6 @@ export default {
       try {
         const response = await this.$axios.post(
           `${process.env.VUE_APP_API_URL}/editProfile/updateBookmark`,
-          // const response = await this.$axios.post(`http://127.0.0.1:5000/editProfile/updateBookmark`,
           {
             userID: this.userID,
             bookmark: this.userBookmarks,
@@ -4238,7 +4238,7 @@ export default {
             },
           }
         );
-        console.log(response.data);
+        console.log("bookmark: " + response.data);
       } catch (error) {
         console.error(error);
       }
@@ -4283,7 +4283,6 @@ export default {
       try {
         const response = await this.$axios.post(
           `${process.env.VUE_APP_API_URL}/editProfile/updateBookmark`,
-          // const response = await this.$axios.post(`http://127.0.0.1:5000/editProfile/updateBookmark`,
           {
             userID: this.userID,
             bookmark: this.userBookmarks,
@@ -4294,7 +4293,7 @@ export default {
             },
           }
         );
-        console.log(response.data);
+        console.log("bookmark" + response.data);
       } catch (error) {
         console.error(error);
       }
