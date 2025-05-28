@@ -627,7 +627,7 @@
                     <button class="nav-link mobile-rating-smaller-text-2 active"  data-bs-toggle="pill" data-bs-target="#BestRatedExpressions" type="button" role="tab" aria-controls="BestRatedExpressions" aria-selected="true">Best Rated Drinks</button>
                 </li>
                 <li class="nav-item pe-2 pt-2 " role="presentation">
-                    <button class="nav-link mobile-rating-smaller-text-2"  data-bs-toggle="pill" data-bs-target="#BestRatedCategories" type="button" role="tab" aria-controls="BestRatedCategories" aria-selected="false">Top Categories</button>
+                    <button class="nav-link mobile-rating-smaller-text-2" data-bs-toggle="pill" data-bs-target="#BestRatedCategories" type="button" role="tab" aria-controls="BestRatedCategories" aria-selected="false">Top Categories</button>
                 </li>
                 <li class="nav-item pe-2 pt-2 " role="presentation">
                     <button class="nav-link mobile-rating-smaller-text-2"  data-bs-toggle="pill" data-bs-target="#YourTopVenues" type="button" role="tab" aria-controls="YourTopVenues" aria-selected="false">Top Venues</button>
@@ -756,16 +756,13 @@
                         <h6 class="fw-bold mb-2">  Your Best Rated Categories </h6>
                         <div class="text-start pb-2" v-for="(category, index) in bestRatedCategories" v-bind:key="category">
                             <div class="row ms-0 default-clickable-text "> 
-                                <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
+                                <div class="col-2 d-flex text-start justify-content-center rounded-circle me-1">
                                     <h5 class="my-auto"> {{ index + 1 }} </h5>
                                 </div>
                                 <div class="col-10 shrink-width-on-dashboard" > <!-- style added by tzh-->
                                     <b> {{ category.category }} </b> 
                                     <br>
-                                    Average Rating: {{ category.averageRating.toFixed(1) || "-" }} 
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
-                                        <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                    </svg>
+                                    Average Rating: {{ category.averageRating.toFixed(1) || "-" }} ★
                                 </div>
                             </div>
                         </div>

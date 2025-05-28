@@ -1,7 +1,7 @@
 <!-- HTML -->
 <template>
     <NavBar />
-
+    <div class="container-fluid" style="background-color: rgb(238, 238, 238);">
     <!-- Display when data is still loading -->
     <div class="text-info-emphasis fst-italic fw-bold fs-5 pt-5" v-if="dataLoaded == false">
         <span>Loading dashboard, please wait...</span>
@@ -12,7 +12,7 @@
     </div>
 
     <!-- Display when data fails to load -->
-    <div class="text-danger fst-italic fw-bold fs-3 pt-5" v-if="dataLoaded == null"> 
+    <div class="text-danger fst-italic fw-bold fs-5 pt-5" v-if="dataLoaded == null"> 
         <span>An error occurred while loading this page, please try again!</span>
         <br>
         <button class="btn primary-btn btn-sm" @click="this.$router.go(-1)">
@@ -27,24 +27,25 @@
 
     <!-- main content -->
 
-    <div class="container pt-5 mobile-pt-3" v-if="dataLoaded">
+    <div class="container pt-5 mobile-pt-3" v-if="dataLoaded" style="background-color: rgb(238, 238, 238);">
 
-        <div class="row">
+        <div class="row ">
 
             <!-- left pane -->
-            <div class="col-lg-4 col-md-12 col-sm-12">
-
+            <div class="col-lg-4 col-md-12 col-sm-12 mb-5 mobile-mb-1">
+                <div class="container ">
                 <!-- row 1: producer info -->
-                <div class="row">
-                    <!-- producer name -->
-                    <div class="col-8 text-start" style="color:black;">
-                        <h2> {{ specified_producer.producerName }} </h2>
-                    </div>
+                <div class="row mobile-my-2">
                     <!-- producer profile photo -->
-                    <div class="col-4">
+                    <div class="col-4 text-start pe-0 ">
                         <img :src="selectedImage || (specified_producer['photo'] || defaultProfilePhoto)" 
-                            alt="" style="width: 100px; height: 100px; z-index: 1;">
+                            alt="" class="rounded-circle-no-bg" style="width: 100px; height: 100px; z-index: 1;">
                     </div>
+                    <!-- producer name -->
+                    <div class="col-8 mobile-col-7 mobile-ms-2 text-start" style="color:black;">
+                        <h4> {{ specified_producer.producerName }} </h4>
+                    </div>
+                    
                 </div>
 
                 <!-- row 2: return to profile -->
@@ -54,11 +55,11 @@
                     </button>
                 </div>
 
-                <div class="row mobile-view-show ps-2 pe-2 mt-3">
+                <div class="row pt-3 mobile-view-show ps-2 pe-2">
                 <!-- row 3: recent fan posted questions mobile xyz -->
                     <button v-if="showQnA"
                        type="button" 
-                       class="active-toggle-producer-QnA tertiary-text pt-2 pb-2 " 
+                       class="active-toggle-producer-QnA mobile-rating-smaller-text-2 pt-2 pb-2 " 
                        data-bs-toggle="collapse" 
                        data-bs-target="#collapseQnA" 
                        aria-expanded="false" 
@@ -67,31 +68,31 @@
                        @click="checkToShowQnA()">Q&As for {{ specified_producer["producerName"] }} ↑</button>
                     <button v-else
                        type="button" 
-                       class="primary-btn-less-round-green border tertiary-text pt-2 pb-2 " 
+                       class="primary-btn-less-round-green mobile-rating-smaller-text-2 tertiary-text pt-2 pb-2 " 
                        data-bs-toggle="collapse" 
                        data-bs-target="#collapseQnA" 
                        aria-expanded="false" 
                        aria-controls="collapseQnA" 
-                       style="font-weight:bold;"
+                       style="font-weight:bold; border: none"
                        @click="checkToShowQnA()">Q&As for {{ specified_producer["producerName"] }} ↓</button>
                     <!-- Q&A-->
                     <div class="collapse pt-3 pe-0 ps-0" id="collapseQnA">
                             <div class="square primary-square-green rounded p-3 mb-3 text-start">
                                 <!-- header text -->
-                                <div class="square-inline pb-2" >
-                                    <h4 class="square-inline text-start mr-auto"> Recent Fan Posted Questions </h4>
+                                <div class="square-inline text-start pb-2" >
+                                    <p class="square-inline text-start fw-bold mr-auto"> Recent Fan Posted Questions </p>
                                 </div>
                                 <!-- buttons-->
                                 <div class="row text-center px-2">
                                     <div class="col-6 d-grid gap-0 no-padding">
-                                        <button type="button" class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text"> <!--tzh amended to tertiary-btn-blue-not-round-->
+                                        <button type="button" style="border:none" class="py-2 mobile-rating-smaller-text-2 tertiary-btn-blue-not-round rounded-0 reverse-clickable-text"> <!--tzh amended to tertiary-btn-blue-not-round-->
                                             <a class="reverse-clickable-text" v-on:click="showAnswered()">
                                                 Answered
                                             </a>
                                         </button>
                                     </div>
                                     <div class="col-6 d-grid gap-0 no-padding">
-                                        <button type="button" class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text"> <!--tzh amended to tertiary-btn-blue-not-round-->
+                                        <button type="button" style="border:none" class="py-2 mobile-rating-smaller-text-2 tertiary-btn-blue-not-round rounded-0 reverse-clickable-text"> <!--tzh amended to tertiary-btn-blue-not-round-->
                                             <a class="reverse-clickable-text" v-on:click="showUnanswered()">
                                                 Unanswered
                                             </a>
@@ -107,7 +108,7 @@
                                             <div v-if="correctProducer || isAdmin">
                                                 <!-- show answered questions -->
                                                 <div v-if="answerStatus">
-                                                    <div class="carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa.id" v-bind:class="{ 'active': index === 0 }">
+                                                    <div class="mobile-rating-smaller-text-2 carousel-item" v-for="(qa, index) in answeredQuestions" v-bind:key="qa.id" v-bind:class="{ 'active': index === 0 }">
                                                         <p> <b> Q: {{ qa["question"] }} </b> </p>
                                                         <!-- [if] not editing -->
                                                         <button v-if="correctProducer && (editingQA == false || editingQAID != qa.id)" type="button" class="btn btn-warning rounded-0 me-1" v-on:click="editQA(qa)">
@@ -134,7 +135,7 @@
 
                                                 <!-- show unanswered questions -->
                                                 <div v-else>
-                                                        <div class="carousel-item" v-for="(qa, index) in unansweredQuestions" v-bind:key="qa.id" v-bind:class="{ 'active': index === 0 }">
+                                                        <div class="mobile-rating-smaller-text-2 carousel-item" v-for="(qa, index) in unansweredQuestions" v-bind:key="qa.id" v-bind:class="{ 'active': index === 0 }">
                                                         <p> <b> Q: {{ qa["question"] }} </b> </p>
                                                         <div class="input-group centered">
                                                             <div class="input-group centered pt-2">
@@ -194,7 +195,7 @@
                     <div class="square primary-square-green rounded p-3 mb-3 text-start">
                         <!-- header text -->
                         <div class="square-inline pb-2" >
-                            <h4 class="square-inline text-start mr-auto"> Recent Fan Posted Questions </h4>
+                            <h5 class="fw-bold square-inline text-start mr-auto"> Recent Fan Posted Questions </h5>
                         </div>
                         <!-- buttons-->
                         <div class="row text-center px-2">
@@ -306,7 +307,7 @@
                 <div class="row pt-3 mobile-view-show ps-2 pe-2">
                     <button v-if="showLatestReview"
                        type="button" 
-                       class="active-toggle-producer-QnA tertiary-text pt-2 pb-2 " 
+                       class="active-toggle-producer-QnA mobile-rating-smaller-text-2 tertiary-text pt-2 pb-2 " 
                        data-bs-toggle="collapse" 
                        data-bs-target="#collapselatestreviews" 
                        aria-expanded="false" 
@@ -315,7 +316,7 @@
                        @click="checkToShowLatestReview()">Latest Reviews ↑</button>
                     <button v-else
                        type="button" 
-                       class="primary-btn-less-round-green tertiary-text pt-2 pb-2 border" 
+                       class="primary-btn-less-round-green  mobile-rating-smaller-text-2 pt-2 pb-2 border" 
                        data-bs-toggle="collapse" 
                        data-bs-target="#collapselatestreviews" 
                        aria-expanded="false" 
@@ -325,26 +326,23 @@
                     
                     <div class="mt-3 collapse square primary-square-green rounded p-3 mb-3 text-start" style="height: 325px;" id="collapselatestreviews">
                         <!-- header text -->
-                        <div class="square-inline pb-2" >
-                            <h4 class="square-inline text-start mr-auto"> Latest Reviews </h4>
+                        <div class="square-inline" >
+                            <p class="square-inline text-start fw-bold mr-auto"> Latest Reviews of Your Expressions </p>
                         </div>
                         <!-- body -->
                         <div style="height: 85%;">
                             <div class="overflow-auto" style="max-height: 100%;">
                                 <!-- v-for loop here-->
-                                <div v-for="review in allReviews" v-bind:key="review.id" class="py-2">
+                                <div v-for="review in allReviews" v-bind:key="review.id" class="py-2 mobile-rating-smaller-text-2 ">
                                     <router-link :to="{ path: '/profile/user/' + review.userID + '/' + getUsernameFromID(review.userID)}" class="reverse-clickable-text">
                                         <b> @{{ getUsernameFromID(review.userID) }}</b>
                                     </router-link> 
                                     rated 
-                                    <router-link :to="{ path: '/listing/view/' + getListingFromID(review.reviewTarget).id + '/' + getListingFromID(review.reviewTarget).listingName }" class="reverse-clickable-text">
+                                    <router-link :to="{ path: '/listing/view/' + getListingFromID(review.reviewTarget).id + '/' + getListingFromID(review.reviewTarget).listingName }" class="reverse-clickable-text mobile-rating-smaller-text-2">
                                         <u> {{ getListingFromID(review.reviewTarget).listingName }} </u>
                                     </router-link>
-                                    <span class="ps-2">
-                                        <i> {{ review.rating }} 
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
-                                                <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                            </svg>
+                                    <span class="ps-2 ">
+                                        <i> {{ review.rating }} ★
                                         </i>
                                     </span>
                                 </div>
@@ -357,7 +355,7 @@
                     <div class="square primary-square-green rounded p-3 mb-3 text-start" style="height: 325px;">
                         <!-- header text -->
                         <div class="square-inline pb-2" >
-                            <h4 class="square-inline text-start mr-auto"> Latest Reviews </h4>
+                            <h5 class="fw-bold square-inline text-start mr-auto"> Latest Reviews </h5>
                         </div>
                         <!-- body -->
                         <div style="height: 85%;">
@@ -383,40 +381,41 @@
                         </div>
                     </div>
                 </div>
+                </div>
             </div>
 
             <!-- right pane -->
-            <div class="col-lg-8 col-md-12 col-sm-12 ps-lg-5">
+            <div class="col-lg-8 col-sm-12 ps-lg-5 mb-5 mobile-mb-3">
                 <!--mobile toggle buttons for graph tzh -->
                 <ul class="nav nav-pills mobile-view-show pt-2"  role="tablist" >
                  <hr>  
-                    <li class="nav-item pe-2 pt-2 " role="presentation">
-                        <button class="nav-link active"  data-bs-toggle="pill" data-bs-target="#countofreviews" type="button" role="tab" aria-controls="countofreviews" aria-selected="true">Count of Reviews</button>
+                    <li class="nav-item pe-1 pt-2 " role="presentation">
+                        <button class="nav-link mobile-rating-smaller-text-2 active"  data-bs-toggle="pill" data-bs-target="#countofreviews" type="button" role="tab" aria-controls="countofreviews" aria-selected="true">Count of Reviews</button>
                     </li>
-                    <li class="nav-item pe-2 pt-2 " role="presentation">
-                        <button class="nav-link "  data-bs-toggle="pill" data-bs-target="#profilevisits" type="button" role="tab" aria-controls="profilevisits" aria-selected="false">Profile Visits</button>
+                    <li class="nav-item pe-1 pt-2 " role="presentation">
+                        <button class="nav-link  mobile-rating-smaller-text-2"  data-bs-toggle="pill" data-bs-target="#profilevisits" type="button" role="tab" aria-controls="profilevisits" aria-selected="false">Profile Visits</button>
                     </li>
-                    <li class="nav-item pe-2 pt-2 " role="presentation">
-                        <button class="nav-link "  data-bs-toggle="pill" data-bs-target="#spread" type="button" role="tab" aria-controls="spread" aria-selected="false">Spread of Ratings</button>
+                    <li class="nav-item pe-1 pt-2 " role="presentation">
+                        <button class="nav-link  mobile-rating-smaller-text-2"  data-bs-toggle="pill" data-bs-target="#spread" type="button" role="tab" aria-controls="spread" aria-selected="false">Spread of Ratings</button>
                     </li>
                 </ul>
 
                     <!-- row 1: review of your expressions & profile visits -->
-                    <div class="row mobile-view-show tab-content" >
+                    <div class="row mobile-view-show tab-content ms-2" >
                     
                         <!-- col 1: review of your expressions -->
-                        <div id="countofreviews" class="tab-pane fade show active col-lg-5 col-md-12 col-sm-12 text-start pt-5 mobile-pt-3 mx-lg-3 ps-lg-0 pe-lg-0">
+                        <div id="countofreviews" class="card p-2 tab-pane fade show active col-11 text-start pt-5 mobile-pt-3 mx-lg-3 ps-lg-0 pe-lg-0" style="color:black;">
                             <Line :data="reviewsData" :options="chartOptions"></Line>
                         </div>
 
                         <!-- col 2: profile visits -->
-                        <div id="profilevisits" class="tab-pane fade col-lg-5 col-md-12 col-sm-12 text-start pt-5 mobile-pt-3 mx-lg-3 ps-lg-0 pe-lg-0">
+                        <div id="profilevisits" class="card p-2 tab-pane fade col-11 text-start pt-5 mobile-pt-3 mx-lg-3 ps-lg-0 pe-lg-0" style="color:black;">
                             
                             <Line :data="profileData" :options="chartOptions"></Line>
                         </div>
                         
                         <!-- col 1: spread of ratings -->
-                        <div id="spread" class="tab-pane fade col-lg-5 col-md-12 col-sm-12 text-start pt-5 mobile-pt-3 mx-lg-3 ps-lg-0 pe-lg-0">
+                        <div id="spread" class="card p-2 tab-pane fade col-11 text-start pt-5 mobile-pt-3 mx-lg-3 ps-lg-0 pe-lg-0" style="color:black;">
                             
                             <Bar :data="ratingsData" :options="chartOptions" />
                         </div>
@@ -425,22 +424,22 @@
                 <!--mobile toggle buttons for top expressions listing tzh -->
                 <ul class="nav nav-pills mobile-view-show pt-2"  role="tablist" >
                     <hr>
-                   <li class="nav-item pe-2 pt-2 " role="presentation">
+                   <li class="nav-item mobile-rating-smaller-text-2 pt-2 pe-1" role="presentation">
                        <button class="nav-link active"  data-bs-toggle="pill" data-bs-target="#BestRatedExpressions" type="button" role="tab" aria-controls="BestRatedExpressions" aria-selected="true">Best Rated</button>
                    </li>
-                   <li class="nav-item pe-2 pt-2 " role="presentation">
+                   <li class="nav-item mobile-rating-smaller-text-2 pt-2 pe-1 " role="presentation">
                        <button class="nav-link "  data-bs-toggle="pill" data-bs-target="#MostReviewedExpressions" type="button" role="tab" aria-controls="MostReviewedExpressions" aria-selected="false">Most Reviewed</button>
                    </li>
-                   <li class="nav-item pe-2 pt-2 " role="presentation">
+                   <li class="nav-item mobile-rating-smaller-text-2 pt-2 pe-1" role="presentation">
                        <button class="nav-link "  data-bs-toggle="pill" data-bs-target="#MostReviewedCategories" type="button" role="tab" aria-controls="MostReviewedCategories" aria-selected="false">Top Categories</button>
                    </li>
                 </ul>
 
                     <!-- row 2: your best rated expressions & your most reviewed expressions -->
-                    <div style="min-height:450px;" class="row mobile-view-show tab-content">
+                    <div class="row mobile-view-show tab-content ms-2">
 
                         <!-- col 1: your best rated expressions -->
-                        <div id="BestRatedExpressions" class="tab-pane fade show active col-lg-5 col-md-12 col-sm-12 text-start pt-3 mx-lg-3 ps-lg-0 pe-lg-0">
+                        <div id="BestRatedExpressions" class="card p-2 tab-pane fade show active col-11 text-start pt-5 mobile-pt-3 mx-lg-3 ps-lg-0 pe-lg-0" style="color:black;">
                             
                             <div class="text-start pb-2" v-for="listing in mostPopular" v-bind:key="listing.id">
                                 <router-link :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}" class="reverse-clickable-text">
@@ -460,7 +459,7 @@
                         </div>
 
                         <!-- col 2: your most reviewed expressions -->
-                        <div id="MostReviewedExpressions" class="tab-pane fade col-lg-5 col-md-12 col-sm-12 text-start pt-3 mx-lg-3 ps-lg-0 pe-lg-0">
+                        <div id="MostReviewedExpressions" class="card p-2 tab-pane fade col-11 text-start pt-5 mobile-pt-3 mx-lg-3 ps-lg-0 pe-lg-0" style="color:black;">
                             
                             <div class="text-start pb-2" v-for="listing in mostDiscussed" v-bind:key="listing.id">
                                 <router-link :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName) }" class="reverse-clickable-text">
@@ -476,7 +475,7 @@
                             </div>
                         </div>
 
-                        <div id="MostReviewedCategories" class="tab-pane fade col text-start pt-3 mx-lg-3 ps-lg-0 pe-lg-0">
+                        <div id="MostReviewedCategories" class="tab-pane card p-2 fade col-11 text-start pt-3 mx-lg-3 ps-lg-0 pe-lg-0">
                             
                             <div class="text-start pb-2" v-for="(category, index) in mostDiscussedCategories" v-bind:key="category">
                                 <div class="row ms-0 default-clickable-text" style="color:black;"> 
@@ -497,28 +496,22 @@
 
 
                 <!-- row 1: review of your expressions & profile visits desktop-->
-                <div class="row mobile-view-hide">
+                <div class="row gap-3 mobile-view-hide">
+                    <!-- col 2: profile visits -->
+                    <div class="card p-3 col-5 text-start" style="color:black;">
+                        <h6 class="fw-bold">  Profile Visits </h6>
+                        <Line :data="profileData" :options="chartOptions"></Line>
+                    </div>
                     
                     <!-- col 1: review of your expressions -->
-                    <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-lg-3 ps-lg-0 pe-lg-0" style="color:black;">
-                        <h3> Reviews of Your Expressions </h3>
+                    <div class="card p-3 col-5 text-start" style="color:black;">
+                        <h6 class="fw-bold"> Reviews of Your Expressions </h6>
                         <Line :data="reviewsData" :options="chartOptions"></Line>
                     </div>
 
-                    <!-- col 2: profile visits -->
-                    <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-lg-3 ps-lg-0 pe-lg-0" style="color:black;">
-                        <h3> Profile Visits </h3>
-                        <Line :data="profileData" :options="chartOptions"></Line>
-                    </div>
-
-                </div>
-
-                <!-- row 2: your best rated expressions & your most reviewed expressions desktop -->
-                <div class="row mobile-view-hide">
-
                     <!-- col 1: your best rated expressions -->
-                    <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-lg-3 ps-lg-0 pe-lg-0" style="color:black;">
-                        <h3> Your Best Rated Expressions </h3>
+                    <div class="card p-3 col-5 text-start" style="color:black;">
+                        <h6 class="fw-bold"> Your Best Rated Expressions </h6>
                         <div class="text-start pb-2" v-for="listing in mostPopular" v-bind:key="listing.id">
                             <router-link :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName) }" class="reverse-clickable-text">
                                 <div class="d-flex align-items-center">
@@ -537,8 +530,8 @@
                     </div>
 
                     <!-- col 2: your most reviewed expressions -->
-                    <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-lg-3 ps-lg-0 pe-lg-0" style="color:black;">
-                        <h3> Your Most Reviewed Expressions </h3>
+                    <div class="card p-3 col-5 text-start" style="color:black;">
+                        <h6> Your Most Reviewed Expressions </h6>
                         <div class="text-start pb-2" v-for="listing in mostDiscussed" v-bind:key="listing.id">
                             <router-link :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName) }" class="reverse-clickable-text">
                                 <div class="d-flex align-items-center">
@@ -553,20 +546,15 @@
                         </div>
                     </div>
 
-                </div> <!-- end of row 2-->
-
-                <!-- row 3: spread of ratings & your most reviewed categories desktop -->
-                <div class="row mobile-view-hide">
-
                     <!-- col 1: spread of ratings -->
-                    <div class="col-lg-5 col-md-12 col-sm-12 text-start pt-5 mx-lg-3 ps-lg-0 pe-lg-0" style="color:black;">
-                        <h3> Spread of Ratings </h3>
+                    <div class="card p-3 col-5 text-start" style="color:black;">
+                        <h6 class="fw-bold"> Spread of Ratings </h6>
                         <Bar :data="ratingsData" :options="chartOptions" />
                     </div>
 
                     <!-- col 2: your most reviewed categories -->
-                    <div class="col text-start pt-5 mx-lg-3 ps-lg-0 pe-lg-0" style="color:black;">
-                        <h3> Your Most Reviewed Categories </h3>
+                    <div class="card p-3 col-5 text-start" style="color:black;">
+                        <h6 class="fw-bold"> Your Most Reviewed Categories </h6>
                         <div class="text-start pb-2" v-for="(category, index) in mostDiscussedCategories" v-bind:key="category">
                             <div class="row ms-0 default-clickable-text"  style="color:black;"> 
                                 <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3" >
@@ -583,11 +571,13 @@
 
                 </div>
 
+
             </div>
 
         </div> <!-- end of row -->
         
     </div> <!-- end of main content -->
+    </div>
     <FooterBar />
 
 </template>
@@ -753,7 +743,7 @@
 
 
                 defaultPhoto: "https://drinkximages.s3.us-east-1.amazonaws.com/images/2d4d94bc-313e-4621-9a15-4bfbf77958de.jpg",
-                defaultProfilePhoto: "https://drinkximages.s3.us-east-1.amazonaws.com/images/27e129b8-2d6e-44a3-8c14-d78c815b8056.jpg",
+                defaultProfilePhoto: "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProducerProfilePhoto.png?v=1748434998",
 
                 // to get producer's answered questions
                 showQnA: false,

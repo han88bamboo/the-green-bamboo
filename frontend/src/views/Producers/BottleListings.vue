@@ -3218,7 +3218,7 @@ export default {
       defaultPhoto:
         "https://drinkximages.s3.us-east-1.amazonaws.com/images/2d4d94bc-313e-4621-9a15-4bfbf77958de.jpg",
       defaultProfilePhoto:
-        "https://drinkximages.s3.us-east-1.amazonaws.com/images/27e129b8-2d6e-44a3-8c14-d78c815b8056.jpg",
+        "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288",
 
       // nearest Bars based on current location
       nearestBars: [],

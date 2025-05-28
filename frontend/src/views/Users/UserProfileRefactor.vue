@@ -50,7 +50,7 @@
                     selectedImage || displayUser.photo || defaultProfilePhoto
                   "
                   alt=""
-                  class="rounded-circle-no-bg border border-dark profile-img"
+                  class="rounded-circle-no-bg profile-img"
                   style="height: auto; width: 100%"
                 />
               </div>
@@ -2749,7 +2749,7 @@ export default {
       currentURL: "",
       // default images
       defaultProfilePhoto:
-        "https://drinkximages.s3.us-east-1.amazonaws.com/images/27e129b8-2d6e-44a3-8c14-d78c815b8056.jpg",
+        "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288",
       defaultDrinkImage:
         "https://drinkximages.s3.us-east-1.amazonaws.com/images/2d4d94bc-313e-4621-9a15-4bfbf77958de.jpg",
 

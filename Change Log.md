@@ -872,3 +872,13 @@ Purpose of the changes:
 
 Nature of the changes (frontend / backend / database):
 frontend, backend and DB
+
+# Update as of 28 May 
+Coder: Kai 
+
+Purpose of the changes:
+changed the front end spacing / margin / toggles for venue and producer dashboards
+edited the default profile picture for producers, venues and users.
+
+Nature of the changes (frontend / backend / database):
+frontend
