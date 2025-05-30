@@ -3397,15 +3397,19 @@ export default {
           `${process.env.VUE_APP_API_URL}/getData/getVenuesWithSpecificListing/${this.listing_id}` // get venues with specific listing by listing_id
         );
         this.venues = response.data;
-        this.locationOptions = response.data.map((item) => ({
-          name: item.venueName,
-          id: item.id,
-          address: item.address,
-        }));
-        this.addressDict = this.venues.reduce((dict, venue) => {
-          dict[venue.address] = venue.id;
-          return dict;
-        }, {});
+
+        if (this.venues != []) {
+          this.locationOptions = response.data.map((item) => ({
+            name: item.venueName,
+            id: item.id,
+            address: item.address,
+          }));
+          this.addressDict = this.venues.reduce((dict, venue) => {
+            dict[venue.address] = venue.id;
+            return dict;
+          }, {});
+        }
+        
       } catch (error) {
         console.error(error);
         this.dataLoaded = null;
@@ -3419,8 +3423,11 @@ export default {
         this.specified_listing = response.data;
         this.producer_id = this.specified_listing.producerID; // find specified producer
         this.bottler_id = this.specified_listing.bottlerID; // find specified bottler
-        this.whereToBuy(); // find where to buy specified listing
-        this.whereToTry(); // find where to try specified listing [RE-ENABLE WHEN VENUES HAVE MENU ATTRIBUTE]
+        
+        if (this.venues != []) {
+          this.whereToTry(); // find where to try specified listing [RE-ENABLE WHEN VENUES HAVE MENU ATTRIBUTE]
+        }
+        
         this.filteredReviews = this.getReviewsForListing(
           this.specified_listing
         );
@@ -3464,6 +3471,9 @@ export default {
           { producerIDs: producerIDs }
         );
         this.producers = response.data.data;
+        this.producerListings = this.producers
+          .filter((producer) => producer.id == this.producer_id)
+          .map((producer) => producer.id);
       } catch (error) {
         console.error(error);
         this.dataLoaded = null;
@@ -3590,12 +3600,6 @@ export default {
       }
     },
 
-    // view which producers have specified listing
-    whereToBuy() {
-      this.producerListings = this.listings
-        .filter((listing) => listing["id"] == this.specified_listing["id"])
-        .map((listing) => listing["producerID"]);
-    },
 
     // view which venues have specified listing, sort by alphabetical order of venue name
     whereToTry() {

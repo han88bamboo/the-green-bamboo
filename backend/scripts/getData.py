@@ -1366,9 +1366,7 @@ def getVenuesWithSpecificListing(listingID):
             venues_id = cursor.fetchall()  # List of tuples like [(1,), (2,), ...]
 
             if not venues_id:
-                return jsonify({
-                    "message": "No venues found with the specified listing."
-                })
+                return []
 
             venues_data = []
             for venue in venues_id:
