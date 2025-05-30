@@ -254,7 +254,6 @@ def get_current_proof_points(user_id):
         for comment_id in comment_ids:
 
             c_id = comment_id['id']
-            print("Comment id: ", c_id)
 
             # Get total likes for club post comments
             cursor.execute('SELECT COUNT(id) FROM "clubPostCommentsLikes" WHERE "commentID" = %s', (c_id,))

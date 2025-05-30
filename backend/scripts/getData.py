@@ -1,8 +1,10 @@
 # Port: 5000
 # Routes: /getAccountRequests (GET), /getCountries (GET), /getListings (GET), /getListingsByIDs (POST), /getListing/<id> (GET), /getProducers (GET), /getProducer/<id> (GET),
+#           /getProducersByIDs (POST),
 #           /getRecentListingReviews/<id> (GET), /getAllListingsNames (GET), /getBookmarkListings (POST), /getUserReviewSummary/<id> (GET),
 #           /getReviews (GET), /getReviewsByListingIDs (POST), /getReviewByTarget/<id> (GET), /getReviewsByUserIds (GET), /getProducerTourReviews (GET), /getVenueReviews (GET), 
 #           /getVenueReviewsByVenueId/<id> (GET), /getProducerReviewsByProducerId/<id> (GET),
+#           /getVenuesWithSpecificListing/<listingID> (GET),
 #           /getUsers (GET), /getUsersFromList (POST), /getUserFollowListDetails (POST) /getUser/<id> (GET), 
 #           /getUserPhoto/<id>/<userType> (GET), /getUserByUsername/<username> (GET), /getVenues (GET), 
 #           /getVenue/<id> (GET), /getVenuesAPI (GET), /getDrinkTypes (GET), /getTypeCategories (GET), /getRequestListings (GET), /getRequestListing/<id> (GET), /getRequestEdits (GET), 
@@ -560,6 +562,56 @@ def getProducer(id):
     finally:
         cur.close()
 
+
+# [GET] Producers by IDs
+@blueprint.route("/getProducersByIDs", methods=['POST'])
+def getProducersByIDs():
+    conn = g.db
+    cursor = conn.cursor()
+
+    try:
+        producer_ids = request.json.get('producerIDs', [])
+
+        if not producer_ids:
+            return jsonify([
+                {
+                    "code": 404,
+                    "message": "At least one producer ID is required."
+                }
+            ]), 404
+        
+        producers_data = []
+        for id in producer_ids:
+            cursor.execute('SELECT "id", "producerName" FROM "producers" WHERE "id" = %s', (id,))
+            producer_data = cursor.fetchone()
+
+            if producer_data:
+                producers_data.append({
+                    "id": producer_data["id"],
+                    "producerName": producer_data["producerName"]
+                })
+
+        if not producers_data:
+            return jsonify([
+                {
+                    "code": 404,
+                    "message": "No producers found for the provided IDs."
+                }
+            ]), 404
+
+        return jsonify({
+            "code": 200,
+            "message": "Producers fetched successfully.",
+            "data": producers_data
+        }), 200
+    
+    except Exception as e:
+        print(str(e))
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred retrieving the producers."
+        }), 500
+
 # [GET] Specific Producer
 @blueprint.route("/getProducerByRequestId/<id>")
 def getProducerByRequestId(id):
@@ -998,17 +1050,33 @@ def getReviewsByListingIDs():
     return jsonify(reviews_data)
 
 # [GET] Specific Reviews by reviewTarget
-@blueprint.route("/getReviewByTarget/<id>")
-def getReviewByTarget(id):
+@blueprint.route("/getReviewByTarget/<id>/<last_review_id>")
+def getReviewByTarget(id, last_review_id):
     conn = g.db
     
     with conn.cursor() as cursor:
-        cursor.execute("""
-            SELECT "reviews".*, "reviewsUserVotes"."upvotes", "reviewsUserVotes"."downvotes"
-            FROM "reviews"
-            LEFT JOIN "reviewsUserVotes" ON "reviews"."id" = "reviewsUserVotes"."reviewId"
-            WHERE "reviews"."reviewTarget" = %s
-        """, (id,))
+
+        if last_review_id == "0":
+            # If last_review_id is 0, fetch the latest 20 reviews for the target
+            cursor.execute("""
+                SELECT "reviews".*, "reviewsUserVotes"."upvotes", "reviewsUserVotes"."downvotes"
+                FROM "reviews"
+                LEFT JOIN "reviewsUserVotes" ON "reviews"."id" = "reviewsUserVotes"."reviewId"
+                WHERE "reviews"."reviewTarget" = %s
+                ORDER BY "reviews"."id" DESC
+                LIMIT 20
+            """, (id,))
+        else:
+            cursor.execute("""
+                SELECT "reviews".*, "reviewsUserVotes"."upvotes", "reviewsUserVotes"."downvotes"
+                FROM "reviews"
+                LEFT JOIN "reviewsUserVotes" ON "reviews"."id" = "reviewsUserVotes"."reviewId"
+                WHERE "reviews"."reviewTarget" = %s
+                AND "reviews"."id" < %s
+                ORDER BY "reviews"."id" DESC
+                LIMIT 20
+            """, (id, last_review_id))
+
         reviews_data = cursor.fetchall()
     
     if not reviews_data:
@@ -1276,6 +1344,68 @@ def getProducerReviewsByProducerId(id):
             del review["downvotes"]
 
         return jsonify(reviews_data)
+
+
+# [GET] Venue information where their menu contains a specific drink/listing
+@blueprint.route("/getVenuesWithSpecificListing/<listingID>", methods=['GET'])
+def getVenuesWithSpecificListing(listingID):
+    conn = g.db
+
+    try:
+        listingID = int(listingID)  # ensure it's an integer
+
+        with conn.cursor() as cursor:
+            # Get venue IDs containing the listing
+            cursor.execute("""
+                SELECT DISTINCT vm."venueId"
+                FROM "menuItems" mi
+                JOIN "venuesMenu" vm ON mi."sectionId" = vm."id"
+                WHERE mi."itemID" = %s;
+            """, (listingID,))
+
+            venues_id = cursor.fetchall()  # List of tuples like [(1,), (2,), ...]
+
+            if not venues_id:
+                return jsonify({
+                    "message": "No venues found with the specified listing."
+                })
+
+            venues_data = []
+            for venue in venues_id:
+                id = venue['venueId']
+
+                cursor.execute("""
+                    SELECT "id", "venueName", "originLocation", "photo", "website" 
+                    FROM "venues"
+                    WHERE "id" = %s;
+                """, (id,))
+                
+                venue_data = cursor.fetchone()
+
+                if venue_data:
+                    venues_data.append({
+                        "id": venue_data["id"],
+                        "venueName": venue_data["venueName"],
+                        "originLocation": venue_data["originLocation"],
+                        "photo": venue_data["photo"],
+                        "website": venue_data["website"]
+                    })
+
+            if not venues_data:
+                return jsonify({
+                    "code": 404,
+                    "message": "No venue data found for the specified listing."
+                }), 404
+
+            return jsonify(venues_data), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching venues with the specified listing.",
+            "error": str(e)
+        }), 500
 
 
 # ----------------------
