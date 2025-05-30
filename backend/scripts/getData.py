@@ -310,7 +310,6 @@ def getNextFollowing30(id):
 
     followedProducers = request.args.get('followedProducers').replace('[', '').replace(']', '').replace('"', '').split(',')
     followedVenues = request.args.get('followedVenues')
-    print(followedVenues)
     # Make sure followedProducers is a tuple so SQL can process
     placeholders = ', '.join(['%s'] * len(followedProducers))
 
@@ -320,7 +319,6 @@ def getNextFollowing30(id):
         cursor.execute(query, params)
         listings_data = cursor.fetchall()
         if followedVenues != '"null"':
-            print('in')
             venue_listings = fetch_venue_listings(cursor, followedVenues.replace('"',''))
             listings_data += venue_listings
     
@@ -387,7 +385,6 @@ def getListingByName(listing_name):
     # URL decode the listing name in case there are special characters
     listing_name = unquote(listing_name)
     
-    print(f"Decoded listing_name: {listing_name}")
 
     conn = g.db
 
@@ -540,7 +537,6 @@ def getProducer(id):
 
         cur.execute(query, (id,))
         producer_data = cur.fetchone()
-        print("This is producer data", producer_data)
 
         if producer_data is None:
             return jsonify({"message": "Producer not found"}), 404
@@ -2939,8 +2935,6 @@ def get_listings_by_observation_tag(tag):
             # Convert the dictionary rows into a list of dictionaries
             listing_dicts = [dict(row) for row in listings]
 
-            # Debugging output
-            print("Listings as Dicts:", listing_dicts)
 
         # Return the result as JSON
         return jsonify(listing_dicts)
@@ -2977,9 +2971,6 @@ def getTop8():
         top8_data = cursor.fetchall() 
         columns = [desc[0] for desc in cursor.description]  
 
-        print("Columns:", columns)  
-        print("Listings:", top8_data)  
-
         listing_dicts = []
         for row in top8_data:
             raw_tags = row["tag_name"].strip('{}')  
@@ -2995,7 +2986,6 @@ def getTop8():
             else:
                 break
 
-        print("Final Processed Tags:", final_listings)  
 
     return jsonify(final_listings)
 
@@ -3056,9 +3046,6 @@ def getTopListings():
             
             # Merge the two result sets
             top_listings.extend(additional_listings)
-        
-        # Debugging output to verify results
-        print("Top Listings:", top_listings)
     
     return jsonify(top_listings)  # Return the final list of listings as JSON response
 
@@ -3095,15 +3082,12 @@ def getRandomListings():
         if not date_results:
             return jsonify({"error": "No dates found in listings"}), 400
 
-        # Log the fetched dates
-        print("Fetched date_results:", date_results)
 
         try:
             # Extract 'addedDate' values properly from RealDictRow
             date_list = [row['addedDate'] for row in date_results if 'addedDate' in row]
             
-            # Log the extracted date list
-            print("Extracted date_list:", date_list)
+           
 
             if not date_list:
                 return jsonify({"error": "Date extraction failed (empty list)"}), 400

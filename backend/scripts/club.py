@@ -23,7 +23,7 @@
 import os
 from flask import Blueprint, g, jsonify, request
 from datetime import datetime, timedelta
-from scripts import pointsHelperFunc, badge_helpers
+from scripts import pointsHelperFunc, badge_helpers, notifications
 import re
 
 # Use to upload image to S3
