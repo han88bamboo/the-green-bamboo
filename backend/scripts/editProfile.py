@@ -18,7 +18,6 @@ blueprint = Blueprint(file_name[:-3], __name__)
 def editDetails():
     conn = g.db
     data = request.get_json()
-    # print(data['image64'])
     userID = data['userID']
     cursor = conn.cursor()
     try:

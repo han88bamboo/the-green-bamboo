@@ -18,8 +18,6 @@ def update_user_listings(cursor, user_id, category_name, selected_listings, sele
     result = cursor.fetchone()
     current_listings = result[category_name] if result and result[category_name] else []
 
-    print(selected_drink_ids)
-    print(category_name)
 
     # Step 2: If same, do nothing
     if set(current_listings) == set(selected_listings):
@@ -241,7 +239,6 @@ def editTop3():
         selected_up_and_coming = data.get('selectedUpAndComing', [])
         selected_goats = data.get('selectedGOATs', [])
         selected_category = data.get('selectedCategory')
-        print(f"Selected Category: {selected_category}")
         selected_drink_ids = data.get('selectedDrinkIDs', [])
         
         if not user_id:
@@ -289,7 +286,7 @@ def editTop3():
             
     except Exception as e:
         print(str(e))
-        return jsonify({"code": 500, "message": "An error occurred updating user selections."}), 500
+        return jsonify({"code": 500, "message": "An error occurred updating user selections.", "error": e}), 500
     
 
 # [GET] Get top 5 Grails, Up & Coming, and GOATs based on drink type

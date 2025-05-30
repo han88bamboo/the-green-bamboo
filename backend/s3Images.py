@@ -113,7 +113,7 @@ def deleteImageFromS3(url):
     #     object_key = 'None'
 
     if('https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/' in url):
-        object_key =  url.replace('https://drinkximages.s3.us-east-1.amazonaws.com/','')
+        object_key =  url.replace('https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/','')
     else:
         object_key = 'None'
 
