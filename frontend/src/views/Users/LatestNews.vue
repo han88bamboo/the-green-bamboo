@@ -236,7 +236,6 @@ export default {
     // load data from database
     async loadData() {
       try {
-        // const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListings`);
         const response = await this.$axios.get(
           `${process.env.VUE_APP_API_URL}/getData/getLatestNews`
         );

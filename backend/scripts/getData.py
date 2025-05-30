@@ -1,13 +1,15 @@
 # Port: 5000
-# Routes: /getAccountRequests (GET), /getCountries (GET), /getListings (GET), /getListingsByIDs (POST), /getListing/<id> (GET), /getProducers (GET), /getProducer/<id> (GET),
-#           /getProducersByIDs (POST),
-#           /getRecentListingReviews/<id> (GET), /getAllListingsNames (GET), /getBookmarkListings (POST), /getUserReviewSummary/<id> (GET),
+# Routes: /getAccountRequests (GET), /getCountries (GET), /getListings (GET), /getListingsByIDs (POST), /getListing/<id> (GET), /getListingsBySearch (GET),
+#           /getProducers (GET), /getProducer/<id> (GET), /getProducersByIDs (POST), /getProducersBySearch (GET),
+#           /getRecentListingReviews/<id> (GET), /getAllListingsNames (GET), 
+#           /getBookmarkListings (POST), /getUserReviewSummary/<id> (GET),
 #           /getReviews (GET), /getReviewsByListingIDs (POST), /getReviewByTarget/<id> (GET), /getReviewsByUserIds (GET), /getProducerTourReviews (GET), /getVenueReviews (GET), 
 #           /getVenueReviewsByVenueId/<id> (GET), /getProducerReviewsByProducerId/<id> (GET),
-#           /getVenuesWithSpecificListing/<listingID> (GET),
+#           /getVenuesWithSpecificListing/<listingID> (GET), /getVenuesBySearch (GET),
 #           /getUsers (GET), /getUsersFromList (POST), /getUserFollowListDetails (POST) /getUser/<id> (GET), 
 #           /getUserPhoto/<id>/<userType> (GET), /getUserByUsername/<username> (GET), /getVenues (GET), 
-#           /getVenue/<id> (GET), /getVenuesAPI (GET), /getDrinkTypes (GET), /getTypeCategories (GET), /getRequestListings (GET), /getRequestListing/<id> (GET), /getRequestEdits (GET), 
+#           /getVenue/<id> (GET), /getVenuesAPI (GET), 
+#           /getDrinkTypes (GET), /getTypeCategories (GET), /getRequestListings (GET), /getRequestListing/<id> (GET), /getRequestEdits (GET), 
 #           /getRequestEdit/<id> (GET), /getModRequests (GET), /getFlavourTags (GET), /getSubTags (GET), /getObservationTags (GET), /getColours (GET), 
 #           /getSpecialColours (GET), /getLanguages (GET), /getServingTypes (GET), /getProducersProfileViews (GET), /getVenuesProfileViewsByVenue/<id> (GET), /getRequestInaccuracyByVenue/<id> (GET)
 #           /getUserFollowList/<id> (GET), /getUserNames (GET), /checkFollowing/<userId>/<userType>/<followId>/<followType> (GET) /getLatestNews (GET)
@@ -367,6 +369,69 @@ def getListing(id):
     
     return jsonify(listing_data)
 
+
+# [GET] Listings by search term
+# Parameters: searchTerm (string), lastID (int)
+@blueprint.route("/getListingsBySearch")
+def getListingsBySearch():
+    conn = g.db
+    cursor = conn.cursor()
+    searchTerm = request.args.get('searchTerm', '').strip()
+    lastID = request.args.get('lastID', '0').strip()
+    lastID = int(lastID) if lastID.isdigit() else 0
+
+    try:
+        search = f'%{searchTerm}%'
+
+        # Searches for listings by name, origin country, drink type, or type category, starting from the lastID
+        cursor.execute("""
+            SELECT * FROM "listings"
+            WHERE (
+                "listingName" ILIKE %s OR
+                "originCountry" ILIKE %s OR
+                "drinkType" ILIKE %s OR
+                "typeCategory" ILIKE %s
+            )
+            AND "id" > %s
+            ORDER BY "id" ASC
+            LIMIT 30
+        """, (search, search, search, search, lastID))
+
+        listings_data = cursor.fetchall()
+
+            
+        if not listings_data:
+            return jsonify([])
+        
+        # Loop through the listings to get the average rating for each listing and producer name
+        for listing in listings_data:
+            # Get the average rating for the listing
+            cursor.execute("""
+                SELECT AVG("rating") AS "averageRating"
+                FROM "reviews"
+                WHERE "reviewTarget" = %s
+            """, (listing['id'],))
+
+            avg_rating = cursor.fetchone()['averageRating']
+
+
+            if avg_rating is not None:
+                listing['averageRating'] = round(avg_rating, 1)
+            else:
+                listing['averageRating'] = '-'
+
+            # Get the producer name
+            cursor.execute('SELECT "producerName" FROM "producers" WHERE "id" = %s', (listing['producerID'],))
+            producer_name = cursor.fetchone()
+            listing['producerName'] = producer_name['producerName'] if producer_name else 'Unknown Producer'
+        
+        return jsonify(listings_data)
+
+    except Exception as e:
+        print(f"Error fetching listings by search: {str(e)}")
+        return jsonify({"code": 500, "message": "An error occurred while fetching listings."}), 500
+
+
 # [GET] Specific Listings By Producer
 @blueprint.route("/getListingsByProducer/<id>")
 def getListingsByProducer(id):
@@ -611,6 +676,53 @@ def getProducersByIDs():
             "code": 500,
             "message": "An error occurred retrieving the producers."
         }), 500
+
+# [GET] Producers by search term
+@blueprint.route("/getProducersBySearch", methods=['GET'])
+def getProducersBySearch():
+    conn = g.db
+    searchTerm = request.args.get('searchTerm', '').strip()
+    lastID = request.args.get('lastID', '0').strip()
+    lastID = int(lastID) if lastID.isdigit() else 0
+
+    try:
+        cursor = conn.cursor()
+
+        # Searches for producers by name or origin country, starting from the lastID
+        cursor.execute("""
+            SELECT * FROM "producers"
+            WHERE ("producerName" ILIKE %s OR "originCountry" ILIKE %s)
+            AND "id" > %s
+            ORDER BY "id" ASC
+            LIMIT 30
+        """, ('%' + searchTerm + '%', '%' + searchTerm + '%', lastID))
+
+        producers_data = cursor.fetchall()
+
+        if not producers_data:
+            return jsonify([])
+        
+        # Loop through the producers to get the average rating for each producer
+        for producer in producers_data:
+            # Get the average rating for the producer
+            cursor.execute("""
+                SELECT AVG("rating") AS "averageRating"
+                FROM "producerReviews"
+                WHERE "producerID" = %s 
+            """, (producer['id'],))
+
+            # Check if the producer has reviews
+            avg_rating = cursor.fetchone()['averageRating']
+            if avg_rating is not None:
+                producer['averageRating'] = round(avg_rating, 1)
+            else:
+                producer['averageRating'] = '-'  
+
+        return jsonify(producers_data)
+
+    except Exception as e:
+        print(f"Error fetching producers by search: {str(e)}")
+        return jsonify({"code": 500, "message": "An error occurred while fetching producers."}), 500
 
 # [GET] Specific Producer
 @blueprint.route("/getProducerByRequestId/<id>")
@@ -1405,6 +1517,54 @@ def getVenuesWithSpecificListing(listingID):
             "error": str(e)
         }), 500
 
+
+# [GET] Get venues by search term
+@blueprint.route("/getVenuesBySearch", methods=['GET'])
+def getVenuesBySearch():
+    searchTerm = request.args.get('searchTerm', '').strip()
+    lastID = request.args.get('lastID', '0')
+    lastID = int(lastID) if lastID.isdigit() else 0
+    conn = g.db
+
+    try:
+        with conn.cursor() as cursor:
+            
+            # Search for venues by name or origin location
+            cursor.execute("""
+                SELECT "id", "venueName", "originLocation", "photo", "website"
+                FROM "venues"
+                WHERE ("venueName" ILIKE %s OR "originLocation" ILIKE %s)
+                AND "id" > %s
+                ORDER BY "id" ASC
+                LIMIT 30
+            """, (f'%{searchTerm}%', f'%{searchTerm}%', lastID))
+            venues_data = cursor.fetchall()
+
+            if not venues_data:
+                return jsonify([])
+            
+            # Loop through all the venues and get their average rating 
+            for venue in venues_data:
+                cursor.execute("""
+                    SELECT AVG("rating") AS avg_rating
+                    FROM "venueReviews"
+                    WHERE "venueID" = %s
+                """, (venue["id"],))
+                avg_rating = cursor.fetchone()
+
+                if avg_rating and avg_rating["avg_rating"] is not None:
+                    venue["averageRating"] = round(avg_rating["avg_rating"], 1)
+                else:
+                    venue["averageRating"] = '-'
+            
+            return jsonify(venues_data), 200
+    except Exception as e:
+        print(str(e))
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching venues by search term.",
+            "error": str(e)
+        }), 500
 
 # ----------------------
 # [NEW] TO BE ADDED:

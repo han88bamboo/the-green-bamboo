@@ -217,7 +217,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                             <div class="mobile-col-2 mobile-pe-0 mobile-ps-1 mobile-view-show">
                                 <div class="d-flex flex-column align-items-center ps-lg-3" >
                                     <h3 class="fs-3 fw-bold rating-text text-end d-flex align-items-center mobile-fs-4" style="margin-bottom: 0.1rem;">    
-                                        {{ getRatings(resultListing) }} ★
+                                        {{ resultListing['averageRating'] }} ★
                                     </h3>
                                 </div>
                             </div>
@@ -241,7 +241,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                                     <router-link class="text-secondary-emphasis text-decoration-none" :to="{ path: '/profile/producer/' + resultListing.producerID + '/' + slugify(resultListing.producerName)}">
                                         <p class="m-0">
                                             <b> Producer: </b>
-                                            {{ getProducerName(resultListing['producerID']) }}
+                                            {{ resultListing['producerName'] }}
                                         </p>
                                         <p class="m-0" v-if="resultListing['bottler'] != 'OB'"><b>Bottler:</b> {{ resultListing['bottler'] }}</p>
                                     </router-link>
@@ -289,7 +289,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                                         <div class="mobile-col-2 mobile-pe-0 mobile-ps-1">
                                             <div class="d-flex justify-content-end ps-lg-3" >
                                                 <h3 class="fs-3 fw-bold rating-text text-end d-flex align-items-center mobile-fs-4" style="margin-bottom: 0.1rem;">    
-                                                    {{ getRatings(resultListing) }} ★
+                                                    {{ resultListing['averageRating'] }} ★
                                                 </h3>
                                             </div>
                                         </div>
@@ -303,6 +303,11 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                                 </p>
                             </div>
                             <hr>
+                        </div>
+
+                        <!-- Load More Listing Result Button -->
+                        <div class="d-flex justify-content-center mb-3" v-if="resultListings.length > 0 && !noMoreListings">
+                            <button class="btn primary-btn btn-lg" @click="searchListingsLazy(searchTerm)">Load More Listings</button>
                         </div>
                     </div>
                 </div>
@@ -339,10 +344,10 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                                 </p>
                                 <p class="m-0  mobile-fs-7">
                                     <b> Average Drink Rating: </b>
-                                    {{ getAllProducerRating(producer) }} ★
+                                    {{ producer["averageRating"] }} ★
                                 </p>
                                 <p class="m-0  mobile-fs-7"><b>Average Tour & Experience Rating:&nbsp;</b>
-                                    {{getAverageTourRatings()}} ★
+                                    {{ producer['averageRating'] }} ★
                                     </p>
 
                                 <p class="mt-1 fst-italic scrollable-long mobile-fs-7">
@@ -374,10 +379,10 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                                     </p>
                                     <p class="m-0">
                                         <b> Average Drink Rating: </b>
-                                        {{ getAllProducerRating(producer) }} ★
+                                        {{ producer['averageRating'] }} ★
                                     </p>
                                     <p class="m-0"><b>Average Tour & Experience Rating:&nbsp;</b>
-                                    {{getAverageTourRatings()}} ★
+                                    {{ producer['averageRating']}} ★
                                     </p>
                                     <!-- Main Drinks 
                                     <div class="m-0">
@@ -402,6 +407,11 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                                 <p class="fst-italic scrollable-long">{{ producer["producerDesc"] }}</p>
                             </div>
                             <hr>
+                        </div>
+
+                        <!-- Load More Producer Result Button -->
+                        <div class="d-flex justify-content-center mb-3" v-if="producerListings.length > 0 && !noMoreProducers">
+                            <button class="btn primary-btn btn-lg" @click="searchProducersLazy(searchTerm)">Load More Producers</button>
                         </div>
                     </div>
                 </div>
@@ -449,7 +459,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                                     <!-- Rating -->
                                     <p class="m-0">
                                         <b> Average Drink Menu Rating: </b>
-                                        {{ getAllVenueRating(venue) }} ★
+                                        {{ venue['averageRating'] }} ★
                                     </p>
                                 </div>
 
@@ -506,7 +516,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                                     <!-- Rating -->
                                     <p class="m-0 mobile-fs-7">
                                         <b> Average Drink Menu Rating: </b>
-                                        {{ getAllVenueRating(venue) }} ★
+                                        {{ venue['averageRating'] }} ★
                                     </p>
                                 </div>
                                 <p class="mt-1 fst-italic scrollable-long mobile-fs-7">
@@ -518,6 +528,10 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                             <hr>
                         </div>
                         
+                        <!-- Load More Venue Result Button -->
+                        <div class="d-flex justify-content-center mb-3" v-if="venueListings.length > 0 && !noMoreVenues">
+                            <button class="btn primary-btn btn-lg" @click="searchVenuesLazy(searchTerm)">Load More Venues</button>
+                        </div>
                     </div>
                 </div>
 
@@ -526,7 +540,6 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
             <BookmarkModal 
                 v-if="user"
                 :user="user" 
-                :listings="listings" 
                 :listingID="bookmarkListingID" />
         </div>
     </div>
@@ -558,13 +571,19 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                     drinkType: ''
                 },
                 drinkTypeList: [],
-                producerList: [],
-                venueList: [],
                 originalResults: [],
                 resultListings: [],
                 producerListings: [],
                 venueListings: [],
-                listings: [],
+
+                // lazy loading tracker last id 
+                noMoreListings: false,
+                lastListingID: 0,
+                noMoreProducers: false,
+                lastProducerID: 0,
+                noMoreVenues: false,
+                lastVenueID: 0,
+                recordsPerLoad: 30,
 
                 // reviews
                 reviews: [],
@@ -631,6 +650,11 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
             let userType = localStorage.getItem('88B_accType')
             if(userType !=null){
                 this.userType = userType
+
+                // Retrieve user data if type user is logged in
+                if (userType === 'user') {
+                    this.getUserData();
+                }
             }
             let userName = localStorage.getItem("88B_accUsername");
             if (userName !== null) {
@@ -655,6 +679,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                     .replace(/\s+/g, '')
                     .replace(/[^\w]/g, '');
             },
+
             async runSearch() {
                 // Search Criteria: if any of the following attributes includes the search term
                 // - Listings: listingName, producerName, bottler, originCountry, drinkType, typeCategory
@@ -673,137 +698,176 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                 }
 
                 // Listings
-                try {
-                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListings`);
-                    this.listings = response.data;
-
-                    // clear previous results
-                    this.resultListings = [];
-
-                    for (let listing of response.data) {
-                        let producer = this.producerList.find((producer) => {
-                            return producer['id'] == listing["producerID"];
-                        });
-                        if (producer) {
-                            listing["producerName"] = producer["producerName"];
-                        }
-                        else {
-                            listing["producerName"] = "";
-                        }
-                        this.resultListings.push(listing);
-                    }
-
-                    // search by listingName, originCountry, drinkType, typeCategory
-                    this.resultListings = this.resultListings.filter((listing) => {
-                        return listing["listingName"]?.toLowerCase().includes(this.searchTerm) || listing["originCountry"]?.toLowerCase().includes(this.searchTerm) || listing["drinkType"]?.toLowerCase().includes(this.searchTerm) || listing["typeCategory"]?.toLowerCase().includes(this.searchTerm);
-                    });
-                    this.originalResults = this.resultListings;
-                    // Observation Tags
-                    if (this.resultListings.length === 0) {
-                        console.log("No results found, trying observation tag search...");
-
-                        const routeTag = this.$route.params.tag;
-                        console.log("Tag passed to runSearch:", routeTag);
-
-                        try {
-                            const observationTagPromise = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingsByObservationTag/${encodeURIComponent(routeTag)}`);
-
-                            this.resultListings = observationTagPromise.data || [];
-                            console.log("Observation Tags:", this.resultListings);
-                            this.observationTags = this.resultListings.filter((listing) => {
-                                return listing["listingName"]?.toLowerCase().includes(this.searchTerm) ||
-                                    listing["originCountry"]?.toLowerCase().includes(this.searchTerm) ||
-                                    listing["drinkType"]?.toLowerCase().includes(this.searchTerm) ||
-                                    listing["typeCategory"]?.toLowerCase().includes(this.searchTerm);
-                            });
-
-                        } catch (error) {
-                            console.error("Error fetching observation tags:", error);
-                            this.resultListings = [];
-                            this.observationTags = [];
-                        }
-                    }
-                }
-                catch (error) {
-                    console.error(error);
-                    this.loadError = true;
-                }
-
+                this.searchListings(this.searchTerm);
+                
                 // Producers
-                try {
-                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducers`);
-                    this.producerList = response.data;
-
-                    // clear previous results
-                    this.producerListings = [];
-
-                    // search by producerName, originCountry
-                    this.producerListings = this.producerList.filter((producer) => {
-                        return producer["producerName"]?.toLowerCase().includes(this.searchTerm) || producer["originCountry"]?.toLowerCase().includes(this.searchTerm);
-                    });
-                }
-                catch (error) {
-                    console.error(error);
-                    this.loadError = true;
-                }
+                this.searchProducers(this.searchTerm);
 
                 // Venues
-                try {
-                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenues`);
-                    this.venueList = response.data;
-
-                    // clear previous results
-                    this.venueListings = [];
-
-                    // search by venueName, originLocation
-                    this.venueListings = this.venueList.filter((venue) => {
-                        return venue["venueName"]?.toLowerCase().includes(this.searchTerm) || venue["originLocation"]?.toLowerCase().includes(this.searchTerm);
-                    });
-
-                } 
-                catch (error) {
-                    console.error(error);
-                }
+                this.searchVenues(this.searchTerm);
 
                 // Users
+                
+
+                this.dataLoaded = true;
+            },
+
+            // Get user data
+            async getUserData() {
                 try {
-                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUsers`);
-                    this.users = response.data;
-                    this.user = this.users.find(user => user.id == this.userID)
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUser/${this.userID}`);
+                    this.user = response.data;
                     if (this.user) {
                         this.userBookmarks = this.user.drinkLists;
-                        let triedDrinks=[]
-                        let wantToTryDrinks=[]
-                        for (let drink of this.user.drinkLists["Drinks I Have Tried"]["listItems"]) {
-                            let triedDrink = this.listings.find(listing => listing.id === parseInt(drink)).listingName;
-                            // let triedDrinkName = triedDrink ? triedDrink.listingName : null;
-                            triedDrinks.push(triedDrink)
+                        console.log(this.userBookmarks);
+                        let triedDrinks = [];
+                        let wantToTryDrinks = [];
+
+                        // Extract tried and want to try drinks from user's drink lists
+                        for (let bookmark of this.userBookmarks) {
+                            if (bookmark.listType === 'haveTried') {
+                                triedDrinks.push(bookmark.listItems);
+                            } else if (bookmark.listType === 'wantToTry') {
+                                wantToTryDrinks.push(bookmark.listItems);
+                            }
                         }
-                        for (let drink of this.user.drinkLists["Drinks I Want To Try"]["listItems"]) {
-                            let wantDrinkName = this.listings.find(listing => listing.id === parseInt(drink)).listingName;   
-                            wantToTryDrinks.push(wantDrinkName)
-                        }
+
                         this.drinkList = {
                             haveTried: triedDrinks,
                             wantToTry: wantToTryDrinks
-                        }
+                        };
                     }
                 } 
                 catch (error) {
                     console.error(error);
                 }
+            },
 
-                // Reviews
+            // Search search term in listings 
+            async searchListings(searchTerm) {
                 try {
-                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getReviews`);
-                    this.reviews = response.data;
-                }
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingsBySearch?searchTerm=${searchTerm}&lastID=0`);
+                    
+                    // If listings result are less than recordsPerLoad, set noMoreListings to true
+                    if (response.data.length <= this.recordsPerLoad - 1) {
+                        this.noMoreListings = true;
+                    } 
+
+                    // Update lastListingID to the last ID of the response
+                    this.lastListingID = response.data.length > 0 ? response.data[response.data.length - 1].id : 0;
+
+                    // clear previous results
+                    this.resultListings = response.data;
+                    this.originalResults = response.data;
+
+                    // Retrieve producer names for each listing
+
+                } 
                 catch (error) {
                     console.error(error);
-                    this.loadError = true;
                 }
+            },
 
-                this.dataLoaded = true;
+            // Search search term in listings [lazy loading]
+            async searchListingsLazy(searchTerm) {
+                try {
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListings/getListingsBySearch?searchTerm=${searchTerm}&lastID=${this.lastListingID}`);
+                    
+                    this.resultListings = this.resultListings.concat(response.data);
+                    this.originalResults = this.originalResults.concat(response.data);
+
+                    // Update lastListingID to the last ID of the response
+                    this.lastListingID += response.data.length > 0 ? response.data[response.data.length - 1].id : 0;
+
+                    // If no more listings, set noMoreListings to true
+                    if (response.data.length <= this.recordsPerLoad - 1) {
+                        this.noMoreListings = true;
+                    }
+                } 
+                catch (error) {
+                    console.error(error);
+                }
+            },
+
+            // Search search term in producers
+            async searchProducers(searchTerm) {
+                try {
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducersBySearch?searchTerm=${searchTerm}&lastID=0`);
+            
+                    // If producers result are less than recordsPerLoad, set noMoreProducers to true
+                    if (response.data.length <= this.recordsPerLoad - 1) {
+                        this.noMoreProducers = true;
+                    }
+                    // clear previous results
+                    this.producerListings = response.data;
+
+                    // Update lastProducerID to the last ID of the response
+                    this.lastProducerID = response.data.length > 0 ? response.data[response.data.length - 1].id : 0;
+
+                } 
+                catch (error) {
+                    console.error(error);
+                }
+            },
+
+            // Search search term in producers [lazy loading]
+            async searchProducersLazy(searchTerm) {
+                try {
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducersBySearch?searchTerm=${searchTerm}&lastID=${this.lastProducerID}`);
+                    
+                    this.producerListings = this.producerListings.concat(response.data);
+
+                    // Update lastProducerID to the last ID of the response
+                    this.lastProducerID += response.data.length > 0 ? response.data[response.data.length - 1].id : 0;
+
+                    // If no more producers, set noMoreProducers to true
+                    if (response.data.length <= this.recordsPerLoad - 1) {
+                        this.noMoreProducers = true;
+                    }
+                } 
+                catch (error) {
+                    console.error(error);
+                }
+            },
+
+            // Search search term in venues
+            async searchVenues(searchTerm) {
+                try {
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenuesBySearch?searchTerm=${searchTerm}&lastID=0`);
+                    
+                    // If venues result are less than recordsPerLoad, set noMoreVenues to true
+                    if (response.data.length <= this.recordsPerLoad - 1) {
+                        this.noMoreVenues = true;
+                    }
+                    this.venueListings = response.data;
+
+                    // Update lastVenueID to the last ID of the response
+                    this.lastVenueID = response.data.length > 0 ? response.data[response.data.length - 1].id : 0;
+
+                } 
+                catch (error) {
+                    console.error(error);
+                }
+            },
+
+            // Search search term in venues [lazy loading]
+            async searchVenuesLazy(searchTerm) {
+                try {
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenuesBySearch?searchTerm=${searchTerm}&lastID=${this.lastVenueID}`);
+
+                    this.venueListings = this.venueListings.concat(response.data);
+
+                    // Update lastVenueID to the last ID of the response
+                    this.lastVenueID += response.data.length > 0 ? response.data[response.data.length - 1].id : 0;
+
+                    // If no more venues, set noMoreVenues to true
+                    if (response.data.length <= this.recordsPerLoad - 1) {
+                        this.noMoreVenues = true;
+                    }
+                } 
+                catch (error) {
+                    console.error(error);
+                }
             },
 
             // Main Filter Function
@@ -813,7 +877,14 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                 // Filter by Drink Type
                 if (this.searchFilter.drinkType != '') {
                     this.resultListings = this.resultListings.filter((listing) => {
-                        return listing["drinkType"] == this.searchFilter.drinkType;
+
+                        // If is 'Whisky' or 'Whisky' or 'Whiskey', convert to 'Whisky'
+                        if (listing["drinkType"] == 'Whisky' || listing["drinkType"] == 'Whiskey') {
+                            return listing["drinkType"] = 'Whisky';
+                        }
+                        else {
+                            return listing["drinkType"] == this.searchFilter.drinkType;
+                        }        
                     });
                 }
             },
@@ -862,13 +933,17 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                     // #5: Ratings (Highest - Lowest)
                     else if (category == 'Ratings (Highest - Lowest)') {
                         this.resultListings.sort((a, b) => {
-                            return this.getAllRatings(b) - this.getAllRatings(a);
+                            const aRating = a.averageRating === '-' ? 0 : parseFloat(a.averageRating);
+                            const bRating = b.averageRating === '-' ? 0 : parseFloat(b.averageRating);
+                            return bRating - aRating;
                         });
                     }
                     // #6: Ratings (Lowest - Highest)
                     else if (category == 'Ratings (Lowest - Highest)') {
                         this.resultListings.sort((a, b) => {
-                            return this.getAllRatings(a) - this.getAllRatings(b);
+                            const aRating = a.averageRating === '-' ? 0 : parseFloat(a.averageRating);
+                            const bRating = b.averageRating === '-' ? 0 : parseFloat(b.averageRating);
+                            return aRating - bRating;
                         });
                     }
                 }
@@ -890,13 +965,17 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                     // #3: Ratings (Highest - Lowest)
                     else if (category == 'Ratings (Highest - Lowest)') {
                         this.producerListings.sort((a, b) => {
-                            return this.getAvgProducerRating(b) - this.getAvgProducerRating(a);
+                            const aRating = a.averageRating === '-' ? 0 : parseFloat(a.averageRating);
+                            const bRating = b.averageRating === '-' ? 0 : parseFloat(b.averageRating);
+                            return bRating - aRating;
                         });
                     }
                     // #4: Ratings (Lowest - Highest)
                     else if (category == 'Ratings (Lowest - Highest)') {
                         this.producerListings.sort((a, b) => {
-                            return this.getAvgProducerRating(a) - this.getAvgProducerRating(b);
+                            const aRating = a.averageRating === '-' ? 0 : parseFloat(a.averageRating);
+                            const bRating = b.averageRating === '-' ? 0 : parseFloat(b.averageRating);
+                            return aRating - bRating;
                         });
                     }
                 }
@@ -918,13 +997,17 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                     // #3: Ratings (Highest - Lowest)
                     else if (category == 'Ratings (Highest - Lowest)') {
                         this.venueListings.sort((a, b) => {
-                            return this.getAvgVenueRating(b) - this.getAvgVenueRating(a);
+                            const aRating = a.averageRating === '-' ? 0 : parseFloat(a.averageRating);
+                            const bRating = b.averageRating === '-' ? 0 : parseFloat(b.averageRating);
+                            return bRating - aRating;
                         });
                     }
                     // #4: Ratings (Lowest - Highest)
                     else if (category == 'Ratings (Lowest - Highest)') {
                         this.venueListings.sort((a, b) => {
-                            return this.getAvgVenueRating(a) - this.getAvgVenueRating(b);
+                            const aRating = a.averageRating === '-' ? 0 : parseFloat(a.averageRating);
+                            const bRating = b.averageRating === '-' ? 0 : parseFloat(b.averageRating);
+                            return aRating - bRating;
                         });
                     }
                 }
@@ -942,75 +1025,6 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                 }
             },
 
-            // get ratings for a listing --> return "-" if no ratings
-            getRatings(listing) {
-                const ratings = this.reviews.filter((rating) => rating["reviewTarget"] == listing['id']);
-                // if there are no ratings
-                if (ratings.length == 0) return "-";
-                // else there are ratings
-                const averageRating = ratings.reduce((total, rating) => {
-                    return total + parseFloat(rating["rating"]);
-                }, 0) / ratings.length;
-
-                return averageRating.toFixed(1);
-            },
-
-            // get ratings for a listing --> return 0 if no ratings
-            getAllRatings(listing) {
-                const ratings = this.reviews.filter((rating) => {
-                    return rating["reviewTarget"] == listing['id'];
-                });
-                // if there are no ratings
-                if (ratings.length == 0) {
-                    return 0;
-                }
-                // else there are ratings
-                const averageRating = ratings.reduce((total, rating) => {
-                    return total + rating["rating"];
-                }, 0) / ratings.length;
-                // round to 1 decimal place
-                const roundedRating = Math.round(averageRating * 10) / 10;
-                return roundedRating;
-            },
-
-            // get average rating for producer --> return "-" if no ratings
-            getAllProducerRating(producer) {
-                let allProducerReviews = this.reviews.filter(review => {
-                    let review_target = review.reviewTarget;
-                    let all_drinks = this.listings.filter(listing => listing.producerID == producer.id);
-                    return all_drinks.some(drink => drink.id === review_target);
-                });
-                // if there are no ratings
-                if (allProducerReviews.length == 0) {
-                    return "-";
-                }
-                // else there are ratings
-                const averageRating = allProducerReviews.reduce((total, review) => {
-                    return total + parseFloat(review.rating);
-                }, 0) / allProducerReviews.length;
-                // round to 1 decimal place
-                return averageRating.toFixed(1);
-            },
-
-            // get average rating for producer --> return 0 if no ratings
-            getAvgProducerRating(producer) {
-                let allProducerReviews = this.reviews.filter(review => {
-                    let review_target = review.reviewTarget;
-                    let all_drinks = this.listings.filter(listing => listing.producerID == producer.id);
-                    return all_drinks.some(drink => drink.id === review_target);
-                });
-                // if there are no ratings
-                if (allProducerReviews.length == 0) {
-                    return 0;
-                }
-                // else there are ratings
-                const averageRating = allProducerReviews.reduce((total, review) => {
-                    return total + parseFloat(review.rating);
-                }, 0) / allProducerReviews.length;
-                // round to 1 decimal place
-                return averageRating.toFixed(1);
-            },
-
             // get all drinks that a venue has
             getAllVenueDrinks(venue) {
                 let allMenuItems = venue["menu"]
@@ -1026,44 +1040,6 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                     return uniqueListingsIDs.includes(listing_id);
                 });
                 return allVenueDrinks
-            },
-
-            // get average rating for venue --> return "-" if no ratings
-            getAllVenueRating(venue) {
-                let allVenueReviews = this.reviews.filter(review => {
-                    let review_target = review.reviewTarget;
-                    let all_drinks = this.getAllVenueDrinks(venue)
-                    return all_drinks.some(drink => drink.id === review_target);
-                });
-                // if there are no ratings
-                if (allVenueReviews.length == 0) {
-                    return "-";
-                }
-                // else there are ratings
-                const averageRating = allVenueReviews.reduce((total, review) => {
-                    return total + parseFloat(review.rating);
-                }, 0) / allVenueReviews.length;
-                // round to 1 decimal place
-                return averageRating.toFixed(1);
-            },
-
-            // get average rating for venue --> return 0 if no ratings
-            getAvgVenueRating(venue) {
-                let allVenueReviews = this.reviews.filter(review => {
-                    let review_target = review.reviewTarget;
-                    let all_drinks = this.getAllVenueDrinks(venue)
-                    return all_drinks.some(drink => drink.id === review_target);
-                });
-                // if there are no ratings
-                if (allVenueReviews.length == 0) {
-                    return 0;
-                }
-                // else there are ratings
-                const averageRating = allVenueReviews.reduce((total, review) => {
-                    return total + parseFloat(review.rating);
-                }, 0) / allVenueReviews.length;
-                // round to 1 decimal place
-                return averageRating.toFixed(1);
             },
 
             // for bookmark component
@@ -1166,34 +1142,6 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                 this.tabActive = selectedTab;
                 // clear sort selection
                 this.sortSelection.category = '';
-            },
-
-            // get producerName for a listing based on producerID
-            getProducerName(producerID) {
-                const producer = this.producerList.find((producer) => {
-                    return producer["id"] == producerID;
-                });
-                // ensures that producer is found before accessing "producerName"
-                if (producer) {
-                    const producerName = producer["producerName"];
-                    return producerName;
-                }
-                else {
-                    return null;
-                }
-            },
-
-            getAverageTourRatings(producerID) {
-                const producer = this.producerList.find((producer) => {
-                    return producer["id"] == producerID;
-                });
-                // ensures that producer is found before accessing "averageRating"
-                if (producer) {
-                    const averageRating = producer["averageRating"];
-                    return averageRating;
-                } else {
-                    return null;
-                }
             },
 
         }

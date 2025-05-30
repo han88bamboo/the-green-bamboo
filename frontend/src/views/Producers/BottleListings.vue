@@ -3237,6 +3237,11 @@ export default {
       addressDict: null,
       // truncation of official description <!-- tzh added  --->
       showFullDescription: false,
+
+      // lazy loading of reviews
+      noMoreReviews: false,
+      lastReviewID: 0,
+      reviewsPerLoad: 20,
     };
   },
   mounted() {
@@ -3290,6 +3295,13 @@ export default {
           `${process.env.VUE_APP_API_URL}/getData/getReviewByTarget/${this.listing_id}/0`
         );
         this.reviews = response.data;
+
+        this.lastReviewID = this.reviews.length > 0 ? this.reviews[this.reviews.length - 1].id : 0;
+
+        if (this.reviews.length < this.reviewsPerLoad) {
+          this.noMoreReviews = true; // No more reviews to load
+        }
+
         // what is detailedReview?
         this.detailedReview = this.reviews[0];
 
@@ -3600,6 +3612,26 @@ export default {
       }
     },
 
+    // Load more reviews 
+    async loadMoreReviews() {
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getReviewByTarget/${this.listing_id}/${this.lastReviewID}`
+        );
+        this.reviews = this.reviews.concat(response.data);
+
+        if (response.data.length > 0) {
+          this.lastReviewID = response.data[response.data.length - 1].id;
+        } 
+
+        if (response.data.length < this.reviewsPerLoad) {
+          this.noMoreReviews = true; // No more reviews to load
+        } 
+
+      } catch (error) {
+        console.error("Error loading more reviews:", error);
+      }
+    },
 
     // view which venues have specified listing, sort by alphabetical order of venue name
     whereToTry() {
