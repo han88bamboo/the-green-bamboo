@@ -9,7 +9,8 @@
 #           /getUsers (GET), /getUsersFromList (POST), /getUserFollowListDetails (POST) /getUser/<id> (GET), 
 #           /getUserPhoto/<id>/<userType> (GET), /getUserByUsername/<username> (GET), /getVenues (GET), 
 #           /getVenue/<id> (GET), /getVenuesAPI (GET), 
-#           /getDrinkTypes (GET), /getTypeCategories (GET), /getRequestListings (GET), /getRequestListing/<id> (GET), /getRequestEdits (GET), 
+#           /getDrinkTypes (GET), /getTypeCategories (GET), /getRequestListings (GET), /getRequestListing/<id> (GET), /getRequestListingsByRole/<role>/<id> (GET),
+#           /getRequestEdits (GET), /getRequestEditsByRole/<role>/<id> (GET),
 #           /getRequestEdit/<id> (GET), /getModRequests (GET), /getFlavourTags (GET), /getSubTags (GET), /getObservationTags (GET), /getColours (GET), 
 #           /getSpecialColours (GET), /getLanguages (GET), /getServingTypes (GET), /getProducersProfileViews (GET), /getVenuesProfileViewsByVenue/<id> (GET), /getRequestInaccuracyByVenue/<id> (GET)
 #           /getUserFollowList/<id> (GET), /getUserNames (GET), /checkFollowing/<userId>/<userType>/<followId>/<followType> (GET) /getLatestNews (GET)
@@ -112,9 +113,13 @@ def parse_json(data):
 # Helper function to fetch user data from the database
 def fetch_user_data(cursor, user_id):
     cursor.execute('SELECT * FROM "users" WHERE "id" = %s', (user_id,))
-
-    # Remove unnecessary fields
     user_data = cursor.fetchone()
+
+    # Remove the password field for security reasons
+    if user_data:
+        user_data = dict(user_data)
+        user_data.pop("hashedPassword", None)
+        user_data.pop("pin", None) 
 
     return user_data
 
@@ -2336,6 +2341,126 @@ def getRequestListings():
 
     return jsonify(request_listings_data)
 
+
+# -----------------------------------------------------------------------------------------
+# [GET] Get request listings filtered by role and id
+@blueprint.route("/getRequestListingsByRole/<role>/<id>")
+def getRequestListingsByRole(role, id):
+    conn = g.db
+    cursor = conn.cursor()
+
+    try:
+        # Convert id to integer
+        id = int(id)
+
+        # Step 1: Check if user is a producer 
+        if role == 'producer':
+
+            # Check if the producer exists
+            cursor.execute("""
+                SELECT * FROM "producers" WHERE "id" = %s
+            """, (id,))
+            producer_data = cursor.fetchone()
+
+            if producer_data is None:
+                return jsonify({
+                    "code": 404,
+                    "message": "Producer not found."
+                }), 404
+
+            cursor.execute("""
+                SELECT * FROM "requestListings"
+                WHERE "producerID" = %s AND "reviewStatus" = false
+            """, (id,))
+
+            request_listings_data = cursor.fetchall()
+
+        elif role == 'user':
+
+            # Get the isAdmin status of the user and modType
+            cursor.execute("""
+                SELECT "isAdmin", "modType" FROM "users" WHERE "id" = %s
+            """, (id,))
+            user_data = cursor.fetchone()
+
+            if user_data is None:
+                return jsonify({
+                    "code": 404,
+                    "message": "User not found."
+                }), 404
+
+            if user_data['isAdmin']: 
+                cursor.execute("""
+                    SELECT * FROM "requestListings"
+                    WHERE "reviewStatus" = false
+                """)
+                request_listings_data = cursor.fetchall()
+            
+            else:
+                # Get the request listings for the user and any listings that match the user's modType
+                cursor.execute("""
+                    SELECT * FROM "requestListings"
+                    WHERE "reviewStatus" = false AND (
+                        "userID" = %s OR "drinkType" IN %s
+                    )
+                """, (id, tuple(user_data['modType'])))
+
+                request_listings_data = cursor.fetchall()
+
+        else:
+            return jsonify({
+                "code": 400,
+                "message": "Invalid role specified."
+            }), 400
+                
+        if not request_listings_data:
+            return jsonify([])
+        
+        # Loop through the request Listings
+        for request_listing in request_listings_data:
+
+            # Get producer name 
+            producer_id = request_listing['producerID']
+
+            if producer_id is None or producer_id == '':
+                request_listing['producerName'] = request_listing['producerNew']
+            else:
+                cursor.execute("""
+                    SELECT "producerName" FROM "producers" WHERE "id" = %s
+                """, (producer_id,))
+                producer_name_data = cursor.fetchone()
+
+                if producer_name_data:
+                    request_listing['producerName'] = producer_name_data['producerName']
+                else:
+                    request_listing['producerName'] = "Unknown Producer"
+
+            # Get requester username   
+            requester_id = request_listing['userID']
+
+            if requester_id is None or requester_id == '':
+                request_listing['requesterUsername'] = '(Anonymous)'
+            else:
+                cursor.execute("""
+                    SELECT "username" FROM "users" WHERE "id" = %s
+                """, (requester_id,))
+                requester_username_data = cursor.fetchone()
+
+                if requester_username_data:
+                    request_listing['requesterUsername'] = requester_username_data['username']
+                else:
+                    request_listing['requesterUsername'] = '(Anonymous)'
+
+        return jsonify(request_listings_data), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching request listings by role and isAdmin status."
+        }), 500
+
+
 # [GET] Specific Request Listing
 @blueprint.route("/getRequestListing/<id>")
 def getRequestListing(id):
@@ -2365,6 +2490,153 @@ def getRequestEdits():
 
     return jsonify(request_edits_data)
 
+
+# -----------------------------------------------------------------------------------------
+# [GET] Get request edits filtered by role and id
+@blueprint.route("/getRequestEditsByRole/<role>/<id>")
+def getRequestEditsByRole(role, id):
+    conn = g.db
+    cursor = conn.cursor()
+
+    # Return data array
+    request_edits_data = []
+    request_dups_data = []
+
+    try:
+        # Producer
+        if role == 'producer':
+
+            # Check if the producer exists
+            cursor.execute("""
+                SELECT * FROM "producers" WHERE "id" = %s
+            """, (id,))
+            producer_data = cursor.fetchone()
+
+            if producer_data is None:
+                return jsonify({
+                    "code": 404,
+                    "message": "Producer not found."
+                }), 404
+
+            cursor.execute("""
+                SELECT * FROM "requestEdits"
+                WHERE "producerID" = %s AND "reviewStatus" = false
+            """, (id,))
+
+            request_edits_data = cursor.fetchall()
+
+        elif role == 'user':
+            # Get the isAdmin status of the user and modType
+            cursor.execute("""
+                SELECT "isAdmin", "modType" FROM "users" WHERE "id" = %s
+            """, (id,))
+            user_data = cursor.fetchone()
+
+            if user_data is None:
+                return jsonify({
+                    "code": 404,
+                    "message": "User not found."
+                }), 404
+
+            if user_data['isAdmin']: 
+                cursor.execute("""
+                    SELECT * FROM "requestEdits"
+                    WHERE "reviewStatus" = false
+                """)
+                request_edits_data = cursor.fetchall()
+            
+            else:
+                # Get the request edits for the user and any edits that match the user's modType
+                cursor.execute("""
+                    SELECT requestEdits.*
+                    FROM "requestEdits"
+                    JOIN "listings" ON requestEdits."listingID" = listings."id"
+                    WHERE requestEdits."reviewStatus" = false AND (
+                        requestEdits."userID" = %s OR listings."drinkType" IN %s
+                    )
+                """, (id, tuple(user_data['modType'])))
+
+
+                request_edits_data = cursor.fetchall()
+        else:
+            return jsonify({
+                "code": 400,
+                "message": "Invalid role specified."
+            }), 400
+        
+        if not request_edits_data:
+            return jsonify([])
+        
+        # Loop through the request Edits
+        for request_edit in request_edits_data:
+
+            # Get listing name, photo and producerID 
+            listing_id = request_edit['listingID']
+
+            if listing_id is None or listing_id == '':
+                continue
+            cursor.execute("""
+                SELECT "listingName", "listingPhoto", "producerID"
+                FROM "requestListings" WHERE "id" = %s
+            """, (listing_id,))
+
+            listing_data = cursor.fetchone()
+
+            if listing_data:
+                request_edit['listingName'] = listing_data['listingName']
+                request_edit['listingPhoto'] = listing_data['listingPhoto']
+                request_edit['producerID'] = listing_data['producerID']
+
+            # Get producer name
+            producer_id = request_edit['producerID']
+            if producer_id is None or producer_id == '':
+                request_edit['producerName'] = "Unknown Producer"
+            else:
+                cursor.execute("""
+                    SELECT "producerName" FROM "producers" WHERE "id" = %s
+                """, (producer_id,))
+                producer_name_data = cursor.fetchone()
+
+                if producer_name_data:
+                    request_edit['producerName'] = producer_name_data['producerName']
+                else:
+                    request_edit['producerName'] = "Unknown Producer"
+
+            # Get requester username
+            requester_id = request_edit['userID']
+            if requester_id is None or requester_id == '':
+                request_edit['requesterUsername'] = '(Anonymous)'
+            else:
+                cursor.execute("""
+                    SELECT "username" FROM "users" WHERE "id" = %s
+                """, (requester_id,))
+                requester_username_data = cursor.fetchone()
+
+                if requester_username_data:
+                    request_edit['requesterUsername'] = requester_username_data['username']
+                else:
+                    request_edit['requesterUsername'] = '(Anonymous)'
+            
+            # Split them according to the edit type
+            if request_edit['duplicateLink']:
+                request_dups_data.append(request_edit)
+            else:
+                request_edits_data.append(request_edit)
+
+        return jsonify({
+            "requestEdits": request_edits_data,
+            "requestDups": request_dups_data
+        }), 200
+            
+    except Exception as e:
+        print(str(e))
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching request edits by role and isAdmin status."
+        }), 500
+
+
+# -----------------------------------------------------------------------------------------
 # [GET] Specific Request Edit
 @blueprint.route("/getRequestEdit/<id>")
 def getRequestEdit(id):

@@ -92,9 +92,9 @@
                                 </div>
                                 <ul class="list-group list-group-flush text-start">
                                     <li class="list-group-item" v-if="requestNew['bottler'] != 'OB'"><span class="fw-bold">Bottler: </span>{{ requestNew['bottler'] }}</li>
-                                    <li class="list-group-item"><span class="fw-bold">Producer: </span>{{ findProducer(requestNew) }}</li>
+                                    <li class="list-group-item"><span class="fw-bold">Producer: </span>{{ requestNew['producerName'] }}</li>
                                     <li class="list-group-item"><span class="fw-bold">Type: </span>{{ requestNew['drinkType'] }}</li>
-                                    <li class="list-group-item"><span class="fw-bold">Requested By: </span>{{ findUser(requestNew["userID"]) }}</li>
+                                    <li class="list-group-item"><span class="fw-bold">Requested By: </span>{{ requestNew["requesterUsername"] }}</li>
                                 </ul>
                                 <div class="card-footer">
                                     <router-link v-if="role == 'producer' || isAdmin || types.includes(requestNew['drinkType'])" :to="{ path: '/listing/create/' + requestNew.id }">
@@ -127,9 +127,9 @@
                                 </div>
                                 <ul class="list-group list-group-flush text-start">
                                     <li class="list-group-item" v-if="requestEdit['sourceLink']"><span class="fw-bold">Source Link: </span>{{ requestEdit['sourceLink'] }}</li>
-                                    <li class="list-group-item"><span class="fw-bold">Producer: </span>{{ findProducer(requestEdit) }}</li>
+                                    <li class="list-group-item"><span class="fw-bold">Producer: </span>{{ requestNew['producerName'] }}</li>
                                     <li class="list-group-item"><span class="fw-bold">Brand Relation: </span>{{ requestEdit['brandRelation'] }}</li>
-                                    <li class="list-group-item"><span class="fw-bold">Requested By: </span>{{ findUser(requestEdit["userID"]) }}</li>
+                                    <li class="list-group-item"><span class="fw-bold">Requested By: </span>{{ requestEdit["requesterUsername"] }}</li>
                                 </ul>
                                 <div class="card-footer">
                                     <router-link v-if="role == 'producer' || isAdmin || types.includes(requestEdit['drinkType'])" :to="{ path: '/listing/edit/' + requestEdit.listingID + '/' + requestEdit.id }">
@@ -162,9 +162,9 @@
                                 </div>
                                 <ul class="list-group list-group-flush text-start">
                                     <li class="list-group-item" v-if="requestDupe['duplicateLink']"><span class="fw-bold">Duplicate Link: </span>{{ requestDupe['duplicateLink'] }}</li>
-                                    <li class="list-group-item"><span class="fw-bold">Producer: </span>{{ findProducer(requestDupe) }}</li>
+                                    <li class="list-group-item"><span class="fw-bold">Producer: </span>{{ requestNew['producerName'] }}</li>
                                     <li class="list-group-item"><span class="fw-bold">Brand Relation: </span>{{ requestDupe['brandRelation'] }}</li>
-                                    <li class="list-group-item"><span class="fw-bold">Requested By: </span>{{ findUser(requestDupe["userID"]) }}</li>
+                                    <li class="list-group-item"><span class="fw-bold">Requested By: </span>{{ requestDupe["requesterUsername"] }}</li>
                                 </ul>
                                 <div class="card-footer">
                                     <router-link v-if="role == 'producer' || isAdmin || types.includes(requestDupe['drinkType'])" :to="{ path: '/listing/edit/' + requestDupe.listingID + '/' + requestDupe.id }">
@@ -211,7 +211,7 @@
                     // flags
                     dataLoaded: false,
                     loadError: false,
-                    accID: null,
+                    accID: localStorage.getItem('88B_accID'),
                     role: localStorage.getItem('88B_accType'),
                     types: [],
                     // Default Photo
@@ -219,9 +219,6 @@
                 }
             },
             mounted() {
-                // Check if user is logged in
-                this.accID = localStorage.getItem('88B_accID');
-
                 if (this.accID == null) {
                     this.$router.push('/login');
                 }
@@ -230,102 +227,14 @@
                 }
             },
             methods: {
-                // find producer name from producer ID
-                findProducer(request) {
-                    const producerID = request["producerID"];
-                    const producer = this.producers.find((producer) => {
-                        return producer["id"] == producerID;
-                    });
-                    if (producer == undefined) {
-                        return request["producerNew"];
-                    }
-                    return producer["producerName"];
-                },
-
-                // find user name from user ID
-                findUser(userID) {
-                    const user = this.users.find((user) => {
-                        return user["id"] == userID;
-                    });
-                    if (user == undefined) {
-                        const producer = this.producers.find((producer) => {
-                            return producer["id"] == userID;
-                        });
-                        if (producer != undefined) {
-                            return producer["producerName"];
-                        }
-                        return "(Anonymous)";
-                    }
-                    return user["username"];
-                },
-
                 // load data from database
                 async loadData() {
-                    // Listings
-                    try {
-                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListings`);
-                        this.listings = response.data;
-                    } 
-                    catch (error) {
-                        console.error(error);
-                        this.loadError = true;
-                    }
-                    // Producers
-                    try {
-                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducers`);
-                        this.producers = response.data;
-                    } 
-                    catch (error) {
-                        console.error(error);
-                        this.loadError = true;
-                    }
-                    // Users
-                    try {
-                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUsers`);
-                        this.users = response.data;
-
-                        if (this.role == 'user') {
-                            this.types = this.users.find((user) => {
-                                return user["id"] == this.accID;
-                            }).modType;
-                        }
-                        this.user = this.users.find(user => user.id == this.accID)
-                        if (this.user) {
-                            // check if user is an admin
-                            if (this.user.isAdmin) {
-                                this.isAdmin = true
-                            }
-                            // if user is not admin, check if user is a moderator
-                            else if (this.user.isModerator) {
-                                this.isModerator = true
-                            }
-                        }
-                    } 
-                    catch (error) {
-                        console.error(error);
-                        this.loadError = true;
-                    }
+                    
                     // Request Listings
                     try {
-                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getRequestListings`);
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getRequestListingsByRole/${this.role}/${this.accID}`);
 
-                        // Filter requests based on user role
-                        if (this.role == 'producer') {
-                            this.requestListings = response.data.filter((request) => {
-                                return request["reviewStatus"] == false && request["producerID"] == this.accID;
-                            })
-                        }
-                        else if (this.role == 'user') {
-                            if (this.isAdmin) {
-                                this.requestListings = response.data.filter((request) => {
-                                    return request["reviewStatus"] == false;
-                                })
-                            } else {
-                                this.requestListings = response.data.filter((request) => {
-                                    return request["reviewStatus"] == false && (request["userID"] == this.accID || this.types.includes(request["drinkType"]));
-                                })
-                            }
-                        }
+                        this.requestListings = response.data
                     } 
                     catch (error) {
                         console.error(error);
@@ -333,48 +242,12 @@
                     }
                     // Request Edits
                     try {
-                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getRequestEdits`);
-                        let unreviewedRequests = response.data.filter((request) => {
-                            return request["reviewStatus"] == false;
-                        });
-
-                        // Obtain listing data for each request
-                        for (let request of unreviewedRequests) {
-                            let targetListing = this.listings.find((listing) => {
-                                return listing["id"] == request["listingID"];
-                            });
-                            if (targetListing == undefined) {
-                                continue;
-                            }
-
-                            request['photo'] = targetListing['photo'];
-                            request['listingName'] = targetListing['listingName'];
-                            request['producerID'] = targetListing['producerID'];
-
-                            if (request['duplicateLink']) {
-                                this.requestDupes.push(request);
-                            } else {
-                                this.requestEdits.push(request);
-                            }
-                        }
-
-                        // Filter requests based on user role
-                        if (this.role == 'producer') {
-                            this.requestEdits = this.requestEdits.filter((request) => {
-                                return request["producerID"] == this.accID;
-                            })
-                            this.requestDupes = this.requestDupes.filter((request) => {
-                                return request["producerID"] == this.accID;
-                            })
-                        }
-                        else if (this.role == 'user' && !this.isAdmin) {
-                            this.requestEdits = this.requestEdits.filter((request) => {
-                                return request["userID"] == this.accID || this.types.includes(request["drinkType"]);
-                            })
-                            this.requestDupes = this.requestDupes.filter((request) => {
-                                return request["userID"] == this.accID || this.types.includes(request["drinkType"]);
-                            })
-                        }
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getRequestEditsByRole/${this.role}/${this.accID}`);
+                        
+                        if ('requestEdits' in response.data) {
+                            this.requestEdits = response.data['requestEdits'];
+                            this.requestDupes = response.data['requestDupes'];
+                        } 
                     } 
                     catch (error) {
                         console.error(error);
@@ -382,7 +255,7 @@
                     }
 
                     this.dataLoaded = true;
-                }
+                },
             }
         }
 </script>
