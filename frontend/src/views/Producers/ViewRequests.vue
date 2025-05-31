@@ -77,7 +77,7 @@
                 <!-- Tab 1: Display New Listing Requests -->
                 <div class="row tab-pane fade show active" id="nav-listing-request" role="tabpanel" aria-labelledby="nav-listing-request-tab">
                     <div class="row">
-                        <hr>
+                        <hr> 
                         <p class="fw-bold fst-italic fs-4 m-0" v-if="requestListings.length > 0">Viewing: New Listing Requests</p>
                         <p class="fw-bold fst-italic fs-4 m-0" v-else>No New Listing Requests!</p>
                         <div class="col-xxl-2 col-lg-3 col-md-4 col-sm-6 col-12 my-1 px-1" v-for="requestNew in requestListings" :key="requestNew.id">
@@ -127,7 +127,7 @@
                                 </div>
                                 <ul class="list-group list-group-flush text-start">
                                     <li class="list-group-item" v-if="requestEdit['sourceLink']"><span class="fw-bold">Source Link: </span>{{ requestEdit['sourceLink'] }}</li>
-                                    <li class="list-group-item"><span class="fw-bold">Producer: </span>{{ requestNew['producerName'] }}</li>
+                                    <li class="list-group-item"><span class="fw-bold">Producer: </span>{{ requestEdit['producerName'] }}</li>
                                     <li class="list-group-item"><span class="fw-bold">Brand Relation: </span>{{ requestEdit['brandRelation'] }}</li>
                                     <li class="list-group-item"><span class="fw-bold">Requested By: </span>{{ requestEdit["requesterUsername"] }}</li>
                                 </ul>
@@ -162,7 +162,7 @@
                                 </div>
                                 <ul class="list-group list-group-flush text-start">
                                     <li class="list-group-item" v-if="requestDupe['duplicateLink']"><span class="fw-bold">Duplicate Link: </span>{{ requestDupe['duplicateLink'] }}</li>
-                                    <li class="list-group-item"><span class="fw-bold">Producer: </span>{{ requestNew['producerName'] }}</li>
+                                    <li class="list-group-item"><span class="fw-bold">Producer: </span>{{ requestDupe['producerName'] }}</li>
                                     <li class="list-group-item"><span class="fw-bold">Brand Relation: </span>{{ requestDupe['brandRelation'] }}</li>
                                     <li class="list-group-item"><span class="fw-bold">Requested By: </span>{{ requestDupe["requesterUsername"] }}</li>
                                 </ul>
@@ -196,17 +196,9 @@
             data() {
                 return {
                     // data from database
-                    listings: [],
-                    producers: [],
-                    users: [],
                     requestListings: [],
                     requestEdits: [],
                     requestDupes: [],
-
-                    // user info
-                    user: null,
-                    isAdmin: false, 
-                    isModerator: false,
 
                     // flags
                     dataLoaded: false,
@@ -235,6 +227,7 @@
                         const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getRequestListingsByRole/${this.role}/${this.accID}`);
 
                         this.requestListings = response.data
+                        console.log("component data loaded successfully");
                     } 
                     catch (error) {
                         console.error(error);
@@ -242,12 +235,13 @@
                     }
                     // Request Edits
                     try {
+                        console.log("loading request edits");
                         const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getRequestEditsByRole/${this.role}/${this.accID}`);
                         
                         if ('requestEdits' in response.data) {
                             this.requestEdits = response.data['requestEdits'];
-                            this.requestDupes = response.data['requestDupes'];
-                        } 
+                            this.requestDupes = response.data['requestDups'];
+                        }
                     } 
                     catch (error) {
                         console.error(error);

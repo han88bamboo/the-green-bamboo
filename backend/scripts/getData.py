@@ -115,12 +115,6 @@ def fetch_user_data(cursor, user_id):
     cursor.execute('SELECT * FROM "users" WHERE "id" = %s', (user_id,))
     user_data = cursor.fetchone()
 
-    # Remove the password field for security reasons
-    if user_data:
-        user_data = dict(user_data)
-        user_data.pop("hashedPassword", None)
-        user_data.pop("pin", None) 
-
     return user_data
 
 # Helper function to fetch drink lists for a user
@@ -2397,13 +2391,23 @@ def getRequestListingsByRole(role, id):
                 request_listings_data = cursor.fetchall()
             
             else:
-                # Get the request listings for the user and any listings that match the user's modType
-                cursor.execute("""
-                    SELECT * FROM "requestListings"
-                    WHERE "reviewStatus" = false AND (
-                        "userID" = %s OR "drinkType" IN %s
-                    )
-                """, (id, tuple(user_data['modType'])))
+                mod_type = user_data['modType']
+                if mod_type:
+                    placeholders = ','.join(['%s'] * len(mod_type))  # -> "%s, %s"
+                    query = f"""
+                        SELECT * FROM "requestListings"
+                        WHERE "reviewStatus" = false AND (
+                            "userID" = %s OR "drinkType" IN ({placeholders})
+                        )
+                    """
+                    params = [id] + mod_type
+                    cursor.execute(query, params)
+                else:
+                    # No mod types: filter only by userID
+                    cursor.execute("""
+                        SELECT * FROM "requestListings"
+                        WHERE "reviewStatus" = false AND "userID" = %s
+                    """, (id,))
 
                 request_listings_data = cursor.fetchall()
 
@@ -2498,127 +2502,106 @@ def getRequestEditsByRole(role, id):
     conn = g.db
     cursor = conn.cursor()
 
-    # Return data array
+    # Return data arrays
     request_edits_data = []
     request_dups_data = []
 
     try:
-        # Producer
-        if role == 'producer':
+        id = int(id)  # Ensure ID is an integer
 
-            # Check if the producer exists
-            cursor.execute("""
-                SELECT * FROM "producers" WHERE "id" = %s
-            """, (id,))
+        if role == 'producer':
+            # Validate producer exists
+            cursor.execute("""SELECT * FROM "producers" WHERE "id" = %s""", (id,))
             producer_data = cursor.fetchone()
 
             if producer_data is None:
-                return jsonify({
-                    "code": 404,
-                    "message": "Producer not found."
-                }), 404
+                return jsonify({"code": 404, "message": "Producer not found."}), 404
 
+            # Fetch unreviewed edits for this producer
             cursor.execute("""
                 SELECT * FROM "requestEdits"
                 WHERE "producerID" = %s AND "reviewStatus" = false
             """, (id,))
-
-            request_edits_data = cursor.fetchall()
+            request_edits_raw = cursor.fetchall()
 
         elif role == 'user':
-            # Get the isAdmin status of the user and modType
-            cursor.execute("""
-                SELECT "isAdmin", "modType" FROM "users" WHERE "id" = %s
-            """, (id,))
+            # Fetch user info
+            cursor.execute("""SELECT "isAdmin", "modType" FROM "users" WHERE "id" = %s""", (id,))
             user_data = cursor.fetchone()
 
             if user_data is None:
-                return jsonify({
-                    "code": 404,
-                    "message": "User not found."
-                }), 404
+                return jsonify({"code": 404, "message": "User not found."}), 404
 
-            if user_data['isAdmin']: 
-                cursor.execute("""
-                    SELECT * FROM "requestEdits"
-                    WHERE "reviewStatus" = false
-                """)
-                request_edits_data = cursor.fetchall()
-            
+            if user_data['isAdmin']:
+                # Admin gets all unreviewed edits
+                cursor.execute("""SELECT * FROM "requestEdits" WHERE "reviewStatus" = false""")
+                request_edits_raw = cursor.fetchall()
+
             else:
-                # Get the request edits for the user and any edits that match the user's modType
-                cursor.execute("""
-                    SELECT requestEdits.*
-                    FROM "requestEdits"
-                    JOIN "listings" ON requestEdits."listingID" = listings."id"
-                    WHERE requestEdits."reviewStatus" = false AND (
-                        requestEdits."userID" = %s OR listings."drinkType" IN %s
-                    )
-                """, (id, tuple(user_data['modType'])))
+                # Standard user: fetch edits by user or by drinkType from modType
+                mod_type = user_data['modType']
+                if mod_type:
+                    placeholders = ','.join(['%s'] * len(mod_type))
+                    query = f"""
+                        SELECT re.*
+                        FROM "requestEdits" re
+                        JOIN "listings" l ON re."listingID" = l."id"
+                        WHERE re."reviewStatus" = false AND (
+                            re."userID" = %s OR l."drinkType" IN ({placeholders})
+                        )
+                    """
+                    params = [id] + mod_type
+                    cursor.execute(query, params)
+                else:
+                    # No modType: only include own requests
+                    cursor.execute("""
+                        SELECT * FROM "requestEdits"
+                        WHERE "reviewStatus" = false AND "userID" = %s
+                    """, (id,))
+                request_edits_raw = cursor.fetchall()
 
-
-                request_edits_data = cursor.fetchall()
         else:
-            return jsonify({
-                "code": 400,
-                "message": "Invalid role specified."
-            }), 400
-        
-        if not request_edits_data:
-            return jsonify([])
-        
-        # Loop through the request Edits
-        for request_edit in request_edits_data:
+            return jsonify({"code": 400, "message": "Invalid role specified."}), 400
 
-            # Get listing name, photo and producerID 
+        if not request_edits_raw:
+            return jsonify({"requestEdits": [], "requestDups": []}), 200
+
+        # Enrich and split request data
+        for request_edit in request_edits_raw:
             listing_id = request_edit['listingID']
+            if listing_id:
+                cursor.execute("""
+                    SELECT "listingName", "photo", "producerID"
+                    FROM "listings"
+                    WHERE "id" = %s
+                """, (listing_id,))
+                listing_data = cursor.fetchone()
 
-            if listing_id is None or listing_id == '':
-                continue
-            cursor.execute("""
-                SELECT "listingName", "listingPhoto", "producerID"
-                FROM "requestListings" WHERE "id" = %s
-            """, (listing_id,))
-
-            listing_data = cursor.fetchone()
-
-            if listing_data:
-                request_edit['listingName'] = listing_data['listingName']
-                request_edit['listingPhoto'] = listing_data['listingPhoto']
-                request_edit['producerID'] = listing_data['producerID']
+                if listing_data:
+                    request_edit['listingName'] = listing_data['listingName']
+                    request_edit['listingPhoto'] = listing_data['photo']
+                    request_edit['producerID'] = listing_data['producerID']
 
             # Get producer name
-            producer_id = request_edit['producerID']
-            if producer_id is None or producer_id == '':
-                request_edit['producerName'] = "Unknown Producer"
+            producer_id = request_edit.get('producerID')
+            if producer_id:
+                cursor.execute("""SELECT "producerName" FROM "producers" WHERE "id" = %s""", (producer_id,))
+                producer_info = cursor.fetchone()
+                request_edit['producerName'] = producer_info['producerName'] if producer_info else "Unknown Producer"
             else:
-                cursor.execute("""
-                    SELECT "producerName" FROM "producers" WHERE "id" = %s
-                """, (producer_id,))
-                producer_name_data = cursor.fetchone()
-
-                if producer_name_data:
-                    request_edit['producerName'] = producer_name_data['producerName']
-                else:
-                    request_edit['producerName'] = "Unknown Producer"
+                request_edit['producerName'] = "Unknown Producer"
 
             # Get requester username
-            requester_id = request_edit['userID']
-            if requester_id is None or requester_id == '':
-                request_edit['requesterUsername'] = '(Anonymous)'
+            requester_id = request_edit.get('userID')
+            if requester_id:
+                cursor.execute("""SELECT "username" FROM "users" WHERE "id" = %s""", (requester_id,))
+                requester_info = cursor.fetchone()
+                request_edit['requesterUsername'] = requester_info['username'] if requester_info else '(Anonymous)'
             else:
-                cursor.execute("""
-                    SELECT "username" FROM "users" WHERE "id" = %s
-                """, (requester_id,))
-                requester_username_data = cursor.fetchone()
+                request_edit['requesterUsername'] = '(Anonymous)'
 
-                if requester_username_data:
-                    request_edit['requesterUsername'] = requester_username_data['username']
-                else:
-                    request_edit['requesterUsername'] = '(Anonymous)'
-            
-            # Split them according to the edit type
-            if request_edit['duplicateLink']:
+            # Sort into correct array
+            if request_edit.get('duplicateLink'):
                 request_dups_data.append(request_edit)
             else:
                 request_edits_data.append(request_edit)
@@ -2627,12 +2610,12 @@ def getRequestEditsByRole(role, id):
             "requestEdits": request_edits_data,
             "requestDups": request_dups_data
         }), 200
-            
+
     except Exception as e:
-        print(str(e))
+        print("Error in getRequestEditsByRole:", str(e))
         return jsonify({
             "code": 500,
-            "message": "An error occurred while fetching request edits by role and isAdmin status."
+            "message": "An error occurred while fetching request edits by role."
         }), 500
 
 
