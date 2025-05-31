@@ -1251,7 +1251,6 @@
                                 <!-- Section Contents -->
                                 <div class="col-12 my-3 me-3" v-for="sectionItem in menuSection.sectionMenu" v-bind:key="sectionItem.itemID">
                                     <div class="row align-items-center">
-                                        {{sectionItem}}
 
                                         <!-- LEFT COLUMN Item Image -->
                                         <div class="col-lg-2 col-12 text-center mb-3 mb-lg-0">
@@ -2152,6 +2151,11 @@
                         </div>
 
                         <hr class="mt-4 mb-2"/>
+                    </div>
+
+                    <!-- Load More Reviews Button -->
+                    <div class="d-flex justify-content-center mb-3" v-if="filteredVenueReviews.length > 0 && !noMoreReviews">
+                        <button class="btn primary-btn btn-lg" @click="loadMoreReviews">Load More Reviews</button>
                     </div>
 
                     <!-- Example "Delete Review" Modal (similar to ProducerProfile) -->
@@ -3090,6 +3094,7 @@
 
                 // lazy loading variables 
                 noMoreReviews: false,
+                reviewsPerLoad: 20, // similar to the limit in backend
 
                 // for venueReviews
                 lastReviewID: 0,
@@ -3719,10 +3724,23 @@
                 let allUserIDs = [];
                 try {
                     const response = await this.$axios.get(
-                        `${process.env.VUE_APP_API_URL}/getData/getVenueReviewsByVenueId/${this.targetVenue.id}`
+                        `${process.env.VUE_APP_API_URL}/getData/getVenueReviewsByVenueId/${this.targetVenue.id}/${this.lastReviewID}`
                     );
                     // Assign all fetched reviews to a property
                     this.filteredVenueReviews = response.data;
+
+                    // Update lastReviewID to the last review's ID in the fetched data
+                    if (this.filteredVenueReviews.length > 0) {
+                        this.lastReviewID = this.filteredVenueReviews[this.filteredVenueReviews.length - 1].id;
+                    } else {
+                        this.lastReviewID = null; // Reset if no reviews are found
+                    }
+
+                    // Check if the return data has the same number of reviews as the limit set in the backend
+                    if (this.filteredVenueReviews.length < this.reviewLimit) {
+                        this.noMoreReviews = true; // No more reviews to load
+                    } 
+
                     allUserIDs = this.filteredVenueReviews.map((review) => review.userID);
                     this.getFilteredVenueReviewsWithImages();
                     this.specificReview = this.getLoggedUserReview();
@@ -3767,6 +3785,54 @@
                 }
             },
 
+            // Load more reviews
+            async loadMoreReviews() {
+                // Check if there are more reviews to load
+                if (this.noMoreReviews) {
+                    return;
+                }
+
+                try {
+                    const response = await this.$axios.get(
+                        `${process.env.VUE_APP_API_URL}/getData/getVenueReviewsByVenueId/${this.targetVenue.id}/${this.lastReviewID}`
+                    );
+                    // Append the new reviews to the existing array
+                    this.filteredVenueReviews.push(...response.data);
+
+                    // Update lastReviewID to the last review's ID in the fetched data
+                    if (response.data.length > 0) {
+                        this.lastReviewID = response.data[response.data.length - 1].id;
+                    } else {
+                        this.lastReviewID = null; // Reset if no reviews are found
+                    }
+
+                    // Check if the return data has the same number of reviews as the limit set in the backend
+                    if (response.data.length < this.reviewLimit) {
+                        this.noMoreReviews = true; // No more reviews to load
+                    } 
+
+                    // Extract all user IDs from the reviews
+                    let allUserIDs = response.data.map((review) => review.userID);
+
+                    // Fetch user data for the reviews
+                    try {
+                        const userResponse = await this.$axios.post(`${process.env.VUE_APP_API_URL}/getData/getUsersFromList`, {
+                            userIDs: allUserIDs,
+                        });
+
+                        // Add absent users to the existing users array
+                        const newUsers = userResponse.data.filter(user => !this.users.some(u => u.id === user.id));
+                        this.users.push(...newUsers);
+                        
+                    } catch (error) {
+                        console.error("Error fetching users for reviews:", error);
+                    }
+                    
+                    this.getFilteredVenueReviewsWithImages();
+                } catch (error) {
+                    console.error("Error fetching more venue reviews:", error);
+                }
+            },
 
 
             // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

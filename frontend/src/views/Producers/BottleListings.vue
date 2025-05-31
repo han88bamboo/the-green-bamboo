@@ -2842,6 +2842,11 @@
             </div>
             <hr class="mt-4 mb-2" />
           </div>
+
+          <!-- Load More Reviews Button -->
+          <div class="d-flex justify-content-center mb-3" v-if="filteredReviews.length > 0 && !noMoreReviews">
+              <button class="btn primary-btn btn-lg" @click="loadMoreReviews">Load More Reviews</button>
+          </div>
         </div>
         <!-- end of producer information -->
       </div>

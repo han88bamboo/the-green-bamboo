@@ -6,7 +6,7 @@
 #           /getBookmarkListings (POST), /getUserReviewSummary/<id> (GET),
 #           /getReviews (GET), /getReviewsByListingIDs (POST), /getReviewByTarget/<id> (GET), /getReviewsByUserIds (GET), /getListingReviewsRating/<listing_id> (GET),
 #           /getProducerTourReviews (GET), /getVenueReviews (GET), 
-#           /getVenueReviewsByVenueId/<id> (GET), /getProducerReviewsByProducerId/<id> (GET),
+#           /getVenueReviewsByVenueId/<id>/<lastReviewID> (GET), /getProducerReviewsByProducerId/<id> (GET),
 #           /getVenuesWithSpecificListing/<listingID> (GET), /getVenuesBySearch (GET),
 #           /getUsers (GET), /getUsersFromList (POST), /getUserFollowListDetails (POST) /getUser/<id> (GET), 
 #           /getUserPhoto/<id>/<userType> (GET), /getUserByUsername/<username> (GET), /getVenues (GET), 
@@ -1487,17 +1487,31 @@ def getVenueReviews():
 
 
 # [GET] Venue Reviews by venue ID
-@blueprint.route("/getVenueReviewsByVenueId/<id>", methods=['GET'])
-def getVenueReviewsByVenueId(id):
+@blueprint.route("/getVenueReviewsByVenueId/<id>/<lastReviewID>", methods=['GET'])
+def getVenueReviewsByVenueId(id, lastReviewID):
     conn = g.db
 
     with conn.cursor() as cursor:
-        cursor.execute("""
-            SELECT "venueReviews".*, "venueReviewsUserVotes"."upvotes", "venueReviewsUserVotes"."downvotes"
-            FROM "venueReviews"
-            LEFT JOIN "venueReviewsUserVotes" ON "venueReviews"."id" = "venueReviewsUserVotes"."reviewId"
-            WHERE "venueReviews"."venueID" = %s
-        """, (id,))
+        if lastReviewID == "0":
+            # If lastReviewID is 0, fetch the latest 20 reviews for the venue
+            cursor.execute("""
+                SELECT "venueReviews".*, "venueReviewsUserVotes"."upvotes", "venueReviewsUserVotes"."downvotes"
+                FROM "venueReviews"
+                LEFT JOIN "venueReviewsUserVotes" ON "venueReviews"."id" = "venueReviewsUserVotes"."reviewId"
+                WHERE "venueReviews"."venueID" = %s
+                ORDER BY "venueReviews"."id" DESC
+                LIMIT 20
+            """, (id,))
+        else:
+            cursor.execute("""
+                SELECT "venueReviews".*, "venueReviewsUserVotes"."upvotes", "venueReviewsUserVotes"."downvotes"
+                FROM "venueReviews"
+                LEFT JOIN "venueReviewsUserVotes" ON "venueReviews"."id" = "venueReviewsUserVotes"."reviewId"
+                WHERE "venueReviews"."venueID" = %s
+                AND "venueReviews"."id" < %s
+                ORDER BY "venueReviews"."id" DESC
+                LIMIT 20
+            """, (id, lastReviewID))
 
         reviews_data = cursor.fetchall()
 
