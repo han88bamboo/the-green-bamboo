@@ -652,7 +652,7 @@ export default {
         this.dashboardURL = "/Producers/ProducersDashboard/" + accID;
         this.dashboardWord = "Brand";
       } else if (this.accType == "venue") {
-        url = url + "Venue/" + accID + "/" + accUsername;
+        url = url + "Venue/" + accID;
         this.loadData(url);
 
         this.profileURL = "/profile/venue/" + accID + "/" + accUsername;

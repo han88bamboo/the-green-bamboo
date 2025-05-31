@@ -1,9 +1,11 @@
 # Port: 5000
 # Routes: /getAccountRequests (GET), /getCountries (GET), /getListings (GET), /getListingsByIDs (POST), /getListing/<id> (GET), /getListingsBySearch (GET),
+#           /getListingsDetailedByID/<id> (GET), /getListingNamesDynamicSearch/<searchTerm> (GET),
 #           /getProducers (GET), /getProducer/<id> (GET), /getProducersByIDs (POST), /getProducersBySearch (GET),
 #           /getRecentListingReviews/<id> (GET), /getAllListingsNames (GET), 
 #           /getBookmarkListings (POST), /getUserReviewSummary/<id> (GET),
-#           /getReviews (GET), /getReviewsByListingIDs (POST), /getReviewByTarget/<id> (GET), /getReviewsByUserIds (GET), /getProducerTourReviews (GET), /getVenueReviews (GET), 
+#           /getReviews (GET), /getReviewsByListingIDs (POST), /getReviewByTarget/<id> (GET), /getReviewsByUserIds (GET), /getListingReviewsRating/<listing_id> (GET),
+#           /getProducerTourReviews (GET), /getVenueReviews (GET), 
 #           /getVenueReviewsByVenueId/<id> (GET), /getProducerReviewsByProducerId/<id> (GET),
 #           /getVenuesWithSpecificListing/<listingID> (GET), /getVenuesBySearch (GET),
 #           /getUsers (GET), /getUsersFromList (POST), /getUserFollowListDetails (POST) /getUser/<id> (GET), 
@@ -431,6 +433,98 @@ def getListingsBySearch():
         return jsonify({"code": 500, "message": "An error occurred while fetching listings."}), 500
 
 
+# [GET] Get detailed listing information by listing ID
+@blueprint.route("/getListingsDetailedByID/<id>")
+def getListingsDetailedByID(id):
+    conn = g.db
+    cursor = conn.cursor()
+
+    try: 
+        # Fetch the listing details
+        cursor.execute('SELECT * FROM "listings" WHERE "id" = %s', (id,))
+        listing_data = cursor.fetchone()
+
+        if listing_data is None:
+            return jsonify({"code": 404, "message": "Listing not found"}), 404
+
+        # Fetch the producer details
+        cursor.execute('SELECT "producerName", "photo" FROM "producers" WHERE "id" = %s', (listing_data['producerID'],))
+        producer_data = cursor.fetchone()
+
+        if producer_data is None:
+            return jsonify({"code": 404, "message": "Producer not found"}), 404
+
+        # Combine the listing and producer data
+        detailed_listing = {
+            **listing_data,
+            "producerName": producer_data['producerName'],
+            "photo": producer_data['photo']
+        }
+
+        # Get the average rating for the listing
+        cursor.execute("""
+            SELECT AVG("rating") AS "averageRating"
+            FROM "reviews"
+            WHERE "reviewTarget" = %s
+        """, (id,))
+
+        avg_rating = cursor.fetchone()['averageRating']
+
+        if avg_rating is not None:
+            detailed_listing['avgRating'] = round(avg_rating, 1)
+        else:
+            detailed_listing['avgRating'] = '-'
+
+        return jsonify(detailed_listing), 200
+
+    except Exception as e:
+        print(f"Error fetching detailed listing by ID {id}: {str(e)}")
+        return jsonify({"code": 500, "message": "An error occurred while fetching the listing."}), 500
+
+
+# [GET] Get Listing names by dynamic search term
+@blueprint.route("/getListingNamesDynamicSearch/<searchTerm>")
+def getListingNamesDynamicSearch(searchTerm):
+    conn = g.db
+    cursor = conn.cursor()
+
+    try:
+        # Searches for listings by name, starting from the lastID
+        cursor.execute("""
+            SELECT 
+                l."id", 
+                l."listingName", 
+                p."producerName"
+            FROM "listings" l
+            JOIN "producers" p ON l."producerID" = p."id"
+            WHERE l."listingName" ILIKE %s
+            ORDER BY l."id" ASC
+        """, ('%' + searchTerm + '%',))
+
+        listings_data = cursor.fetchall()
+
+        # Convert the fetched data to a list of dictionaries
+        for listing in listings_data:
+            listing_dict = {
+                "id": listing["id"],
+                "listingName": listing["listingName"],
+                "producerName": listing["producerName"]
+            }
+            # Convert Decimal to float if necessary
+            for key, value in listing_dict.items():
+                if isinstance(value, Decimal):
+                    listing_dict[key] = float(value)
+            listing.update(listing_dict)
+
+        if not listings_data:
+            return jsonify([])
+
+        return jsonify(listings_data)
+
+    except Exception as e:
+        print(f"Error fetching listing names by dynamic search: {str(e)}")
+        return jsonify({"code": 500, "message": "An error occurred while fetching listing names."}), 500
+
 # [GET] Specific Listings By Producer
 @blueprint.route("/getListingsByProducer/<id>")
 def getListingsByProducer(id):
@@ -561,7 +655,7 @@ def getProducer(id):
         query = """
             SELECT 
                 p.id, p."producerName", p."producerDesc", p."originCountry", p."mainDrinks", p.photo, 
-                p."hashedPassword", p."claimStatus", p."statusOB", p.username, p."producerLink", 
+                p."claimStatus", p."statusOB", p.username, p."producerLink", 
                 p."yearFounded", p."activeStatus", p.owner, p.location, p."openForTours", p.website,
                 p."stripeCustomerId", p."claimStatusCheckDate", p."isIndependentBottler",
                 COALESCE((
@@ -716,6 +810,10 @@ def getProducersBySearch():
                 producer['averageRating'] = round(avg_rating, 1)
             else:
                 producer['averageRating'] = '-'  
+
+            # Remove the hashed password and other sensitive fields
+            producer.pop('hashedPassword', None)
+
 
         return jsonify(producers_data)
 
@@ -1205,69 +1303,6 @@ def getReviewByTarget(id, last_review_id):
 
 
 # [GET] Latest 10 Specific Reviews by usr(s) - using one or more user IDs (retrieve latest reviews for the specified user(s) as well as the review target(s) data)
-# @blueprint.route("/getReviewsByUserIds")
-# def getReviewsByUserIds():
-
-#     user_ids_str = request.args.get('user_ids')
-#     user_ids = user_ids_str.split(',')
-#     conn = g.db
-    
-#     with conn.cursor() as cursor:
-#         # Fetch latest reviews for the specified user(s)
-        
-#         cursor.execute('''
-#             WITH latest_reviews AS (
-#                 SELECT "reviewDesc", "rating", "reviewTarget", "createdDate", "userID"
-#                 FROM "reviews"
-#                 WHERE "userID" IN %s
-#                 ORDER BY "createdDate" DESC
-#                 LIMIT 10
-#             )
-#             SELECT "reviewDesc", "rating", "reviewTarget", "createdDate", "userID"
-#             FROM latest_reviews
-#             ORDER BY "createdDate" DESC;
-#         ''', (tuple(user_ids),))
-#         latest_reviews = cursor.fetchall()
-
-#         # Retrieve the display name(s) for each user
-#         cursor.execute('SELECT "id", "displayName", "photo" FROM "users" WHERE "id" IN %s', (tuple(user_ids),))
-#         user_display_names = cursor.fetchall()
-
-#         # Convert the user display names to dictionary format where the key is the user ID
-#         user_display_names = {user['id']: user for user in user_display_names}
-
-#         # Retrieve the review target(s) for each review
-#         review_target_list = []
-#         for review in latest_reviews:
-#             review = dict(review)
-#             if (review['reviewTarget'] not in review_target_list):
-#                 review_target_list.append(review['reviewTarget'])
-        
-#         # Fetch the review target(s) data
-#         cursor.execute('SELECT "id", "listingName", "photo" FROM "listings" WHERE "id" IN %s', (tuple(review_target_list),))
-#         review_targets_data = cursor.fetchall()
-
-#         # Map the review target data to the reviews
-#         for review in latest_reviews:
-#             review['userInfo'] = user_display_names[review['userID']]
-#             review['reviewTarget'] = next((item for item in review_targets_data if item["id"] == review['reviewTarget']), None)
-        
-#         # Convert the reviews to JSON format
-#         latest_reviews = parse_json(latest_reviews)
-    
-#     if not latest_reviews:
-#         return jsonify({
-#             'code': 404,
-#             'message': 'No reviews found for the specified user(s).'
-#         })
-
-#     return jsonify({
-#         'code': 200,
-#         'message': 'Latest reviews fetched successfully.',
-#         'data': latest_reviews
-#     })
-
-# Updated blueprint route
 @blueprint.route("/getReviewsByUserIds")
 def getReviewsByUserIds():
     user_ids_str = request.args.get('user_ids')
@@ -1343,6 +1378,58 @@ def getReviewsByUserIds():
             'message': 'Latest reviews fetched successfully.',
             'data': parse_json(latest_reviews)
         })
+
+
+# [GET] Get average rating for a specific listing based on reviews
+@blueprint.route("/getListingReviewsRating/<listing_id>")
+def getListingReviewsRating(listing_id):
+    conn = g.db
+    cursor = conn.cursor()
+
+    if listing_id is None:
+        return jsonify({
+            "code": 400,
+            "message": "Listing ID is required."
+        }), 400
+
+    try:
+        # Fetch the average rating for the listing
+        cursor.execute("""
+            SELECT AVG("rating") AS "averageRating"
+            FROM "reviews"
+            WHERE "reviewTarget" = %s AND "reviewType" = 'Listing'
+        """, (listing_id,))
+
+        avg_rating = cursor.fetchone()
+
+        if avg_rating is None or avg_rating['averageRating'] is None:
+            return jsonify({
+                "code": 200,
+                "averageRating": "-",
+                "reviewCount": 0
+            }), 200
+        
+        # Fetch the number of reviews for the listing
+        cursor.execute("""
+            SELECT COUNT(*) AS "reviewCount"
+            FROM "reviews"
+            WHERE "reviewTarget" = %s AND "reviewType" = 'Listing'
+        """, (listing_id,))
+        review_count = cursor.fetchone()
+
+        return jsonify({
+            "code": 200,
+            "averageRating": round(avg_rating['averageRating'], 1),
+            "reviewCount": review_count['reviewCount'] or 0
+        }), 200
+    
+    except Exception as e:
+        print(f"Error fetching average rating for listing {listing_id}: {str(e)}")
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching the average rating."
+        }), 500
+    
 
 # [GET] Producer Tour Reviews
 @blueprint.route("/getProducerTourReviews")
@@ -2067,6 +2154,9 @@ def getVenue(id):
         venue['openingHours'] = venue['openingHours'] if venue['openingHours'] else {}
         venue['questionsAnswers'] = venue['questionsAnswers'] if venue['questionsAnswers'] else []
         venue['updates'] = venue['updates'] if venue['updates'] else []
+
+        # Remove unnecessary fields
+        del venue["hashedPassword"]
 
         return jsonify(venue), 200
 

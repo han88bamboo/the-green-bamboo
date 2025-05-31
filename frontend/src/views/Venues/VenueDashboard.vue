@@ -809,6 +809,7 @@
                 viewerID: localStorage.getItem('88B_accID'),
                 viewerType: localStorage.getItem('88B_accType'),
                 targetVenue: '',
+                targetVenueID: '',
                 
                 defaultProfilePhoto: "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultVenueProfilePhoto.png?v=1748435337",
 
@@ -944,7 +945,7 @@
             // Check if route params "venueID" is present
             if (this.$route.params.venueID != "" && this.$route.params.venueID != undefined) {
                 this.targetVenue = this.$route.params.venueID;
-
+                this.targetVenueID = this.$route.params.venueID;
                 // If logged in as a venue, check if the venueID matches the logged in venue's ID
                 if (this.viewerType == 'venue' && this.viewerID == this.targetVenue) {
                     this.selfView = true;
@@ -963,6 +964,7 @@
             // If no venueID is specified, display logged in venue's profile page
             else if (this.viewerType == 'venue') {
                 this.targetVenue = this.viewerID;
+
                 this.selfView = true;
             }
             // If not logged in as a venue, redirect to your own profile page / login
@@ -1029,7 +1031,7 @@
             // Obtain venue data
             async getVenueData() {
                 try {
-                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenue/` + this.targetVenue);
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenue/` + this.targetVenueID);
 
                     if (response != null && response.data != null && response.data != "" && !(Array.isArray(response.data) && response.data.length == 0)) {
 

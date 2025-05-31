@@ -1055,7 +1055,7 @@
                     <!-- ------- END Menu Header + Option Buttons / START Search + Edit Menu Options + Sort ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
                     <!-- Search + Edit Menu Options + Sort -->
-                    <div class="container" v-if="!(editMenuMode && !editMenuDataLoaded) && targetVenue['claimStatus']"> 
+                    <div class="container" v-if="targetVenue['claimStatus']"> 
                         <div class="row align-items-center mobile-view-show" >
                             <!-- Search Bar -->
                             <div v-if="!editMenuMode" class="col-12 p-0">
@@ -1173,13 +1173,14 @@
 
                                 <!-- Section Contents -->
                                 <div class="col-12 my-3" v-for="sectionItem in menuSection.sectionMenu" v-bind:key="sectionItem.itemID">
+                                    
                                     <div class="row">
 
                                         <!-- FIRST COLUMN: Image + Rating stacked vertically -->
                                         <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0 d-flex flex-column align-items-center">
 
                                             <!-- Item Image -->
-                                            <router-link :to="{ path: '/listing/view/' + sectionItem.itemID }" class="default-text-no-background">
+                                            <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName }" class="default-text-no-background">
                                                 <img :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" >
                                             </router-link>
 
@@ -1199,7 +1200,7 @@
 
                                             <!-- Item Name -->
                                                 <div class="mobile-mb-1">
-                                                    <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + sectionItem.itemID }">
+                                                    <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName  }">
                                                         <p class="mobile-fs-6 fs-5 fw-bold text-start text-decoration-underline m-0" style="margin-bottom:0.3rem;">{{ sectionItem.itemDetails['itemName'] }}</p>
                                                     </router-link>
                                                 </div>
@@ -1209,7 +1210,7 @@
                                             <!-- Item Producer / Drink Type / Type Category / ABV / <Country> / Description -->
                                             <div class="row">
                                                     <p class="text-start mb-1 mobile-fs-7" >
-                                                        <router-link v-if="sectionItem.itemDetails['itemProducerID']" style="color: #2c3e50;" class="text-decoration-none" :to="{ path: '/profile/producer/' + sectionItem.itemDetails['itemProducerID'] }">
+                                                        <router-link v-if="sectionItem.itemDetails['itemProducerID']" style="color: #2c3e50;" class="text-decoration-none" :to="{ path: '/profile/producer/' + sectionItem.itemDetails['itemProducerID'] + '/' + sectionItem.itemDetails['itemProducer'] }">
                                                             <span v-if="sectionItem.itemDetails['itemProducer']">{{ sectionItem.itemDetails['itemProducer'] }} | </span>
                                                         </router-link>
                                                         <span v-if="sectionItem.itemDetails['itemType']">{{ sectionItem.itemDetails['itemType'] }} | </span>
@@ -1250,10 +1251,11 @@
                                 <!-- Section Contents -->
                                 <div class="col-12 my-3 me-3" v-for="sectionItem in menuSection.sectionMenu" v-bind:key="sectionItem.itemID">
                                     <div class="row align-items-center">
+                                        {{sectionItem}}
 
                                         <!-- LEFT COLUMN Item Image -->
                                         <div class="col-lg-2 col-12 text-center mb-3 mb-lg-0">
-                                            <router-link :to="{ path: '/listing/view/' + sectionItem.itemID }" class="default-text-no-background">
+                                            <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName  }" class="default-text-no-background">
                                                 <!-- <img :src=" 'data:image/jpeg;base64,' + (sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" style="width: 150px; height: 150px;"> -->
                                                 <img :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image">
                                             </router-link>
@@ -1264,14 +1266,14 @@
                                         <div class="col-lg-7 col-12 ps-lg-4">
 
                                             <!-- Item Name -->
-                                            <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + sectionItem.itemID }">
+                                            <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName  }">
                                                 <p class="fw-bold fs-5 text-start text-decoration-underline m-0" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">{{ sectionItem.itemDetails['itemName'] }}</p>
                                             </router-link>
 
                                             <!-- Item Details (Producer, Type, ABV, Country) -->
 
                                             <p class="text-start mb-1" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
-                                                <router-link v-if="sectionItem.itemDetails['itemProducerID']" style="color: #2c3e50;" class="text-decoration-none" :to="{ path: '/profile/producer/' + sectionItem.itemDetails['itemProducerID'] }">
+                                                <router-link v-if="sectionItem.itemDetails['itemProducerID']" style="color: #2c3e50;" class="text-decoration-none" :to="{ path: '/profile/producer/' + sectionItem.itemDetails['itemProducerID'] + '/' + sectionItem.itemDetails['itemProducer'] }">
                                                     <span v-if="sectionItem.itemDetails['itemProducer']">{{ sectionItem.itemDetails['itemProducer'] }} | </span>
                                                 </router-link>
                                                 <span v-if="sectionItem.itemDetails['itemType']">{{ sectionItem.itemDetails['itemType'] }} | </span>
@@ -1323,7 +1325,7 @@
                                         
 
                                         <!-- See User Reviews -->
-                                            <router-link :to="{ path: '/listing/view/' + sectionItem.itemID }">
+                                            <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName  }">
                                                 <button type="button" class="btn btn-read-more px-10"> See Reviews </button>
                                             </router-link>
                                         </div>
@@ -1339,18 +1341,9 @@
                     </div>
 
                     <!-- ------- END Menu View (Not Editing) / START Menu View (Editing) ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
-
-                    <!-- Display when edit menu data is still loading -->
-                    <div class="text-info-emphasis fst-italic fw-bold fs-5 my-5" v-if="editMenuMode && editMenuDataLoaded == false">
-                        <span>Loading more data for menu edits, please wait...</span>
-                        <br><br>
-                        <div class="spinner-border" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                    </div>
                     
                     <!-- Menu View (Editing) -->
-                    <div v-if="editMenuMode && editMenuDataLoaded" class="container text-start "> <!--tzh removed scrollable-listings-->
+                    <div v-if="editMenuMode" class="container text-start "> <!--tzh removed scrollable-listings-->
 
                         <!-- No Menu Sections to Show -->
                         <div v-if="editMenu.length == 0" class="row my-4">
@@ -1705,15 +1698,30 @@
 
                                         <!-- [input] bottle name -->
                                         <div class="form-group mb-3">
-                                            <p class="text-start mb-1"> Bottle Listing ID (Search by Name) <span class="text-danger">*</span></p>
-                                            <input list="newMenuItemList" v-model="newMenuItemID" class="form-control" id="newMenuItemID" placeholder="Enter a Drink to Add to Menu" @change="updateNewMenuItemTarget">
-                                            <datalist id="newMenuItemList">
-                                                <option v-for="listing in allListings" :key="listing.id" :value="listing.id">
-                                                    {{ listing.listingName }} (Producer: {{ listing.producerName }})
-                                                </option>
-                                            </datalist>
+                                            <p class="text-start mb-1">Bottle Listing ID (Search by Name) <span class="text-danger">*</span></p>
+
+                                            <input
+                                                type="text"
+                                                class="form-control"
+                                                v-model="searchQuery"
+                                                @input="debouncedSearch"
+                                                placeholder="Enter a Drink to Add to Menu"
+                                            />
+
+                                            <ul class="list-group" v-if="searchResults.length > 0 && searchQuery">
+                                                <li 
+                                                v-for="listing in searchResults" 
+                                                :key="listing.id" 
+                                                class="list-group-item list-group-item-action"
+                                                @click="selectListing(listing)"
+                                                >
+                                                {{ listing.listingName }} (Producer: {{ listing.producerName }})
+                                                </li>
+                                            </ul>
+
                                             <p v-show="newMenuItemID.length > 0" class="text-start mb-1 text-danger" id="newMenuItemTargetError"></p>
                                         </div>
+
 
                                         <!-- [input] target menu section -->
                                         <div class="form-group mb-3">
@@ -2753,7 +2761,6 @@
             <BookmarkModal 
                 v-if="userInfo" 
                 :user="userInfo" 
-                :listings="loadedListings" 
                 :listingID="bookmarkListingID" />
 
             <!-- ------- END Bookmark Modal ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
@@ -2957,6 +2964,7 @@
                 viewerType: localStorage.getItem('88B_accType'),
                 userName: '',
                 targetVenue: '',
+                targetVenueID: '',
                 currentURL: window.location.href,
 
                 // Data
@@ -3044,10 +3052,13 @@
 
                 // Menu Editing
                 editMenuMode: false,
-                editMenuDataLoaded: false,
-                allListings: [],
                 editMenu: [],
-                newMenuItemID: '',
+
+                searchQuery: '',
+                searchResults: [],
+                debounceTimer: null,
+
+                newMenuItemID: '', // selected item ID to add to menu
                 newMenuItemTarget: {},
                 newMenuItemTargetSection: {},
                 newMenuItemPrice: -1,
@@ -3077,7 +3088,11 @@
                 // for bookmark component
                 bookmarkListingID: {},
 
+                // lazy loading variables 
+                noMoreReviews: false,
+
                 // for venueReviews
+                lastReviewID: 0,
                 venueReviews: [],
                 reviewDesc: "",
                 reviewDescError: "",
@@ -3144,6 +3159,8 @@
             // Check if route params "venueID" is present
             if (this.$route.params.venueID != "" && this.$route.params.venueID != undefined) {
                 this.targetVenue = this.$route.params.venueID;
+                this.targetVenueID = this.$route.params.venueID;
+                
                 this.userName = this.$route.params.username || this.userName;
 
                 // If logged in as a venue, check if the venueID matches the logged in venue's ID
@@ -3184,7 +3201,7 @@
 
             var userName = localStorage.getItem("88B_accUsername");
             if (userName !== null) {
-            this.userName = userName;
+                this.userName = userName;
             }
 
 
@@ -3205,6 +3222,7 @@
                 return "";
             },
 
+            // Need refactor
             getUsernameFromReview(review) {
                 // If you have an array of users in `this.users`:
                 const user = this.users.find((u) => u.id === review.userID);
@@ -3214,6 +3232,7 @@
                 return "(unknown user)";
             },
 
+            // Need refactor
             getUserPointsFromReview(review) {
                 const user = this.users.find((user) => {
                     return user["id"] == review["userID"];
@@ -3223,6 +3242,7 @@
                 }
             },
 
+            // Need refactor
             getUserRankFromReview(review) {
                 const user = this.users.find((user) => {
                     return user["id"] == review["userID"];
@@ -3244,10 +3264,10 @@
             // Obtain venue data
             async getVenueData() {
                 try {
-                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenue/` + this.targetVenue);
-
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenue/${this.targetVenueID}`);
+                    
                     if (response != null && response.data != null && response.data != "" && !(Array.isArray(response.data) && response.data.length == 0)) {
-
+                        
                         this.targetVenue = response.data;
 
                         // Set editable data
@@ -3426,7 +3446,8 @@
                     this.showQnA = true;
                 }
             },
-            // check if user is mod
+
+            // check if user is mod - need refactor
             checkModFromUserID(userID) {
             const user = this.users.find((user) => {
                 return user["id"] == userID;
@@ -3435,7 +3456,6 @@
                 return user["modType"].length > 0;
             }
             },
-
 
 
             // Load other data
@@ -3451,71 +3471,70 @@
 
                             // If not found, get from server
                             if (listingData == undefined) {
-                                let response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListing/` + item.itemID);
-                                listingData = response.data;
 
-                                if (Array.isArray(listingData) && listingData.length == 0) {
-                                    // Remove item from section
-                                    section.sectionMenu = section.sectionMenu.filter(i => i.itemID != item.itemID);
-                                }
-                                // If found, obtain additional data and add to loadedListings
-                                else if (listingData != null && listingData != "") {
+                                try {
+                                    let response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListing/` + item.itemID);
+                                    listingData = response.data;
 
-                                    // Get reviews
-                                    let reviewResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getReviewByTarget/` + item.itemID);
-                                    let reviewData = reviewResponse.data;
-
-                                    if (Array.isArray(reviewData) && reviewData.length == 0) {
-                                        listingData["reviews"] = [];
-                                        listingData["avgRating"] = 0;
+                                    if (Array.isArray(listingData) && listingData.length == 0) {
+                                        // Remove item from section
+                                        section.sectionMenu = section.sectionMenu.filter(i => i.itemID != item.itemID);
                                     }
-                                    else if (reviewData != null && reviewData != "") {
-                                        listingData["reviews"] = reviewData;
-                                        listingData["avgRating"] = reviewData.reduce((a, b) => a + parseFloat(b.rating), 0) / reviewData.length;
-                                    }
-                                    else {
-                                        // Error
-                                        throw "Error: Unexpected response from server!";
-                                    }
+                                    // If found, obtain additional data and add to loadedListings
+                                    else if (listingData != null && listingData != "") {
 
-                                    // Find producer in loadedProducers
-                                    let producerData = this.loadedProducers.find(p => p.id == listingData["producerID"]);
+                                        try {
+                                            // Get average rating 
+                                            let reviewResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingReviewsRating/` + item.itemID);
+                                            listingData['avgRating'] = reviewResponse.data['averageRating'];
+                                            listingData['reviewCount'] = reviewResponse.data['reviewCount'];
 
-                                    // If not found, get from server
-                                    if (producerData == undefined) {
-                                        let producerResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducer/` + listingData["producerID"]);
-                                        producerData = producerResponse.data;
+                                            // Find producer in loadedProducers
+                                            let producerData = this.loadedProducers.find(p => p.id == listingData["producerID"]);
 
-                                        if (Array.isArray(producerData) && producerData.length == 0) {
-                                            // Remove item from section
-                                            section.sectionMenu = section.sectionMenu.filter(i => i.itemID != item.itemID);
+                                            try {
+                                                // If not found, get from server
+                                                if (producerData == undefined) {
+                                                    let producerResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducer/` + listingData["producerID"]);
+                                                    producerData = producerResponse.data;
+
+                                                    if (Array.isArray(producerData) && producerData.length == 0) {
+                                                        // Remove item from section
+                                                        section.sectionMenu = section.sectionMenu.filter(i => i.itemID != item.itemID);
+                                                    }
+                                                    // If found, add to loadedProducers
+                                                    else if (producerData != null && producerData != "") {
+                                                        this.loadedProducers.push(producerData);
+                                                    }
+                                                }
+
+                                                // Set producer data (producerData should either be valid or [] here)
+                                                if (!(Array.isArray(producerData) && producerData.length == 0)) {
+                                                    listingData["producerName"] = producerData["producerName"];
+
+                                                    // Add to loadedListings
+                                                    this.loadedListings.push(listingData);
+                                                }
+                                                else {
+                                                    listingData = [];
+                                                }
+                                            }
+                                            catch (error) {
+                                                console.error("Error fetching producer data: ", error);
+                                                listingData = [];   
+                                            }
                                         }
-                                        // If found, add to loadedProducers
-                                        else if (producerData != null && producerData != "") {
-                                            this.loadedProducers.push(producerData);
-                                        }
-                                        else {
-                                            // Error
-                                            throw "Error: Unexpected response from server!";
+                                        catch (error) {
+                                            console.error("Error fetching listing reviews rating: ", error);
+                                            listingData = [];
                                         }
                                     }
-
-                                    // Set producer data (producerData should either be valid or [] here)
-                                    if (!(Array.isArray(producerData) && producerData.length == 0)) {
-                                        listingData["producerName"] = producerData["producerName"];
-
-                                        // Add to loadedListings
-                                        this.loadedListings.push(listingData);
-                                    }
-                                    else {
-                                        listingData = [];
-                                    }
-                                    
                                 }
-                                else {
-                                    // Error
-                                    throw "Error: Unexpected response from server!";
+                                catch (error) {
+                                    console.error("Error fetching listing data: ", error);
+                                    listingData = [];
                                 }
+                                
                             }
 
                             // Set item data (listingData should either be valid or [] here)
@@ -3529,7 +3548,7 @@
                                     itemABV: listingData["abv"],
                                     itemCountry: listingData["originCountry"],
                                     itemDesc: listingData["officialDesc"],
-                                    itemRating: listingData["avgRating"].toFixed(1),
+                                    itemRating: listingData["avgRating"],
                                     itemProducer: listingData["producerName"],
                                     itemProducerID: listingData["producerID"],
                                 };
@@ -3542,9 +3561,7 @@
                                 else {
                                     item.itemDetails.itemServingTypeName = "(Unknown)";
                                 }
-
                             }
-
                         }
                     }
 
@@ -3552,7 +3569,7 @@
                     this.mostPopular = this.loadedListings.sort((a, b) => (a.avgRating < b.avgRating) ? 1 : -1).slice(0, 5);
 
                     // Obtain mostDiscussed listings
-                    this.mostDiscussed = this.loadedListings.sort((a, b) => (a.reviews.length < b.reviews.length) ? 1 : -1).slice(0, 5);
+                    this.mostDiscussed = this.loadedListings.sort((a, b) => (a.reviewCount < b.reviewCount) ? 1 : -1).slice(0, 5);
 
                     // Obtain recentlyAdded listings
                     this.recentlyAdded = this.loadedListings.sort((a, b) => (Date.parse(a.addedDate) < Date.parse(b.addedDate)) ? 1 : -1).slice(0, 5);
@@ -3725,6 +3742,7 @@
                 }
                 
             },
+
             onFilesChange(event) {
                 const files = event.target.files;
                 // Limit to a total of 3 images (existing plus new ones)
@@ -3841,7 +3859,7 @@
 
             // Search Menu
             searchMenu() {
-
+                console.log("Searching menu with term: " + this.searchMenuTerm);
                 // Trim search term, set to lowercase. If empty, set searchMenuResults to detailedMenu
                 this.searchMenuTerm = this.searchMenuTerm.trim().toLowerCase();
                 if (this.searchMenuTerm == '') {
@@ -4128,7 +4146,6 @@
             checkOpeningHours() {
                 // Reset error flag
                 this.editOpeningHoursError = false;
-                console.log(this.newOpeningHours);
 
                 for (let day in this.newOpeningHours) {
                     const timeSlots = this.newOpeningHours[day];
@@ -4292,19 +4309,25 @@
             },
 
             // Update New Menu Item Target
-            updateNewMenuItemTarget() {
+            async updateNewMenuItemTarget() {
 
                 // get error message element
                 let newMenuItemTargetError = document.getElementById("newMenuItemTargetError");
 
-                let itemData = this.allListings.find(i => i.id == this.newMenuItemID);
-                if (itemData != undefined) {
-                    this.newMenuItemTarget = itemData;
-                    newMenuItemTargetError.innerText = "";
+                // Retrieve from backend the liting data based on newMenuItemID
+                try {
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingsDetailedByID/${this.newMenuItemID}`);
+                    let itemData = response.data;
 
-                    this.updateNewMenuItemTargetSection();
-                }
-                else {
+                    // Check if itemData is valid
+                    if (itemData) {
+                        this.newMenuItemTarget = itemData;
+                        newMenuItemTargetError.innerText = "";
+
+                        this.updateNewMenuItemTargetSection();
+                    }
+                } 
+                catch (error) {
                     this.newMenuItemTarget = {};
                     newMenuItemTargetError.innerText = "Please target a valid bottle listing!";
                 }
@@ -4407,6 +4430,8 @@
                     // console.error(error);
                 }
 
+                this.editMenuMode = false;
+
 
                 // Reset newMenuItemID, newMenuItemTarget, newMenuItemTargetSection, newMenuItemPrice, newMenuItemServingType
                 this.newMenuItemID = "";
@@ -4428,64 +4453,6 @@
             // Enable Edit Menu Mode
             async enableEditMenuMode() {
                 this.editMenuMode = true;
-
-                // If editMenuDataLoaded is false, load necessary additional data
-                if (!this.editMenuDataLoaded) {
-
-                    try {
-                        // Obtain all listings
-                        const listingResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListings`);
-                        this.allListings = listingResponse.data;
-
-                        // Obtain all reviews
-                        let reviewResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getReviews`);
-                        let reviewData = reviewResponse.data;
-
-                        // Obtain all producers
-                        let producerResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducers`);
-                        this.loadedProducers = producerResponse.data;
-
-                        // Get reviews + producer name for each listing
-                        for (let listingData of this.allListings) {
-
-                            // Get reviews
-                            let listingReviews = reviewData.filter(r => r.reviewTarget == listingData.id);
-
-                            if (Array.isArray(listingReviews) && listingReviews.length == 0) {
-                                listingData["reviews"] = [];
-                                listingData["avgRating"] = 0;
-                            }
-                            else if (listingReviews != null && listingReviews != "") {
-                                listingData["reviews"] = listingReviews;
-                                listingData['avgRating'] = listingReviews.reduce((a, b) => a + parseFloat(b.rating), 0) / listingReviews.length;
-                            }
-                            else {
-                                // Error
-                                throw "Error: Unexpected response from server!";
-                            }
-
-                            // Find producer in loadedProducers
-                            let producerData = this.loadedProducers.find(p => p.id == listingData["producerID"]);
-
-                            // If not found, remove item from valid listings
-                            if (producerData == undefined) {
-                                this.allListings = this.allListings.filter(i => i.id != listingData.id);
-                            }
-                            // If found, set producer name
-                            else {
-                                listingData["producerName"] = producerData["producerName"];
-                            }
-
-                        }
-
-                        // Set editMenuDataLoaded to true (prevent re-loading data on subsequent calls)
-                        this.editMenuDataLoaded = true;
-                    }
-                    catch (error) {
-                        alert("An error occurred while attempting to load extra data for menu editing, please try again!");
-                        this.$router.go(0);
-                    }
-                }
             },
 
             // Update Menu
@@ -4928,6 +4895,7 @@
                 return hash;
             },
 
+            // Need refactor
             async confirmUpdatePassword(){
                 let oldHash = this.hashPassword(this.targetVenue.venueName, this.oldPassword)
                 let newHash = this.hashPassword(this.targetVenue.venueName, this.newPassword)
@@ -5040,7 +5008,7 @@
                 }
             },
 
-            // get average venue ratings
+            // get average venue ratings - need refactor
             getAverageVenueRatings() {
                 const ratings = this.filteredVenueReviews.map((review) => parseFloat(review.rating));
                 if (ratings.length === 0) return "-";
@@ -5239,7 +5207,38 @@
                 return specificReview;
             },
 
+            // Updated search item to add to menu functions 
+            // Debounced input handler
+            debouncedSearch() {
+                clearTimeout(this.debounceTimer);
+                this.debounceTimer = setTimeout(() => {
+                this.searchListings();
+                }, 300); // debounce delay (ms)
+            },
 
+            // Actual search call
+            async searchListings() {
+                if (this.searchQuery.length < 2) {
+                this.searchResults = [];
+                return;
+                }
+
+                try {
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingNamesDynamicSearch/${this.searchQuery}`);
+                    this.searchResults = response.data;
+                } catch (error) {
+                    console.error("Search failed:", error);
+                    this.searchResults = [];
+                }
+            },
+
+            // Set selected listing
+            selectListing(listing) {
+                this.newMenuItemID = listing.id;
+                this.searchQuery = listing.listingName;
+                this.searchResults = []; // Clear dropdown
+                this.updateNewMenuItemTarget();
+            }
         }
     }
 </script>
