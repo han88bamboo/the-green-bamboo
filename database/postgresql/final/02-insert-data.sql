@@ -3976,3 +3976,19 @@ INSERT INTO "pointSystemRules" ("ruleName", "ruleDesc", "ruleCategory", "proofPo
      (18, 'user', 0),
      (19, 'user', 0),
      (20, 'user', 0);
+
+
+INSERT INTO "notifications" (
+    "userId", "userType", "notiTabs", "notiType", "image", "link", "message", "createdAt"
+)
+VALUES
+-- forYou notifications (club invites)
+(5, 'user', 'forYou', 'clubInvite', NULL, '/club/view/3/Scotch Aficionados', '@admin invited you to join a club: Scotch Aficionados!', '2024-10-30 18:45:31'),
+(5, 'user', 'forYou', 'clubInvite', NULL, '/club/view/4/Rum Admirers', '@admin invited you to join a club: Rum Admirers!', '2024-10-30 18:45:31'),
+(5, 'user', 'forYou', 'clubInvite', NULL, '/club/view/5/Whisky Women', '@admin invited you to join a club: Whisky Women!', '2024-10-30 18:45:31'),
+(5, 'user', 'forYou', 'clubInvite', NULL, '/club/view/6/Tequila Tribe', '@admin invited you to join a club: Tequila Tribe!', '2024-10-30 18:45:31'),
+
+-- venues & producers notifications (new events)
+(5, 'user', 'venues & producers', 'newEvent', NULL, '/event/10/Cider Festival', 'Orh Gao Taproom is hosting a new event: Cider Festival on June 20, 2025 at 02:00 PM', '2025-05-04 18:45:31'),
+(5, 'user', 'venues & producers', 'newEvent', NULL, '/event/8/IPA Showcase', 'Don’t miss the IPA Showcase!', '2025-05-03 18:45:31'),
+(5, 'user', 'venues & producers', 'newEvent', NULL, '/event/6/Ladies Night - Margaritas Galore', 'Ladies Night - Margaritas Galore happening soon!', '2025-05-02 18:45:31');

@@ -103,12 +103,12 @@
                     No notifications to display
                   </div>
                   <div v-else v-for="(notification, index) in notifications.forYou" :key="index"
-                    class="notification-item" @click="navigateToNotification(notification)">
+                    class="notification-item" @click="onNotificationClick(notification, 'forYou')">
                     <div class="container-fluid px-0">
                       <div class="row align-items-center">
 
                         <div class="col-10 col-sm-11">
-                          <div class="title">{{ notification.title }}</div>
+                          <div class="title">{{ notification.message }}</div>
                           <div class="time">{{ getTimeDifference(notification.time) }}</div>
                         </div>
 
@@ -128,7 +128,7 @@
                     No notifications to display
                   </div>
                   <div v-else v-for="(notification, index) in notifications.venues" :key="index"
-                    class="notification-item with-logo" @click="navigateToNotification(notification)">
+                    class="notification-item with-logo" @click="onNotificationClick(notification, 'venues')">
                     <div class="container-fluid px-0">
                       <div class="row align-items-center">
 
@@ -138,7 +138,7 @@
                             <img v-else src="../../Images/Drinks/Placeholder.png" alt="Default logo" class="logo-image">
                           </div>
                           <div class="notification-content-text">
-                            <div class="title">{{ notification.title }}</div>
+                            <div class="title">{{ notification.message }}</div>
                             <div class="time">{{ getTimeDifference(notification.time) }}</div>
                           </div>
                         </div>
@@ -157,21 +157,21 @@
 
                 <!-- News Tab -->
                 <div v-if="activeTab === 'news'" class="tab-content">
-                  <div v-if="notifications.news.length === 0" class="p-3 text-center">
+                  <div v-if="notifications.news.filter(a => !a.read).length === 0" class="p-3 text-center">
                     No news to display
                   </div>
-                  <div v-else v-for="(article, index) in notifications.news" :key="index"
-                    class="notification-item with-logo" @click="navigateToNotification(article)">
+                  <div v-else v-for="(article, index) in notifications.news.filter(a => !a.read)" :key="index"
+                    class="notification-item with-logo" @click="onNotificationClick(article, 'news')">
                     <div class="container-fluid px-0">
                       <div class="row align-items-center">
 
                         <div class="col-10 col-sm-11">
                           <div class="notification-logo">
-                            <img v-if="article.logo" :src="article.logo" alt="News logo" class="logo-image">
+                            <img v-if="article.image" :src="article.image" alt="News logo" class="logo-image">
                             <img v-else src="../../Images/Drinks/Placeholder.png" alt="Default logo" class="logo-image">
                           </div>
                           <div class="notification-content-text">
-                            <div class="title">{{ article.title }}</div>
+                            <div class="title">{{ article.message }}</div>
                             <div class="time">{{ getTimeDifference(article.time) }}</div>
                           </div>
                         </div>
@@ -183,7 +183,7 @@
                       </div>
                     </div>
 
-                    <hr v-if="index < notifications.news.length - 1" class="notification-divider">
+                    <hr v-if="index < notifications.news.filter(a => !a.read).length - 1" class="notification-divider">
                   </div>
                 </div>
               </div>
@@ -543,8 +543,8 @@ export default {
     document.addEventListener("keydown", this.handleKeyDown);
 
     if (localStorage.getItem("88B_accID")) {
-      this.fetchNotifications();
       this.fetchNewsRSS();
+      this.fetchNotifications();
     }
   },
   beforeUnmount() {
@@ -677,11 +677,11 @@ export default {
     toggleNotifications() {
       this.showNotifications = !this.showNotifications;
       if (this.showNotifications) {
-        if (!this.notificationsLoaded) {
-          this.fetchNotifications();
-        }
         if (!this.newsLoaded) {
           this.fetchNewsRSS();
+        }
+        if (!this.notificationsLoaded) {
+          this.fetchNotifications();
         }
       }
     },
@@ -693,6 +693,8 @@ export default {
       const accID = localStorage.getItem("88B_accID");
       const accType = localStorage.getItem("88B_accType");
 
+      console.log("Fetching notifications for:", accType, accID);
+
       try {
         const response = await this.$axios.get(
           `${process.env.VUE_APP_API_URL}/getData/getNotifications/${accType}/${accID}`
@@ -700,7 +702,10 @@ export default {
 
         this.notifications.forYou = response.data.forYou || [];
         this.notifications.venues = response.data.venues || [];
+        this.notifications.news = response.data.news || [];
         this.notificationsLoaded = true;
+
+        console.log("Notifications fetched:", this.notifications);
 
         // Calculate unread count
         this.unreadCount = this.countUnreadNotifications();
@@ -712,21 +717,41 @@ export default {
 
     async fetchNewsRSS() {
       try {
+        // 1) fetch RSS feed
         const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/rssFeed/rssfeed`);
-
         const latestNews = response.data[0]?.latest_news || [];
 
-        this.notifications.news = latestNews.map(article => ({
+        // 2) prepare array of { title, link, image } for upsert
+        const upsertArticles = latestNews.map(article => ({
           title: article.title,
-          time: new Date(article.published).getTime(),
-          logo: article.image_url,
           link: article.link,
+          image: article.image_url || null,
           read: false,
-          type: 'news'
+          published: new Date(article.published).getTime() || new Date().toISOString()
         }));
 
-        this.newsLoaded = true;
+        // 3) grab userId/userType from localStorage
+        const userId = parseInt(localStorage.getItem("88B_accID"), 10);
+        const userType = localStorage.getItem("88B_accType");
 
+        // 4) POST to /notifications/news to insert/update in DB
+        if (userId && userType) {
+          try {
+            await this.$axios.post(
+              `${process.env.VUE_APP_API_URL}/notifications/insertNews`,
+              {
+                userId,
+                userType,
+                articles: upsertArticles
+              }
+            );
+          } catch (err) {
+            console.error("Failed to insert/update news notifications:", err);
+            // proceed—UI can still show the news
+          }
+        }
+
+        this.newsLoaded = true;
         this.unreadCount = this.countUnreadNotifications();
       } catch (error) {
         console.error("Error fetching RSS feed:", error);
@@ -734,16 +759,31 @@ export default {
       }
     },
 
-    navigateToNotification(notification) {
-      if (notification.type === 'news') {
-        window.open(notification.link, '_blank');
+    async onNotificationClick(notification, category) {
+      // 1) send DELETE request to backend
+      try {
+        await this.$axios.delete(
+          `${process.env.VUE_APP_API_URL}/notifications/readNotification`,
+          { data: notification }
+        );
+      } catch (err) {
+        console.error("Failed to delete notification:", err);
+        // even if delete fails, proceed with navigation—but you may want to bail early:
+        // return;
       }
-      else {
-        if (notification.link) {
-          const baseUrl = window.location.origin;
-          const newUrl = baseUrl + notification.link;
-          window.location.href = newUrl;
-        }
+
+      // 2) remove from local array and recalc unread count
+      this.notifications[category] = this.notifications[category].filter(
+        (n) => n.id !== notification.id
+      );
+      this.unreadCount = this.countUnreadNotifications();
+
+      // 3) navigate as before
+      if (notification.notiType === "news") {
+        window.open(notification.link, "_blank");
+      } else if (notification.link) {
+        const baseUrl = window.location.origin;
+        window.location.href = baseUrl + notification.link;
       }
     },
 
