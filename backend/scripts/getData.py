@@ -1,21 +1,55 @@
 # Port: 5000
-# Routes: /getAccountRequests (GET), /getCountries (GET), /getListings (GET), /getListingsByIDs (POST), /getListing/<id> (GET), /getListingsBySearch (GET),
-#           /getListingsDetailedByID/<id> (GET), /getListingNamesDynamicSearch/<searchTerm> (GET),
+# Routes: 
+#           [Account Requests]
+#           /getAccountRequests (GET), 
+
+#           [Countries]
+#           /getCountries (GET), 
+
+#           [Listings]
+#           /getListings (GET), /getListingsByIDs (POST), /getListing/<id> (GET), /getListingsBySearch (GET),
+#           /getListingsDetailedByID/<id> (GET), /getListingNamesDynamicSearch/<searchTerm> (GET), /getAllListingsNames (GET),
+
+#           [Producers]
 #           /getProducers (GET), /getProducer/<id> (GET), /getProducersByIDs (POST), /getProducersBySearch (GET),
-#           /getRecentListingReviews/<id> (GET), /getAllListingsNames (GET), 
-#           /getBookmarkListings (POST), /getUserReviewSummary/<id> (GET),
-#           /getReviews (GET), /getReviewsByListingIDs (POST), /getReviewByTarget/<id> (GET), /getReviewsByUserIds (GET), /getListingReviewsRating/<listing_id> (GET),
-#           /getProducerTourReviews (GET), /getVenueReviews (GET), 
-#           /getVenueReviewsByVenueId/<id>/<lastReviewID> (GET), /getProducerReviewsByProducerId/<id> (GET),
-#           /getVenuesWithSpecificListing/<listingID> (GET), /getVenuesBySearch (GET),
+#           /getProducersProfileViews (GET),
+
+#           [Venues]
+#           /getVenuesWithSpecificListing/<listingID> (GET), /getVenuesBySearch (GET), /getVenues (GET), 
+#           /getVenue/<id> (GET), /getVenuesAPI (GET), /getVenuesProfileViewsByVenue/<id> (GET),
+
+#           [Users]
 #           /getUsers (GET), /getUsersFromList (POST), /getUserFollowListDetails (POST) /getUser/<id> (GET), 
-#           /getUserPhoto/<id>/<userType> (GET), /getUserByUsername/<username> (GET), /getVenues (GET), 
-#           /getVenue/<id> (GET), /getVenuesAPI (GET), 
-#           /getDrinkTypes (GET), /getTypeCategories (GET), /getRequestListings (GET), /getRequestListing/<id> (GET), /getRequestListingsByRole/<role>/<id> (GET),
-#           /getRequestEdits (GET), /getRequestEditsByRole/<role>/<id> (GET),
-#           /getRequestEdit/<id> (GET), /getModRequests (GET), /getFlavourTags (GET), /getSubTags (GET), /getObservationTags (GET), /getColours (GET), 
-#           /getSpecialColours (GET), /getLanguages (GET), /getServingTypes (GET), /getProducersProfileViews (GET), /getVenuesProfileViewsByVenue/<id> (GET), /getRequestInaccuracyByVenue/<id> (GET)
-#           /getUserFollowList/<id> (GET), /getUserNames (GET), /checkFollowing/<userId>/<userType>/<followId>/<followType> (GET) /getLatestNews (GET)
+#           /getUserPhoto/<id>/<userType> (GET), /getUserByUsername/<username> (GET), /getUserFollowList/<id> (GET), 
+#           /checkFollowing/<userId>/<userType>/<followId>/<followType> (GET), /getUserReviewSummary/<id> (GET),
+#           /getUserDashBoardData/<id> (GET), /getUserTop5ReviewsData/<id> (GET), /getUsersRecentActivity/<id>/<number> (GET),
+
+#           [Listing Reviews]
+#           /getRecentListingReviews/<id> (GET), /getReviews (GET),
+#           /getReviewsByListingIDs (POST), /getReviewByTarget/<id> (GET), /getReviewsByUserIds (GET), 
+#           /getListingReviewsRating/<listing_id> (GET),
+
+#           [Producer Reviews]
+#           /getProducerTourReviews (GET), /getProducerReviewsByProducerId/<id> (GET),
+
+#           [Venue Reviews]
+#           /getVenueReviews (GET), /getVenueReviewsByVenueId/<id>/<lastReviewID> (GET), 
+
+#           [User Bookmarks]
+#           /getBookmarkListings (POST), 
+
+#           [Request listings]
+#           /getRequestListings (GET), /getRequestListing/<id> (GET), /getRequestListingsByRole/<role>/<id> (GET),
+   
+#           [Request Edits]
+#           /getRequestEdits (GET), /getRequestEditsByRole/<role>/<id> (GET), /getRequestEdit/<id> (GET),
+
+#           [Others]
+#           /getDrinkTypes (GET), /getTypeCategories (GET), /getModRequests (GET),
+#           /getFlavourTags (GET), /getSubTags (GET), /getObservationTags (GET),
+#           /getColours (GET), /getSpecialColours (GET), /getLanguages (GET),
+#           /getServingTypes (GET), /getLatestNews (GET), /getRequestInaccuracyByVenue/<id> (GET),
+#           /getUserNames (GET),
 # -----------------------------------------------------------------------------------------
 
 # pip install python-bsonjs
@@ -3418,6 +3452,170 @@ def getUserFollowList(id):
             }
         ), 500
     
+    finally:
+        cur.close()
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Get user dashboard data
+# Data includes: 
+#   - top 5 best rated listings
+#   - top 5 best rated category
+#   - top 5 venues where the user left the most reviews (checks the location column in the reviews table)
+#   - top 5 producers where the user left the most reviews (checks the producerId column in the reviews table)
+#   - top 5 drink styles which the user left the most reviews
+#   - total number of reviews the user has made
+#   - total number of followers the user has
+@blueprint.route("/getUserDashBoardData/<id>")
+def getUserDashBoardData(id):
+    conn = g.db
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        # Step 1: Check if id is a valid user in the table
+        cur.execute('SELECT * FROM "users" WHERE "id" = %s', (id,))
+        user_data = cur.fetchone()
+
+        if user_data is None:
+            return jsonify(
+                {
+                    "code": 404,
+                    "message": "User not found."
+                }
+            ), 404
+        
+        # Step 2: Get the top 5 best rated listings from the top 5 reviews of the user
+        cur.execute("""
+            SELECT "reviewTarget", "rating" from "reviews" 
+            WHERE "userID" = %s 
+            ORDER BY "rating" DESC
+            LIMIT 5
+        """, (id,))
+
+        top_reviews = cur.fetchall()
+
+        # Loop through the top reviews and get the listing data (name, photo, id and average rating)
+        top_5_best_reviewed_listings = []
+
+        for review in top_reviews:
+            listing_id = review['reviewTarget']
+
+            # Get the listing data
+            cur.execute('SELECT "listingName", "photo", "id" FROM "listings" WHERE "id" = %s', (listing_id,))
+            listing_data = cur.fetchone()
+
+            top_5_best_reviewed_listings.append(listing_data)
+
+        # Step 3: Get the top 5 best rated categories by the user (reviews joined with listings)
+        cur.execute("""
+            SELECT 
+                l."drinkType",
+                ROUND(AVG(r."rating")::numeric, 2) AS "averageRating"
+            FROM "reviews" r
+            JOIN "listings" l ON r."reviewTarget" = l."id"
+            WHERE r."userID" = %s
+            AND r."reviewType" = 'Listing'
+            GROUP BY l."drinkType"
+            ORDER BY "averageRating" DESC
+            LIMIT 5;
+        """, (id,))
+
+        top_categories = cur.fetchall()
+
+        # Step 4: Get the top 5 venues where the user left the most reviews (group by location and count reviews)
+        cur.execute("""
+            SELECT 
+                v."id" AS "venueId",
+                v."venueName",
+                COUNT(r."id") AS "reviewCount"
+            FROM "reviews" r
+            JOIN "venues" v ON r."location" = v."id"
+            WHERE r."userID" = %s
+            AND r."reviewType" = 'Listing'
+            GROUP BY v."id", v."venueName"
+            ORDER BY "reviewCount" DESC
+            LIMIT 5;
+        """, (id,))
+
+        top_venues = cur.fetchall()
+
+        # Step 5: Get the top 5 producers where the user left the most reviews
+        cur.execute("""
+            SELECT 
+                p."id" AS "producerId",
+                p."producerName",
+                COUNT(r."id") AS "reviewCount"
+            FROM "reviews" r
+            JOIN "listings" l ON r."reviewTarget" = l."id"
+            JOIN "producers" p ON l."producerID" = p."id"
+            WHERE r."userID" = %s
+            GROUP BY p."id", p."producerName"
+            ORDER BY "reviewCount" DESC
+            LIMIT 5;
+        """, (id,))
+
+        top_producers = cur.fetchall()
+
+        # Step 6: Get the top 5 drink styles which the user left the most reviews
+        cur.execute("""
+            SELECT 
+                l."drinkType",
+                COUNT(r."id") AS "reviewCount"
+            FROM "reviews" r
+            JOIN "listings" l ON r."reviewTarget" = l."id"
+            WHERE r."userID" = %s
+            AND r."reviewType" = 'Listing'
+            GROUP BY l."drinkType"
+            ORDER BY "reviewCount" DESC
+            LIMIT 5;
+        """, (id,))
+
+        top_drink_styles = cur.fetchall()
+
+        # Step 7: Get the total number of reviews the user has made
+        cur.execute("""
+            SELECT COUNT(*) AS "totalReviews"
+            FROM "reviews"
+            WHERE "userID" = %s
+        """, (id,))
+
+        total_reviews_data = cur.fetchone()
+        total_reviews = total_reviews_data['totalReviews'] if total_reviews_data else 0
+
+        # Step 8: Get the total number of followers the user has
+        cur.execute("""
+            SELECT COUNT(*)
+            FROM "usersFollowLists"
+            WHERE "users" @> ARRAY[%s]::TEXT[];
+        """, (str(id),))
+
+        total_followers_data = cur.fetchone()
+        total_followers = total_followers_data['count'] if total_followers_data else 0
+
+        # Step 9: Prepare the final response data
+        response_data = {
+            "top5BestReviewedListings": top_5_best_reviewed_listings,
+            "top5BestRatedCategories": top_categories,
+            "top5Venues": top_venues,
+            "top5Producers": top_producers,
+            "top5DrinkStyles": top_drink_styles,
+            "totalReviews": total_reviews,
+            "totalFollowers": total_followers
+        }
+
+        return jsonify({
+            "code": 200,
+            "data": response_data
+        }), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred retrieving the user data."
+            }
+        ), 500
     finally:
         cur.close()
 
