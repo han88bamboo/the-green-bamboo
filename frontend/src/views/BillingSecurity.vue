@@ -526,7 +526,7 @@
                     localStorage.setItem("88B_accID", this.businessId);
                     localStorage.setItem("88B_accType", this.businessType);
                     // redirect to profile page
-                    this.$router.push(`/profile/${this.businessType}/${this.businessId}`)
+                    this.$router.push(`/profile/${this.businessType}/${this.businessId}/${this.username}`)
                 }
                 
             }, 

@@ -882,3 +882,13 @@ edited the default profile picture for producers, venues and users.
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 2 June 
+Coder: Jun Wei
+
+Purpose of the changes:
+- Debugged the issue of stripe payment element not showing up (payment.py)
+- Debugged the issue of blank page redirection after creation of account after stripe payment (BillingSecurity.vue)
+
+Nature of the changes (frontend / backend / database):
+frontend and backend

@@ -101,61 +101,12 @@ def create_subscription():
     customer_id = data['customerId']
     price_id = data['priceId']
 
-    debug_collection = {}
-
-    log_debug("Creating subscription with data", {
-        "customer_id": customer_id,
-        "price_id": price_id
-    })
-
-    debug_collection["input_data"] = {
-            "customer_id": customer_id,
-            "price_id": price_id
-        }
-
     try:
-
-        # Check if customer exists first
-        log_debug("Verifying customer exists")
-        try:
-            customer = stripe.Customer.retrieve(customer_id)
-            debug_collection["customer_check"] = {
-                "exists": True,
-                "id": customer.id,
-                "email": customer.email
-            }
-            log_debug("Customer verified", debug_collection["customer_check"])
-        except Exception as e:
-            debug_collection["customer_check"] = {
-                "exists": False,
-                "error": str(e)
-            }
-            log_debug("Customer verification failed", debug_collection["customer_check"])
-        
-        # Check if price exists
-        log_debug("Verifying price exists")
-        try:
-            price = stripe.Price.retrieve(price_id)
-            debug_collection["price_check"] = {
-                "exists": True,
-                "id": price.id,
-                "active": price.active,
-                "unit_amount": price.unit_amount,
-                "currency": price.currency
-            }
-            log_debug("Price verified", debug_collection["price_check"])
-        except Exception as e:
-            debug_collection["price_check"] = {
-                "exists": False,
-                "error": str(e)
-            }
-            log_debug("Price verification failed", debug_collection["price_check"])
-            
-
         # Create the subscription. Note we're expanding the Subscription's
         # latest invoice and that invoice's payment_intent
         # so we can pass it to the front end to confirm the payment
-        log_debug("Calling stripe.Subscription.create")
+        # Note that expand might be optional due to the update of API version on stripe's end
+        # API used to return latest_invoice.payment_intent.client_secret
         subscription = stripe.Subscription.create(
             customer=customer_id,
             items=[{
@@ -163,146 +114,221 @@ def create_subscription():
             }],
             payment_behavior='default_incomplete',
             payment_settings={'save_default_payment_method': 'on_subscription'},
-            #expand=['latest_invoice.payment_intent'],
+            expand=['latest_invoice.confirmation_secret'],
         )
-
-         
-        # Log subscription raw data
-        log_debug("Raw subscription response keys", list(subscription.keys()))
         
-        # Check basic subscription properties
-        debug_collection["subscription_basic"] = {
-            "id": subscription.id,
-            "status": subscription.status,
-            "current_period_start": subscription.current_period_start,
-            "current_period_end": subscription.current_period_end
-        }
-        log_debug("Basic subscription properties", debug_collection["subscription_basic"])
-        
-        # Retrieve latest_invoice and payment_intent separately
-        log_debug("Retrieving invoice and payment intent separately")
-        client_secret = None
-
-        # Get the latest invoice ID from the subscription
-        if hasattr(subscription, 'latest_invoice') and subscription.latest_invoice:
-            latest_invoice_id = subscription.latest_invoice
-            debug_collection["latest_invoice_id"] = latest_invoice_id
-            
-            try:
-                # Retrieve the full invoice
-                invoice = stripe.Invoice.retrieve(latest_invoice_id)
-                debug_collection["invoice_retrieved"] = {
-                    "id": invoice.id,
-                    "status": invoice.status
-                }
-                
-                # If the invoice has a payment_intent, retrieve it
-                if hasattr(invoice, 'payment_intent') and invoice.payment_intent:
-                    payment_intent_id = invoice.payment_intent
-                    debug_collection["payment_intent_id"] = payment_intent_id
-                    
-                    try:
-                        # Retrieve the full payment intent
-                        payment_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
-                        debug_collection["payment_intent_retrieved"] = {
-                            "id": payment_intent.id,
-                            "status": payment_intent.status
-                        }
-                        
-                        # Get the client secret from the payment intent
-                        if hasattr(payment_intent, 'client_secret'):
-                            client_secret = payment_intent.client_secret
-                            debug_collection["client_secret_retrieved"] = True
-                        
-                    except Exception as e:
-                        debug_collection["payment_intent_retrieval_error"] = str(e)
-                        log_debug("Error retrieving payment intent", str(e))
-            
-            except Exception as e:
-                debug_collection["invoice_retrieval_error"] = str(e)
-                log_debug("Error retrieving invoice", str(e))
-
-        # Check if latest_invoice exists
-        has_latest_invoice = hasattr(subscription, 'latest_invoice') and subscription.latest_invoice is not None
-        debug_collection["has_latest_invoice"] = has_latest_invoice
-        
-        if has_latest_invoice:
-            debug_collection["latest_invoice"] = {
-                "id": subscription.latest_invoice.id,
-                "total": subscription.latest_invoice.total,
-                "status": subscription.latest_invoice.status,
-            }
-            
-            # Check if payment_intent exists
-            has_payment_intent = (hasattr(subscription.latest_invoice, 'payment_intent') 
-                                and subscription.latest_invoice.payment_intent is not None)
-            debug_collection["has_payment_intent"] = has_payment_intent
-            
-            if has_payment_intent:
-                debug_collection["payment_intent"] = {
-                    "id": subscription.latest_invoice.payment_intent.id,
-                    "status": subscription.latest_invoice.payment_intent.status,
-                    "amount": subscription.latest_invoice.payment_intent.amount,
-                    "has_client_secret": hasattr(subscription.latest_invoice.payment_intent, 'client_secret')
-                }
-
-        # Detailed logging of the subscription structure
-        log_debug("Checking subscription structure", {
-            "has_latest_invoice": hasattr(subscription, 'latest_invoice'),
-            "invoice_keys": dir(subscription.latest_invoice) if hasattr(subscription, 'latest_invoice') else [],
-            "has_payment_intent": hasattr(subscription, 'latest_invoice') and hasattr(subscription.latest_invoice, 'payment_intent'),
-            "subscription_status": subscription.status,
-        })
-
-         # Extremely detailed object inspection
-        subscription_dict = inspect_object(subscription, max_depth=3)
-        debug_collection["subscription_structure"] = subscription_dict
-        log_debug("Full subscription structure", subscription_dict)
-
-
-        # Check if payment_intent exists before trying to access it
-        if hasattr(subscription, 'latest_invoice') and hasattr(subscription.latest_invoice, 'payment_intent'):
-            if subscription.latest_invoice.payment_intent is not None:
-                client_secret = subscription.latest_invoice.payment_intent.client_secret
-                debug_data = {
-                    "subscription_id": subscription.id,
-                    "client_secret_prefix": client_secret[:10] + "..." if client_secret else None,
-                    "payment_intent_id": subscription.latest_invoice.payment_intent.id
-                }
-                log_debug("Subscription created with payment intent", debug_data)
-                
-                return jsonify(
-                    subscriptionId=subscription.id, 
-                    clientSecret=client_secret,
-                    debug_info=debug_data
-                ), 200
-            else:
-                error_info = {
-                    "error_type": "NullPaymentIntent",
-                    "error_message": "Subscription created but payment_intent is null",
-                    "subscription_id": subscription.id
-                }
-                log_debug("Error: Null payment_intent in subscription", error_info)
-                return jsonify(error={'message': 'Payment setup failed. Please try again.'}, 
-                              debug_info=error_info), 400
-        else:
-            error_info = {
-                "error_type": "MissingPaymentIntent",
-                "error_message": "Subscription created but payment_intent is missing",
-                "subscription_id": subscription.id
-            }
-            log_debug("Error: Missing payment_intent in subscription", error_info)
-            return jsonify(error={'message': 'Payment setup failed. Please try again.'}, 
-                          debug_info=error_info), 400
+        return jsonify(subscriptionId=subscription.id, clientSecret=subscription.latest_invoice.confirmation_secret.client_secret), 200
 
     except Exception as e:
-        error_info = {
-            "error_type": type(e).__name__,
-            "error_message": str(e),
-            "user_message": getattr(e, 'user_message', str(e))
-        }
-        log_debug("Error creating subscription", error_info)
-        return jsonify(error={'message': getattr(e, 'user_message', str(e))}, debug_info=error_info), 400
+        return jsonify(error={'message': e.user_message}), 400
+# def create_subscription():
+#     db = g.db
+#     data = json.loads(request.data)
+#     customer_id = data['customerId']
+#     price_id = data['priceId']
+
+#     debug_collection = {}
+
+#     log_debug("Creating subscription with data", {
+#         "customer_id": customer_id,
+#         "price_id": price_id
+#     })
+
+#     debug_collection["input_data"] = {
+#             "customer_id": customer_id,
+#             "price_id": price_id
+#         }
+
+#     try:
+
+#         # Check if customer exists first
+#         log_debug("Verifying customer exists")
+#         try:
+#             customer = stripe.Customer.retrieve(customer_id)
+#             debug_collection["customer_check"] = {
+#                 "exists": True,
+#                 "id": customer.id,
+#                 "email": customer.email
+#             }
+#             log_debug("Customer verified", debug_collection["customer_check"])
+#         except Exception as e:
+#             debug_collection["customer_check"] = {
+#                 "exists": False,
+#                 "error": str(e)
+#             }
+#             log_debug("Customer verification failed", debug_collection["customer_check"])
+        
+#         # Check if price exists
+#         log_debug("Verifying price exists")
+#         try:
+#             price = stripe.Price.retrieve(price_id)
+#             debug_collection["price_check"] = {
+#                 "exists": True,
+#                 "id": price.id,
+#                 "active": price.active,
+#                 "unit_amount": price.unit_amount,
+#                 "currency": price.currency
+#             }
+#             log_debug("Price verified", debug_collection["price_check"])
+#         except Exception as e:
+#             debug_collection["price_check"] = {
+#                 "exists": False,
+#                 "error": str(e)
+#             }
+#             log_debug("Price verification failed", debug_collection["price_check"])
+            
+
+#         # Create the subscription. Note we're expanding the Subscription's
+#         # latest invoice and that invoice's payment_intent
+#         # so we can pass it to the front end to confirm the payment
+#         log_debug("Calling stripe.Subscription.create")
+#         subscription = stripe.Subscription.create(
+#             customer=customer_id,
+#             items=[{
+#                 'price': price_id,
+#             }],
+#             payment_behavior='default_incomplete',
+#             payment_settings={'save_default_payment_method': 'on_subscription'},
+#             #expand=['latest_invoice.payment_intent'],
+#         )
+
+         
+#         # Log subscription raw data
+#         log_debug("Raw subscription response keys", list(subscription.keys()))
+        
+#         # Check basic subscription properties
+#         debug_collection["subscription_basic"] = {
+#             "id": subscription.id,
+#             "status": subscription.status,
+#             "current_period_start": subscription.current_period_start,
+#             "current_period_end": subscription.current_period_end
+#         }
+#         log_debug("Basic subscription properties", debug_collection["subscription_basic"])
+        
+#         # Retrieve latest_invoice and payment_intent separately
+#         log_debug("Retrieving invoice and payment intent separately")
+#         client_secret = None
+
+#         # Get the latest invoice ID from the subscription
+#         if hasattr(subscription, 'latest_invoice') and subscription.latest_invoice:
+#             latest_invoice_id = subscription.latest_invoice
+#             debug_collection["latest_invoice_id"] = latest_invoice_id
+            
+#             try:
+#                 # Retrieve the full invoice
+#                 invoice = stripe.Invoice.retrieve(latest_invoice_id)
+#                 debug_collection["invoice_retrieved"] = {
+#                     "id": invoice.id,
+#                     "status": invoice.status
+#                 }
+                
+#                 # If the invoice has a payment_intent, retrieve it
+#                 if hasattr(invoice, 'payment_intent') and invoice.payment_intent:
+#                     payment_intent_id = invoice.payment_intent
+#                     debug_collection["payment_intent_id"] = payment_intent_id
+                    
+#                     try:
+#                         # Retrieve the full payment intent
+#                         payment_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
+#                         debug_collection["payment_intent_retrieved"] = {
+#                             "id": payment_intent.id,
+#                             "status": payment_intent.status
+#                         }
+                        
+#                         # Get the client secret from the payment intent
+#                         if hasattr(payment_intent, 'client_secret'):
+#                             client_secret = payment_intent.client_secret
+#                             debug_collection["client_secret_retrieved"] = True
+                        
+#                     except Exception as e:
+#                         debug_collection["payment_intent_retrieval_error"] = str(e)
+#                         log_debug("Error retrieving payment intent", str(e))
+            
+#             except Exception as e:
+#                 debug_collection["invoice_retrieval_error"] = str(e)
+#                 log_debug("Error retrieving invoice", str(e))
+
+#         # Check if latest_invoice exists
+#         has_latest_invoice = hasattr(subscription, 'latest_invoice') and subscription.latest_invoice is not None
+#         debug_collection["has_latest_invoice"] = has_latest_invoice
+        
+#         if has_latest_invoice:
+#             debug_collection["latest_invoice"] = {
+#                 "id": subscription.latest_invoice.id,
+#                 "total": subscription.latest_invoice.total,
+#                 "status": subscription.latest_invoice.status,
+#             }
+            
+#             # Check if payment_intent exists
+#             has_payment_intent = (hasattr(subscription.latest_invoice, 'payment_intent') 
+#                                 and subscription.latest_invoice.payment_intent is not None)
+#             debug_collection["has_payment_intent"] = has_payment_intent
+            
+#             if has_payment_intent:
+#                 debug_collection["payment_intent"] = {
+#                     "id": subscription.latest_invoice.payment_intent.id,
+#                     "status": subscription.latest_invoice.payment_intent.status,
+#                     "amount": subscription.latest_invoice.payment_intent.amount,
+#                     "has_client_secret": hasattr(subscription.latest_invoice.payment_intent, 'client_secret')
+#                 }
+
+#         # Detailed logging of the subscription structure
+#         log_debug("Checking subscription structure", {
+#             "has_latest_invoice": hasattr(subscription, 'latest_invoice'),
+#             "invoice_keys": dir(subscription.latest_invoice) if hasattr(subscription, 'latest_invoice') else [],
+#             "has_payment_intent": hasattr(subscription, 'latest_invoice') and hasattr(subscription.latest_invoice, 'payment_intent'),
+#             "subscription_status": subscription.status,
+#         })
+
+#          # Extremely detailed object inspection
+#         subscription_dict = inspect_object(subscription, max_depth=3)
+#         debug_collection["subscription_structure"] = subscription_dict
+#         log_debug("Full subscription structure", subscription_dict)
+
+
+#         # Check if payment_intent exists before trying to access it
+#         if hasattr(subscription, 'latest_invoice') and hasattr(subscription.latest_invoice, 'payment_intent'):
+#             if subscription.latest_invoice.payment_intent is not None:
+#                 client_secret = subscription.latest_invoice.payment_intent.client_secret
+#                 debug_data = {
+#                     "subscription_id": subscription.id,
+#                     "client_secret_prefix": client_secret[:10] + "..." if client_secret else None,
+#                     "payment_intent_id": subscription.latest_invoice.payment_intent.id
+#                 }
+#                 log_debug("Subscription created with payment intent", debug_data)
+                
+#                 return jsonify(
+#                     subscriptionId=subscription.id, 
+#                     clientSecret=client_secret,
+#                     debug_info=debug_data
+#                 ), 200
+#             else:
+#                 error_info = {
+#                     "error_type": "NullPaymentIntent",
+#                     "error_message": "Subscription created but payment_intent is null",
+#                     "subscription_id": subscription.id
+#                 }
+#                 log_debug("Error: Null payment_intent in subscription", error_info)
+#                 return jsonify(error={'message': 'Payment setup failed. Please try again.'}, 
+#                               debug_info=error_info), 400
+#         else:
+#             error_info = {
+#                 "error_type": "MissingPaymentIntent",
+#                 "error_message": "Subscription created but payment_intent is missing",
+#                 "subscription_id": subscription.id
+#             }
+#             log_debug("Error: Missing payment_intent in subscription", error_info)
+#             return jsonify(error={'message': 'Payment setup failed. Please try again.'}, 
+#                           debug_info=error_info), 400
+
+#     except Exception as e:
+#         error_info = {
+#             "error_type": type(e).__name__,
+#             "error_message": str(e),
+#             "user_message": getattr(e, 'user_message', str(e))
+#         }
+#         log_debug("Error creating subscription", error_info)
+#         return jsonify(error={'message': getattr(e, 'user_message', str(e))}, debug_info=error_info), 400
 
 
 @blueprint.route('/retrieve-latest-subscription', methods=['POST'])
