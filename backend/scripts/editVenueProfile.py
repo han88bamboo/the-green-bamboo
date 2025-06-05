@@ -9,7 +9,7 @@ import os
 import s3Images
 from flask import Blueprint, g, request, jsonify
 from datetime import datetime
-from scripts import pointsHelperFunc, badge_helpers
+from scripts import pointsHelperFunc, badge_helpers, notifications
 
 
 file_name = os.path.basename(__file__)
@@ -168,7 +168,7 @@ def sendQuestions():
     conn = g.db
     cur = conn.cursor()
     data = request.get_json()
-    print(data)
+    print("Received data for sending questions:", data)
 
     venueID = int(data['venueID'])
     question = data['question']
@@ -185,6 +185,34 @@ def sendQuestions():
             (question, answer, date, userID, venueID)
         )
         conn.commit()
+
+        cur.execute("""
+            SELECT username
+            FROM venues
+            WHERE venues.id = %s
+        """, (venueID,))
+        
+        venue_username = cur.fetchone()['username']
+        
+        cur.execute("""
+            SELECT username
+            FROM users
+            WHERE users.id = %s
+        """, (userID,))
+        user_username = cur.fetchone()['username']
+        
+        notification_data = {
+            "userId": venueID,                     # the venue (or producer) who should receive this
+            "userType": "venue",                   # or "producer" if it were a producer’s Q&A
+            "notiTabs": "forYou",
+            "notiType": "venue_question",
+            "image": None,                          # optional: you can pass an icon/thumbnail if desired
+            "link": f"/Venues/VenuesQA/{venueID}",  # wherever you display the new question
+            "message": f"@{user_username} asked you a question"
+        }
+        print("Notification data for venue:", notification_data)
+        
+        notifications.add_notification_to_db(notification_data)
 
         # Initialize variables for points and badge processing
         points_earned = 0
@@ -601,7 +629,7 @@ def addListingToMenu():
     conn = g.db
     cur = conn.cursor()
     data = request.get_json()
-    print(data)
+    print("Received data for adding listing to menu:", data)
 
     venueID = int(data['venueID'])
     menuOrder = int(data['menuOrder'])
@@ -636,6 +664,35 @@ def addListingToMenu():
             (menuOrder, itemPrice, True, listingID, servingType, sectionId)
         )
         conn.commit()
+        
+        # ---------------------------------------------------------
+        # Build and insert notification for the producer whose bottle listing was added
+        # ---------------------------------------------------------
+        cur.execute(
+            'SELECT "producerID", "listingName" FROM "listings" WHERE "id" = %s',
+            (listingID,)
+        )
+        listing_row = cur.fetchone()
+        producerId = listing_row["producerID"]
+        listingName = listing_row["listingName"]
+
+        cur.execute(
+            'SELECT "venueName" FROM "venues" WHERE "id" = %s',
+            (venueID,)
+        )
+        venueName = cur.fetchone()["venueName"]
+
+        notification_data = {
+            "userId": producerId,
+            "userType": "producer",
+            "notiTabs": "forYou",
+            "notiType": "listingIncluded",
+            "image": None,  # optional: e.g. listing_row["photo"] if you want the bottle’s image
+            "link": f"/profile/venue/{venueID}/{venueName}",
+            "message": f"Your listing “{listingName}” has been added to {venueName}’s menu."
+        }
+
+        notifications.add_notification_to_db(notification_data)
 
         return jsonify(
             {

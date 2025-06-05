@@ -7,7 +7,7 @@ import os
 import s3Images
 from flask import Blueprint, g, request, jsonify
 from datetime import datetime
-from scripts import pointsHelperFunc, badge_helpers
+from scripts import pointsHelperFunc, badge_helpers, notifications
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -96,7 +96,7 @@ def createReviews():
             hashed_password = 'hashed_password'
             cur.execute(insert_venue_sql, (location_name, address, hashed_password, username))
             venue_id = cur.fetchone()['id'] if cur.rowcount > 0 else None
-            print(venue_id)
+    
             conn.commit()
 
     # Upload image into S3
@@ -118,6 +118,36 @@ def createReviews():
     try:
         cur.execute(insert_review_sql, review_values)
         conn.commit()
+        
+        cur.execute('SELECT "listingName" FROM listings WHERE id = %s', (review_target,))
+        listing_row = cur.fetchone()
+        listing_name = listing_row['listingName'] if listing_row else "your listing"
+
+        cur.execute('SELECT username FROM users WHERE id = %s', (user_id,))
+        user_row = cur.fetchone()
+        reviewer_username = user_row['username'] if user_row else "Someone"
+
+        for tagged_id in tagged_users:
+            try:
+                tagged_id_int = int(tagged_id)
+            except ValueError:
+                continue  # skip invalid IDs
+            
+            # Check if tagged_id corresponds to a venue
+            cur.execute('SELECT id FROM venues WHERE id = %s', (tagged_id_int,))
+            if cur.rowcount == 0:
+                continue  # not a venue
+
+            notification_data = {
+                "userId": tagged_id_int,
+                "userType": "venue",
+                "notiTabs": "forYou",
+                "notiType": "venue_tagged_review",
+                "image": None,
+                "link": f"/listing/view/{review_target}/{listing_name}",
+                "message": f"@{reviewer_username} mentioned your venue in their review of {listing_name}"
+            }
+            notifications.add_notification_to_db(notification_data)
 
         if pointsHelperFunc.check_max_proof_points(user_id):
             return jsonify({
@@ -166,8 +196,6 @@ def createReviews():
         if total_points:
             cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE id = %s AND "userType" = %s', (total_points, user_id, 'user',))
             conn.commit()
-
-            print(f"Awarded points: {total_points}")
 
         # Badge Processing
         badges_awarded = []
@@ -321,8 +349,6 @@ def createProducerReviews():
         # Update user points
         cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE id = %s AND "userType" = %s', (total_points, user_id, 'user',))
         conn.commit()
-
-        print(f"Points awarded: {total_points}")
 
         return jsonify({"code": 201, "data": raw_review['reviewDesc'], "pointsEarned": total_points}), 201
 

@@ -22,7 +22,7 @@
 import os
 from flask import Blueprint, g, jsonify, request
 from datetime import datetime, timedelta
-from scripts import pointsHelperFunc, badge_helpers
+from scripts import pointsHelperFunc, badge_helpers, notifications
 
 # Use to upload image to S3
 import s3Images
@@ -1410,9 +1410,45 @@ def joinClub():
 
         # Get the member's ID in the clubMembers table
         cur.execute('SELECT id FROM "clubMembers" WHERE "clubID" = %s AND "userID" = %s AND "userType" = %s', (club_id, user_id, user_type,))
+        
+        member_id = cur.fetchone()['id']
+
+        # Build and insert the notification
+        owner_id = club['createdByID']
+        owner_type = club['createdByType']
+
+        club_name = club['clubName']
+        
+        print("Club name:", club_name)
+        print("Owner ID:", owner_id, "Owner Type:", owner_type)
+
+        if user_type == 'user':
+            cur.execute('SELECT username FROM "users" WHERE id = %s', (user_id,))
+            row = cur.fetchone()
+            member_username = row['username'] if row else 'Someone'
+        elif user_type == 'producer':
+            cur.execute('SELECT username FROM "producers" WHERE id = %s', (user_id,))
+            row = cur.fetchone()
+            member_username = row['username'] if row else 'Someone'
+        else:  # user_type == 'venue'
+            cur.execute('SELECT username FROM "venues" WHERE id = %s', (user_id,))
+            row = cur.fetchone()
+            member_username = row['username'] if row else 'Someone'
+
+        notification_data = {
+            "userId":   owner_id,
+            "userType": owner_type,         # 'producer' or 'venue'
+            "notiTabs": "forYou",
+            "notiType": "club_join",
+            "image":    None,
+            "link":     f"/club/view/{club_id}/{club_name}",
+            "message":  f"@{member_username} joined your club: {club_name}"
+        }
+        notifications.add_notification_to_db(notification_data)
+        
         return jsonify({
             'message': 'User joined the club successfully',
-            'memberID': cur.fetchone()['id']
+            'memberID': member_id
         }), 201
 
     except Exception as e:
@@ -1805,6 +1841,36 @@ def acceptClubRequest():
         cur.execute('UPDATE "clubs" SET "totalMembers" = "totalMembers" + 1 WHERE id = %s', (club_id,))
         conn.commit()
 
+        # Step 7: Build and insert the notification
+        owner_id   = club['createdByID']
+        owner_type = club['createdByType']
+        club_name  = club['clubName']
+
+        # Look up the new member’s username
+        if user_type == 'user':
+            cur.execute('SELECT username FROM "users" WHERE id = %s', (requester_id,))
+            row = cur.fetchone()
+            member_username = row['username'] if row else 'Someone'
+        elif user_type == 'producer':
+            cur.execute('SELECT username FROM "producers" WHERE id = %s', (requester_id,))
+            row = cur.fetchone()
+            member_username = row['username'] if row else 'Someone'
+        else:  # 'venue'
+            cur.execute('SELECT username FROM "venues" WHERE id = %s', (requester_id,))
+            row = cur.fetchone()
+            member_username = row['username'] if row else 'Someone'
+
+        notification_data = {
+            "userId":   owner_id,
+            "userType": owner_type,
+            "notiTabs": "forYou",
+            "notiType": "club_join",
+            "image":    None,
+            "link":     f"/club/view/{club_id}/{club_name}",
+            "message":  f"@{member_username} joined your club: {club_name}"
+        }
+        notifications.add_notification_to_db(notification_data)
+
         return jsonify({
             'message': 'User accepted successfully'
         }), 200
@@ -1891,6 +1957,37 @@ def acceptClubInvite():
         # Step 6: Append 1 to the totalMembers in the clubs table
         cur.execute('UPDATE "clubs" SET "totalMembers" = "totalMembers" + 1 WHERE id = %s', (club_id,))
         conn.commit()
+
+        # Step 7: Build and insert the notification
+        owner_id   = club['createdByID']
+        owner_type = club['createdByType']
+        club_name  = club['clubName']
+
+        # Look up the new member’s username
+        if user_type == 'user':
+            cur.execute('SELECT username FROM "users" WHERE id = %s', (user_id,))
+            row = cur.fetchone()
+            member_username = row['username'] if row else 'Someone'
+        elif user_type == 'producer':
+            cur.execute('SELECT username FROM "producers" WHERE id = %s', (user_id,))
+            row = cur.fetchone()
+            member_username = row['username'] if row else 'Someone'
+        else:  # 'venue'
+            cur.execute('SELECT username FROM "venues" WHERE id = %s', (user_id,))
+            row = cur.fetchone()
+            member_username = row['username'] if row else 'Someone'
+
+        notification_data = {
+            "userId":   owner_id,
+            "userType": owner_type,
+            "notiTabs": "forYou",
+            "notiType": "club_join",
+            "image":    None,
+            "link":     f"/club/view/{club_id}/{club_name}",
+            "message":  f"@{member_username} joined your club: {club_name}"
+        }
+        print("Notification data:", notification_data)
+        notifications.add_notification_to_db(notification_data)
 
         return jsonify({
             'message': 'User joined the club successfully'

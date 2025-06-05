@@ -18,9 +18,11 @@ def add_notification_to_db(data):
       - userType  [str]
       - notiTabs  [str]
       - notiType  [str]
-      - image     [str] (optional)
-      - link      [str] (optional)
+      - image     [str] 
+      - link      [str] 
       - message   [str]
+      - createdAt [int] 
+      - read      [bool] 
     We no longer pass `createdAt` explicitly, so the DB DEFAULT CURRENT_TIMESTAMP is used.
     """
     conn = g.db
@@ -30,8 +32,8 @@ def add_notification_to_db(data):
         cursor.execute(
             '''
             INSERT INTO "notifications"
-                ("userId", "userType", "notiTabs", "notiType", "image", "link", "message")
-            VALUES (%s,      %s,        %s,        %s,        %s,      %s,      %s)
+                ("userId", "userType", "notiTabs", "notiType", "image", "link", "message", "createdAt", "read")
+            VALUES (%s,      %s,        %s,        %s,        %s,      %s,      %s, %s, %s)
             ''',
             (
                 data.get('userId'),
@@ -40,7 +42,9 @@ def add_notification_to_db(data):
                 data.get('notiType'),
                 data.get('image'),   # may be None
                 data.get('link'),    # may be None
-                data.get('message')
+                data.get('message'),
+                data.get('createdAt'),  
+                data.get('read', False)
             )
         )
         conn.commit()

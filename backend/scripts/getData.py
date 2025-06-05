@@ -3071,12 +3071,12 @@ def getRandomListings():
 #     cur = conn.cursor()
     
 #     try:
-        # acc_id = int(acc_id)
+#         acc_id = int(acc_id)
         
-        # cur.execute(
-        #     'SELECT notif_hash FROM "userNotificationsRead" WHERE user_id = %s',
-        #     (acc_id,)
-        # )
+#         cur.execute(
+#             'SELECT notif_hash FROM "userNotificationsRead" WHERE user_id = %s',
+#             (acc_id,)
+#         )
 #         read_hashes = {row[0] for row in cur.fetchall()}
         
 #         for_you_notifications = []
@@ -3684,52 +3684,52 @@ def getRandomListings():
 #                     venues_notifications.append(notification)
 #                     producer_drink_count[producer_id] += 1
         
-        # def normalize_datetime(time_value):
-        #     if time_value is None:
-        #         return None
+#         def normalize_datetime(time_value):
+#             if time_value is None:
+#                 return None
                 
-        #     if isinstance(time_value, str):
-        #         try:
-        #             return datetime.strptime(time_value, '%Y-%m-%dT%H:%M:%S.%fZ').replace(tzinfo=timezone.utc)
-        #         except ValueError:
-        #             try:
-        #                 return datetime.strptime(time_value, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
-        #             except ValueError:
-        #                 return datetime.now(timezone.utc)
-        #     elif isinstance(time_value, date) and not isinstance(time_value, datetime):
-        #         return datetime.combine(time_value, datetime.min.time()).replace(tzinfo=timezone.utc)
-        #     elif isinstance(time_value, datetime):
-        #         if time_value.tzinfo is None:
-        #             return time_value.replace(tzinfo=timezone.utc)
-        #         return time_value
+#             if isinstance(time_value, str):
+#                 try:
+#                     return datetime.strptime(time_value, '%Y-%m-%dT%H:%M:%S.%fZ').replace(tzinfo=timezone.utc)
+#                 except ValueError:
+#                     try:
+#                         return datetime.strptime(time_value, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
+#                     except ValueError:
+#                         return datetime.now(timezone.utc)
+#             elif isinstance(time_value, date) and not isinstance(time_value, datetime):
+#                 return datetime.combine(time_value, datetime.min.time()).replace(tzinfo=timezone.utc)
+#             elif isinstance(time_value, datetime):
+#                 if time_value.tzinfo is None:
+#                     return time_value.replace(tzinfo=timezone.utc)
+#                 return time_value
             
-        #     return datetime.now(timezone.utc)
+#             return datetime.now(timezone.utc)
         
-        # # Helper function for sorting
-        # def get_sort_key(notification):
-        #     time_value = notification.get('time')
-        #     if time_value is not None:
-        #         return normalize_datetime(time_value)
-        #     return datetime.now(timezone.utc)
+#         # Helper function for sorting
+#         def get_sort_key(notification):
+#             time_value = notification.get('time')
+#             if time_value is not None:
+#                 return normalize_datetime(time_value)
+#             return datetime.now(timezone.utc)
         
-        # # Normalize datetime objects in notifications
-        # for notification in for_you_notifications:
-        #     if notification['time'] is not None:
-        #         notification['time'] = normalize_datetime(notification['time'])
+#         # Normalize datetime objects in notifications
+#         for notification in for_you_notifications:
+#             if notification['time'] is not None:
+#                 notification['time'] = normalize_datetime(notification['time'])
         
-        # for notification in venues_notifications:
-        #     if notification['time'] is not None:
-        #         notification['time'] = normalize_datetime(notification['time'])
+#         for notification in venues_notifications:
+#             if notification['time'] is not None:
+#                 notification['time'] = normalize_datetime(notification['time'])
         
-        # # Sort notifications by time (recent first)
-        # for_you_notifications.sort(key=get_sort_key, reverse=True)
-        # venues_notifications.sort(key=get_sort_key, reverse=True)
+#         # Sort notifications by time (recent first)
+#         for_you_notifications.sort(key=get_sort_key, reverse=True)
+#         venues_notifications.sort(key=get_sort_key, reverse=True)
         
-        # # Return the notifications
-        # return jsonify({
-        #     'forYou': for_you_notifications[:10],  # Limit to 10 most recent notifications
-        #     'venues': venues_notifications[:20]
-        # }), 200
+#         # Return the notifications
+#         return jsonify({
+#             'forYou': for_you_notifications[:10],  # Limit to 10 most recent notifications
+#             'venues': venues_notifications[:20]
+#         }), 200
         
 #     except Exception as e:
 #         print(str(e))

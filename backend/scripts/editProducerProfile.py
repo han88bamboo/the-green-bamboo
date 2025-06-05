@@ -7,7 +7,7 @@ import s3Images
 from flask import Blueprint, g, request, jsonify
 from bson.objectid import ObjectId
 from datetime import datetime
-from scripts import pointsHelperFunc, badge_helpers
+from scripts import pointsHelperFunc, badge_helpers, notifications
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -168,6 +168,28 @@ def sendQuestions():
             (question, answer, date, userID, producerID)
         )
         conn.commit()
+
+        # Send a notification to the producer
+        # Fetch the asking user's username
+        cur.execute('SELECT username FROM users WHERE id = %s', (userID,))
+        user_row = cur.fetchone()
+        user_username = user_row['username'] if user_row else "Someone"
+
+        # # Fetch the producer's username
+        # cur.execute('SELECT username FROM producers WHERE id = %s', (producerID,))
+        # producer_row = cur.fetchone()
+        # producer_username = producer_row['username'] if producer_row else ""
+
+        notification_data = {
+            "userId":   producerID,
+            "userType": "producer",
+            "notiTabs": "forYou",
+            "notiType": "producer_question",
+            "image":    None,
+            "link":     f"/Producers/ProducersQA/{producerID}",
+            "message":  f"@{user_username} asked you a question"
+        }
+        notifications.add_notification_to_db(notification_data)
 
         # Initialize variables for points and badge processing
         points_earned = 0

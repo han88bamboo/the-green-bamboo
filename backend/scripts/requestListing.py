@@ -10,7 +10,7 @@ import s3Images
 from bson import json_util
 from flask import Blueprint, g, request, jsonify
 from datetime import datetime
-from scripts import pointsHelperFunc, badge_helpers
+from scripts import pointsHelperFunc, badge_helpers, notifications
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -246,6 +246,27 @@ def requestEdits():
         
         cur.execute(sql, list(newRequest.values()))
         conn.commit()
+
+        # Build and insert notification for the producer who owns this listing
+
+        producerId = existingListing["producerID"]
+        listingName = existingListing["listingName"]
+
+        cur.execute('SELECT username FROM users WHERE id = %s', (newRequest["userID"],))
+        userRow = cur.fetchone()
+        userUsername = userRow["username"] if userRow else "Someone"
+
+        notification_data = {
+            "userId": producerId,
+            "userType": "producer",
+            "notiTabs": "forYou",
+            "notiType": "edit_request",
+            "image": None,
+            "link": f"/request/view",  # adjust this to the actual front-end route if needed
+            "message": f"@{userUsername} requested an edit for {listingName}"
+        }
+
+        notifications.add_notification_to_db(notification_data)
 
         return jsonify(
             {
