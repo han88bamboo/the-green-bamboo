@@ -43,7 +43,7 @@
                         <!-- Button to cast vote -->
                         <button v-if="userType == 'user'"
                             class="btn primary-btn-less-round-blue btn-lg mb-3 mobile-rating-smaller-text-2" 
-                            @click=" userID ? $router.push('/dashboard/user') : $router.push('/login')"
+                            @click=" userID ? $router.push('/dashboard/user/' + userID) : $router.push('/login')"
                         >
                             <span class="fw-bold "> Cast your vote! </span>
                         </button>

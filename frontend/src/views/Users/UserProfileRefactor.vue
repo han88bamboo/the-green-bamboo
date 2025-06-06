@@ -195,7 +195,7 @@
             <div class="row mt-3">
               <router-link
                 v-if="ownProfile && user"
-                :to="{ path: '/dashboard/user' }"
+                :to="{ path: '/dashboard/user/' + userID }"
                 class="btn primary-btn-less-round-blue btn-lg mt-3"
                 style="font-weight: bold"
               >

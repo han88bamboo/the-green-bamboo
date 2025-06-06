@@ -210,7 +210,7 @@ const routes = [
     component: () => import("../views/Producers/ProducerDashboard.vue"),
   },
   {
-    path: "/dashboard/user",
+    path: "/dashboard/user/:userID",
     name: "dashboarduser",
     component: () => import("../views/Users/UserDashboard.vue"),
   },

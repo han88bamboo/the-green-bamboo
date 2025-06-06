@@ -22,7 +22,8 @@
 #           /getUsers (GET), /getUsersFromList (POST), /getUserFollowListDetails (POST) /getUser/<id> (GET), 
 #           /getUserPhoto/<id>/<userType> (GET), /getUserByUsername/<username> (GET), /getUserFollowList/<id> (GET), 
 #           /checkFollowing/<userId>/<userType>/<followId>/<followType> (GET), /getUserReviewSummary/<id> (GET),
-#           /getUserDashBoardData/<id> (GET), /getUserTop5ReviewsData/<id> (GET), /getUsersRecentActivity/<id>/<number> (GET),
+#           /getUserDashBoardData/<id> (GET), /getRecentFollowersActivity/<id> (GET), /getRecentReviewsActivity/<id> (GET),
+#           /getRecentUserActivity/<id> (GET), 
 
 #           [Listing Reviews]
 #           /getRecentListingReviews/<id> (GET), /getReviews (GET),
@@ -3494,7 +3495,7 @@ def getUserDashBoardData(id):
 
         top_reviews = cur.fetchall()
 
-        # Loop through the top reviews and get the listing data (name, photo, id and average rating)
+        # Loop through the top reviews and get the listing data (name, photo, id and rating)
         top_5_best_reviewed_listings = []
 
         for review in top_reviews:
@@ -3503,6 +3504,10 @@ def getUserDashBoardData(id):
             # Get the listing data
             cur.execute('SELECT "listingName", "photo", "id" FROM "listings" WHERE "id" = %s', (listing_id,))
             listing_data = cur.fetchone()
+
+            # Add rating to the listing data
+            if listing_data:
+                listing_data['rating'] = review['rating']
 
             top_5_best_reviewed_listings.append(listing_data)
 
@@ -3618,6 +3623,214 @@ def getUserDashBoardData(id):
         ), 500
     finally:
         cur.close()
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Get recent followers activity for a user
+@blueprint.route('/getRecentFollowersActivity/<id>', methods=['GET'])
+def recent_follower_activity(id):
+
+    conn = g.db
+    cursor = conn.cursor()
+
+
+    try:
+        # 1. Last 2 followed user IDs by current user
+        cursor.execute("""
+            SELECT users
+            FROM "usersFollowLists"
+            WHERE "userId" = %s
+        """, (id,))
+        result = cursor.fetchone()
+
+        followers = []
+        if result:
+            followed_ids = result['users']
+            last_two_ids = followed_ids[-2:] if len(followed_ids) >= 2 else followed_ids
+
+            for followed_id in last_two_ids:
+                # Get username for followed user
+                cursor.execute("""
+                    SELECT "username"
+                    FROM users
+                    WHERE "id" = %s
+                """, (int(followed_id),))
+                user_result = cursor.fetchone()
+                if user_result:
+                    followers.append({
+                        'userID': int(followed_id),
+                        'username': user_result['username'],
+                        'type': 'follow',
+                        'date': datetime.utcnow() # Placeholder date, do not have actual follow date as it is not stored
+                    })
+
+        # 2. Reviews where user was tagged
+        cursor.execute("""
+            SELECT r."userID", r."reviewTarget", r."createdDate", l."listingName"
+            FROM reviews r
+            JOIN listings l ON r."reviewTarget" = l."id"
+            WHERE r."reviewType" = 'Listing'
+            AND %s = ANY(r."taggedUsers")
+        """, (id,))
+        tagged_rows = cursor.fetchall()
+        tags = [{
+            'userID': row['userID'],
+            'listingID': row['reviewTarget'],
+            'listingName': row['listingName'],
+            'date': row['createdDate'],
+            'type': 'tag'
+        } for row in tagged_rows]
+
+        # Combine & sort
+        activities = followers + tags
+        activities.sort(key=lambda x: x['date'], reverse=True)
+
+        # Limit to top 10 latest activities
+        activities = activities[:10]
+
+        cursor.close()
+        return jsonify(activities)
+    
+    except Exception as e:
+        print(f"Error in recent_follower_activity: {str(e)}")
+        return jsonify({"error": "An error occurred while fetching recent follower activity."}), 500
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Get recent reviews activity for a user
+@blueprint.route('/getRecentReviewsActivity/<id>', methods=['GET'])
+def recent_review_activity(id):
+
+    conn = g.db
+    cursor = conn.cursor()
+
+    try:
+
+        # Step 1: Get user's reviews (IDs and their listing targets)
+        cursor.execute("""
+            SELECT r."id", r."reviewTarget"
+            FROM reviews r
+            WHERE r."userID" = %s
+        """, (id,))
+        review_rows = cursor.fetchall()
+
+        review_ids = [row['id'] for row in review_rows]
+        review_target_map = {row['id']: row['reviewTarget'] for row in review_rows}
+
+        if not review_ids:
+            return jsonify([])
+
+        # Step 2: Get votes from reviewsUserVotes
+        cursor.execute(f"""
+            SELECT "reviewId", "upvotes", "downvotes"
+            FROM "reviewsUserVotes"
+            WHERE "reviewId" IN %s
+        """, (tuple(review_ids),))
+        vote_rows = cursor.fetchall()
+
+        activities = []
+
+        for row in vote_rows:
+            review_id = row['reviewId']
+            upvotes = row['upvotes'] or []
+            downvotes = row['downvotes'] or []
+
+            for upvote in upvotes:
+                activities.append({
+                    'userID': int(upvote['userId']),
+                    'reviewTarget': review_target_map.get(review_id),
+                    'type': 'upvote',
+                    'date': upvote['date']
+                })
+
+            for downvote in downvotes:
+                activities.append({
+                    'userID': int(downvote['userID']),
+                    'reviewTarget': review_target_map.get(review_id),
+                    'type': 'downvote',
+                    'date': downvote['date']
+                })
+
+        # Step 3: Sort and return top 10
+        activities.sort(key=lambda x: x['date'], reverse=True)
+        top_10 = activities[:10]
+
+        cursor.close()
+        return jsonify(top_10)
+
+    except Exception as e:
+        print(f"Error in recent_review_activity: {str(e)}")
+        return jsonify({"error": "An error occurred while fetching recent review activity."}), 500
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Get recent user activity for a user
+@blueprint.route('/getRecentUserActivity/<id>', methods=['GET'])
+def recent_user_activity(id):
+
+    conn = g.db
+    cursor = conn.cursor()
+
+    activities = []
+
+    try:
+        # 1. Get user reviews
+        cursor.execute("""
+            SELECT r."reviewTarget", r."rating", r."createdDate", l."listingName"
+            FROM reviews r
+            JOIN listings l ON r."reviewTarget" = l."id"
+            WHERE r."userID" = %s
+        """, (id,))
+        reviews = cursor.fetchall()
+
+        for review in reviews:
+            rating = review['rating']
+            createdDate = review['createdDate']
+            activities.append({
+                'type': 'review',
+                'listingID': review['reviewTarget'],
+                'listingName': review['listingName'],
+                'rating': rating,
+                'date': createdDate
+            })
+
+
+        # 2. Get user's drink lists
+        cursor.execute("""
+            SELECT id, "listName"
+            FROM "usersDrinkLists"
+            WHERE "userId" = %s
+        """, (id,))
+        user_lists = cursor.fetchall()  # list of (listId, listName)
+
+        # 3. For each list, get the drink items
+        for listId, listName in user_lists:
+            cursor.execute("""
+                SELECT "drinkId", "addedDate"
+                FROM usersDrinkListItems
+                WHERE "listId" = %s
+            """, (listId,))
+            list_items = cursor.fetchall()
+            for drinkId, addedDate in list_items:
+                activities.append({
+                    'type': 'bookmark',
+                    'listingID': drinkId,
+                    'listName': listName,
+                    'date': addedDate.isoformat() if addedDate else None
+                })
+
+        # 4. Sort by date desc and limit top 10
+        activities = [a for a in activities if a['date'] is not None]
+        activities.sort(key=lambda x: x['date'], reverse=True)
+        activities = activities[:10]
+
+        cursor.close()
+        return jsonify(activities)
+    
+    except Exception as e:
+        print(f"Error in recent_user_activity: {str(e)}")
+        return jsonify({"error": "An error occurred while fetching recent user activity."}), 500
+
 
 # -----------------------------------------------------------------------------------------
 # [GET] All the usernames in the database [users only]

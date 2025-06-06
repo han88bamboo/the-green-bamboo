@@ -944,7 +944,6 @@
 
             // Check if route params "venueID" is present
             if (this.$route.params.venueID != "" && this.$route.params.venueID != undefined) {
-                this.targetVenue = this.$route.params.venueID;
                 this.targetVenueID = this.$route.params.venueID;
                 // If logged in as a venue, check if the venueID matches the logged in venue's ID
                 if (this.viewerType == 'venue' && this.viewerID == this.targetVenue) {
