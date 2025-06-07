@@ -333,13 +333,13 @@
                         <div style="height: 85%;">
                             <div class="overflow-auto" style="max-height: 100%;">
                                 <!-- v-for loop here-->
-                                <div v-for="review in allReviews" v-bind:key="review.id" class="py-2 mobile-rating-smaller-text-2 ">
-                                    <router-link :to="{ path: '/profile/user/' + review.userID + '/' + getUsernameFromID(review.userID)}" class="reverse-clickable-text">
-                                        <b> @{{ getUsernameFromID(review.userID) }}</b>
+                                <div v-for="review in recentReviews" v-bind:key="review.id" class="py-2 mobile-rating-smaller-text-2 ">
+                                    <router-link :to="{ path: '/profile/user/' + review.userID + '/' + review.username}" class="reverse-clickable-text">
+                                        <b> @{{ review.username }}</b>
                                     </router-link> 
                                     rated 
-                                    <router-link :to="{ path: '/listing/view/' + getListingFromID(review.reviewTarget).id + '/' + getListingFromID(review.reviewTarget).listingName }" class="reverse-clickable-text mobile-rating-smaller-text-2">
-                                        <u> {{ getListingFromID(review.reviewTarget).listingName }} </u>
+                                    <router-link :to="{ path: '/listing/view/' + review.listingID + '/' + review.listingName }" class="reverse-clickable-text mobile-rating-smaller-text-2">
+                                        <u> {{ review.listingName }} </u>
                                     </router-link>
                                     <span class="ps-2 ">
                                         <i> {{ review.rating }} ★
@@ -361,13 +361,13 @@
                         <div style="height: 85%;">
                             <div class="overflow-auto" style="max-height: 100%;">
                                 <!-- v-for loop here-->
-                                <div v-for="review in allReviews" v-bind:key="review.id" class="py-2">
-                                    <router-link :to="{ path: '/profile/user/' + review.userID + '/' + getUsernameFromID(review.userID) }" class="reverse-clickable-text">
-                                        <b> @{{ getUsernameFromID(review.userID) }}</b>
+                                <div v-for="review in recentReviews" v-bind:key="review.id" class="py-2">
+                                    <router-link :to="{ path: '/profile/user/' + review.userID + '/' + review.username }" class="reverse-clickable-text">
+                                        <b> @{{ review.username }}</b>
                                     </router-link> 
                                     rated 
-                                    <router-link :to="{ path: '/listing/view/' + getListingFromID(review.reviewTarget).id + '/' + getListingFromID(review.reviewTarget).listingName}" class="reverse-clickable-text">
-                                        <u> {{ getListingFromID(review.reviewTarget).listingName }} </u>
+                                    <router-link :to="{ path: '/listing/view/' + review.listingID + '/' + review.listingName}" class="reverse-clickable-text">
+                                        <u> {{ review.listingName }} </u>
                                     </router-link>
                                     <span class="ps-2">
                                         <i> {{ review.rating }} 
@@ -442,13 +442,14 @@
                         <div id="BestRatedExpressions" class="card p-2 tab-pane fade show active col-11 text-start pt-5 mobile-pt-3 mx-lg-3 ps-lg-0 pe-lg-0" style="color:black;">
                             
                             <div class="text-start pb-2" v-for="listing in mostPopular" v-bind:key="listing.id">
+                                
                                 <router-link :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}" class="reverse-clickable-text">
                                     <div class="d-flex align-items-center">
-                                        <img :src="(listing.photo || defaultPhoto)" style="width: 70px; height: 70px;">
+                                        <img :src="(listing.photo == null || listing.photo == '' ? defaultPhoto : listing.photo)" style="width: 70px; height: 70px;">
                                         <p class="ms-3 default-clickable-text"> 
                                             <b> {{ listing.listingName }} </b> 
                                             <br>
-                                            {{ this.sortedAverageRatings[listing.listingName] || "-" }} 
+                                            {{ listing.rating }} 
                                             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
                                                 <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
                                             </svg>
@@ -464,11 +465,11 @@
                             <div class="text-start pb-2" v-for="listing in mostDiscussed" v-bind:key="listing.id">
                                 <router-link :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName) }" class="reverse-clickable-text">
                                     <div class="d-flex align-items-center">
-                                        <img :src="(listing.photo || defaultPhoto)" style="width: 70px; height: 70px;">
+                                        <img :src="(listing.photo == null || listing.photo == '' ? defaultPhoto : listing.photo)" style="width: 70px; height: 70px;">
                                         <p class="ms-3 default-clickable-text"> 
                                             <b> {{ listing.listingName }} </b> 
                                             <br>
-                                            {{ this.reviewCounts[listing.listingName] }} reviews
+                                            {{ listing.reviewCount }} reviews
                                         </p>
                                     </div>
                                 </router-link>
@@ -477,17 +478,22 @@
 
                         <div id="MostReviewedCategories" class="tab-pane card p-2 fade col-11 text-start pt-3 mx-lg-3 ps-lg-0 pe-lg-0">
                             
-                            <div class="text-start pb-2" v-for="(category, index) in mostDiscussedCategories" v-bind:key="category">
-                                <div class="row ms-0 default-clickable-text" style="color:black;"> 
-                                    <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3" >
-                                        <h5 class="my-auto"> {{ index + 1 }} </h5>
-                                    </div>
-                                    <div class="col-10 shrink-width-on-dashboard">
-                                        <b> {{ category[0] }} </b> 
-                                        <br>
-                                        {{ category[1] || "-" }} reviews
+                            <div class="text-start pb-2" v-for="(object, index) in topCategoriesData" v-bind:key="index">
+
+                                <div v-for="(value, key) in object" v-bind:key="key">
+                                    <div class="row ms-0 default-clickable-text" style="color:black;"> 
+                                        <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3" >
+                                            <h5 class="my-auto"> {{ index + 1 }} </h5>
+                                        </div>
+                                        <div class="col-10 shrink-width-on-dashboard">
+                                            <b> {{ key }} </b> 
+                                            <br>
+                                            {{ value == 0 ? '-' : value }} reviews
+                                        </div>
                                     </div>
                                 </div>
+                                
+                                
                             </div>
                         </div>
 
@@ -515,11 +521,11 @@
                         <div class="text-start pb-2" v-for="listing in mostPopular" v-bind:key="listing.id">
                             <router-link :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName) }" class="reverse-clickable-text">
                                 <div class="d-flex align-items-center">
-                                    <img :src="(listing.photo || defaultPhoto)" style="width: 70px; height: 70px;">
+                                    <img :src="(listing.photo == null || listing.photo == '' ? defaultPhoto : listing.photo)" style="width: 70px; height: 70px;">
                                     <p class="ms-3 default-clickable-text"> 
                                         <b> {{ listing.listingName }} </b> 
                                         <br>
-                                        {{ this.sortedAverageRatings[listing.listingName] || "-" }} 
+                                        {{ listing.rating }} 
                                         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
                                             <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
                                         </svg>
@@ -535,11 +541,11 @@
                         <div class="text-start pb-2" v-for="listing in mostDiscussed" v-bind:key="listing.id">
                             <router-link :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName) }" class="reverse-clickable-text">
                                 <div class="d-flex align-items-center">
-                                    <img :src="(listing.photo || defaultPhoto)" style="width: 70px; height: 70px;">
+                                    <img :src="(listing.photo == null || listing.photo == '' ? defaultPhoto : listing.photo)" style="width: 70px; height: 70px;">
                                     <p class="ms-3 default-clickable-text"> 
                                         <b> {{ listing.listingName }} </b> 
                                         <br>
-                                        {{ this.reviewCounts[listing.listingName] }} reviews
+                                        {{ listing.reviewCount }} reviews
                                     </p>
                                 </div>
                             </router-link>
@@ -555,17 +561,21 @@
                     <!-- col 2: your most reviewed categories -->
                     <div class="card p-3 col-5 text-start" style="color:black;">
                         <h6 class="fw-bold"> Your Most Reviewed Categories </h6>
-                        <div class="text-start pb-2" v-for="(category, index) in mostDiscussedCategories" v-bind:key="category">
-                            <div class="row ms-0 default-clickable-text"  style="color:black;"> 
-                                <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3" >
-                                    <h5 class="my-auto"> {{ index + 1 }} </h5>
-                                </div>
-                                <div class="col-10 shrink-width-on-dashboard">
-                                    <b> {{ category[0] }} </b> 
-                                    <br>
-                                    {{ category[1] || "-" }} reviews
+                        <div class="text-start pb-2" v-for="(object, index) in topCategoriesData" v-bind:key="index">
+
+                            <div v-for="(value, key) in object" v-bind:key="key">
+                                <div class="row ms-0 default-clickable-text"  style="color:black;"> 
+                                    <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3" >
+                                        <h5 class="my-auto"> {{ index + 1 }} </h5>
+                                    </div>
+                                    <div class="col-10 shrink-width-on-dashboard">
+                                        <b> {{ key }} </b> 
+                                        <br>
+                                        {{ value == 0 ? '-' : value }} reviews
+                                    </div>
                                 </div>
                             </div>
+                            
                         </div>
                     </div>
 
@@ -606,17 +616,17 @@
         },
         computed: {
             reviewsData() {
-                const dates = [...new Set(this.allReviews.map(review => this.formatDateMonthYear(review.createdDate)))];
-                dates.sort((a, b) => {
-                    const [monthA, yearA] = a.split('/');
-                    const [monthB, yearB] = b.split('/');
-                    if (yearA !== yearB) {
-                        return yearA - yearB;
-                    } else {
-                        return monthA - monthB;
-                    }
+                const dates = Object.keys(this.numReviewSpread).sort((a, b) => {
+                const [yearA, monthA] = a.split('-').map(Number);
+                const [yearB, monthB] = b.split('-').map(Number);
+
+                if (yearA !== yearB) {
+                    return yearA - yearB;
+                } else {
+                    return monthA - monthB;
+                }
                 });
-                const counts = dates.map(date => this.allReviews.filter(review => this.formatDateMonthYear(review.createdDate) === date).length);
+                const counts = dates.map(date => this.numReviewSpread[date] || 0);
                 return {
                     labels: dates,
                     datasets: [
@@ -653,7 +663,7 @@
             },
             ratingsData() { 
                 const ratings = Array.from({length: 11}, (_, i) => i);
-                const counts = ratings.map(value => Object.values(this.roundedSortedRatings).filter(v => v === value).length);
+                const counts = ratings.map(rating => this.ratingCountData[rating.toString()] || 0);
                 return {
                     labels: [...new Set([...ratings, ...Array.from({length: 11}, (_, i) => i)])].sort((a, b) => a - b),
                     datasets: [
@@ -670,10 +680,9 @@
             return {
                 dataLoaded: false,
                 // data from database
-                producers: [],
-                listings: [],
-                reviews: [],
-                users: [],
+                topCategoriesData: [],
+                ratingCountData: [],
+                numReviewSpread: [],
                 producersProfileViews: [],
 
                 user_id: "",
@@ -683,6 +692,7 @@
                 // specified producer
                 producer_id: null,
                 specified_producer: {},
+                recentReviews: [],
 
                 // for Q&A
                 // to get producer's answered questions
@@ -787,83 +797,82 @@
                             this.correctProducer = true;
                         }
                     }
-                // producers
+                // producer
                 // _id, producerName, producerDesc, originCountry, statusOB, mainDrinks
                 try {
-                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducers`);
-                        this.producers = response.data;
-                        this.specified_producer = this.producers.find(producer => producer["id"] == this.producer_id); // find specified producer
-                        this.checkProducerAnswered()
-
-                    } 
-                    catch (error) {
-                        console.error(error);
-                        this.dataLoaded = null;
-                    }
-                // listings
-                // _id, listingName, producerID, bottler, originCountry, drinkType, typeCategory, age, abv, reviewLink, officialDesc, sourceLink, photo
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducer/${this.producer_id}`);
+                    this.specified_producer = response.data;
+                    this.checkProducerAnswered()
+                } 
+                catch (error) {
+                    console.error(error);
+                    this.dataLoaded = null;
+                }
+                // recent reviews on the producer's listings
                 try {
-                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListings`);
-                        this.listings = response.data;
-                    } 
-                    catch (error) {
-                        console.error(error);
-                        this.dataLoaded = null;
-                    }
-                // reviews
-                // _id, userID, reviewTarget, date, rating, reviewDesc, taggedUsers, reviewTitle, reviewType, flavorTag, photo
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducerLatestReviews/${this.producer_id}`);
+                    this.recentReviews = response.data;
+                } catch (error) {
+                    console.error(error);
+                    this.dataLoaded = null;
+                }
+                // producer dashboard data
                 try {
-                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getReviews`);
-                        this.reviews = response.data;
-                    }
-                    catch (error) {
-                        console.error(error);
-                        this.dataLoaded = null;
-                    }
-                // users
-                // _id, username, displayName, choiceDrinks, drinkLists, modType, photo
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducerDashBoardData/${this.producer_id}`);
+                    this.topCategoriesData = response.data.topCategories;
+                    this.ratingCountData = response.data.roundedRatingsCount;
+                    this.numReviewSpread = response.data.numReviewsSpread;
+                } catch (error) {
+                    console.error(error);
+                    this.dataLoaded = null;
+                }
+                // producer most reviewed listings
                 try {
-                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUsers`);
-                        this.users = response.data;
-                    } 
-                    catch (error) {
-                        console.error(error);
-                        this.dataLoaded = null;
-                    }
-                 // producersProfileViews
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getMostReviewedExpressions/${this.producer_id}`);
+                    this.mostDiscussed = response.data;
+                } catch (error) {
+                    console.error(error);
+                    this.dataLoaded = null;
+                }
+                // producer best rated listings
+                try {
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getBestRatedExpressions/${this.producer_id}`);
+                    this.mostPopular = response.data;
+                } catch (error) {
+                    console.error(error);
+                    this.dataLoaded = null;
+                }
+                // producersProfileViews
                 // _id, producerID, views
                 try {
-                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducersProfileViews`);
-                        this.producersProfileViews = response.data;
-                        // let producerProfileViewInfo = this.producersProfileViews?.find(view => view.producerId == this.producer_id);
-                        // let producerViews = producerProfileViewInfo?.count;
-                        this.producerViews = response.data
-                    }
-                    catch (error) {
-                        console.error(error);
-                        // this.dataLoaded = null;
-                    }
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducersProfileViewsByProducer/${this.producer_id}`);
+                    this.producerViews = response.data
+                }
+                catch (error) {
+                    console.error(error);
+                    // this.dataLoaded = null;
+                }
 
                 // fetch all methods
-                this.getAllDrinks()
-                this.getAllReviews()
+                // this.getAllDrinks()
+                // this.getAllReviews()
 
-                this.getCountsByType()
-                this.getCountsByCategory()
+                // this.getCountsByType()
+                // this.getCountsByCategory()
 
-                this.getRatingsByType()
-                this.getAverageRatings()
-                this.getReviewCounts()
-                this.getCategoryReviewCounts()
-                this.roundSortedAverageRatings()
+                // this.getRatingsByType()
+                // this.getAverageRatings()
+                // this.getReviewCounts()
+                // this.getCategoryReviewCounts()
+                // this.roundSortedAverageRatings()
 
-                this.getTotalCounts()
-                this.getTotalReviewCounts()
-                this.getTotalCategoryCounts()
+                // this.getTotalCounts()
+                // this.getTotalReviewCounts()
+                // this.getTotalCategoryCounts()
 
-                this.getMostPopular()
-                this.getMostDiscussed()
-                this.getMostDiscussedCategory()
+                // this.getMostPopular()
+                // this.getMostDiscussed()
+                // this.getMostDiscussedCategory()
 
                 // Set data loaded to true
                 if (this.dataLoaded != null) {
@@ -925,264 +934,6 @@
 
                 // force page to reload
                 window.location.reload();
-            },
-
-            // get all drinks that a producer has
-            getAllDrinks() {
-                let allProducerDrinks = this.listings.filter(listing => listing.producerID == this.producer_id);
-                this.allDrinks = allProducerDrinks;
-            },
-
-            // get all reviews that a producer has
-            getAllReviews() {
-                let allProducerReviews = this.reviews.filter(review => {
-                    let review_target = review.reviewTarget;
-                    let all_drinks = this.allDrinks;
-                    return all_drinks.some(drink => drink.id === review_target);
-                });
-                this.allReviews = allProducerReviews;
-            },
-
-            getUserFromID(userID) {
-                let user = this.users.find(user => user.id == userID);
-                if (user) {
-                    return user
-                }
-            },
-
-            // get username from userID
-            getUsernameFromID(userID) {
-                let user = this.getUserFromID(userID);
-                if (user) {
-                    return user.username
-                }
-            },
-
-            // get listing from listingID
-            getListingFromID(listingID) {
-                let listing = this.listings.find(listing => listing.id == listingID);
-                if (listing) {
-                    return listing
-                }
-            },
-
-            // find drink name given reviewTarget
-            findDrinkNameForReview(reviewTarget) {
-                let drink_name = this.listings.find(listing => listing.id == reviewTarget).listingName;
-                return drink_name;
-            },
-
-            // find drink name given listing
-            findDrinkNameForListing(listing) {
-                let drink_name = listing.listingName;
-                return drink_name;
-            },
-
-            // find drink type given listing
-            findDrinkTypeForListing(listing) {
-                let drink_type = listing.drinkType;
-                return drink_type;
-            },
-
-            // get compiled dictionary of ratings of each type of drink
-            getRatingsByType() {
-                let allProducerDrinkRatings = {};
-                this.allReviews.forEach(review => {
-                    let drink_name = this.findDrinkNameForReview(review.reviewTarget);
-                    let rating = review["rating"];
-                    allProducerDrinkRatings[drink_name] = allProducerDrinkRatings[drink_name] || [];
-                                                            allProducerDrinkRatings[drink_name].push(rating);
-                });
-                this.drinkRatings = allProducerDrinkRatings;
-            },
-
-            // get compiled dictionary of count of each type of drink
-            getCountsByType() {
-                let allProducerDrinkCounts = {};
-                this.allDrinks.forEach(listing => {
-                    let drink_name = this.findDrinkNameForListing(listing);
-                    allProducerDrinkCounts[drink_name] = allProducerDrinkCounts[drink_name] ? 
-                                                            allProducerDrinkCounts[drink_name] + 1 : 1;
-                });
-                this.drinkCounts = allProducerDrinkCounts;
-            },
-
-            // get compiled dictionary of count of each category of drink
-            getCountsByCategory() {
-                let allCategoryDrinkCounts = {};
-                this.allDrinks.forEach(listing => {
-                    let drink_category = this.findDrinkTypeForListing(listing);
-                    allCategoryDrinkCounts[drink_category] = allCategoryDrinkCounts[drink_category] ? 
-                                                            allCategoryDrinkCounts[drink_category] + 1 : 1;
-                });
-                this.drinkCategoryCounts = allCategoryDrinkCounts;
-            },
-
-            // get average ratings for each listing
-            getAverageRatings() {
-                const averageRatings = {};
-                for (const [drink, ratings] of Object.entries(this.drinkRatings)) {
-                    const filteredRatings = ratings.filter(value => value !== "-").map(Number);
-                    if (filteredRatings.length > 0) {
-                        const averageRating = filteredRatings.reduce((sum, rating) => sum + rating, 0) / filteredRatings.length;
-                        averageRatings[drink] = averageRating;
-                    }
-                }
-                const sortedProducerAverageRatings = Object.fromEntries(Object.entries(averageRatings)
-                                                        .sort((a, b) => b[1] - a[1]));
-                this.sortedAverageRatings = sortedProducerAverageRatings;
-            },
-
-            // get number of reviews for each listing
-            getReviewCounts() {
-                const reviewCounts = {};
-                // Iterate through all reviews
-                this.allReviews.forEach(review => {
-                    const reviewTargetName = this.findDrinkNameForReview(review.reviewTarget);
-                    // Check if reviewTargetId is already in reviewCounts
-                    if (reviewTargetName in reviewCounts) {
-                        reviewCounts[reviewTargetName]++;
-                    } else {
-                        reviewCounts[reviewTargetName] = 1;
-                    }
-                });
-
-                // Iterate through all drinks
-                this.allDrinks.forEach(drink => {
-                    const drinkName = drink.listingName;
-                    // Check if drinkId is not in reviewCounts
-                    if (! (drinkName in reviewCounts)) {
-                        reviewCounts[drinkName] = 0;
-                    }
-                });
-
-                this.reviewCounts = reviewCounts;
-            },
-
-            // get number of reviews for each category
-            getCategoryReviewCounts() {
-                const categoryReviewCounts = {};
-                // Iterate through all reviews
-                this.allReviews.forEach(review => {
-                    const reviewTarget = review.reviewTarget;
-                    const reviewListing = this.listings.find(listing => listing.id === reviewTarget);
-                    const drinkType = this.findDrinkTypeForListing(reviewListing);
-                    // Check if reviewTargetId is already in reviewCounts
-                    if (drinkType in categoryReviewCounts) {
-                        categoryReviewCounts[drinkType]++;
-                    } else {
-                        categoryReviewCounts[drinkType] = 1;
-                    }
-                });
-
-                // Iterate through all drinks
-                this.allDrinks.forEach(drink => {
-                    const drinkType = this.findDrinkTypeForListing(drink);
-                    // Check if drinkId is not in reviewCounts
-                    if (! (drinkType in categoryReviewCounts)) {
-                        categoryReviewCounts[drinkType] = 0;
-                    }
-                });
-
-                this.categoryReviewCounts = categoryReviewCounts;
-            },
-
-            // get total counts for each listing
-            getTotalCounts() {
-                const drinkCountsArray = Object.entries(this.drinkCounts);
-                drinkCountsArray.sort((a, b) => b[1] - a[1]);
-                const sortedProducerDrinkCounts = Object.fromEntries(drinkCountsArray);
-                this.sortedDrinksCounts = sortedProducerDrinkCounts;
-            },
-
-            // get total reviews for each listing
-            getTotalReviewCounts() {
-                const reviewCountsArray = Object.entries(this.reviewCounts);
-                reviewCountsArray.sort((a, b) => b[1] - a[1]);
-                const sortedProducerReviewCounts = Object.fromEntries(reviewCountsArray);
-                this.sortedReviewCounts = sortedProducerReviewCounts;
-            },
-
-            // get total counts for each category
-            getTotalCategoryCounts() {
-                const drinkCategoryCountsArray = Object.entries(this.categoryReviewCounts);
-                drinkCategoryCountsArray.sort((a, b) => b[1] - a[1]);
-                const sortedCategoryCounts = Object.fromEntries(drinkCategoryCountsArray);
-                this.sortedCategoryCounts = sortedCategoryCounts;
-            },
-
-            // get the most popular drinks
-            getMostPopular() {
-                // get the average ratings
-                const averageRatings = this.sortedAverageRatings;
-                // get the first 5 items from the average ratings
-                let firstFiveItems = Object.entries(averageRatings).slice(0, 5);
-                firstFiveItems = firstFiveItems.map(item => {
-                    const listing = this.listings.find(listing => listing.listingName === item[0]);
-                    return listing ? [...item, listing.id] : item;
-                });
-                // if firstFiveItems is less than 5, get the remaining from this.allDrinks
-                if (firstFiveItems.length < 5) {
-                    this.allDrinks.forEach(drink => {
-                        if (!firstFiveItems.some(item => item[0] == drink.listingName)) {
-                            let drinkName = drink.listingName;
-                            let drinkCount = this.drinkCounts[drink.listingName];
-                            let drinkID = drink.id
-                            firstFiveItems.push([drinkName, drinkCount, drinkID]);
-                        }
-                    });
-                }
-                firstFiveItems = firstFiveItems.slice(0,5)
-                this.mostPopular = firstFiveItems;
-                this.mostPopular = this.mostPopular.map(item => {
-                    return this.listings.find(listing => listing.id == item[2]);
-                });
-            },
-
-            // get the most discussed drinks
-            getMostDiscussed() {
-                // get the drink counts
-                const drinkCounts = this.sortedReviewCounts;
-                // get the first 5 items from the drink counts
-                let firstFiveItems = Object.entries(drinkCounts).slice(0, 5);
-                firstFiveItems = firstFiveItems.map(item => {
-                    const listing = this.listings.find(listing => listing.listingName === item[0]);
-                    return listing ? [...item, listing.id] : item;
-                });
-                // if firstFiveItems is less than 5, get the remaining from this.allDrinks
-                if (firstFiveItems.length < 5) {
-                    this.allDrinks.forEach(drink => {
-                        if (!firstFiveItems.some(item => item[0] == drink.listingName)) {
-                            let drinkName = drink.listingName;
-                            let drinkCount = this.drinkCounts[drink.listingName];
-                            let drinkID = drink.id
-                            firstFiveItems.push([drinkName, drinkCount, drinkID]);
-                        }
-                    });
-                }
-                firstFiveItems = firstFiveItems.slice(0,5)
-                this.mostDiscussed = firstFiveItems;
-                this.mostDiscussed = this.mostDiscussed.map(item => {
-                    return this.listings.find(listing => listing.id == item[2]);
-                });
-            },
-
-            // get the most discussed categories
-            getMostDiscussedCategory() {
-                // get the drink category counts
-                const drinkCategoryCounts = this.sortedCategoryCounts
-                // get the first 5 items from the drink counts
-                let firstFiveItems = Object.entries(drinkCategoryCounts).slice(0, 5);
-                // get the first 5 items from the drink category counts
-                this.mostDiscussedCategories = firstFiveItems;
-            },
-
-            roundSortedAverageRatings() {
-                const roundedAverageRatings = {};
-                for (const [drink, rating] of Object.entries(this.sortedAverageRatings)) {
-                    roundedAverageRatings[drink] = Math.round(rating);
-                }
-                this.roundedSortedRatings = roundedAverageRatings;
             },
 
             formatDateMonthYear(dateTimeString) {
@@ -1274,6 +1025,266 @@
                     this.showLatestReview = true;
                 }
             },
+
+            // old functions before refactoring =====================================================================================================
+
+            // get all drinks that a producer has
+            // getAllDrinks() {
+            //     let allProducerDrinks = this.listings.filter(listing => listing.producerID == this.producer_id);
+            //     this.allDrinks = allProducerDrinks;
+            // },
+
+            // get all reviews that a producer has
+            // getAllReviews() {
+            //     let allProducerReviews = this.reviews.filter(review => {
+            //         let review_target = review.reviewTarget;
+            //         let all_drinks = this.allDrinks;
+            //         return all_drinks.some(drink => drink.id === review_target);
+            //     });
+            //     this.allReviews = allProducerReviews;
+            // },
+
+            // get number of reviews for each listing
+            // getReviewCounts() {
+            //     const reviewCounts = {};
+            //     // Iterate through all reviews
+            //     this.allReviews.forEach(review => {
+            //         const reviewTargetName = this.findDrinkNameForReview(review.reviewTarget);
+            //         // Check if reviewTargetId is already in reviewCounts
+            //         if (reviewTargetName in reviewCounts) {
+            //             reviewCounts[reviewTargetName]++;
+            //         } else {
+            //             reviewCounts[reviewTargetName] = 1;
+            //         }
+            //     });
+
+            //     // Iterate through all drinks
+            //     this.allDrinks.forEach(drink => {
+            //         const drinkName = drink.listingName;
+            //         // Check if drinkId is not in reviewCounts
+            //         if (! (drinkName in reviewCounts)) {
+            //             reviewCounts[drinkName] = 0;
+            //         }
+            //     });
+
+            //     this.reviewCounts = reviewCounts;
+            // },
+
+            // get number of reviews for each category
+            // getCategoryReviewCounts() {
+            //     const categoryReviewCounts = {};
+            //     // Iterate through all reviews
+            //     this.allReviews.forEach(review => {
+            //         const reviewTarget = review.reviewTarget;
+            //         const reviewListing = this.listings.find(listing => listing.id === reviewTarget);
+            //         const drinkType = this.findDrinkTypeForListing(reviewListing);
+            //         // Check if reviewTargetId is already in reviewCounts
+            //         if (drinkType in categoryReviewCounts) {
+            //             categoryReviewCounts[drinkType]++;
+            //         } else {
+            //             categoryReviewCounts[drinkType] = 1;
+            //         }
+            //     });
+
+            //     // Iterate through all drinks
+            //     this.allDrinks.forEach(drink => {
+            //         const drinkType = this.findDrinkTypeForListing(drink);
+            //         // Check if drinkId is not in reviewCounts
+            //         if (! (drinkType in categoryReviewCounts)) {
+            //             categoryReviewCounts[drinkType] = 0;
+            //         }
+            //     });
+
+            //     this.categoryReviewCounts = categoryReviewCounts;
+            // },
+
+            // get total counts for each listing
+            // getTotalCounts() {
+            //     const drinkCountsArray = Object.entries(this.drinkCounts);
+            //     drinkCountsArray.sort((a, b) => b[1] - a[1]);
+            //     const sortedProducerDrinkCounts = Object.fromEntries(drinkCountsArray);
+            //     this.sortedDrinksCounts = sortedProducerDrinkCounts;
+            // },
+
+            // get total reviews for each listing
+            // getTotalReviewCounts() {
+            //     const reviewCountsArray = Object.entries(this.reviewCounts);
+            //     reviewCountsArray.sort((a, b) => b[1] - a[1]);
+            //     const sortedProducerReviewCounts = Object.fromEntries(reviewCountsArray);
+            //     this.sortedReviewCounts = sortedProducerReviewCounts;
+            // },
+
+            // get total counts for each category
+            // getTotalCategoryCounts() {
+            //     const drinkCategoryCountsArray = Object.entries(this.categoryReviewCounts);
+            //     drinkCategoryCountsArray.sort((a, b) => b[1] - a[1]);
+            //     const sortedCategoryCounts = Object.fromEntries(drinkCategoryCountsArray);
+            //     this.sortedCategoryCounts = sortedCategoryCounts;
+            // },
+
+            // get compiled dictionary of count of each type of drink
+            // getCountsByType() {
+            //     let allProducerDrinkCounts = {};
+            //     this.allDrinks.forEach(listing => {
+            //         let drink_name = this.findDrinkNameForListing(listing);
+            //         allProducerDrinkCounts[drink_name] = allProducerDrinkCounts[drink_name] ? 
+            //                                                 allProducerDrinkCounts[drink_name] + 1 : 1;
+            //     });
+            //     this.drinkCounts = allProducerDrinkCounts;
+            // },
+
+            // get compiled dictionary of count of each category of drink
+            // getCountsByCategory() {
+            //     let allCategoryDrinkCounts = {};
+            //     this.allDrinks.forEach(listing => {
+            //         let drink_category = this.findDrinkTypeForListing(listing);
+            //         allCategoryDrinkCounts[drink_category] = allCategoryDrinkCounts[drink_category] ? 
+            //                                                 allCategoryDrinkCounts[drink_category] + 1 : 1;
+            //     });
+            //     this.drinkCategoryCounts = allCategoryDrinkCounts;
+            // },
+
+            // get average ratings for each listing
+            // getAverageRatings() {
+            //     const averageRatings = {};
+            //     for (const [drink, ratings] of Object.entries(this.drinkRatings)) {
+            //         const filteredRatings = ratings.filter(value => value !== "-").map(Number);
+            //         if (filteredRatings.length > 0) {
+            //             const averageRating = filteredRatings.reduce((sum, rating) => sum + rating, 0) / filteredRatings.length;
+            //             averageRatings[drink] = averageRating;
+            //         }
+            //     }
+            //     const sortedProducerAverageRatings = Object.fromEntries(Object.entries(averageRatings)
+            //                                             .sort((a, b) => b[1] - a[1]));
+            //     this.sortedAverageRatings = sortedProducerAverageRatings;
+            // },
+
+            // get compiled dictionary of ratings of each type of drink
+            // getRatingsByType() {
+            //     let allProducerDrinkRatings = {};
+            //     this.allReviews.forEach(review => {
+            //         let drink_name = this.findDrinkNameForReview(review.reviewTarget);
+            //         let rating = review["rating"];
+            //         allProducerDrinkRatings[drink_name] = allProducerDrinkRatings[drink_name] || [];
+            //                                                 allProducerDrinkRatings[drink_name].push(rating);
+            //     });
+            //     this.drinkRatings = allProducerDrinkRatings;
+            // },
+
+            // roundSortedAverageRatings() {
+            //     const roundedAverageRatings = {};
+            //     for (const [drink, rating] of Object.entries(this.sortedAverageRatings)) {
+            //         roundedAverageRatings[drink] = Math.round(rating);
+            //     }
+            //     this.roundedSortedRatings = roundedAverageRatings;
+            // },
+
+            // getUserFromID(userID) {
+            //     let user = this.users.find(user => user.id == userID);
+            //     if (user) {
+            //         return user
+            //     }
+            // },
+
+            // get username from userID
+            // getUsernameFromID(userID) {
+            //     let user = this.getUserFromID(userID);
+            //     if (user) {
+            //         return user.username
+            //     }
+            // },
+
+            // get listing from listingID
+            // getListingFromID(listingID) {
+            //     let listing = this.listings.find(listing => listing.id == listingID);
+            //     if (listing) {
+            //         return listing
+            //     }
+            // },
+
+            // find drink name given reviewTarget
+            // findDrinkNameForReview(reviewTarget) {
+            //     let drink_name = this.listings.find(listing => listing.id == reviewTarget).listingName;
+            //     return drink_name;
+            // },
+
+            // find drink name given listing
+            // findDrinkNameForListing(listing) {
+            //     let drink_name = listing.listingName;
+            //     return drink_name;
+            // },
+
+            // find drink type given listing
+            // findDrinkTypeForListing(listing) {
+            //     let drink_type = listing.drinkType;
+            //     return drink_type;
+            // },
+
+            // get the most popular drinks
+            // getMostPopular() {
+            //     // get the average ratings
+            //     const averageRatings = this.sortedAverageRatings;
+            //     // get the first 5 items from the average ratings
+            //     let firstFiveItems = Object.entries(averageRatings).slice(0, 5);
+            //     firstFiveItems = firstFiveItems.map(item => {
+            //         const listing = this.listings.find(listing => listing.listingName === item[0]);
+            //         return listing ? [...item, listing.id] : item;
+            //     });
+            //     // if firstFiveItems is less than 5, get the remaining from this.allDrinks
+            //     if (firstFiveItems.length < 5) {
+            //         this.allDrinks.forEach(drink => {
+            //             if (!firstFiveItems.some(item => item[0] == drink.listingName)) {
+            //                 let drinkName = drink.listingName;
+            //                 let drinkCount = this.drinkCounts[drink.listingName];
+            //                 let drinkID = drink.id
+            //                 firstFiveItems.push([drinkName, drinkCount, drinkID]);
+            //             }
+            //         });
+            //     }
+            //     firstFiveItems = firstFiveItems.slice(0,5)
+            //     this.mostPopular = firstFiveItems;
+            //     this.mostPopular = this.mostPopular.map(item => {
+            //         return this.listings.find(listing => listing.id == item[2]);
+            //     });
+            // },
+
+            // get the most discussed drinks
+            // getMostDiscussed() {
+            //     // get the drink counts
+            //     const drinkCounts = this.sortedReviewCounts;
+            //     // get the first 5 items from the drink counts
+            //     let firstFiveItems = Object.entries(drinkCounts).slice(0, 5);
+            //     firstFiveItems = firstFiveItems.map(item => {
+            //         const listing = this.listings.find(listing => listing.listingName === item[0]);
+            //         return listing ? [...item, listing.id] : item;
+            //     });
+            //     // if firstFiveItems is less than 5, get the remaining from this.allDrinks
+            //     if (firstFiveItems.length < 5) {
+            //         this.allDrinks.forEach(drink => {
+            //             if (!firstFiveItems.some(item => item[0] == drink.listingName)) {
+            //                 let drinkName = drink.listingName;
+            //                 let drinkCount = this.drinkCounts[drink.listingName];
+            //                 let drinkID = drink.id
+            //                 firstFiveItems.push([drinkName, drinkCount, drinkID]);
+            //             }
+            //         });
+            //     }
+            //     firstFiveItems = firstFiveItems.slice(0,5)
+            //     this.mostDiscussed = firstFiveItems;
+            //     this.mostDiscussed = this.mostDiscussed.map(item => {
+            //         return this.listings.find(listing => listing.id == item[2]);
+            //     });
+            // },
+
+            // get the most discussed categories
+            // getMostDiscussedCategory() {
+            //     // get the drink category counts
+            //     const drinkCategoryCounts = this.sortedCategoryCounts
+            //     // get the first 5 items from the drink counts
+            //     let firstFiveItems = Object.entries(drinkCategoryCounts).slice(0, 5);
+            //     // get the first 5 items from the drink category counts
+            //     this.mostDiscussedCategories = firstFiveItems;
+            // },
         }
     };
 </script>

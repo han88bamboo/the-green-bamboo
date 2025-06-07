@@ -31,7 +31,6 @@ DROP TABLE IF EXISTS "producerUpdateLikes" CASCADE;
 DROP TABLE IF EXISTS "producers" CASCADE;
 DROP TABLE IF EXISTS "producersProfileViews" CASCADE;
 DROP TABLE IF EXISTS "producersOpeningHours" CASCADE;
-DROP TABLE IF EXISTS "producersProfileViewsViews" CASCADE;
 DROP TABLE IF EXISTS "producersQuestionAnswers" CASCADE;
 DROP TABLE IF EXISTS "producersUpdates" CASCADE;
 DROP TABLE IF EXISTS "requestEdits" CASCADE;

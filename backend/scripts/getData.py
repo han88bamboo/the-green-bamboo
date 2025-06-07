@@ -13,7 +13,9 @@
 
 #           [Producers]
 #           /getProducers (GET), /getProducer/<id> (GET), /getProducersByIDs (POST), /getProducersBySearch (GET),
-#           /getProducersProfileViews (GET),
+#           /getProducersProfileViews (GET), /getProducersProfileViewsByProducer/<id> (GET),
+#           /getBestRatedExpressions/<producerID> (GET), /getMostReviewedExpressions/<producerID> (GET),
+#           /getProducerDashBoardData/<producerID> (GET), /getProducerLatestReviews/<producerID> (GET),
 
 #           [Venues]
 #           /getVenuesWithSpecificListing/<listingID> (GET), /getVenuesBySearch (GET), /getVenues (GET), 
@@ -3131,14 +3133,16 @@ def getProducersProfileViews():
     finally:
         cur.close()
 
+
+# -----------------------------------------------------------------------------------------
 # [GET] producersProfileViews by producerID
 @blueprint.route("/getProducersProfileViewsByProducer/<id>")
-def getProducersProfileViewsByProducer():
+def getProducersProfileViewsByProducer(id):
     conn = g.db
     cur = conn.cursor()
 
     try:
-        cur.execute('SELECT * FROM "producersProfileViews" WHERE "producerID" = %s', (id,))
+        cur.execute('SELECT * FROM "producersProfileViews" WHERE "producerId" = %s', (id,))
         producers_profile_views_data = cur.fetchall()
 
         if not producers_profile_views_data:
@@ -3157,6 +3161,229 @@ def getProducersProfileViewsByProducer():
     
     finally:
         cur.close()
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Get best rated expressions for a producer
+@blueprint.route("/getBestRatedExpressions/<producerID>")
+def getBestRatedExpressions(producerID):
+    conn = g.db
+    cur = conn.cursor()
+
+    bestRatedExpressions = []
+
+    try:
+        # Query to get best rated expressions for a producer
+        query = """
+            SELECT 
+                l."listingName", 
+                l."photo",
+                l.id, 
+                AVG(r."rating") AS "rating"
+            FROM 
+                "listings" l
+            JOIN 
+                "reviews" r ON l.id = r."reviewTarget"
+            WHERE 
+                l."producerID" = %s
+            GROUP BY 
+                l.id, l."listingName"
+            ORDER BY 
+                "rating" DESC
+            LIMIT 5;
+        """
+        cur.execute(query, (producerID,))
+        best_rated_expressions = cur.fetchall()
+
+        # Loop through the best rated expressions to round ratings to 1 decimal place
+        for expression in best_rated_expressions:
+            expression['rating'] = round(expression['rating'], 1)
+            bestRatedExpressions.append(expression)
+
+        return jsonify(best_rated_expressions), 200
+    
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred retrieving the best rated expressions."
+            }
+        ), 500
+    
+    finally:
+        cur.close()
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Get most reviewed expressions for a producer
+@blueprint.route("/getMostReviewedExpressions/<producerID>")
+def getMostReviewedExpressions(producerID):
+    conn = g.db
+    cur = conn.cursor()
+
+    mostReviewedExpressions = []
+
+    try:
+        # Query to get most reviewed expressions for a producer
+        query = """
+            SELECT 
+                l."listingName",
+                l."photo", 
+                l.id, 
+                COUNT(*) AS "reviewCount"
+            FROM 
+                listings l
+            JOIN 
+                reviews r ON l.id = r."reviewTarget"
+            WHERE 
+                l."producerID" = %s
+            GROUP BY 
+                l.id, l."listingName"
+            ORDER BY 
+                "reviewCount" DESC
+            LIMIT 5;
+        """
+        cur.execute(query, (producerID,))
+        most_reviewed_expressions = cur.fetchall()
+
+        for expression in most_reviewed_expressions:
+            mostReviewedExpressions.append(expression)
+
+        return jsonify(mostReviewedExpressions), 200
+    
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred retrieving the most reviewed expressions."
+            }
+        ), 500
+    
+    finally:
+        cur.close()
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Get producer dashboard data
+@blueprint.route("/getProducerDashBoardData/<producerID>")
+def getProducerDashBoardData(producerID):
+    conn = g.db
+    cursor = conn.cursor()
+
+    topCategories = []
+    roundedRatingsCount = {}
+    numReviewsSpread = {}
+
+    try:
+        # Get the top 5 most reviewed categories 
+        cursor.execute("""
+            SELECT l."drinkType", COUNT(r.*) as "count"
+            FROM "listings" l
+            JOIN "reviews" r ON l.id = r."reviewTarget"
+            WHERE l."producerID" = %s
+            GROUP BY l."drinkType"
+            ORDER BY "count" DESC
+            LIMIT 5
+        """, (producerID,))
+        top_categories_data = cursor.fetchall()
+
+        for category in top_categories_data:
+            # Category as key and count as value
+            topCategories.append({ category['drinkType']: category['count'] })
+    
+
+        # Get rounded ratings and the corresponding count based on the reviews on listings by a specific producer
+        cursor.execute("""
+            SELECT ROUND(r."rating", 0) as "roundedRating", COUNT(*) as "count"
+            FROM "reviews" r
+            JOIN "listings" l ON r."reviewTarget" = l.id
+            WHERE l."producerID" = %s
+            GROUP BY "roundedRating"
+        """, (producerID,))
+        rounded_ratings_data = cursor.fetchall()
+
+        for rating in rounded_ratings_data:
+            # Rounded rating as key and count as value
+            roundedRatingsCount[int(round(rating['roundedRating'], 0))] = rating['count']
+
+        # Get the number of reviews spread by month
+        cursor.execute("""
+            SELECT DATE_TRUNC('month', r."createdDate") as "month", COUNT(*) as "count"
+            FROM "reviews" r
+            JOIN "listings" l ON r."reviewTarget" = l.id
+            WHERE l."producerID" = %s
+            GROUP BY "month"
+            ORDER BY "month"
+        """, (producerID,))
+        num_reviews_spread_data = cursor.fetchall()
+
+        for review in num_reviews_spread_data:
+            # Month as key and count as value
+            month_str = review['month'].strftime('%Y-%m')
+            numReviewsSpread[month_str] = review['count']
+
+        return jsonify({
+            "topCategories": topCategories,
+            "roundedRatingsCount": roundedRatingsCount,
+            "numReviewsSpread": numReviewsSpread
+        }), 200
+    
+    
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred retrieving the producer dashboard data."
+            }
+        ), 500
+    finally:
+        cursor.close()
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Get producer latest reviews from users on listings that are owned by the producer 
+@blueprint.route("/getProducerLatestReviews/<producerID>")
+def getProducerLatestReviews(producerID):
+    conn = g.db
+    cursor = conn.cursor()
+
+    latestReviews = []
+
+    try:
+        # Query to get the latest reviews for listings owned by the producer
+        query = """
+            SELECT r.id, r."userID", l."listingName", l.id as "listingID", u."username", r."rating"
+            FROM "reviews" r
+            JOIN "listings" l ON r."reviewTarget" = l.id
+            JOIN "users" u ON r."userID" = u.id
+            WHERE l."producerID" = %s
+            ORDER BY r."createdDate" DESC
+            LIMIT 5
+        """
+        cursor.execute(query, (producerID,))
+        latest_reviews_data = cursor.fetchall()
+
+        for review in latest_reviews_data:
+            latestReviews.append(review)
+
+        return jsonify(latestReviews), 200
+    
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred retrieving the producer's latest reviews."
+            }
+        ), 500
+    
+    finally:
+        cursor.close()
+
+
 
 # ----------------------
 # [NEW] TO BE ADDED:
