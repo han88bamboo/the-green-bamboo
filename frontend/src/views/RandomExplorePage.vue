@@ -207,17 +207,17 @@
                     <div style="align-items: center; justify-content: center">
                       <p>
                         <span class="title-card-text">
-                          {{ requestListings.length }}
+                          {{ requestListingsCount }}
                         </span>
                         New Listing Requests
                         <br />
                         <span class="title-card-text">
-                          {{ requestEdits.length }}
+                          {{ requestEditsCount }}
                         </span>
                         Edit Listing Requests
                         <br />
                         <span class="title-card-text">
-                          {{ requestDupes.length }}
+                          {{ requestDupesCount }}
                         </span>
                         Duplicate Reports
                       </p>
@@ -292,11 +292,11 @@
                                     '/profile/producer/' +
                                     listing.producerID +
                                     '/' +
-                                    getProducerName(listing),
+                                    listing.producerName,
                                 }"
                                 class="reverse-clickable-text"
                               >
-                                {{ getProducerName(listing) }}
+                                {{ listing.producerName}}
                               </router-link>
                             </span>
                           </div>
@@ -412,7 +412,7 @@
                           <br />
                           
                           <br />
-                          </div>
+                        </div>
 
                         <!-- Show if it's either producer or venue question? (Kai Lin wants to show newly added expressions)-->
                       </div>
@@ -486,17 +486,17 @@
                     <div style="align-items: center; justify-content: center">
                       <p>
                         <span class="title-card-text">
-                          {{ requestListings.length }}
+                          {{ requestListingsCount }}
                         </span>
                         New Listing Requests
                         <br />
                         <span class="title-card-text">
-                          {{ requestEdits.length }}
+                          {{ requestEditsCount }}
                         </span>
                         Edit Listing Requests
                         <br />
                         <span class="title-card-text">
-                          {{ requestDupes.length }}
+                          {{ requestDupesCount }}
                         </span>
                         Duplicate Reports
                       </p>
@@ -1027,12 +1027,12 @@
                                           '/profile/producer/' +
                                           listing.producerID +
                                           '/' +
-                                          getProducerName(listing),
+                                          listing.producerName,
                                       }"
                                       class="primary-clickable-text"
                                     >
                                       <h6 class="Xmobile-rating-smaller-text">
-                                        <b>{{ getProducerName(listing) }}</b>
+                                        <b>{{ listing.producerName }}</b>
                                       </h6>
                                     </router-link>
                                   </div>
@@ -1059,11 +1059,11 @@
                                 <div class="text-center text-md-end col-12 col-md-3 d-flex flex-row flex-md-col justify-content-between d-md-block mt-0 mt-md-3 px-3"
                                 >
                                   <h1 class="fw-bold text-warning mobile-view-hide">
-                                    {{ getRatings(listing) }} ★
+                                    {{ listing.rating }} ★
                                   </h1>
 
                                   <h4 class="fw-bold text-warning mobile-view-show">
-                                    {{ getRatings(listing) }} ★
+                                    {{ listing.rating }} ★
                                   </h4>
                                   <div class="d-grid">
                                     <router-link
@@ -1317,12 +1317,12 @@
                                           '/profile/producer/' +
                                           listing.producerID +
                                           '/' +
-                                          getProducerName(listing),
+                                          listing.producerName,
                                       }"
                                       class="primary-clickable-text"
                                     >
                                       <h6 class="Xmobile-rating-smaller-text">
-                                        <b>{{ getProducerName(listing) }}</b>
+                                        <b>{{ listing.producerName }}</b>
                                       </h6>
                                     </router-link>
                                   </div>
@@ -1346,10 +1346,10 @@
                                 <!-- Rating & Read More Button -->
                                 <div class="text-center text-md-end col-12 col-md-3 d-flex flex-row flex-md-col justify-content-between d-md-block mt-0 mt-md-3 px-3">
                                   <h1 class="fw-bold text-warning mobile-view-hide">
-                                    {{ getRatings(listing) }} ★
+                                    {{ listing.rating }} ★
                                   </h1>
                                   <h4 class="fw-bold text-warning mobile-view-show">
-                                    {{ getRatings(listing) }} ★
+                                    {{ listing.rating }} ★
                                   </h4>
                                   <div class="d-grid">
                                     <router-link
@@ -1432,21 +1432,13 @@ export default {
       // data from database
       // countries: [],
       listings: [],
-      producers: [],
       reviews: [],
-      users: [],
-      venues: [],
-      venuesAPI: [],
       drinkTypes: [],
-      requestListings: [],
-      requestEdits: [],
-      requestDupes: [],
-      modRequests: [],
+      // modRequests: [],
 
       // for user account credentials
       userID: "",
       userType: "",
-      types: [],
       username: "",
       displayName: "",
       isAdmin: "",
@@ -1509,6 +1501,10 @@ export default {
       allProducerDrinks: [],
       allVenueDrinks: [],
       recentlyAdded: [],
+
+      lastRAProducerListingID: null,
+      lastMenuID: null,
+
       filteredRecentlyAdded: [],
       questionsUpdates: [],
       followCount: 0,
@@ -1551,20 +1547,8 @@ export default {
             },
     // load data from database
     async loadData() {
-      // countries
-      // _id, originCountry
-      // try {
-      //     const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getCountries`);
-      //     this.countries = response.data;
-      // }
-      // catch (error) {
-      //     console.error(error);
-      // }
-      // listings
-      // _id, listingName, producerID, bottler, originCountry, drinkType, typeCategory, age, abv, reviewLink, officialDesc, sourceLink, photo
+
       try {
-        // const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListings`);
-        // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getRandomListings`);
         const response = await this.$axios.get(
           `${process.env.VUE_APP_API_URL}/getData/getRandomListings`
         );
@@ -1575,92 +1559,13 @@ export default {
         console.error(error);
         this.dataLoaded = null;
       }
-      // producers
-      // _id, producerName, producerDesc, originCountry, statusOB, mainDrinks
-      // TODO: make retrieved producers only for listings that are retrieved initially
-      try {
-        const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getProducers`
-        );
-        this.producers = response.data;
-      } catch (error) {
-        console.error(error);
-        this.dataLoaded = null;
-      }
-      // reviews
-      // _id, userID, reviewTarget, date, rating, reviewDesc, taggedUsers, reviewTitle, reviewType, flavorTag, photo
-      // TODO: make retrieved reviews only for the listings that are retrieved initially
-      try {
-        const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getReviews`
-        );
-        this.reviews = response.data;
-        this.getAllReviews();
-        this.getMostReviews();
-      } catch (error) {
-        console.error(error);
-        this.dataLoaded = null;
-      }
-      // venues
-      // _id, venueName, venueDesc, originCountry, address, openingHours
-      try {
-        const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getVenues`
-        );
-        this.venues = response.data;
-      } catch (error) {
-        console.error(error);
-        this.dataLoaded = null;
-      }
-      // users
-      // _id, username, displayName, choiceDrinks, drinkLists, modType, photo
-      try {
-        const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getUser/${this.userID}`
-        );
-        this.user = response.data;
-        if (this.user) {
-          // Get the list of users that the current user is following
 
-          // Add awaits to ensure these complete in order
-          await this.getFollowedProducers();
-          await this.getFollowedVenues();
-          await Promise.all([
-            this.getListingsByProducer(),
-            this.getListingsByVenue()
-          ]);
-          this.getRecentlyAdded();
-          this.getQuestionsUpdates();
+      await this.getUserDetails();
 
-          if (this.user.followLists.users.length > 0) {
-            this.userFollowing = this.user.followLists.users;
-            // Get the latest reviews from users that the current user is following
-            this.getUsersLatestReviews();
-          }
-          // check if user is an admin
-          if (this.user.isAdmin) {
-            this.isAdmin = true;
-          }
-          // if user is not admin, check if user is a moderator
-          if (this.user.modType.length > 0) {
-            this.isModerator = true;
-          }
-        }
-      } catch (error) {
-        console.error(error);
-        // this.dataLoaded = null;
-      }
-      // venuesAPI
-      // _id, venueName, venueDesc, originCountry
-      // try {
-      //         const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenuesAPI`);
-      //         this.venuesAPI = response.data;
-      //     }
-      //     catch (error) {
-      //         console.error(error);
-      //     }
+      // get top 5 most reviewed drinks
+      this.getMostReviews();
+  
       // drinkTypes
-      // _id, drinkType, typeCategory
       try {
         const response = await this.$axios.get(
           `${process.env.VUE_APP_API_URL}/getData/getDrinkTypes`
@@ -1673,92 +1578,36 @@ export default {
         console.error(error);
         this.dataLoaded = null;
       }
-      // requestListings
-      // _id, listingName, producerNew, producerID, bottler, originCountry, drinkType, typeCategory, age, abv, reviewLink, sourceLink, brandRelation, reviewStatus, userID, photo
+      
+      // requests counts
       try {
-        const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getRequestListings`
+        // Prepare data for request counts
+        let data = {}
+
+        if (this.userType == "user") {
+          data = {
+            user_id: this.userID,
+            user_type: this.userType,
+            is_admin: this.isAdmin,
+            drink_types: this.user.modType ? this.user.modType : [],
+          };
+        } else {
+          data = {
+            user_id: this.userID,
+            user_type: this.userType,
+            is_admin: false,
+            drink_types: [],
+          };
+        }
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/getData/getRequestsCount`,
+          data
         );
-        this.requestListings = response.data;
-        // Filter requests based on user role
-        if (this.userType == "producer") {
-          this.requestListings = response.data.filter((request) => {
-            return (
-              request["reviewStatus"] == false &&
-              request["producerID"] == this.userID
-            );
-          });
-        } else if (this.userType == "user") {
-          if (this.isAdmin) {
-            this.requestListings = response.data.filter((request) => {
-              return request["reviewStatus"] == false;
-            });
-          } else {
-            this.requestListings = response.data.filter((request) => {
-              return (
-                request["reviewStatus"] == false &&
-                (request["userID"] == this.userID ||
-                  this.types.includes(request["drinkType"]))
-              );
-            });
-          }
-        }
-      } catch (error) {
-        console.error(error);
-        this.dataLoaded = null;
-      }
-      // requestEdits
-      // _id, duplicateLink, editDesc, sourceLink, brandRelation, listingID, userID, reviewStatus
-      try {
-        const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getRequestEdits`
-        );
-        let unreviewedRequests = response.data.filter((request) => {
-          return request["reviewStatus"] == false;
-        });
+        this.requestListingsCount = response.data.requestListings;
+        this.requestEditsCount = response.data.requestEdits;
+        this.requestDupesCount = response.data.requestDupes;
+        this.totalRequests = this.requestListingsCount + this.requestEditsCount + this.requestDupesCount;
 
-        // Obtain listing data for each request
-        for (let request of unreviewedRequests) {
-          let targetListing = this.listings.find((listing) => {
-            return listing["id"] == request["listingID"];
-          });
-          if (targetListing == undefined) {
-            continue;
-          }
-
-          request["photo"] = targetListing["photo"];
-          request["listingName"] = targetListing["listingName"];
-          request["producerID"] = targetListing["producerID"];
-
-          if (request["duplicateLink"]) {
-            this.requestDupes.push(request);
-          } else {
-            this.requestEdits.push(request);
-          }
-        }
-
-        // Filter requests based on user role
-        if (this.userType == "producer") {
-          this.requestEdits = this.requestEdits.filter((request) => {
-            return request["producerID"] == this.userID;
-          });
-          this.requestDupes = this.requestDupes.filter((request) => {
-            return request["producerID"] == this.userID;
-          });
-        } else if (this.userType == "user" && !this.isAdmin) {
-          this.requestEdits = this.requestEdits.filter((request) => {
-            return (
-              request["userID"] == this.userID ||
-              this.types.includes(request["drinkType"])
-            );
-          });
-          this.requestDupes = this.requestDupes.filter((request) => {
-            return (
-              request["userID"] == this.userID ||
-              this.types.includes(request["drinkType"])
-            );
-          });
-        }
       } catch (error) {
         console.error(error);
         this.dataLoaded = null;
@@ -1773,12 +1622,6 @@ export default {
       //     console.error(error);
       // }
 
-      this.getUsername();
-      // listing requests
-      this.totalRequests =
-        this.requestListings.length +
-        this.requestEdits.length +
-        this.requestDupes.length;
 
       // set dataLoaded to true
       if (this.dataLoaded != null) {
@@ -1786,75 +1629,201 @@ export default {
       }
     },
 
-    // get username of user accessing page
-    async getUsername() {
-      let producer = this.producers.find(
-        (producer) => producer.id == parseInt(this.userID)
-      );
-      let venue = this.venues.find(
-        (venue) => venue.id == parseInt(this.userID)
-      );
-      if (this.user && this.userType == "user") {
-        this.username = this.user.username;
-        this.displayName = this.user.displayName;
+    // get details of user accessing this page
+    async getUserDetails() {
+      // get userID from local storage
+      this.userID = localStorage.getItem("88B_accID");
+      // get userType from local storage
+      this.userType = localStorage.getItem("88B_accType");
 
-        // drink shelf
-        // 1. Loop through all the drink lists
-        let allDrinkShelf = [];
+      // if user is logged in, get user details
+      if (this.userID && this.userType) {
+        try {
+          
+          // Check if user is user type
+          if (this.userType == "user") {
+            const response = await this.$axios.get(
+              `${process.env.VUE_APP_API_URL}/getData/getUser/${this.userID}`
+            );
+            this.user = response.data;
 
-        Object.values(this.user.drinkLists).forEach((value) => {
-          let listItems = value.listItems || [];
-          allDrinkShelf.push(...listItems);
-        });
+            // Get the list of users that the current user is following
 
-        // Sort by addedDate (newest first)
-        allDrinkShelf.sort((a, b) => new Date(b.addedDate) - new Date(a.addedDate));
+            // Add awaits to ensure these complete in order
+            await this.getFollowers();
+            this.getRecentlyAdded();
+            this.getQuestionsUpdates();
 
-        // Loop through allDrinkShelf to get the drink details and add to drinkShelf
-        if (this.listings && this.listings.length > 0) {
-          for (let drink of allDrinkShelf) {
-            
-            try {
-              const response = await this.$axios.get(
-                `${process.env.VUE_APP_API_URL}/getData/getListing/${drink.drinkId}`
-              );
+            if (this.user.followLists.users.length > 0) {
+              this.userFollowing = this.user.followLists.users;
+              // Get the latest reviews from users that the current user is following
+              this.getUsersLatestReviews();
+            }
+            // check if user is an admin
+            if (this.user.isAdmin) {
+              this.isAdmin = true;
+            }
+            // if user is not admin, check if user is a moderator
+            if (this.user.modType.length > 0) {
+              this.isModerator = true;
+            }
 
-              this.drinkShelf.push(response.data);
-            } catch (error) {
-              console.error("Error retrieving listing details:", error);
+            this.username = this.user.username;
+            this.displayName = this.user.displayName;
+
+            // drink shelf
+            // 1. Loop through all the drink lists
+            let allDrinkShelf = [];
+
+            Object.values(this.user.drinkLists).forEach((value) => {
+              let listItems = value.listItems || [];
+              allDrinkShelf.push(...listItems);
+            });
+
+            // Sort by addedDate (newest first)
+            allDrinkShelf.sort((a, b) => new Date(b.addedDate) - new Date(a.addedDate));
+
+            // Loop through allDrinkShelf to get the drink details and add to drinkShelf
+            if (this.listings && this.listings.length > 0) {
+              for (let drink of allDrinkShelf) {
+                
+                try {
+                  const response = await this.$axios.get(
+                    `${process.env.VUE_APP_API_URL}/getData/getListing/${drink.drinkId}`
+                  );
+
+                  this.drinkShelf.push(response.data);
+                } catch (error) {
+                  console.error("Error retrieving listing details:", error);
+                }
+              }
+            }
+
+          } else if (this.userType == "producer") {
+            const response = await this.$axios.get(
+              `${process.env.VUE_APP_API_URL}/getData/getProducer/${this.userID}`
+            );
+            let producer = response.data;
+
+            this.username = producer.producerName;
+            // Q&A
+            let answeredQuestions = producer["questionsAnswers"];
+            if (answeredQuestions.length > 0) {
+              for (let qa in answeredQuestions) {
+                let answer = answeredQuestions[qa]["answer"];
+                if (answer == "") {
+                  this.unansweredQuestions.push(answeredQuestions[qa]);
+                }
+              }
+            }
+
+          } else if (this.userType == "venue") {
+            const response = await this.$axios.get(
+              `${process.env.VUE_APP_API_URL}/getData/getVenue/${this.userID}`
+            );
+            let venue = response.data;
+
+            this.username = venue.venueName;
+
+            // Q&A
+            let answeredQuestions = venue["questionsAnswers"];
+            if (answeredQuestions.length > 0) {
+              for (let qa in answeredQuestions) {
+                let answer = answeredQuestions[qa]["answer"];
+                if (answer == "") {
+                  this.unansweredQuestions.push(answeredQuestions[qa]);
+                }
+              }
             }
           }
-        }
 
-
-
-      } else if (producer && this.userType == "producer") {
-        this.username = producer.producerName;
-        // Q&A
-        let answeredQuestions = producer["questionsAnswers"];
-        if (answeredQuestions.length > 0) {
-          for (let qa in answeredQuestions) {
-            let answer = answeredQuestions[qa]["answer"];
-            if (answer == "") {
-              this.unansweredQuestions.push(answeredQuestions[qa]);
-            }
-          }
-        }
-      } else if (venue) {
-        this.username = venue.venueName;
-
-        // Q&A
-        let answeredQuestions = venue["questionsAnswers"];
-        if (answeredQuestions.length > 0) {
-          for (let qa in answeredQuestions) {
-            let answer = answeredQuestions[qa]["answer"];
-            if (answer == "") {
-              this.unansweredQuestions.push(answeredQuestions[qa]);
-            }
-          }
+        } catch (error) {
+          console.error("Error retrieving user details:", error);
+          this.dataLoaded = null; 
         }
       }
     },
+
+    // get followrs if user is logged in
+    async getFollowers() {
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getAllUserFollowingsIDs/${this.userID}`
+        );
+        this.followedProducers = response.data.producers
+        this.followedVenues = response.data.venues
+      } catch (error) {
+        console.error("Error retrieving followers:", error);
+      }
+    },
+
+    // get username of user accessing page
+    // async getUsername() {
+    //   let producer = this.producers.find(
+    //     (producer) => producer.id == parseInt(this.userID)
+    //   );
+    //   let venue = this.venues.find(
+    //     (venue) => venue.id == parseInt(this.userID)
+    //   );
+    //   if (this.user && this.userType == "user") {
+    //     this.username = this.user.username;
+    //     this.displayName = this.user.displayName;
+
+    //     // drink shelf
+    //     // 1. Loop through all the drink lists
+    //     let allDrinkShelf = [];
+
+    //     Object.values(this.user.drinkLists).forEach((value) => {
+    //       let listItems = value.listItems || [];
+    //       allDrinkShelf.push(...listItems);
+    //     });
+
+    //     // Sort by addedDate (newest first)
+    //     allDrinkShelf.sort((a, b) => new Date(b.addedDate) - new Date(a.addedDate));
+
+    //     // Loop through allDrinkShelf to get the drink details and add to drinkShelf
+    //     if (this.listings && this.listings.length > 0) {
+    //       for (let drink of allDrinkShelf) {
+            
+    //         try {
+    //           const response = await this.$axios.get(
+    //             `${process.env.VUE_APP_API_URL}/getData/getListing/${drink.drinkId}`
+    //           );
+
+    //           this.drinkShelf.push(response.data);
+    //         } catch (error) {
+    //           console.error("Error retrieving listing details:", error);
+    //         }
+    //       }
+    //     }
+
+    //   } else if (producer && this.userType == "producer") {
+    //     this.username = producer.producerName;
+    //     // Q&A
+    //     let answeredQuestions = producer["questionsAnswers"];
+    //     if (answeredQuestions.length > 0) {
+    //       for (let qa in answeredQuestions) {
+    //         let answer = answeredQuestions[qa]["answer"];
+    //         if (answer == "") {
+    //           this.unansweredQuestions.push(answeredQuestions[qa]);
+    //         }
+    //       }
+    //     }
+    //   } else if (venue) {
+    //     this.username = venue.venueName;
+
+    //     // Q&A
+    //     let answeredQuestions = venue["questionsAnswers"];
+    //     if (answeredQuestions.length > 0) {
+    //       for (let qa in answeredQuestions) {
+    //         let answer = answeredQuestions[qa]["answer"];
+    //         if (answer == "") {
+    //           this.unansweredQuestions.push(answeredQuestions[qa]);
+    //         }
+    //       }
+    //     }
+    //   }
+    // },
 
     // Helper function for onkeyup search to reset filter
     // helperSearch(){
@@ -1864,35 +1833,35 @@ export default {
     // },
 
     // for search button
-    // searchListings() {
-    //     // flag to check if there are search inputs
-    //     const searchInput = this.searchInput.toLowerCase();
-    //     this.searchTerm = this.searchInput;
+    searchListings() {
+        // flag to check if there are search inputs
+        const searchInput = this.searchInput.toLowerCase();
+        this.searchTerm = this.searchInput;
 
-    //     // if there is something searched
-    //     this.search = true;
-    //     const searchResults = this.listings.filter((listing) => {
-    //         const expressionName = listing["listingName"].toLowerCase();
-    //         const producer = this.getProducerName(listing).toLowerCase(); //error here if return null, meaning drink doesnt belong to any producer
-    //         return expressionName.includes(searchInput) || producer.includes(searchInput);
-    //     });
+        // if there is something searched
+        this.search = true;
+        const searchResults = this.listings.filter((listing) => {
+            const expressionName = listing["listingName"].toLowerCase();
+            const producer = this.getProducerName(listing).toLowerCase(); //error here if return null, meaning drink doesnt belong to any producer
+            return expressionName.includes(searchInput) || producer.includes(searchInput);
+        });
 
-    //     // add search results to search history
-    //     this.searchHistory.push([searchInput, searchResults]);
+        // add search results to search history
+        this.searchHistory.push([searchInput, searchResults]);
 
-    //     // if nothing found
-    //     if (searchResults.length == 0) {
-    //         this.filteredListings = [];
-    //     }
-    //     else {
-    //         this.filteredListings = searchResults;
-    //     }
+        // if nothing found
+        if (searchResults.length == 0) {
+            this.filteredListings = [];
+        }
+        else {
+            this.filteredListings = searchResults;
+        }
 
-    //     // if there is nothing searched
-    //     if (this.searchInput == '') {
-    //         this.resetListings();
-    //     }
-    // },
+        // if there is nothing searched
+        if (this.searchInput == '') {
+            this.resetListings();
+        }
+    },
 
     // for viewing previous listings (show previous search results)
     // previousListing() {
@@ -1921,73 +1890,10 @@ export default {
       this.moreListings = true;
     },
 
-    // get producerName for a listing based on listing
-    getProducerName(listing) {
-      const producer = this.producers.find((producer) => {
-        return producer["id"] == listing["producerID"];
-      });
-      // ensures that producer is found before accessing "producerName"
-      if (producer) {
-        const producerName = producer["producerName"];
-        return producerName;
-      } else {
-        return null;
-      }
-    },
-
-    // get reviews for a listing
-    getReviews(listing) {
-      // list of all reviews of the particular drink
-      const reviews = this.reviews.filter((review) => {
-        return review["reviewTarget"] == listing["listingName"];
-      });
-      // choose random review from the list
-      const randomReview = reviews[Math.floor(Math.random() * reviews.length)];
-      // check if a review is found before accessing "Review Desc"
-      const reviewDesc = randomReview ? randomReview["reviewDesc"] : null;
-      return reviewDesc;
-    },
-
-    // get ratings for a listing
-    getRatings(listing) {
-      const ratings = this.reviews.filter((rating) => {
-        return rating["reviewTarget"] == listing["id"];
-      });
-      // if there are no ratings
-      if (ratings.length == 0) {
-        return "-";
-      }
-      // else there are ratings
-      const averageRating =
-        ratings.reduce((total, rating) => {
-          return total + parseFloat(rating["rating"]);
-        }, 0) / ratings.length;
-      return averageRating.toFixed(1); //tzh changed .toFixed(2) to .toFixed(1)
-    },
-
-    // get ratings for a listing --> return 0 if no ratings
-    getAllRatings(listing) {
-      const ratings = this.reviews.filter((rating) => {
-        return rating["reviewTarget"] == listing["id"];
-      });
-      // if there are no ratings
-      if (ratings.length == 0) {
-        return 0;
-      }
-      // else there are ratings
-      const averageRating =
-        ratings.reduce((total, rating) => {
-          return total + rating["rating"];
-        }, 0) / ratings.length;
-      // round to 1 decimal place
-      const roundedRating = Math.round(averageRating * 10) / 10;
-      return roundedRating;
-    },
-
     // Handle select of drink type filter option like sake, gin, whiskey
     selectDrinkType(drinkType) {
       // reset most reviews and recently added arrays so that can repeatedly filter
-      this.getMostReviews();
+      // this.getMostReviews();
       this.moreListings = true;
       // Determine selected drink type, and corresponding drink categories
       this.selectedCategory = null;
@@ -1995,6 +1901,7 @@ export default {
       for (let drinks of this.drinkTypes) {
         if (drinks["drinkType"] == drinkType["drinkType"]) {
           this.selectedTypeCategory = drinks["typeCategory"];
+          
         }
       }
 
@@ -2082,13 +1989,13 @@ export default {
       // #5: Ratings (Highest - Lowest)
       else if (category == "Ratings (Highest - Lowest)") {
         this.filteredListings.sort((a, b) => {
-          return this.getAllRatings(b) - this.getAllRatings(a);
+          return b.rating - a.rating;
         });
       }
       // #6: Ratings (Lowest - Highest)
       else if (category == "Ratings (Lowest - Highest)") {
         this.filteredListings.sort((a, b) => {
-          return this.getAllRatings(a) - this.getAllRatings(b);
+          return a.rating - b.rating;
         });
       }
     },
@@ -2157,60 +2064,47 @@ export default {
       this.selectedDrinkType = "";
       this.selectedCategory = "";
       this.isFilterType = "";
-      if (this.discovery) {
-        this.mostReviews = [];
-        this.getMostReviews();
-      }
+      // if (this.discovery) {
+      //   this.mostReviews = [];
+      //   this.getMostReviews();
+      // }
     },
 
-    clearCategory() {
-      // Handle the click event here
-      this.resetListings();
-      this.selectDrinkType(this.selectedDrinkType);
-      this.moreListings = true;
-    },
+    // clearCategory() {
+    //   // Handle the click event here
+    //   this.resetListings();
+    //   this.selectDrinkType(this.selectedDrinkType);
+    //   this.moreListings = true;
+    // },
 
     // check if user has already added listing to shelf, add colour to button accordingly
-    checkDrinkLists(listing) {
-      const haveTried = this.drinkList.haveTried.includes(listing.listingName);
-      const wantToTry = this.drinkList.wantToTry.includes(listing.listingName);
+    // checkDrinkLists(listing) {
+    //   const haveTried = this.drinkList.haveTried.includes(listing.listingName);
+    //   const wantToTry = this.drinkList.wantToTry.includes(listing.listingName);
 
-      const haveTriedButton = `
-                <button type="button" class="btn custom-drink-list-btn rounded-0 ${
-                  haveTried ? "disabled" : ""
-                }">
-                    Have tried
-                </button>
-                `;
+    //   const haveTriedButton = `
+    //             <button type="button" class="btn custom-drink-list-btn rounded-0 ${
+    //               haveTried ? "disabled" : ""
+    //             }">
+    //                 Have tried
+    //             </button>
+    //             `;
 
-      const wantToTryButton = `
-                <button type="button" class="btn custom-drink-list-btn rounded-0 ${
-                  wantToTry ? "disabled" : ""
-                }">
-                    Want to try
-                </button>
-                `;
+    //   const wantToTryButton = `
+    //             <button type="button" class="btn custom-drink-list-btn rounded-0 ${
+    //               wantToTry ? "disabled" : ""
+    //             }">
+    //                 Want to try
+    //             </button>
+    //             `;
 
-      return {
-        buttons: {
-          haveTried: haveTriedButton,
-          wantToTry: wantToTryButton,
-        },
-      };
-    },
-
-    // find drink name given reviewTarget
-    findDrinkNameForReview(reviewTarget) {
-      if (reviewTarget) {
-        let drink = this.listings.find((listing) => listing.id == reviewTarget);
-        if (drink) {
-          let drink_name = drink.listingName;
-          return drink_name;
-        }
-      }
-
-      return "";
-    },
+    //   return {
+    //     buttons: {
+    //       haveTried: haveTriedButton,
+    //       wantToTry: wantToTryButton,
+    //     },
+    //   };
+    // },
 
     // change status of discovery
     changeDiscoveryStatus() {
@@ -2236,61 +2130,68 @@ export default {
       this.clearSelection();
     },
 
-    // find drink name given listing
-    findDrinkNameForListing(listing) {
-      let drink_name = listing.listingName;
-      return drink_name;
-    },
-
     // get all reviews that a producer has
-    getAllReviews() {
-      const reviewCounts = {};
-      // Iterate through all reviews
-      this.reviews.forEach((review) => {
-        const reviewTargetName = this.findDrinkNameForReview(
-          review.reviewTarget
-        );
-        // Check if reviewTargetId is already in reviewCounts
-        if (reviewTargetName in reviewCounts) {
-          reviewCounts[reviewTargetName]++;
-        } else {
-          reviewCounts[reviewTargetName] = 1;
-        }
-      });
+    // getAllReviews() {
+    //   const reviewCounts = {};
+    //   // Iterate through all reviews
+    //   this.reviews.forEach((review) => {
+    //     const reviewTargetName = this.findDrinkNameForReview(
+    //       review.reviewTarget
+    //     );
+    //     // Check if reviewTargetId is already in reviewCounts
+    //     if (reviewTargetName in reviewCounts) {
+    //       reviewCounts[reviewTargetName]++;
+    //     } else {
+    //       reviewCounts[reviewTargetName] = 1;
+    //     }
+    //   });
 
-      // Iterate through all drinks
-      this.listings.forEach((drink) => {
-        const drinkName = drink.listingName;
-        // Check if drinkId is not in reviewCounts
-        if (!(drinkName in reviewCounts)) {
-          reviewCounts[drinkName] = 0;
-        }
-      });
+    //   // Iterate through all drinks
+    //   this.listings.forEach((drink) => {
+    //     const drinkName = drink.listingName;
+    //     // Check if drinkId is not in reviewCounts
+    //     if (!(drinkName in reviewCounts)) {
+    //       reviewCounts[drinkName] = 0;
+    //     }
+    //   });
 
-      this.allReviews = reviewCounts;
-    },
+    //   this.allReviews = reviewCounts;
+    // },
 
-    // get top 5 most reviewed items by producer
-    getMostReviews() {
-      this.mostReviews = [];
-      let mostProducerReviews = Object.keys(this.allReviews).sort((a, b) => {
-        return this.allReviews[b] - this.allReviews[a];
-      }); // to get top five, add .slice(0, 5)
-      mostProducerReviews.forEach((drink) => {
-        let review = this.getListingByName(drink);
-        if (review && review != "") {
-          this.mostReviews.push(review);
-        }
-      });
-    },
+    // // find drink name given reviewTarget
+    // findDrinkNameForReview(reviewTarget) {
+    //   if (reviewTarget) {
+    //     let drink = this.listings.find((listing) => listing.id == reviewTarget);
+    //     if (drink) {
+    //       let drink_name = drink.listingName;
+    //       return drink_name;
+    //     }
+    //   }
 
-    // get listing by name
-    getListingByName(name) {
-      let listing = this.listings.find((listing) => {
-        return listing.listingName == name;
-      });
-      return listing;
-    },
+    //   return "";
+    // },
+
+    // // get top 5 most reviewed items by producer
+    // getMostReviews() {
+    //   this.mostReviews = [];
+    //   let mostProducerReviews = Object.keys(this.allReviews).sort((a, b) => {
+    //     return this.allReviews[b] - this.allReviews[a];
+    //   }); // to get top five, add .slice(0, 5)
+    //   mostProducerReviews.forEach((drink) => {
+    //     let review = this.getListingByName(drink);
+    //     if (review && review != "") {
+    //       this.mostReviews.push(review);
+    //     }
+    //   });
+    // },
+
+    // // get listing by name
+    // getListingByName(name) {
+    //   let listing = this.listings.find((listing) => {
+    //     return listing.listingName == name;
+    //   });
+    //   return listing;
+    // },
 
     // get latest review from any users that the current user is following
     async getUsersLatestReviews() {
@@ -2308,216 +2209,60 @@ export default {
       }
     },
 
-    // get producers that user follows
-    getFollowedProducers() {
-      this.followedProducers = this.user.followLists.producers;
-    },
-
-    // get listings by producer
-    getListingsByProducer() {
-      // Reset the array to avoid duplicate data
-        this.allProducerDrinks = [];
-        
-        if (!this.followedProducers || this.followedProducers.length === 0) {
-          return Promise.resolve(); // Return early if no producers to follow
-        }
-        
-        try {
-          this.followedProducers.forEach((producer) => {
-            const producerListings = this.listings.filter(
-              (listing) => listing.producerID == parseInt(producer)
-            );
-            this.allProducerDrinks.push(...producerListings);
-          });
-          return Promise.resolve();
-        } catch (error) {
-          console.error("Error in getListingsByProducer:", error);
-          return Promise.reject(error);
-        }
-    },
-
-    // get venues that user follows
-    getFollowedVenues() {
-      if (this.user) {
-        this.followedVenues = this.user.followLists.venues;
-      }
-    },
-
-    // get listings by venue
-    getListingsByVenue() {    
-      // Reset the array to avoid duplicate data
-      this.allVenueDrinks = [];
-      
-      if (!this.followedVenues || this.followedVenues.length === 0) {
-        return Promise.resolve(); // Return early if no venues to follow
-      }
-      
+    // refactored version of getMostReviews
+    async getMostReviews() {
       try {
-        this.followedVenues.forEach((venue) => {
-          const venueID = parseInt(venue);
-          const venueObject = this.venues.find((v) => v.id === venueID);
-          
-          if (!venueObject || !venueObject.menu) return; // Skip if venue not found or has no menu
-          
-          let allMenuItems = venueObject.menu;
-          let allSectionMenus = allMenuItems.reduce((acc, menuItem) => {
-            return acc.concat(menuItem.sectionMenu || []);
-          }, []);
-
-          let allListingsIDs = allSectionMenus.reduce((acc, menuItem) => {
-            return acc.concat(menuItem.itemID || []);
-          }, []);
-
-          let uniqueListingsIDs = [...new Set(allListingsIDs)];
-          
-          const allVenueDrinks = this.listings.filter(listing => 
-            uniqueListingsIDs.includes(listing.id)
-          );
-          
-          this.allVenueDrinks.push(...allVenueDrinks);
-        });
-        return Promise.resolve();
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getTop5MostReviewedListings`
+        );
+        this.mostReviews = response.data;
       } catch (error) {
-        console.error("Error in getListingsByVenue:", error);
-        return Promise.reject(error);
+        console.error("Error retrieving most reviewed listings:", error);
+        this.dataLoaded = null;
       }
     },
 
-    // get recently added
-    getRecentlyAdded() {
-        try {
-          console.log("Producer drinks:", this.allProducerDrinks.length);
-          console.log("Venue drinks:", this.allVenueDrinks.length);
-          
-          // Combine producer and venue listings with deduplication
-          this.recentlyAdded = [
-            ...new Map(
-              this.allProducerDrinks
-                .concat(this.allVenueDrinks)
-                .map((item) => [item.id, item])
-            ).values(),
-          ];
-          
-          console.log("Combined recently added:", this.recentlyAdded.length);
-          
-          // Sort by date if available, newest first
-          if (this.recentlyAdded.length > 0 && this.recentlyAdded[0].addedDate) {
-            this.recentlyAdded.sort((a, b) => {
-              return new Date(b.addedDate || 0) - new Date(a.addedDate || 0);
-            });
+    // refactored version of getRecentlyAdded
+    async getRecentlyAdded() {
+      try {
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/getData/getRecentlyAddedListings`,
+          {
+            producerIDs: this.followedProducers,
+            venueIDs: this.followedVenues,
           }
-          
-          return Promise.resolve(this.recentlyAdded);
-        } catch (error) {
-          console.error("Error in getRecentlyAdded:", error);
-          this.recentlyAdded = [];
-          return Promise.reject(error);
-        }
+        );
+        this.recentlyAdded = response.data.listings;
+        this.lastRAProducerListingID = response.data.lastListingIdP;
+        this.lastMenuID = response.data.lastMenuID;
+
+      } catch (error) {
+        console.error("Error retrieving recently added listings:", error);
+        this.recentlyAdded = [];
+      }
     },
 
-    getQuestionsUpdates() {
-      // get all following producers updates
-      const producerUpdates = this.producers
-        .filter((producer) =>
-          JSON.stringify(this.followedProducers).includes(
-            JSON.stringify(producer.id)
-          )
-        )
-        .reduce((arr, producer) => {
-          if (producer.updates && producer.updates.length > 0) {
-            let updatesWithProducerName = producer.updates.map((update) => ({
-              ...update,
-              name: producer.producerName,
-              id: producer.id,
-              photo: producer.photo,
-              type: "producerUpdate",
-            }));
-            arr.push(...updatesWithProducerName);
-          }
-          return arr;
-        }, []);
+    // refactored version of getQuestionsUpdates
+    async getQuestionsUpdates() {
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getQuestionsUpdates/${this.userID}`
+        );
 
-      // get all following venues updates
-      const venueUpdates = this.venues
-        .filter((venue) =>
-          JSON.stringify(this.followedVenues).includes(JSON.stringify(venue.id))
-        )
-        .reduce((arr, venue) => {
-          if (venue.updates && venue.updates.length > 0) {
-            let updatesWithVenueName = venue.updates.map((update) => ({
-              ...update,
-              name: venue.venueName,
-              id: venue.id,
-              photo: venue.photo,
-              type: "venueUpdate",
-            }));
-            arr.push(...updatesWithVenueName);
-          }
-          return arr;
-        }, []);
-
-      // get all following producers questions with answers
-      const producerQuestions = this.producers
-        .filter((producer) =>
-          JSON.stringify(this.followedProducers).includes(
-            JSON.stringify(producer.id)
-          )
-        )
-        .reduce((arr, producer) => {
-          if (
-            producer.questionsAnswers &&
-            producer.questionsAnswers.some((qa) => qa.answer)
-          ) {
-            let questionsWithProducerName = producer.questionsAnswers.map(
-              (question) => ({
-                ...question,
-                name: producer.producerName,
-                type: "producerQuestion",
-              })
-            );
-            arr.push(...questionsWithProducerName);
-          }
-          return arr;
-        }, []);
-      // get all following venues questions with answers
-      const venueQuestions = this.venues
-        .filter((venue) =>
-          JSON.stringify(this.followedVenues).includes(JSON.stringify(venue.id))
-        )
-        .reduce((arr, venue) => {
-          if (
-            venue.questionsAnswers &&
-            venue.questionsAnswers.some((qa) => qa.answer)
-          ) {
-            let questionsWithVenueName = venue.questionsAnswers.map(
-              (question) => ({
-                ...question,
-                name: venue.venueName,
-                type: "venueQuestion",
-              })
-            );
-            arr.push(...questionsWithVenueName);
-          }
-          return arr;
-        }, []);
-
-      this.questionsUpdates = [
-        ...producerUpdates,
-        ...venueUpdates,
-        ...producerQuestions,
-        ...venueQuestions,
-      ];
-
-      // TO REMOVE after date is added to question answers
-      // this.questionsUpdates = [...producerUpdates, ...venueUpdates];
-
-      // sort by date
-      this.questionsUpdates.sort((a, b) => {
-        return new Date(b.date) - new Date(a.date);
-      });
+        let responseData = response.data
+        this.questionsUpdates = [
+          responseData.producerUpdate,
+          responseData.venueUpdate,
+          responseData.producerQuestion,
+          responseData.venueQuestion
+        ];
+        
+      } catch (error) {
+        console.error("Error retrieving questions updates:", error);
+        this.questionsUpdates = [];
+      }
     },
 
-    // get time difference
     getTimeDifference(date) {
       let currentDate = new Date();
       let updateDate = new Date(date);
@@ -2589,33 +2334,23 @@ export default {
       //Lazy loading for following tab
       // Check if there are items in recentlyAdded before accessing
       if (this.recentlyAdded && this.recentlyAdded.length > 0) {
-        let lastFollowingId = this.recentlyAdded[this.recentlyAdded.length - 1].id;
         
-        let params = {
+        let data = {
           followedProducers: this.followedProducers,
-          followedVenues:
-            this.followedVenues.length > this.followCount
-              ? this.followedVenues[this.followCount]
-              : "null",
-        };
-        let queryString = new URLSearchParams({
-          followedProducers: JSON.stringify(params.followedProducers),
-          followedVenues: JSON.stringify(params.followedVenues),
-        }).toString();
-        const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getNextFollowing30` +
-            "/" +
-            lastFollowingId +
-            `?${queryString}`
+          lastListingIdP: this.lastRAProducerListingID,
+          lastMenuId: this.lastMenuID,
+          followedVenues: this.followedVenues,
+        }
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/getData/getNextFollowing30`,
+          data
         );
-        const newItems = response.data.filter(
-          (item) =>
-            !this.recentlyAdded.some(
-              (existingItem) => existingItem.id === item.id
-            )
-        );
-        this.recentlyAdded.push(...newItems);
-        if (response.data.length == 0) {
+        
+        this.recentlyAdded.push(...response.data.listings);
+        this.lastRAProducerListingID = response.data.lastListingIdP;
+        this.lastMenuID = response.data.lastMenuId;
+
+        if (response.data.listings.length == 0) {
           this.moreListings = false;
         }
         

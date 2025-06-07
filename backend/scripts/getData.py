@@ -9,6 +9,7 @@
 #           [Listings]
 #           /getListings (GET), /getListingsByIDs (POST), /getListing/<id> (GET), /getListingsBySearch (GET),
 #           /getListingsDetailedByID/<id> (GET), /getListingNamesDynamicSearch/<searchTerm> (GET), /getAllListingsNames (GET),
+#           /getRecentlyAddedListings (POST),
 
 #           [Producers]
 #           /getProducers (GET), /getProducer/<id> (GET), /getProducersByIDs (POST), /getProducersBySearch (GET),
@@ -23,12 +24,12 @@
 #           /getUserPhoto/<id>/<userType> (GET), /getUserByUsername/<username> (GET), /getUserFollowList/<id> (GET), 
 #           /checkFollowing/<userId>/<userType>/<followId>/<followType> (GET), /getUserReviewSummary/<id> (GET),
 #           /getUserDashBoardData/<id> (GET), /getRecentFollowersActivity/<id> (GET), /getRecentReviewsActivity/<id> (GET),
-#           /getRecentUserActivity/<id> (GET), 
+#           /getRecentUserActivity/<id> (GET), /getAllUserFollowingsIDs/<id> (GET),
 
 #           [Listing Reviews]
 #           /getRecentListingReviews/<id> (GET), /getReviews (GET),
 #           /getReviewsByListingIDs (POST), /getReviewByTarget/<id> (GET), /getReviewsByUserIds (GET), 
-#           /getListingReviewsRating/<listing_id> (GET),
+#           /getListingReviewsRating/<listing_id> (GET), /getTop5MostReviewedListings (GET),
 
 #           [Producer Reviews]
 #           /getProducerTourReviews (GET), /getProducerReviewsByProducerId/<id> (GET),
@@ -50,7 +51,7 @@
 #           /getFlavourTags (GET), /getSubTags (GET), /getObservationTags (GET),
 #           /getColours (GET), /getSpecialColours (GET), /getLanguages (GET),
 #           /getServingTypes (GET), /getLatestNews (GET), /getRequestInaccuracyByVenue/<id> (GET),
-#           /getUserNames (GET),
+#           /getUserNames (GET), /getQuestionsUpdates (GET), /getRequestsCount (POST),
 # -----------------------------------------------------------------------------------------
 
 # pip install python-bsonjs
@@ -209,22 +210,6 @@ def fetch_follow_lists(cursor, user_id):
         "venues": follow_lists_data["venues"] if follow_lists_data and follow_lists_data["venues"] else []
     }
 
-# Helper function to fetch venue menu items based on venueId
-def fetch_venue_listings(cursor, venue_id):
-    cursor.execute("""
-        SELECT * 
-        FROM "listings" 
-        WHERE "id" IN (
-            SELECT mi."itemID"
-            FROM "menuItems" mi
-            JOIN "venuesMenu" vm ON mi."sectionId" = vm."id"
-            WHERE vm."venueId" = %s
-        );
-    """, (venue_id,))
-    venue_items = cursor.fetchall()
-
-    return venue_items
-
 # def modifyPhotos():
 #     data = db.producers.find({})
 #     dataEncode = parse_json(data)
@@ -342,30 +327,88 @@ def getFiltered30(id):
     return jsonify(listings_data)
 
 # -----------------------------------------------------------------------------------------
-# [GET] Get Listings from next in following list for both venue and producer
-@blueprint.route("/getNextFollowing30/<id>")
-def getNextFollowing30(id):
+# [POST] Get Listings from next in following list for both venue and producer
+@blueprint.route("/getNextFollowing30", methods=['POST'])
+def getNextFollowing30():
     conn = g.db
-    id = int(id)
 
-    followedProducers = request.args.get('followedProducers').replace('[', '').replace(']', '').replace('"', '').split(',')
+    followedProducers = request.args.get('followedProducers')
     followedVenues = request.args.get('followedVenues')
-    # Make sure followedProducers is a tuple so SQL can process
-    placeholders = ', '.join(['%s'] * len(followedProducers))
+    lastListingIdP = request.args.get('lastListingIdP', 0)
+    lastMenuId = request.args.get('lastMenuId', 0)
 
-    with conn.cursor() as cursor:
-        query = f'SELECT * FROM "listings" WHERE "id" > %s AND "producerID" IN ({placeholders}) LIMIT 30'
-        params = (id, *followedProducers)
-        cursor.execute(query, params)
-        listings_data = cursor.fetchall()
-        if followedVenues != '"null"':
-            venue_listings = fetch_venue_listings(cursor, followedVenues.replace('"',''))
-            listings_data += venue_listings
-    
-    if not listings_data:
-        return jsonify([])
+    last_listing_id_p = 0
+    last_menu_id = 0
 
-    return jsonify(listings_data)
+    listings_data = []
+
+    try:
+
+        with conn.cursor() as cursor:
+
+            if followedProducers and len(followedProducers) > 0:
+                cursor.execute('SELECT * FROM "listings" WHERE "id" < %s  AND "producerID" IN %s ORDER BY "addedDate" DESC LIMIT 15', (lastListingIdP, tuple(followedProducers),))
+                producer_listings = cursor.fetchall()
+                listings_data.extend(producer_listings)
+                last_listing_id_p = producer_listings[-1]['id']
+
+            if followedVenues and len(followedVenues) > 0:
+                cursor.execute("""
+                    SELECT 
+                        l.*,                             
+                        vm."venueId",                     
+                        v."venueName",                  
+                        m."id" AS "menuItemId"           
+                    FROM "menuItems" m
+                    JOIN "listings" l ON m."itemID" = l."id"
+                    JOIN "venuesMenu" vm ON m."sectionId" = vm."id"
+                    JOIN "venues" v ON vm."venueId" = v."id"
+                    WHERE m."itemID" IS NOT NULL
+                    AND m."id" < %s
+                    AND vm."venueId" IN %s
+                    ORDER BY m."id" DESC
+                    LIMIT 15;
+                """, (lastMenuId, tuple(followedVenues),))
+                venue_listings = cursor.fetchall()
+
+                # Loop through the venue listings to remove duplicate listings
+                for venue_listing in venue_listings:
+                    # Check if the listing already exists in the listings_data
+                    if not any(listing['id'] == venue_listing['id'] for listing in listings_data):
+                        last_menu_id = venue_listing['menuItemId']
+                        listings_data.append(venue_listing)
+
+            if listings_data:
+                # Loop through the listings to get the average rating for each listing and producer name
+                for listing in listings_data:
+                    # Get the average rating for the listing
+                    cursor.execute("""
+                        SELECT AVG("rating") AS "averageRating"
+                        FROM "reviews"
+                        WHERE "reviewTarget" = %s
+                    """, (listing['id'],))
+
+                    avg_rating = cursor.fetchone()['averageRating']
+
+                    if avg_rating is not None:
+                        listing['rating'] = round(avg_rating, 1)
+                    else:
+                        listing['rating'] = '-'
+
+                    # Get the producer name if it's a listing
+                    if 'producerID' in listing:
+                        cursor.execute('SELECT "producerName" FROM "producers" WHERE "id" = %s', (listing['producerID'],))
+                        producer_name = cursor.fetchone()
+                        listing['producerName'] = producer_name['producerName'] if producer_name else 'Unknown Producer'
+
+        return jsonify({
+            "listings": listings_data,
+            "lastListingIdP": last_listing_id_p,
+            "lastMenuId": last_menu_id
+        })
+    except Exception as e:
+        print(f"Error fetching next following listings: {str(e)}")
+        return jsonify({"code": 500, "message": "An error occurred while fetching listings."}), 500
 
 # -----------------------------------------------------------------------------------------
 # [GET] Listings from db when filter is applied for next 30 in following tab
@@ -1131,6 +1174,104 @@ def getAllListingsNames():
 
     return jsonify(listings_data), 200
 
+
+# [POST] Get recently added listings by producers and venues from a list of producer IDs and venue IDs that a user follows
+@blueprint.route("/getRecentlyAddedListings", methods=['POST'])
+def getRecentlyAddedListings():
+    conn = g.db 
+    cursor = conn.cursor()
+
+    producer_ids = request.json.get('producerIDs', [])
+    venue_ids = request.json.get('venueIDs', [])
+
+    listings_data = []
+    last_listing_id_p = 0
+    last_menu_id = 0
+
+    try:
+        # Retrieve the top 10 recently added listings by producers whose IDs are in the provided list
+        if len(producer_ids) > 0:
+            cursor.execute("""
+                SELECT * FROM "listings" 
+                WHERE "producerID" IN %s 
+                ORDER BY "addedDate" DESC
+                LIMIT 15
+            """, (tuple(producer_ids),))
+            producer_listings = cursor.fetchall()
+
+            listings_data.extend(producer_listings)
+
+            last_listing_id_p = producer_listings[-1]['id'] if producer_listings else 0
+
+        # Retrieve the top 10 recently added menu items by venues whose IDs are in the provided list
+        if len(venue_ids) > 0:
+            cursor.execute("""
+                SELECT 
+                    l.*,                             
+                    vm."venueId",                     
+                    v."venueName",                  
+                    m."id" AS "menuItemId"           
+                FROM "menuItems" m
+                JOIN "listings" l ON m."itemID" = l."id"
+                JOIN "venuesMenu" vm ON m."sectionId" = vm."id"
+                JOIN "venues" v ON vm."venueId" = v."id"
+                WHERE m."itemID" IS NOT NULL
+                AND vm."venueId" IN %s
+                ORDER BY m."id" DESC
+                LIMIT 15;
+            """, (tuple(venue_ids),))
+            venue_listings = cursor.fetchall()
+
+            # Add unique venue listings to the listings_data
+            for venue_listing in venue_listings:
+                # Check if the listing already exists in listings_data
+                if not any(listing['id'] == venue_listing['id'] for listing in listings_data):
+                    last_menu_id = venue_listing['menuItemId']
+                    listings_data.append(venue_listing)
+
+        # Loop through the listings to get the average rating for each listing and producer name
+        if len(listings_data) == 0:
+            return jsonify([]), 200
+        
+        for listing in listings_data:
+            # Get the average rating for the listing
+            cursor.execute("""
+                SELECT AVG("rating") AS "averageRating"
+                FROM "reviews"
+                WHERE "reviewTarget" = %s
+            """, (listing['id'],))
+
+            avg_rating = cursor.fetchone()['averageRating']
+
+            if avg_rating is not None:
+                listing['rating'] = round(avg_rating, 1)
+            else:
+                listing['rating'] = '-'
+
+            # Get the producer name if it's a listing from a producer
+            if 'producerID' in listing:
+                cursor.execute('SELECT "producerName" FROM "producers" WHERE "id" = %s', (listing['producerID'],))
+                producer_name = cursor.fetchone()
+                listing['producerName'] = producer_name['producerName'] if producer_name else 'Unknown Producer'
+            else:
+                listing['producerName'] = 'N/A'
+
+        return jsonify({
+            "listings": listings_data,
+            "lastListingIdP": last_listing_id_p,
+            "lastMenuID": last_menu_id
+        }), 200
+
+
+    
+    except Exception as e:
+        print(f"Error fetching recently added listings: {str(e)}")
+        return jsonify({"code": 500, "message": "An error occurred while fetching recently added listings."}), 500
+    
+    finally:
+        cursor.close()
+
+
 # [POST] Get bookmarked listings
 @blueprint.route("/getBookmarkListings", methods=['POST'])
 def getBookmarkListings():
@@ -1464,7 +1605,70 @@ def getListingReviewsRating(listing_id):
             "code": 500,
             "message": "An error occurred while fetching the average rating."
         }), 500
+
+
+# [GET] Get top 5 listings reviews by count
+@blueprint.route("/getTop5MostReviewedListings")
+def getTop5MostReviewedListings():
+    conn = g.db
+    cursor = conn.cursor()
+
+    try:
+        # Fetch the top 5 most reviewed listings
+        cursor.execute("""
+            SELECT "reviewTarget", COUNT(*) AS "reviewCount"
+            FROM "reviews"
+            WHERE "reviewType" = 'Listing'
+            GROUP BY "reviewTarget"
+            ORDER BY "reviewCount" DESC
+            LIMIT 5
+        """)
+
+        top_listings = cursor.fetchall()
+
+        if not top_listings:
+            return jsonify([]), 200
+
+        # Loop through the top listings to get their details (average rating, producer name, listing name)
+        for listing in top_listings:
+            listing_id = listing['reviewTarget']
+
+            # Get the average rating for the listing
+            cursor.execute("""
+                SELECT AVG("rating") AS "averageRating"
+                FROM "reviews"
+                WHERE "reviewTarget" = %s AND "reviewType" = 'Listing'
+            """, (listing_id,))
+            avg_rating = cursor.fetchone()['averageRating']
+
+            if avg_rating is not None:
+                listing['rating'] = round(avg_rating, 1)
+            else:
+                listing['rating'] = '-'
+
+            # Get the producer ID for the listing
+            cursor.execute('SELECT "producerID", "listingName", "drinkType" FROM "listings" WHERE "id" = %s', (listing_id,))
+            listing_details = cursor.fetchone()
+            listing['listingName'] = listing_details['listingName'] if listing_details else 'Unknown Listing'
+            listing['producerID'] = listing_details['producerID'] if listing_details else None
+            listing['drinkType'] = listing_details['drinkType'] if listing_details else 'Unknown Drink Type'
+
+            # Get the producer name for the listing
+            cursor.execute('SELECT "producerName" FROM "producers" WHERE "id" = %s', (listing_details['producerID'],))
+            producer_name = cursor.fetchone()
+            listing['producerName'] = producer_name['producerName'] if producer_name else 'Unknown Producer'
+
+        return jsonify(top_listings), 200
     
+    except Exception as e:
+        print(f"Error fetching top 5 most reviewed listings: {str(e)}")
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching the top listings."
+        }), 500
+    
+    finally:
+        cursor.close()
 
 # [GET] Producer Tour Reviews
 @blueprint.route("/getProducerTourReviews")
@@ -3458,6 +3662,52 @@ def getUserFollowList(id):
 
 
 # -----------------------------------------------------------------------------------------
+# [GET] Get all the IDs for all the 3 user types whom the user is following
+@blueprint.route("/getAllUserFollowingsIDs/<id>")
+def getAllUserFollowingsIDs(id):
+    conn = g.db
+    cur = conn.cursor()
+
+    try:
+        # Step 1: Check if id is a valid user in the table based on userType
+        cur.execute('SELECT * FROM "users" WHERE "id" = %s', (id,))
+        user_data = cur.fetchone()
+
+        if user_data is None:
+            return jsonify(
+                {
+                    "code": 404,
+                    "message": "User not found."
+                }
+            ), 404
+        
+        # Step 2: Retrieve the follow list using the fetch_user_follow_list function
+        cur.execute('SELECT "users", "producers", "venues" FROM "usersFollowLists" WHERE "userId" = %s', (id,))
+        follow_list = fetch_follow_lists(cur, id)
+
+        return jsonify({
+            'users': follow_list['users'],
+            'producers': follow_list['producers'],
+            'venues': follow_list['venues']
+        }), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred retrieving the followings IDs."
+            }
+        ), 500
+    
+    finally:
+        cur.close()
+
+
+
+
+
+# -----------------------------------------------------------------------------------------
 # [GET] Get user dashboard data
 # Data includes: 
 #   - top 5 best rated listings
@@ -4158,6 +4408,26 @@ def getRandomListings():
         cursor.execute('SELECT * FROM "listings" WHERE "addedDate"::DATE = %s ORDER BY RANDOM() LIMIT 30', (random_date,))
         listings_data = cursor.fetchall()
 
+        # Loop through the listings and get the producer name
+        for listing in listings_data:
+            cursor.execute('SELECT "producerName" FROM "producers" WHERE "id" = %s', (listing['producerID'],))
+            producer_data = cursor.fetchone()
+            if producer_data:
+                listing['producerName'] = producer_data['producerName']
+            else:
+                listing['producerName'] = None
+
+            # Get rating for the listing
+            cursor.execute("""
+                SELECT AVG("rating") AS "averageRating"
+                FROM "reviews"
+                WHERE "reviewTarget" = %s AND "reviewType" = 'Listing'
+            """, (listing['id'],))
+
+            rating_data = cursor.fetchone()
+            listing['rating'] = round(rating_data['averageRating'],1) if rating_data and rating_data['averageRating'] is not None else '-'
+
+
     if not listings_data:
         return jsonify({"error": "No listings found for selected date"}), 400
 
@@ -4796,3 +5066,253 @@ def getNotifications(acc_type, acc_id):
     
     finally:
         cur.close()
+
+
+# ------------------------------------------------------------------------------------------
+# [GET] Get questions and updates from producers and venues the user follows
+# Purpose: Get questions and updates for a specific user (get questions and updates from producers and venues the user follows)
+@blueprint.route('/getQuestionsUpdates/<user_id>', methods=['GET'])
+def get_questions_updates(user_id):
+
+    conn = g.db
+    cursor = conn.cursor()
+
+    try:
+        # Get the list of producers and venues the user follows
+        cursor.execute("""
+            SELECT "producers", "venues" FROM "usersFollowLists" WHERE "userId" = %s
+        """, (user_id,))
+        follow_data = cursor.fetchone()
+
+        producers = follow_data['producers']
+        venues = follow_data['venues']
+
+        producer_questions = []
+        producer_updates = []
+        venue_questions = []
+        venue_updates = []
+
+        # Loop through producers 
+        if producers:
+
+            for pid in producers:
+
+                # Get producer questions with answers
+                cursor.execute("""
+                    SELECT pqa.id, pqa.question, pqa.answer, pqa.date,
+                           p.id AS "producerID", p."producerName", p.photo
+                    FROM "producersQuestionAnswers" pqa
+                    JOIN producers p ON pqa."producerId" = p.id
+                    WHERE p.id = %s AND pqa.answer IS NOT NULL
+                    ORDER BY pqa.date DESC
+                    LIMIT 5
+                """, (pid,))
+                producer_questions = cursor.fetchall()
+                # Add type to each question
+                for question in producer_questions:
+                    question['type'] = 'producerQuestion'
+
+
+                # Get producer updates
+                cursor.execute("""
+                    SELECT pu.id, pu.date, pu.text,
+                           p.id AS "producerID", p."producerName", p.photo
+                    FROM "producersUpdates" pu
+                    JOIN producers p ON pu."producerId" = p.id
+                    WHERE p.id = %s
+                    ORDER BY pu.date DESC
+                    LIMIT 3
+                """, (pid,))
+                producer_updates = cursor.fetchall()
+
+                # Add type to each update
+                for update in producer_updates:
+                    update['type'] = 'producerUpdate'
+
+        # Loop through venues 
+        if venues:
+
+            for vid in venues:
+
+                # Get venue questions with answers
+                cursor.execute("""
+                    SELECT vqa.id, vqa.question, vqa.answer, vqa.date,
+                           v.id AS "venueID", v."venueName", v.photo
+                    FROM "venuesQuestionAnswers" vqa
+                    JOIN venues v ON vqa."venueId" = v.id
+                    WHERE v.id = %s AND vqa.answer IS NOT NULL
+                    ORDER BY vqa.date DESC
+                    LIMIT 5
+                """, (vid,))
+                venue_questions = cursor.fetchall()
+                # Add type to each question
+                for question in venue_questions:
+                    question['type'] = 'venueQuestion'
+
+                # Get venue updates
+                cursor.execute("""
+                    SELECT vu.id, vu.date, vu.text,
+                           v.id AS "venueID", v."venueName", v.photo
+                    FROM "venuesUpdates" vu
+                    JOIN venues v ON vu."venueId" = v.id
+                    WHERE v.id = %s
+                    ORDER BY vu.date DESC
+                    LIMIT 3
+                """, (vid,))
+                venue_updates = cursor.fetchall()
+                # Add type to each update
+                for update in venue_updates:
+                    update['type'] = 'venueUpdate'
+
+
+        # Prepare the response
+        response = {
+            'producerQuestion': producer_questions if producer_questions else [],
+            'producerUpdate': producer_updates if producer_updates else [],
+            'venueQuestion': venue_questions if venue_questions else [],
+            'venueUpdate': venue_updates if venue_updates else []
+        }
+        return jsonify(response), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({
+            'code': 500,
+            'message': 'An error occurred fetching questions and updates.'
+        }), 500
+    finally:
+        cursor.close()
+
+# ------------------------------------------------------------------------------------------
+# [POST] Get the number of requests for a specific user, specifically the number of listing requests, listing edits requests, and duplicate requests
+# Post data: user_id, user_type, is_admin, drink_types
+@blueprint.route('/getRequestsCount', methods=['POST'])
+def get_requests_count():
+    conn = g.db
+    cur = conn.cursor()
+
+    data = request.get_json()
+    user_id = data.get('user_id')
+    if not user_id:
+        return jsonify({
+            'code': 400,
+            'message': 'User ID is required.'
+        }), 400
+    
+    user_type = data.get('user_type')
+    is_admin = data.get('is_admin')
+    drink_types = data.get('drink_types', [])
+
+    try:
+        # Check user type
+        if user_type == 'user':
+
+            # Check if user is admin 
+            if is_admin:
+
+                # Get all requests for admin user
+                cur.execute("""
+                    SELECT COUNT(*) AS count FROM "requestListings"
+                    WHERE "reviewStatus" = FALSE
+                """)
+                listing_requests_count = cur.fetchone()['count']
+
+                # Get all listing edits requests for admin user
+                cur.execute("""
+                    SELECT COUNT(*) AS count FROM "requestEdits"
+                    WHERE "reviewStatus" = FALSE
+                    AND "duplicateLink" IS NULL
+                """)
+                listing_edits_requests_count = cur.fetchone()['count']
+
+                # Get all duplicate requests for admin user
+                cur.execute("""
+                    SELECT COUNT(*) AS count FROM "requestEdits"
+                    WHERE "reviewStatus" = FALSE
+                    AND "duplicateLink" IS NOT NULL
+                """)
+                duplicate_requests_count = cur.fetchone()['count']
+            else:
+                # Get requests raised by the user or request is part of the user's drink types (moderator)
+                cur.execute("""
+                    SELECT COUNT(*) AS count FROM "requestListings"
+                    WHERE "userID" = %s OR "drinkType" = ANY(%s)
+                    AND "reviewStatus" = FALSE
+                """, (user_id, drink_types))
+                listing_requests_count = cur.fetchone()['count']
+
+                # Get listing edits requests raised by the user or request is part of the user's drink types (moderator)
+                cur.execute("""
+                    SELECT COUNT(*) AS count
+                    FROM "requestEdits" re
+                    JOIN listings l ON re."listingID" = l.id
+                    WHERE (
+                        re."userID" = %s OR l."drinkType" = ANY(%s)
+                    )
+                    AND re."reviewStatus" = FALSE
+                    AND re."duplicateLink" IS NULL
+                """, (user_id, drink_types))
+                listing_edits_requests_count = cur.fetchone()['count']
+
+
+                # Get duplicate requests raised by the user or request is part of the user's drink types (moderator)
+                cur.execute("""
+                    SELECT COUNT(*) AS count 
+                    FROM "requestEdits" re
+                    JOIN listings l ON re."listingID" = l.id
+                    WHERE (
+                            re."userID" = %s OR l."drinkType" = ANY(%s)
+                        )
+                    AND re."reviewStatus" = FALSE
+                    AND re."duplicateLink" IS NOT NULL
+                """, (user_id, drink_types))
+                duplicate_requests_count = cur.fetchone()['count']
+
+        elif user_type == 'producer':
+            # Get requests related to the producer
+            cur.execute("""
+                SELECT COUNT(*) AS count FROM "requestListings"
+                WHERE "producerID" = %s
+                AND "reviewStatus" = FALSE
+            """, (user_id,))
+            listing_requests_count = cur.fetchone()['count']
+
+            # Get listing edits requests related to the producer
+            cur.execute("""
+                SELECT COUNT(*) AS count FROM "requestEdits"
+                WHERE "producerID" = %s
+                AND "reviewStatus" = FALSE
+                AND "duplicateLink" IS NULL
+            """, (user_id,))
+            listing_edits_requests_count = cur.fetchone()['count']
+
+            # Get duplicate requests related to the producer
+            cur.execute("""
+                SELECT COUNT(*) AS count FROM "requestEdits"
+                WHERE "producerID" = %s
+                AND "reviewStatus" = FALSE
+                AND "duplicateLink" IS NOT NULL
+            """, (user_id,))
+            duplicate_requests_count = cur.fetchone()['count']
+        else:
+            return jsonify({
+                'code': 400,
+                'message': 'Invalid user type.'
+            }), 400
+
+        return jsonify({
+            'listingRequests': listing_requests_count,
+            'listingEditsRequests': listing_edits_requests_count,
+            'duplicateRequests': duplicate_requests_count
+        }), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({
+            'code': 500,
+            'message': 'An error occurred fetching requests count.'
+        }), 500
+
+    finally:
+        cur.close()
+
