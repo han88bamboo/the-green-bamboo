@@ -38,10 +38,9 @@
           
         >
           <img
-            v-if="clubInfo.clubBanner != ''"
+            v-if="clubInfo.clubBanner != null && clubInfo.clubBanner != ''" 
             :src="clubInfo.clubBanner"
             class="img-fluid"
-            alt="Club Banner"
           />
           <img v-else :src="defaultBanner" class="img-fluid" alt="Club Banner" />
         </div>
