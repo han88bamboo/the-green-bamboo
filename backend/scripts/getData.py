@@ -9,7 +9,7 @@
 #           [Listings]
 #           /getListings (GET), /getListingsByIDs (POST), /getListing/<id> (GET), /getListingsBySearch (GET),
 #           /getListingsDetailedByID/<id> (GET), /getListingNamesDynamicSearch/<searchTerm> (GET), /getAllListingsNames (GET),
-#           /getRecentlyAddedListings (POST),
+#           /getRecentlyAddedListings (POST), 
 
 #           [Producers]
 #           /getProducers (GET), /getProducer/<id> (GET), /getProducersByIDs (POST), /getProducersBySearch (GET),
@@ -4054,19 +4054,20 @@ def recent_user_activity(id):
         user_lists = cursor.fetchall()  # list of (listId, listName)
 
         # 3. For each list, get the drink items
-        for listId, listName in user_lists:
+        for list in user_lists:
             cursor.execute("""
                 SELECT "drinkId", "addedDate"
-                FROM usersDrinkListItems
+                FROM "usersDrinkListItems"
                 WHERE "listId" = %s
-            """, (listId,))
+            """, (list['id'],))
             list_items = cursor.fetchall()
-            for drinkId, addedDate in list_items:
+
+            for item in list_items:
                 activities.append({
                     'type': 'bookmark',
-                    'listingID': drinkId,
-                    'listName': listName,
-                    'date': addedDate.isoformat() if addedDate else None
+                    'listingID': item['drinkId'],
+                    'listName': list['listName'],
+                    'date': item['addedDate']
                 })
 
         # 4. Sort by date desc and limit top 10
