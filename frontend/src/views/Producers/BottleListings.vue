@@ -2253,7 +2253,7 @@
                     <!-- Edit & Delete Buttons -->
                     <div class="mt-2">
                       <button
-                        v-if="review.userID === parseInt(userID) || correctModerator || user.isAdmin"
+                        v-if="review.userID === parseInt(userID) || correctModerator || (user && user.isAdmin)"
                         class="btn btn-warning me-1 py-1 mobile-fs-7"
                         @click="setUpdateID(review)"
                         data-bs-toggle="modal"
@@ -2262,7 +2262,7 @@
                         Edit
                       </button>
                       <button
-                        v-if="review.userID === correctModerator || user.isAdmin"
+                        v-if="review.userID === correctModerator || (user && user.isAdmin)"
                         class="btn btn-danger py-1 mobile-fs-7"
                         @click="setDeleteID(review)"
                         data-bs-toggle="modal"
@@ -2393,7 +2393,7 @@
                     </button>
                   
                     <ul class="dropdown-menu">
-                      <li v-if="review.userID === parseInt(userID) || correctModerator || user.isAdmin">
+                      <li v-if="review.userID === parseInt(userID) || correctModerator || (user && user.isAdmin)">
                         <button
                           class="dropdown-item"
                           @click="setUpdateID(review)"
@@ -2403,7 +2403,7 @@
                           Edit
                         </button>
                       </li>
-                      <li v-if="review.userID === correctModerator || user.isAdmin">
+                      <li v-if="review.userID === correctModerator || (user && user.isAdmin)">
                         <button
                           class="dropdown-item text-danger"
                           @click="setDeleteID(review)"

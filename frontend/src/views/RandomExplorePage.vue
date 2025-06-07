@@ -1600,7 +1600,7 @@ export default {
           };
         }
 
-        if (this.userType != "venue") {
+        if (this.userType != "venue" && this.userType) {
           const response = await this.$axios.post(
             `${process.env.VUE_APP_API_URL}/getData/getRequestsCount`,
             data
