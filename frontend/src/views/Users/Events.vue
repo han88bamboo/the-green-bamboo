@@ -1203,7 +1203,6 @@ export default {
 
             this.disableButton = true;
             try {
-                console.log(this.newEvent);
 
                 // Check if all fields are filled
                 if (!this.newEvent.eventName || !this.newEvent.eventDescription || !this.newEvent.eventType || !this.newEvent.eventStartDate || this.newEvent.ticketed == null) {
@@ -1268,9 +1267,10 @@ export default {
                     toast.success("Event created successfully.");
 
                     // Close modal
-                    document.getElementById('createEventModal').classList.remove('show');
-                    document.body.classList.remove('modal-open');
-                    document.querySelectorAll('.modal-backdrop').forEach(backdrop => backdrop.remove());
+                    this.showCreateEventModal = false;
+                    // document.getElementById('createEventModal').classList.remove('show');
+                    // document.body.classList.remove('modal-open');
+                    // document.querySelectorAll('.modal-backdrop').forEach(backdrop => backdrop.remove());
 
                     // Restore scrolling on the body
                     document.body.style.overflow = 'auto'; 

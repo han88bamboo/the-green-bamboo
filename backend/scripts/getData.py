@@ -5279,17 +5279,21 @@ def get_requests_count():
 
             # Get listing edits requests related to the producer
             cur.execute("""
-                SELECT COUNT(*) AS count FROM "requestEdits"
-                WHERE "producerID" = %s
-                AND "reviewStatus" = FALSE
-                AND "duplicateLink" IS NULL
+                SELECT COUNT(*) AS count 
+                FROM "requestEdits" re
+                JOIN listings l ON re."listingID" = l.id
+                WHERE l."producerID" = %s
+                AND re."reviewStatus" = FALSE
+                AND re."duplicateLink" IS NULL
             """, (user_id,))
             listing_edits_requests_count = cur.fetchone()['count']
 
             # Get duplicate requests related to the producer
             cur.execute("""
-                SELECT COUNT(*) AS count FROM "requestEdits"
-                WHERE "producerID" = %s
+                SELECT COUNT(*) AS count 
+                FROM "requestEdits" re
+                JOIN listings l ON re."listingID" = l.id
+                WHERE l."producerID" = %s
                 AND "reviewStatus" = FALSE
                 AND "duplicateLink" IS NOT NULL
             """, (user_id,))

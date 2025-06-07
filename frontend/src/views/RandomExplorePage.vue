@@ -1599,14 +1599,17 @@ export default {
             drink_types: [],
           };
         }
-        const response = await this.$axios.post(
-          `${process.env.VUE_APP_API_URL}/getData/getRequestsCount`,
-          data
-        );
-        this.requestListingsCount = response.data.requestListings;
-        this.requestEditsCount = response.data.requestEdits;
-        this.requestDupesCount = response.data.requestDupes;
-        this.totalRequests = this.requestListingsCount + this.requestEditsCount + this.requestDupesCount;
+
+        if (this.userType != "venue") {
+          const response = await this.$axios.post(
+            `${process.env.VUE_APP_API_URL}/getData/getRequestsCount`,
+            data
+          );
+          this.requestListingsCount = response.data.requestListings;
+          this.requestEditsCount = response.data.requestEdits;
+          this.requestDupesCount = response.data.requestDupes;
+          this.totalRequests = this.requestListingsCount + this.requestEditsCount + this.requestDupesCount;
+        }
 
       } catch (error) {
         console.error(error);
