@@ -558,7 +558,7 @@
                   <!-- Name and Rank -->
                     <div class="d-flex align-items-center flex-wrap">
                       <router-link
-                        :to="profileURL(comment.commenterInfo.id, comment.commenterInfo.userType)"
+                        :to="profileURL(comment.commenterInfo.id, comment.commenterInfo.userType, comment.commenterInfo.displayName)"
                         class="fw-bold me-2 hover-underline"
                         style="color: rgb(2, 117, 98);"
                       >
@@ -895,6 +895,15 @@ export default {
     },
   },
   methods: {
+    slugify(text = '') {
+  return String(text)               
+    .normalize('NFKD')               
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')            
+    .replace(/[^\w-]+/g, '')         
+    .replace(/--+/g, '-');           
+},
     // Function to get membership details of user 
     async getMembershipDetails() {
       try {
@@ -929,13 +938,13 @@ export default {
     },
 
     // Function to get the profile URL of the commenter
-    profileURL(commenterID, userType) {
+    profileURL(commenterID, userType, commenterUserName) {
       if (userType == "user") {
-        return `/profile/user/${commenterID}`;
+        return `/profile/user/${commenterID}/${this.slugify(commenterUserName)}`;
       } else if (userType == "producer") {
-        return `/profile/producer/${commenterID}`;
+        return `/profile/producer/${commenterID}/${this.slugify(commenterUserName)}`;
       } else {
-        return `/profile/venue/${commenterID}`;
+        return `/profile/venue/${commenterID}/${this.slugify(commenterUserName)}`;
       }
     },
 

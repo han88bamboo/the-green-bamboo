@@ -82,7 +82,7 @@
                                             <i> 
                                                 You rated 
                                                 <b>
-                                                    <router-link :to="{ path: '/listing/view/' + activity.listingID }" class="reverse-clickable-text">
+                                                    <router-link :to="{ path: '/listing/view/' + activity.listingID + '/' + slugify(activity.listingName) }" class="reverse-clickable-text">
                                                         <u> {{ activity.listingName }} </u>
                                                     </router-link>
                                                     &nbsp;<span style="color: #F0B358">{{ activity.rating }} stars</span>
@@ -94,13 +94,13 @@
                                             <i>
                                                 You added
                                                 <b>
-                                                    <router-link :to="{ path: '/listing/view/' + activity.listingID }" class="reverse-clickable-text">
+                                                    <router-link :to="{ path: '/listing/view/' + activity.listingID + '/' + slugify(activity.listingName) }" class="reverse-clickable-text">
                                                         <u> {{ activitiy.listingName }} </u>
                                                     </router-link>
                                                 </b>
                                                 &nbsp;to your list:&nbsp;
                                                 <b>
-                                                    <router-link :to="{ path: `/profile/user/${userID}/${activity.listName}`}" class="reverse-clickable-text">
+                                                    <router-link :to="{ path: `/profile/user/${userID}/${slugify(activity.listName)}`}" class="reverse-clickable-text">
                                                         <u><span style="color: #F0B358;">{{ activity.listName }}</span></u>
                                                     </router-link>
                                                 </b>
@@ -130,7 +130,7 @@
                                             <svg v-if="activity.type == 'downvote'" fill="#ffffff" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="m20.901 10.566c-.167-.345-.516-.566-.901-.566h-2-2v-3-4c0-.553-.447-1-1-1h-6c-.553 0-1 .447-1 1v5 2h-1-3c-.385 0-.734.221-.901.566-.166.347-.12.758.12 1.059l8 10c.19.237.477.375.781.375s.591-.138.781-.375l8-10c.24-.301.286-.712.12-1.059z"/></svg>
                                             <i> 
                                                 Someone <span :style="{ color: activity.type === 'upvote' ? '#90ee90' : '#ff7f7f' }">{{ activity.type }}d</span> your review on 
-                                                <router-link :to="{ path: '/listing/view/' + activity.reviewTarget }" class="reverse-clickable-text">
+                                                <router-link :to="{ path: '/listing/view/' + activity.reviewTarget + '/' + slugify(activity.listingName) }" class="reverse-clickable-text">
                                                     <u> {{ activity.listingName }} </u>
                                                 </router-link>
                                                 {{ getTimeDifference(activity.date) }}
@@ -138,7 +138,7 @@
                                         </div>
                                         <div v-else-if="activity.type === 'follow'">
                                             <i> 
-                                                <router-link :to="{ path: '/profile/user/' + activity.userID }" class="reverse-clickable-text">
+                                                <router-link :to="{ path: '/profile/user/' + activity.userID + '/' + slugify(activity.username) }" class="reverse-clickable-text">
                                                     @<b> {{ activity.username }} </b>
                                                 </router-link> 
                                                 started following you
@@ -165,11 +165,11 @@
                                     <div v-for="activity in recentFollowerActivity" v-bind:key="activity.id" class="py-2">
                                         <div v-if="activity.type === 'tag'">
                                             <i> 
-                                                <router-link :to="{ path: '/profile/user/' + activity.userID }" class="reverse-clickable-text">
+                                                <router-link :to="{ path: '/profile/user/' + activity.userID + '/' + slugify(activity.username)}" class="reverse-clickable-text">
                                                     @<b> {{ activity.username }} </b>
                                                 </router-link> 
                                                 tagged you in a review on 
-                                                <router-link :to="{ path: '/listing/view/' + activity.listingID + '/' + activity.listingName}" class="reverse-clickable-text">
+                                                <router-link :to="{ path: '/listing/view/' + activity.listingID + '/' + slugify(activity.listingName)}" class="reverse-clickable-text">
                                                     <u> {{ activity.listingName }} </u>
                                                 </router-link>
                                                 {{ getTimeDifference(activity.date) }}
@@ -177,7 +177,7 @@
                                         </div>
                                         <div v-else-if="activity.type === 'follow'">
                                             <i> 
-                                                <router-link :to="{ path: '/profile/user/' + activity.userID }" class="reverse-clickable-text">
+                                                <router-link :to="{ path: '/profile/user/' + activity.userID + '/' + slugify(activity.username) }" class="reverse-clickable-text">
                                                     @<b> {{ activity.username }} </b>
                                                 </router-link> 
                                                 started following you
@@ -244,7 +244,7 @@
                                     <!-- Grail Details -->
                                     <div class="flex-grow-1 mobile-col-6 text-start">
                                         <router-link 
-                                            :to="'/listing/view/' + grail.id + '/' + grail.name.replace(/[^a-zA-Z0-9]/g, '')" class="default-clickable-text mobile-rating-smaller-text-2 mb-0"
+                                            :to="'/listing/view/' + grail.id + '/' + grail.name.replace(/[^a-zA-Z0-9]/g, '-')" class="default-clickable-text mobile-rating-smaller-text-2 mb-0"
                                             style="font-weight: bold; text-decoration: underline; display: block;">
                                             {{ grail.name }}
                                         </router-link>
@@ -734,7 +734,7 @@
                     <div class="card ms-5 p-3 col-5 text-start" style="color:black;">
                         <h6 class="fw-bold  mb-2">  Best Rated Drinks </h6>
                         <div class="text-start pb-2" v-for="listing in top5BestReviewedListings" v-bind:key="listing.id">
-                            <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
+                            <router-link :to="{ path: '/listing/view/' + listing.id +'/' + slugify(listing.listingName) }" class="reverse-clickable-text">
                                 <div class="d-flex align-items-center">
                                     <!-- <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;"> -->
                                     <img :src="(listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;">
@@ -1381,6 +1381,14 @@
             document.removeEventListener("keydown", this.handleKeyDown);
         },
         methods: {
+            slugify(text) {
+            if (!text) return "";
+            return text
+                .toString()
+                .toLowerCase()
+                .replace(/\s+/g, '-')
+                .replace(/[^\w]/g, '-');
+        },
             async loadData() {
                 // Fetch display user details
                 await this.fetchDisplayUserDetails();

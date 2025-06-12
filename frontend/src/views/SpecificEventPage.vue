@@ -856,13 +856,15 @@ export default {
         }
     },
     methods: {
-        slugify(text) {
-                return text
-                    .toString()
-                    .toLowerCase()
-                    .replace(/\s+/g, '')
-                    .replace(/[^\w]/g, '');
-            },
+        slugify(text = '') {
+  return String(text)               
+    .normalize('NFKD')               
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')            
+    .replace(/[^\w-]+/g, '')         
+    .replace(/--+/g, '-');           
+},
         // Function to get event information
         async getEvent() {
             try {
@@ -1228,13 +1230,13 @@ export default {
         // Function to get the profile URL of the poster 
         profileURL(posterID, userType, userName) {
             if (userType == 'user') {
-                return `/profile/user/${posterID}/${userName}`;
+                return `/profile/user/${posterID}/${this.slugify(userName)}`;
             }
             else if (userType == 'producer') {
-                return `/profile/producer/${posterID}/${userName}`;
+                return `/profile/producer/${posterID}/${this.slugify(userName)}`;
             }
             else {
-                return `/profile/venue/${posterID}/${userName}`;
+                return `/profile/venue/${posterID}/${this.slugify(userName)}`;
             }
 
         },
