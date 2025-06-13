@@ -22,7 +22,7 @@
 
         <div class="col mobile-view-hide d-flex align-items-center">
           <!-- search bar with suggestions -tzh added mobile-view-hide  -->
-          <div
+          <!-- <div
             class="col-8 position-relative search-bar d-flex"
             style="height: 50px"
           >
@@ -65,7 +65,7 @@
               "
               v-on:click="goSearch"
             />
-          </div>
+          </div> -->
           <!-- camera button -->
           <!-- <div class="col mobile-view-hide">
                             <button class="btn primary-btn-less-round-green d-flex align-items-center" style="height: 50px; margin-left: 10px; padding: 0px 15px;" v-on:click="imageSearch">
@@ -73,6 +73,7 @@
                                 <img src="../../Images/Others/camera-white.png" style="width: 30px; height: 30px; margin-left: 10px;">
                             </button>
                     </div> -->
+          <SearchBar :showSurpriseButton="false" class="w-100"/>
         </div>
 
         <div class="col-2 dropdown mobile-col-4">
@@ -429,7 +430,7 @@
     <div class="col-12 primary-square mt-2 py-1">
       <div class="mobile-view-show col-12 ps-4 pe-4 d-flex justify-content-center py-2">
         <!-- <input class="search-bar form-control rounded fst-italic" type="text" placeholder="What are you drinking today?" style="height: 50px;" v-model="searchInput" v-on:keyup.enter="goSearch"> -->
-        <div class="search-bar d-flex align-items-center col-12 position-relative">
+        <!-- <div class="search-bar d-flex align-items-center col-12 position-relative">
           <div class="w-100 position-relative">
             <input
               class="form-control fst-italic border-0"
@@ -469,7 +470,8 @@
             "
             v-on:click="goSearch"
           />
-        </div>
+        </div> -->
+        <SearchBar :showSurpriseButton="false" class="w-100" />
       </div>
       <div
         class="mobile-view-hide container-fluid align-items-center col-xxl-8 col-xl-9 col-lg-10 col-md-11 col-sm-12"
@@ -557,10 +559,13 @@
 </template>
 
 <script>
-import axios from "axios";
+import SearchBar from './SearchBar.vue';
 
 export default {
   name: "NavBar",
+  components: {
+    SearchBar,
+  },
   data() {
     return {
       searchInput: "",
@@ -574,10 +579,10 @@ export default {
       onCreate: false,
       onRequest: false,
       dashboardWord: "",
-      suggestions: [],
-      showSuggestions: false,
-      selectedIndex: -1,
-      isFetching: false,
+      // suggestions: [],
+      // showSuggestions: false,
+      // selectedIndex: -1,
+      // isFetching: false,
       showNotifications: false,
       activeTab: "forYou",
 
@@ -594,41 +599,41 @@ export default {
       newsLoaded: false,
     };
   },
-  computed: {
-    filteredSuggestions() {
-      if (this.searchInput.trim() === "") return [];
+  // computed: {
+  //   filteredSuggestions() {
+  //     if (this.searchInput.trim() === "") return [];
 
-      const searchTerm = this.searchInput.toLowerCase();
+  //     const searchTerm = this.searchInput.toLowerCase();
 
-      const startsWithMatches = this.suggestions.filter((item) =>
-        item.toLowerCase().startsWith(searchTerm)
-      );
+  //     const startsWithMatches = this.suggestions.filter((item) =>
+  //       item.toLowerCase().startsWith(searchTerm)
+  //     );
 
-      const wordStartsWithMatches = this.suggestions.filter((item) => {
-        const words = item.toLowerCase().split(" ");
-        return (
-          words.some((word) => word.startsWith(searchTerm)) &&
-          !item.toLowerCase().startsWith(searchTerm)
-        );
-      });
+  //     const wordStartsWithMatches = this.suggestions.filter((item) => {
+  //       const words = item.toLowerCase().split(" ");
+  //       return (
+  //         words.some((word) => word.startsWith(searchTerm)) &&
+  //         !item.toLowerCase().startsWith(searchTerm)
+  //       );
+  //     });
 
-      const substringMatches = this.suggestions.filter(
-        (item) =>
-          item.toLowerCase().includes(searchTerm) &&
-          !item.toLowerCase().startsWith(searchTerm) &&
-          !item
-            .toLowerCase()
-            .split(" ")
-            .some((word) => word.startsWith(searchTerm))
-      );
+  //     const substringMatches = this.suggestions.filter(
+  //       (item) =>
+  //         item.toLowerCase().includes(searchTerm) &&
+  //         !item.toLowerCase().startsWith(searchTerm) &&
+  //         !item
+  //           .toLowerCase()
+  //           .split(" ")
+  //           .some((word) => word.startsWith(searchTerm))
+  //     );
 
-      return [
-        ...startsWithMatches,
-        ...wordStartsWithMatches,
-        ...substringMatches,
-      ].slice(0, 7);
-    },
-  },
+  //     return [
+  //       ...startsWithMatches,
+  //       ...wordStartsWithMatches,
+  //       ...substringMatches,
+  //     ].slice(0, 7);
+  //   },
+  // },
   mounted() {
     // Obtain user's profile picture + set profile URL
     if (localStorage.getItem("88B_accID") != null) {
@@ -679,7 +684,6 @@ export default {
       }
     }
 
-    this.fetchAllListings();
 
     document.addEventListener("click", this.handleClickOutside);
     document.addEventListener("keydown", this.handleKeyDown);
@@ -716,87 +720,87 @@ export default {
       }
     },
     // for search feature
-    async fetchAllListings() {
-      try {
-        this.isFetching = true;
-        const response = await axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getListingsName`
-        );
-        this.suggestions = response.data;
-      } catch (error) {
-        console.error("Error fetching listings:", error);
-        this.suggestions = [];
-      } finally {
-        this.isFetching = false;
-      }
-    },
+    // async fetchAllListings() {
+    //   try {
+    //     this.isFetching = true;
+    //     // const response = await axios.get(
+    //     //   `${process.env.VUE_APP_API_URL}/getData/getListingsName`
+    //     // );
+    //     // this.suggestions = response.data;
+    //   } catch (error) {
+    //     console.error("Error fetching listings:", error);
+    //     this.suggestions = [];
+    //   } finally {
+    //     this.isFetching = false;
+    //   }
+    // },
 
-    getSuggestions() {
-      if (this.searchInput.trim().length > 0) {
-        this.showSuggestions = true;
-      } else {
-        this.showSuggestions = false;
-      }
-    },
+    // getSuggestions() {
+    //   if (this.searchInput.trim().length > 0) {
+    //     this.showSuggestions = true;
+    //   } else {
+    //     this.showSuggestions = false;
+    //   }
+    // },
 
-    selectSuggestion(suggestion) {
-      this.searchInput = suggestion;
-      this.showSuggestions = false;
-      this.goSearch();
-    },
+    // selectSuggestion(suggestion) {
+    //   this.searchInput = suggestion;
+    //   this.showSuggestions = false;
+    //   this.goSearch();
+    // },
 
-    handleKeyDown(e) {
-      if (!this.showSuggestions) return;
+    // handleKeyDown(e) {
+    //   if (!this.showSuggestions) return;
 
-      const suggestions = this.filteredSuggestions;
-      if (e.key === "ArrowDown") {
-        e.preventDefault();
-        this.selectedIndex = Math.min(
-          this.selectedIndex + 1,
-          suggestions.length - 1
-        );
-      } else if (e.key === "ArrowUp") {
-        e.preventDefault();
-        this.selectedIndex = Math.max(this.selectedIndex - 1, 0);
-      } else if (e.key === "Enter" && this.selectedIndex >= 0) {
-        e.preventDefault();
-        this.selectSuggestion(suggestions[this.selectedIndex]);
-      } else if (e.key === "Escape") {
-        this.showSuggestions = false;
-      }
-    },
+    //   const suggestions = this.filteredSuggestions;
+    //   if (e.key === "ArrowDown") {
+    //     e.preventDefault();
+    //     this.selectedIndex = Math.min(
+    //       this.selectedIndex + 1,
+    //       suggestions.length - 1
+    //     );
+    //   } else if (e.key === "ArrowUp") {
+    //     e.preventDefault();
+    //     this.selectedIndex = Math.max(this.selectedIndex - 1, 0);
+    //   } else if (e.key === "Enter" && this.selectedIndex >= 0) {
+    //     e.preventDefault();
+    //     this.selectSuggestion(suggestions[this.selectedIndex]);
+    //   } else if (e.key === "Escape") {
+    //     this.showSuggestions = false;
+    //   }
+    // },
 
-    handleClickOutside(e) {
-      if (!this.$el.contains(e.target)) {
-        this.showSuggestions = false;
-      }
-    },
+    // handleClickOutside(e) {
+    //   if (!this.$el.contains(e.target)) {
+    //     this.showSuggestions = false;
+    //   }
+    // },
 
-    goSearch() {
-      if (this.searchInput != "") {
-        // remove any '/' from search input
-        this.searchInput = this.searchInput.replace(/\//g, "");
+    // goSearch() {
+    //   if (this.searchInput != "") {
+    //     // remove any '/' from search input
+    //     this.searchInput = this.searchInput.replace(/\//g, "");
 
-        // if already on search page, refresh the page with new search input
-        if (this.$route.path.split("/")[1] == "search") {
-          window.location.href = "/search/" + this.searchInput;
-        } else {
-          // re-route to search page
-          this.$router.push({ path: "/search/" + this.searchInput });
-        }
-        this.showSuggestions = false;
-      }
-    },
+    //     // if already on search page, refresh the page with new search input
+    //     if (this.$route.path.split("/")[1] == "search") {
+    //       window.location.href = "/search/" + this.searchInput;
+    //     } else {
+    //       // re-route to search page
+    //       this.$router.push({ path: "/search/" + this.searchInput });
+    //     }
+    //     this.showSuggestions = false;
+    //   }
+    // },
 
-    imageSearch() {
-      // if already on image search page, refresh the page
-      if (this.$route.path.split("/")[1] == "imageSearch") {
-        window.location.href = "/imageSearch";
-      } else {
-        // re-route to image search page
-        this.$router.push({ path: "/imageSearch" });
-      }
-    },
+    // imageSearch() {
+    //   // if already on image search page, refresh the page
+    //   if (this.$route.path.split("/")[1] == "imageSearch") {
+    //     window.location.href = "/imageSearch";
+    //   } else {
+    //     // re-route to image search page
+    //     this.$router.push({ path: "/imageSearch" });
+    //   }
+    // },
     // logout function
     logout() {
       localStorage.removeItem("88B_accID");

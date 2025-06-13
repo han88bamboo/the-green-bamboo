@@ -8,7 +8,7 @@
 
 #           [Listings]
 #           /getListings (GET), /getListingsByIDs (POST), /getListing/<id> (GET), /getListingsBySearch (GET),
-#           /getListingsDetailedByID/<id> (GET), /getListingNamesDynamicSearch/<searchTerm> (GET), /getAllListingsNames (GET),
+#           /getListingsDetailedByID/<id> (GET), /getListingNamesDynamicSearch/<searchTerm> (GET), /getListingsNames/<search_term> (GET),
 #           /getRecentlyAddedListings (POST), 
 
 #           [Producers]
@@ -624,7 +624,6 @@ def getListingsByProducer(id):
 def getListingByName(listing_name):
     # URL decode the listing name in case there are special characters
     listing_name = unquote(listing_name)
-    
 
     conn = g.db
 
@@ -1164,17 +1163,38 @@ def getRecentListingReviews(id):
     
 
 # [GET] Get all listings names
-@blueprint.route("/getAllListingsNames")
-def getAllListingsNames():
+@blueprint.route("/getListingsNames/<search_term>")
+def getListingsNames(search_term):
     conn = g.db
-    with conn.cursor() as cursor:
-        cursor.execute('SELECT "id", "listingName" FROM "listings"')
-        listings_data = cursor.fetchall()
+    search_term = search_term.strip()
 
-    if not listings_data:
-        return jsonify([]), 404
+    try:
 
-    return jsonify(listings_data), 200
+        with conn.cursor() as cursor:
+            # Fetch 20 listings names based on the search term
+            cursor.execute("""
+                SELECT "listingName"
+                FROM "listings"
+                WHERE "listingName" ILIKE %s
+                LIMIT 20
+            """, ('%' + search_term + '%',))
+
+            listings_data = cursor.fetchall()
+
+        if not listings_data:
+            return jsonify([]), 404
+
+        # Convert into a list
+        listings_data = [listing['listingName'] for listing in listings_data]
+        # Remove duplicates
+        listings_data = list(set(listings_data))
+
+        return jsonify(listings_data), 200
+
+    except Exception as e:
+        print(f"Error fetching listings names: {str(e)}")
+        return jsonify({"code": 500, "message": "An error occurred while fetching listings names."}), 500
+
 
 
 # [POST] Get recently added listings by producers and venues from a list of producer IDs and venue IDs that a user follows

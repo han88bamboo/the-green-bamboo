@@ -366,7 +366,7 @@
                                 <div class="position-relative">
                                     <input class="form-control search-input" type="text"
                                         placeholder="Search for a drink" v-model="searchInput"
-                                        @keyup.enter="addSelectedDrink" @input="getSuggestions"
+                                        @keyup.enter="addSelectedDrink" @input="fetchSuggestions"
                                         autocomplete="off" />
                                     <span class="search-icon">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
@@ -378,14 +378,21 @@
                 
                                     <!-- Autocomplete Suggestions -->
                                     <div class="autocomplete-container position-absolute w-100"
-                                        v-if="showSuggestions && filteredSuggestions.length > 0">
+                                        v-if="showSuggestions && suggestions.length > 0">
                                         <ul class="list-group">
                                             <li class="list-group-item list-group-item-action text-start"
-                                                v-for="(suggestion, index) in filteredSuggestions" :key="index"
-                                                @click="selectSuggestion(suggestion)"
-                                                :class="{ active: selectedIndex === index }"
-                                                @mouseover="selectedIndex = index">
+                                                v-for="(suggestion, index) in suggestions" :key="index"
+                                                @click="selectSuggestion(suggestion)">
                                                 {{ suggestion }}
+                                            </li>
+                                        </ul>
+                                    </div>
+
+                                    <div class="autocomplete-container position-absolute w-100"
+                                        v-if="showNoResultsMsg">
+                                        <ul class="list-group">
+                                            <li class="list-group-item list-group-item-action text-start">
+                                                No results found. Try a different search.
                                             </li>
                                         </ul>
                                     </div>
@@ -852,7 +859,6 @@
     import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js'
     import { LineElement, PointElement } from 'chart.js'
     import FooterBar from "@/components/FooterBar.vue";
-    import axios from 'axios';
     import { useToast } from "vue-toastification";
 
     ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
@@ -1128,47 +1134,6 @@
 
             //     return activities.slice(0, 10);
             // },
-
-
-            // Start: Added by SMU Group 3 for the search bar in the popup modal
-            filteredSuggestions() {
-                if (this.searchInput.trim() === "") return [];
-            
-                const searchTerm = this.searchInput.toLowerCase();
-            
-                // First prioritize items that start with the search term
-                const startsWithMatches = this.suggestions.filter((item) =>
-                    item.toLowerCase().startsWith(searchTerm)
-                );
-            
-                // Then add items where any word starts with the search term
-                const wordStartsWithMatches = this.suggestions.filter((item) => {
-                    const words = item.toLowerCase().split(" ");
-                    return (
-                        words.some((word) => word.startsWith(searchTerm)) &&
-                        !item.toLowerCase().startsWith(searchTerm)
-                    ); // exclude already matched items
-                });
-            
-                // Finally add substring matches not covered by above rules
-                const substringMatches = this.suggestions.filter(
-                    (item) =>
-                        item.toLowerCase().includes(searchTerm) &&
-                        !item.toLowerCase().startsWith(searchTerm) &&
-                        !item
-                            .toLowerCase()
-                            .split(" ")
-                            .some((word) => word.startsWith(searchTerm))
-                );
-            
-                // Combine all matches with priority order and limit to 7
-                return [
-                    ...startsWithMatches,
-                    ...wordStartsWithMatches,
-                    ...substringMatches,
-                ].slice(0, 7);
-            },
-            // End: Added by SMU Group 3 for the search bar in the popup modal
         },
         data() {
             return {
@@ -1311,6 +1276,7 @@
                 searchInput: "",
                 suggestions: [],
                 showSuggestions: false,
+                showNoResultsMsg: false,
                 selectedIndex: -1,
                 selectedDrinks: [], 
                 selectedDrinksIDs: [],
@@ -1372,7 +1338,6 @@
             // Added by SMU Group 3
             // Fetch user's existing selections from database
             // await this.fetchUserSelections(); - already done in fetchDisplayUserDetails()
-            await this.fetchAllListings();
             document.addEventListener("click", this.handleClickOutside);
             document.addEventListener("keydown", this.handleKeyDown);
         },
@@ -1543,12 +1508,11 @@
                 try {
                     const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUserDashBoardData/${this.displayUserID}`);
                     let response_Data = response.data.data;
-                    console.log("response_Data: ", response_Data);
 
                     this.followerCount = response_Data.totalFollowers
                     this.drinkCount = response_Data.totalReviews;
                     this.top5BestReviewedListings = response_Data.top5BestReviewedListings;
-                    this.top5BestReviewedCategories = response_Data.top5BestReviewedCategories;
+                    this.top5BestReviewedCategories = response_Data.top5BestReviewedCategories; // not showing up
                     this.top5Venues = response_Data.top5Venues;
                     this.top5Producers = response_Data.top5Producers;
                     this.top5Styles = response_Data.top5Styles;
@@ -1967,28 +1931,37 @@
                 }
             },
             // Fetches all listings names for suggestions
-            async fetchAllListings() {
+            async fetchSuggestions() {
                 try {
-                    this.isFetching = true;
-                    const response = await axios.get(
-                        `${process.env.VUE_APP_API_URL}/getData/getListingsName`
+                    if (this.searchInput.trim().length === 0) {
+                        this.suggestions = [];
+                        return;
+                    }
+                    const response = await this.$axios.get(
+                        `${process.env.VUE_APP_API_URL}/getData/getListingsNames/${this.searchInput.trim()}` // Ensure searchInput is trimmed
                     );
                     this.suggestions = response.data;
+                    this.showSuggestions = true;
+                    this.showNoResultsMsg = false; // Reset no results message
+                    
                 } catch (error) {
                     console.error("Error fetching listings:", error);
+
+                    if (error.response && error.response.status === 404) {
+                        // If no suggestions found, set suggestions to an empty array
+                        this.showNoResultsMsg = true;
+                    }
                     this.suggestions = [];
-                } finally {
-                    this.isFetching = false;
                 }
             },
             // Get suggestions based on current input
-            getSuggestions() {
-                if (this.searchInput.trim().length > 0) {
-                    this.showSuggestions = true;
-                } else {
-                    this.showSuggestions = false;
-                }
-            },
+            // getSuggestions() {
+            //     if (this.searchInput.trim().length > 0) {
+            //         this.showSuggestions = true;
+            //     } else {
+            //         this.showSuggestions = false;
+            //     }
+            // },
             // Select a suggestion
             async selectSuggestion(suggestion) {
                 // Check if max number of drinks (3) has been reached, but only for Up & Coming and GOATs
@@ -2006,7 +1979,6 @@
                 }
                 // Store the suggestion
                 this.searchInput = suggestion;
-                this.showSuggestions = false;
             
                 try {
                     const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingByName/${suggestion}`);
@@ -2030,37 +2002,37 @@
                 }
             },
             // Handle keyboard navigation
-            handleKeyDown(e) {
-                if (!this.showSuggestions) return;
+            // handleKeyDown(e) {
+            //     if (!this.showSuggestions) return;
             
-                const suggestions = this.filteredSuggestions;
-                // Down arrow
-                if (e.key === "ArrowDown") {
-                    e.preventDefault();
-                    this.selectedIndex = Math.min(
-                        this.selectedIndex + 1,
-                        suggestions.length - 1
-                    );
-                }
-                // Up arrow
-                else if (e.key === "ArrowUp") {
-                    e.preventDefault();
-                    this.selectedIndex = Math.max(this.selectedIndex - 1, 0);
-                }
-                // Enter key
-                else if (e.key === "Enter") {
-                    e.preventDefault();
-                    // If suggestions are visible and an index is selected, 
-                    // simulate clicking on that suggestion
-                    if (this.showSuggestions && this.selectedIndex >= 0) {
-                        this.selectSuggestion(suggestions[this.selectedIndex]);
-                    }
-                }
-                // Escape key
-                else if (e.key === "Escape") {
-                    this.showSuggestions = false;
-                }
-            },
+            //     const suggestions = this.filteredSuggestions;
+            //     // Down arrow
+            //     if (e.key === "ArrowDown") {
+            //         e.preventDefault();
+            //         this.selectedIndex = Math.min(
+            //             this.selectedIndex + 1,
+            //             suggestions.length - 1
+            //         );
+            //     }
+            //     // Up arrow
+            //     else if (e.key === "ArrowUp") {
+            //         e.preventDefault();
+            //         this.selectedIndex = Math.max(this.selectedIndex - 1, 0);
+            //     }
+            //     // Enter key
+            //     else if (e.key === "Enter") {
+            //         e.preventDefault();
+            //         // If suggestions are visible and an index is selected, 
+            //         // simulate clicking on that suggestion
+            //         if (this.showSuggestions && this.selectedIndex >= 0) {
+            //             this.selectSuggestion(suggestions[this.selectedIndex]);
+            //         }
+            //     }
+            //     // Escape key
+            //     else if (e.key === "Escape") {
+            //         this.showSuggestions = false;
+            //     }
+            // },
             // Close suggestions when clicking outside
             handleClickOutside(e) {
                 if (!this.$el.contains(e.target)) {
