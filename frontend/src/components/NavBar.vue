@@ -207,220 +207,306 @@
               class="btn p-0 me-1"
               @click="forceLoad(profileURL)"
             >
-              <svg
-                v-if="photo == ''"
-                xmlns="http://www.w3.org/2000/svg"
-                width="45"
-                height="45"
-                fill="currentColor"
-                class="bi bi-person-circle mobile-view-hide"
-                viewBox="0 0 16 16"
-              >
-                <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
-                <path
-                  fill-rule="evenodd"
-                  d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"
-                />
-              </svg>
               <img
-                v-else
-                :src="photo"
+                :src="computedPhoto"
                 style="width: 45px; height: 45px"
                 class="img-border"
               />
             </button>
+
             <router-link v-if="!onProfile" :to="profileURL">
               <button type="button" class="btn p-0 mobile-view-hide">
-                <svg
-                  v-if="photo == ''"
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="45"
-                  height="45"
-                  fill="currentColor"
-                  class="bi bi-person-circle"
-                  viewBox="0 0 16 16"
-                >
-                  <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
-                  <path
-                    fill-rule="evenodd"
-                    d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"
-                  />
-                </svg>
                 <img
-                  v-else
-                  :src="photo"
+                  :src="computedPhoto"
                   style="width: 45px; height: 45px"
                   class="img-border"
                 />
               </button>
             </router-link>
 
-            <!-- dropdown button -->
-            <button
-              class="navbar-toggler p-0 show"
-              type="button"
-              data-bs-toggle="dropdown"
-              aria-expanded="true"
-            >
-              <span class="navbar-toggler-icon"></span>
-            </button>
 
-            <!-- dropdown menu -->
-            <ul class="dropdown-menu dropdown-menu-end">
-              <li>
-                <router-link :to="'/'" class="dropdown-item">Home</router-link>
-              </li>
-
-              <li v-if="onProfile">
-                <span class="dropdown-item" @click="forceLoad(profileURL)"
-                  >My Profile</span
-                >
-              </li>
-              <li v-if="!onProfile">
-                <router-link :to="profileURL" class="dropdown-item"
-                  >My Profile</router-link
-                >
-              </li>
-
-              <li
-                v-if="
-                  onCreate && (accType == 'producer' || isAdmin || isModerator)
-                "
+            <!-- Navigation Button and Dropdown Menu - DESKTOP -->
+            <div class="position-relative d-none d-md-block">
+              <button
+                class="navbar-toggler p-0 show mobile-view-hide"
+                type="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="true"
               >
-                <span class="dropdown-item" @click="forceLoad('/listing/create')"
-                  >Create New Listing</span
-                >
-              </li>
-              <li
-                v-if="
-                  !onCreate && (accType == 'producer' || isAdmin || isModerator)
-                "
-              >
-                <router-link :to="'/listing/create'" class="dropdown-item"
-                  >Create New Listing</router-link
-                >
-              </li>
+                <span class="navbar-toggler-icon"></span>
+              </button>
 
-              <li v-if="onRequest && accType == 'user'">
-                <span class="dropdown-item" @click="forceLoad('/request/new')"
-                  >Request New Listing</span
-                >
-              </li>
-              <li v-if="!onRequest && accType == 'user'">
-                <router-link :to="'/request/new'" class="dropdown-item"
-                  >Request New Listing</router-link
-                >
-              </li>
-
-              <li v-if="isAdmin || isModerator || accType == 'producer'">
-                <router-link :to="'/request/view'" class="dropdown-item"
-                  >View Requests</router-link
-                >
-              </li>
-
-              <li v-if="isAdmin">
-                <router-link :to="'/admin/dashboard'" class="dropdown-item"
-                  >Admin Dashboard</router-link
-                >
-              </li>
-              <li v-if="isAdmin">
-                <router-link :to="'/admin/importListings'" class="dropdown-item"
-                  >Import Listings</router-link
-                >
-              </li>
-
-              <div class="mobile-view-show">
+              <!-- dropdown menu DESKTOP ONLY -->
+              <ul class="dropdown-menu dropdown-menu-end">
+                <!-- Homepage -->
                 <li>
-                  <router-link :to="'/explore'" class="dropdown-item"
-                    >Explore</router-link
+                  <router-link :to="'/'" class="dropdown-item">Home</router-link>
+                </li>
+                <!-- My Profile -->
+                <li v-if="onProfile">
+                  <span class="dropdown-item" @click="forceLoad(profileURL)"
+                    >My Profile</span
                   >
                 </li>
-                <li>
-                  <router-link :to="'/best-of'" class="dropdown-item"
-                    >Best Of</router-link
+                <li v-if="!onProfile">
+                  <router-link :to="profileURL" class="dropdown-item"
+                    >My Profile</router-link
                   >
                 </li>
+                <!-- User's Analytics-->
                 <li>
-                  <router-link :to="dashboardURL" class="dropdown-item"
-                    >{{ dashboardWord }} Dashboard</router-link
+                    <router-link :to="dashboardURL" class="dropdown-item"
+                      >{{ dashboardWord }} Analytics </router-link
+                    >
+                </li>
+                <!-- Add New Product (Producers)-->
+                  <li
+                  v-if="onCreate && accType == 'producer'"
+                >
+                  <span class="dropdown-item" @click="forceLoad('/listing/create')"
+                    >Add A Product</span
                   >
                 </li>
-                <li>
-                  <span
-                    @click="externalURL('https://88bamboo.co/')"
-                    class="dropdown-item"
-                    >Latest News</span
+                <li
+                  v-if="!onCreate && accType == 'producer'"
+                >
+                  <router-link :to="'/listing/create'" class="dropdown-item"
+                    >Add A Product</router-link
                   >
                 </li>
-                <li v-if="onRequest && accType == 'user'">
-                  <span
-                    style="color: #d58d2d !important"
-                    @click="forceLoad('/request/new')"
-                    class="dropdown-item"
+                <!-- Request New Listing (Users / Venues)-->
+                <li v-if="onRequest && ((accType === 'user' && !isAdmin && !isModerator) || accType === 'venue')">
+                  <span class="dropdown-item" @click="forceLoad('/request/new')"
                     >Submit A Drink</span
                   >
                 </li>
-                <li v-if="!onRequest && accType == 'user'">
-                  <router-link :to="'/request/new'"
-                    ><span class="dropdown-item" style="color: #d58d2d !important"
+                <li v-if="!onRequest && ((accType === 'user' && !isAdmin && !isModerator) || accType === 'venue')">
+                  <router-link :to="'/request/new'" class="dropdown-item"
+                    >Submit A Drink</router-link
+                  >
+                </li>
+                <li v-if="isAdmin"><hr class="dropdown-divider" /></li>
+                <!-- Create New Listing (Producers / Moderators / Admin)-->
+                <li
+                  v-if="
+                    onCreate && (accType == isAdmin || isModerator)
+                  "
+                >
+                  <span class="dropdown-item" @click="forceLoad('/listing/create')"
+                    >Create New Listing</span
+                  >
+                </li>
+                <li
+                  v-if="
+                    !onCreate && (accType == isAdmin || isModerator)
+                  "
+                >
+                  <router-link :to="'/listing/create'" class="dropdown-item"
+                    >Create New Listing</router-link
+                  >
+                </li>
+                <!-- View Requests -->
+                <li v-if="isAdmin || isModerator || accType == 'producer'">
+                  <router-link :to="'/request/view'" class="dropdown-item"
+                    >Review Requests</router-link
+                  >
+                </li>
+                <!-- Admin Controls - ADMIN ONLY -->
+                <li v-if="isAdmin">
+                  <router-link :to="'/admin/dashboard'" class="dropdown-item"
+                    >Admin Controls</router-link
+                  >
+                </li>
+                <!-- Bulk Import Listings - ADMIN ONLY -->
+                <li v-if="isAdmin">
+                  <router-link :to="'/admin/importListings'" class="dropdown-item"
+                    >Import Listings</router-link
+                  >
+                </li>
+                <div class="mobile-view-show">
+                  <li>
+                    <router-link :to="'/explore'" class="dropdown-item"
+                      >Explore</router-link
+                    >
+                  </li>
+                  <li>
+                    <router-link :to="'/best-of'" class="dropdown-item"
+                      >Best Of</router-link
+                    >
+                  </li>
+                  
+                  <li>
+                    <span
+                      @click="externalURL('https://88bamboo.co/')"
+                      class="dropdown-item"
+                      >Latest News</span
+                    >
+                  </li>
+                  <li v-if="onRequest && accType == 'user'">
+                    <span
+                      style="color: #d58d2d !important"
+                      @click="forceLoad('/request/new')"
+                      class="dropdown-item"
                       >Submit A Drink</span
-                    ></router-link
+                    >
+                  </li>
+                  <li v-if="!onRequest && accType == 'user'">
+                    <router-link :to="'/request/new'"
+                      ><span class="dropdown-item" style="color: #d58d2d !important"
+                        >Submit A Drink</span
+                      ></router-link
+                    >
+                  </li>
+                  <li
+                    v-if="
+                      onCreate && (accType == 'producer' || isAdmin || isModerator)
+                    "
+                  >
+                    <span
+                      style="color: #d58d2d !important"
+                      class="dropdown-item"
+                      @click="forceLoad('/listing/create')"
+                      >Add A New Drink</span
+                    >
+                  </li>
+                  <li
+                    v-if="
+                      !onCreate && (accType == 'producer' || isAdmin || isModerator)
+                    "
+                    :to="'/listing/create'"
+                  >
+                    <span style="color: #d58d2d !important" class="dropdown-item"
+                      >Add A New Drink</span
+                    >
+                  </li>
+                  <li>
+                    <router-link :to="'/clubs/view'" class="dropdown-item"
+                      >Join Clubs</router-link
+                    >
+                  </li>
+                  <li>
+                    <router-link :to="'/events/view'" class="dropdown-item"
+                      >Find Events</router-link
+                    >
+                  </li>
+                </div>
+
+                <li><hr class="dropdown-divider" /></li>
+                <li v-if="profileURL == '/login'">
+                  <router-link :to="'/login'" class="dropdown-item"
+                    >Login</router-link
                   >
                 </li>
-                <li
-                  v-if="
-                    onCreate && (accType == 'producer' || isAdmin || isModerator)
-                  "
-                >
+                <li v-if="profileURL == '/login'">
+                  <router-link :to="'/signup'" class="fw-bold dropdown-item button"
+                    >Sign Up for Free</router-link
+                  >
+                </li>
+                <li v-if="profileURL != '/login'">
                   <span
-                    style="color: #d58d2d !important"
                     class="dropdown-item"
-                    @click="forceLoad('/listing/create')"
-                    >Add A New Drink</span
+                    style="cursor: pointer"
+                    @click="logout"
+                    >Log Out</span
                   >
                 </li>
-                <li
-                  v-if="
-                    !onCreate && (accType == 'producer' || isAdmin || isModerator)
-                  "
-                  :to="'/listing/create'"
-                >
-                  <span style="color: #d58d2d !important" class="dropdown-item"
-                    >Add A New Drink</span
-                  >
-                </li>
-                <li>
-                  <router-link :to="'/clubs/view'" class="dropdown-item"
-                    >Find Club</router-link
-                  >
-                </li>
-                <li>
-                  <router-link :to="'/events/view'" class="dropdown-item"
-                    >Find Events</router-link
-                  >
-                </li>
+              </ul>
+            </div>
+            
+            <!-- Navigation Button and Right Drawer Panel - MOBILE -->
+            <button
+              class="btn p-0 d-md-none"
+              type="button"
+              @click="showDrawer = true"
+            >
+              <span class="navbar-toggler-icon"></span>
+            </button>
+          
+            <!-- Mobile Drawer MOBILE ONLY -->
+            <div v-if="showDrawer" class="mobile-drawer d-md-none">
+              <div class="drawer-header d-flex justify-content-between align-items-center px-3 pt-3">
+                <button class="fs-1 border-0 bg-transparent text-black" @click="showDrawer = false" aria-label="Close">
+                ×
+                </button>
               </div>
 
-              <li><hr class="dropdown-divider" /></li>
-              <li v-if="profileURL == '/login'">
-                <router-link :to="'/login'" class="dropdown-item"
-                  >Login</router-link
+              <ul class="list-unstyled ps-4">
+                <!-- Home -->
+                <li class="drawer-section-title text-start"><router-link to="/" style="text-decoration: none">Home</router-link></li>
+
+                <!-- Explore (Collapsible) -->
+                <li
+                  class="drawer-section-title mt-2 d-flex align-items-center"
+                  @click="toggleExplore"
                 >
-              </li>
-              <li v-if="profileURL == '/login'">
-                <router-link :to="'/signup'" class="dropdown-item"
-                  >Sign Up</router-link
+                  <span>Explore</span>
+                  <span style="margin-left: 8px;">{{ showExplore ? '▾' : '▸' }}</span>
+                </li>
+                <li v-show="showExplore" class="text-start pt-1" ><router-link to="/explore" style="text-decoration: none; font-weight:normal">Trending Drinks</router-link></li>
+                <li v-show="showExplore" class="text-start"><router-link to="/best-of" style="text-decoration: none; font-weight:normal">Best Of</router-link></li>
+                <li v-show="showExplore" class="text-start"><router-link to="/best-of" style="text-decoration: none; font-weight:normal">Latest News</router-link></li>
+
+                <!-- My Stats (Collapsible) -->
+                <li
+                  class="drawer-section-title mt-2 d-flex align-items-center text-start"
+                  @click="toggleStats"
                 >
-              </li>
-              <li v-if="profileURL != '/login'">
-                <span
-                  class="dropdown-item"
-                  style="cursor: pointer"
-                  @click="logout"
-                  >Log Out</span
+                  <span>{{ dashboardWord }} Stats</span>
+                  <span style="margin-left: 8px;">{{ showStats ? '▾' : '▸' }}</span>
+                </li>
+                <li v-show="showStats" class="text-start pt-1"><router-link :to="dashboardURL" style="text-decoration: none; font-weight: normal">{{ dashboardWord }} Profile</router-link></li>
+                <li v-show="showStats" class="text-start"><router-link :to="dashboardURL" style="text-decoration: none; font-weight: normal">{{ dashboardWord }} Dashboard</router-link></li>
+
+                <!-- Clubs and Events -->
+                
+                <li class="drawer-section-title pt-2 text-start">
+                  <router-link to="/clubs/view" style="text-decoration: none">
+                    {{ accType === 'producer' || accType === 'venue' ? 'Create A Club' : 'Join Clubs' }}
+                  </router-link>
+                </li>
+
+                <li class="drawer-section-title pt-2 text-start">
+                  <router-link to="/events/view" style="text-decoration: none">
+                    {{ accType === 'producer' || accType === 'venue' ? 'Create An Event' : 'Find Events' }}
+                  </router-link>
+                </li>
+
+                 <!-- Moderator Controls (Collapsible) -->
+                <li
+                  v-if="(accType === isAdmin || isModerator)"
+                  class="drawer-section-title mt-2 d-flex align-items-center text-start"
+                  @click="toggleAdmin"
                 >
-              </li>
-            </ul>
+                  <span>Moderator Controls</span>
+                  <span style="margin-left: 8px;">{{ showAdmin ? '▾' : '▸' }}</span>
+                </li>
+                <li v-show="showAdmin"  v-if="(accType == isAdmin || isModerator)" class="text-start pt-1"><router-link :to="'/listing/create'" style="text-decoration: none; font-weight: normal">Create New Drink</router-link></li>
+                <li v-show="showAdmin" v-if="(accType == isAdmin || isModerator)" class="text-start"><router-link :to="'/request/view'" style="text-decoration: none; font-weight: normal">View Requests</router-link></li>
+                <li v-show="showAdmin" v-if="isAdmin" class="text-start"><router-link :to="'/admin/dashboard'" style="text-decoration: none; font-weight: normal">Admin Controls</router-link></li>
+                <li v-show="showAdmin" v-if="isAdmin" class="text-start"><router-link :to="'/admin/importListings'" style="text-decoration: none; font-weight: normal">Import Listings</router-link></li>
+                
+                </ul>
+                <hr class="m-0 mb-3" />
+                <ul class="list-unstyled ps-4">
+
+                <!-- Submit / Add a Drink -->
+                <li v-if="((accType === 'user' && !isAdmin && !isModerator) || accType === 'venue')" class="text-start">
+                  <router-link to="/request/new" style="text-decoration: none; ">Submit A Drink</router-link></li>
+                <li v-if="accType === 'producer'" class="text-start">
+                  <router-link to="/listing/create" style="text-decoration: none;">Add New Product</router-link>
+                </li>
+                <li v-if="accType === 'isAdmin || isModerator'" class="text-start">
+                  <router-link to="/listing/create" style="text-decoration: none;">Add New Drink</router-link>
+                </li>
+
+                <!-- Auth -->
+                <div v-if="profileURL === '/login'" class=" py-2 text-start"><router-link to="/login" class="btn primary-btn-less-round-blue fw-bold text-start" style="text-decoration: none;">Sign Up</router-link></div>
+                <li v-if="profileURL !== '/login'" class="text-start pt-2 fw-bold"><span @click="logout" style="text-decoration: none">Log Out</span></li>
+              </ul>
+            </div>
+
+
+
           </div>
         </div>
       </div>
@@ -629,6 +715,11 @@ export default {
       // isFetching: false,
       showNotifications: false,
       activeTab: "forYou",
+      showDrawer: false,
+      showMobileMenu: false,
+      showExplore: false,
+      showStats: false,
+      showAdmin: false,
 
       notifications: {
         forYou: [],
@@ -678,6 +769,21 @@ export default {
   //     ].slice(0, 7);
   //   },
   // },
+  computed: {
+    computedPhoto() {
+      if (this.photo) return this.photo;
+
+      if (this.accType === 'producer') {
+        return 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProducerProfilePhoto.png?v=1748434998';
+      } else if (this.accType === 'venue') {
+        return 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultVenueProfilePhoto.png?v=1748435337';
+      } else {
+        return 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288';
+      }
+    }
+  },
+
+  
   mounted() {
     // Obtain user's profile picture + set profile URL
     if (localStorage.getItem("88B_accID") != null) {
@@ -763,6 +869,18 @@ export default {
         console.error(error);
       }
     },
+
+    toggleExplore() {
+    this.showExplore = !this.showExplore;
+  },
+
+  toggleStats() {
+    this.showStats = !this.showStats;
+  },
+
+  toggleAdmin() {
+    this.showAdmin = !this.showAdmin;
+  },
     // for search feature
     // async fetchAllListings() {
     //   try {
@@ -899,6 +1017,7 @@ export default {
         this.notificationsError = "Failed to load notifications";
       }
     },
+    
 
     async fetchNewsRSS() {
       try {
@@ -968,6 +1087,7 @@ export default {
           return seconds + (seconds === 1 ? ' second ago' : ' seconds ago');
       }
     }, 
+    
   },
 };
 </script>
@@ -1004,4 +1124,49 @@ input.form-control {
   box-shadow: none !important;
   outline: none;
 }
+
+
+.drawer-header {
+  display: flex;
+  justify-content: flex-end;
+  padding: 1rem;
+}
+
+.mobile-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 85%;
+  max-width: 220px;
+  background-color: #f8e5c5;
+  z-index: 1050;
+  overflow-y: auto;
+  box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+}
+
+.drawer-section-title {
+  font-weight: bold;
+  font-size: 16px;
+  letter-spacing: 0.5px;
+  color: #222;
+  
+}
+
+.drawer-link,
+.drawer-link a,
+.drawer-link span {
+  display: block;
+  font-weight: 500;
+  margin: 10px 0;
+  color: #000;
+  text-decoration: none;
+}
+
+.text-highlight {
+  color: #d58d2d !important;
+  font-weight: 700;
+}
+
+
 </style>

@@ -898,6 +898,7 @@ Coder: Kai
 
 Purpose of the changes:
 - Edited text and button displays for NavBar on Desktop for various users
+- Edited the front end of the mobile navigation bar - changed from dropdown to right panel. 
 
 Nature of the changes (frontend / backend / database):
 frontend

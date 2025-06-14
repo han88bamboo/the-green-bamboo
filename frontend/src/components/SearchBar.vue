@@ -81,10 +81,10 @@
             </div>-->
         </div>
 
-        <!-- Row 2: Surprise Me on desktop, Scan bottle + Surprise Me on mobile 
+        <!-- Row 2: Surprise Me on desktop, Scan bottle + Surprise Me on mobile -->
         <div class="row mt-3">
             
-            <div class="col-6 mobile-view-hide d-flex justify-content-center">
+            <!--<div class="col-6 mobile-view-hide d-flex justify-content-center">
                 <button
                     class="btn d-flex align-items-center fw-bold"
                     style="background-color: #027562; color: white"
@@ -97,10 +97,10 @@
                         class="fw-bold"
                     />
                 </button>
-            </div>
+            </div>-->
 
-             Surprise Me button - full row on desktop, half width on mobile 
-            <div class="col-6 col-md-12 d-flex justify-content-center " v-if="showSurpriseButton">
+            <!--Surprise Me button - full row on desktop, half width on mobile -->
+            <div class="col-12 align-items-center justify-content-center " v-if="showSurpriseButton">
                 <router-link :to="'/explore'">
                     <button
                         class="btn btn-md text-white fw-bold"
@@ -111,7 +111,7 @@
                     </button>
                 </router-link>
             </div>
-        </div> -->
+        </div> 
     </div>
 </template>
 <script>

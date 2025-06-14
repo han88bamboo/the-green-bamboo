@@ -2170,6 +2170,12 @@ button.primary-square:hover {
   overflow-x: hidden; /* Prevent horizontal scrolling */
 }
 
+.dropdown-menu-end {
+  right: 0 !important;
+  left: auto !important;
+  transform: translateX(0); /* Ensures no shift */
+}
+
 .drink-category-column {
   transform: translate3d(-140px, 0px, 0px);
   background-color: white;
