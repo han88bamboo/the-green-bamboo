@@ -4,7 +4,7 @@
         <div class="row">
             <!-- Search bar - full width on mobile, partial width on desktop -->
             <div
-                class="col-12 col-md-12 d-flex align-items-center justify-content-center"
+                class="col-12 col-md-12 pt-2 d-flex align-items-center justify-content-center"
             >
                 <div
                     class="col-8 position-relative search-bar d-flex w-100"
@@ -12,7 +12,7 @@
                 >
                     <div class="w-100 position-relative">
                         <input
-                            class="form-control fst-italic"
+                            class="form-control fst-italic "
                             type="text"
                             style="border: none; height: 100%; line-height: 50px; padding: 0 1rem;"
                             placeholder="Go for it!"
@@ -81,10 +81,10 @@
             </div>-->
         </div>
 
-        <!-- Row 2: Surprise Me on desktop, Scan bottle + Surprise Me on mobile -->
+        <!-- Row 2: Surprise Me on desktop, Scan bottle + Surprise Me on mobile 
         <div class="row mt-3">
-            <!-- Scan bottle button - Only visible on mobile in this row -->
-            <div class="col-6 d-md-none d-flex justify-content-center">
+            
+            <div class="col-6 mobile-view-hide d-flex justify-content-center">
                 <button
                     class="btn d-flex align-items-center fw-bold"
                     style="background-color: #027562; color: white"
@@ -99,8 +99,8 @@
                 </button>
             </div>
 
-            <!-- Surprise Me button - full row on desktop, half width on mobile -->
-            <div class="col-6 col-md-12 d-flex justify-content-center" v-if="showSurpriseButton">
+             Surprise Me button - full row on desktop, half width on mobile 
+            <div class="col-6 col-md-12 d-flex justify-content-center " v-if="showSurpriseButton">
                 <router-link :to="'/explore'">
                     <button
                         class="btn btn-md text-white fw-bold"
@@ -111,7 +111,7 @@
                     </button>
                 </router-link>
             </div>
-        </div>
+        </div> -->
     </div>
 </template>
 <script>

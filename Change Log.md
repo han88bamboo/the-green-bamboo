@@ -892,3 +892,12 @@ Purpose of the changes:
 
 Nature of the changes (frontend / backend / database):
 frontend and backend
+
+# Update as of 14 June 
+Coder: Kai 
+
+Purpose of the changes:
+- Edited text and button displays for NavBar on Desktop for various users
+
+Nature of the changes (frontend / backend / database):
+frontend
