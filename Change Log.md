@@ -912,3 +912,15 @@ Purpose of the changes:
 
 Nature of the changes (frontend / backend / database):
 frontend and backend
+
+# Update as of 15 June 
+Coder: Han 
+
+Purpose of the changes:
+added help topics / "get started page" on Drink-X, with first 3 topics:
+(1) Features
+(2) Drink-X for Venues
+(3) Drink–X for Brands
+
+Nature of the changes (frontend / backend / database):
+frontend 
