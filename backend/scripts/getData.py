@@ -1532,8 +1532,9 @@ def getReviewsByListingIDs():
 @blueprint.route("/getReviewByTarget/<id>/<last_review_id>")
 def getReviewByTarget(id, last_review_id):
     conn = g.db
+    cursor = conn.cursor()
     
-    with conn.cursor() as cursor:
+    try:
 
         if last_review_id == "0":
             # If last_review_id is 0, fetch the latest 20 reviews for the target
@@ -1558,18 +1559,25 @@ def getReviewByTarget(id, last_review_id):
 
         reviews_data = cursor.fetchall()
     
-    if not reviews_data:
-        return jsonify([])
-    
-    for review in reviews_data:
-        review["userVotes"] = {
-            "upvotes": review["upvotes"] if review["upvotes"] else [],
-            "downvotes": review["downvotes"] if review["downvotes"] else []
-        }
-        del review["upvotes"]
-        del review["downvotes"]
+        if not reviews_data:
+            return jsonify([])
+        
+        for review in reviews_data:
+            review["userVotes"] = {
+                "upvotes": review["upvotes"] if review["upvotes"] else [],
+                "downvotes": review["downvotes"] if review["downvotes"] else []
+            }
+            del review["upvotes"]
+            del review["downvotes"]
 
-    return jsonify(reviews_data)
+        return jsonify(reviews_data)
+
+    except Exception as e:
+        print(f"Error fetching reviews by target {id}: {str(e)}")
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching reviews."
+        }), 500
 
 
 # [GET] Latest 10 Specific Reviews by usr(s) - using one or more user IDs (retrieve latest reviews for the specified user(s) as well as the review target(s) data)

@@ -943,43 +943,52 @@
         mounted() {
 
             // Check if route params "venueID" is present
-            if (this.$route.params.venueID != "" && this.$route.params.venueID != undefined) {
-                this.targetVenueID = this.$route.params.venueID;
-                // If logged in as a venue, check if the venueID matches the logged in venue's ID
-                if (this.viewerType == 'venue' && this.viewerID == this.targetVenue) {
-                    this.selfView = true;
-                }
-                // If logged in as a user, check if user is an administrator
-                else if (this.viewerType == 'user' && this.viewerID != "" && this.viewerID != undefined) {
-                    this.$router.push('/login');
-                    // this.getUserData();
-                }
-                // If insufficient permissions, redirect to your own profile page / login
-                else {
-                    this.$router.push('/login');
-                }
-                
-            }
-            // If no venueID is specified, display logged in venue's profile page
-            else if (this.viewerType == 'venue') {
-                this.targetVenue = this.viewerID;
+            this.targetVenueID = this.$route.params.venueID || '';
 
+            if (this.viewerType == 'venue' && this.viewerID == this.targetVenueID) {
                 this.selfView = true;
+                this.getVenueData();
             }
-            // If not logged in as a venue, redirect to your own profile page / login
-            else {
-                this.$router.push('/login');
-            }
+            // if (this.$route.params.venueID != "" && this.$route.params.venueID != undefined) {
+            //     this.targetVenueID = this.$route.params.venueID;
+            //     // If logged in as a venue, check if the venueID matches the logged in venue's ID
+            //     if (this.viewerType == 'venue' && this.viewerID == this.targetVenueID) {
+            //         this.selfView = true;
+            //         this.getVenueData();
+            //     } else {
+            //         // this.$router.push('/login');
+            //     }
+            //     // // If logged in as a user, check if user is an administrator
+            //     // else if (this.viewerType == 'user' && this.viewerID != "" && this.viewerID != undefined) {
+            //     //     this.$router.push('/login');
+            //     //     // this.getUserData();
+            //     // }
+            //     // // If insufficient permissions, redirect to your own profile page / login
+            //     // else {
+            //     //     this.$router.push('/login');
+            //     // }
+                
+            // }
+            // If no venueID is specified, display logged in venue's profile page
+            // else if (this.viewerType == 'venue') {
+            //     this.targetVenue = this.viewerID;
 
-            // Obtain venue data
-            if (this.targetVenue != "" && this.targetVenue != undefined) {
-                if (this.selfView) {
-                    this.getVenueData();
-                }
-            }
-            else {
-                this.venueExists = false;
-            }
+            //     this.selfView = true;
+            // }
+            // // If not logged in as a venue, redirect to your own profile page / login
+            // else {
+            //     this.$router.push('/login');
+            // }
+
+            // // Obtain venue data
+            // if (this.targetVenue != "" && this.targetVenue != undefined) {
+            //     if (this.selfView) {
+            //         this.getVenueData();
+            //     }
+            // }
+            // else {
+            //     this.venueExists = false;
+            // }
 
         },
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1013,7 +1022,7 @@
                             this.powerView = true;
                         }
                         else {
-                            this.$router.push('/login');
+                            // this.$router.push('/login');
                         }
 
                         this.getVenueData();
@@ -1100,7 +1109,7 @@
                                 else if (listingData != null && listingData != "") {
 
                                     // Get reviews
-                                    let reviewResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getReviewByTarget/` + item.itemID);
+                                    let reviewResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getReviewByTarget/` + item.itemID + "/0");
                                     let reviewData = reviewResponse.data;
 
                                     if (Array.isArray(reviewData) && reviewData.length == 0) {
