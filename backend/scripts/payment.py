@@ -400,11 +400,11 @@ def retrieve_subscription_details():
             # Retrieve product details to get the name
             product = stripe.Product.retrieve(product_id)
             subscription_name = product['name']
-            
-            # Get the next billing date
-            next_billing_date_unix = subscription['current_period_end']
+
+            # Get the next billing date            
+            next_billing_date_unix = item["current_period_end"]
+
             next_billing_date = datetime.fromtimestamp(next_billing_date_unix).isoformat()
-            
             subscription_details = {
                 "subscription_id": subscription['id'],
                 "price_id": price_id,
@@ -494,7 +494,8 @@ def cancel_subscription():
         return jsonify(error=f"An error occurred: {str(e)}"), 500
     
 
-
+# This functions aims to show the upcoming details of payment of the business
+# Take note to keep up to date with the api version
 @blueprint.route('/retrieve-upcoming-invoice', methods=['POST'])
 def retrieve_upcoming_invoice():
     db = g.db
@@ -503,9 +504,12 @@ def retrieve_upcoming_invoice():
         subscription_id = data['subscription_id']
         
         # Retrieve the upcoming invoice for the subscription
-        upcoming_invoice = stripe.Invoice.upcoming(
-            subscription=subscription_id
-        )
+        upcoming_invoice = stripe.Invoice.create_preview(subscription=subscription_id)
+        
+        # Previously, was using this stripe api call, but it got updated such that it wasnt callable
+        # upcoming_invoice = stripe.Invoice.upcoming(
+        #     subscription=subscription_id
+        # )
         
         return jsonify(upcoming_invoice)
         

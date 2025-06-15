@@ -249,6 +249,55 @@ def updateAccountRequest():
         cur.close()
 
 # -----------------------------------------------------------------------------------------
+# [POST] Updates a Business Account Request with Business Id after creation of account from admin dashbboard approving account request
+@blueprint.route("/updateAccountRequestBusinessID", methods= ['POST'])
+def updateAccountRequestBusinessID():
+    conn = g.db
+    cur = conn.cursor()
+    data = request.get_json()
+    print(data)
+
+    accountID = int(data['businessID'])
+    requestID = int(data['requestID'])
+    print(accountID)
+    print(requestID)
+    try:
+        cur.execute(
+            """
+                UPDATE "accountRequests"
+                SET "businessId" = %s
+                WHERE "id" = %s
+            """,
+            (accountID, requestID)
+        )
+        conn.commit()
+
+        return jsonify(
+            {   
+                "code": 201,
+                "data": {
+                    "requestID": accountID
+                }
+            }
+        ), 201
+    
+    except Exception as e:
+        conn.rollback()
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "data": {
+                    "requestID": accountID
+                },
+                "message": "An error occurred updating the account request."
+            }
+        ), 500
+    
+    finally:
+        cur.close()
+
+# -----------------------------------------------------------------------------------------
 # [POST] Creates an Account
 # - Insert entry into the "producers" collection. 
 @blueprint.route("/createProducerAccount", methods=['POST'])

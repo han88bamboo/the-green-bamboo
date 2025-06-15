@@ -902,3 +902,13 @@ Purpose of the changes:
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 15 June 
+Coder: Jun Wei 
+
+Purpose of the changes:
+- Debugged issue of business settings button not being clickable for claimed and approved businesses (venues and producers)
+- Debugged issue of business settings page's broken backend calls due to different Stripe API response values (different api versions). 
+
+Nature of the changes (frontend / backend / database):
+frontend and backend
