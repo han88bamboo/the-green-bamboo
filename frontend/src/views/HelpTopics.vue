@@ -306,7 +306,7 @@ export default {
           title: 'Drink-X for Brands',
           lastUpdated: '15 June 2025',
           body: `
-<h3>Brand Owners: Build Your Community and Showcase Your Spirits on Drink-X!</h3>
+<h3>Brand Owners: Build Your Community and Showcase Your Products on Drink-X!</h3>
     <p>
       Whether you’re a heritage distillery, a craft upstart, or an independent bottler, Drink-X is your digital home for connecting with drink lovers and building your brand’s story. 
       Drink-X gives you powerful tools to engage fans, promote your latest releases, and grow your following:
