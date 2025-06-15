@@ -924,3 +924,12 @@ added help topics / "get started page" on Drink-X, with first 3 topics:
 
 Nature of the changes (frontend / backend / database):
 frontend 
+
+# Update as of 15 June - deployed too
+Coder: Han 
+
+Purpose of the changes:
+added conditionally rendered welcome sections for VenueProfile.vue and ProducerProfile.vue
+
+Nature of the changes (frontend / backend / database):
+frontend 
