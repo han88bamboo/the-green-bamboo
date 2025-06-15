@@ -976,18 +976,48 @@ def getProducerByRequestId(id):
         cur.close()
 
 # [GET] List of unique producers names and id
-@blueprint.route("/getUniqueProducersNamesID")
-def getUniqueProducersNamesID():
+@blueprint.route("/getUniqueProducersNamesID/<search_term>/<pid>")
+def getUniqueProducersNamesID(search_term, pid):
     conn = g.db
-    with conn.cursor() as cursor:
-        cursor.execute('SELECT DISTINCT "producerName", "isIndependentBottler", "id" FROM "producers"')
-        producers_data = cursor.fetchall()
+    cursor = conn.cursor()
 
-    if not producers_data:
-        return jsonify({
-            "code": 404,
-            "message": "No producers found."
-        })
+    search_term = search_term.strip().lower()
+
+    try:
+
+        # Retrieve producer name and ID is pid is not '0' - stop here since we only want to return this one
+        if pid != '0':
+            cursor.execute('SELECT "id", "producerName" FROM "producers" WHERE "id" = %s', (int(pid),))
+            producer_data = cursor.fetchone()
+            
+            if producer_data:
+
+                return jsonify({
+                    "code": 200,
+                    "message": "Producer fetched successfully.",
+                    "id": producer_data["id"],
+                    "producerName": producer_data["producerName"]
+                })
+
+        # If pid is '0', search for producers by name to populate into the input field for suggestions [SubmitListingNew.vue]
+        cursor.execute("""
+            SELECT "id", "producerName"
+            FROM "producers"
+            WHERE "producerName" ILIKE %s
+            LIMIT 30
+        """, ('%' + search_term + '%',))
+        
+        producers_data = cursor.fetchall()  
+
+        if not producers_data:
+            return jsonify({
+                "code": 404,
+                "message": "No producers found."
+            })
+
+    except Exception as e:
+        print(f"Error fetching producers by search: {str(e)}")
+        return jsonify({"code": 500, "message": "An error occurred while fetching producers."}), 500
     
     # Convert the data to a list of dictionaries
 
@@ -1007,6 +1037,48 @@ def getUniqueProducersNamesID():
         "message": "Producers fetched successfully.",
         "data": producers_list
     })
+
+
+# [GET] List of unique bottlers names and id
+@blueprint.route("/getUniqueBottlersNamesID/<search_term>")
+def getUniqueBottlersNamesID(search_term):
+    conn = g.db
+
+    search_term = search_term.strip().lower()
+
+    with conn.cursor() as cursor:
+        cursor.execute("""
+            SELECT "id", "producerName"
+            FROM "producers"
+            WHERE "producerName" ILIKE %s AND "isIndependentBottler" = TRUE
+            LIMIT 30
+        """, ('%' + search_term + '%',))
+        
+        bottlers_data = cursor.fetchall()
+
+    if not bottlers_data:
+        return jsonify({
+            "code": 404,
+            "message": "No independent bottlers found."
+        })
+    
+    # Convert the data to a list of dictionaries
+    bottlers_list = []
+    for bottler in bottlers_data:
+        if bottler["producerName"] == None:
+            continue
+        bottler_dict = {
+            "producerName": bottler["producerName"],
+            "id": bottler["id"]
+        }
+        bottlers_list.append(bottler_dict)
+
+    return jsonify({
+        "code": 200,
+        "message": "Independent bottlers fetched successfully.",
+        "data": bottlers_list
+    })
+
 # [GET] All producers with basic info needed for listings
 @blueprint.route("/getAllProducers")
 def getAllProducers():

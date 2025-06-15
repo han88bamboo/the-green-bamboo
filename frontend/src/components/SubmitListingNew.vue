@@ -507,6 +507,20 @@
                 this.loadData();
             }
         },
+        watch: {
+            // Watch for changes in form['bottler'] to retrieve relevant bottlers information
+            'form.bottler'(newVal) {
+                if (newVal.length >= 2) {
+                    this.fetchBottlerSuggestions(newVal);
+                }
+            },
+            // Watch for changes in form['producerNew'] to retrieve relevant producer information
+            'form.producerNew'(newVal) {
+                if (newVal.length >= 2) {
+                    this.fetchProducerSuggestions(newVal);
+                }
+            },
+        },
         methods:{
 
             slugify(text) {
@@ -609,23 +623,27 @@
                         console.error("Error fetching data:",error);
                     }
 
-                    // populate "producerList" form data variable
-                    try {
-                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUniqueProducersNamesID`);
-                        this.producerList = response.data.data;
-                        this.producerList.sort((a,b)=>{
-                            return a.producerName.localeCompare(b.producerName)
-                        })
-                        this.bottlersList = this.producerList.filter(producer => producer.isIndependentBottler == true);
-                        // Check if user is a producer
-                        if (localStorage.getItem('88B_accType') == "producer") {
-                            this.isProducer = this.producerList.find(producer => producer.id == this.form['userID']).producerName;
-                            this.form['producerID'] = this.form['userID'];
-                        }
-                    } 
-                    catch (error) {
-                        console.error(error);
+                    if (localStorage.getItem('88B_accType') == "producer") {
+                        this.getProducerName();
                     }
+
+                    // populate "producerList" form data variable
+                    // try {
+                    //     const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUniqueProducersNamesID`);
+                    //     this.producerList = response.data.data;
+                    //     this.producerList.sort((a,b)=>{
+                    //         return a.producerName.localeCompare(b.producerName)
+                    //     })
+                    //     this.bottlersList = this.producerList.filter(producer => producer.isIndependentBottler == true);
+                    //     // Check if user is a producer
+                    //     if (localStorage.getItem('88B_accType') == "producer") {
+                    //         this.isProducer = this.producerList.find(producer => producer.id == this.form['userID']).producerName;
+                    //         this.form['producerID'] = this.form['userID'];
+                    //     }
+                    // } 
+                    // catch (error) {
+                    //     console.error(error);
+                    // }
 
                 }
                 // Only run when editing listing / proposing edit / reporting duplicate (listingID is present in route params)
@@ -739,6 +757,37 @@
 
                 this.dataLoaded = true;
                 this.fillForm = true;
+            },
+
+            // Function to get current Producer name and ID
+            async getProducerName() {
+                try {
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUniqueProducersNamesID/dummy/` + this.form['userID']);
+                    this.isProducer = response.data.producerName;
+                    this.form['producerID'] = this.form['userID'];
+                } catch (error) {
+                    console.error("Error fetching producer name:", error);
+                }
+            },
+
+            // Function to get producer names dynamically (lazy loading to avoid loading all producers at once)
+            async fetchProducerSuggestions(query) {
+                try {
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUniqueProducersNamesID/` + query + '/0');
+                    this.producerList = response.data.data;
+                } catch (error) {
+                    console.error("Error fetching producer suggestions:", error);
+                }
+            },
+
+            // Function to get bottler names dynamically (lazy loading to avoid loading all bottlers at once)
+            async fetchBottlerSuggestions(query) {
+                try {
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUniqueBottlersNamesID/` + query);
+                    this.bottlersList = response.data.data;
+                } catch (error) {
+                    console.error("Error fetching bottler suggestions:", error);
+                }
             },
 
             // Function to check user editing permissions
@@ -882,7 +931,7 @@
             },
 
             getBottlerID() {
-                let bottler = this.producerList.find(producer => producer.isIndependentBottler == true && producer.producerName == this.form['bottler'])
+                let bottler = this.bottlersList.find(producer => producer.producerName == this.form['bottler'])
                 if (bottler) {
                     this.form['bottlerID'] = bottler.id;
                 }

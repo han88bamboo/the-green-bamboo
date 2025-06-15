@@ -341,7 +341,7 @@
                       <h6 v-else class="text-body-secondary producer-page">
                         Bottler:
                         <router-link
-                          :to="{ path: '/profile/producer/' + this.bottler_id }"
+                          :to="{ path: '/profile/producer/' + this.bottler_id + '/' + getProducerName(this.producer_id), }"
                           class="default-text-no-background"
                         >
                           <u style="color: black">
@@ -3710,6 +3710,13 @@ export default {
         (p) => p.id === producerID
       );
       return producer ? producer.producerName : "Unknown Producer";
+    },
+
+    getBottlerName(bottlerID) {
+      const bottler = this.producers.find(
+        (p) => p.id === bottlerID
+      );
+      return bottler ? bottler.producerName : "Unknown Bottler";
     },
 
     // get VenueName for a listing based on producerID

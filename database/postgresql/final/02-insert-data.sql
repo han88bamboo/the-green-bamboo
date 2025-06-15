@@ -2705,28 +2705,42 @@ VALUES
         'Southwest France Dessert'
     ]);
 
-INSERT INTO "producers" ("producerName", "producerDesc", "originCountry", "mainDrinks", "photo", "hashedPassword", "claimStatus", "claimStatusCheckDate", "statusOB", "username", "producerLink", "stripeCustomerId"
-) VALUES 
-    ('Hennessy', 'This is Hennessy', 'France', '{}', NULL, '-6552510', true, NULL, NULL, 'Hennessy', '', NULL),
-    ('Jack Daniel''s', 'Famous Tennessee whiskey brand known for its smooth, charcoal-mellowed whiskey.', 'United States', '{}', NULL, '-1469695901', false, NULL, NULL, 'jackdaniels', '', NULL),
-    ('Johnnie Walker', 'One of the most iconic Scotch whisky brands, known for its blended whiskies.', 'Scotland', '{}', NULL, '640032836', false, NULL, NULL, 'johnniewalker', '', NULL),
-    ('Jameson', 'The most famous Irish whiskey, triple-distilled for smoothness.', 'Ireland', '{}', NULL, '-152907913', false, NULL, NULL, 'jameson', '', NULL),
-    ('Chivas Regal', 'A well-known brand of blended Scotch whisky.', 'Scotland', '{}', NULL, '1650366560', false, NULL, NULL, 'chivasregal', '', NULL),
-    ('Glenfiddich', 'One of the most famous single malt Scotch whisky brands.', 'Scotland', '{}', NULL, '626732607', false, NULL, NULL, 'glenfiddich', '', NULL),
-    ('Bacardi', 'World-famous rum brand, known for white and dark rums.', 'Cuba', '{}', NULL, '1396448963', false, NULL, NULL, 'bacardi', '', NULL),
-    ('Captain Morgan', 'Popular spiced rum brand, known for its smooth taste.', 'Jamaica', '{}', NULL, '-1018979690', false, NULL, NULL, 'captainmorgan', '', NULL),
-    ('Don Julio', 'Premium tequila brand, known for its smooth and high-quality tequila.', 'Mexico', '{}', NULL, '2038084859', false, NULL, NULL, 'donjulio', '', NULL),
-    ('Patrón', 'A high-end tequila brand, famous for its handcrafted production process.', 'Mexico', '{}', NULL, '462830215', false, NULL, NULL, 'patron', '', NULL),
-    ('Jose Cuervo', 'One of the oldest and most famous tequila brands in the world.', 'Mexico', '{}', NULL, '-2090820217', false, NULL, NULL, 'josecuervo', '', NULL),
-    ('Tanqueray', 'One of the world’s most popular gin brands, known for its London Dry Gin.', 'United Kingdom', '{}', NULL, '1792363181', false, NULL, NULL, 'tanqueray', '', NULL),
-    ('Hendrick''s', 'Scottish gin brand, famous for its cucumber and rose-infused flavors.', 'Scotland', '{}', NULL, '1458970391', false, NULL, NULL, 'hendricks', '', NULL),
-    ('Bombay Sapphire', 'A premium gin brand known for its smooth taste and botanicals.', 'United Kingdom', '{}', NULL, '-938116355', false, NULL, NULL, 'bombaysapphire', '', NULL),
-    ('Suntory', 'Japanese whisky and spirits brand, known for Hibiki and Yamazaki.', 'Japan', '{}', NULL, '-345359732', false, NULL, NULL, 'suntory', '', NULL),
-    ('Nikka', 'Japanese whisky brand, known for its high-quality single malts and blends.', 'Japan', '{}', NULL, '505268853', false, NULL, NULL, 'nikka', '', NULL),
-    ('Tito''s Handmade Vodka', 'An American vodka brand made from corn and distilled in Texas.', 'United States', '{}', NULL, '2016735326', false, NULL, NULL, 'titosvodka', '', NULL),
-    ('Grey Goose', 'A premium French vodka brand, made with high-quality wheat.', 'France', '{}', NULL, '-1636822077', false, NULL, NULL, 'greygoose', '', NULL),
-    ('Absolut', 'One of the most famous vodka brands, known for its pure Swedish vodka.', 'Sweden', '{}', NULL, '-1030449104', false, NULL, NULL, 'absolut', '', NULL),
-    ('Tiger Beer', 'A popular Asian beer brand, brewed in Singapore.', 'Singapore', '{}', NULL, '165298405', false, NULL, NULL, 'tigerbeer', '', NULL);
+INSERT INTO "producers" (
+    "producerName", "producerDesc", "originCountry", "isIndependentBottler",
+    "mainDrinks", "photo", "hashedPassword", "claimStatus", "claimStatusCheckDate",
+    "statusOB", "yearFounded", "activeStatus", "owner", "location", "openForTours",
+    "website", "username", "producerLink", "stripeCustomerId"
+) VALUES
+    ('Hennessy', 'This is Hennessy', 'France', false, '{}', NULL, '-6552510', true, NULL, NULL, 1765, 'active', 'Moët Hennessy', 'Cognac, France', true, 'https://www.hennessy.com', 'Hennessy', '', NULL),
+    ('Jack Daniel''s', 'Famous Tennessee whiskey brand known for its smooth, charcoal-mellowed whiskey.', 'United States', false, '{}', NULL, '-1469695901', false, NULL, NULL, 1866, 'active', 'Brown-Forman', 'Lynchburg, TN', true, 'https://www.jackdaniels.com', 'jackdaniels', '', NULL),
+    ('Johnnie Walker', 'One of the most iconic Scotch whisky brands, known for its blended whiskies.', 'Scotland', false, '{}', NULL, '640032836', false, NULL, NULL, 1820, 'active', 'Diageo', 'Kilmarnock, Scotland', true, 'https://www.johnniewalker.com', 'johnniewalker', '', NULL),
+    ('Jameson', 'The most famous Irish whiskey, triple-distilled for smoothness.', 'Ireland', false, '{}', NULL, '-152907913', false, NULL, NULL, 1780, 'active', 'Pernod Ricard', 'Dublin, Ireland', true, 'https://www.jamesonwhiskey.com', 'jameson', '', NULL),
+    ('Chivas Regal', 'A well-known brand of blended Scotch whisky.', 'Scotland', false, '{}', NULL, '1650366560', false, NULL, NULL, 1801, 'active', 'Pernod Ricard', 'Keith, Scotland', true, 'https://www.chivas.com', 'chivasregal', '', NULL),
+    ('Glenfiddich', 'One of the most famous single malt Scotch whisky brands.', 'Scotland', false, '{}', NULL, '626732607', false, NULL, NULL, 1887, 'active', 'William Grant & Sons', 'Dufftown, Scotland', true, 'https://www.glenfiddich.com', 'glenfiddich', '', NULL),
+    ('Bacardi', 'World-famous rum brand, known for white and dark rums.', 'Cuba', false, '{}', NULL, '1396448963', false, NULL, NULL, 1862, 'active', 'Bacardi Limited', 'Hamilton, Bermuda', true, 'https://www.bacardi.com', 'bacardi', '', NULL),
+    ('Captain Morgan', 'Popular spiced rum brand, known for its smooth taste.', 'Jamaica', false, '{}', NULL, '-1018979690', false, NULL, NULL, 1944, 'active', 'Diageo', 'Jamaica', false, 'https://www.captainmorgan.com', 'captainmorgan', '', NULL),
+    ('Don Julio', 'Premium tequila brand, known for its smooth and high-quality tequila.', 'Mexico', false, '{}', NULL, '2038084859', false, NULL, NULL, 1942, 'active', 'Diageo', 'Jalisco, Mexico', true, 'https://www.donjulio.com', 'donjulio', '', NULL),
+    ('Patrón', 'A high-end tequila brand, famous for its handcrafted production process.', 'Mexico', false, '{}', NULL, '462830215', false, NULL, NULL, 1989, 'active', 'Bacardi', 'Jalisco, Mexico', true, 'https://www.patrontequila.com', 'patron', '', NULL),
+    ('Jose Cuervo', 'One of the oldest and most famous tequila brands in the world.', 'Mexico', false, '{}', NULL, '-2090820217', false, NULL, NULL, 1795, 'active', 'Casa Cuervo', 'Tequila, Mexico', true, 'https://www.josecuervo.com', 'josecuervo', '', NULL),
+    ('Tanqueray', 'One of the world’s most popular gin brands, known for its London Dry Gin.', 'United Kingdom', false, '{}', NULL, '1792363181', false, NULL, NULL, 1830, 'active', 'Diageo', 'London, UK', true, 'https://www.tanqueray.com', 'tanqueray', '', NULL),
+    ('Hendrick''s', 'Scottish gin brand, famous for its cucumber and rose-infused flavors.', 'Scotland', false, '{}', NULL, '1458970391', false, NULL, NULL, 1999, 'active', 'William Grant & Sons', 'Girvan, Scotland', true, 'https://www.hendricksgin.com', 'hendricks', '', NULL),
+    ('Bombay Sapphire', 'A premium gin brand known for its smooth taste and botanicals.', 'United Kingdom', false, '{}', NULL, '-938116355', false, NULL, NULL, 1986, 'active', 'Bacardi', 'Laverstoke Mill, UK', true, 'https://www.bombaysapphire.com', 'bombaysapphire', '', NULL),
+    ('Suntory', 'Japanese whisky and spirits brand, known for Hibiki and Yamazaki.', 'Japan', false, '{}', NULL, '-345359732', false, NULL, NULL, 1899, 'active', 'Beam Suntory', 'Tokyo, Japan', true, 'https://www.suntory.com', 'suntory', '', NULL),
+    ('Nikka', 'Japanese whisky brand, known for its high-quality single malts and blends.', 'Japan', false, '{}', NULL, '505268853', false, NULL, NULL, 1934, 'active', 'Asahi Group', 'Yoichi, Japan', true, 'https://www.nikka.com', 'nikka', '', NULL),
+    ('Tito''s Handmade Vodka', 'An American vodka brand made from corn and distilled in Texas.', 'United States', false, '{}', NULL, '2016735326', false, NULL, NULL, 1997, 'active', 'Fifth Generation, Inc.', 'Austin, TX', false, 'https://www.titosvodka.com', 'titosvodka', '', NULL),
+    ('Grey Goose', 'A premium French vodka brand, made with high-quality wheat.', 'France', false, '{}', NULL, '-1636822077', false, NULL, NULL, 1997, 'active', 'Bacardi', 'Cognac, France', true, 'https://www.greygoose.com', 'greygoose', '', NULL),
+    ('Absolut', 'One of the most famous vodka brands, known for its pure Swedish vodka.', 'Sweden', false, '{}', NULL, '-1030449104', false, NULL, NULL, 1879, 'active', 'Pernod Ricard', 'Åhus, Sweden', true, 'https://www.absolut.com', 'absolut', '', NULL),
+    ('Tiger Beer', 'A popular Asian beer brand, brewed in Singapore.', 'Singapore', false, '{}', NULL, '165298405', false, NULL, NULL, 1932, 'active', 'Heineken Asia Pacific', 'Singapore', true, 'https://www.tigerbeer.com', 'tigerbeer', '', NULL),
+    ('Signatory Vintage', 'Independent bottler offering a wide range of single malts.', 'Scotland', true, '{}', NULL, '91283477', false, NULL, NULL, 1988, 'active', 'Andrew Symington', 'Pitlochry, Scotland', true, 'https://www.signatoryvintage.com', 'signatory', '', NULL),
+    ('Compass Box', 'Creative whisky maker blending high-quality Scotch whiskies.', 'United Kingdom', true, '{}', NULL, '34827391', false, NULL, NULL, 2000, 'active', 'John Glaser', 'London, UK', false, 'https://www.compassboxwhisky.com', 'compassbox', '', NULL),
+    ('Cadenhead''s', 'Scotland’s oldest independent bottler.', 'Scotland', true, '{}', NULL, '72834912', false, NULL, NULL, 1842, 'active', 'J&A Mitchell', 'Campbeltown, Scotland', true, 'https://www.wmcadenhead.com', 'cadenheads', '', NULL),
+    ('Douglas Laing & Co', 'Family-run bottler with many rare Scotch whisky expressions.', 'Scotland', true, '{}', NULL, '82374291', false, NULL, NULL, 1948, 'active', 'Fred Laing', 'Glasgow, Scotland', true, 'https://www.douglaslaing.com', 'douglaslaing', '', NULL),
+    ('That Boutique-y Whisky Company', 'Known for quirky labels and small-batch bottlings.', 'United Kingdom', true, '{}', NULL, '91827364', false, NULL, NULL, 2012, 'active', 'Atom Brands', 'Kent, UK', false, 'https://www.boutiqueywhisky.com', 'boutiquey', '', NULL),
+    ('Adelphi', 'Premium Scotch bottler with a focus on quality.', 'Scotland', true, '{}', NULL, '19283746', false, NULL, NULL, 1993, 'active', 'Adelphi Distillery Ltd.', 'Fife, Scotland', false, 'https://www.adelphidistillery.com', 'adelphi', '', NULL),
+    ('SMWS', 'Exclusive club offering single cask whisky to members.', 'Scotland', true, '{}', NULL, '67584930', false, NULL, NULL, 1983, 'active', 'The Artisanal Spirits Company', 'Edinburgh, Scotland', false, 'https://www.smws.com', 'smws', '', NULL),
+    ('Berry Bros. & Rudd', 'Historic bottler and wine merchant.', 'United Kingdom', true, '{}', NULL, '83492018', false, NULL, NULL, 1698, 'active', 'Berry Bros. & Rudd Ltd.', 'London, UK', true, 'https://www.bbr.com', 'berrybros', '', NULL),
+    ('Elixir Distillers', 'Boutique bottler and creator of Port Askaig.', 'United Kingdom', true, '{}', NULL, '47291837', false, NULL, NULL, 2017, 'active', 'Sukhinder Singh', 'London, UK', false, 'https://www.elixirdistillers.com', 'elixirdistillers', '', NULL),
+    ('The Whisky Trail', 'Independent bottler of rare and vintage Scotch.', 'Scotland', true, '{}', NULL, '75839201', false, NULL, NULL, 2006, 'active', 'Whiskybase B.V.', 'Edinburgh, Scotland', false, 'https://www.whiskybase.com/whiskies/brand/whisky-trail', 'whiskytrail', '', NULL);
 
 INSERT INTO "venues" (
     "venueName", 
