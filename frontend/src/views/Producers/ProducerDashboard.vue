@@ -3,13 +3,7 @@
     <NavBar />
     <div class="container-fluid" style="background-color: rgb(238, 238, 238);">
     <!-- Display when data is still loading -->
-    <div class="text-info-emphasis fst-italic fw-bold fs-5 pt-5" v-if="dataLoaded == false">
-        <span>Loading dashboard, please wait...</span>
-        <br><br>
-        <div class="spinner-border" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-    </div>
+    <LoadingWithFunFact v-if="dataLoaded === false" />
 
     <!-- Display when data fails to load -->
     <div class="text-danger fst-italic fw-bold fs-5 pt-5" v-if="dataLoaded == null"> 
@@ -603,6 +597,7 @@
     import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js'
     import { LineElement, PointElement } from 'chart.js'
     import FooterBar from "@/components/FooterBar.vue";
+    import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 
     ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
     ChartJS.register(LineElement, PointElement)
@@ -612,7 +607,8 @@
             NavBar,
             Bar,
             Line,
-            FooterBar
+            FooterBar,
+            LoadingWithFunFact,
         },
         computed: {
             reviewsData() {

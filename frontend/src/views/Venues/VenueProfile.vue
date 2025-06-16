@@ -8,13 +8,7 @@
     <div class="container pt-5 mobile-pt-3">
 
         <!-- Display when data is still loading -->
-        <div class="text-info-emphasis fst-italic fw-bold fs-5" v-if="dataLoaded == false">
-            <span>Loading profile, please wait...</span>
-            <br><br>
-            <div class="spinner-border" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-        </div>
+        <LoadingWithFunFact v-if="dataLoaded === false" />
 
         <!-- Display when venue does not exist -->
         <div class="text-danger fst-italic fw-bold fs-3" v-if="venueExists == false || dataLoaded == null"> 
@@ -3169,6 +3163,7 @@
     import EventBox from '@/components/EventBox.vue';
     import FooterBar from "@/components/FooterBar.vue";
     import { useToast } from 'vue-toastification';
+    import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 
     export default {
         name: 'profileVenue',
@@ -3178,7 +3173,8 @@
             ListingRowDisplayProducerProfile,
             BookmarkModal,
             EventBox,
-            FooterBar
+            FooterBar,
+            LoadingWithFunFact,
         },
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         data() {

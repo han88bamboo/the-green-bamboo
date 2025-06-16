@@ -271,10 +271,8 @@
 
         <div class="container pb-4">
             <!-- Loading Spinner -->
-            <div v-if="loading" class="d-flex justify-content-center align-items-center" style="height: 6rem;">
-                <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
+            <div v-if="loading" class="d-flex flex-column justify-content-center align-items-center" style="min-height: 10rem;">
+            <LoadingWithFunFact />
             </div>
 
             <!-- Content (only shown when not loading) -->
@@ -926,12 +924,15 @@
 import NavBar from "@/components/NavBar.vue";
 import SearchBar from "@/components/SearchBar.vue";
 import FooterBar from "@/components/FooterBar.vue";
+import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
+
 
 export default {
     components: {
         NavBar,
         SearchBar,
-        FooterBar
+        FooterBar,
+        LoadingWithFunFact,
     },
     data() {
         return {

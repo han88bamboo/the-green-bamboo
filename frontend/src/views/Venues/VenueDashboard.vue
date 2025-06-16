@@ -10,13 +10,7 @@
     <div class="container pt-5 mobile-pt-3">
 
         <!-- Display when data is still loading -->
-        <div class="text-info-emphasis fst-italic fw-bold fs-5" v-if="dataLoaded == false">
-            <span>Loading dashboard, please wait...</span>
-            <br><br>
-            <div class="spinner-border" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-        </div>
+        <LoadingWithFunFact v-if="dataLoaded === false" />
 
 
         <!-- Display when venue does not exist -->
@@ -784,6 +778,7 @@
     import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js';
     import { LineElement, PointElement } from 'chart.js';
     import FooterBar from "@/components/FooterBar.vue";
+    import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 
     ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
     ChartJS.register(LineElement, PointElement)
@@ -794,7 +789,8 @@
             NavBar,
             Bar,
             Line,
-            FooterBar
+            FooterBar,
+            LoadingWithFunFact,
         },
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         data() {

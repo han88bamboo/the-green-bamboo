@@ -10,7 +10,7 @@
                 <div class="drink-photo-container-row image-container-150">
                     <router-link :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName) }" class="default-text-no-background">
                         <img v-if="listing.photo !== '' && listing.photo !== null" :src="listing.photo" class="add-drink-photo-background centered rounded"> 
-                        <img v-else src="https://drinkximages.s3.us-east-1.amazonaws.com/images/2d4d94bc-313e-4621-9a15-4bfbf77958de.jpg" class="add-drink-photo-background centered rounded">
+                        <img v-else src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739" class="add-drink-photo-background centered rounded">
                     </router-link>
                     
                     <BookmarkIcon 
