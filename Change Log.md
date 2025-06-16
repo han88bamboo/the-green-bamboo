@@ -933,3 +933,13 @@ added conditionally rendered welcome sections for VenueProfile.vue and ProducerP
 
 Nature of the changes (frontend / backend / database):
 frontend 
+
+# Update as of 16 June 
+Coder: Kai 
+
+Purpose of the changes:
+Changed the leaderboard front end and category names 
+changed default profile pic for User that shows up on User Dashboard
+
+Nature of the changes (frontend / backend / database):
+frontend 
