@@ -994,7 +994,7 @@
                                   />
                                   <img
                                     v-else
-                                    src="../../Images/Drinks/Placeholder.png"
+                                    src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
                                     class="listing-image"
                                   />
                                 </div>
@@ -1158,7 +1158,7 @@
                                   />
                                   <img
                                     v-else
-                                    src="../../Images/Drinks/Placeholder.png"
+                                    src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
                                     class="listing-image"
                                   />
                                 </div>
@@ -1279,7 +1279,7 @@
                               <div class="text-center text-md-start">
                                 <div class="image-wrapper position-relative d-inline-block">
                                   <img v-if="listing['photo']" :src="listing['photo']" class="listing-image" />
-                                  <img v-else src="../../Images/Drinks/Placeholder.png" class="listing-image" />
+                                  <img v-else src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739" class="listing-image" />
                                 </div>
                                 <!-- <div class="mobile-view-hide position-absolute" style="top: 10px; right: 10px;">
                                   <BookmarkIcon

@@ -235,7 +235,7 @@
                                     <div class="me-3 mobile-col-2 d-flex image-container producer-profile-no-left-padding-large-screen align-items-center" style="width: 100px; height: 100px;">
                                         <img v-if="grail.image" :src="grail.image" alt="Drink image"
                                             style="max-height: 100px; object-fit: contain;" />
-                                        <img v-else src="../../../Images/Drinks/Placeholder.png" alt="Image placeholder"
+                                        <img v-else src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739" alt="Image placeholder"
                                             style="max-height: 100px; object-fit: contain;" />
                                     </div>
                 
@@ -285,7 +285,7 @@
                                     <div class="col-3 mobile-col-2 image-container me-2 mobile-px-0 producer-profile-no-left-padding-large-screen align-items-center">
                                         <img v-if="item.image" class="img-fluid "  :src="item.image" alt="Drink image"
                                             style="width: 100%; height: 100%; object-fit: contain;" />
-                                        <img v-else class="img-fluid " src="../../../Images/Drinks/Placeholder.png" alt="Image placeholder"
+                                        <img v-else class="img-fluid " src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739" alt="Image placeholder"
                                             style="width: 100%; height: 100%; object-fit: contain;" />
                                     </div>
                                     <div class="col-8 text-start">
@@ -326,7 +326,7 @@
                                     <div class="col-3 mobile-col-2 image-container me-2 mobile-px-0 producer-profile-no-left-padding-large-screen align-items-center">
                                         <img v-if="item.image" class="img-fluid" :src="item.image" alt="Drink image"
                                             style="width: 100%; height: 100%; object-fit: contain;" />
-                                        <img v-else  class="img-fluid" src="../../../Images/Drinks/Placeholder.png" alt="Image placeholder"
+                                        <img v-else  class="img-fluid" src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739" alt="Image placeholder"
                                             style="width: 100%; height: 100%; object-fit: contain;" />
                                     </div>
                                     <div class="text-start">
@@ -419,7 +419,7 @@
                                                 <img v-if="selectedDrinkDetails && selectedDrinkDetails[index] && selectedDrinkDetails[index].photo"
                                                     :src="selectedDrinkDetails[index].photo" alt="Drink bottle"
                                                     style="height: 60px; width: 40px; object-fit: contain;" />
-                                                <img v-else src="../../../Images/Drinks/Placeholder.png"
+                                                <img v-else src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
                                                     alt="Drink bottle"
                                                     style="height: 60px; width: 40px; object-fit: contain;" />
                                             </div>
@@ -467,7 +467,7 @@
                                     <div class="me-3 mobile-col-2 d-flex image-container producer-profile-no-left-padding-large-screen align-items-center" style="width: 100px; height: 100px;">
                                         <img v-if="grail.image" :src="grail.image" alt="Drink image"
                                             style="max-height: 100px; object-fit: contain;" />
-                                        <img v-else src="../../../Images/Drinks/Placeholder.png" alt="Image placeholder"
+                                        <img v-else src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739" alt="Image placeholder"
                                             style="max-height: 100px; object-fit: contain;" />
                                     </div>
                 
@@ -517,7 +517,7 @@
                                     <div class="col-3 mobile-col-2 image-container me-2 mobile-px-0 producer-profile-no-left-padding-large-screen align-items-center">
                                         <img v-if="item.image" class="img-fluid "  :src="item.image" alt="Drink image"
                                             style="width: 100%; height: 100%; object-fit: contain;" />
-                                        <img v-else class="img-fluid " src="../../../Images/Drinks/Placeholder.png" alt="Image placeholder"
+                                        <img v-else class="img-fluid " src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739" alt="Image placeholder"
                                             style="width: 100%; height: 100%; object-fit: contain;" />
                                     </div>
                                     <div class="col-8 text-start">
@@ -558,7 +558,7 @@
                                     <div class="col-3 mobile-col-2 image-container me-2 mobile-px-0 producer-profile-no-left-padding-large-screen align-items-center">
                                         <img v-if="item.image" class="img-fluid" :src="item.image" alt="Drink image"
                                             style="width: 100%; height: 100%; object-fit: contain;" />
-                                        <img v-else  class="img-fluid" src="../../../Images/Drinks/Placeholder.png" alt="Image placeholder"
+                                        <img v-else  class="img-fluid" src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739" alt="Image placeholder"
                                             style="width: 100%; height: 100%; object-fit: contain;" />
                                     </div>
                                     <div class="text-start">
@@ -651,7 +651,7 @@
                                                 <img v-if="selectedDrinkDetails && selectedDrinkDetails[index] && selectedDrinkDetails[index].photo"
                                                     :src="selectedDrinkDetails[index].photo" alt="Drink bottle"
                                                     style="height: 60px; width: 40px; object-fit: contain;" />
-                                                <img v-else src="../../../Images/Drinks/Placeholder.png"
+                                                <img v-else src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
                                                     alt="Drink bottle"
                                                     style="height: 60px; width: 40px; object-fit: contain;" />
                                             </div>
