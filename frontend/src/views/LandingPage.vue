@@ -224,7 +224,7 @@
                             <div class="drink-photo-container-row image-container-150 mb-2" style="width: 150px" @click="goSearchListing(listing)">
                                 <img v-if="listing['photo']" :src="listing['photo']" class="img-fluid rounded mb-2"
                                     style="max-height: 100px; object-fit: contain;" />
-                                <img v-else src="../../Images/Drinks/Placeholder.png" class="img-fluid rounded mb-2"
+                                <img v-else src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739" class="img-fluid rounded mb-2"
                                     style="max-height: 100px; object-fit: contain;" />
                                 <div class="fw-semibold mobile-rating-smaller-text-2 listing-text">{{ listing['listingName'] }}</div>
                             </div>
@@ -249,7 +249,7 @@
                     />
                     <img
                     v-else
-                    src="../../Images/Drinks/Placeholder.png"
+                    src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
                     class="img-fluid rounded mb-2"
                     style="max-height: 120px; object-fit: contain;"
                     />

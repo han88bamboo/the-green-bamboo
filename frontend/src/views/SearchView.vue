@@ -196,7 +196,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                             <div class="mobile-col-3 mobile-me-3 image-container mb-3 mobile-px-0 producer-profile-no-left-padding-large-screen mobile-view-show">
                                 <router-link :to="{ path: '/listing/view/' + resultListing.id + '/' + slugify(resultListing.listingName) }">
                                     <img v-if="resultListing['photo']" :src="resultListing['photo']" class="img-border img-fluid object-fit-cover review-image" style="width:256px; height:256px">
-                                    <img v-else src="../../Images/Drinks/Placeholder.png" class=" img-border img-fluid object-fit-cover review-image" style="/*width:256px; height:256px*/"> 
+                                    <img v-else src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739" class=" img-border img-fluid object-fit-cover review-image" style="/*width:256px; height:256px*/"> 
                                 </router-link>
                             </div>
                             <div class="col-lg-8 col-12 ps-3 mobile-col-6 mobile-pe-0 mobile-ps-1 mobile-view-show">
@@ -226,7 +226,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                             <div class="d-flex justify-content-end col-3  image-container mb-3 mobile-px-0 mobile-view-hide">
                                 <router-link :to="{ path: '/listing/view/' + resultListing.id + '/' + slugify(resultListing.listingName) }">
                                     <img v-if="resultListing['photo']" :src="resultListing['photo']" class="img-border img-fluid object-fit-cover review-image" style="width:300px; height:300px">
-                                    <img v-else src="../../Images/Drinks/Placeholder.png" class=" img-border img-fluid object-fit-cover review-image" style="/*width:300px; height:300px*/"> 
+                                    <img v-else src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739" class=" img-border img-fluid object-fit-cover review-image" style="/*width:300px; height:300px*/"> 
                                 </router-link>
                             </div>
 
@@ -328,7 +328,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                             <div class="mobile-col-3 mobile-me-3 image-container mb-3 mobile-px-0 producer-profile-no-left-padding-large-screen mobile-view-show">
                                 <router-link :to="{ path: '/profile/producer/' + producer.id + '/' + slugify(producer.producerName)}">
                                     <img v-if="producer['photo']" :src="producer['photo']" class="img-border img-fluid object-fit-cover review-image" style="/*width:256px; height:256px*/">
-                                    <img v-else src="../../Images/Drinks/Placeholder.png" class="img-border img-fluid object-fit-cover review-image" style="/*width:256px; height:256px*/"> 
+                                    <img v-else src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739" class="img-border img-fluid object-fit-cover review-image" style="/*width:256px; height:256px*/"> 
                                 </router-link>
                             </div>
                             <!-- Details -->
@@ -362,7 +362,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                             <div class="d-flex justify-content-end col-4  image-container mb-4 mobile-px-0 mobile-view-hide">
                                 <router-link :to="{ path: '/profile/producer/' + producer.id + '/' + slugify(producer.producerName)}">
                                     <img v-if="producer['photo']" :src="producer['photo']" class="img-border img-fluid object-fit-cover review-image" style="/*width:300px; height:300px*/">
-                                    <img v-else src="../../Images/Drinks/Placeholder.png" class="img-border img-fluid object-fit-cover review-image" style="/*width:300px; height:300px*/"> 
+                                    <img v-else src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739" class="img-border img-fluid object-fit-cover review-image" style="/*width:300px; height:300px*/"> 
                                 </router-link>
                             </div>
                             <!-- Details -->
@@ -430,7 +430,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                             <div class="d-flex justify-content-end col-4  image-container mb-4 mobile-px-0 mobile-view-hide">
                                 <router-link :to="{ path: '/profile/venue/' + venue.id + '/' + slugify(venue.venueName)}">
                                     <img v-if="venue['photo']" :src="venue['photo']" class="img-border img-fluid object-fit-cover review-image" style="/*width:256px; height:256px*/">
-                                    <img v-else src="../../Images/Drinks/Placeholder.png" class="img-border img-fluid object-fit-cover review-image" style="/*width:256px; height:256px*/"> 
+                                    <img v-else src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739" class="img-border img-fluid object-fit-cover review-image" style="/*width:256px; height:256px*/"> 
                                 </router-link>
                             </div>
                             <!-- Details -->
@@ -493,7 +493,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                             <div class="mobile-col-3 mobile-me-3 image-container mb-3 mobile-px-0 producer-profile-no-left-padding-large-screen mobile-view-show">
                                 <router-link :to="{ path: '/profile/venue/' + venue.id + '/' + slugify(venue.venueName)}">
                                     <img v-if="venue['photo']" :src="venue['photo']" class="img-border img-fluid object-fit-cover review-image" style="/*width:256px; height:256px*/">
-                                    <img v-else src="../../Images/Drinks/Placeholder.png" class="img-border img-fluid object-fit-cover review-image" style="/*width:256px; height:256px*/"> 
+                                    <img v-else src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739" class="img-border img-fluid object-fit-cover review-image" style="/*width:256px; height:256px*/"> 
                                 </router-link>
                             </div>
                             <!-- Details -->
