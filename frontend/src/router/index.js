@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from "vue-router";
-import HelpTopics from '@/views/HelpTopics.vue';
 
 const routes = [
   // ----------------- MAIN PAGES -----------------
@@ -344,12 +343,12 @@ const routes = [
   {
     path: '/help',
     name: 'help',
-    component: HelpTopics,
+     component: () => import('@/views/HelpTopics.vue')
   },
   {
     path: '/help/:section',
     name: 'helpSection',
-    component: HelpTopics
+     component: () => import('@/views/HelpTopics.vue')
   }
 
 ];
