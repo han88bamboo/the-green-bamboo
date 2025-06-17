@@ -893,6 +893,7 @@ Purpose of the changes:
 Nature of the changes (frontend / backend / database):
 frontend and backend
 
+
 # Update as of 14 June 
 Coder: Kai 
 
@@ -943,3 +944,16 @@ changed default profile pic for User that shows up on User Dashboard
 
 Nature of the changes (frontend / backend / database):
 frontend 
+
+# Update as of 17 June
+
+Coder: Candy
+
+Purpose of the changes:
+Updated URL that are not working on user's dashboard
+(1) Updated UserDashboard.vue
+(2) Updated organiser link format (frontend/src/views/SpecificEventPage.vue)
+(2) Updated post discussion user link format (ClubPostView.vue)
+
+Nature of the changes (frontend / backend / database):
+frontend
