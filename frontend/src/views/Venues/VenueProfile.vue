@@ -8,13 +8,7 @@
     <div class="container pt-5 mobile-pt-3">
 
         <!-- Display when data is still loading -->
-        <div class="text-info-emphasis fst-italic fw-bold fs-5" v-if="dataLoaded == false">
-            <span>Loading profile, please wait...</span>
-            <br><br>
-            <div class="spinner-border" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-        </div>
+        <LoadingWithFunFact v-if="dataLoaded === false" />
 
         <!-- Display when venue does not exist -->
         <div class="text-danger fst-italic fw-bold fs-3" v-if="venueExists == false || dataLoaded == null"> 
@@ -40,6 +34,235 @@
 
             <!-- Venue Information -->
             <div class="col-xl-9 col-12 px-3 px-lg-4">
+                <!-- Welcome Section for Venue Owners -->
+                <div v-if="selfView"
+                style="
+                    border: 1px solid #e0e0e0;
+                    border-radius: 8px;
+                    padding: 16px;
+                    background-color: #ffffff;
+                    margin-bottom: 20px;
+                "
+                class="mb-4 "
+                >
+
+                <h3
+                    style="
+                    font-size: 24px;
+                    font-weight: bold;
+                    border-bottom: 1px solid #e0e0e0;
+                    padding-bottom: 16px;
+                    "
+                >
+                    Welcome to Drink-X. Grow your bar's presence!
+                </h3>
+
+        <div class="row fs-7">
+            <!-- First Column -->
+            <div class="col-md-6">
+            <!-- Action Item 1 -->
+            <div
+                style="
+                display: flex;
+                align-items: flex-start;
+                gap: 16px;
+                margin-bottom: 16px;
+                "
+            >
+                <img
+                src="/CurateMenu.png"
+                style="
+                    width: 64px;
+                    height: 64px;
+                    object-fit: contain;
+                    border-radius: 4px;
+                "
+                alt="Update your menu"
+                />
+                <div class="text-start">
+                <p class="mobile-rating-smaller-text-2 mb-2 text-start">
+                    <strong>Curate Your Menu! Show fans what you're pouring so they'll get over now!</strong> (PS: Generate a menu QR code–customers can scan to see the menu at your venue!)
+                </p>
+                <button
+                    class="btn btn-warning btn-sm rounded fw-bold fs-8"
+                    @click="contentMode = 'menu'; enableEditMenuMode()"
+                    onclick="setTimeout(() => {
+                        document.getElementById('menu-section').scrollIntoView({behavior: 'smooth'});
+                        setTimeout(() => {
+                        window.scrollBy({top: -100, behavior: 'smooth'});
+                        const menuEl = document.getElementById('menu');
+                        if (menuEl) {
+                            menuEl.classList.add('highlight-section');
+                            setTimeout(() => menuEl.classList.remove('highlight-section'), 3000);
+                        }
+                        }, 550);
+                    }, 100)"
+                >
+                    Update Menu
+                </button>
+                </div>
+            </div>
+
+            <!-- Action Item 2 -->
+            <div
+                style="
+                display: flex;
+                align-items: flex-start;
+                gap: 16px;
+                margin-bottom: 16px;
+                "
+            >
+                <img
+                src="/PostAnnouncement.png"
+                style="
+                    width: 64px;
+                    height: 64px;
+                    object-fit: contain;
+                    border-radius: 4px;
+                "
+                alt="Share an update"
+                />
+                <div class="text-start">
+                <p class="mobile-rating-smaller-text-2 mb-2 text-start">
+                    <strong>Post An Announcement</strong> (This is a great way to share with your fans any latest news, events or special offers at your venue! Create some buzz!)
+                </p>
+                <button
+                    class="btn btn-warning btn-sm rounded fw-bold fs-8"
+                    @click="contentMode = 'overview'"
+                    onclick="setTimeout(() => {
+                        const menuSection = document.getElementById('updates-section');
+                        if (menuSection) {
+                            menuSection.scrollIntoView({behavior: 'smooth'});
+                            
+                            // After initial scroll completes, adjust position and add highlight
+                            setTimeout(() => {
+                                // Scroll up 100px
+                                window.scrollBy({top: -100, behavior: 'smooth'});
+                                
+                                // After position adjustment, add highlight class
+                                setTimeout(() => {
+                                    menuSection.classList.add('highlight-section');
+                                    
+                                    // Remove highlight after 3 seconds
+                                    setTimeout(() => {
+                                        menuSection.classList.remove('highlight-section');
+                                    }, 3000);
+                                }, 300);
+                            }, 400);
+                        }
+                    }, 100)"
+                >
+                    Post Announcement
+                </button>
+                </div>
+            </div>
+
+            <div
+                style="
+                display: flex;
+                align-items: flex-start;
+                gap: 16px;
+                margin-bottom: 16px;
+                "
+            >
+                <img
+                src="/CreateEvent.png"
+                style="
+                    width: 64px;
+                    height: 64px;
+                    object-fit: contain;
+                    border-radius: 4px;
+                "
+                alt="Create Event"
+                />
+                <div class="text-start">
+                <p class="mobile-rating-smaller-text-2 mb-2 text-start">
+                    <strong>Create An Event </strong> (Hosting an event? Let everyone know what’s up and to RSVP now!) 
+                </p>
+                <router-link :to="'/events/view'">
+                    <button
+                        class="btn btn-warning btn-sm rounded fw-bold fs-8"
+                    >
+                        Create Event
+                    </button>
+                </router-link>
+                </div>
+            </div>
+            </div>
+
+            <!-- Second Column -->
+            <div class="col-md-6">
+            <!-- Action Item 3 -->
+            <div
+                style="
+                display: flex;
+                align-items: flex-start;
+                gap: 16px;
+                margin-bottom: 16px;
+                "
+            >
+                <img
+                src="/AnswerQnAs.png"
+                style="
+                    width: 64px;
+                    height: 64px;
+                    object-fit: contain;
+                    border-radius: 4px;
+                "
+                alt="Answer Q&A's"
+                />
+                <div class="text-start">
+                <p class="mobile-rating-smaller-text-2 mb-2 text-start">
+                    <strong>Answer Q&A’s</strong> (This is a great way to keep fans engaged by answering questions they may have about your venue or offerings!)
+                </p>
+                
+                    <button
+                    class="btn btn-warning btn-sm rounded fw-bold fs-8"
+                        @click="highlightQnAAndNavigate"
+                    >
+                    Answer Q&A's
+                    </button>
+                
+                </div>
+            </div>
+
+            <!-- Action Item 4 (Additional) -->
+            <div
+                style="
+                display: flex;
+                align-items: flex-start;
+                gap: 16px;
+                margin-bottom: 16px;
+                "
+            >
+                <img
+                src="/CreateClub.png"
+                style="
+                    width: 64px;
+                    height: 64px;
+                    object-fit: contain;
+                    border-radius: 4px;
+                "
+                alt="Create Club"
+                />
+                <div class="text-start">
+                <p class="mobile-rating-smaller-text-2 mb-2 text-start">
+                    <strong>Create A Club </strong> (Every awesome establishment needs its own fan club! Connect with your fanbase and get them coming back for more!)
+                </p>
+                <router-link :to="'/clubs/view'">
+                    <button
+                        class="btn btn-warning btn-sm rounded fw-bold fs-8"
+                    >
+                        Create Club
+                    </button>
+                </router-link>
+                </div>
+            </div>
+            </div>
+        </div>
+
+                </div>
+
 
 
                 <!-- ------- START Header ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
@@ -364,17 +587,16 @@
             
                 <!--------- END Follow Venue Button ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
                 <!-- ------- END Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
-
                 <!-- ------- END Header  ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
                
                 <!-- START Content Buttons (Bar Overview / Bar Menu / Venue Reviews / Review a venue button) -->
-                <div class="row mt-3 mobile-mt-1">
+                <div class="row mt-3 mobile-mt-1" id="menu-section">
                     <div class="col-8 d-flex justify-content-start mobile-col-7 mobile-pe-0">
                         <!-- Toggle Bar Overview -->
                         <button v-if="contentMode == 'overview'" class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'overview'"> Bar Overview </button>
                         <button v-else class="btn inactive-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'overview'"> Bar Overview </button>
                         <!-- Toggle Bar Menu -->
-                        <button v-if="contentMode == 'menu'" class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'menu'"> Bar Menu </button>
+                        <button  v-if="contentMode == 'menu'" class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'menu'"> Bar Menu </button>
                         <button v-else class="btn inactive-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'menu'"> Bar Menu </button>
                         <!-- Toggle Venue Reviews -->
                         <button 
@@ -402,7 +624,7 @@
                     <!-- ------- START Latest Updates Header + Latest Update Information ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
                     <!-- Latest Updates Header -->
-                    <div class="row">
+                    <div class="row"  >
                         <div class="col-12">
                             <p class="text-start text-body-secondary fs-4 fw-bold m-0 mobile-fs-6">Latest Updates from {{ targetVenue["venueName"] }}</p>
                             <p v-if="!(targetVenue['updates'].length > 0) && targetVenue['claimStatus']" class="text-start fs-6 mobile-rating-smaller-text-2 fst-italic m-1 pb-2">{{ targetVenue["venueName"] }} has not posted any updates!</p>
@@ -498,7 +720,7 @@
                     <!-- ------- END Latest Updates Header + Latest Update Information / START Add Update ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
                     <!-- Add Update -->
-                    <div v-if="selfView" class="row pt-3">
+                    <div v-if="selfView" class="row pt-3" id="updates-section">
 
                         <!-- Text Box / Options -->
                         <div class="input-group centered">
@@ -928,7 +1150,7 @@
                 <!-- ------- END Bar Overview / START Bar Menu ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
                 <!-- Bar Menu -->
-                <div v-if="contentMode == 'menu'">
+                <div v-if="contentMode == 'menu'" id="menu">
 
                     <!-- ------- START Menu Lock Message (Venue Unclaimed) ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
@@ -2340,7 +2562,7 @@
                 <!-- Q&A -->
                 <div class="row ">
                     <!--  Q&A-->
-                    <div class="col-xl-12 col-lg-3 col-md-6 col-12 mobile-view-hide">
+                    <div id="qna" class="col-xl-12 col-lg-3 col-md-6 col-12 mobile-view-hide">
                         <div class="square primary-square-green rounded p-4 mb-3"> <!--tzh added -green -->
 
                             <!-- Header -->
@@ -2941,6 +3163,7 @@
     import EventBox from '@/components/EventBox.vue';
     import FooterBar from "@/components/FooterBar.vue";
     import { useToast } from 'vue-toastification';
+    import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 
     export default {
         name: 'profileVenue',
@@ -2950,7 +3173,8 @@
             ListingRowDisplayProducerProfile,
             BookmarkModal,
             EventBox,
-            FooterBar
+            FooterBar,
+            LoadingWithFunFact,
         },
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         data() {
@@ -3010,7 +3234,7 @@
                 selectedImage: '',
                 targetVenueOriginalPhoto: '',
                 defaultProfilePhoto: "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultVenueProfilePhoto.png?v=1748435337",
-                defaultPhoto: "https://drinkximages.s3.us-east-1.amazonaws.com/images/2d4d94bc-313e-4621-9a15-4bfbf77958de.jpg",
+                defaultPhoto: "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739",
 
                 // Updates
                 newUpdateText: '',
@@ -5304,6 +5528,34 @@
                 this.searchQuery = listing.listingName;
                 this.searchResults = []; // Clear dropdown
                 this.updateNewMenuItemTarget();
+            },
+            highlightQnAAndNavigate() {
+            // Find the QnA section
+            const qnaSection = document.getElementById('qna');
+            
+            if (qnaSection) {
+                // Add the highlight effect
+                qnaSection.classList.add('highlight-section');
+                
+                // Remove highlight after 3 seconds
+                setTimeout(() => {
+                qnaSection.classList.remove('highlight-section');
+                }, 3000);
+            }
+            },
+            highlightMenuSection() {
+            // Find the menu section
+            const menuSection = document.getElementById('menu');
+            
+            if (menuSection) {
+                // Add the highlight effect
+                menuSection.classList.add('highlight-section');
+                
+                // Remove highlight after 3 seconds
+                setTimeout(() => {
+                menuSection.classList.remove('highlight-section');
+                }, 3000);
+            }
             }
         }
     }
@@ -5314,4 +5566,16 @@
     opacity: 0.5;
     background: #c8ebfb;
     }
+
+    @keyframes highlightBorder {
+  0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.8); }
+  70% { box-shadow: 0 0 0 10px rgba(255, 193, 7, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
+}
+
+.highlight-section {
+  animation: highlightBorder 1s ease-out infinite;
+  border: 2px solid #FFC107;
+  border-radius: 5px;
+}
 </style>

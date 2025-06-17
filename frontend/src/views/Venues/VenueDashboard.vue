@@ -10,13 +10,7 @@
     <div class="container pt-5 mobile-pt-3">
 
         <!-- Display when data is still loading -->
-        <div class="text-info-emphasis fst-italic fw-bold fs-5" v-if="dataLoaded == false">
-            <span>Loading dashboard, please wait...</span>
-            <br><br>
-            <div class="spinner-border" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-        </div>
+        <LoadingWithFunFact v-if="dataLoaded === false" />
 
 
         <!-- Display when venue does not exist -->
@@ -784,6 +778,7 @@
     import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js';
     import { LineElement, PointElement } from 'chart.js';
     import FooterBar from "@/components/FooterBar.vue";
+    import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 
     ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
     ChartJS.register(LineElement, PointElement)
@@ -794,7 +789,8 @@
             NavBar,
             Bar,
             Line,
-            FooterBar
+            FooterBar,
+            LoadingWithFunFact,
         },
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         data() {
@@ -943,43 +939,52 @@
         mounted() {
 
             // Check if route params "venueID" is present
-            if (this.$route.params.venueID != "" && this.$route.params.venueID != undefined) {
-                this.targetVenueID = this.$route.params.venueID;
-                // If logged in as a venue, check if the venueID matches the logged in venue's ID
-                if (this.viewerType == 'venue' && this.viewerID == this.targetVenue) {
-                    this.selfView = true;
-                }
-                // If logged in as a user, check if user is an administrator
-                else if (this.viewerType == 'user' && this.viewerID != "" && this.viewerID != undefined) {
-                    this.$router.push('/login');
-                    // this.getUserData();
-                }
-                // If insufficient permissions, redirect to your own profile page / login
-                else {
-                    this.$router.push('/login');
-                }
-                
-            }
-            // If no venueID is specified, display logged in venue's profile page
-            else if (this.viewerType == 'venue') {
-                this.targetVenue = this.viewerID;
+            this.targetVenueID = this.$route.params.venueID || '';
 
+            if (this.viewerType == 'venue' && this.viewerID == this.targetVenueID) {
                 this.selfView = true;
+                this.getVenueData();
             }
-            // If not logged in as a venue, redirect to your own profile page / login
-            else {
-                this.$router.push('/login');
-            }
+            // if (this.$route.params.venueID != "" && this.$route.params.venueID != undefined) {
+            //     this.targetVenueID = this.$route.params.venueID;
+            //     // If logged in as a venue, check if the venueID matches the logged in venue's ID
+            //     if (this.viewerType == 'venue' && this.viewerID == this.targetVenueID) {
+            //         this.selfView = true;
+            //         this.getVenueData();
+            //     } else {
+            //         // this.$router.push('/login');
+            //     }
+            //     // // If logged in as a user, check if user is an administrator
+            //     // else if (this.viewerType == 'user' && this.viewerID != "" && this.viewerID != undefined) {
+            //     //     this.$router.push('/login');
+            //     //     // this.getUserData();
+            //     // }
+            //     // // If insufficient permissions, redirect to your own profile page / login
+            //     // else {
+            //     //     this.$router.push('/login');
+            //     // }
+                
+            // }
+            // If no venueID is specified, display logged in venue's profile page
+            // else if (this.viewerType == 'venue') {
+            //     this.targetVenue = this.viewerID;
 
-            // Obtain venue data
-            if (this.targetVenue != "" && this.targetVenue != undefined) {
-                if (this.selfView) {
-                    this.getVenueData();
-                }
-            }
-            else {
-                this.venueExists = false;
-            }
+            //     this.selfView = true;
+            // }
+            // // If not logged in as a venue, redirect to your own profile page / login
+            // else {
+            //     this.$router.push('/login');
+            // }
+
+            // // Obtain venue data
+            // if (this.targetVenue != "" && this.targetVenue != undefined) {
+            //     if (this.selfView) {
+            //         this.getVenueData();
+            //     }
+            // }
+            // else {
+            //     this.venueExists = false;
+            // }
 
         },
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1013,7 +1018,7 @@
                             this.powerView = true;
                         }
                         else {
-                            this.$router.push('/login');
+                            // this.$router.push('/login');
                         }
 
                         this.getVenueData();
@@ -1100,7 +1105,7 @@
                                 else if (listingData != null && listingData != "") {
 
                                     // Get reviews
-                                    let reviewResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getReviewByTarget/` + item.itemID);
+                                    let reviewResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getReviewByTarget/` + item.itemID + "/0");
                                     let reviewData = reviewResponse.data;
 
                                     if (Array.isArray(reviewData) && reviewData.length == 0) {

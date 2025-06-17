@@ -3,16 +3,7 @@
   <NavBar />
 
   <!-- Display when data is still loading -->
-  <div
-    class="text-info-emphasis fst-italic fw-bold fs-5 pt-5"
-    v-if="dataLoaded == false"
-  >
-    <span>Loading listing, please wait...</span>
-    <br /><br />
-    <div class="spinner-border" role="status">
-      <span class="visually-hidden">Loading...</span>
-    </div>
-  </div>
+  <LoadingWithFunFact v-if="dataLoaded === false" />
 
   <!-- Display when data fails to load -->
   <div
@@ -341,7 +332,7 @@
                       <h6 v-else class="text-body-secondary producer-page">
                         Bottler:
                         <router-link
-                          :to="{ path: '/profile/producer/' + this.bottler_id }"
+                          :to="{ path: '/profile/producer/' + this.bottler_id + '/' + getProducerName(this.producer_id), }"
                           class="default-text-no-background"
                         >
                           <u style="color: black">
@@ -3052,6 +3043,7 @@ import NavBar from "@/components/NavBar.vue";
 import BookmarkIcon from "@/components/BookmarkIcon.vue";
 import BookmarkModal from "@/components/BookmarkModal.vue";
 import FooterBar from "@/components/FooterBar.vue";
+import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 
 export default {
   // setup(){
@@ -3063,6 +3055,7 @@ export default {
     BookmarkIcon,
     BookmarkModal,
     FooterBar,
+    LoadingWithFunFact,
   },
   data() {
     return {
@@ -3219,7 +3212,7 @@ export default {
       // for bookmark component
       bookmarkListingID: null,
       defaultPhoto:
-        "https://drinkximages.s3.us-east-1.amazonaws.com/images/2d4d94bc-313e-4621-9a15-4bfbf77958de.jpg",
+        "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739",
       defaultProfilePhoto:
         "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288",
 
@@ -3710,6 +3703,13 @@ export default {
         (p) => p.id === producerID
       );
       return producer ? producer.producerName : "Unknown Producer";
+    },
+
+    getBottlerName(bottlerID) {
+      const bottler = this.producers.find(
+        (p) => p.id === bottlerID
+      );
+      return bottler ? bottler.producerName : "Unknown Bottler";
     },
 
     // get VenueName for a listing based on producerID

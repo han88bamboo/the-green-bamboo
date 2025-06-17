@@ -893,7 +893,59 @@ Purpose of the changes:
 Nature of the changes (frontend / backend / database):
 frontend and backend
 
-# Update as of 12 June
+
+# Update as of 14 June 
+Coder: Kai 
+
+Purpose of the changes:
+- Edited text and button displays for NavBar on Desktop for various users
+- Edited the front end of the mobile navigation bar - changed from dropdown to right panel. 
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 15 June 
+Coder: Jun Wei 
+
+Purpose of the changes:
+- Debugged issue of business settings button not being clickable for claimed and approved businesses (venues and producers)
+- Debugged issue of business settings page's broken backend calls due to different Stripe API response values (different api versions). 
+
+Nature of the changes (frontend / backend / database):
+frontend and backend
+
+# Update as of 15 June 
+Coder: Han 
+
+Purpose of the changes:
+added help topics / "get started page" on Drink-X, with first 3 topics:
+(1) Features
+(2) Drink-X for Venues
+(3) Drink–X for Brands
+
+Nature of the changes (frontend / backend / database):
+frontend 
+
+# Update as of 15 June - deployed too
+Coder: Han 
+
+Purpose of the changes:
+added conditionally rendered welcome sections for VenueProfile.vue and ProducerProfile.vue
+
+Nature of the changes (frontend / backend / database):
+frontend 
+
+# Update as of 16 June 
+Coder: Kai 
+
+Purpose of the changes:
+Changed the leaderboard front end and category names 
+changed default profile pic for User that shows up on User Dashboard
+
+Nature of the changes (frontend / backend / database):
+frontend 
+
+# Update as of 17 June
 
 Coder: Candy
 

@@ -187,9 +187,6 @@ def get_current_proof_points(user_id):
                 # If no votes, set to 0
                 total_review_upvotes += 0
                 total_review_downvotes += 0
-    
-    print("Total review upvotes: ", total_review_upvotes)
-    print("Total review downvotes: ", total_review_downvotes)
 
     # Get the producer review id for producer reviews made by user
     cursor.execute('SELECT id FROM "producerReviews" WHERE "userID" = %s', (user_id,))
@@ -212,9 +209,6 @@ def get_current_proof_points(user_id):
             else:
                 total_producer_review_upvotes += 0
                 total_producer_review_downvotes += 0
-
-    print("Total producer review upvotes: ", total_producer_review_upvotes)
-    print("Total producer review downvotes: ", total_producer_review_downvotes)
 
     # Get the member ids of the user 
     cursor.execute('SELECT id FROM "clubMembers" WHERE "userID" = %s', (user_id,))

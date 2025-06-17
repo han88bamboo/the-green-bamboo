@@ -4,7 +4,7 @@
         <div class="row">
             <!-- Search bar - full width on mobile, partial width on desktop -->
             <div
-                class="col-12 col-md-12 d-flex align-items-center justify-content-center"
+                class="col-12 col-md-12 pt-2 d-flex align-items-center justify-content-center"
             >
                 <div
                     class="col-8 position-relative search-bar d-flex w-100"
@@ -12,20 +12,19 @@
                 >
                     <div class="w-100 position-relative">
                         <input
-                            class="form-control fst-italic"
+                            class="form-control fst-italic "
                             type="text"
                             style="border: none; height: 100%; line-height: 50px; padding: 0 1rem;"
                             placeholder="Go for it!"
                             v-model="searchInput"
-                            v-on:keyup.enter="goSearch"
-                            v-on:input="getSuggestions"
+                            v-on:input="fetchSuggestion"
                             autocomplete="off"
                         />
                         <div
                             class="autocomplete-container position-absolute w-100"
                             v-if="
                                 showSuggestions &&
-                                filteredSuggestions.length > 0
+                                suggestions.length > 0
                             "
                         >
                             <ul class="list-group">
@@ -33,13 +32,20 @@
                                     class="list-group-item list-group-item-action text-start"
                                     v-for="(
                                         suggestion, index
-                                    ) in filteredSuggestions"
+                                    ) in suggestions"
                                     :key="index"
                                     v-on:click="selectSuggestion(suggestion)"
-                                    :class="{ active: selectedIndex === index }"
-                                    v-on:mouseover="selectedIndex = index"
                                 >
                                     {{ suggestion }}
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="autocomplete-container position-absolute w-100"
+                            v-if="showNoResultsMsg">
+                            <ul class="list-group">
+                                <li class="list-group-item list-group-item-action text-start">
+                                    No results found. Try a different search.
                                 </li>
                             </ul>
                         </div>
@@ -77,8 +83,8 @@
 
         <!-- Row 2: Surprise Me on desktop, Scan bottle + Surprise Me on mobile -->
         <div class="row mt-3">
-            <!-- Scan bottle button - Only visible on mobile in this row -->
-            <div class="col-6 d-md-none d-flex justify-content-center">
+            
+            <!--<div class="col-6 mobile-view-hide d-flex justify-content-center">
                 <button
                     class="btn d-flex align-items-center fw-bold"
                     style="background-color: #027562; color: white"
@@ -91,10 +97,10 @@
                         class="fw-bold"
                     />
                 </button>
-            </div>
+            </div>-->
 
-            <!-- Surprise Me button - full row on desktop, half width on mobile -->
-            <div class="col-6 col-md-12 d-flex justify-content-center">
+            <!--Surprise Me button - full row on desktop, half width on mobile -->
+            <div class="col-12 align-items-center justify-content-center " v-if="showSurpriseButton">
                 <router-link :to="'/explore'">
                     <button
                         class="btn btn-md text-white fw-bold"
@@ -105,64 +111,69 @@
                     </button>
                 </router-link>
             </div>
-        </div>
+        </div> 
     </div>
 </template>
 <script>
-import axios from "axios";
 
 export default {
     name: "SearchBar",
+    props: {
+        // You can define any props if needed
+        showSurpriseButton: {
+            type: Boolean,
+            default: true, // Default to true if not provided
+        },
+    },
     data() {
         return {
             searchInput: "",
             suggestions: [],
             showSuggestions: false,
-            selectedIndex: -1,
             isFetching: false,
+            showNoResultsMsg: false, // Flag to show no results message
         };
     },
-    computed: {
-        filteredSuggestions() {
-            if (this.searchInput.trim() === "") return [];
+    // computed: {
+    //     filteredSuggestions() {
+    //         if (this.searchInput.trim() === "") return [];
 
-            const searchTerm = this.searchInput.toLowerCase();
+    //         const searchTerm = this.searchInput.toLowerCase();
 
-            // First prioritize items that start with the search term
-            const startsWithMatches = this.suggestions.filter((item) =>
-                item.toLowerCase().startsWith(searchTerm)
-            );
+    //         // First prioritize items that start with the search term
+    //         const startsWithMatches = this.suggestions.filter((item) =>
+    //             item.toLowerCase().startsWith(searchTerm)
+    //         );
 
-            // Then add items where any word starts with the search term
-            const wordStartsWithMatches = this.suggestions.filter((item) => {
-                const words = item.toLowerCase().split(" ");
-                return (
-                    words.some((word) => word.startsWith(searchTerm)) &&
-                    !item.toLowerCase().startsWith(searchTerm)
-                ); // exclude already matched items
-            });
+    //         // Then add items where any word starts with the search term
+    //         const wordStartsWithMatches = this.suggestions.filter((item) => {
+    //             const words = item.toLowerCase().split(" ");
+    //             return (
+    //                 words.some((word) => word.startsWith(searchTerm)) &&
+    //                 !item.toLowerCase().startsWith(searchTerm)
+    //             ); // exclude already matched items
+    //         });
 
-            // Finally add substring matches not covered by above rules
-            const substringMatches = this.suggestions.filter(
-                (item) =>
-                    item.toLowerCase().includes(searchTerm) &&
-                    !item.toLowerCase().startsWith(searchTerm) &&
-                    !item
-                        .toLowerCase()
-                        .split(" ")
-                        .some((word) => word.startsWith(searchTerm))
-            );
+    //         // Finally add substring matches not covered by above rules
+    //         const substringMatches = this.suggestions.filter(
+    //             (item) =>
+    //                 item.toLowerCase().includes(searchTerm) &&
+    //                 !item.toLowerCase().startsWith(searchTerm) &&
+    //                 !item
+    //                     .toLowerCase()
+    //                     .split(" ")
+    //                     .some((word) => word.startsWith(searchTerm))
+    //         );
 
-            // Combine all matches with priority order and limit to 7
-            return [
-                ...startsWithMatches,
-                ...wordStartsWithMatches,
-                ...substringMatches,
-            ].slice(0, 7);
-        },
-    },
+    //         // Combine all matches with priority order and limit to 7
+    //         return [
+    //             ...startsWithMatches,
+    //             ...wordStartsWithMatches,
+    //             ...substringMatches,
+    //         ].slice(0, 7);
+    //     },
+    // },
     mounted() {
-        this.fetchAllListings();
         // Close suggestions when clicking outside
         document.addEventListener("click", this.handleClickOutside);
         // Add keyboard navigation
@@ -174,26 +185,30 @@ export default {
     },
     methods: {
         // Fetch all listings from backend
-        async fetchAllListings() {
+        async fetchSuggestion() {
             try {
+
+                if (this.searchInput.trim() === "") {
+                    this.suggestions = [];
+                    this.showSuggestions = false;
+                    return;
+                }
+
                 this.isFetching = true;
-                const response = await axios.get(
-                    `${process.env.VUE_APP_API_URL}/getData/getListingsName`
+                const response = await this.$axios.get(
+                    `${process.env.VUE_APP_API_URL}/getData/getListingsNames/${this.searchInput}`
                 );
                 this.suggestions = response.data;
+                this.showSuggestions = true;
+                this.showNoResultsMsg = false; // Hide no results message if suggestions are found
             } catch (error) {
                 console.error("Error fetching listings:", error);
+                if (error.response && error.response.status === 404) {
+                    this.showNoResultsMsg = true; // Show no results message
+                } 
                 this.suggestions = [];
             } finally {
                 this.isFetching = false;
-            }
-        },
-        // Get suggestions based on current input
-        getSuggestions() {
-            if (this.searchInput.trim().length > 0) {
-                this.showSuggestions = true;
-            } else {
-                this.showSuggestions = false;
             }
         },
         // Select a suggestion
@@ -202,34 +217,7 @@ export default {
             this.showSuggestions = false;
             this.goSearch();
         },
-        // Handle keyboard navigation
-        handleKeyDown(e) {
-            if (!this.showSuggestions) return;
 
-            const suggestions = this.filteredSuggestions;
-            // Down arrow
-            if (e.key === "ArrowDown") {
-                e.preventDefault();
-                this.selectedIndex = Math.min(
-                    this.selectedIndex + 1,
-                    suggestions.length - 1
-                );
-            }
-            // Up arrow
-            else if (e.key === "ArrowUp") {
-                e.preventDefault();
-                this.selectedIndex = Math.max(this.selectedIndex - 1, 0);
-            }
-            // Enter key
-            else if (e.key === "Enter" && this.selectedIndex >= 0) {
-                e.preventDefault();
-                this.selectSuggestion(suggestions[this.selectedIndex]);
-            }
-            // Escape key
-            else if (e.key === "Escape") {
-                this.showSuggestions = false;
-            }
-        },
         // Close suggestions when clicking outside
         handleClickOutside(e) {
             if (!this.$el.contains(e.target)) {

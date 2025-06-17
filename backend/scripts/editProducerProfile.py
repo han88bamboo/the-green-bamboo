@@ -443,7 +443,6 @@ def addProfileCount():
     conn = g.db
     cur = conn.cursor()
     data = request.get_json()
-    print(data)
     producerID = int(data['businessId'])
     viewsID = int(data['viewsId'])
 

@@ -20,7 +20,8 @@
             FooterBar
         },
         mounted() {
-            if (localStorage.getItem('88B_accType') != "user") {
+            const accType = localStorage.getItem('88B_accType');
+            if (!["user", "venue"].includes(accType)) {
                 alert("This page is only accessible to users! Please log in as a user to access this page.")
                 this.$router.push({path: '/login'});
             }

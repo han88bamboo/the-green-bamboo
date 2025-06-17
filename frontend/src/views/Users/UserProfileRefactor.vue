@@ -2,16 +2,7 @@
   <NavBar />
 
   <!-- Display when data is still loading -->
-  <div
-    class="text-info-emphasis fst-italic fw-bold fs-5 pt-5"
-    v-if="dataLoaded == false"
-  >
-    <span>Loading profile, please wait...</span>
-    <br /><br />
-    <div class="spinner-border" role="status">
-      <span class="visually-hidden">Loading...</span>
-    </div>
-  </div>
+  <LoadingWithFunFact v-if="dataLoaded === false" />
 
   <!-- Display when data fails to load -->
   <div
@@ -2733,6 +2724,7 @@ import { useToast } from "vue-toastification";
 import EventBox from "@/components/EventBox.vue";
 import BookmarkModal from "@/components/BookmarkModal.vue";
 import ListingRowDisplayUserProfile from "@/components/ListingRowDisplayUserProfile.vue";
+import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 
 export default {
   name: "UserProfileRefactor",
@@ -2742,6 +2734,7 @@ export default {
     EventBox,
     BookmarkModal,
     ListingRowDisplayUserProfile,
+    LoadingWithFunFact,
   },
   data() {
     return {
@@ -2751,7 +2744,7 @@ export default {
       defaultProfilePhoto:
         "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288",
       defaultDrinkImage:
-        "https://drinkximages.s3.us-east-1.amazonaws.com/images/2d4d94bc-313e-4621-9a15-4bfbf77958de.jpg",
+        "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739",
 
       producers: [],
 

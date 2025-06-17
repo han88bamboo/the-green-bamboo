@@ -1539,8 +1539,24 @@
                             this.businessClaimStatus = "false";
                             this.requestId = request.id;
                             const createSuccess = await this.createBusiness();
+                            //UPDATE THE ACCOUNTREQUEST WITH BUSINESS ID HERE, RETRIEVE THE BUSINESS ID FROM CREATION HERE
+                            // Created new endpoint for updatingAccountRequest with businessId        
                             if (!createSuccess) {
                                 return;
+                            }else{
+                                try{                            
+                                    await this.$axios.post(`${process.env.VUE_APP_API_URL}/createAccount/updateAccountRequestBusinessID`,  
+                                        {
+                                            requestID: requestID,
+                                            businessID: createSuccess
+                                        }, {
+                                        headers: {
+                                            'Content-Type': 'application/json'
+                                        }
+                                    });
+                                }catch(error){
+                                    console.error(error);
+                                }
                             }
                             const link = await this.generateToken(createSuccess, request.id)
                             this.emailLink(request, link);

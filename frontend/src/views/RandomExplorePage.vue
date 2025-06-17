@@ -121,16 +121,7 @@
   <NavBar />
 
   <!-- Display when data is still loading -->
-  <div
-    class="text-info-emphasis fst-italic fw-bold fs-5 pt-5"
-    v-if="dataLoaded == false"
-  >
-    <span>Loading page, please wait...</span>
-    <br /><br />
-    <div class="spinner-border" role="status">
-      <span class="visually-hidden">Loading...</span>
-    </div>
-  </div>
+   <LoadingWithFunFact v-if="dataLoaded === false" />
 
   <!-- Display when data fails to load-->
   <div
@@ -341,116 +332,116 @@
               <div class="col-12 ">
                 <div class="shelf primary-square-green">
                   <div class="square p-3 mb-3 text-start" style="height: 300px">
-                  <!-- header text -->
-                  <div class="square-inline">
-                    <h5 class="square-inline text-start mr-auto fw-bold">
-                      Brands You Follow
-                    </h5>
-                  </div>
-                  <!-- body -->
-                  <div style="height: 85%">
-                    <div
-                      v-if="questionsUpdates.length > 0"
-                      class="Xoverflow-auto"
-                      style="max-height: 100%"
-                    >
+                    <!-- header text -->
+                    <div class="square-inline">
+                      <h5 class="square-inline text-start mr-auto fw-bold">
+                        Brands You Follow
+                      </h5>
+                    </div>
+                    <!-- body -->
+                    <div style="height: 85%">
                       <div
-                        v-for="(update, index) in questionsUpdates"
-                        :key="index"
+                        v-if="questionsUpdates.length > 0"
+                        class="Xoverflow-auto"
+                        style="max-height: 100%"
                       >
-                        <!--Show if it's either producer or venue update-->
                         <div
-                          v-if="
-                            update.type == 'producerUpdate' ||
-                            update.type == 'venueUpdate'
-                          "
+                          v-for="(update, index) in questionsUpdates"
+                          :key="index"
                         >
-                        <!-- Left side: Profile image -->
-                        <div class="row"> 
-                        <div v-if="update.type == 'producerUpdate'" class="col-2 pt-1" >
-                          <router-link
-                            :to="{
-                              path:
-                                '/profile/producer/' +
-                                update.id +
-                                '/' +
-                                update.producerName, //updated username
-                            }"
-                            class="reverse-text"
+                          <!--Show if it's either producer or venue update-->
+                          <div
+                            v-if="
+                              update.type == 'producerUpdate' ||
+                              update.type == 'venueUpdate'
+                            "
                           >
-                            <img
-                              :src="update.photo || defaultProfilePhoto"
-                              style="width: 37.5px; height: 37.5px"
-                              class="img-border"
-                            />
-                            
-                          </router-link>
-                        </div>  
-                        <div v-else  class="col-2 pt-1">
-                          <router-link
-                            :to="{ path: '/profile/venue/' + update.id }"
-                            class="reverse-text"
-                          >
-                            <img
-                              :src="update.photo || defaultProfilePhoto"
-                              style="width: 37.5px; height: 37.5px"
-                              class="img-border"
-                            />
-                            
-                          </router-link>
-                        </div>
-                        
-                          <!-- Right side: Brand info and update -->
-                          <div class="xflex-grow-1 col-10">
-                            <b class="ps-2 reverse-text"> {{ update.name }} </b>  <br />
-                            <i>{{ getTimeDifference(update.date) }}</i>
+                          <!-- Left side: Profile image -->
+                          <div class="row"> 
+                          <div v-if="update.type == 'producerUpdate'" class="col-2 pt-1" >
+                            <router-link
+                              :to="{
+                                path:
+                                  '/profile/producer/' +
+                                  update.id +
+                                  '/' +
+                                  update.producerName, //updated username
+                              }"
+                              class="reverse-text"
+                            >
+                              <img
+                                :src="update.photo || defaultProfilePhoto"
+                                style="width: 37.5px; height: 37.5px"
+                                class="img-border"
+                              />
+                              
+                            </router-link>
+                          </div>  
+                          <div v-else  class="col-2 pt-1">
+                            <router-link
+                              :to="{ path: '/profile/venue/' + update.id }"
+                              class="reverse-text"
+                            >
+                              <img
+                                :src="update.photo || defaultProfilePhoto"
+                                style="width: 37.5px; height: 37.5px"
+                                class="img-border"
+                              />
+                              
+                            </router-link>
                           </div>
-                        </div>
                           
-                          updated status: "<b>{{ update.text }}</b
-                          >"
-                          <br />
-                          
-                          <br />
-                        </div>
+                            <!-- Right side: Brand info and update -->
+                            <div class="xflex-grow-1 col-10">
+                              <b class="ps-2 reverse-text"> {{ update.name }} </b>  <br />
+                              <i>{{ getTimeDifference(update.date) }}</i>
+                            </div>
+                          </div>
+                            
+                            updated status: "<b>{{ update.text }}</b
+                            >"
+                            <br />
+                            
+                            <br />
+                          </div>
 
-                        <!-- Show if it's either producer or venue question? (Kai Lin wants to show newly added expressions)-->
+                          <!-- Show if it's either producer or venue question? (Kai Lin wants to show newly added expressions)-->
+                        </div>
+                      </div>
+                      <div
+                        v-else-if="userID"
+                        style="
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                          height: 100%;
+                        "
+                      >
+                        <h6 class="fst-italic">No brands added yet.</h6>
+                      </div>
+                      <div
+                        v-else-if="!userID"
+                        style="
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                          height: 100%;
+                          flex-direction: column;
+                        "
+                      >
+                        <p class="text-white text-center">
+                          Log in to follow your favourite brands
+                        </p>
+                        <router-link :to="{ path: '/login' }">
+                          <button
+                            class="btn btn-shelf-login py-2 px-3"
+                            style="font-weight: bold"
+                          >
+                            Login
+                          </button>
+                        </router-link>
                       </div>
                     </div>
-                    <div
-                      v-else-if="userID"
-                      style="
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        height: 100%;
-                      "
-                    >
-                      <h6 class="fst-italic">No brands added yet.</h6>
-                    </div>
-                    <div
-                      v-else-if="!userID"
-                      style="
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        height: 100%;
-                        flex-direction: column;
-                      "
-                    >
-                      <p class="text-white text-center">
-                        Log in to follow your favourite brands
-                      </p>
-                      <router-link :to="{ path: '/login' }">
-                        <button
-                          class="btn btn-shelf-login py-2 px-3"
-                          style="font-weight: bold"
-                        >
-                          Login
-                        </button>
-                      </router-link>
-                    </div>
-                  </div>
                   </div>
                 </div>
               </div>
@@ -994,7 +985,7 @@
                                   />
                                   <img
                                     v-else
-                                    src="../../Images/Drinks/Placeholder.png"
+                                    src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
                                     class="listing-image"
                                   />
                                 </div>
@@ -1158,7 +1149,7 @@
                                   />
                                   <img
                                     v-else
-                                    src="../../Images/Drinks/Placeholder.png"
+                                    src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
                                     class="listing-image"
                                   />
                                 </div>
@@ -1279,7 +1270,7 @@
                               <div class="text-center text-md-start">
                                 <div class="image-wrapper position-relative d-inline-block">
                                   <img v-if="listing['photo']" :src="listing['photo']" class="listing-image" />
-                                  <img v-else src="../../Images/Drinks/Placeholder.png" class="listing-image" />
+                                  <img v-else src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739" class="listing-image" />
                                 </div>
                                 <!-- <div class="mobile-view-hide position-absolute" style="top: 10px; right: 10px;">
                                   <BookmarkIcon
@@ -1417,13 +1408,15 @@ import NavBar from "@/components/NavBar.vue";
 // import BookmarkIcon from "@/components/BookmarkIcon.vue";
 import BookmarkModal from "@/components/BookmarkModal.vue";
 import FooterBar from "@/components/FooterBar.vue";
+import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 
 export default {
   components: {
     NavBar,
     // BookmarkIcon,
     BookmarkModal,
-    FooterBar
+    FooterBar,
+    LoadingWithFunFact
   },
 
   data() {
@@ -1520,7 +1513,7 @@ export default {
       bookmarkListingID: {},
 
       defaultProfilePhoto:
-        "https://drinkximages.s3.us-east-1.amazonaws.com/images/2d4d94bc-313e-4621-9a15-4bfbf77958de.jpg",
+        "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739",
     };
   },
   mounted() {
@@ -2253,12 +2246,19 @@ export default {
         );
 
         let responseData = response.data
+        
         this.questionsUpdates = [
-          responseData.producerUpdate,
-          responseData.venueUpdate,
-          responseData.producerQuestion,
-          responseData.venueQuestion
-        ];
+          ...responseData.producerUpdate,
+          ...responseData.venueUpdate,
+          ...responseData.producerQuestion,
+          ...responseData.venueQuestion
+        ].sort((a, b) => new Date(b.date) - new Date(a.date)); // descending order
+
+        // Add time difference to each question update
+        this.questionsUpdates.forEach((update) => {
+          update.timeDifference = this.getTimeDifference(update.date);
+        });
+
         
       } catch (error) {
         console.error("Error retrieving questions updates:", error);

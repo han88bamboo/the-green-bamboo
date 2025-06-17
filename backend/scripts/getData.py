@@ -8,7 +8,7 @@
 
 #           [Listings]
 #           /getListings (GET), /getListingsByIDs (POST), /getListing/<id> (GET), /getListingsBySearch (GET),
-#           /getListingsDetailedByID/<id> (GET), /getListingNamesDynamicSearch/<searchTerm> (GET), /getAllListingsNames (GET),
+#           /getListingsDetailedByID/<id> (GET), /getListingNamesDynamicSearch/<searchTerm> (GET), /getListingsNames/<search_term> (GET),
 #           /getRecentlyAddedListings (POST), 
 
 #           [Producers]
@@ -624,7 +624,6 @@ def getListingsByProducer(id):
 def getListingByName(listing_name):
     # URL decode the listing name in case there are special characters
     listing_name = unquote(listing_name)
-    
 
     conn = g.db
 
@@ -977,18 +976,48 @@ def getProducerByRequestId(id):
         cur.close()
 
 # [GET] List of unique producers names and id
-@blueprint.route("/getUniqueProducersNamesID")
-def getUniqueProducersNamesID():
+@blueprint.route("/getUniqueProducersNamesID/<search_term>/<pid>")
+def getUniqueProducersNamesID(search_term, pid):
     conn = g.db
-    with conn.cursor() as cursor:
-        cursor.execute('SELECT DISTINCT "producerName", "isIndependentBottler", "id" FROM "producers"')
-        producers_data = cursor.fetchall()
+    cursor = conn.cursor()
 
-    if not producers_data:
-        return jsonify({
-            "code": 404,
-            "message": "No producers found."
-        })
+    search_term = search_term.strip().lower()
+
+    try:
+
+        # Retrieve producer name and ID is pid is not '0' - stop here since we only want to return this one
+        if pid != '0':
+            cursor.execute('SELECT "id", "producerName" FROM "producers" WHERE "id" = %s', (int(pid),))
+            producer_data = cursor.fetchone()
+            
+            if producer_data:
+
+                return jsonify({
+                    "code": 200,
+                    "message": "Producer fetched successfully.",
+                    "id": producer_data["id"],
+                    "producerName": producer_data["producerName"]
+                })
+
+        # If pid is '0', search for producers by name to populate into the input field for suggestions [SubmitListingNew.vue]
+        cursor.execute("""
+            SELECT "id", "producerName"
+            FROM "producers"
+            WHERE "producerName" ILIKE %s
+            LIMIT 30
+        """, ('%' + search_term + '%',))
+        
+        producers_data = cursor.fetchall()  
+
+        if not producers_data:
+            return jsonify({
+                "code": 404,
+                "message": "No producers found."
+            })
+
+    except Exception as e:
+        print(f"Error fetching producers by search: {str(e)}")
+        return jsonify({"code": 500, "message": "An error occurred while fetching producers."}), 500
     
     # Convert the data to a list of dictionaries
 
@@ -1008,6 +1037,48 @@ def getUniqueProducersNamesID():
         "message": "Producers fetched successfully.",
         "data": producers_list
     })
+
+
+# [GET] List of unique bottlers names and id
+@blueprint.route("/getUniqueBottlersNamesID/<search_term>")
+def getUniqueBottlersNamesID(search_term):
+    conn = g.db
+
+    search_term = search_term.strip().lower()
+
+    with conn.cursor() as cursor:
+        cursor.execute("""
+            SELECT "id", "producerName"
+            FROM "producers"
+            WHERE "producerName" ILIKE %s AND "isIndependentBottler" = TRUE
+            LIMIT 30
+        """, ('%' + search_term + '%',))
+        
+        bottlers_data = cursor.fetchall()
+
+    if not bottlers_data:
+        return jsonify({
+            "code": 404,
+            "message": "No independent bottlers found."
+        })
+    
+    # Convert the data to a list of dictionaries
+    bottlers_list = []
+    for bottler in bottlers_data:
+        if bottler["producerName"] == None:
+            continue
+        bottler_dict = {
+            "producerName": bottler["producerName"],
+            "id": bottler["id"]
+        }
+        bottlers_list.append(bottler_dict)
+
+    return jsonify({
+        "code": 200,
+        "message": "Independent bottlers fetched successfully.",
+        "data": bottlers_list
+    })
+
 # [GET] All producers with basic info needed for listings
 @blueprint.route("/getAllProducers")
 def getAllProducers():
@@ -1164,17 +1235,38 @@ def getRecentListingReviews(id):
     
 
 # [GET] Get all listings names
-@blueprint.route("/getAllListingsNames")
-def getAllListingsNames():
+@blueprint.route("/getListingsNames/<search_term>")
+def getListingsNames(search_term):
     conn = g.db
-    with conn.cursor() as cursor:
-        cursor.execute('SELECT "id", "listingName" FROM "listings"')
-        listings_data = cursor.fetchall()
+    search_term = search_term.strip()
 
-    if not listings_data:
-        return jsonify([]), 404
+    try:
 
-    return jsonify(listings_data), 200
+        with conn.cursor() as cursor:
+            # Fetch 20 listings names based on the search term
+            cursor.execute("""
+                SELECT "listingName"
+                FROM "listings"
+                WHERE "listingName" ILIKE %s
+                LIMIT 20
+            """, ('%' + search_term + '%',))
+
+            listings_data = cursor.fetchall()
+
+        if not listings_data:
+            return jsonify([]), 404
+
+        # Convert into a list
+        listings_data = [listing['listingName'] for listing in listings_data]
+        # Remove duplicates
+        listings_data = list(set(listings_data))
+
+        return jsonify(listings_data), 200
+
+    except Exception as e:
+        print(f"Error fetching listings names: {str(e)}")
+        return jsonify({"code": 500, "message": "An error occurred while fetching listings names."}), 500
+
 
 
 # [POST] Get recently added listings by producers and venues from a list of producer IDs and venue IDs that a user follows
@@ -1440,8 +1532,9 @@ def getReviewsByListingIDs():
 @blueprint.route("/getReviewByTarget/<id>/<last_review_id>")
 def getReviewByTarget(id, last_review_id):
     conn = g.db
+    cursor = conn.cursor()
     
-    with conn.cursor() as cursor:
+    try:
 
         if last_review_id == "0":
             # If last_review_id is 0, fetch the latest 20 reviews for the target
@@ -1466,18 +1559,25 @@ def getReviewByTarget(id, last_review_id):
 
         reviews_data = cursor.fetchall()
     
-    if not reviews_data:
-        return jsonify([])
-    
-    for review in reviews_data:
-        review["userVotes"] = {
-            "upvotes": review["upvotes"] if review["upvotes"] else [],
-            "downvotes": review["downvotes"] if review["downvotes"] else []
-        }
-        del review["upvotes"]
-        del review["downvotes"]
+        if not reviews_data:
+            return jsonify([])
+        
+        for review in reviews_data:
+            review["userVotes"] = {
+                "upvotes": review["upvotes"] if review["upvotes"] else [],
+                "downvotes": review["downvotes"] if review["downvotes"] else []
+            }
+            del review["upvotes"]
+            del review["downvotes"]
 
-    return jsonify(reviews_data)
+        return jsonify(reviews_data)
+
+    except Exception as e:
+        print(f"Error fetching reviews by target {id}: {str(e)}")
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching reviews."
+        }), 500
 
 
 # [GET] Latest 10 Specific Reviews by usr(s) - using one or more user IDs (retrieve latest reviews for the specified user(s) as well as the review target(s) data)

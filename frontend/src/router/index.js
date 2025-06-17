@@ -337,6 +337,20 @@ const routes = [
     name: "bestof",
     component: () => import("../views/BestOfView.vue"),
   }, 
+
+  // ----------------- Help Page --------------------
+  
+  {
+    path: '/help',
+    name: 'help',
+     component: () => import('@/views/HelpTopics.vue')
+  },
+  {
+    path: '/help/:section',
+    name: 'helpSection',
+     component: () => import('@/views/HelpTopics.vue')
+  }
+
 ];
 
 const router = createRouter({
