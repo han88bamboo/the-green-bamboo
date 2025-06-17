@@ -672,9 +672,9 @@ def importListings():
             new_profiles_with_ids = cur.fetchall()
             producer_name_id_dict.update({row["producerName"]: row["id"] for row in new_profiles_with_ids})
 
-        # Fetch existing listings to avoid duplicates
-        cur.execute('SELECT "listingName", "producerID" FROM "listings"')
-        existing_listings = {(row['listingName'], row['producerID']) for row in cur.fetchall()}
+        # # Fetch existing listings to avoid duplicates - TZH commented out because this duplicate detection system is faulty
+        # cur.execute('SELECT "listingName", "producerID" FROM "listings"')
+        # existing_listings = {(row['listingName'], row['producerID']) for row in cur.fetchall()}
 
         listings_to_insert = []
         image_urls = []
@@ -706,10 +706,11 @@ def importListings():
             producer_id = producer_name_id_dict.get(producer_name)
             listing_name = converted_row[0]
 
-            if (listing_name, producer_id) in existing_listings:
-                print(f"Skipping duplicate listing: {listing_name} from {producer_name}")
-                image_urls.append(None)  # Add None to maintain alignment with listings
-                continue
+            # tzh commented out the duplicate detection system because it was faulty
+            # if (listing_name, producer_id) in existing_listings:
+            #     print(f"Skipping duplicate listing: {listing_name} from {producer_name}")
+            #     image_urls.append(None)  # Add None to maintain alignment with listings
+            #     continue
 
             # Handle bottler scenarios
             bottler_name = converted_row[2]

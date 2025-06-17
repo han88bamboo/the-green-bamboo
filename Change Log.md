@@ -957,3 +957,13 @@ Updated URL that are not working on user's dashboard
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 18 June
+
+Coder: Candy
+
+Purpose of the changes:
+switched off faulty duplicate checking mechanism - it was causing photo misalignments 
+
+Nature of the changes (frontend / backend / database):
+backend
