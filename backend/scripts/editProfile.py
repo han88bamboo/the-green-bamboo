@@ -5,7 +5,7 @@
 import os
 import s3Images
 from flask import Blueprint, g, request, jsonify
-from scripts import pointsHelperFunc, badge_helpers
+from scripts import pointsHelperFunc, badge_helpers, notifications
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -184,6 +184,26 @@ def updateBookmark():
             net_list_change = num_lists_to_add_count - num_lists_to_delete_count
             if net_list_change != 0:
                 badge_result = badge_helpers.process_public_list_badge(conn, cursor, userID, net_list_change)
+
+        cursor.execute('SELECT username FROM users WHERE id = %s', (userID,))
+        user_row = cursor.fetchone()
+        if user_row:
+            # Get the username of the user
+            user_username = user_row['username'] if user_row else "Someone"
+            
+        # Notify if badge earned
+        if badge_result:
+            notification_data = {
+                "userId":   userID,
+                "userType": "user",
+                "notiTabs": "forYou",
+                "notiType": "badge_earned",
+                "image":    None,
+                "link":     f"/profile/user/{userID}/{user_username}",
+                "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}."
+            }
+            print("Notification data:", notification_data)
+            notifications.add_notification_to_db(notification_data)
 
         # Prepare the response
         response_data = {

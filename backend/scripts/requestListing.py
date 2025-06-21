@@ -504,6 +504,26 @@ def requestReviewStatus(requestID):
             )
             conn.commit()
 
+        cur.execute('SELECT username FROM users WHERE id = %s', (user_id,))
+        user_row = cur.fetchone()
+        if user_row:
+            # Get the username of the user
+            user_username = user_row['username'] if user_row else "Someone"
+            
+        # Notify if badge earned
+        if badge_result:
+            notification_data = {
+                "userId":   user_id,
+                "userType": "user",
+                "notiTabs": "forYou",
+                "notiType": "badge_earned",
+                "image":    None,
+                "link":     f"/profile/user/{user_id}/{user_username}",
+                "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}."
+            }
+            print("Adding notification for badge earned:", notification_data)
+            notifications.add_notification_to_db(notification_data)        
+
         # Prepare the response
         response_data = {
             "code": 201,

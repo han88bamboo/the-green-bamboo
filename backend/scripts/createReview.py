@@ -43,6 +43,7 @@ def create_username(location_name):
 @blueprint.route("/createReview", methods= ['POST'])
 def createReviews():
     raw_review = request.get_json()
+    print("Raw review data:", raw_review)  # Debugging line to check the input data
     conn = g.db
     cur = conn.cursor()
 
@@ -126,28 +127,44 @@ def createReviews():
         cur.execute('SELECT username FROM users WHERE id = %s', (user_id,))
         user_row = cur.fetchone()
         reviewer_username = user_row['username'] if user_row else "Someone"
-
         for tagged_id in tagged_users:
             try:
                 tagged_id_int = int(tagged_id)
             except ValueError:
                 continue  # skip invalid IDs
             
-            # Check if tagged_id corresponds to a venue
-            cur.execute('SELECT id FROM venues WHERE id = %s', (tagged_id_int,))
-            if cur.rowcount == 0:
-                continue  # not a venue
+            # # Check if tagged_id corresponds to a venue
+            # cur.execute('SELECT id FROM venues WHERE id = %s', (tagged_id_int,))
+            # if cur.rowcount == 0:
+            #     continue  # not a venue
+            # print("hello3")
+            # notification_data = {
+            #     "userId": tagged_id_int,
+            #     "userType": "venue",
+            #     "notiTabs": "forYou",
+            #     "notiType": "venue_tagged_review",
+            #     "image": None,
+            #     "link": f"/listing/view/{review_target}/{listing_name}",
+            #     "message": f"@{reviewer_username} mentioned your venue in their review of {listing_name}"
+            # }
+            # print("Adding notification for tagged venue:", notification_data)
+            # notifications.add_notification_to_db(notification_data)
 
-            notification_data = {
-                "userId": tagged_id_int,
-                "userType": "venue",
-                "notiTabs": "forYou",
-                "notiType": "venue_tagged_review",
-                "image": None,
-                "link": f"/listing/view/{review_target}/{listing_name}",
-                "message": f"@{reviewer_username} mentioned your venue in their review of {listing_name}"
-            }
-            notifications.add_notification_to_db(notification_data)
+            cur.execute('SELECT 1 FROM "users" WHERE id=%s', (tagged_id_int,))
+            if cur.rowcount:
+                notification_data = {
+                    "userId":   tagged_id_int,
+                    "userType": "user",
+                    "notiTabs": "forYou",
+                    "notiType": "user_tagged_review",
+                    "image":    None,
+                    "link":     f"/listing/view/{review_target}/{listing_name}",
+                    "message":  f"@{reviewer_username} mentioned you in a review of {listing_name}"
+                }
+                print("Adding notification for tagged user:", notification_data)
+                notifications.add_notification_to_db(notification_data)
+                
+                
 
         if pointsHelperFunc.check_max_proof_points(user_id):
             return jsonify({

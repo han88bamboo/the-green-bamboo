@@ -17,7 +17,7 @@ import os
 from flask import Blueprint, g, jsonify, request
 from datetime import datetime
 import re
-from scripts import badge_helpers
+from scripts import badge_helpers, notifications
 
 # Use to upload image to S3
 import s3Images
@@ -1169,6 +1169,26 @@ def addAttendee():
         cursor.execute('UPDATE events SET "numAttendees" = "numAttendees" + 1 WHERE id = %s', (data['eventID'],))
         conn.commit()
 
+        cursor.execute(
+            'SELECT "eventName" FROM events WHERE id = %s',
+            (data['eventID'],)
+        )
+        ev = cursor.fetchone()
+        event_name = ev['eventName'] if ev and 'eventName' in ev else 'the event'
+
+        # Build and send notification
+        notification_data = {
+            "userId":    data['userID'],
+            "userType":  data['userType'],
+            "notiTabs":  "forYou",
+            "notiType":  "event_invite",
+            "image":     None,
+            "link":      f"/event/{data['eventID']}/{event_name}",
+            "message":   f"You have been invited to {event_name}"
+        }
+        print("data for notification: ", notification_data)
+        notifications.add_notification_to_db(notification_data)
+
         return jsonify({'message': 'Attendee added successfully'}), 201
 
     except Exception as e:
@@ -1303,6 +1323,26 @@ def updateAttendeeStatus():
                 user_id = attendee_info.get('userID')
                 if user_id:
                     badge_result = badge_helpers.process_event_attendance_badge(conn, cursor, user_id)
+
+                cursor.execute('SELECT username FROM users WHERE id = %s', (user_id,))
+                user_row = cursor.fetchone()
+                if user_row:
+                    # Get the username of the user
+                    user_username = user_row['username'] if user_row else "Someone"
+                            
+                # Notify user of badge
+                if badge_result:
+                    notification_data = {
+                        "userId":   user_id,
+                        "userType": "user",
+                        "notiTabs": "forYou",
+                        "notiType": "badge_earned",
+                        "image":    None,
+                        "link":     f"/profile/user/{user_id}/{user_username}",
+                        "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}."
+                    }
+                    print("notification data for badge: ", notification_data)
+                    notifications.add_notification_to_db(notification_data)
         
         response_data = {'message': 'Attendee status updated successfully'}
         

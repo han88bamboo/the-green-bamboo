@@ -174,7 +174,13 @@ def voteReview():
             if review_row:
                 review_owner_id = review_row["userID"]
                 review_created = review_row["createdDate"]
-                
+
+                cur.execute('SELECT username FROM users WHERE id = %s', (review_owner_id,))
+                review_row = cur.fetchone()
+                if review_row:
+                    # Get the username of the user
+                    review_username = review_row['username'] if review_row else "Someone"       
+                             
                 # Convert the vote time to datetime object
                 upvote_dt = datetime.strptime(current_time, "%Y-%m-%d %H:%M:%S")
                 
@@ -198,9 +204,10 @@ def voteReview():
                           "notiTabs": "forYou",
                           "notiType": "badge_earned",
                           "image":    None,
-                          "link":     f"/profile/{review_owner_id}/badges",
+                          "link":     f"/profile/user/{review_owner_id}/{review_username}",
                           "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}."
                         }
+                        print("Badge notification data: ", notification_data)
                         notifications.add_notification_to_db(notification_data)
             
             # Prepare the response

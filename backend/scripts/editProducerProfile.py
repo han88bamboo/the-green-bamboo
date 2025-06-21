@@ -216,6 +216,20 @@ def sendQuestions():
             # Process the Question badge
             badge_result = badge_helpers.process_question_badge(conn, cur, userID)
         
+        # If badge earned, send notification
+        if badge_result:
+            notification_data = {
+                "userId":   userID,
+                "userType": "user",
+                "notiTabs": "forYou",
+                "notiType": "badge_earned",
+                "image":    None,
+                "link":     f"/profile/user/{userID}/{user_username}",
+                "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}."
+            }
+            print("Sending badge notification:", notification_data)
+            notifications.add_notification_to_db(notification_data)
+        
         # Prepare the response
         response_data = {
             "code": 201,
