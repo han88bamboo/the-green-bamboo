@@ -2705,28 +2705,42 @@ VALUES
         'Southwest France Dessert'
     ]);
 
-INSERT INTO "producers" ("producerName", "producerDesc", "originCountry", "mainDrinks", "photo", "hashedPassword", "claimStatus", "claimStatusCheckDate", "statusOB", "username", "producerLink", "stripeCustomerId"
-) VALUES 
-    ('Hennessy', 'This is Hennessy', 'France', '{}', NULL, '-6552510', true, NULL, NULL, 'Hennessy', '', NULL),
-    ('Jack Daniel''s', 'Famous Tennessee whiskey brand known for its smooth, charcoal-mellowed whiskey.', 'United States', '{}', NULL, '-1469695901', false, NULL, NULL, 'jackdaniels', '', NULL),
-    ('Johnnie Walker', 'One of the most iconic Scotch whisky brands, known for its blended whiskies.', 'Scotland', '{}', NULL, '640032836', false, NULL, NULL, 'johnniewalker', '', NULL),
-    ('Jameson', 'The most famous Irish whiskey, triple-distilled for smoothness.', 'Ireland', '{}', NULL, '-152907913', false, NULL, NULL, 'jameson', '', NULL),
-    ('Chivas Regal', 'A well-known brand of blended Scotch whisky.', 'Scotland', '{}', NULL, '1650366560', false, NULL, NULL, 'chivasregal', '', NULL),
-    ('Glenfiddich', 'One of the most famous single malt Scotch whisky brands.', 'Scotland', '{}', NULL, '626732607', false, NULL, NULL, 'glenfiddich', '', NULL),
-    ('Bacardi', 'World-famous rum brand, known for white and dark rums.', 'Cuba', '{}', NULL, '1396448963', false, NULL, NULL, 'bacardi', '', NULL),
-    ('Captain Morgan', 'Popular spiced rum brand, known for its smooth taste.', 'Jamaica', '{}', NULL, '-1018979690', false, NULL, NULL, 'captainmorgan', '', NULL),
-    ('Don Julio', 'Premium tequila brand, known for its smooth and high-quality tequila.', 'Mexico', '{}', NULL, '2038084859', false, NULL, NULL, 'donjulio', '', NULL),
-    ('Patrón', 'A high-end tequila brand, famous for its handcrafted production process.', 'Mexico', '{}', NULL, '462830215', false, NULL, NULL, 'patron', '', NULL),
-    ('Jose Cuervo', 'One of the oldest and most famous tequila brands in the world.', 'Mexico', '{}', NULL, '-2090820217', false, NULL, NULL, 'josecuervo', '', NULL),
-    ('Tanqueray', 'One of the world’s most popular gin brands, known for its London Dry Gin.', 'United Kingdom', '{}', NULL, '1792363181', false, NULL, NULL, 'tanqueray', '', NULL),
-    ('Hendrick''s', 'Scottish gin brand, famous for its cucumber and rose-infused flavors.', 'Scotland', '{}', NULL, '1458970391', false, NULL, NULL, 'hendricks', '', NULL),
-    ('Bombay Sapphire', 'A premium gin brand known for its smooth taste and botanicals.', 'United Kingdom', '{}', NULL, '-938116355', false, NULL, NULL, 'bombaysapphire', '', NULL),
-    ('Suntory', 'Japanese whisky and spirits brand, known for Hibiki and Yamazaki.', 'Japan', '{}', NULL, '-345359732', false, NULL, NULL, 'suntory', '', NULL),
-    ('Nikka', 'Japanese whisky brand, known for its high-quality single malts and blends.', 'Japan', '{}', NULL, '505268853', false, NULL, NULL, 'nikka', '', NULL),
-    ('Tito''s Handmade Vodka', 'An American vodka brand made from corn and distilled in Texas.', 'United States', '{}', NULL, '2016735326', false, NULL, NULL, 'titosvodka', '', NULL),
-    ('Grey Goose', 'A premium French vodka brand, made with high-quality wheat.', 'France', '{}', NULL, '-1636822077', false, NULL, NULL, 'greygoose', '', NULL),
-    ('Absolut', 'One of the most famous vodka brands, known for its pure Swedish vodka.', 'Sweden', '{}', NULL, '-1030449104', false, NULL, NULL, 'absolut', '', NULL),
-    ('Tiger Beer', 'A popular Asian beer brand, brewed in Singapore.', 'Singapore', '{}', NULL, '165298405', false, NULL, NULL, 'tigerbeer', '', NULL);
+INSERT INTO "producers" (
+    "producerName", "producerDesc", "originCountry", "isIndependentBottler",
+    "mainDrinks", "photo", "hashedPassword", "claimStatus", "claimStatusCheckDate",
+    "statusOB", "yearFounded", "activeStatus", "owner", "location", "openForTours",
+    "website", "username", "producerLink", "stripeCustomerId"
+) VALUES
+    ('Hennessy', 'This is Hennessy', 'France', false, '{}', NULL, '-6552510', true, NULL, NULL, 1765, 'active', 'Moët Hennessy', 'Cognac, France', true, 'https://www.hennessy.com', 'Hennessy', '', NULL),
+    ('Jack Daniel''s', 'Famous Tennessee whiskey brand known for its smooth, charcoal-mellowed whiskey.', 'United States', false, '{}', NULL, '-1469695901', false, NULL, NULL, 1866, 'active', 'Brown-Forman', 'Lynchburg, TN', true, 'https://www.jackdaniels.com', 'jackdaniels', '', NULL),
+    ('Johnnie Walker', 'One of the most iconic Scotch whisky brands, known for its blended whiskies.', 'Scotland', false, '{}', NULL, '640032836', false, NULL, NULL, 1820, 'active', 'Diageo', 'Kilmarnock, Scotland', true, 'https://www.johnniewalker.com', 'johnniewalker', '', NULL),
+    ('Jameson', 'The most famous Irish whiskey, triple-distilled for smoothness.', 'Ireland', false, '{}', NULL, '-152907913', false, NULL, NULL, 1780, 'active', 'Pernod Ricard', 'Dublin, Ireland', true, 'https://www.jamesonwhiskey.com', 'jameson', '', NULL),
+    ('Chivas Regal', 'A well-known brand of blended Scotch whisky.', 'Scotland', false, '{}', NULL, '1650366560', false, NULL, NULL, 1801, 'active', 'Pernod Ricard', 'Keith, Scotland', true, 'https://www.chivas.com', 'chivasregal', '', NULL),
+    ('Glenfiddich', 'One of the most famous single malt Scotch whisky brands.', 'Scotland', false, '{}', NULL, '626732607', false, NULL, NULL, 1887, 'active', 'William Grant & Sons', 'Dufftown, Scotland', true, 'https://www.glenfiddich.com', 'glenfiddich', '', NULL),
+    ('Bacardi', 'World-famous rum brand, known for white and dark rums.', 'Cuba', false, '{}', NULL, '1396448963', false, NULL, NULL, 1862, 'active', 'Bacardi Limited', 'Hamilton, Bermuda', true, 'https://www.bacardi.com', 'bacardi', '', NULL),
+    ('Captain Morgan', 'Popular spiced rum brand, known for its smooth taste.', 'Jamaica', false, '{}', NULL, '-1018979690', false, NULL, NULL, 1944, 'active', 'Diageo', 'Jamaica', false, 'https://www.captainmorgan.com', 'captainmorgan', '', NULL),
+    ('Don Julio', 'Premium tequila brand, known for its smooth and high-quality tequila.', 'Mexico', false, '{}', NULL, '2038084859', false, NULL, NULL, 1942, 'active', 'Diageo', 'Jalisco, Mexico', true, 'https://www.donjulio.com', 'donjulio', '', NULL),
+    ('Patrón', 'A high-end tequila brand, famous for its handcrafted production process.', 'Mexico', false, '{}', NULL, '462830215', false, NULL, NULL, 1989, 'active', 'Bacardi', 'Jalisco, Mexico', true, 'https://www.patrontequila.com', 'patron', '', NULL),
+    ('Jose Cuervo', 'One of the oldest and most famous tequila brands in the world.', 'Mexico', false, '{}', NULL, '-2090820217', false, NULL, NULL, 1795, 'active', 'Casa Cuervo', 'Tequila, Mexico', true, 'https://www.josecuervo.com', 'josecuervo', '', NULL),
+    ('Tanqueray', 'One of the world’s most popular gin brands, known for its London Dry Gin.', 'United Kingdom', false, '{}', NULL, '1792363181', false, NULL, NULL, 1830, 'active', 'Diageo', 'London, UK', true, 'https://www.tanqueray.com', 'tanqueray', '', NULL),
+    ('Hendrick''s', 'Scottish gin brand, famous for its cucumber and rose-infused flavors.', 'Scotland', false, '{}', NULL, '1458970391', false, NULL, NULL, 1999, 'active', 'William Grant & Sons', 'Girvan, Scotland', true, 'https://www.hendricksgin.com', 'hendricks', '', NULL),
+    ('Bombay Sapphire', 'A premium gin brand known for its smooth taste and botanicals.', 'United Kingdom', false, '{}', NULL, '-938116355', false, NULL, NULL, 1986, 'active', 'Bacardi', 'Laverstoke Mill, UK', true, 'https://www.bombaysapphire.com', 'bombaysapphire', '', NULL),
+    ('Suntory', 'Japanese whisky and spirits brand, known for Hibiki and Yamazaki.', 'Japan', false, '{}', NULL, '-345359732', false, NULL, NULL, 1899, 'active', 'Beam Suntory', 'Tokyo, Japan', true, 'https://www.suntory.com', 'suntory', '', NULL),
+    ('Nikka', 'Japanese whisky brand, known for its high-quality single malts and blends.', 'Japan', false, '{}', NULL, '505268853', false, NULL, NULL, 1934, 'active', 'Asahi Group', 'Yoichi, Japan', true, 'https://www.nikka.com', 'nikka', '', NULL),
+    ('Tito''s Handmade Vodka', 'An American vodka brand made from corn and distilled in Texas.', 'United States', false, '{}', NULL, '2016735326', false, NULL, NULL, 1997, 'active', 'Fifth Generation, Inc.', 'Austin, TX', false, 'https://www.titosvodka.com', 'titosvodka', '', NULL),
+    ('Grey Goose', 'A premium French vodka brand, made with high-quality wheat.', 'France', false, '{}', NULL, '-1636822077', false, NULL, NULL, 1997, 'active', 'Bacardi', 'Cognac, France', true, 'https://www.greygoose.com', 'greygoose', '', NULL),
+    ('Absolut', 'One of the most famous vodka brands, known for its pure Swedish vodka.', 'Sweden', false, '{}', NULL, '-1030449104', false, NULL, NULL, 1879, 'active', 'Pernod Ricard', 'Åhus, Sweden', true, 'https://www.absolut.com', 'absolut', '', NULL),
+    ('Tiger Beer', 'A popular Asian beer brand, brewed in Singapore.', 'Singapore', false, '{}', NULL, '165298405', false, NULL, NULL, 1932, 'active', 'Heineken Asia Pacific', 'Singapore', true, 'https://www.tigerbeer.com', 'tigerbeer', '', NULL),
+    ('Signatory Vintage', 'Independent bottler offering a wide range of single malts.', 'Scotland', true, '{}', NULL, '91283477', false, NULL, NULL, 1988, 'active', 'Andrew Symington', 'Pitlochry, Scotland', true, 'https://www.signatoryvintage.com', 'signatory', '', NULL),
+    ('Compass Box', 'Creative whisky maker blending high-quality Scotch whiskies.', 'United Kingdom', true, '{}', NULL, '34827391', false, NULL, NULL, 2000, 'active', 'John Glaser', 'London, UK', false, 'https://www.compassboxwhisky.com', 'compassbox', '', NULL),
+    ('Cadenhead''s', 'Scotland’s oldest independent bottler.', 'Scotland', true, '{}', NULL, '72834912', false, NULL, NULL, 1842, 'active', 'J&A Mitchell', 'Campbeltown, Scotland', true, 'https://www.wmcadenhead.com', 'cadenheads', '', NULL),
+    ('Douglas Laing & Co', 'Family-run bottler with many rare Scotch whisky expressions.', 'Scotland', true, '{}', NULL, '82374291', false, NULL, NULL, 1948, 'active', 'Fred Laing', 'Glasgow, Scotland', true, 'https://www.douglaslaing.com', 'douglaslaing', '', NULL),
+    ('That Boutique-y Whisky Company', 'Known for quirky labels and small-batch bottlings.', 'United Kingdom', true, '{}', NULL, '91827364', false, NULL, NULL, 2012, 'active', 'Atom Brands', 'Kent, UK', false, 'https://www.boutiqueywhisky.com', 'boutiquey', '', NULL),
+    ('Adelphi', 'Premium Scotch bottler with a focus on quality.', 'Scotland', true, '{}', NULL, '19283746', false, NULL, NULL, 1993, 'active', 'Adelphi Distillery Ltd.', 'Fife, Scotland', false, 'https://www.adelphidistillery.com', 'adelphi', '', NULL),
+    ('SMWS', 'Exclusive club offering single cask whisky to members.', 'Scotland', true, '{}', NULL, '67584930', false, NULL, NULL, 1983, 'active', 'The Artisanal Spirits Company', 'Edinburgh, Scotland', false, 'https://www.smws.com', 'smws', '', NULL),
+    ('Berry Bros. & Rudd', 'Historic bottler and wine merchant.', 'United Kingdom', true, '{}', NULL, '83492018', false, NULL, NULL, 1698, 'active', 'Berry Bros. & Rudd Ltd.', 'London, UK', true, 'https://www.bbr.com', 'berrybros', '', NULL),
+    ('Elixir Distillers', 'Boutique bottler and creator of Port Askaig.', 'United Kingdom', true, '{}', NULL, '47291837', false, NULL, NULL, 2017, 'active', 'Sukhinder Singh', 'London, UK', false, 'https://www.elixirdistillers.com', 'elixirdistillers', '', NULL),
+    ('The Whisky Trail', 'Independent bottler of rare and vintage Scotch.', 'Scotland', true, '{}', NULL, '75839201', false, NULL, NULL, 2006, 'active', 'Whiskybase B.V.', 'Edinburgh, Scotland', false, 'https://www.whiskybase.com/whiskies/brand/whisky-trail', 'whiskytrail', '', NULL);
 
 INSERT INTO "venues" (
     "venueName", 
@@ -2767,26 +2781,26 @@ INSERT INTO "producersQuestionAnswers" (
 INSERT INTO "listings" (
     "listingName", "producerID", "bottler", "originCountry", "drinkType", "abv", "officialDesc", "allowMod", "addedDate", "typeCategory", "age", "reviewLink", "sourceLink", "photo", "drinkStyle")
 	VALUES 
-    ('Hennessy VS', 1, 'OB', 'Japan', 'Whiskey', 12, 'BEST EVEERRRR', true, '2024-10-05 00:14:37.661786', 'Single Malt', 12, '', '', '', ''),
-    ('Jack Daniel''s Old No. 7', 2, 'Jack Daniel''s', 'United States', 'Whiskey', 40, 'The classic Tennessee whiskey with a smooth, charcoal-mellowed flavor.', true, '2024-02-02', 'Bourbon', NULL, '', '', '', ''),
-    ('Jack Daniel''s Single Barrel Select', 2, 'Jack Daniel''s', 'United States', 'Whiskey', 47, 'A richer and more complex version of the classic Jack Daniel’s.', true, '2024-02-02', 'Bourbon', NULL, '', '', '', ''),
-    ('Jack Daniel''s Tennessee Honey', 2, 'Jack Daniel''s', 'United States', 'Whiskey', 35, 'A smooth blend of Jack Daniel’s and honey liqueur.', true, '2024-02-02', 'Flavored Whiskey', NULL, '', '', '', ''),
-    ('Jack Daniel''s Sinatra Select', 2, 'Jack Daniel''s', 'United States', 'Whiskey', 45, 'A premium whiskey honoring Frank Sinatra, aged in specially designed barrels.', true, '2024-02-02', 'Bourbon', NULL, '', '', '', ''),
-    ('Jack Daniel''s Bonded', 2, 'Jack Daniel''s', 'United States', 'Whiskey', 50, 'Bottled-in-bond whiskey with a bolder, richer flavor.', true, '2024-02-02', 'Bourbon', NULL, '', '', '', ''),
-    ('Johnnie Walker Black Label', 3, 'Johnnie Walker', 'Scotland', 'Whiskey', 40, 'A smooth, well-balanced blended Scotch aged 12 years.', true, '2024-02-02', 'Blended Scotch', 12, '', '', '', ''),
-    ('Johnnie Walker Blue Label', 3, 'Johnnie Walker', 'Scotland', 'Whiskey', 43, 'An ultra-premium blend featuring rare, aged Scotch whiskies.', true, '2024-02-02', 'Blended Scotch', NULL, '', '', '', ''),
-    ('Johnnie Walker Red Label', 3, 'Johnnie Walker', 'Scotland', 'Whiskey', 40, 'A bold, fiery blend ideal for mixing in cocktails.', true, '2024-02-02', 'Blended Scotch', NULL, '', '', '', ''),
-    ('Johnnie Walker Green Label', 3, 'Johnnie Walker', 'Scotland', 'Whiskey', 43, 'A rich, green blend of malt whisky for a fresh taste.', true, '2024-02-02', 'Blended Scotch', NULL, '', '', '', ''),
-    ('Jameson Irish Whiskey', 4, 'Jameson', 'Ireland', 'Whiskey', 40, 'A triple-distilled, smooth Irish whiskey with hints of vanilla and spice.', true, '2024-02-02', 'Irish Whiskey', NULL, '', '', '', ''),
-    ('Jameson Black Barrel', 4, 'Jameson', 'Ireland', 'Whiskey', 40, 'A rich, intense version of Jameson aged in charred barrels.', true, '2024-02-02', 'Irish Whiskey', NULL, '', '', '', ''),
-    ('Jameson Caskmates Stout Edition', 4, 'Jameson', 'Ireland', 'Whiskey', 40, 'Jameson finished in craft beer stout barrels for a deeper taste.', true, '2024-02-02', 'Irish Whiskey', NULL, '', '', '', ''),
-    ('Jameson Crested', 4, 'Jameson', 'Ireland', 'Whiskey', 40, 'A rich, smooth blend of Jameson whiskey with a creamy finish.', true, '2024-02-02', 'Irish Whiskey', NULL, '', '', '', ''),
-    ('Chivas Regal 12', 5, 'Chivas Regal', 'Scotland', 'Whiskey', 40, 'A smooth, honeyed Scotch whisky aged for 12 years.', true, '2024-02-02', 'Blended Scotch', 12, '', '', '', ''),
-    ('Chivas Regal 18', 5, 'Chivas Regal', 'Scotland', 'Whiskey', 40, 'A more complex, rich Scotch aged 18 years.', true, '2024-02-02', 'Blended Scotch', 18, '', '', '', ''),
-    ('Chivas Regal Extra', 5, 'Chivas Regal', 'Scotland', 'Whiskey', 40, 'A rich, indulgent Scotch whisky with a warm, fruity flavor.', true, '2024-02-02', 'Blended Scotch', NULL, '', '', '', ''),
-    ('Glenfiddich 12', 6, 'Glenfiddich', 'Scotland', 'Whiskey', 40, 'A light and fruity single malt aged for 12 years.', true, '2024-02-02', 'Single Malt Scotch', 12, '', '', '', ''),
-    ('Glenfiddich 18', 6, 'Glenfiddich', 'Scotland', 'Whiskey', 43, 'A richer, sherry-aged single malt aged 18 years.', true, '2024-02-02', 'Single Malt Scotch', 18, '', '', '', ''),
-    ('Glenfiddich 21', 6, 'Glenfiddich', 'Scotland', 'Whiskey', 40, 'A rare single malt aged for 21 years with rich oak notes.', true, '2024-02-02', 'Single Malt Scotch', 21, '', '', '', ''),
+    ('Hennessy VS', 1, 'OB', 'Japan', 'Whisky', 12, 'BEST EVEERRRR', true, '2024-10-05 00:14:37.661786', 'Single Malt', 12, '', '', '', ''),
+    ('Jack Daniel''s Old No. 7', 2, 'Jack Daniel''s', 'United States', 'Whisky', 40, 'The classic Tennessee whiskey with a smooth, charcoal-mellowed flavor.', true, '2024-02-02', 'Bourbon', NULL, '', '', '', ''),
+    ('Jack Daniel''s Single Barrel Select', 2, 'Jack Daniel''s', 'United States', 'Whisky', 47, 'A richer and more complex version of the classic Jack Daniel’s.', true, '2024-02-02', 'Bourbon', NULL, '', '', '', ''),
+    ('Jack Daniel''s Tennessee Honey', 2, 'Jack Daniel''s', 'United States', 'Whisky', 35, 'A smooth blend of Jack Daniel’s and honey liqueur.', true, '2024-02-02', 'Flavored Whiskey', NULL, '', '', '', ''),
+    ('Jack Daniel''s Sinatra Select', 2, 'Jack Daniel''s', 'United States', 'Whisky', 45, 'A premium whiskey honoring Frank Sinatra, aged in specially designed barrels.', true, '2024-02-02', 'Bourbon', NULL, '', '', '', ''),
+    ('Jack Daniel''s Bonded', 2, 'Jack Daniel''s', 'United States', 'Whisky', 50, 'Bottled-in-bond whiskey with a bolder, richer flavor.', true, '2024-02-02', 'Bourbon', NULL, '', '', '', ''),
+    ('Johnnie Walker Black Label', 3, 'Johnnie Walker', 'Scotland', 'Whisky', 40, 'A smooth, well-balanced blended Scotch aged 12 years.', true, '2024-02-02', 'Blended Scotch', 12, '', '', '', ''),
+    ('Johnnie Walker Blue Label', 3, 'Johnnie Walker', 'Scotland', 'Whisky', 43, 'An ultra-premium blend featuring rare, aged Scotch whiskies.', true, '2024-02-02', 'Blended Scotch', NULL, '', '', '', ''),
+    ('Johnnie Walker Red Label', 3, 'Johnnie Walker', 'Scotland', 'Whisky', 40, 'A bold, fiery blend ideal for mixing in cocktails.', true, '2024-02-02', 'Blended Scotch', NULL, '', '', '', ''),
+    ('Johnnie Walker Green Label', 3, 'Johnnie Walker', 'Scotland', 'Whisky', 43, 'A rich, green blend of malt whisky for a fresh taste.', true, '2024-02-02', 'Blended Scotch', NULL, '', '', '', ''),
+    ('Jameson Irish Whiskey', 4, 'Jameson', 'Ireland', 'Whisky', 40, 'A triple-distilled, smooth Irish whiskey with hints of vanilla and spice.', true, '2024-02-02', 'Irish Whiskey', NULL, '', '', '', ''),
+    ('Jameson Black Barrel', 4, 'Jameson', 'Ireland', 'Whisky', 40, 'A rich, intense version of Jameson aged in charred barrels.', true, '2024-02-02', 'Irish Whiskey', NULL, '', '', '', ''),
+    ('Jameson Caskmates Stout Edition', 4, 'Jameson', 'Ireland', 'Whisky', 40, 'Jameson finished in craft beer stout barrels for a deeper taste.', true, '2024-02-02', 'Irish Whiskey', NULL, '', '', '', ''),
+    ('Jameson Crested', 4, 'Jameson', 'Ireland', 'Whisky', 40, 'A rich, smooth blend of Jameson whiskey with a creamy finish.', true, '2024-02-02', 'Irish Whiskey', NULL, '', '', '', ''),
+    ('Chivas Regal 12', 5, 'Chivas Regal', 'Scotland', 'Whisky', 40, 'A smooth, honeyed Scotch whisky aged for 12 years.', true, '2024-02-02', 'Blended Scotch', 12, '', '', '', ''),
+    ('Chivas Regal 18', 5, 'Chivas Regal', 'Scotland', 'Whisky', 40, 'A more complex, rich Scotch aged 18 years.', true, '2024-02-02', 'Blended Scotch', 18, '', '', '', ''),
+    ('Chivas Regal Extra', 5, 'Chivas Regal', 'Scotland', 'Whisky', 40, 'A rich, indulgent Scotch whisky with a warm, fruity flavor.', true, '2024-02-02', 'Blended Scotch', NULL, '', '', '', ''),
+    ('Glenfiddich 12', 6, 'Glenfiddich', 'Scotland', 'Whisky', 40, 'A light and fruity single malt aged for 12 years.', true, '2024-02-02', 'Single Malt Scotch', 12, '', '', '', ''),
+    ('Glenfiddich 18', 6, 'Glenfiddich', 'Scotland', 'Whisky', 43, 'A richer, sherry-aged single malt aged 18 years.', true, '2024-02-02', 'Single Malt Scotch', 18, '', '', '', ''),
+    ('Glenfiddich 21', 6, 'Glenfiddich', 'Scotland', 'Whisky', 40, 'A rare single malt aged for 21 years with rich oak notes.', true, '2024-02-02', 'Single Malt Scotch', 21, '', '', '', ''),
     ('Hennessy VS', 7, 'Hennessy', 'France', 'Cognac', 40, 'A smooth and bold cognac with notes of oak and fruit.', true, '2024-02-02', 'Cognac', NULL, '', '', '', ''),
     ('Hennessy XO', 7, 'Hennessy', 'France', 'Cognac', 40, 'An extra-aged blend with a rich, complex flavor.', true, '2024-02-02', 'Cognac', NULL, '', '', '', ''),
     ('Hennessy Paradis', 7, 'Hennessy', 'France', 'Cognac', 40, 'A luxurious, multi-layered cognac with deep, smooth flavors.', true, '2024-02-02', 'Cognac', NULL, '', '', '', ''),
@@ -2800,8 +2814,8 @@ INSERT INTO "listings" (
     ('Tanqueray London Dry Gin', 12, 'Tanqueray', 'United Kingdom', 'Gin', 47.3, 'A classic gin with a crisp, juniper-forward taste.', true, '2024-02-02', 'London Dry Gin', NULL, '', '', '', ''),
     ('Hendrick''s Gin', 13, 'Hendrick''s', 'Scotland', 'Gin', 44, 'A unique gin infused with cucumber and rose petals.', true, '2024-02-02', 'Gin', NULL, '', '', '', ''),
     ('Bombay Sapphire Gin', 14, 'Bombay Sapphire', 'United Kingdom', 'Gin', 40, 'A smooth gin with a rich blend of 10 botanicals.', true, '2024-02-02', 'Gin', NULL, '', '', '', ''),
-    ('Suntory Hibiki', 15, 'Suntory', 'Japan', 'Whiskey', 43, 'A harmonious blend of malt and grain whiskies aged in various casks.', true, '2024-02-02', 'Blended Whisky', NULL, '', '', '', ''),
-    ('Nikka From The Barrel', 16, 'Nikka', 'Japan', 'Whiskey', 51.4, 'A bold, rich whisky with complex flavors of fruit and spice.', true, '2024-02-02', 'Blended Whisky', NULL, '', '', '', ''),
+    ('Suntory Hibiki', 15, 'Suntory', 'Japan', 'Whisky', 43, 'A harmonious blend of malt and grain whiskies aged in various casks.', true, '2024-02-02', 'Blended Whisky', NULL, '', '', '', ''),
+    ('Nikka From The Barrel', 16, 'Nikka', 'Japan', 'Whisky', 51.4, 'A bold, rich whisky with complex flavors of fruit and spice.', true, '2024-02-02', 'Blended Whisky', NULL, '', '', '', ''),
     ('Tito''s Handmade Vodka', 17, 'Tito''s', 'United States', 'Vodka', 40, 'A premium American vodka distilled from corn for a smooth finish.', true, '2024-02-02', 'Vodka', NULL, '', '', '', ''),
     ('Grey Goose Vodka', 18, 'Grey Goose', 'France', 'Vodka', 40, 'A premium French vodka made from high-quality wheat.', true, '2024-02-02', 'Vodka', NULL, '', '', '', ''),
     ('Absolut Vodka', 19, 'Absolut', 'Sweden', 'Vodka', 40, 'A famous Swedish vodka made with 100% natural ingredients.', true, '2024-02-02', 'Vodka', NULL, '', '', '', ''),
@@ -2820,16 +2834,16 @@ INSERT INTO "usersFollowLists" (
 
 
 INSERT INTO "usersDrinkLists" (
-    "userId", "listName")
+    "userId", "listName", "listDesc")
     VALUES 
-    (1, 'Drinks I Have Tried'), 
-    (1, 'Drinks I Want To Try'), 
-    (2, 'Drinks I Have Tried'), 
-    (2, 'Drinks I Want To Try'), 
-    (3, 'Drinks I Have Tried'), 
-    (3, 'Drinks I Want To Try'), 
-    (4, 'Drinks I Have Tried'), 
-    (4, 'Drinks I Want To Try');
+    (1, 'Drinks I Have Tried', ''), 
+    (1, 'Drinks I Want To Try', ''), 
+    (2, 'Drinks I Have Tried', ''), 
+    (2, 'Drinks I Want To Try', ''), 
+    (3, 'Drinks I Have Tried', ''), 
+    (3, 'Drinks I Want To Try', ''), 
+    (4, 'Drinks I Have Tried', ''), 
+    (4, 'Drinks I Want To Try', '');
 
 INSERT INTO "venuesMenu" (
     "sectionName", "sectionOrder","venueId")

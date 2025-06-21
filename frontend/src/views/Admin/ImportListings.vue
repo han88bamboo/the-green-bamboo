@@ -22,7 +22,7 @@
     </div>
 
     <!-- Display when data fails to load -->
-    <div class="text-danger fst-italic fw-bold fs-3 pt-5" v-if="dataLoaded == null"> 
+    <div class="text-danger fst-italic fw-bold fs-5 pt-5" v-if="dataLoaded == null"> 
         <span>An error occurred while loading this page, please try again!</span>
         <br>
         <button class="btn primary-btn btn-sm" @click="this.$router.go(-1)">

@@ -366,7 +366,7 @@ export default {
         this.loadData(url);
 
         this.profileURL = "/profile/user/" + accID + "/" + accUsername;
-        this.dashboardURL = "/dashboard/user";
+        this.dashboardURL = "/dashboard/user/" + accID;
         this.dashboardWord = "Drink";
       } else if (this.accType == "producer") {
         url = url + "Producer/" + accID;
@@ -380,7 +380,7 @@ export default {
         this.loadData(url);
 
         this.profileURL = "/profile/venue/" + accID + "/" + accUsername;
-        this.dashboardURL = "/dashboard/venue";
+        this.dashboardURL = "/dashboard/venue/" + accID;
         this.dashboardWord = "Venue";
       }
 

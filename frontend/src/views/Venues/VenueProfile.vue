@@ -8,13 +8,7 @@
     <div class="container pt-5 mobile-pt-3">
 
         <!-- Display when data is still loading -->
-        <div class="text-info-emphasis fst-italic fw-bold fs-5" v-if="dataLoaded == false">
-            <span>Loading profile, please wait...</span>
-            <br><br>
-            <div class="spinner-border" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-        </div>
+        <LoadingWithFunFact v-if="dataLoaded === false" />
 
         <!-- Display when venue does not exist -->
         <div class="text-danger fst-italic fw-bold fs-3" v-if="venueExists == false || dataLoaded == null"> 
@@ -40,6 +34,235 @@
 
             <!-- Venue Information -->
             <div class="col-xl-9 col-12 px-3 px-lg-4">
+                <!-- Welcome Section for Venue Owners -->
+                <div v-if="selfView"
+                style="
+                    border: 1px solid #e0e0e0;
+                    border-radius: 8px;
+                    padding: 16px;
+                    background-color: #ffffff;
+                    margin-bottom: 20px;
+                "
+                class="mb-4 "
+                >
+
+                <h3
+                    style="
+                    font-size: 24px;
+                    font-weight: bold;
+                    border-bottom: 1px solid #e0e0e0;
+                    padding-bottom: 16px;
+                    "
+                >
+                    Welcome to Drink-X. Grow your bar's presence!
+                </h3>
+
+        <div class="row fs-7">
+            <!-- First Column -->
+            <div class="col-md-6">
+            <!-- Action Item 1 -->
+            <div
+                style="
+                display: flex;
+                align-items: flex-start;
+                gap: 16px;
+                margin-bottom: 16px;
+                "
+            >
+                <img
+                src="/CurateMenu.png"
+                style="
+                    width: 64px;
+                    height: 64px;
+                    object-fit: contain;
+                    border-radius: 4px;
+                "
+                alt="Update your menu"
+                />
+                <div class="text-start">
+                <p class="mobile-rating-smaller-text-2 mb-2 text-start">
+                    <strong>Curate Your Menu! Show fans what you're pouring so they'll get over now!</strong> (PS: Generate a menu QR code–customers can scan to see the menu at your venue!)
+                </p>
+                <button
+                    class="btn btn-warning btn-sm rounded fw-bold fs-8"
+                    @click="contentMode = 'menu'; enableEditMenuMode()"
+                    onclick="setTimeout(() => {
+                        document.getElementById('menu-section').scrollIntoView({behavior: 'smooth'});
+                        setTimeout(() => {
+                        window.scrollBy({top: -100, behavior: 'smooth'});
+                        const menuEl = document.getElementById('menu');
+                        if (menuEl) {
+                            menuEl.classList.add('highlight-section');
+                            setTimeout(() => menuEl.classList.remove('highlight-section'), 3000);
+                        }
+                        }, 550);
+                    }, 100)"
+                >
+                    Update Menu
+                </button>
+                </div>
+            </div>
+
+            <!-- Action Item 2 -->
+            <div
+                style="
+                display: flex;
+                align-items: flex-start;
+                gap: 16px;
+                margin-bottom: 16px;
+                "
+            >
+                <img
+                src="/PostAnnouncement.png"
+                style="
+                    width: 64px;
+                    height: 64px;
+                    object-fit: contain;
+                    border-radius: 4px;
+                "
+                alt="Share an update"
+                />
+                <div class="text-start">
+                <p class="mobile-rating-smaller-text-2 mb-2 text-start">
+                    <strong>Post An Announcement</strong> (This is a great way to share with your fans any latest news, events or special offers at your venue! Create some buzz!)
+                </p>
+                <button
+                    class="btn btn-warning btn-sm rounded fw-bold fs-8"
+                    @click="contentMode = 'overview'"
+                    onclick="setTimeout(() => {
+                        const menuSection = document.getElementById('updates-section');
+                        if (menuSection) {
+                            menuSection.scrollIntoView({behavior: 'smooth'});
+                            
+                            // After initial scroll completes, adjust position and add highlight
+                            setTimeout(() => {
+                                // Scroll up 100px
+                                window.scrollBy({top: -100, behavior: 'smooth'});
+                                
+                                // After position adjustment, add highlight class
+                                setTimeout(() => {
+                                    menuSection.classList.add('highlight-section');
+                                    
+                                    // Remove highlight after 3 seconds
+                                    setTimeout(() => {
+                                        menuSection.classList.remove('highlight-section');
+                                    }, 3000);
+                                }, 300);
+                            }, 400);
+                        }
+                    }, 100)"
+                >
+                    Post Announcement
+                </button>
+                </div>
+            </div>
+
+            <div
+                style="
+                display: flex;
+                align-items: flex-start;
+                gap: 16px;
+                margin-bottom: 16px;
+                "
+            >
+                <img
+                src="/CreateEvent.png"
+                style="
+                    width: 64px;
+                    height: 64px;
+                    object-fit: contain;
+                    border-radius: 4px;
+                "
+                alt="Create Event"
+                />
+                <div class="text-start">
+                <p class="mobile-rating-smaller-text-2 mb-2 text-start">
+                    <strong>Create An Event </strong> (Hosting an event? Let everyone know what’s up and to RSVP now!) 
+                </p>
+                <router-link :to="'/events/view'">
+                    <button
+                        class="btn btn-warning btn-sm rounded fw-bold fs-8"
+                    >
+                        Create Event
+                    </button>
+                </router-link>
+                </div>
+            </div>
+            </div>
+
+            <!-- Second Column -->
+            <div class="col-md-6">
+            <!-- Action Item 3 -->
+            <div
+                style="
+                display: flex;
+                align-items: flex-start;
+                gap: 16px;
+                margin-bottom: 16px;
+                "
+            >
+                <img
+                src="/AnswerQnAs.png"
+                style="
+                    width: 64px;
+                    height: 64px;
+                    object-fit: contain;
+                    border-radius: 4px;
+                "
+                alt="Answer Q&A's"
+                />
+                <div class="text-start">
+                <p class="mobile-rating-smaller-text-2 mb-2 text-start">
+                    <strong>Answer Q&A’s</strong> (This is a great way to keep fans engaged by answering questions they may have about your venue or offerings!)
+                </p>
+                
+                    <button
+                    class="btn btn-warning btn-sm rounded fw-bold fs-8"
+                        @click="highlightQnAAndNavigate"
+                    >
+                    Answer Q&A's
+                    </button>
+                
+                </div>
+            </div>
+
+            <!-- Action Item 4 (Additional) -->
+            <div
+                style="
+                display: flex;
+                align-items: flex-start;
+                gap: 16px;
+                margin-bottom: 16px;
+                "
+            >
+                <img
+                src="/CreateClub.png"
+                style="
+                    width: 64px;
+                    height: 64px;
+                    object-fit: contain;
+                    border-radius: 4px;
+                "
+                alt="Create Club"
+                />
+                <div class="text-start">
+                <p class="mobile-rating-smaller-text-2 mb-2 text-start">
+                    <strong>Create A Club </strong> (Every awesome establishment needs its own fan club! Connect with your fanbase and get them coming back for more!)
+                </p>
+                <router-link :to="'/clubs/view'">
+                    <button
+                        class="btn btn-warning btn-sm rounded fw-bold fs-8"
+                    >
+                        Create Club
+                    </button>
+                </router-link>
+                </div>
+            </div>
+            </div>
+        </div>
+
+                </div>
+
 
 
                 <!-- ------- START Header ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
@@ -364,17 +587,16 @@
             
                 <!--------- END Follow Venue Button ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
                 <!-- ------- END Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
-
                 <!-- ------- END Header  ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
                
                 <!-- START Content Buttons (Bar Overview / Bar Menu / Venue Reviews / Review a venue button) -->
-                <div class="row mt-3 mobile-mt-1">
+                <div class="row mt-3 mobile-mt-1" id="menu-section">
                     <div class="col-8 d-flex justify-content-start mobile-col-7 mobile-pe-0">
                         <!-- Toggle Bar Overview -->
                         <button v-if="contentMode == 'overview'" class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'overview'"> Bar Overview </button>
                         <button v-else class="btn inactive-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'overview'"> Bar Overview </button>
                         <!-- Toggle Bar Menu -->
-                        <button v-if="contentMode == 'menu'" class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'menu'"> Bar Menu </button>
+                        <button  v-if="contentMode == 'menu'" class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'menu'"> Bar Menu </button>
                         <button v-else class="btn inactive-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'menu'"> Bar Menu </button>
                         <!-- Toggle Venue Reviews -->
                         <button 
@@ -402,7 +624,7 @@
                     <!-- ------- START Latest Updates Header + Latest Update Information ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
                     <!-- Latest Updates Header -->
-                    <div class="row">
+                    <div class="row"  >
                         <div class="col-12">
                             <p class="text-start text-body-secondary fs-4 fw-bold m-0 mobile-fs-6">Latest Updates from {{ targetVenue["venueName"] }}</p>
                             <p v-if="!(targetVenue['updates'].length > 0) && targetVenue['claimStatus']" class="text-start fs-6 mobile-rating-smaller-text-2 fst-italic m-1 pb-2">{{ targetVenue["venueName"] }} has not posted any updates!</p>
@@ -498,7 +720,7 @@
                     <!-- ------- END Latest Updates Header + Latest Update Information / START Add Update ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
                     <!-- Add Update -->
-                    <div v-if="selfView" class="row pt-3">
+                    <div v-if="selfView" class="row pt-3" id="updates-section">
 
                         <!-- Text Box / Options -->
                         <div class="input-group centered">
@@ -928,7 +1150,7 @@
                 <!-- ------- END Bar Overview / START Bar Menu ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
                 <!-- Bar Menu -->
-                <div v-if="contentMode == 'menu'">
+                <div v-if="contentMode == 'menu'" id="menu">
 
                     <!-- ------- START Menu Lock Message (Venue Unclaimed) ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
@@ -1055,7 +1277,7 @@
                     <!-- ------- END Menu Header + Option Buttons / START Search + Edit Menu Options + Sort ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
                     <!-- Search + Edit Menu Options + Sort -->
-                    <div class="container" v-if="!(editMenuMode && !editMenuDataLoaded) && targetVenue['claimStatus']"> 
+                    <div class="container" v-if="targetVenue['claimStatus']"> 
                         <div class="row align-items-center mobile-view-show" >
                             <!-- Search Bar -->
                             <div v-if="!editMenuMode" class="col-12 p-0">
@@ -1173,13 +1395,14 @@
 
                                 <!-- Section Contents -->
                                 <div class="col-12 my-3" v-for="sectionItem in menuSection.sectionMenu" v-bind:key="sectionItem.itemID">
+                                    
                                     <div class="row">
 
                                         <!-- FIRST COLUMN: Image + Rating stacked vertically -->
                                         <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0 d-flex flex-column align-items-center">
 
                                             <!-- Item Image -->
-                                            <router-link :to="{ path: '/listing/view/' + sectionItem.itemID }" class="default-text-no-background">
+                                            <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName }" class="default-text-no-background">
                                                 <img :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" >
                                             </router-link>
 
@@ -1199,7 +1422,7 @@
 
                                             <!-- Item Name -->
                                                 <div class="mobile-mb-1">
-                                                    <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + sectionItem.itemID }">
+                                                    <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName  }">
                                                         <p class="mobile-fs-6 fs-5 fw-bold text-start text-decoration-underline m-0" style="margin-bottom:0.3rem;">{{ sectionItem.itemDetails['itemName'] }}</p>
                                                     </router-link>
                                                 </div>
@@ -1209,7 +1432,7 @@
                                             <!-- Item Producer / Drink Type / Type Category / ABV / <Country> / Description -->
                                             <div class="row">
                                                     <p class="text-start mb-1 mobile-fs-7" >
-                                                        <router-link v-if="sectionItem.itemDetails['itemProducerID']" style="color: #2c3e50;" class="text-decoration-none" :to="{ path: '/profile/producer/' + sectionItem.itemDetails['itemProducerID'] }">
+                                                        <router-link v-if="sectionItem.itemDetails['itemProducerID']" style="color: #2c3e50;" class="text-decoration-none" :to="{ path: '/profile/producer/' + sectionItem.itemDetails['itemProducerID'] + '/' + sectionItem.itemDetails['itemProducer'] }">
                                                             <span v-if="sectionItem.itemDetails['itemProducer']">{{ sectionItem.itemDetails['itemProducer'] }} | </span>
                                                         </router-link>
                                                         <span v-if="sectionItem.itemDetails['itemType']">{{ sectionItem.itemDetails['itemType'] }} | </span>
@@ -1253,7 +1476,7 @@
 
                                         <!-- LEFT COLUMN Item Image -->
                                         <div class="col-lg-2 col-12 text-center mb-3 mb-lg-0">
-                                            <router-link :to="{ path: '/listing/view/' + sectionItem.itemID }" class="default-text-no-background">
+                                            <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName  }" class="default-text-no-background">
                                                 <!-- <img :src=" 'data:image/jpeg;base64,' + (sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" style="width: 150px; height: 150px;"> -->
                                                 <img :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image">
                                             </router-link>
@@ -1264,14 +1487,14 @@
                                         <div class="col-lg-7 col-12 ps-lg-4">
 
                                             <!-- Item Name -->
-                                            <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + sectionItem.itemID }">
+                                            <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName  }">
                                                 <p class="fw-bold fs-5 text-start text-decoration-underline m-0" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">{{ sectionItem.itemDetails['itemName'] }}</p>
                                             </router-link>
 
                                             <!-- Item Details (Producer, Type, ABV, Country) -->
 
                                             <p class="text-start mb-1" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
-                                                <router-link v-if="sectionItem.itemDetails['itemProducerID']" style="color: #2c3e50;" class="text-decoration-none" :to="{ path: '/profile/producer/' + sectionItem.itemDetails['itemProducerID'] }">
+                                                <router-link v-if="sectionItem.itemDetails['itemProducerID']" style="color: #2c3e50;" class="text-decoration-none" :to="{ path: '/profile/producer/' + sectionItem.itemDetails['itemProducerID'] + '/' + sectionItem.itemDetails['itemProducer'] }">
                                                     <span v-if="sectionItem.itemDetails['itemProducer']">{{ sectionItem.itemDetails['itemProducer'] }} | </span>
                                                 </router-link>
                                                 <span v-if="sectionItem.itemDetails['itemType']">{{ sectionItem.itemDetails['itemType'] }} | </span>
@@ -1323,7 +1546,7 @@
                                         
 
                                         <!-- See User Reviews -->
-                                            <router-link :to="{ path: '/listing/view/' + sectionItem.itemID }">
+                                            <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName  }">
                                                 <button type="button" class="btn btn-read-more px-10"> See Reviews </button>
                                             </router-link>
                                         </div>
@@ -1339,18 +1562,9 @@
                     </div>
 
                     <!-- ------- END Menu View (Not Editing) / START Menu View (Editing) ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
-
-                    <!-- Display when edit menu data is still loading -->
-                    <div class="text-info-emphasis fst-italic fw-bold fs-5 my-5" v-if="editMenuMode && editMenuDataLoaded == false">
-                        <span>Loading more data for menu edits, please wait...</span>
-                        <br><br>
-                        <div class="spinner-border" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                    </div>
                     
                     <!-- Menu View (Editing) -->
-                    <div v-if="editMenuMode && editMenuDataLoaded" class="container text-start "> <!--tzh removed scrollable-listings-->
+                    <div v-if="editMenuMode" class="container text-start "> <!--tzh removed scrollable-listings-->
 
                         <!-- No Menu Sections to Show -->
                         <div v-if="editMenu.length == 0" class="row my-4">
@@ -1705,15 +1919,30 @@
 
                                         <!-- [input] bottle name -->
                                         <div class="form-group mb-3">
-                                            <p class="text-start mb-1"> Bottle Listing ID (Search by Name) <span class="text-danger">*</span></p>
-                                            <input list="newMenuItemList" v-model="newMenuItemID" class="form-control" id="newMenuItemID" placeholder="Enter a Drink to Add to Menu" @change="updateNewMenuItemTarget">
-                                            <datalist id="newMenuItemList">
-                                                <option v-for="listing in allListings" :key="listing.id" :value="listing.id">
-                                                    {{ listing.listingName }} (Producer: {{ listing.producerName }})
-                                                </option>
-                                            </datalist>
+                                            <p class="text-start mb-1">Bottle Listing ID (Search by Name) <span class="text-danger">*</span></p>
+
+                                            <input
+                                                type="text"
+                                                class="form-control"
+                                                v-model="searchQuery"
+                                                @input="debouncedSearch"
+                                                placeholder="Enter a Drink to Add to Menu"
+                                            />
+
+                                            <ul class="list-group" v-if="searchResults.length > 0 && searchQuery">
+                                                <li 
+                                                v-for="listing in searchResults" 
+                                                :key="listing.id" 
+                                                class="list-group-item list-group-item-action"
+                                                @click="selectListing(listing)"
+                                                >
+                                                {{ listing.listingName }} (Producer: {{ listing.producerName }})
+                                                </li>
+                                            </ul>
+
                                             <p v-show="newMenuItemID.length > 0" class="text-start mb-1 text-danger" id="newMenuItemTargetError"></p>
                                         </div>
+
 
                                         <!-- [input] target menu section -->
                                         <div class="form-group mb-3">
@@ -1956,6 +2185,9 @@
                                 >
                                     <b> @{{ getUsernameFromReview(review) }} </b>
                                 </router-link>
+                                <span class="ms-2">
+                                    {{ getUserPointsFromReview(review) }}
+                                </span>
                                 {{ getUserRankFromReview(review)}}
                                 &nbsp;rated
                                 <span style="color: #f0b358">★</span>
@@ -2143,6 +2375,11 @@
                         <hr class="mt-4 mb-2"/>
                     </div>
 
+                    <!-- Load More Reviews Button -->
+                    <div class="d-flex justify-content-center mb-3" v-if="filteredVenueReviews.length > 0 && !noMoreReviews">
+                        <button class="btn primary-btn btn-lg" @click="loadMoreReviews">Load More Reviews</button>
+                    </div>
+
                     <!-- Example "Delete Review" Modal (similar to ProducerProfile) -->
                     <div
                         class="modal fade"
@@ -2325,7 +2562,7 @@
                 <!-- Q&A -->
                 <div class="row ">
                     <!--  Q&A-->
-                    <div class="col-xl-12 col-lg-3 col-md-6 col-12 mobile-view-hide">
+                    <div id="qna" class="col-xl-12 col-lg-3 col-md-6 col-12 mobile-view-hide">
                         <div class="square primary-square-green rounded p-4 mb-3"> <!--tzh added -green -->
 
                             <!-- Header -->
@@ -2750,7 +2987,6 @@
             <BookmarkModal 
                 v-if="userInfo" 
                 :user="userInfo" 
-                :listings="loadedListings" 
                 :listingID="bookmarkListingID" />
 
             <!-- ------- END Bookmark Modal ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
@@ -2927,6 +3163,7 @@
     import EventBox from '@/components/EventBox.vue';
     import FooterBar from "@/components/FooterBar.vue";
     import { useToast } from 'vue-toastification';
+    import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 
     export default {
         name: 'profileVenue',
@@ -2936,7 +3173,8 @@
             ListingRowDisplayProducerProfile,
             BookmarkModal,
             EventBox,
-            FooterBar
+            FooterBar,
+            LoadingWithFunFact,
         },
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         data() {
@@ -2954,6 +3192,7 @@
                 viewerType: localStorage.getItem('88B_accType'),
                 userName: '',
                 targetVenue: '',
+                targetVenueID: '',
                 currentURL: window.location.href,
 
                 // Data
@@ -2994,8 +3233,8 @@
                 editProfilePhoto: '',
                 selectedImage: '',
                 targetVenueOriginalPhoto: '',
-                defaultProfilePhoto: "https://drinkximages.s3.amazonaws.com/images/27e129b8-2d6e-44a3-8c14-d78c815b8056.jpg",
-                defaultPhoto: "https://drinkximages.s3.us-east-1.amazonaws.com/images/2d4d94bc-313e-4621-9a15-4bfbf77958de.jpg",
+                defaultProfilePhoto: "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultVenueProfilePhoto.png?v=1748435337",
+                defaultPhoto: "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739",
 
                 // Updates
                 newUpdateText: '',
@@ -3041,10 +3280,13 @@
 
                 // Menu Editing
                 editMenuMode: false,
-                editMenuDataLoaded: false,
-                allListings: [],
                 editMenu: [],
-                newMenuItemID: '',
+
+                searchQuery: '',
+                searchResults: [],
+                debounceTimer: null,
+
+                newMenuItemID: '', // selected item ID to add to menu
                 newMenuItemTarget: {},
                 newMenuItemTargetSection: {},
                 newMenuItemPrice: -1,
@@ -3074,7 +3316,12 @@
                 // for bookmark component
                 bookmarkListingID: {},
 
+                // lazy loading variables 
+                noMoreReviews: false,
+                reviewsPerLoad: 20, // similar to the limit in backend
+
                 // for venueReviews
+                lastReviewID: 0,
                 venueReviews: [],
                 reviewDesc: "",
                 reviewDescError: "",
@@ -3141,6 +3388,8 @@
             // Check if route params "venueID" is present
             if (this.$route.params.venueID != "" && this.$route.params.venueID != undefined) {
                 this.targetVenue = this.$route.params.venueID;
+                this.targetVenueID = this.$route.params.venueID;
+                
                 this.userName = this.$route.params.username || this.userName;
 
                 // If logged in as a venue, check if the venueID matches the logged in venue's ID
@@ -3181,7 +3430,7 @@
 
             var userName = localStorage.getItem("88B_accUsername");
             if (userName !== null) {
-            this.userName = userName;
+                this.userName = userName;
             }
 
 
@@ -3202,6 +3451,7 @@
                 return "";
             },
 
+            // Need refactor
             getUsernameFromReview(review) {
                 // If you have an array of users in `this.users`:
                 const user = this.users.find((u) => u.id === review.userID);
@@ -3211,6 +3461,17 @@
                 return "(unknown user)";
             },
 
+            // Need refactor
+            getUserPointsFromReview(review) {
+                const user = this.users.find((user) => {
+                    return user["id"] == review["userID"];
+                });
+                if (user) {
+                    return user["currentPoints"];
+                }
+            },
+
+            // Need refactor
             getUserRankFromReview(review) {
                 const user = this.users.find((user) => {
                     return user["id"] == review["userID"];
@@ -3232,10 +3493,10 @@
             // Obtain venue data
             async getVenueData() {
                 try {
-                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenue/` + this.targetVenue);
-
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenue/${this.targetVenueID}`);
+                    
                     if (response != null && response.data != null && response.data != "" && !(Array.isArray(response.data) && response.data.length == 0)) {
-
+                        
                         this.targetVenue = response.data;
 
                         // Set editable data
@@ -3414,7 +3675,8 @@
                     this.showQnA = true;
                 }
             },
-            // check if user is mod
+
+            // check if user is mod - need refactor
             checkModFromUserID(userID) {
             const user = this.users.find((user) => {
                 return user["id"] == userID;
@@ -3423,7 +3685,6 @@
                 return user["modType"].length > 0;
             }
             },
-
 
 
             // Load other data
@@ -3439,71 +3700,70 @@
 
                             // If not found, get from server
                             if (listingData == undefined) {
-                                let response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListing/` + item.itemID);
-                                listingData = response.data;
 
-                                if (Array.isArray(listingData) && listingData.length == 0) {
-                                    // Remove item from section
-                                    section.sectionMenu = section.sectionMenu.filter(i => i.itemID != item.itemID);
-                                }
-                                // If found, obtain additional data and add to loadedListings
-                                else if (listingData != null && listingData != "") {
+                                try {
+                                    let response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListing/` + item.itemID);
+                                    listingData = response.data;
 
-                                    // Get reviews
-                                    let reviewResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getReviewByTarget/` + item.itemID);
-                                    let reviewData = reviewResponse.data;
-
-                                    if (Array.isArray(reviewData) && reviewData.length == 0) {
-                                        listingData["reviews"] = [];
-                                        listingData["avgRating"] = 0;
+                                    if (Array.isArray(listingData) && listingData.length == 0) {
+                                        // Remove item from section
+                                        section.sectionMenu = section.sectionMenu.filter(i => i.itemID != item.itemID);
                                     }
-                                    else if (reviewData != null && reviewData != "") {
-                                        listingData["reviews"] = reviewData;
-                                        listingData["avgRating"] = reviewData.reduce((a, b) => a + parseFloat(b.rating), 0) / reviewData.length;
-                                    }
-                                    else {
-                                        // Error
-                                        throw "Error: Unexpected response from server!";
-                                    }
+                                    // If found, obtain additional data and add to loadedListings
+                                    else if (listingData != null && listingData != "") {
 
-                                    // Find producer in loadedProducers
-                                    let producerData = this.loadedProducers.find(p => p.id == listingData["producerID"]);
+                                        try {
+                                            // Get average rating 
+                                            let reviewResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingReviewsRating/` + item.itemID);
+                                            listingData['avgRating'] = reviewResponse.data['averageRating'];
+                                            listingData['reviewCount'] = reviewResponse.data['reviewCount'];
 
-                                    // If not found, get from server
-                                    if (producerData == undefined) {
-                                        let producerResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducer/` + listingData["producerID"]);
-                                        producerData = producerResponse.data;
+                                            // Find producer in loadedProducers
+                                            let producerData = this.loadedProducers.find(p => p.id == listingData["producerID"]);
 
-                                        if (Array.isArray(producerData) && producerData.length == 0) {
-                                            // Remove item from section
-                                            section.sectionMenu = section.sectionMenu.filter(i => i.itemID != item.itemID);
+                                            try {
+                                                // If not found, get from server
+                                                if (producerData == undefined) {
+                                                    let producerResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducer/` + listingData["producerID"]);
+                                                    producerData = producerResponse.data;
+
+                                                    if (Array.isArray(producerData) && producerData.length == 0) {
+                                                        // Remove item from section
+                                                        section.sectionMenu = section.sectionMenu.filter(i => i.itemID != item.itemID);
+                                                    }
+                                                    // If found, add to loadedProducers
+                                                    else if (producerData != null && producerData != "") {
+                                                        this.loadedProducers.push(producerData);
+                                                    }
+                                                }
+
+                                                // Set producer data (producerData should either be valid or [] here)
+                                                if (!(Array.isArray(producerData) && producerData.length == 0)) {
+                                                    listingData["producerName"] = producerData["producerName"];
+
+                                                    // Add to loadedListings
+                                                    this.loadedListings.push(listingData);
+                                                }
+                                                else {
+                                                    listingData = [];
+                                                }
+                                            }
+                                            catch (error) {
+                                                console.error("Error fetching producer data: ", error);
+                                                listingData = [];   
+                                            }
                                         }
-                                        // If found, add to loadedProducers
-                                        else if (producerData != null && producerData != "") {
-                                            this.loadedProducers.push(producerData);
-                                        }
-                                        else {
-                                            // Error
-                                            throw "Error: Unexpected response from server!";
+                                        catch (error) {
+                                            console.error("Error fetching listing reviews rating: ", error);
+                                            listingData = [];
                                         }
                                     }
-
-                                    // Set producer data (producerData should either be valid or [] here)
-                                    if (!(Array.isArray(producerData) && producerData.length == 0)) {
-                                        listingData["producerName"] = producerData["producerName"];
-
-                                        // Add to loadedListings
-                                        this.loadedListings.push(listingData);
-                                    }
-                                    else {
-                                        listingData = [];
-                                    }
-                                    
                                 }
-                                else {
-                                    // Error
-                                    throw "Error: Unexpected response from server!";
+                                catch (error) {
+                                    console.error("Error fetching listing data: ", error);
+                                    listingData = [];
                                 }
+                                
                             }
 
                             // Set item data (listingData should either be valid or [] here)
@@ -3517,7 +3777,7 @@
                                     itemABV: listingData["abv"],
                                     itemCountry: listingData["originCountry"],
                                     itemDesc: listingData["officialDesc"],
-                                    itemRating: listingData["avgRating"].toFixed(1),
+                                    itemRating: listingData["avgRating"],
                                     itemProducer: listingData["producerName"],
                                     itemProducerID: listingData["producerID"],
                                 };
@@ -3530,9 +3790,7 @@
                                 else {
                                     item.itemDetails.itemServingTypeName = "(Unknown)";
                                 }
-
                             }
-
                         }
                     }
 
@@ -3540,7 +3798,7 @@
                     this.mostPopular = this.loadedListings.sort((a, b) => (a.avgRating < b.avgRating) ? 1 : -1).slice(0, 5);
 
                     // Obtain mostDiscussed listings
-                    this.mostDiscussed = this.loadedListings.sort((a, b) => (a.reviews.length < b.reviews.length) ? 1 : -1).slice(0, 5);
+                    this.mostDiscussed = this.loadedListings.sort((a, b) => (a.reviewCount < b.reviewCount) ? 1 : -1).slice(0, 5);
 
                     // Obtain recentlyAdded listings
                     this.recentlyAdded = this.loadedListings.sort((a, b) => (Date.parse(a.addedDate) < Date.parse(b.addedDate)) ? 1 : -1).slice(0, 5);
@@ -3690,10 +3948,23 @@
                 let allUserIDs = [];
                 try {
                     const response = await this.$axios.get(
-                        `${process.env.VUE_APP_API_URL}/getData/getVenueReviewsByVenueId/${this.targetVenue.id}`
+                        `${process.env.VUE_APP_API_URL}/getData/getVenueReviewsByVenueId/${this.targetVenue.id}/${this.lastReviewID}`
                     );
                     // Assign all fetched reviews to a property
                     this.filteredVenueReviews = response.data;
+
+                    // Update lastReviewID to the last review's ID in the fetched data
+                    if (this.filteredVenueReviews.length > 0) {
+                        this.lastReviewID = this.filteredVenueReviews[this.filteredVenueReviews.length - 1].id;
+                    } else {
+                        this.lastReviewID = null; // Reset if no reviews are found
+                    }
+
+                    // Check if the return data has the same number of reviews as the limit set in the backend
+                    if (this.filteredVenueReviews.length < this.reviewLimit) {
+                        this.noMoreReviews = true; // No more reviews to load
+                    } 
+
                     allUserIDs = this.filteredVenueReviews.map((review) => review.userID);
                     this.getFilteredVenueReviewsWithImages();
                     this.specificReview = this.getLoggedUserReview();
@@ -3713,6 +3984,7 @@
                 }
                 
             },
+
             onFilesChange(event) {
                 const files = event.target.files;
                 // Limit to a total of 3 images (existing plus new ones)
@@ -3737,6 +4009,54 @@
                 }
             },
 
+            // Load more reviews
+            async loadMoreReviews() {
+                // Check if there are more reviews to load
+                if (this.noMoreReviews) {
+                    return;
+                }
+
+                try {
+                    const response = await this.$axios.get(
+                        `${process.env.VUE_APP_API_URL}/getData/getVenueReviewsByVenueId/${this.targetVenue.id}/${this.lastReviewID}`
+                    );
+                    // Append the new reviews to the existing array
+                    this.filteredVenueReviews.push(...response.data);
+
+                    // Update lastReviewID to the last review's ID in the fetched data
+                    if (response.data.length > 0) {
+                        this.lastReviewID = response.data[response.data.length - 1].id;
+                    } else {
+                        this.lastReviewID = null; // Reset if no reviews are found
+                    }
+
+                    // Check if the return data has the same number of reviews as the limit set in the backend
+                    if (response.data.length < this.reviewLimit) {
+                        this.noMoreReviews = true; // No more reviews to load
+                    } 
+
+                    // Extract all user IDs from the reviews
+                    let allUserIDs = response.data.map((review) => review.userID);
+
+                    // Fetch user data for the reviews
+                    try {
+                        const userResponse = await this.$axios.post(`${process.env.VUE_APP_API_URL}/getData/getUsersFromList`, {
+                            userIDs: allUserIDs,
+                        });
+
+                        // Add absent users to the existing users array
+                        const newUsers = userResponse.data.filter(user => !this.users.some(u => u.id === user.id));
+                        this.users.push(...newUsers);
+                        
+                    } catch (error) {
+                        console.error("Error fetching users for reviews:", error);
+                    }
+                    
+                    this.getFilteredVenueReviewsWithImages();
+                } catch (error) {
+                    console.error("Error fetching more venue reviews:", error);
+                }
+            },
 
 
             // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -3829,7 +4149,7 @@
 
             // Search Menu
             searchMenu() {
-
+                console.log("Searching menu with term: " + this.searchMenuTerm);
                 // Trim search term, set to lowercase. If empty, set searchMenuResults to detailedMenu
                 this.searchMenuTerm = this.searchMenuTerm.trim().toLowerCase();
                 if (this.searchMenuTerm == '') {
@@ -4116,7 +4436,6 @@
             checkOpeningHours() {
                 // Reset error flag
                 this.editOpeningHoursError = false;
-                console.log(this.newOpeningHours);
 
                 for (let day in this.newOpeningHours) {
                     const timeSlots = this.newOpeningHours[day];
@@ -4280,19 +4599,25 @@
             },
 
             // Update New Menu Item Target
-            updateNewMenuItemTarget() {
+            async updateNewMenuItemTarget() {
 
                 // get error message element
                 let newMenuItemTargetError = document.getElementById("newMenuItemTargetError");
 
-                let itemData = this.allListings.find(i => i.id == this.newMenuItemID);
-                if (itemData != undefined) {
-                    this.newMenuItemTarget = itemData;
-                    newMenuItemTargetError.innerText = "";
+                // Retrieve from backend the liting data based on newMenuItemID
+                try {
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingsDetailedByID/${this.newMenuItemID}`);
+                    let itemData = response.data;
 
-                    this.updateNewMenuItemTargetSection();
-                }
-                else {
+                    // Check if itemData is valid
+                    if (itemData) {
+                        this.newMenuItemTarget = itemData;
+                        newMenuItemTargetError.innerText = "";
+
+                        this.updateNewMenuItemTargetSection();
+                    }
+                } 
+                catch (error) {
                     this.newMenuItemTarget = {};
                     newMenuItemTargetError.innerText = "Please target a valid bottle listing!";
                 }
@@ -4395,6 +4720,8 @@
                     // console.error(error);
                 }
 
+                this.editMenuMode = false;
+
 
                 // Reset newMenuItemID, newMenuItemTarget, newMenuItemTargetSection, newMenuItemPrice, newMenuItemServingType
                 this.newMenuItemID = "";
@@ -4416,64 +4743,6 @@
             // Enable Edit Menu Mode
             async enableEditMenuMode() {
                 this.editMenuMode = true;
-
-                // If editMenuDataLoaded is false, load necessary additional data
-                if (!this.editMenuDataLoaded) {
-
-                    try {
-                        // Obtain all listings
-                        const listingResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListings`);
-                        this.allListings = listingResponse.data;
-
-                        // Obtain all reviews
-                        let reviewResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getReviews`);
-                        let reviewData = reviewResponse.data;
-
-                        // Obtain all producers
-                        let producerResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducers`);
-                        this.loadedProducers = producerResponse.data;
-
-                        // Get reviews + producer name for each listing
-                        for (let listingData of this.allListings) {
-
-                            // Get reviews
-                            let listingReviews = reviewData.filter(r => r.reviewTarget == listingData.id);
-
-                            if (Array.isArray(listingReviews) && listingReviews.length == 0) {
-                                listingData["reviews"] = [];
-                                listingData["avgRating"] = 0;
-                            }
-                            else if (listingReviews != null && listingReviews != "") {
-                                listingData["reviews"] = listingReviews;
-                                listingData['avgRating'] = listingReviews.reduce((a, b) => a + parseFloat(b.rating), 0) / listingReviews.length;
-                            }
-                            else {
-                                // Error
-                                throw "Error: Unexpected response from server!";
-                            }
-
-                            // Find producer in loadedProducers
-                            let producerData = this.loadedProducers.find(p => p.id == listingData["producerID"]);
-
-                            // If not found, remove item from valid listings
-                            if (producerData == undefined) {
-                                this.allListings = this.allListings.filter(i => i.id != listingData.id);
-                            }
-                            // If found, set producer name
-                            else {
-                                listingData["producerName"] = producerData["producerName"];
-                            }
-
-                        }
-
-                        // Set editMenuDataLoaded to true (prevent re-loading data on subsequent calls)
-                        this.editMenuDataLoaded = true;
-                    }
-                    catch (error) {
-                        alert("An error occurred while attempting to load extra data for menu editing, please try again!");
-                        this.$router.go(0);
-                    }
-                }
             },
 
             // Update Menu
@@ -4916,6 +5185,7 @@
                 return hash;
             },
 
+            // Need refactor
             async confirmUpdatePassword(){
                 let oldHash = this.hashPassword(this.targetVenue.venueName, this.oldPassword)
                 let newHash = this.hashPassword(this.targetVenue.venueName, this.newPassword)
@@ -5028,7 +5298,7 @@
                 }
             },
 
-            // get average venue ratings
+            // get average venue ratings - need refactor
             getAverageVenueRatings() {
                 const ratings = this.filteredVenueReviews.map((review) => parseFloat(review.rating));
                 if (ratings.length === 0) return "-";
@@ -5227,7 +5497,66 @@
                 return specificReview;
             },
 
+            // Updated search item to add to menu functions 
+            // Debounced input handler
+            debouncedSearch() {
+                clearTimeout(this.debounceTimer);
+                this.debounceTimer = setTimeout(() => {
+                this.searchListings();
+                }, 300); // debounce delay (ms)
+            },
 
+            // Actual search call
+            async searchListings() {
+                if (this.searchQuery.length < 2) {
+                this.searchResults = [];
+                return;
+                }
+
+                try {
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingNamesDynamicSearch/${this.searchQuery}`);
+                    this.searchResults = response.data;
+                } catch (error) {
+                    console.error("Search failed:", error);
+                    this.searchResults = [];
+                }
+            },
+
+            // Set selected listing
+            selectListing(listing) {
+                this.newMenuItemID = listing.id;
+                this.searchQuery = listing.listingName;
+                this.searchResults = []; // Clear dropdown
+                this.updateNewMenuItemTarget();
+            },
+            highlightQnAAndNavigate() {
+            // Find the QnA section
+            const qnaSection = document.getElementById('qna');
+            
+            if (qnaSection) {
+                // Add the highlight effect
+                qnaSection.classList.add('highlight-section');
+                
+                // Remove highlight after 3 seconds
+                setTimeout(() => {
+                qnaSection.classList.remove('highlight-section');
+                }, 3000);
+            }
+            },
+            highlightMenuSection() {
+            // Find the menu section
+            const menuSection = document.getElementById('menu');
+            
+            if (menuSection) {
+                // Add the highlight effect
+                menuSection.classList.add('highlight-section');
+                
+                // Remove highlight after 3 seconds
+                setTimeout(() => {
+                menuSection.classList.remove('highlight-section');
+                }, 3000);
+            }
+            }
         }
     }
 </script>
@@ -5237,4 +5566,16 @@
     opacity: 0.5;
     background: #c8ebfb;
     }
+
+    @keyframes highlightBorder {
+  0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.8); }
+  70% { box-shadow: 0 0 0 10px rgba(255, 193, 7, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
+}
+
+.highlight-section {
+  animation: highlightBorder 1s ease-out infinite;
+  border: 2px solid #FFC107;
+  border-radius: 5px;
+}
 </style>

@@ -17,12 +17,18 @@
             SubmitListingNew
         },
         mounted() {
-            // if (localStorage.getItem('88B_accType') != "user") {
-            if (localStorage.getItem('88B_accType') == "venue" || (localStorage.getItem('88B_accType') == "producer" && this.$route.params.mode != "edit") ) {
-            
-                alert("This page is only accessible to users! Please log in as a user to access this page.")
-                this.$router.push({path: '/login'});
+            const accType = localStorage.getItem('88B_accType');
+            const mode = this.$route.params.mode;
+
+            const isAllowed =
+                accType === "user" ||
+                accType === "venue" ||
+                (accType === "producer" && mode === "edit");
+
+            if (!isAllowed) {
+                alert("This page is only accessible to users, venues, or producers editing a listing.");
+                this.$router.push({ path: '/login' });
             }
-        },
+            },
     }
 </script>

@@ -1,4 +1,5 @@
 -- DROP TABLES IF EXISTS -- 
+DROP TABLE IF EXISTS "notifications" CASCADE;
 DROP TABLE IF EXISTS "eventAttendees" CASCADE;
 DROP TABLE IF EXISTS "events" CASCADE;
 DROP TABLE IF EXISTs "clubPostCommentsLikes" CASCADE;
@@ -30,7 +31,6 @@ DROP TABLE IF EXISTS "producerUpdateLikes" CASCADE;
 DROP TABLE IF EXISTS "producers" CASCADE;
 DROP TABLE IF EXISTS "producersProfileViews" CASCADE;
 DROP TABLE IF EXISTS "producersOpeningHours" CASCADE;
-DROP TABLE IF EXISTS "producersProfileViewsViews" CASCADE;
 DROP TABLE IF EXISTS "producersQuestionAnswers" CASCADE;
 DROP TABLE IF EXISTS "producersUpdates" CASCADE;
 DROP TABLE IF EXISTS "requestEdits" CASCADE;
@@ -366,7 +366,7 @@ CREATE TABLE "modRequests" (
     "reviewStatus" BOOLEAN
 );
 
--- ========= [NEW!] "usersFollowLists" =========
+-- ========= "usersFollowLists" =========
 CREATE TABLE "usersFollowLists" (
     "id" SERIAL PRIMARY KEY, 
     "userId" INTEGER REFERENCES "users"("id") ON DELETE SET NULL, -- [!] reference "users"("id")
@@ -375,16 +375,17 @@ CREATE TABLE "usersFollowLists" (
     "venues" TEXT[] -- Contains "venues"("id")s
 );
 
--- ========= [NEW!] "usersDrinkLists" =========
+-- ========= "usersDrinkLists" =========
 CREATE TABLE "usersDrinkLists" (
     "id" SERIAL PRIMARY KEY,
     "userId" INTEGER REFERENCES "users"("id") ON DELETE SET NULL,  -- [!] reference "users" FK
     "listName" TEXT,
+    "listDesc" TEXT,
     -- "drinks" TEXT[],-- Contains "listings"("id")s
     UNIQUE ("userId", "listName")
 );
 
--- ========= [NEW!] "usersDrinkListItems" =========
+-- ========= "usersDrinkListItems" =========
 CREATE TABLE "usersDrinkListItems" (
     "id" SERIAL PRIMARY KEY,
     "listId" INTEGER REFERENCES "usersDrinkLists"("id") ON DELETE CASCADE, -- [!] reference "usersDrinkLists" FK
@@ -418,7 +419,7 @@ CREATE TABLE "reviews" (
     "address" VARCHAR(255)
 );
 
--- ========= [NEW!] "reviewsUserVotes" =========
+-- ========= "reviewsUserVotes" =========
 CREATE TABLE "reviewsUserVotes" (
     "id" SERIAL PRIMARY KEY,
     "upvotes" JSONB DEFAULT '[]', -- Contains "users"("id")s and date
@@ -479,7 +480,7 @@ CREATE TABLE "tokens" (
     "expiry" TIMESTAMP
 );
 
--- ========= [NEW!] "venuesMenu" =========
+-- ========= "venuesMenu" =========
 CREATE TABLE "venuesMenu" (
     "id" SERIAL PRIMARY KEY,
     "sectionName" VARCHAR(255),
@@ -488,7 +489,7 @@ CREATE TABLE "venuesMenu" (
     "venueId" INTEGER REFERENCES "venues"("id") ON DELETE SET NULL -- [!] References venues FK
 );
 
--- ========= [NEW] "menuItems" =========
+-- ========= "menuItems" =========
 CREATE TABLE "menuItems" (
     "id" SERIAL PRIMARY KEY,
     "itemOrder" INTEGER,
@@ -499,7 +500,7 @@ CREATE TABLE "menuItems" (
     "sectionId" INTEGER REFERENCES "venuesMenu"("id") ON DELETE CASCADE
 );
 
--- ========= [NEW!] "venuesOpeningHours" =========
+-- ========= "venuesOpeningHours" =========
 CREATE TABLE "venuesOpeningHours" (
     "id" SERIAL PRIMARY KEY,
     "Monday" TEXT[],
@@ -512,7 +513,7 @@ CREATE TABLE "venuesOpeningHours" (
     "venueId" INTEGER REFERENCES "venues"("id") ON DELETE SET NULL -- [!] References venues FK
 );
 
--- ========= [NEW!] "venuesQuestionAnswers" =========
+-- ========= "venuesQuestionAnswers" =========
 CREATE TABLE "venuesQuestionAnswers" (
     "id" SERIAL PRIMARY KEY,
     "question" VARCHAR(255),
@@ -522,7 +523,7 @@ CREATE TABLE "venuesQuestionAnswers" (
     "venueId" INTEGER REFERENCES "venues"("id") ON DELETE SET NULL -- [!] References venues FK
 );
 
--- ========= [NEW!] "venuesUpdates" =========
+-- ========= "venuesUpdates" =========
 CREATE TABLE "venuesUpdates" (
     "id" SERIAL PRIMARY KEY,
     "date" TIMESTAMP,
@@ -532,7 +533,7 @@ CREATE TABLE "venuesUpdates" (
     -- need add likes?
 );
 
--- ========= [NEW!] "venueUpdateLikes" =========
+-- ========= "venueUpdateLikes" =========
 CREATE TABLE "venueUpdateLikes" (
     "id" SERIAL PRIMARY KEY,
     "updateId" INTEGER REFERENCES "venuesUpdates"("id") ON DELETE CASCADE,
@@ -540,14 +541,14 @@ CREATE TABLE "venueUpdateLikes" (
     "userType" VARCHAR(50)
 );
 
--- -- ========= [NEW!] "venuesProfileViewsViews" =========
+-- -- ========= "venuesProfileViewsViews" =========
 -- CREATE TABLE "venuesProfileViewsViews" (
 --     "id" SERIAL PRIMARY KEY,
 --     "date" TIMESTAMP,
 --     "count" INT
 -- );
 
--- ========= [NEW!] "venuesProfileViews" =========
+-- ========= "venuesProfileViews" =========
 CREATE TABLE "venuesProfileViews" (
     "id" SERIAL PRIMARY KEY,
     "date" TIMESTAMP,
@@ -733,17 +734,20 @@ CREATE TABLE "eventAttendees" (
     "eventStartTime" TIME,
     "userID" INTEGER,
     "attendeeType" VARCHAR(255),
-    "attendeeStatus" BOOLEAN
+    "attendeeStatus" BOOLEAN,
+    "hasPaid" BOOLEAN DEFAULT FALSE,
+    "attendanceStatus" VARCHAR(50) DEFAULT 'Not Checked In',
+    "rsvpTimestamp" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- ========= [NEW!] "associations" - by SMU GROUP 3 =========
+-- ========= "associations" =========
 CREATE TABLE "associations" (
     "id" SERIAL PRIMARY KEY,
     "subTag1" VARCHAR(255) REFERENCES "subTags"("subTag") ON DELETE SET NULL, -- [!] References subTags FK
     "subTag2" VARCHAR(255) REFERENCES "subTags"("subTag") ON DELETE SET NULL -- [!] References subTags FK
 );
 
--- ======== [NEW!] "pointsRecorder" - by SMU GROUP 3 =========
+-- ======== "pointsRecorder" =========
 CREATE TABLE "pointsRecorder" (
     "id" SERIAL PRIMARY KEY,
     "userID" INTEGER,
@@ -751,7 +755,7 @@ CREATE TABLE "pointsRecorder" (
     "currentPoints" INTEGER
 );
 
--- ========= [NEW!] "pointSystemRules" - by SMU GROUP 3 =========
+-- ========= "pointSystemRules" =========
 CREATE TABLE "pointSystemRules" (
     "id" SERIAL PRIMARY KEY,
     "ruleName" VARCHAR(255),
@@ -760,7 +764,7 @@ CREATE TABLE "pointSystemRules" (
     "proofPoints" INTEGER
 );
 
--- ========= [NEW!] "grails" ==========
+-- ========= "grails" ==========
 CREATE TABLE "grails" (
     "id" SERIAL PRIMARY KEY,
     "listingName" VARCHAR(255),
@@ -770,7 +774,7 @@ CREATE TABLE "grails" (
     "counter" INTEGER
 );
 
--- ========= [NEW!] "upAndComing" ==========
+-- ========= "upAndComing" ==========
 CREATE TABLE "upAndComing" (
     "id" SERIAL PRIMARY KEY,
     "listingName" VARCHAR(255),
@@ -780,7 +784,7 @@ CREATE TABLE "upAndComing" (
     "counter" INTEGER
 );
 
--- ========= [NEW!] "goats" ==========
+-- ========= "goats" ==========
 CREATE TABLE "goats" (
     "id" SERIAL PRIMARY KEY,
     "listingName" VARCHAR(255),

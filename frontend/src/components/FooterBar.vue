@@ -40,8 +40,8 @@
           <!--<h5>Section</h5>-->
           <ul class="nav flex-column" style="font-weight: bold;">
             
-            <li class="nav-item mb-2  justify-content-start" style="display: flex !important;"><a href="#" class="nav-link p-0 text-black">Features</a></li>
-            <li class="nav-item mb-2 justify-content-start" style="display: flex !important;"><a href="#" class="nav-link p-0 text-black">What's New</a></li>
+            <li class="nav-item mb-2  justify-content-start" style="display: flex !important;"><a href="/help/features" class="nav-link p-0 text-black">Features</a></li>
+            <li class="nav-item mb-2 justify-content-start" style="display: flex !important;"><a href="/help/whats-new" class="nav-link p-0 text-black">What's New</a></li>
             
           </ul>
         </div>
@@ -49,9 +49,9 @@
         <div class="col footer-col">
           <!--<h5>Section</h5>-->
           <ul class="nav flex-column" style="font-weight: bold; ">
-            <li class="nav-item mb-2  justify-content-start" style="display: flex !important;"><a href="#" class="nav-link p-0 text-black">Drink-X for Venues</a></li>
-            <li class="nav-item mb-2  justify-content-start" style="display: flex !important;"><a href="#" class="nav-link p-0 text-black">Drink-X for Brands</a></li>
-            <li class="nav-item mb-2  justify-content-start" style="display: flex !important;"><a href="#" class="nav-link p-0 text-black">Partner Center</a></li>
+            <li class="nav-item mb-2  justify-content-start" style="display: flex !important;"><a href="/help/venues" class="nav-link p-0 text-black">Drink-X for Venues</a></li>
+            <li class="nav-item mb-2  justify-content-start" style="display: flex !important;"><a href="/help/brands" class="nav-link p-0 text-black">Drink-X for Brands</a></li>
+            <li class="nav-item mb-2  justify-content-start" style="display: flex !important;"><a href="/help/partner" class="nav-link p-0 text-black">Partner Center</a></li>
           
           </ul>
         </div>
@@ -59,12 +59,11 @@
         <div class="col footer-col">
             <!--<h5>Section</h5>-->
           <ul class="nav flex-column" style="font-weight: bold; ">
-            <li class="nav-item mb-2  justify-content-start" style="display: flex !important;"><a href="#" class="nav-link p-0 text-black">About</a></li>
-            <li class="nav-item mb-2  justify-content-start" style="display: flex !important;"><a href="#" class="nav-link p-0 text-black">FAQs</a></li>
-            <li class="nav-item mb-2  justify-content-start" style="display: flex !important;"><a href="#" class="nav-link p-0 text-black">Support</a></li>
-            <li class="nav-item mb-2  justify-content-start" style="display: flex !important;"><a href="#" class="nav-link p-0 text-black">Terms</a></li>
-            <li class="nav-item mb-2  justify-content-start" style="display: flex !important;"><a href="#" class="nav-link p-0 text-black">Privacy</a></li>
-            <li class="nav-item mb-2  justify-content-start" style="display: flex !important;"><a href="#" class="nav-link p-0 text-black">Privacy</a></li>
+            <li class="nav-item mb-2  justify-content-start" style="display: flex !important;"><a href="/help/about" class="nav-link p-0 text-black">About</a></li>
+            <li class="nav-item mb-2  justify-content-start" style="display: flex !important;"><a href="/help/faqs" class="nav-link p-0 text-black">FAQs</a></li>
+            <li class="nav-item mb-2  justify-content-start" style="display: flex !important;"><a href="/help/support" class="nav-link p-0 text-black">Support</a></li>
+            <li class="nav-item mb-2  justify-content-start" style="display: flex !important;"><a href="/help/terms" class="nav-link p-0 text-black">Terms</a></li>
+            <li class="nav-item mb-2  justify-content-start" style="display: flex !important;"><a href="/help/privacy" class="nav-link p-0 text-black">Privacy</a></li>
             <li class="nav-item mb-2  justify-content-start" style="display: flex !important;"><a href="/login" class="nav-link p-0 " style="color:#027562 !important;">Login</a></li>
          
           </ul>

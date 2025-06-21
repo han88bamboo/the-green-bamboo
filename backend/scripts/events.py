@@ -10,11 +10,14 @@
 #   [attendees] /getAttendees (GET), /checkAttendance (GET), 
 #               /addAttendee (POST), 
 #               /removeAttendee (DELETE)
+#               /updateAttendeeStatus (PUT)
 # -----------------------------------------------------------------------------------------
 
 import os
 from flask import Blueprint, g, jsonify, request
 from datetime import datetime
+import re
+from scripts import badge_helpers
 
 # Use to upload image to S3
 import s3Images
@@ -57,7 +60,7 @@ def canCreateMoreEvents(cur, user_id, user_type):
 
     # Determine the max events based on user type
     if user_type == 'user':
-        max_events = 1 # Per month for users
+        max_events = 5 # Per month for users
 
     else:
         max_events = 3 # Per month for producers and venues
@@ -120,9 +123,15 @@ def getEvents(offset):
 
             # Convert datetime objects to string
             event['eventStartDate'] = event['eventStartDate'].strftime('%Y-%m-%d')
-            event['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
-            event['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
-            event['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+
+            if event['eventEndDate'] is not None:
+                event['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
+            
+            if event['eventStartTime'] is not None:
+                event['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
+
+            if event['eventEndTime'] is not None:
+                event['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
 
             # Append the event into the return_data
             return_data.append(event)
@@ -173,9 +182,15 @@ def getSpecificEvent(event_id):
 
         # Convert datetime objects to string
         event['eventStartDate'] = event['eventStartDate'].strftime('%Y-%m-%d')
-        event['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
-        event['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
-        event['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+
+        if event['eventEndDate'] is not None:
+            event['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
+        
+        if event['eventStartTime'] is not None:
+            event['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
+
+        if event['eventEndTime'] is not None:
+            event['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
 
         return jsonify({
             'event': event
@@ -243,9 +258,14 @@ def getUserEvents(user_id, user_type, offset):
 
             # Convert datetime objects to string
             event['eventStartDate'] = event['eventStartDate'].strftime('%Y-%m-%d')
-            event['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
-            event['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
-            event['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+            if event['eventEndDate'] is not None:
+                event['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
+            
+            if event['eventStartTime'] is not None:
+                event['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
+
+            if event['eventEndTime'] is not None:
+                event['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
 
             # Append the event into the return_data
             return_data.append(event)
@@ -291,9 +311,16 @@ def getTop6Events():
             top_event['eventDesc'] = event['eventDesc']
             top_event['eventType'] = event['eventType']
             top_event['eventStartDate'] = event['eventStartDate'].strftime('%Y-%m-%d')
-            top_event['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
-            top_event['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
-            top_event['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+
+            if event['eventEndDate'] is not None:
+                top_event['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
+            
+            if event['eventStartTime'] is not None:
+                top_event['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
+
+            if event['eventEndTime'] is not None:
+                top_event['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+
             top_event['numAttendees'] = event['numAttendees']
             top_event['eventBanners'] = event['eventBanners']
         
@@ -360,9 +387,14 @@ def getUpcomingFollowingEvents(user_id, user_type):
             event_details['eventDesc'] = event['eventDesc']
             event_details['eventType'] = event['eventType']
             event_details['eventStartDate'] = event['eventStartDate'].strftime('%Y-%m-%d')
-            event_details['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
-            event_details['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
-            event_details['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+
+            if event['eventEndDate'] is not None:
+                event_details['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
+            if event['eventStartTime'] is not None:
+                event_details['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
+            if event['eventEndTime'] is not None:
+                event_details['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+
             event_details['eventBanners'] = event['eventBanners']
         
             return_data.append(event_details)
@@ -419,9 +451,14 @@ def getUserPastEvents(user_id, offset):
             ev['eventDesc'] = event_info['eventDesc']
             ev['eventType'] = event_info['eventType']
             ev['eventStartDate'] = event_info['eventStartDate'].strftime('%Y-%m-%d')
-            ev['eventEndDate'] = event_info['eventEndDate'].strftime('%Y-%m-%d')
-            ev['eventStartTime'] = event_info['eventStartTime'].strftime('%H:%M')
-            ev['eventEndTime'] = event_info['eventEndTime'].strftime('%H:%M')
+
+            if event_info['eventEndDate'] is not None:
+                ev['eventEndDate'] = event_info['eventEndDate'].strftime('%Y-%m-%d')
+            if event_info['eventStartTime'] is not None:
+                ev['eventStartTime'] = event_info['eventStartTime'].strftime('%H:%M')
+            if event_info['eventEndTime'] is not None:
+                ev['eventEndTime'] = event_info['eventEndTime'].strftime('%H:%M')
+                
             ev['eventBanners'] = event_info['eventBanners']
 
             # Append the event into the return_data
@@ -511,9 +548,14 @@ def getUserUpcomingEvents(user_id, user_type, offset):
             ev['eventDesc'] = event_info['eventDesc']
             ev['eventType'] = event_info['eventType']
             ev['eventStartDate'] = event_info['eventStartDate'].strftime('%Y-%m-%d')
-            ev['eventEndDate'] = event_info['eventEndDate'].strftime('%Y-%m-%d')
-            ev['eventStartTime'] = event_info['eventStartTime'].strftime('%H:%M')
-            ev['eventEndTime'] = event_info['eventEndTime'].strftime('%H:%M')
+
+            if event_info['eventEndDate'] is not None:
+                ev['eventEndDate'] = event_info['eventEndDate'].strftime('%Y-%m-%d')
+            if event_info['eventStartTime'] is not None:
+                ev['eventStartTime'] = event_info['eventStartTime'].strftime('%H:%M')
+            if event_info['eventEndTime'] is not None:
+                ev['eventEndTime'] = event_info['eventEndTime'].strftime('%H:%M')
+
             ev['eventBanners'] = event_info['eventBanners']
 
             # Append the event into the return_data
@@ -545,7 +587,7 @@ def getRecentlyAddedEvents():
 
     try:
         # Step 1: Get the recently added events
-        cursor.execute('SELECT * FROM events ORDER BY "createdDate" DESC LIMIT 5')
+        cursor.execute('SELECT * FROM events WHERE "eventEndDate" >= CURRENT_DATE ORDER BY "createdDate"  DESC LIMIT 5')
         events = cursor.fetchall()
 
         if not events:
@@ -559,9 +601,14 @@ def getRecentlyAddedEvents():
             event_details['eventDesc'] = event['eventDesc']
             event_details['eventType'] = event['eventType']
             event_details['eventStartDate'] = event['eventStartDate'].strftime('%Y-%m-%d')
-            event_details['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
-            event_details['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
-            event_details['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+
+            if event['eventEndDate'] is not None:
+                event_details['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
+            if event['eventStartTime'] is not None:
+                event_details['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
+            if event['eventEndTime'] is not None:
+                event_details['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+
             event_details['createdDate'] = event['createdDate'].strftime('%Y-%m-%d')
             event_details['eventBanners'] = event['eventBanners']
             
@@ -606,9 +653,14 @@ def searchEvents(search_query, offset):
             event_details['eventDesc'] = event['eventDesc']
             event_details['eventType'] = event['eventType']
             event_details['eventStartDate'] = event['eventStartDate'].strftime('%Y-%m-%d')
-            event_details['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
-            event_details['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
-            event_details['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+
+            if event['eventEndDate'] is not None:
+                event_details['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
+            if event['eventStartTime'] is not None:
+                event_details['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
+            if event['eventEndTime'] is not None:
+                event_details['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+        
             event_details['eventBanners'] = event['eventBanners']
             event_details['numAttendees'] = event['numAttendees']
             
@@ -688,7 +740,7 @@ def createEvent():
         # Step 1: Get the input data
         data = request.json
 
-        required_fields = ['eventName', 'eventDesc', 'eventType', 'eventStartDate', 'eventEndDate', 'eventStartTime', 'eventEndTime', 'ticketed', 'eventOwnerID', 'eventOwnerType']
+        required_fields = ['eventName', 'eventDesc', 'eventType', 'eventStartDate', 'ticketed', 'eventOwnerID', 'eventOwnerType']
 
         # Check if the required fields are present and not empty
         for field in required_fields:
@@ -719,7 +771,18 @@ def createEvent():
         
         # Step 4: Convert datetime values to datetime objects
         data['eventStartDate'] = datetime.strptime(data['eventStartDate'], '%Y-%m-%d')
-        data['eventEndDate'] = datetime.strptime(data['eventEndDate'], '%Y-%m-%d')
+
+        if data['eventEndDate'] != '' and data['eventEndDate'] is not None:
+            data['eventEndDate'] = datetime.strptime(data['eventEndDate'], '%Y-%m-%d')
+        else:
+            data['eventEndDate'] = None
+
+        if data['eventStartTime'] == '' or data['eventStartTime'] is None:
+            data['eventStartTime'] = None
+
+        if data['eventEndTime'] == '' or data['eventEndTime'] is None:
+            data['eventEndTime'] = None
+
 
         # Check if paymentLink is provided
         if 'paymentLink' in data and not data['paymentLink']:
@@ -789,6 +852,7 @@ def updateEvent():
             if field not in data or not data[field]:
                 return jsonify({'error': f'Missing or empty required field: {field}'}), 400
 
+
         # Step 2: Check if the event exist
         cursor.execute('SELECT * FROM events WHERE id = %s', (data['eventID'],))
         event = cursor.fetchone()
@@ -810,6 +874,9 @@ def updateEvent():
         if 'eventDesc' in data and data['eventDesc']:
             update_fields.append('"eventDesc" = %s')
             update_values.append(data['eventDesc'])
+        if 'eventType' in data and data['eventType']:
+            update_fields.append('"eventType" = %s')
+            update_values.append(data['eventType'])
         if 'eventStartDate' in data and data['eventStartDate']:
             update_fields.append('"eventStartDate" = %s')
             update_values.append(datetime.strptime(data['eventStartDate'], '%Y-%m-%d'))
@@ -841,11 +908,21 @@ def updateEvent():
             if len(data['eventBanners']) == 0:
                 update_fields.append('"eventBanners" = %s')
                 update_values.append(None)
+            
+            # Loop through current eventBanners and check if they are not in the new eventBanners
+            # If not, remove them from the eventBanners
+            current_event_banners = event['eventBanners']
 
-            # Upload each image (base64Image) to S3
+            if current_event_banners is not None:
+                for current_banner in current_event_banners:
+                    if current_banner not in data['eventBanners']:
+                        # Remove the banner from S3
+                        s3Images.deleteImageFromS3(current_banner)
+
+            # Upload each image (base64Image) to S3 in the new eventBanners
             event_banner = []
             for image in data['eventBanners']:
-
+                
                 if not image:
                     continue
 
@@ -854,7 +931,10 @@ def updateEvent():
                     event_banner.append(image)
                     continue
                 else:
-                    url = s3Images.uploadBase64ImageToS3(image)
+
+                    # Remove the base64 prefix if it exists
+                    base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', image)
+                    url = s3Images.uploadBase64ImageToS3(base64_string)
                     if url:
                         event_banner.append(url)
 
@@ -975,6 +1055,13 @@ def getAttendees(event_id):
             if not user_info:
                 continue
 
+            # Adding the new tracking fields
+            user_info['hasPaid'] = attendee.get('hasPaid', False)
+            user_info['attendanceStatus'] = attendee.get('attendanceStatus', 'Not Checked In')
+            user_info['rsvpDate'] = attendee.get('rsvpTimestamp')
+            user_info['eventDate'] = attendee.get('eventDate')
+            user_info['attendeeId'] = attendee['id']
+
             # Append the user information into the return_data
             return_data.append(user_info)
 
@@ -1071,7 +1158,11 @@ def addAttendee():
             return jsonify({'error': 'User is already an attendee'}), 400
 
         # Step 5: Add the attendee to the event
-        cursor.execute('INSERT INTO "eventAttendees" ("eventID", "eventDate", "eventStartTime", "userID", "attendeeType", "attendeeStatus") VALUES (%s, %s, %s, %s, %s, TRUE)', (data['eventID'], event['eventStartDate'], event['eventStartTime'], data['userID'], data['userType'],))
+        cursor.execute('''
+            INSERT INTO "eventAttendees" 
+            ("eventID", "eventDate", "eventStartTime", "userID", "attendeeType", "attendeeStatus", "rsvpTimestamp") 
+            VALUES (%s, %s, %s, %s, %s, TRUE, CURRENT_TIMESTAMP)
+        ''', (data['eventID'], event['eventStartDate'], event['eventStartTime'], data['userID'], data['userType']))
         conn.commit()
 
         # Step 6: Update the number of attendees in the event
@@ -1144,3 +1235,196 @@ def removeAttendee():
     finally:
         cursor.close()
 
+@blueprint.route('/updateAttendeeStatus', methods=['PUT'])
+def updateAttendeeStatus():
+    data = request.get_json()
+    
+    attendee_id = data.get('attendeeId')
+    has_paid = data.get('hasPaid')
+    attendance_status = data.get('attendanceStatus')
+    event_owner_id = data.get('eventOwnerID')
+    event_owner_type = data.get('eventOwnerType')
+    
+    conn = g.db
+    cursor = conn.cursor()
+    
+    try:
+        # Verify the requester is the event owner
+        cursor.execute('''
+            SELECT e.* FROM events e 
+            JOIN "eventAttendees" ea ON e.id = ea."eventID" 
+            WHERE ea.id = %s AND e."eventOwnerID" = %s AND e."eventOwnerType" = %s
+        ''', (attendee_id, event_owner_id, event_owner_type))
+        
+        if not cursor.fetchone():
+            return jsonify({'error': 'Unauthorized'}), 403
+        
+        cursor.execute('''
+            SELECT ea.*, e."eventName"
+            FROM "eventAttendees" ea
+            JOIN events e ON ea."eventID" = e.id
+            WHERE ea.id = %s
+        ''', (attendee_id,))
+        
+        attendee_info = cursor.fetchone()
+        if not attendee_info:
+            return jsonify({'error': 'Attendee not found'}), 404
+        
+        previous_attendance_status = attendee_info.get('attendanceStatus')
+        
+        update_fields = []
+        update_values = []
+        
+        if has_paid is not None:
+            update_fields.append('"hasPaid" = %s')
+            update_values.append(has_paid)
+            
+        if attendance_status is not None:
+            update_fields.append('"attendanceStatus" = %s')
+            update_values.append(attendance_status)
+        
+        badge_result = None
+        
+        if update_fields:
+            update_values.append(attendee_id)
+            cursor.execute(f'''
+                UPDATE "eventAttendees" 
+                SET {", ".join(update_fields)}
+                WHERE id = %s
+            ''', update_values)
+            
+            conn.commit()
+            
+            # Process badge if attendance status changed to "Checked In"
+            if (attendance_status == "Checked In" and 
+                previous_attendance_status != "Checked In" and
+                attendee_info.get('attendeeType') == 'user'):
+                
+                user_id = attendee_info.get('userID')
+                if user_id:
+                    badge_result = badge_helpers.process_event_attendance_badge(conn, cursor, user_id)
+        
+        response_data = {'message': 'Attendee status updated successfully'}
+        
+        if badge_result:
+            response_data['badgeAwarded'] = badge_result
+            
+        return jsonify(response_data), 200
+        
+    except Exception as e:
+        print(f"Error updating attendee status: {str(e)}")
+        conn.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+
+@blueprint.route('/getUserOrganisingEvents/<user_id>/<user_type>', methods=['GET'])
+def getUserOrganisingEvents(user_id, user_type):
+    conn = g.db
+    cursor = conn.cursor()
+
+    return_data = []
+
+    try:
+        # Query to get all events that the user is organizing (both upcoming and past)
+        query = '''
+            SELECT e.*
+            FROM "events" e
+            WHERE e."eventOwnerID" = %s
+            AND e."eventOwnerType" = %s
+            ORDER BY e."eventStartDate" DESC, e."eventStartTime" DESC
+        '''
+
+        cursor.execute(query, (user_id, user_type))
+        events = cursor.fetchall()
+
+        if not events:
+            return jsonify({'error': 'No events found'}), 404
+        
+        for event in events:
+            ev = {}
+            ev['eventID'] = event['id']
+            ev['eventName'] = event['eventName']
+            ev['eventDesc'] = event['eventDesc']
+            ev['eventType'] = event['eventType']
+            ev['eventStartDate'] = event['eventStartDate'].strftime('%Y-%m-%d')
+            ev['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
+            ev['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
+            ev['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+            ev['eventBanners'] = event['eventBanners']
+            ev['eventLocation'] = event['eventLocation']
+            ev['numAttendees'] = event['numAttendees']
+
+            return_data.append(ev)
+
+        return jsonify({
+            'events': return_data
+        }), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+
+
+@blueprint.route('/getUserAttendingEvents/<user_id>/<user_type>', methods=['GET'])
+def getUserAttendingEvents(user_id, user_type):
+    conn = g.db
+    cursor = conn.cursor()
+
+    return_data = []
+
+    try:
+        # Query to get all events that the user is attending (both upcoming and past)
+        # Only include events where attendeeStatus is True (confirmed attendance)
+        query = '''
+            SELECT 
+                e.*,
+                ea."attendeeStatus",
+                ea."hasPaid",
+                ea."attendanceStatus",
+                ea."rsvpTimestamp"
+            FROM "eventAttendees" ea
+            JOIN "events" e ON ea."eventID" = e."id"
+            WHERE ea."userID" = %s 
+            AND ea."attendeeType" = %s
+            AND ea."attendeeStatus" = TRUE
+            ORDER BY e."eventStartDate" DESC, e."eventStartTime" DESC
+        '''
+
+        cursor.execute(query, (user_id, user_type))
+        events = cursor.fetchall()
+
+        if not events:
+            return jsonify({'error': 'No events found'}), 404
+        
+        for event in events:
+            ev = {}
+            ev['eventID'] = event['id']
+            ev['eventName'] = event['eventName']
+            ev['eventDesc'] = event['eventDesc']
+            ev['eventType'] = event['eventType']
+            ev['eventStartDate'] = event['eventStartDate'].strftime('%Y-%m-%d')
+            ev['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
+            ev['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
+            ev['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+            ev['eventBanners'] = event['eventBanners']
+            ev['eventLocation'] = event['eventLocation']
+            ev['numAttendees'] = event['numAttendees']
+            ev['attendeeStatus'] = event['attendeeStatus']
+            ev['hasPaid'] = event['hasPaid']
+            ev['attendanceStatus'] = event['attendanceStatus']
+            ev['rsvpTimestamp'] = event['rsvpTimestamp'].strftime('%Y-%m-%d %H:%M:%S') if event['rsvpTimestamp'] else None
+
+            return_data.append(ev)
+
+        return jsonify({
+            'events': return_data
+        }), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()

@@ -33,200 +33,236 @@
     <div v-if="dataLoaded == true">
       <!-- Club Banner -->
       <div style="background-color:white">
-      <div
-        class="align-items-center justify-content-center event-hero"
-        
-      >
-        <img
-          v-if="clubInfo.clubBanner != ''"
-          :src="clubInfo.clubBanner"
-          class="img-fluid"
-          alt="Club Banner"
-        />
-        <img v-else :src="defaultBanner" class="img-fluid" alt="Club Banner" />
-      </div>
+        <div
+          class="align-items-center justify-content-center event-hero"
+          
+        >
+          <img
+            v-if="clubInfo.clubBanner != null && clubInfo.clubBanner != ''" 
+            :src="clubInfo.clubBanner"
+            class="img-fluid"
+          />
+          <img v-else :src="defaultBanner" class="img-fluid" alt="Club Banner" />
+        </div>
 
-      <div class="container">
-        <div class="row">
-          <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mt-4" >
-              <div class="flex-shrink-0 me-3 text-start mb-0" style="min-width: 0; background-color:white">
-                <!-- Club Name -->
-                <h4 class="fw-bold mobile-fs-5">{{ clubInfo.clubName }}</h4>
-                <!-- Club type and number of members -->
-                  <p class="text-start fw-bold mobile-fs-7 p-0" style="color: rgb(2, 117, 98);">
-                    <span v-if="clubInfo.isInviteOnly" class="fw-bold">
-                      Private Group
-                    </span>
-                    <span v-else class="fw-bold"> Public Group </span>
-                    <span> | </span>
-                    <span class="fw-bold">Number of Members:</span>
-                    {{ clubInfo.totalMembers }}
-                    <!--Number of members with joinStatus = True (members who have been invited but not yet accepted will not be included)-->
-                  </p>
-              </div>
+        <div class="container">
+          <div class="row">
+            <div class="col-12">
+              <div class="d-flex justify-content-between align-items-center mt-4" >
+                <div class="flex-shrink-0 me-3 text-start mb-0" style="min-width: 0; background-color:white">
+                  <!-- Club Name -->
+                  <h4 class="fw-bold mobile-fs-5">{{ clubInfo.clubName }}</h4>
+                  <!-- Club type and number of members -->
+                    <p class="text-start fw-bold mobile-fs-7 p-0" style="color: rgb(2, 117, 98);">
+                      <span v-if="clubInfo.isInviteOnly" class="fw-bold">
+                        Private Group
+                      </span>
+                      <span v-else class="fw-bold"> Public Group </span>
+                      <span> | </span>
+                      <span class="fw-bold">Number of Members:</span>
+                      {{ clubInfo.totalMembers }}
+                      <!--Number of members with joinStatus = True (members who have been invited but not yet accepted will not be included)-->
+                    </p>
+                </div>
                 <!-- Spacer that shrinks -->
                 <div class="flex-grow-1"></div>
                 <!-- Buttons: RSVP + Invite DESKTOP -->
-              <div class="col-6 text-end justify-content-center mobile-view-hide">
-                      <button
-                        v-if="isMember"
-                        class="btn primary-btn-green rounded me-2 "
-                        data-bs-toggle="modal"
-                        data-bs-target="#addPostModal"
-                      >
-                        Add Post
-                      </button>
-                      <button
-                        v-if="
-                          isMember == null &&
-                          !clubInfo.isInviteOnly &&
-                          !hasRequested &&
-                          !isInvited
-                        "
-                        class="btn primary-btn-less-round-blue rounded me-2 fw-bold"
-                        @click="joinClub"
-                        :disabled="disableButton"
-                      >
-                        Join Club
-                      </button>
-                      <button
-                        v-if="
-                          isMember == null &&
-                          clubInfo.isInviteOnly &&
-                          !hasRequested &&
-                          !isInvited
-                        "
-                        class="btn primary-btn-less-round-blue rounded me-2 fw-bold"
-                        @click="requestToJoin"
-                        :disabled="disableButton"
-                      >
-                        Request to Join
-                      </button>
-                      <button
-                        v-if="isInvited"
-                        class="btn primary-btn-less-round-blue rounded me-2 fw-bold"
-                        @click="acceptInvite"
-                        :disabled="disableButton"
-                      >
-                        Accept Invite
-                      </button>
-                      <button
-                        v-if="hasRequested"
-                        class="btn primary-btn-less-round-blue rounded ms-2 fw-bold"
-                        disabled
-                      >
-                        Request Sent
-                      </button>
-                      <button
-                        class="px-2 btn btn-warning"
-                      >
-                        <!-- Invite icon -->
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="16"
-                          height="16"
-                          fill="white"
-                          class="bi bi-share fw-bold"
-                          viewBox="0 0 16 16"
-                        >
-                          <path
-                            d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.5 2.5 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5m-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3"
-                          />
-                        </svg>
-                        <!-- Invite text -->
-                        <span class="ms-2 fw-bold mobile-view-hide" style="color: white">Invite your friends!</span>
-                      </button>
-                    </div>
-            </div>
-            <!-- Buttons: RSVP + Invite MOBILE -->
+                <div class="col-6 text-end justify-content-center mobile-view-hide">
+                  <button
+                    v-if="isMember"
+                    class="btn primary-btn-green rounded me-2 "
+                    data-bs-toggle="modal"
+                    data-bs-target="#addPostModal"
+                  >
+                    Add Post
+                  </button>
+                  <button
+                    v-if="
+                      isMember == null &&
+                      !clubInfo.isInviteOnly &&
+                      !hasRequested &&
+                      !isInvited
+                    "
+                    class="btn primary-btn-less-round-blue rounded me-2 fw-bold"
+                    @click="joinClub"
+                    :disabled="disableButton"
+                  >
+                    Join Club
+                  </button>
+                  <button
+                    v-if="
+                      isMember == null &&
+                      clubInfo.isInviteOnly &&
+                      !hasRequested &&
+                      !isInvited
+                    "
+                    class="btn primary-btn-less-round-blue rounded me-2 fw-bold"
+                    @click="requestToJoin"
+                    :disabled="disableButton"
+                  >
+                    Request to Join
+                  </button>
+                  <button
+                    v-if="isInvited"
+                    class="btn primary-btn-less-round-blue rounded me-2 fw-bold"
+                    @click="acceptInvite"
+                    :disabled="disableButton"
+                  >
+                    Accept Invite
+                  </button>
+                  <button
+                    v-if="hasRequested"
+                    class="btn primary-btn-less-round-blue rounded ms-2 fw-bold"
+                    disabled
+                  >
+                    Request Sent
+                  </button>
+                  <button
+                    class="px-2 btn btn-warning"
+                    data-bs-toggle="modal" 
+                    data-bs-target="#inviteFriendModal"
+                  >
+                    <!-- Invite icon -->
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      fill="white"
+                      class="bi bi-share fw-bold"
+                      viewBox="0 0 16 16"
+                    >
+                      <path
+                        d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.5 2.5 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5m-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3"
+                      />
+                    </svg>
+                    <!-- Invite text -->
+                    <span class="ms-2 fw-bold mobile-view-hide" style="color: white">Invite your friends!</span>
+                  </button>
+                </div>
+              </div>
+              <!-- Buttons: RSVP + Invite MOBILE -->
               <div class="d-flex gap-1 flex-shrink-0 mobile-view-show mb-3 mt-0">
-                      <button
-                        v-if="isMember"
-                        class="btn primary-btn-green rounded btn-sm me-2 "
-                        data-bs-toggle="modal"
-                        data-bs-target="#addPostModal"
-                      >
-                        Add Post
-                      </button>
-                      <button
-                        v-if="
-                          isMember == null &&
-                          !clubInfo.isInviteOnly &&
-                          !hasRequested &&
-                          !isInvited
-                        "
-                        class="btn primary-btn-less-round-blue btn-sm rounded me-2 fw-bold"
-                        @click="joinClub"
-                        :disabled="disableButton"
-                      >
-                        Join Club
-                      </button>
-                      <button
-                        v-if="
-                          isMember == null &&
-                          clubInfo.isInviteOnly &&
-                          !hasRequested &&
-                          !isInvited
-                        "
-                        class="btn primary-btn-less-round-blue btn-sm rounded me-2 fw-bold"
-                        @click="requestToJoin"
-                        :disabled="disableButton"
-                      >
-                        Request to Join
-                      </button>
-                      <button
-                        v-if="isInvited"
-                        class="btn primary-btn-less-round-blue btn-sm rounded me-2 fw-bold"
-                        @click="acceptInvite"
-                        :disabled="disableButton"
-                      >
-                        Accept Invite
-                      </button>
-                      <button
-                        v-if="hasRequested"
-                        class="btn primary-btn-less-round-blue btn-sm rounded me-2 fw-bold"
-                        disabled
-                      >
-                        Request Sent
-                      </button>
-                      <button
-                        class="px-3 btn btn-warning"
-                      >
-                        <!-- Invite icon -->
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="16"
-                          height="16"
-                          fill="white"
-                          class="bi bi-share fw-bold btn-sm"
-                          viewBox="0 0 16 16"
-                        >
-                          <path
-                            d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.5 2.5 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5m-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3"
-                          />
-                        </svg>
-                        <!-- Invite text -->
-                        <span class="ms-2 fw-bold mobile-view-hide" style="color: white">Invite your friends!</span>
-                      </button>
-                      <!-- View My Clubs Toggle Button -->
-                        <button 
-                        class="ms-2 secondary-btn rounded d-md-none mobile-rating-smaller-text-2" 
-                        style="font-weight: bold; background-color:white"
-                        type="button" 
-                        data-bs-toggle="collapse" 
-                        data-bs-target="#sidebarContent" 
-                        aria-expanded="false" 
-                        aria-controls="sidebarContent"
-                        >
-                        Club Info &#8595;
-                        </button>
-                    </div>
+                <button
+                  v-if="isMember"
+                  class="btn primary-btn-green rounded btn-sm me-2 "
+                  data-bs-toggle="modal"
+                  data-bs-target="#addPostModal"
+                >
+                  Add Post
+                </button>
+                <button
+                  v-if="
+                    isMember == null &&
+                    !clubInfo.isInviteOnly &&
+                    !hasRequested &&
+                    !isInvited
+                  "
+                  class="btn primary-btn-less-round-blue btn-sm rounded me-2 fw-bold"
+                  @click="joinClub"
+                  :disabled="disableButton"
+                >
+                  Join Club
+                </button>
+                <button
+                  v-if="
+                    isMember == null &&
+                    clubInfo.isInviteOnly &&
+                    !hasRequested &&
+                    !isInvited
+                  "
+                  class="btn primary-btn-less-round-blue btn-sm rounded me-2 fw-bold"
+                  @click="requestToJoin"
+                  :disabled="disableButton"
+                >
+                  Request to Join
+                </button>
+                <button
+                  v-if="isInvited"
+                  class="btn primary-btn-less-round-blue btn-sm rounded me-2 fw-bold"
+                  @click="acceptInvite"
+                  :disabled="disableButton"
+                >
+                  Accept Invite
+                </button>
+                <button
+                  v-if="hasRequested"
+                  class="btn primary-btn-less-round-blue btn-sm rounded me-2 fw-bold"
+                  disabled
+                >
+                  Request Sent
+                </button>
+                <button
+                  class="px-3 btn btn-warning"
+                  data-bs-toggle="modal" 
+                  data-bs-target="#inviteFriendModal"
+                >
+                  <!-- Invite icon -->
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    fill="white"
+                    class="bi bi-share fw-bold btn-sm"
+                    viewBox="0 0 16 16"
+                  >
+                    <path
+                      d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.5 2.5 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5m-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3"
+                    />
+                  </svg>
+                  <!-- Invite text -->
+                  <span class="ms-2 fw-bold mobile-view-hide" style="color: white">Invite your friends!</span>
+                </button>
+                <!-- View My Clubs Toggle Button -->
+                <button 
+                  class="ms-2 secondary-btn rounded d-md-none mobile-rating-smaller-text-2" 
+                  style="font-weight: bold; background-color:white"
+                  type="button" 
+                  data-bs-toggle="collapse" 
+                  data-bs-target="#sidebarContent" 
+                  aria-expanded="false" 
+                  aria-controls="sidebarContent"
+                  >
+                  Club Info &#8595;
+                </button>
+              </div>
+            </div>
           </div>
         </div>
+        <hr style="color:black" class="mt-0">
       </div>
-      <hr style="color:black" class="mt-0">
+
+      <!-- Invite Friend Modal Start (QR Code) -->
+      <div class="modal fade" id="inviteFriendModal" tabindex="-1" aria-labelledby="inviteFriendModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+              <div class="modal-content">
+                  <div class="modal-header">
+                      <h1 class="modal-title fs-5" id="shareMenuModalLabel"> Club QR Code </h1>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                      <div class="centered">
+                          <qr-code v-bind:text="currentURL" ref="qrCode"></qr-code>
+                      </div>
+                      <div class="input-group pt-3">
+                          <input type="text" class="form-control" aria-label="Link" aria-describedby="button-addon2" v-bind:value="currentURL" disabled>
+                          <button class="btn btn-outline-secondary" type="button" id="button-addon2" @click="copyToClipboard(currentURL)">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
+                                  <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/>
+                                  <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/>
+                              </svg>
+                          </button>
+                      </div>
+                      <p class="text-start pt-2" v-if="clipboardItem"> 
+                          <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16">
+                              <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
+                          </svg>
+                          Copied to clipboard!
+                      </p>
+                  </div>
+              </div>
+          </div>
       </div>
+      <!-- Invite Friend Modal End -->
 
       <!-- Main content -->
       <div v-if="!editClub" class="container mt-4">
@@ -512,7 +548,7 @@
                 <!-- Column 1: Poster Photo -->
                 <div class="row mb-2 mx-0 px-0 justify-content-center">
                   <div class="col-1 mobile-col-2 d-flex flex-column justify-content-center align-items-center">
-
+                    
                     <router-link
                       :to="
                         profileURL(post.posterInfo.id, post.posterInfo.userType)
@@ -521,8 +557,8 @@
                       <p class="fw-bold mb-1 mobile-rating-smaller-text-2">{{ post.posterName }}</p>
                     </router-link>
                     <img
-                      v-if="post.posterPhoto"
-                      :src="post.posterPhoto"
+                      v-if="post.posterInfo.photo"
+                      :src="post.posterInfo.photo"
                       class="img-fluid rounded-circle"
                       alt="Poster Photo"
                     />
@@ -558,6 +594,9 @@
                               {{ post.posterInfo.venueName }}&nbsp;
                             </template>
                           </router-link>
+                          <span v-if="post.posterInfo.userType === 'user'" class="mobile-rating-smaller-text-2">
+                            {{ post.posterInfo.currentPoints }} {{ memberID }}
+                          </span>
                           <span v-if="post.posterInfo.userType === 'user'" class="mobile-rating-smaller-text-2" :style="{ color: post.posterInfo.rankColor }">
                             {{ post.posterInfo.rank }} &nbsp; 
                           </span>
@@ -1060,6 +1099,8 @@
             <!-- Invite button -->
             <button
               class="ps-0 btn btn-warning ps-2 d-flex flex-row align-items-center btn-sm"
+              data-bs-toggle="modal" 
+              data-bs-target="#inviteFriendModal"
             >
               <!-- Invite icon -->
               <svg
@@ -1440,6 +1481,8 @@
       />
     </div>
   </div>
+  <!-- Footer End -->
+    <FooterBar />
 </template>
 
 <script>
@@ -1447,11 +1490,14 @@
 import NavBar from "@/components/NavBar.vue";
 import ClubSettings from "@/components/ClubSettings.vue";
 import { useToast } from "vue-toastification";
+import FooterBar from "@/components/FooterBar.vue";
+
 export default {
   name: "ClubView",
   components: {
     NavBar,
     ClubSettings,
+    FooterBar
   },
   data() {
     return {
@@ -1509,6 +1555,12 @@ export default {
 
       // Variable for showing the club settings component
       editClub: false,
+
+      // Variable for current URL for current page for sharing 
+      currentURL: window.location.href,
+
+      // Variable to store clipboard item for copy confirmation
+      clipboardItem: null,
     };
   },
 
@@ -2045,7 +2097,8 @@ export default {
         }
       } catch (error) {
         console.log(error);
-        alert("An error occurred while editing the post, please try again!");
+        const toast = useToast();
+        toast.error("An error occurred while editing the post, please try again!");
       }
     },
 
@@ -2075,7 +2128,8 @@ export default {
         }
       } catch (error) {
         console.log(error);
-        alert("An error occurred while deleting the post, please try again!");
+        const toast = useToast();
+        toast.error("An error occurred while deleting the post, please try again!");
       }
     },
 
@@ -2125,6 +2179,20 @@ export default {
           "An error occurred while adding the comment. Please try again later."
         );
       }
+    },
+
+    // Copy to Clipboard
+    copyToClipboard(text) {
+        navigator.clipboard.writeText(text)
+        .then(() => {
+            this.clipboardItem = true;
+            setTimeout(() => {
+                this.clipboardItem = false;
+            }, 3000);
+        })
+        .catch(err => {
+            console.error('Failed to copy text: ', err);
+        });
     },
   },
 

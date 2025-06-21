@@ -293,6 +293,8 @@
         </div>
     </div>
 
+  <!-- Footer End -->
+    <FooterBar />
 </template>
 
 <!-- ------------------------------------------------------------------------------ -->
@@ -300,11 +302,13 @@
 <script>
     // import components used
     import NavBar from '@/components/NavBar.vue';
+    import FooterBar from "@/components/FooterBar.vue";
 
     export default{
         name: 'BusinessSignUpPage',
         components: {
-            NavBar
+            NavBar,
+            FooterBar
         },
         data(){
             return{

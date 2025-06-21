@@ -105,7 +105,6 @@
                         <th scope="col">Member Name</th>
                         <th scope="col">Role</th>
                         <th scope="col">Data Joined</th>
-                        <th scope="col">Join Status</th>
                         <th scope="col" v-if="manageMode">Actions</th>
                     </tr>
                 </thead>
@@ -132,12 +131,7 @@
                         </td>
                         <!-- Column 4: Date joined -->
                         <td>{{ member.joinDate }}</td>
-                        <!-- Column 5: Join Status -->
-                        <td>
-                            <span v-if="member.joinStatus">Joined</span>
-                            <span v-else>Pending</span>
-                        </td>
-                        <!-- Column 6: Action Buttons -->
+                        <!-- Column 5: Action Buttons -->
                         <td v-if="manageMode">
                             <button v-if="!member.isAdmin && member.joinStatus" class="btn btn-primary me-3" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#makeAdminModal" @click="selectedMemberMakeAdmin = member">
                                 Make Admin
@@ -229,6 +223,68 @@
                 {{ errorMessage }}
             </p>
         </div>
+
+        <!-- Horizontal line divider to seperate sections -->
+        <hr>
+
+        <!-- Invited Member Section -->
+        <div class="row mt-3">
+            <h4 class="fw-bold"> Club Member Invites ({{ invitedMembers.length }}) </h4>
+            <p>Users who have been invited but has yet to accept the invite.</p>
+
+            <table v-if="invitedMembers.length > 0" class="table table-striped mt-3 ms-2 md-ms-0">
+                <thead>
+                    <tr>
+                        <th scope="col">Member Photo</th>
+                        <th scope="col">Member Name</th>
+                        <th scope="col">Date Invited</th>
+                        <th scope="col">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="member in invitedMembers" :key="member.memberID">
+                        <!-- Column 1: Photo -->
+                        <td>
+                            <img v-if="member.photo" :src="member.photo" class="rounded-circle" style="width: 50px; height: 50px;" alt="profile-photo">
+                            <svg v-else xmlns="http://www.w3.org/2000/svg" width="45" height="45" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                                <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+                                <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+                            </svg>
+                        </td>
+                        <!-- Column2: Name -->
+                        <td>{{ member.displayName }}</td>
+                        <!-- Column3: Date Invited -->
+                        <td>{{ member.inviteDate }}</td>
+                        <!-- Column4: Status -->
+                        <td>Pending</td>
+                    </tr>
+                </tbody>
+
+            </table>
+
+            <!-- Pagination Controls for member invite table -->
+            <nav v-if="invitedMembers.length > 0">
+                <ul class="pagination justify-content-center mt-3">
+                    <!-- << -->
+                    <li class="page-item" :class="{ disabled: currentInvitedTablePage === 1 }">
+                        <button class="page-link" @click="goToInvitedPage(currentInvitedTablePage - 1)" aria-label="Previous">
+                            &laquo;
+                        </button>
+                    </li>
+                    <!-- Page numbers -->
+                    <li v-for="page in totalRequestPages" :key="page" class="page-item" :class="{ active: page === currentRequestTablePage }">
+                        <button class="page-link" @click="goToInvitedPage(page)">{{ page }}</button>
+                    </li>
+                    <!-- >> -->
+                    <li class="page-item" :class="{ disabled: currentInvitedTablePage === totalRequestPages }">
+                        <button class="page-link" @click="goTogoToInvitedPageRequestPage(currentInvitedTablePage + 1)" aria-label="Next">
+                            &raquo;
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
 
         <!-- Horizontal line divider to seperate sections -->
         <hr>
@@ -394,19 +450,21 @@ export default {
             members: [],
             currentMemberTablePage: 1, // Tracks the current member table page the user is on
             pageSizeMembers: 1, // Determine number of members to show per member table page (value here should be the same as LIMIT VALUE IN THE BACKEND)
+            errorMessage: '', // Variable for error message if fail to retrieve member list
+
+            // Variables to store invited members
+            invitedMembers: [],
+            currentInvitedTablePage: 1, // Tracks the current invited member table page the user is on
+            pageSizeInvited: 1, // Determine number of invited members to show per invited member table page (value here should be the same as LIMIT VALUE IN THE BACKEND)
+            invitedListError: '', // Variable for error message if fail to retrieve invited member list
 
             // Variable to store request to join club
             requests: [],
             totalRequest: null,
             currentRequestTablePage: 1, // Tracks the current request table page the user is on
             pageSizeRequests: 1, // Determine number of requests to show per request table page (value here should be the same as LIMIT VALUE IN THE BACKEND)
-
-            // Variable for error message if fail to retrieve member list
-            errorMessage: '',
-
-            // Variable for error message if fail to retrieve member request list
-            requestListError: '',
-
+            requestListError: '', // Variable for error message if fail to retrieve member request list
+            
             // Variable to store member information for granting admin status
             selectedMemberMakeAdmin: {},
 
@@ -459,6 +517,33 @@ export default {
             }
         },
 
+        // Function to get invited members
+        async getInvitedMembers() {
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getInvitedMembers/${this.clubId}/0`);
+                this.invitedMembers = response.data.invitedMembers;
+            } catch (error) {
+                console.error(error);
+                if (error.response.status != 404) {
+                    this.errorMessage = 'Failed to retrieve invited members';
+                }
+            }
+        },
+
+        // Function to get the next page of invited members
+        async getNextInvitedTablePage() {
+            try {
+                let latestMemberID = this.invitedMembers[this.invitedMembers.length - 1].memberID;
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getInvitedMembers/${this.clubId}/${latestMemberID}`);
+                this.invitedMembers = this.invitedMembers.concat(response.data.invitedMembers);
+            } catch (error) {
+                console.error(error);
+                if (error.response.status != 404) {
+                    this.errorMessage = 'Failed to retrieve invited members';
+                }
+            }
+        },
+
         // Function to get club member requests (when the page first loads)
         async getClubRequests() {
             try {
@@ -476,12 +561,10 @@ export default {
         // Function to get the next page of club member requests
         async getNextRequestTablePage() {
             try {
-                console.log(this.requests);
                 let latestRequestID = this.requests[this.requests.length - 1].requestID;
                 const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/club/getClubRequests/${this.clubId}/${latestRequestID}`);
                 this.requests = this.requests.concat(response.data.requests);
             } catch (error) {
-                console.error(error);
                 if (error.response.status != 404) {
                     this.requestListError = 'Failed to retrieve club member requests';
                 }
@@ -524,6 +607,12 @@ export default {
                     toast.success('Club information updated successfully');
                     this.editMode = false;
                     this.loading = false;
+
+                    // Exit settings page by refreshing the page
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+
                 })
                 .catch((error) => {
                     console.error(error);
@@ -538,6 +627,12 @@ export default {
         goToMemberPage(page) {
             this.getNextMemberTablePage();
             this.currentMemberTablePage = page;
+        },
+
+        // Function to go to a specific invited member table page
+        goToInvitedPage(page) {
+            this.getNextInvitedTablePage();
+            this.currentInvitedTablePage = page;
         },
 
         // Function to go to a specific request table page

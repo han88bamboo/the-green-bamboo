@@ -699,3 +699,271 @@ Cleaned up some misalignment in search boxes
 
 Nature of the changes (frontend / backend / database):
 frontend 
+
+# Update as of 20 May 
+Coder: CP
+
+Purpose of the changes:
+bug fix: edited create event form and upcoming events backend endpoint
+- made time and limit and location optional in create event form
+- included all day option in create event from
+- included user's own events when retrieving upcoming events
+- edited error message shown on events page if user did not login
+
+
+Nature of the changes (frontend / backend / database):
+frontend and backend
+
+# Update as of 20 May 
+Coder: CP
+
+Purpose of the changes:
+fix: added rank color due to merge issue previously
+
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 21 May 
+Coder: CP
+
+Purpose of the changes:
+bug fixes for clubs
+[Clubs] Join status is wrongly stated as "Pending" for members who have already successfully joined
+[Clubs] Club can't change from private to public
+[Clubs] Profile picture of users postings in clubs is not showing the user's profile picture, just the default user picture.
+
+Nature of the changes (frontend / backend / database):
+frontend and a bit of backend
+
+# Update as of 21 May 
+Coder: CP
+
+Purpose of the changes:
+bug fix: fix total member not showing on clubs you manage section on browse clubs page
+
+
+Nature of the changes (frontend / backend / database):
+frontend and backend
+
+# Update as of 21 May 
+Coder: CP
+
+Purpose of the changes:
+bug fix: show correct error message on specific event page for more events
+
+
+Nature of the changes (frontend / backend / database):
+frontend and backend
+
+
+# Update as of 21 May 
+Coder: Han
+
+Purpose of the changes:
+reverted BillingSecurity.vue and Payment.py files back to original version to fix bug where Stripe payment does not go through. added debugging logs
+
+Nature of the changes (frontend / backend / database):
+frontend, backend
+
+# Update as of 21 May 
+Coder: CP
+
+Purpose of the changes:
+bug fix: fixed club and events bugs
+Fixes:
+- image uploading for club banner, club post and event banners (base64 issue fix)
+- fixed club status on the left menu on browse club page
+
+
+Nature of the changes (frontend / backend / database):
+frontend and backend
+
+# Update as of 22 May 
+Coder: Han
+
+Purpose of the changes:
+commented out the Scan Bottle feature from landing page.
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 22 May 
+Coder: Han
+
+Purpose of the changes:
+added footer to all the relevant pages
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 22 May 
+Coder: Han
+
+Purpose of the changes:
+fixed broken links to drinks listings on UserProfileRefactor.vue and ListingRowDisplayUserProfile.vue components
+also fixed producer error message and added new method to get producers on getdata.py
+
+Nature of the changes (frontend / backend / database):
+frontend, backend
+
+# Update as of 22 May 
+Coder: Han
+
+Purpose of the changes:
+fixed broken links to drinks listings on userdashboard.vue
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 23 May 
+Coder: Han
+
+Purpose of the changes:
+fixed issue whereby delete button didn't work for announcements on deployed site.
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 23 May 
+Coder: Danish
+
+Purpose of the changes:
+•⁠  ⁠Fixed the 'My Drink Lists' button color on badges tab active.
+•⁠  ⁠Fixed progress bar calculation in user badges
+•⁠  ⁠Added Public Lists badge
+•⁠  ⁠Added badge notification in user's notification
+
+Nature of the changes (frontend / backend / database):
+backend mostly, and frontend
+
+
+
+# Update as of 23 May 
+Coder: Kai
+
+Purpose of the changes:
+front-end changes for user dashboard + best of selection module
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 26 May 
+Coder: Kai
+
+Purpose of the changes:
+front-end changes for Best Of - mobile responsiveness
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 26 May 
+Coder: Han (Danish & CP's work )
+Purpose of the changes:
+– adding rsvp badge, events check in status
+– feat: change in events ui
+– feat: best of page including show all for type category for each drink type
+– bug fixes: fixed best of bugs
+  > only users can see cast your vote button
+  > fixed routing issue for cast your vote button
+  > refactored best of selections to add the exact listing user have selected
+– feat: added edit and delete button on club post page
+
+
+Nature of the changes (frontend / backend / database):
+frontend, backend and DB
+
+# Update as of 28 May 
+Coder: Kai 
+
+Purpose of the changes:
+changed the front end spacing / margin / toggles for venue and producer dashboards
+edited the default profile picture for producers, venues and users.
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 2 June 
+Coder: Jun Wei
+
+Purpose of the changes:
+- Debugged the issue of stripe payment element not showing up (payment.py)
+- Debugged the issue of blank page redirection after creation of account after stripe payment (BillingSecurity.vue)
+
+Nature of the changes (frontend / backend / database):
+frontend and backend
+
+
+# Update as of 14 June 
+Coder: Kai 
+
+Purpose of the changes:
+- Edited text and button displays for NavBar on Desktop for various users
+- Edited the front end of the mobile navigation bar - changed from dropdown to right panel. 
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 15 June 
+Coder: Jun Wei 
+
+Purpose of the changes:
+- Debugged issue of business settings button not being clickable for claimed and approved businesses (venues and producers)
+- Debugged issue of business settings page's broken backend calls due to different Stripe API response values (different api versions). 
+
+Nature of the changes (frontend / backend / database):
+frontend and backend
+
+# Update as of 15 June 
+Coder: Han 
+
+Purpose of the changes:
+added help topics / "get started page" on Drink-X, with first 3 topics:
+(1) Features
+(2) Drink-X for Venues
+(3) Drink–X for Brands
+
+Nature of the changes (frontend / backend / database):
+frontend 
+
+# Update as of 15 June - deployed too
+Coder: Han 
+
+Purpose of the changes:
+added conditionally rendered welcome sections for VenueProfile.vue and ProducerProfile.vue
+
+Nature of the changes (frontend / backend / database):
+frontend 
+
+# Update as of 16 June 
+Coder: Kai 
+
+Purpose of the changes:
+Changed the leaderboard front end and category names 
+changed default profile pic for User that shows up on User Dashboard
+
+Nature of the changes (frontend / backend / database):
+frontend 
+
+# Update as of 17 June
+
+Coder: Candy
+
+Purpose of the changes:
+Updated URL that are not working on user's dashboard
+(1) Updated UserDashboard.vue
+(2) Updated organiser link format (frontend/src/views/SpecificEventPage.vue)
+(2) Updated post discussion user link format (ClubPostView.vue)
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 18 June
+
+Coder: Candy
+
+Purpose of the changes:
+switched off faulty duplicate checking mechanism - it was causing photo misalignments 
+
+Nature of the changes (frontend / backend / database):
+backend

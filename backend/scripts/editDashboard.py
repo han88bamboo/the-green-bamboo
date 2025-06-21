@@ -12,11 +12,12 @@ blueprint = Blueprint(file_name[:-3], __name__)
 # -----------------------------------------------------------------------------------------
 
 # Helper function to update database 
-def update_user_listings(cursor, user_id, category_name, selected_listings):
+def update_user_listings(cursor, user_id, category_name, selected_listings, selected_drink_ids):
     # Step 1: Get current values
     cursor.execute(f'SELECT "{category_name}" FROM "users" WHERE "id" = %s', (user_id,))
     result = cursor.fetchone()
     current_listings = result[category_name] if result and result[category_name] else []
+
 
     # Step 2: If same, do nothing
     if set(current_listings) == set(selected_listings):
@@ -36,12 +37,11 @@ def update_user_listings(cursor, user_id, category_name, selected_listings):
     cursor.execute('''
         SELECT "id", "listingName", "drinkType", "typeCategory"
         FROM "listings"
-        WHERE "listingName" = ANY(%s)
-    ''', (selected_listings,))
+        WHERE "id" IN %s
+    ''', (tuple(selected_drink_ids),))
     new_items = cursor.fetchall()
 
     for drink in new_items:
-        print(drink)
         success = add_listing_to_table(cursor, category_name, drink['id'], drink['listingName'], drink['drinkType'], drink['typeCategory'])
         if not success:
             return {"error": f"Error adding new {category_name}"}
@@ -132,14 +132,27 @@ def fetch_top_5(cursor, table, drink_type=None, type_category=None):
 
     try:
         if drink_type and drink_type != "Show All Types":
-            cursor.execute(f'''
-                SELECT "listingID", "listingName", "drinkType", "typeCategory", "counter"
-                FROM "{table}"
-                WHERE "drinkType" IN %s AND "typeCategory" = %s
-                ORDER BY "counter" DESC
-                LIMIT 5
-            ''', (tuple(drink_type), type_category,))
+
+            # If only drink type is provided, filter by drink type
+            if type_category == "Show All":
+                cursor.execute(f'''
+                    SELECT "listingID", "listingName", "drinkType", "typeCategory", "counter"
+                    FROM "{table}"
+                    WHERE "drinkType" IN %s
+                    ORDER BY "counter" DESC
+                    LIMIT 5
+                ''', (tuple(drink_type),))
+            else:
+                # If a specific type category is provided, filter by both drink type and type category
+                cursor.execute(f'''
+                    SELECT "listingID", "listingName", "drinkType", "typeCategory", "counter"
+                    FROM "{table}"
+                    WHERE "drinkType" IN %s AND "typeCategory" = %s
+                    ORDER BY "counter" DESC
+                    LIMIT 5
+                ''', (tuple(drink_type), type_category,))
         else:
+            # If drink type is Show All Types, fetch top 5 without filtering by drink type
             cursor.execute(f'''
                 SELECT "listingID", "listingName", "drinkType", "typeCategory", "counter"
                 FROM "{table}"
@@ -207,6 +220,8 @@ def editTop3():
     - selectedGrails: Array of drink names for Grails section
     - selectedUpAndComing: Array of drink names for Up & Coming section
     - selectedGOATs: Array of drink names for GOATs section
+    - selectedCategory: Category selected during the update
+    - selectedDrinkIDs: Array of drink IDs corresponding to the selected drinks pending update
     
     Returns:
     - 201: User's selections updated successfully
@@ -223,6 +238,8 @@ def editTop3():
         selected_grails = data.get('selectedGrails', [])
         selected_up_and_coming = data.get('selectedUpAndComing', [])
         selected_goats = data.get('selectedGOATs', [])
+        selected_category = data.get('selectedCategory')
+        selected_drink_ids = data.get('selectedDrinkIDs', [])
         
         if not user_id:
             return jsonify({"code": 400, "message": "User ID is required"}), 400
@@ -236,19 +253,22 @@ def editTop3():
                 return jsonify({"code": 404, "message": "User not found"}), 404
             
             # Step 1: Update grails
-            grails_result = update_user_listings(cursor, user_id, "grails", selected_grails)
-            if isinstance(grails_result, dict) and "error" in grails_result:
-                return jsonify({"code": 410, "message": grails_result["error"]}), 410
+            if selected_category == "Grail":
+                grails_result = update_user_listings(cursor, user_id, "grails", selected_grails, selected_drink_ids)
+                if isinstance(grails_result, dict) and "error" in grails_result:
+                    return jsonify({"code": 410, "message": grails_result["error"]}), 410
 
             # Step 2: Update up and coming
-            upcoming_result = update_user_listings(cursor, user_id, "upAndComing", selected_up_and_coming)
-            if isinstance(upcoming_result, dict) and "error" in upcoming_result:
-                return jsonify({"code": 410, "message": upcoming_result["error"]}), 410
+            elif selected_category == "Up & Coming":
+                upcoming_result = update_user_listings(cursor, user_id, "upAndComing", selected_up_and_coming, selected_drink_ids)
+                if isinstance(upcoming_result, dict) and "error" in upcoming_result:
+                    return jsonify({"code": 410, "message": upcoming_result["error"]}), 410
 
             # Step 3: Update goats
-            goats_result = update_user_listings(cursor, user_id, "goats", selected_goats)
-            if isinstance(goats_result, dict) and "error" in goats_result:
-                return jsonify({"code": 410, "message": goats_result["error"]}), 410
+            else:
+                goats_result = update_user_listings(cursor, user_id, "goats", selected_goats, selected_drink_ids)
+                if isinstance(goats_result, dict) and "error" in goats_result:
+                    return jsonify({"code": 410, "message": goats_result["error"]}), 410
 
                      
             # Step 4: Update the user's selections
@@ -266,14 +286,17 @@ def editTop3():
             
     except Exception as e:
         print(str(e))
-        return jsonify({"code": 500, "message": "An error occurred updating user selections."}), 500
+        return jsonify({"code": 500, "message": "An error occurred updating user selections.", "error": e}), 500
     
 
 # [GET] Get top 5 Grails, Up & Coming, and GOATs based on drink type
-@blueprint.route("/getTop5/<drink_type>/<type_category>", methods=['GET'])
-def getTop5(drink_type, type_category):
+@blueprint.route("/getTop5", methods=['GET'])
+def getTop5():
     conn = g.db
     cursor = conn.cursor()
+
+    drink_type = request.args.get('type')
+    type_category = request.args.get('typeCat')
 
     try:
         grails_data = fetch_top_5(cursor, "grails", drink_type, type_category)

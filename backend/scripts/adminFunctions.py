@@ -15,7 +15,7 @@ import s3Images
 import base64
 import chardet
 from psycopg2.extras import execute_values
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from flask import Blueprint, g, request, jsonify
 from datetime import datetime
@@ -672,9 +672,9 @@ def importListings():
             new_profiles_with_ids = cur.fetchall()
             producer_name_id_dict.update({row["producerName"]: row["id"] for row in new_profiles_with_ids})
 
-        # Fetch existing listings to avoid duplicates
-        cur.execute('SELECT "listingName", "producerID" FROM "listings"')
-        existing_listings = {(row['listingName'], row['producerID']) for row in cur.fetchall()}
+        # # Fetch existing listings to avoid duplicates - TZH commented out because this duplicate detection system is faulty
+        # cur.execute('SELECT "listingName", "producerID" FROM "listings"')
+        # existing_listings = {(row['listingName'], row['producerID']) for row in cur.fetchall()}
 
         listings_to_insert = []
         image_urls = []
@@ -706,10 +706,11 @@ def importListings():
             producer_id = producer_name_id_dict.get(producer_name)
             listing_name = converted_row[0]
 
-            if (listing_name, producer_id) in existing_listings:
-                print(f"Skipping duplicate listing: {listing_name} from {producer_name}")
-                image_urls.append(None)  # Add None to maintain alignment with listings
-                continue
+            # tzh commented out the duplicate detection system because it was faulty
+            # if (listing_name, producer_id) in existing_listings:
+            #     print(f"Skipping duplicate listing: {listing_name} from {producer_name}")
+            #     image_urls.append(None)  # Add None to maintain alignment with listings
+            #     continue
 
             # Handle bottler scenarios
             bottler_name = converted_row[2]
@@ -745,13 +746,29 @@ def importListings():
                 'addedDate': datetime.now()
             })
 
-        # Parallelize S3 image uploads
-        def upload_image(image_url):
-            return s3Images.uploadURLtoS3(image_url) if image_url else None
+        # FIXED: Parallelize S3 image uploads while maintaining order
+        def upload_image_with_index(indexed_data):
+            index, image_url = indexed_data
+            s3_url = s3Images.uploadURLtoS3(image_url) if image_url else None
+            return index, s3_url
+
+        # Create indexed data to maintain order
+        indexed_image_urls = list(enumerate(image_urls))
+        s3_urls = [None] * len(image_urls)
 
         with ThreadPoolExecutor() as executor:
-            s3_urls = list(executor.map(upload_image, image_urls))
-            print("S3 URLs:", s3_urls)
+            # Submit all tasks
+            future_to_index = {
+                executor.submit(upload_image_with_index, indexed_data): indexed_data[0] 
+                for indexed_data in indexed_image_urls
+            }
+            
+            # Process completed tasks and maintain order
+            for future in as_completed(future_to_index):
+                index, s3_url = future.result()
+                s3_urls[index] = s3_url
+
+        print("S3 URLs:", s3_urls)
 
         # Update photo URLs in listings
         for listing, s3_url in zip(listings_to_insert, s3_urls):

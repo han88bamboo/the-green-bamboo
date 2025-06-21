@@ -123,7 +123,7 @@
                         <h5 class="text-start fw-bold my-3 collapse d-md-block">Clubs You Manage <button v-if="adminClubs.length > 5" type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#showAllManagedClubs">View All</button></h5>
 
                         <div v-for="club in adminClubs.slice(0, 5)" class="event-club-box" :key="club.id">
-
+                            
                             <!-- Club Banner Image -->
                             <div style="flex: 0 0 40%; max-width: 40%; height: 100px;">
                                 <img v-if="club.clubInfo.clubBanner" :src="club.clubInfo.clubBanner" class="img-fluid event-banner;" alt="..." style="object-fit: cover;">
@@ -136,9 +136,9 @@
                                 </router-link>
                                 <!-- Club details -->
                                 <p class="text-success text-start small">
-                                        <span v-if="club.isInviteOnly == false">Public Group | </span>
-                                        <span v-else>Private Group | </span>
-                                        <span>{{ club.totalMembers }} Members</span>
+                                    <span v-if="club.clubInfo.isInviteOnly == false">Public Group | </span>
+                                    <span v-else>Private Group | </span>
+                                    <span>{{ club.totalMembers }} Members</span>
                                 </p>
                             </div>
                         </div>
@@ -248,11 +248,26 @@
                 
                                         <!-- Column 1: Post information -->
                                         <div class="col-12">
-                                            <!-- Club Photo + Club Name on same row, aligned left -->
+                                            <!-- Poster Photo + Club Name on same row, aligned left -->
                                             <div class="d-flex flex-row align-items-center justify-content-start">
-                                                <!-- Club Photo -->
-                                                <img v-if="post.clubBanner" :src="post.clubBanner" class="rounded-circle" alt="..." style="height: 50px; width: 50px; object-fit: cover;">
-                                                <img v-else :src="defaultBanner" class="rounded-circle" alt="Default Club Banner" style="height: 50px; width: 50px; object-fit: cover;">
+                                                <!-- Poster Photo -->
+                                                <img v-if="post.posterInfo.photo" :src="post.posterInfo.photo" class="rounded-circle" alt="..." style="height: 50px; width: 50px; object-fit: cover;">
+                                                <svg
+                                                    v-else
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="50"
+                                                    height="50"
+                                                    fill="currentColor"
+                                                    class="bi bi-person-circle"
+                                                    viewBox="0 0 16 16"
+                                                    style="object-fit: cover;"
+                                                    >
+                                                    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
+                                                    <path
+                                                        fill-rule="evenodd"
+                                                        d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"
+                                                    />
+                                                </svg>
                                                 <!-- Poster name and rank on the same line -->
                                                 <div class="row">
                                                    <h6 class="ms-2 text-start">
@@ -263,6 +278,7 @@
                                                             <template v-else>{{ post.posterInfo.venueName }}</template>
                                                         </span>
                                                     </router-link>
+                                                    <span class="ms-2">{{ post.posterInfo.currentPoints }}</span>
                                                     <span class="fw-bold fst-italic" :style="{color: post.posterInfo.rankColor}"> {{ post.posterInfo.rank }}</span>
                                                     posted in
                                                     <router-link :to="{ name: 'clubview', params: { clubID: post.clubID, clubName: slugify(post.clubName || 'unknown-club') }}" class="fw-bold text-decoration-none hover-underline" style="color:#027562">
@@ -318,12 +334,12 @@
                                                         <button 
                                                         type="button" 
                                                         class="mobile-view-hide btn primary-btn rounded" 
-                                                        @click="viewPost(post.id)">
+                                                        @click="viewPost(post.clubID, post.id)">
                                                         View Post
                                                         </button>
                                                     
                                                     </div>
-                                                    <span @click="viewPost(post.id)" style="cursor: pointer; text-decoration: underline;" class="mt-1 fst-italic mobile-rating-smaller-text-2 mobile-view-show">
+                                                    <span @click="viewPost(post.clubID, post.id)" style="cursor: pointer; text-decoration: underline;" class="mt-1 fst-italic mobile-rating-smaller-text-2 mobile-view-show">
                                                         View Post
                                                         </span>
                                                 </div>
@@ -421,17 +437,21 @@
             </div>
         </div>
     </div>
+    <!-- Footer End -->
+        <FooterBar />
 </template>
 
 <script>
 // Import the necessary libraries
 import NavBar from '@/components/NavBar.vue';
 import { useToast } from 'vue-toastification';
+import FooterBar from "@/components/FooterBar.vue";
 
 export default {
     name: "BrowseClubs",
     components: {
-        NavBar
+        NavBar,
+        FooterBar
     },
     data() {
         return {
@@ -444,6 +464,7 @@ export default {
 
             // Variable for default Banner 
             defaultBanner: require("@/assets/defaultGroupBanner.png"),
+
 
             // Variables for lazy loading
             offset: 0,
@@ -769,8 +790,8 @@ export default {
         },  
         
         // Function to view a post
-        viewPost(postID) {
-            this.$router.push(`/club/${this.clubId}/post/${postID}`);
+        viewPost(clubID, postID) {
+            this.$router.push(`/club/${clubID}/post/${postID}`);
         },
 
         // Function to redirect to the profile page of the poster

@@ -2,16 +2,7 @@
   <NavBar />
 
   <!-- Display when data is still loading -->
-  <div
-    class="text-info-emphasis fst-italic fw-bold fs-5 pt-5"
-    v-if="dataLoaded == false"
-  >
-    <span>Loading profile, please wait...</span>
-    <br /><br />
-    <div class="spinner-border" role="status">
-      <span class="visually-hidden">Loading...</span>
-    </div>
-  </div>
+  <LoadingWithFunFact v-if="dataLoaded === false" />
 
   <!-- Display when data fails to load -->
   <div
@@ -50,7 +41,7 @@
                     selectedImage || displayUser.photo || defaultProfilePhoto
                   "
                   alt=""
-                  class="rounded-circle-no-bg border border-dark profile-img"
+                  class="rounded-circle-no-bg profile-img"
                   style="height: auto; width: 100%"
                 />
               </div>
@@ -195,7 +186,7 @@
             <div class="row mt-3">
               <router-link
                 v-if="ownProfile && user"
-                :to="{ path: '/dashboard/user' }"
+                :to="{ path: '/dashboard/user/' + userID }"
                 class="btn primary-btn-less-round-blue btn-lg mt-3"
                 style="font-weight: bold"
               >
@@ -313,7 +304,7 @@
                     <div class="edit-drink-choice">
                       <div class="row">
                         <div class="col-4 text-start ps-5" style="margin: auto">
-                          Drink Choice
+                          Drink of Choice
                         </div>
                         <div class="col-8 text-start">
                           <!-- checkbox to choose drinks -->
@@ -333,18 +324,14 @@
                             />
                             <label
                               v-if="selectedDrinks.includes(type)"
-                              class="btn primary-btn-less-round"
+                              class="btn primary-btn-less-round btn-sm"
+                              style="background-color: #f0b358;border:1px solid #f0b358;"
                               :for="index"
-                              style="
-                                color: whitesmoke;
-                                background-color: #535c72;
-                                border: 4px solid #535c72;
-                              "
                               >{{ type }}</label
                             >
                             <label
                               v-else
-                              class="btn primary-btn-outline-less-round"
+                              class="btn btn-edit-profile-tags btn-sm"
                               :for="index"
                               >{{ type }}</label
                             >
@@ -375,20 +362,16 @@
                           />
                           <label
                             v-if="selectedFlavours?.includes(tag.familyTag)"
-                            class="btn primary-btn-less-round"
+                            class="btn primary-btn-less-round btn-sm"
+                            style="background-color: #f0b358;border:1px solid #f0b358;"
                             :for="'flavour-' + index"
-                            style="
-                              color: whitesmoke;
-                              background-color: #535c72;
-                              border: 4px solid #535c72;
-                            "
                           >
                             {{ tag.familyTag }}
                           </label>
                           <label
                             v-else
                             :for="'flavour-' + index"
-                            class="btn primary-btn-outline-less-round"
+                            class="btn btn-edit-profile-tags btn-sm"
                           >
                             {{ tag.familyTag }}
                           </label>
@@ -422,20 +405,16 @@
                                 tag.observationTag
                               )
                             "
-                            class="btn primary-btn-less-round"
+                            class="btn primary-btn-less-round btn-sm"
+                            style="background-color: #f0b358;border:1px solid #f0b358;"
                             :for="'tag-' + index"
-                            style="
-                              color: whitesmoke;
-                              background-color: #535c72;
-                              border: 4px solid #535c72;
-                            "
                           >
                             {{ tag.observationTag }}
                           </label>
                           <label
                             v-else
                             :for="'tag-' + index"
-                            class="btn primary-btn-outline-less-round"
+                            class="btn btn-edit-profile-tags btn-sm"
                           >
                             {{ tag.observationTag }}
                           </label>
@@ -445,17 +424,10 @@
                     <!-- Edit Observaiton Tag End -->
                   </div>
                   <div class="modal-footer">
+                    
                     <button
                       type="button"
-                      class="btn btn-secondary"
-                      data-bs-dismiss="modal"
-                      @click="cancelChanges"
-                    >
-                      Close
-                    </button>
-                    <button
-                      type="button"
-                      class="btn btn-primary"
+                      class="btn btn-read-more btn-sm"
                       @click="saveChangesDetails"
                       data-bs-dismiss="modal"
                     >
@@ -1008,7 +980,7 @@
 
             <!-- Change Password start -->
             <div
-              v-if="ownProfile"
+              v-show="ownProfile"
               class="modal fade"
               id="changePasswordModal"
               tabindex="-1"
@@ -1017,7 +989,7 @@
             >
               <div class="modal-dialog">
                 <div class="modal-content">
-                  <div class="modal-header" style="background-color: #535c72">
+                  <div class="modal-header" style="background-color: #f0b358 ">
                     <h1
                       class="modal-title fs-5"
                       id="exampleModalLabel"
@@ -1036,14 +1008,14 @@
                   <!-- Initial select mode, change or reset password -->
                   <div v-if="changingPassword == ''" class="modal-body">
                     <button
-                      class="btn tertiary-btn reverse-clickable-text m-1"
+                      class="btn btn-read-more btn-sm reverse-clickable-text m-1"
                       type="button"
                       @click="changingPassword = 'change'"
                     >
                       Change Password
                     </button>
                     <button
-                      class="btn tertiary-btn reverse-clickable-text m-1"
+                      class="btn btn-read-more btn-sm reverse-clickable-text m-1"
                       type="button"
                       @click="changingPassword = 'reset'"
                     >
@@ -1105,16 +1077,16 @@
                         Click on "Send Pin" and key in the OTP sent to your
                         email:
                       </p>
-                      <div class="input-group">
+                      <div class="input-group gap-2">
                         <input
                           type="text"
-                          class="form-control"
+                          class="form-control rounded"
                           placeholder="Enter OTP"
                           v-model="resetPin"
                         />
                         <button
                           :disabled="isButtonDisabled"
-                          class="btn btn-primary"
+                          class="btn btn-read-more rounded"
                           type="button"
                           id="resendPin"
                           @click="sendResetPin"
@@ -1158,19 +1130,19 @@
                         !(passwordError || passwordSuccess)
                       "
                     >
-                      <b>Please wait while password is being resetted.</b>
+                      <b>Please wait while password is being reset.</b>
                     </div>
 
                     <!-- if password change/reset is successful -->
                     <p
                       v-if="passwordSuccess"
-                      class="text-success fst-italic fw-bold fs-3"
+                      class="text-success  fw-bold fs-5"
                     >
                       Password {{ changingPassword }} is successful!
                     </p>
                     <p
                       v-if="passwordSuccess && confirmResetPassword"
-                      class="text-success fst-italic fw-bold fs-3"
+                      class="text-success fw-bold fs-5"
                     >
                       An email has been sent to you containing the password.
                     </p>
@@ -1178,14 +1150,14 @@
                     <!-- if password change/reset faces error -->
                     <p
                       v-if="passwordError"
-                      class="text-danger fst-italic fw-bold fs-3"
+                      class="text-danger  fw-bold fs-5"
                     >
                       There is an error during password {{ changingPassword }},
                       please try again!
                     </p>
                     <p
                       v-if="passwordMismatch"
-                      class="text-danger fst-italic fw-bold fs-3"
+                      class="text-danger fst-italic fw-bold fs-5"
                     >
                       Old password do not match, please try again
                     </p>
@@ -1201,21 +1173,12 @@
                       "
                       type="button"
                       @click="selectPasswordMode"
-                      class="btn btn-secondary"
+                      class="btn btn-secondary sm"
                     >
                       Return
                     </button>
 
-                    <!-- Close modal-->
-                    <button
-                      v-if="!resettingPassword"
-                      type="button"
-                      @click="resetChangePassword"
-                      class="btn btn-secondary"
-                      data-bs-dismiss="modal"
-                    >
-                      Close
-                    </button>
+                    
 
                     <!-- Change password first confirmation and second confirmation -->
                     <button
@@ -1231,7 +1194,7 @@
                       "
                       type="button"
                       @click="updatePassword"
-                      class="btn btn-primary"
+                      class="btn btn-read-more btn-sm"
                     >
                       Change Password
                     </button>
@@ -1247,7 +1210,7 @@
                       "
                       type="button"
                       @click="confirmUpdatePassword"
-                      class="btn btn-primary"
+                      class="btn btn-read-more btn-sm"
                     >
                       Update Password
                     </button>
@@ -1265,7 +1228,7 @@
                       "
                       type="button"
                       @click="verifyOTP"
-                      class="btn btn-primary"
+                      class="btn btn-read-more btn-sm"
                     >
                       Verify OTP
                     </button>
@@ -1276,7 +1239,7 @@
                       "
                       type="button"
                       @click="resetPassword"
-                      class="btn btn-primary"
+                      class="btn btn-read-more btn-sm"
                     >
                       Reset Password
                     </button>
@@ -1404,7 +1367,7 @@
                 />
                 <div>
                   <p class="mobile-rating-smaller-text-2 mb-2">
-                    Review your first drink.
+                    Quench your thirst! Review your first drink!
                   </p>
                   <router-link :to="'/explore'">
                     <button
@@ -1423,7 +1386,7 @@
                   style="width: 64px; height: 64px; object-fit: contain; border-radius: 4px;" 
                   alt="Invite two friends" />
                 <div>
-                  <p class="mobile-rating-smaller-text-2 mb-2">Invite two friends.</p>
+                  <p class="mobile-rating-smaller-text-2 mb-2">Don't drink alone! Invite your friends!</p>
                   <button
                     class="btn btn-warning btn-sm rounded fw-bold"
                     @mouseover="hoverButton($event)"
@@ -1457,7 +1420,7 @@
                 />
                 <div>
                   <p class="mobile-rating-smaller-text-2 mb-2">
-                    Curate a list to share.
+                    Curate a list to share. You'll want to remember this!
                   </p>
                   <button
                     class="btn btn-warning btn-sm rounded fw-bold"
@@ -1745,9 +1708,9 @@
               class="btn mx-1 fw-bold no-hover"
               :class="{
                 'primary-btn-green active-toggle-button-user-profile':
-                  activeTab !== 'reviews',
+                  activeTab === 'lists',
                 'primary-btn-green-thin-outline inactive-toggle-button-user-profile':
-                  activeTab === 'reviews',
+                  activeTab !== 'lists',
               }"
               @click="switchTab('lists')"
             >
@@ -1789,7 +1752,7 @@
                       </div>
                       <div class="col-9 mobile-col-9 mobile-ps-2">
                         <a
-                          :href="'/listing/view/' + review.reviewTarget"
+                          :href="'/listing/view/' + review.reviewTarget + '/' + encodeURIComponent(getListingName(review.reviewTarget) || 'unknown-listing')"
                           style="text-decoration: none; color: #223957"
                         >
                           <p class="fs-5 mobile-fs-6 mb-1 mobile-mb-0_5 default-clickable-text">
@@ -1855,15 +1818,18 @@
 
                 <ListingRowDisplayUserProfile
                   :listingArr="top5ListingsData"
+                  :producers="producers"
                   displayName="Favourite Listings"
                   columnWidth="165px"
                 />
 
                 <ListingRowDisplayUserProfile
                   :listingArr="recentActivity"
+                  :producers="producers"
                   displayName="Recent Activity"
                   columnWidth="165px"
                 />
+                <br>
               </div>
 
               <!-- lists tab -->
@@ -2235,6 +2201,7 @@
                   </div>
                   <!-- modal end -->
                 </div>
+                <br>
               </div>
 
               <!-- individual list tab -->
@@ -2524,7 +2491,7 @@
                       "
                     >
                       <a
-                        :href="'/listing/view/' + listing?.drinkId"
+                        :href="'/listing/view/' + listing?.drinkId + '/' + encodeURIComponent(bookedMarkedListings[listing?.drinkId]?.listingName || 'unknown-listing')"
                         style="text-decoration: none; color: inherit"
                       >
                         <h5 class="mobile-fs-6"><b>
@@ -2687,7 +2654,9 @@
                         />
                         
                         <!-- Badge name -->
-                        <p class="badge-name mb-1"><strong>{{ badge.badgeName }}</strong></p>
+                        <p class="badge-name mb-1 text-center">
+                          <strong>{{ badge.badgeName }} <span style="white-space: nowrap;">(Lvl {{ badge.currentLevel }})</span></strong>
+                        </p>
                         
                         <!-- Date acquired -->
                         <p class="badge-date text-muted small mb-2">{{ new Date(badge.dateEarned).toLocaleDateString() }}</p>
@@ -2698,7 +2667,11 @@
                             class="progress-bar"
                             style="background-color: #3498db;" 
                             role="progressbar"
-                            :style="{width: (badge.currentProgress / badge.nextLevelRequirement * 100) + '%'}"
+                            :style="{
+                              width: badge.currentProgress >= badge.nextLevelRequirement 
+                                ? '0%' 
+                                : (badge.currentProgress / badge.nextLevelRequirement * 100) + '%'
+                            }"
                             :aria-valuenow="badge.currentProgress"
                             aria-valuemin="0"
                             :aria-valuemax="badge.nextLevelRequirement"
@@ -2707,13 +2680,19 @@
                         
                         <!-- Progress text -->
                         <p class="progress-text small mb-0" v-if="badge.nextLevelRequirement">
-                          <span v-if="badge.badgeType === 'Action'">
-                            {{ badge.nextLevelRequirement - badge.currentProgress }} More Actions To<br>Reach The Next Level!
+                          <span v-if="badge.currentProgress < badge.nextLevelRequirement">
+                            <span v-if="badge.badgeType === 'Action'">
+                              {{ badge.nextLevelRequirement - badge.currentProgress }} More Actions To<br>Reach The Next Level!
+                            </span>
+                            <span v-else>
+                              {{ badge.nextLevelRequirement - badge.currentProgress }} More Reviews To<br>Reach The Next Level!
+                            </span>
                           </span>
                           <span v-else>
-                            {{ badge.nextLevelRequirement - badge.currentProgress }} More Reviews To<br>Reach The Next Level!
+                            Ready to Level Up!
                           </span>
                         </p>
+
                         <p class="progress-text small mb-0" v-else>Maximum level reached!</p>
                       </div>
                     </div>
@@ -2745,6 +2724,7 @@ import { useToast } from "vue-toastification";
 import EventBox from "@/components/EventBox.vue";
 import BookmarkModal from "@/components/BookmarkModal.vue";
 import ListingRowDisplayUserProfile from "@/components/ListingRowDisplayUserProfile.vue";
+import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 
 export default {
   name: "UserProfileRefactor",
@@ -2754,6 +2734,7 @@ export default {
     EventBox,
     BookmarkModal,
     ListingRowDisplayUserProfile,
+    LoadingWithFunFact,
   },
   data() {
     return {
@@ -2761,9 +2742,11 @@ export default {
       currentURL: "",
       // default images
       defaultProfilePhoto:
-        "https://drinkximages.s3.us-east-1.amazonaws.com/images/27e129b8-2d6e-44a3-8c14-d78c815b8056.jpg",
+        "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288",
       defaultDrinkImage:
-        "https://drinkximages.s3.us-east-1.amazonaws.com/images/2d4d94bc-313e-4621-9a15-4bfbf77958de.jpg",
+        "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739",
+
+      producers: [],
 
       // Data loading variables
       displayUserDataLoaded: false,
@@ -3024,7 +3007,8 @@ export default {
           this.getSubTags(),
           this.getFlavourTag(), // added by group 3 edit profile
           this.getObservationTags(), // added by group 3 for the edit profile
-          this.getUserBadges()
+          this.getUserBadges(),
+          this.getProducers()
         ]);
 
         await this.getReviewsSummary();
@@ -3048,6 +3032,7 @@ export default {
         console.error("An error occurred:", error);
         this.dataLoaded = null;
       }
+    
     },
 
     // ------------------- Get Page Data -------------------
@@ -3076,6 +3061,7 @@ export default {
 
         // get display user bookmark lists
         this.displayUserBookmarks = this.displayUser.drinkLists;
+        console.log("Display User Bookmarks:", this.displayUserBookmarks);
 
         // get listings details in bookmark lists
         this.getBookmarkListings();
@@ -3762,7 +3748,7 @@ export default {
         );
       }
 
-      // window.location.reload();
+      window.location.reload();
     },
 
     // reset edit profile form
@@ -4147,9 +4133,15 @@ export default {
 
     // ------------------ Format Top 5 Listings Data for Component ------------------
     formatTop5ListingsData() {
-      this.top5ListingsData = this.top5Listings.map((listingID) =>
-        this.listings.find((listing) => listing.id === listingID)
-      );
+      this.top5ListingsData = this.top5Listings.map((listingID) => {
+        const listing = this.listings.find((listing) => listing.id === listingID);
+        // Make sure we have a listing name for the URL
+        if (listing && !listing.listingName) {
+          // If no listing name is found, try to get it from the dictionary or use a default
+          listing.listingName = this.listingIDDictionary[listingID] || "unknown-listing";
+        }
+        return listing;
+      });
     },
 
     // ------------------ View Bookmark List Functions ------------------
@@ -4229,7 +4221,6 @@ export default {
       try {
         const response = await this.$axios.post(
           `${process.env.VUE_APP_API_URL}/editProfile/updateBookmark`,
-          // const response = await this.$axios.post(`http://127.0.0.1:5000/editProfile/updateBookmark`,
           {
             userID: this.userID,
             bookmark: this.userBookmarks,
@@ -4240,7 +4231,7 @@ export default {
             },
           }
         );
-        console.log(response.data);
+        console.log("bookmark: " + response.data);
       } catch (error) {
         console.error(error);
       }
@@ -4285,7 +4276,6 @@ export default {
       try {
         const response = await this.$axios.post(
           `${process.env.VUE_APP_API_URL}/editProfile/updateBookmark`,
-          // const response = await this.$axios.post(`http://127.0.0.1:5000/editProfile/updateBookmark`,
           {
             userID: this.userID,
             bookmark: this.userBookmarks,
@@ -4296,7 +4286,7 @@ export default {
             },
           }
         );
-        console.log(response.data);
+        console.log("bookmark" + response.data);
       } catch (error) {
         console.error(error);
       }
@@ -4601,6 +4591,18 @@ export default {
         const toast = useToast();
         toast.error("Failed to unfollow user. Please try again.");
       }
+    },
+    
+    async getProducers() {
+    try {
+      const response = await this.$axios.get(
+        `${process.env.VUE_APP_API_URL}/getData/getAllProducers`
+      );
+      this.producers = response.data;
+      console.log("Producers loaded:", this.producers.length);
+    } catch (error) {
+      console.error("Error fetching producers:", error);
+    }
     },
   },
 };

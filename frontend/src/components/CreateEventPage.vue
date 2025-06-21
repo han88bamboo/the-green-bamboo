@@ -3,17 +3,17 @@
         <form>
             <!-- Event name -->
             <div class="mb-3">
-                <label for="eventName" class="form-label">Event Name:</label>
+                <label for="eventName" class="form-label">Event Name <span style="color: red;">*</span></label>
                 <input type="text" class="form-control" id="eventName" required v-model="newEvent.eventName" @input="emitNewEvent">
             </div>
 
             <!-- Event description input editor -->
-            <p class="fw-bold">Event Description:</p>
+            <p>Event Description <span style="color: red;">*</span></p>
             <div id="editor-container" style="height: 300px;" class="mb-3"></div>
 
             <!-- Event type -->
             <div class="mb-3 row">
-                <label for="eventType">Event Type: </label>
+                <label for="eventType">Event Type <span style="color: red;">*</span></label>
                 
                 <div>
                     <div class="form-check form-check-inline">
@@ -34,13 +34,13 @@
             <div class="mb-3 row">
                 <!-- Event start date -->
                 <div class="col">
-                    <label for="eventStartDate" class="form-label">Event Start Date:</label>
+                    <label for="eventStartDate" class="form-label">Event Start Date <span style="color: red;">*</span></label>
                     <input type="date" class="form-control" id="eventStartDate" required v-model="newEvent.eventStartDate" :min="new Date().toISOString().split('T')[0]" @input="emitNewEvent"> 
                 </div>
 
                 <!-- Event start time -->
                 <div class="col">
-                    <label for="eventStartTime" class="form-label">Event Start Time:</label>
+                    <label for="eventStartTime" class="form-label">Event Start Time</label>
                     <input type="time" class="form-control" id="eventStartTime" v-model="newEvent.eventStartTime" @input="emitNewEvent" :disabled="newEvent.allDay">
                 </div>
             </div>
@@ -49,19 +49,19 @@
             <div class="mb-3 row">
                 <!-- Event end date -->
                 <div class="col">
-                    <label for="eventEndDate" class="form-label">Event End Date:</label>
-                    <input type="date" class="form-control" id="eventEndDate" required v-model="newEvent.eventEndDate" :min="newEvent.eventStartDate" @input="emitNewEvent">
+                    <label for="eventEndDate" class="form-label">Event End Date</label>
+                    <input type="date" class="form-control" id="eventEndDate" v-model="newEvent.eventEndDate" :min="newEvent.eventStartDate" @input="emitNewEvent">
                 </div>
 
                 <!-- Event end time -->
                 <div class="col">
-                    <label for="eventEndTime" class="form-label">Event End Time:</label>
+                    <label for="eventEndTime" class="form-label">Event End Time</label>
                     <input type="time" class="form-control" id="eventEndTime" v-model="newEvent.eventEndTime" @input="emitNewEvent" :disabled="newEvent.allDay">
                 </div>
             </div>
 
             <!-- All Day Checkbox -->
-            <div class="form-check mb-3">
+            <div class="mb-3">
                 <input class="form-check-input" type="checkbox" id="allDay" 
                     v-model="newEvent.allDay" 
                     @change="emitNewEvent">
@@ -74,7 +74,7 @@
 
             <!-- Event wallpaper upload -->
             <div class="mb-3">
-                <label for="eventBanner" class="form-label">Add Event Wallpaper (upload up to 3 images):</label>
+                <label for="eventBanner" class="form-label">Add Event Wallpaper (upload up to 3 images)</label>
                 <input type="file" class="form-control" id="eventBanner" multiple accept="image/*" @change="uploadImages">
             </div>
 
@@ -93,7 +93,7 @@
 
             <!-- Event limit -->
             <div class="mb-3">
-                <label for="eventLimit" class="form-label">Event Limit:</label>
+                <label for="eventLimit" class="form-label">Event Limit</label>
                 <input type="number" class="form-control" min="1" id="eventLimit" v-model="newEvent.eventLimit" @input="emitNewEvent">
             </div>
 
@@ -101,7 +101,7 @@
 
             <!-- Ticketed event -->
             <div class="mb-3">
-                <label for="ticketedEventYes">Is this a ticketed event? (Click yes if this event requires a pre-sign up for entry.)</label>
+                <label for="ticketedEventYes">Is this a ticketed event? (Click yes if this event requires a pre-sign up for entry.) <span style="color: red;">*</span></label>
                 <div>
                     <div class="form-check form-check-inline">
                         <!-- Yes Option -->
@@ -137,8 +137,8 @@
             <!-- Event location -->
             <div class="mb-3">
                 <label for="eventLocation" class="form-label">
-                    <span v-if="newEvent.eventType == 'Location'">Event Location:</span>
-                    <span v-else>Event Link:</span>
+                    <span v-if="newEvent.eventType == 'Location'">Event Location</span>
+                    <span v-else>Event Link</span>
                 </label>
                 <input type="text" class="form-control" id="eventLocation" v-model="newEvent.eventLocation" @input="emitNewEvent">
             </div>

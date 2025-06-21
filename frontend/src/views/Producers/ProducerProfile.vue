@@ -3,16 +3,7 @@
   <NavBar />
 
   <!-- Display when data is still loading -->
-  <div
-    class="text-info-emphasis fst-italic fw-bold fs-5 pt-5"
-    v-if="dataLoaded == false"
-  >
-    <span>Loading profile, please wait...</span>
-    <br /><br />
-    <div class="spinner-border" role="status">
-      <span class="visually-hidden">Loading...</span>
-    </div>
-  </div>
+  <LoadingWithFunFact v-if="dataLoaded === false" />
 
   <!-- Display when data fails to load -->
   <div
@@ -37,6 +28,236 @@
     <div class="row">
       <!-- producer information -->
       <div class="col-xl-9 col-12 px-3 px-lg-4"> <!-- KAI Added Impt margins for left columm -->
+
+      <!-- Welcome Section for Producer Owners -->
+      <div v-if="selfView"
+        style="
+          border: 1px solid #e0e0e0;
+          border-radius: 8px;
+          padding: 16px;
+          background-color: #ffffff;
+          margin-bottom: 20px;
+        "
+        class="mb-4"
+      >
+        <h3
+          style="
+            font-size: 24px;
+            font-weight: bold;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 16px;
+          "
+        >
+          Welcome to Drink-X. Grow your brand's presence!
+        </h3>
+
+        <div class="row fs-7">
+          <!-- First Column -->
+          <div class="col-md-6">
+            <!-- Action Item 1 -->
+            <div
+              style="
+                display: flex;
+                align-items: flex-start;
+                gap: 16px;
+                margin-bottom: 16px;
+              "
+            >
+              <img
+                src="/CurateProduct.png"
+                style="
+                  width: 64px;
+                  height: 64px;
+                  object-fit: contain;
+                  border-radius: 4px;
+                "
+                alt="Manage your products"
+              />
+              <div class="text-start">
+                <p class="mobile-rating-smaller-text-2 mb-2 text-start">
+                  <strong>Curate Your Product List & Add New Expressions!</strong> (Add your hot new releases so fans can start leaving reviews, and make sure the correct products are verifiably yours!)
+                </p>
+                <button
+                  class="btn btn-warning btn-sm rounded fw-bold fs-8"
+                  @click="showAllListings()"
+                  onclick="setTimeout(() => {
+                    // First scroll to the container
+                    document.getElementById('catalogue').scrollIntoView({behavior: 'smooth'});
+                      
+                    // Fine-tune position after scrolling
+                    setTimeout(() => {
+                      window.scrollBy({top: -100, behavior: 'smooth'});
+                      const catalogueEl = document.getElementById('expressionsArea');
+                      // Add highlight animation
+                      if (catalogueEl) {
+                        catalogueEl.classList.add('highlight-section');
+                        setTimeout(() => catalogueEl.classList.remove('highlight-section'), 3000);
+                      }
+                    }, 550);
+                  }, 100)"
+                >
+                  Curate or Add Products
+                </button>
+              </div>
+            </div>
+
+            <!-- Action Item 2 -->
+            <div
+              style="
+                display: flex;
+                align-items: flex-start;
+                gap: 16px;
+                margin-bottom: 16px;
+              "
+            >
+              <img
+                src="/PostAnnouncement.png"
+                style="
+                  width: 64px;
+                  height: 64px;
+                  object-fit: contain;
+                  border-radius: 4px;
+                "
+                alt="Share an update"
+              />
+              <div class="text-start">
+                <p class="mobile-rating-smaller-text-2 mb-2 text-start">
+                  <strong>Post An Announcement</strong> (Share product launches, awards, or special news with your fans! Create some buzz!)
+                </p>
+                <button
+                  class="btn btn-warning btn-sm rounded fw-bold fs-8"
+                  @click="contentMode = 'overview'; showAllReviews()"
+                  onclick="setTimeout(() => {
+                    // Find the update input section
+                    const updateSection = document.querySelector('.input-group.centered');
+                    if (updateSection) {
+                      updateSection.scrollIntoView({behavior: 'smooth'});
+                      
+                      // After initial scroll completes, adjust position and add highlight
+                      setTimeout(() => {
+                        // Scroll up slightly for better positioning
+                        window.scrollBy({top: -100, behavior: 'smooth'});
+                        
+                        // Add the highlight effect
+                        updateSection.classList.add('highlight-section');
+                        
+                        // Remove highlight after 3 seconds
+                        setTimeout(() => {
+                          updateSection.classList.remove('highlight-section');
+                        }, 3000);
+                      }, 450);
+                    }
+                  }, 100)"
+                >
+                  Post Announcement
+                </button>
+              </div>
+            </div>
+
+            <div
+              style="
+                display: flex;
+                align-items: flex-start;
+                gap: 16px;
+                margin-bottom: 16px;
+              "
+            >
+              <img
+                src="/CreateEvent.png"
+                style="
+                  width: 64px;
+                  height: 64px;
+                  object-fit: contain;
+                  border-radius: 4px;
+                "
+                alt="Create Event"
+              />
+              <div class="text-start">
+                <p class="mobile-rating-smaller-text-2 mb-2 text-start">
+                  <strong>Create An Event</strong> (Hosting an event? Let your fans know what's up and to RSVP now!)
+                </p>
+                <router-link :to="'/events/view'">
+                  <button
+                    class="btn btn-warning btn-sm rounded fw-bold fs-8"
+                  >
+                    Create Event
+                  </button>
+                </router-link>
+              </div>
+            </div>
+          </div>
+
+          <!-- Second Column -->
+          <div class="col-md-6">
+            <!-- Action Item 3 -->
+            <div
+              style="
+                display: flex;
+                align-items: flex-start;
+                gap: 16px;
+                margin-bottom: 16px;
+              "
+            >
+              <img
+                src="/AnswerQnAs.png"
+                style="
+                  width: 64px;
+                  height: 64px;
+                  object-fit: contain;
+                  border-radius: 4px;
+                "
+                alt="Answer Q&A's"
+              />
+              <div class="text-start">
+                <p class="mobile-rating-smaller-text-2 mb-2 text-start">
+                  <strong>Answer Q&A's</strong> (Regularly engage your fans by answering their questions about your products and brand!)
+                </p>
+                <button
+                  class="btn btn-warning btn-sm rounded fw-bold fs-8"
+                  @click="highlightQnASection"
+                >
+                  Answer Q&A's
+                </button>
+              </div>
+            </div>
+
+            <!-- Action Item 4 -->
+            <div
+                style="
+                display: flex;
+                align-items: flex-start;
+                gap: 16px;
+                margin-bottom: 16px;
+                "
+            >
+                <img
+                src="/CreateClub.png"
+                style="
+                    width: 64px;
+                    height: 64px;
+                    object-fit: contain;
+                    border-radius: 4px;
+                "
+                alt="Create Club"
+                />
+                <div class="text-start">
+                <p class="mobile-rating-smaller-text-2 mb-2 text-start">
+                    <strong>Create A Club </strong> (Every awesome brand needs its own fan club! Connect with your fanbase and get them coming back for more!)
+                </p>
+                <router-link :to="'/clubs/view'">
+                    <button
+                        class="btn btn-warning btn-sm rounded fw-bold fs-8"
+                    >
+                        Create Club
+                    </button>
+                </router-link>
+                </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
         <!-- header -->
         <div class="row">
           <!-- image -->
@@ -459,7 +680,7 @@
 
         <!--review this business above-->     
         <div class="row mt-3 mobile-mt-1">
-          <div class="col-12 d-flex justify-content-start mobile-pe-0">
+          <div class="col-12 d-flex justify-content-start mobile-pe-0" id="catalogue">
             <!-- toggle latest updates-->
             <button
               v-if="showListings == false && showTours == false"
@@ -1668,7 +1889,7 @@
         <!-- show all listings-->
         <div v-else-if="showListings == true && showTours == false">
           <!-- search & sort by -->
-          <div class="row">
+          <div class="row" id="expressionsArea">
             <!-- back button -->
             <div class="col-1 centered mobile-view-hide">
               <!-- back button -->
@@ -2257,6 +2478,9 @@
                       >
                         <b> @{{ getUsernameFromReview(review) }} </b>
                       </router-link>
+                      <span class="ms-2">
+                        {{ getUserPointsFromReview(review) }}
+                      </span>
                       <span :style="{ color: getUserRankColor(review) }">
                         {{ getUserRankFromReview(review) }}
                       </span>
@@ -2593,7 +2817,7 @@
           
           <!-- VIEW Q&A DESKTOP VIEW -->
           
-          <div class="col-xl-12 col-lg-4 col-md-6 col-12 mobile-view-hide">
+          <div class="col-xl-12 col-lg-4 col-md-6 col-12 mobile-view-hide" id="qna">
             <div class="square primary-square-green rounded p-3 mb-3">
               <!--tzh added -green -->
               <!-- header text -->
@@ -3467,6 +3691,7 @@ import BookmarkIcon from "@/components/BookmarkIcon.vue";
 import BookmarkModal from "@/components/BookmarkModal.vue";
 import FooterBar from "@/components/FooterBar.vue";
 import { useToast } from "vue-toastification";
+import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 
 export default {
   components: {
@@ -3476,6 +3701,7 @@ export default {
     BookmarkIcon,
     BookmarkModal,
     FooterBar,
+    LoadingWithFunFact,
   },
   data() {
     return {
@@ -3714,13 +3940,21 @@ export default {
 
       // default producer photo
       defaultPhoto:
-        "https://drinkximages.s3.us-east-1.amazonaws.com/images/2d4d94bc-313e-4621-9a15-4bfbf77958de.jpg",
+        "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739",
       defaultProfilePhoto:
-        "https://drinkximages.s3.us-east-1.amazonaws.com/images/27e129b8-2d6e-44a3-8c14-d78c815b8056.jpg",
+        "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProducerProfilePhoto.png?v=1748434998",
       // for truncation of official bottle description <!-- tzh added  --->
       showFullDescription: {},
       //for truncation of producer description - tzh added
       showFullProducerDescription: false,
+      
+      // to check if it is producer viewing their own profile
+      viewerID: localStorage.getItem('88B_accID'),
+      viewerType: localStorage.getItem('88B_accType'),
+      selfView: false,
+      targetProducer: '',
+      targetProducerID: '',
+    
     };
   },
   async mounted() {
@@ -3738,6 +3972,29 @@ export default {
     if (userName !== null) {
       this.userName = userName;
     }
+
+  // Add the new selfView logic
+    // Check if route params "producerID" is present
+    if (this.$route.params.producerID != "" && this.$route.params.producerID != undefined) {
+      this.targetProducer = this.$route.params.producerID;
+      this.targetProducerID = this.$route.params.producerID;
+      
+      // If logged in as a producer, check if the producerID matches the logged in producer's ID
+      if (this.userType == 'producer' && this.user_id == this.targetProducer) {
+        this.selfView = true;
+      }
+    }
+    // If no producerID is specified, display logged in producer's profile page
+    else if (this.userType == 'producer') {
+      this.targetProducer = this.user_id;
+      this.selfView = true;
+      
+      // Update URL if needed - adjust this based on your routing structure
+      if (window.location.pathname.indexOf(this.targetProducer) === -1) {
+        this.currentURL = window.location.origin + window.location.pathname + '/' + this.targetProducer;
+      }
+    }
+
 
     await this.loadData();
   },
@@ -4317,6 +4574,15 @@ export default {
       });
       if (user) {
         return user["username"];
+      }
+    },
+    
+    getUserPointsFromReview(review) {
+      const user = this.users.find((user) => {
+        return user["id"] == review["userID"];
+      });
+      if (user) {
+        return user["currentPoints"];
       }
     },
 
@@ -5600,9 +5866,10 @@ export default {
     },
 
     // delete update
-    deleteUpdate(update) {
+    async deleteUpdate(update) {
       try {
-        const response = this.$axios.post(
+        // Wait for the API call to complete
+        const response = await this.$axios.post(
           `${process.env.VUE_APP_API_URL}/editProducerProfile/deleteUpdate`,
           {
             producerID: this.producer_id,
@@ -5612,15 +5879,18 @@ export default {
             headers: {
               "Content-Type": "application/json",
             },
+            timeout: 3000, // Add a 10-second timeout
           }
         );
-        console.log(response.data);
+        
+        console.log("Delete successful:", response.data);
+        
+        // Only reload after successful completion
+        window.location.reload();
       } catch (error) {
-        console.error(error);
+        console.error("Delete failed:", error);
+        alert("Failed to delete update. Please try again.");
       }
-
-      // force page to reload
-      window.location.reload();
     },
 
     // cancel update
@@ -5921,6 +6191,32 @@ export default {
       const listingsLength = this.lazyListings.length;
       this.lazyListings = this.filteredListings.slice(0, listingsLength + 10);
     },
+
+    highlightQnASection() {
+      const qnaSection = document.getElementById('qna');
+      
+      if (qnaSection) {
+        qnaSection.classList.add('highlight-section');
+        
+        setTimeout(() => {
+          qnaSection.classList.remove('highlight-section');
+        }, 3000);
+      }
+    }
   },
 };
 </script>
+
+<style>
+@keyframes highlightBorder {
+  0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.8); }
+  70% { box-shadow: 0 0 0 10px rgba(255, 193, 7, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
+}
+
+.highlight-section {
+  animation: highlightBorder 1s ease-out infinite;
+  border: 2px solid #FFC107;
+  border-radius: 5px;
+}
+</style>

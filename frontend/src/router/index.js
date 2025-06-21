@@ -210,7 +210,7 @@ const routes = [
     component: () => import("../views/Producers/ProducerDashboard.vue"),
   },
   {
-    path: "/dashboard/user",
+    path: "/dashboard/user/:userID",
     name: "dashboarduser",
     component: () => import("../views/Users/UserDashboard.vue"),
   },
@@ -337,6 +337,20 @@ const routes = [
     name: "bestof",
     component: () => import("../views/BestOfView.vue"),
   }, 
+
+  // ----------------- Help Page --------------------
+  
+  {
+    path: '/help',
+    name: 'help',
+     component: () => import('@/views/HelpTopics.vue')
+  },
+  {
+    path: '/help/:section',
+    name: 'helpSection',
+     component: () => import('@/views/HelpTopics.vue')
+  }
+
 ];
 
 const router = createRouter({

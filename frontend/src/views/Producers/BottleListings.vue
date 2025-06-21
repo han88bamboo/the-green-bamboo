@@ -3,16 +3,7 @@
   <NavBar />
 
   <!-- Display when data is still loading -->
-  <div
-    class="text-info-emphasis fst-italic fw-bold fs-5 pt-5"
-    v-if="dataLoaded == false"
-  >
-    <span>Loading listing, please wait...</span>
-    <br /><br />
-    <div class="spinner-border" role="status">
-      <span class="visually-hidden">Loading...</span>
-    </div>
-  </div>
+  <LoadingWithFunFact v-if="dataLoaded === false" />
 
   <!-- Display when data fails to load -->
   <div
@@ -341,7 +332,7 @@
                       <h6 v-else class="text-body-secondary producer-page">
                         Bottler:
                         <router-link
-                          :to="{ path: '/profile/producer/' + this.bottler_id }"
+                          :to="{ path: '/profile/producer/' + this.bottler_id + '/' + getProducerName(this.producer_id), }"
                           class="default-text-no-background"
                         >
                           <u style="color: black">
@@ -1423,7 +1414,6 @@
                           placeholder="Tag friends"
                           v-on:input="updateFriendTag"
                         />
-
                         <datalist id="filteredFollowList">
                           <option
                             v-for="user in filteredUsers"
@@ -2194,6 +2184,9 @@
                       >
                         <b>@{{ getUsernameFromReview(review) }}</b>
                       </router-link>
+                      <span class="ms-2">
+                        {{ getUserPointsFromReview(review) }}
+                      </span>
                       <span :style="{ color: getUserRankColor(review) }">
                         {{ getUserRankFromReview(review) }}
                       </span>
@@ -2251,7 +2244,7 @@
                     <!-- Edit & Delete Buttons -->
                     <div class="mt-2">
                       <button
-                        v-if="review.userID === parseInt(userID) || correctModerator || user.isAdmin"
+                        v-if="review.userID === parseInt(userID) || correctModerator || (user && user.isAdmin)"
                         class="btn btn-warning me-1 py-1 mobile-fs-7"
                         @click="setUpdateID(review)"
                         data-bs-toggle="modal"
@@ -2260,7 +2253,7 @@
                         Edit
                       </button>
                       <button
-                        v-if="review.userID === correctModerator || user.isAdmin"
+                        v-if="review.userID === correctModerator || (user && user.isAdmin)"
                         class="btn btn-danger py-1 mobile-fs-7"
                         @click="setDeleteID(review)"
                         data-bs-toggle="modal"
@@ -2391,7 +2384,7 @@
                     </button>
                   
                     <ul class="dropdown-menu">
-                      <li v-if="review.userID === parseInt(userID) || correctModerator || user.isAdmin">
+                      <li v-if="review.userID === parseInt(userID) || correctModerator || (user && user.isAdmin)">
                         <button
                           class="dropdown-item"
                           @click="setUpdateID(review)"
@@ -2401,7 +2394,7 @@
                           Edit
                         </button>
                       </li>
-                      <li v-if="review.userID === correctModerator || user.isAdmin">
+                      <li v-if="review.userID === correctModerator || (user && user.isAdmin)">
                         <button
                           class="dropdown-item text-danger"
                           @click="setDeleteID(review)"
@@ -2475,6 +2468,9 @@
                                 {{ getUsernameFromReview(detailedReview) }}
                               </span>
                             </router-link>
+                            <span class="ms-2">
+                              {{ getUserPointsFromReview(review) }}
+                            </span>
                             <span :style="{ color: getUserRankColor(review) }">
                               {{ getUserRankFromReview(review) }}
                             </span>
@@ -2837,6 +2833,11 @@
             </div>
             <hr class="mt-4 mb-2" />
           </div>
+
+          <!-- Load More Reviews Button -->
+          <div class="d-flex justify-content-center mb-3" v-if="filteredReviews.length > 0 && !noMoreReviews">
+              <button class="btn primary-btn btn-lg" @click="loadMoreReviews">Load More Reviews</button>
+          </div>
         </div>
         <!-- end of producer information -->
       </div>
@@ -3024,7 +3025,6 @@
     <BookmarkModal
       v-if="user"
       :user="user"
-      :listings="listings"
       :listingID="bookmarkListingID"
       :key="bookmarkListingID ? 'modal-'+bookmarkListingID : 'modal-default'"
     />
@@ -3043,6 +3043,7 @@ import NavBar from "@/components/NavBar.vue";
 import BookmarkIcon from "@/components/BookmarkIcon.vue";
 import BookmarkModal from "@/components/BookmarkModal.vue";
 import FooterBar from "@/components/FooterBar.vue";
+import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 
 export default {
   // setup(){
@@ -3054,6 +3055,7 @@ export default {
     BookmarkIcon,
     BookmarkModal,
     FooterBar,
+    LoadingWithFunFact,
   },
   data() {
     return {
@@ -3079,7 +3081,6 @@ export default {
       searchInput: "",
       searchTerm: "",
       searchResults: [],
-      filteredListings: [],
       filteredReviews: [],
       filteredReviewsWithImages: [],
 
@@ -3120,8 +3121,8 @@ export default {
       // [TODO] get drink list of user, for now is hardcoded
 
       drinkList: {
-        haveTried: [""],
-        wantToTry: [""],
+        haveTried: [],
+        wantToTry: [],
       },
       haveTried: false,
       wantToTry: false,
@@ -3211,9 +3212,9 @@ export default {
       // for bookmark component
       bookmarkListingID: null,
       defaultPhoto:
-        "https://drinkximages.s3.us-east-1.amazonaws.com/images/2d4d94bc-313e-4621-9a15-4bfbf77958de.jpg",
+        "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739",
       defaultProfilePhoto:
-        "https://drinkximages.s3.us-east-1.amazonaws.com/images/27e129b8-2d6e-44a3-8c14-d78c815b8056.jpg",
+        "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288",
 
       // nearest Bars based on current location
       nearestBars: [],
@@ -3234,6 +3235,11 @@ export default {
       addressDict: null,
       // truncation of official description <!-- tzh added  --->
       showFullDescription: false,
+
+      // lazy loading of reviews
+      noMoreReviews: false,
+      lastReviewID: 0,
+      reviewsPerLoad: 20,
     };
   },
   mounted() {
@@ -3284,9 +3290,16 @@ export default {
       // _id, userID, reviewTarget, date, rating, reviewDesc, taggedUsers, reviewTitle, reviewType, flavorTag, photo
       try {
         const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getReviewByTarget/${this.listing_id}`
+          `${process.env.VUE_APP_API_URL}/getData/getReviewByTarget/${this.listing_id}/0`
         );
         this.reviews = response.data;
+
+        this.lastReviewID = this.reviews.length > 0 ? this.reviews[this.reviews.length - 1].id : 0;
+
+        if (this.reviews.length < this.reviewsPerLoad) {
+          this.noMoreReviews = true; // No more reviews to load
+        }
+
         // what is detailedReview?
         this.detailedReview = this.reviews[0];
 
@@ -3391,20 +3404,22 @@ export default {
       // _id, venueName, venueDesc, originCountry, address, openingHours
       try {
         const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getVenues`
+          `${process.env.VUE_APP_API_URL}/getData/getVenuesWithSpecificListing/${this.listing_id}` // get venues with specific listing by listing_id
         );
         this.venues = response.data;
-        console.log("Venues", response.data);
-        this.locationOptions = response.data.map((item) => ({
-          name: item.venueName,
-          id: item.id,
-          address: item.address,
-        }));
-        this.addressDict = this.venues.reduce((dict, venue) => {
-          dict[venue.address] = venue.id;
-          return dict;
-        }, {});
-        this.getVenuesWithMenu(); // extract venues with menu
+
+        if (this.venues != []) {
+          this.locationOptions = response.data.map((item) => ({
+            name: item.venueName,
+            id: item.id,
+            address: item.address,
+          }));
+          this.addressDict = this.venues.reduce((dict, venue) => {
+            dict[venue.address] = venue.id;
+            return dict;
+          }, {});
+        }
+        
       } catch (error) {
         console.error(error);
         this.dataLoaded = null;
@@ -3413,17 +3428,16 @@ export default {
       // _id, listingName, producerID, bottler, originCountry, drinkType, typeCategory, age, abv, reviewLink, officialDesc, sourceLink, photo
       try {
         const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getListings`
+          `${process.env.VUE_APP_API_URL}/getData/getListing/${this.listing_id}` // get specific listing by listing_id
         );
-        this.listings = response.data;
-        this.filteredListings = this.listings; // originally, make filtered listings the entire collection of listings
-        this.specified_listing = this.listings.find(
-          (listing) => listing.id == this.listing_id
-        ); // find specified listing
+        this.specified_listing = response.data;
         this.producer_id = this.specified_listing.producerID; // find specified producer
         this.bottler_id = this.specified_listing.bottlerID; // find specified bottler
-        this.whereToBuy(); // find where to buy specified listing
-        this.whereToTry(); // find where to try specified listing [RE-ENABLE WHEN VENUES HAVE MENU ATTRIBUTE]
+        
+        if (this.venues != []) {
+          this.whereToTry(); // find where to try specified listing [RE-ENABLE WHEN VENUES HAVE MENU ATTRIBUTE]
+        }
+        
         this.filteredReviews = this.getReviewsForListing(
           this.specified_listing
         );
@@ -3457,10 +3471,19 @@ export default {
       // producers
       // _id, producerName, producerDesc, originCountry, statusOB, mainDrinks
       try {
-        const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getProducers`
+        // Extract the producer ID and bottler ID from the specified listing
+        let producerIDs = [];
+        producerIDs.push(this.specified_listing.producerID);
+        producerIDs.push(this.specified_listing.bottlerID);
+
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/getData/getProducersByIDs`,
+          { producerIDs: producerIDs }
         );
-        this.producers = response.data;
+        this.producers = response.data.data;
+        this.producerListings = this.producers
+          .filter((producer) => producer.id == this.producer_id)
+          .map((producer) => producer.id);
       } catch (error) {
         console.error(error);
         this.dataLoaded = null;
@@ -3474,12 +3497,24 @@ export default {
             userIDs: this.allRelevantUserIDs,
           }
         );
-        this.users = response.data;
+        this.users = response.data;        
         this.user = this.users.find((user) => user.id == this.userID);
         if (this.user) {
           this.userBookmarks = this.user.drinkLists;
-          let triedDrinks = [];
-          let wantToTryDrinks = [];
+          this.drinkList.haveTried = this.user.drinkList['Drinks I Have Tried'].listItems
+          this.drinkList.wantToTry = this.user.drinkList['Drinks I Want To Try'].listItems
+
+          // Convert them to list of listing IDs
+          this.drinkList.haveTried = this.drinkList.haveTried.map(item => item.drinkId);
+          this.drinkList.wantToTry = this.drinkList.wantToTry.map(item => item.drinkId);
+
+          // Get follow list user details 
+          const response = await this.$axios.post(
+            `${process.env.VUE_APP_API_URL}/getData/getUserFollowListDetails`, {
+              userIDs: this.user.followLists.users,
+            }
+          );
+          this.users = this.users.concat(response.data);
           this.followList = this.users.filter((user) => {
             return this.user.followLists.users.some(
               (item) => parseInt(item) === user.id
@@ -3494,39 +3529,7 @@ export default {
               };
             });
           }
-          if (
-            this.user.drinkLists &&
-            Object.keys(this.user.drinkLists).length > 0
-          ) {
-            if (this.user.drinkLists["Drinks I Have Tried"]) {
-              for (let drink of this.user.drinkLists["Drinks I Have Tried"][
-                "listItems"
-              ]) {
-                let triedDrinkName = this.listings.find(
-                  (listing) => listing.id === parseInt(drink?.drinkId)
-                )?.listingName;
-                if (triedDrinkName) {
-                  triedDrinks.push(triedDrinkName);
-                }
-              }
-            }
-            if (this.user.drinkLists["Drinks I Want To Try"]) {
-              for (let drink of this.user.drinkLists["Drinks I Want To Try"][
-                "listItems"
-              ]) {
-                let wantDrinkName = this.listings.find(
-                  (listing) => listing.id === parseInt(drink?.drinkId)
-                )?.listingName;
-                if (wantDrinkName) {
-                  wantToTryDrinks.push(wantDrinkName);
-                }
-              }
-            }
-          }
-          this.drinkList = {
-            haveTried: triedDrinks,
-            wantToTry: wantToTryDrinks,
-          };
+          
         }
       } catch (error) {
         console.error(error);
@@ -3607,40 +3610,30 @@ export default {
       }
     },
 
-    // view which producers have specified listing
-    whereToBuy() {
-      this.producerListings = this.listings
-        .filter((listing) => listing["id"] == this.specified_listing["id"])
-        .map((listing) => listing["producerID"]);
-    },
+    // Load more reviews 
+    async loadMoreReviews() {
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getReviewByTarget/${this.listing_id}/${this.lastReviewID}`
+        );
+        this.reviews = this.reviews.concat(response.data);
 
-    // extract venues with menu
-    getVenuesWithMenu() {
-      this.venuesWithMenu = this.venues.filter(
-        (venue) => venue["menu"].length > 0
-      );
+        if (response.data.length > 0) {
+          this.lastReviewID = response.data[response.data.length - 1].id;
+        } 
+
+        if (response.data.length < this.reviewsPerLoad) {
+          this.noMoreReviews = true; // No more reviews to load
+        } 
+
+      } catch (error) {
+        console.error("Error loading more reviews:", error);
+      }
     },
 
     // view which venues have specified listing, sort by alphabetical order of venue name
     whereToTry() {
-      for (let venue of this.venuesWithMenu) {
-        let allMenuItems = venue["menu"];
-        let allSectionMenus = allMenuItems.reduce((acc, menuItem) => {
-          return acc.concat(menuItem.sectionMenu);
-        }, []);
-
-        let allListingsIDs = allSectionMenus.reduce((acc, menuItem) => {
-          return acc.concat(menuItem.itemID);
-        }, []);
-
-        let uniqueListingsIDs = [
-          ...new Set(allListingsIDs.map((item) => item["id"])),
-        ];
-        if (uniqueListingsIDs.includes(this.specified_listing["id"])) {
-          this.venueListings.push(venue);
-        }
-      }
-
+      
       if ((this.currentLocation.lat != 0) | (this.currentLocation.lng != 0)) {
         const apiKey = process.env.VUE_APP_GOOGLE_MAPS_API_KEY;
         // const apiKey = 'AIzaSyD5aukdDYDbnc8BKjFF_YjApx-fUe515Hs'; // Replace with your Google Places API key
@@ -3648,13 +3641,12 @@ export default {
         // create an object to store the distance of each venue from the current location
         let venueDistances = {};
 
-        this.venueListings.forEach(async (venue) => {
+        this.venues.forEach(async (venue) => {
           const address = encodeURIComponent(venue.address);
           const response = await this.$axios.get(
             `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${apiKey}`
           );
           const { results } = response.data;
-          console.log(results);
           if (results.length > 0) {
             const { lat, lng } = results[0].geometry.location;
             venue.coordinates = { lat, lng };
@@ -3673,7 +3665,6 @@ export default {
               );
               const responseData = response2.data.data;
               const rows = responseData.rows;
-              console.log(rows);
               if (rows.length > 0 && rows[0].elements.length > 0) {
                 const distance = rows[0].elements[0].distance;
                 const duration = rows[0].elements[0].duration;
@@ -3707,31 +3698,18 @@ export default {
       }
     },
 
-    // get producerName for a listing based on producerID
     getProducerName(producerID) {
-      const producer = this.producers.find((producer) => {
-        return producer["id"] == producerID;
-      });
-      // ensures that producer is found before accessing "producerName"
-      if (producer) {
-        const producerName = producer["producerName"];
-        return producerName;
-      } else {
-        return null;
-      }
+      const producer = this.producers.find(
+        (p) => p.id === producerID
+      );
+      return producer ? producer.producerName : "Unknown Producer";
     },
 
-    // get BottlerName for a listing based on producerID
     getBottlerName(bottlerID) {
-      const bottler = this.producers.find((bottler) => {
-        return bottler["id"] == bottlerID;
-      });
-      if (bottler) {
-        const bottlerName = bottler["producerName"];
-        return bottlerName;
-      } else {
-        return null;
-      }
+      const bottler = this.producers.find(
+        (p) => p.id === bottlerID
+      );
+      return bottler ? bottler.producerName : "Unknown Bottler";
     },
 
     // get VenueName for a listing based on producerID
@@ -3759,8 +3737,8 @@ export default {
 
     // check if user has already added listing to shelf, add colour to button accordingly
     checkDrinkLists(listing) {
-      const haveTried = this.drinkList.haveTried.includes(listing.listingName);
-      const wantToTry = this.drinkList.wantToTry.includes(listing.listingName);
+      const haveTried = this.drinkList.haveTried.includes(listing.id);
+      const wantToTry = this.drinkList.wantToTry.includes(listing.id);
 
       const haveTriedButton = `
                <div type="button" class=" ${haveTried ? "disabled" : ""}">
@@ -3865,7 +3843,6 @@ export default {
       const specificReview = this.filteredReviews.filter((review) => {
         return review["userID"] == this.userID;
       });
-      console.log("Specific Review", specificReview);
       if (specificReview.length != 0) {
         this.inEdit = true;
         this.selectedLanguage = specificReview[0].language;
@@ -3927,6 +3904,15 @@ export default {
       });
       if (user) {
         return user["username"];
+      }
+    },
+
+    getUserPointsFromReview(review) {
+      const user = this.users.find((user) => {
+        return user["id"] == review["userID"];
+      });
+      if (user) {
+        return user["currentPoints"];
       }
     },
 
@@ -4032,8 +4018,8 @@ export default {
         this.finish = this.finish.trim();
       }
 
-      // Add console log here to debug the rating value before submission
-      console.log("Rating before submission:", this.rating);
+      // // Add console log here to debug the rating value before submission
+      // console.log("Rating before submission:", this.rating);
 
       let submitAPI = `${process.env.VUE_APP_API_URL}/createReview/createReview`;
       let submitData = {
@@ -4097,7 +4083,7 @@ export default {
       }
 
       // Add console log here to debug the rating value before submission
-      console.log("Rating before submission:", this.rating);
+      // console.log("Rating before submission:", this.rating);
 
       let submitAPI =
         `${process.env.VUE_APP_API_URL}/editReview/updateReview/` +
@@ -4460,11 +4446,8 @@ export default {
         });
 
       if (responseCode == 200) {
-        console.log("Success");
         window.location.reload();
-      } else {
-        console.log("Fail");
-      }
+      } 
     },
     async addToWantList() {
       // CP edits: Check if user is logged in
@@ -4492,11 +4475,8 @@ export default {
         });
 
       if (responseCode == 210) {
-        console.log("Success");
         window.location.reload();
-      } else {
-        console.log("Fail");
-      }
+      } 
     },
 
     getFilteredReviewsWithImages() {
@@ -4594,7 +4574,6 @@ export default {
     },
     // for bookmark component
     handleIconClick(data) {
-      console.log("BookmarkIcon clicked with data:", data);
       if (data === "login") {
         this.$router.push("/login");
       } else {
@@ -4606,7 +4585,6 @@ export default {
         } else {
           this.bookmarkListingID = data;
         }
-        console.log("bookmarkListingID updated to:", this.bookmarkListingID);
       }
     },
 
@@ -4637,6 +4615,7 @@ export default {
       }
 
       let user = this.users.find((user) => user.username === this.friendTag);
+      
       if (user) {
         this.selectedFriendTag = user;
         friendTagError.innerHTML = "";
@@ -4745,7 +4724,6 @@ export default {
             const match = html.match(regex);
             const img_url = match ? match[1] : null;
             this.ogImage[url] = img_url;
-            console.log(img_url);
           })
           .catch((err) => {
             console.log(err);

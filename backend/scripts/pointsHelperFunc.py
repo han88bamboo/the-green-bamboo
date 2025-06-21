@@ -103,7 +103,7 @@ def check_max_proof_points(user_id):
 
 # Check if user has achieved the minumum proof points to create a club 
 max_number_of_clubs = 1
-min_points = 200
+min_points = 100
 
 def check_user_can_create_club(user_id):
     """
@@ -139,4 +139,137 @@ def check_user_can_create_club(user_id):
         return (False, 'insufficient points', min_points)
 
 
+###############################################################################################################
 
+# Get the current proof points of the user using user ID
+def get_current_proof_points(user_id):
+    """
+    Get the current proof points of the user based on their user ID.
+
+    Args:
+        user_id (int): The ID of the user.
+
+    Returns:
+        int: The current proof points of the user.
+    """
+
+    # Retrieve the user's proof points from the database
+    conn = g.db
+    cursor = conn.cursor()
+    cursor.execute('SELECT "currentPoints" FROM "pointsRecorder" WHERE "userID" = %s AND "userType" = %s', (user_id, 'user',))
+    user_points = cursor.fetchone()
+
+    # If no proof points are found, return None
+    if user_points is None:
+        return None
+
+    # Get the total likes and dislikes for reviews, posts, and comments 
+
+    # Step 1: Listing Reviews 
+    cursor.execute('SELECT id FROM "reviews" WHERE "userID" = %s', (user_id,))
+    review_ids = cursor.fetchall()
+
+    # Loop through each review id and compile number of upvotes and downvotes for each review
+    total_review_upvotes = 0
+    total_review_downvotes = 0
+
+    if review_ids:
+        for review_id in review_ids:
+
+            r_id = review_id['id']
+            cursor.execute('SELECT "upvotes", "downvotes" FROM "reviewsUserVotes" WHERE "reviewId" = %s', (r_id,))
+            votes = cursor.fetchone()
+
+            if votes:
+                total_review_upvotes += len(votes['upvotes'])
+                total_review_downvotes += len(votes['downvotes'])
+            else:
+                # If no votes, set to 0
+                total_review_upvotes += 0
+                total_review_downvotes += 0
+
+    # Get the producer review id for producer reviews made by user
+    cursor.execute('SELECT id FROM "producerReviews" WHERE "userID" = %s', (user_id,))
+    producer_review_ids = cursor.fetchall()
+
+    
+    # Loop through each producer review id and compile number of upvotes and downvotes for each producer review
+    total_producer_review_upvotes = 0
+    total_producer_review_downvotes = 0
+
+    if producer_review_ids:
+        for producer_review_id in producer_review_ids:
+            pr_id = producer_review_id['id']
+            cursor.execute('SELECT "upvotes", "downvotes" FROM "producerReviewsUserVotes" WHERE "reviewId" = %s', (pr_id,))
+            votes = cursor.fetchone()
+
+            if votes:
+                total_producer_review_upvotes += len(votes['upvotes'])
+                total_producer_review_downvotes += len(votes['downvotes'])
+            else:
+                total_producer_review_upvotes += 0
+                total_producer_review_downvotes += 0
+
+    # Get the member ids of the user 
+    cursor.execute('SELECT id FROM "clubMembers" WHERE "userID" = %s', (user_id,))
+    member_ids = cursor.fetchall()
+
+    post_ids = []
+    comment_ids = []
+
+    # Get the post ids for posts ids and comments ids made by user
+    for member_id in member_ids:
+        m_id = member_id['id']
+        cursor.execute('SELECT id FROM "clubPosts" WHERE "posterID" = %s', (m_id,))
+        post_ids += cursor.fetchall()
+
+        cursor.execute('SELECT id FROM "clubPostComments" WHERE "commenterID" = %s', (m_id,))
+        comment_ids += cursor.fetchall()
+    
+    # Loop through each member id and compile number of likes and dislikes for posts and comments made 
+    total_member_likes = 0
+    total_member_dislikes = 0
+
+
+    if post_ids:
+        for post_id in post_ids:
+
+            p_id = post_id['id']
+
+            # Get total likes for club posts
+            cursor.execute('SELECT COUNT(id) FROM "clubPostsLikes" WHERE "postID" = %s', (p_id,))
+            total_member_likes += cursor.fetchone()['count']
+
+            # Get total dislikes for club posts
+            cursor.execute('SELECT COUNT(id) FROM "clubPostsDislikes" WHERE "postID" = %s', (p_id,))
+            total_member_dislikes += cursor.fetchone()['count']
+
+    if comment_ids:
+        for comment_id in comment_ids:
+
+            c_id = comment_id['id']
+
+            # Get total likes for club post comments
+            cursor.execute('SELECT COUNT(id) FROM "clubPostCommentsLikes" WHERE "commentID" = %s', (c_id,))
+            total_member_likes += cursor.fetchone()['count']
+
+            # Get total dislikes for club post comments
+            cursor.execute('SELECT COUNT(id) FROM "clubPostCommentsDislikes" WHERE "commentID" = %s', (c_id,))
+            total_member_dislikes += cursor.fetchone()['count']
+        
+
+    # Get the proofPoints for upvotes and downvotes
+    cursor.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = 8')
+    upvote_points = cursor.fetchone()['proofPoints']
+
+    cursor.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = 9')
+    downvote_points = cursor.fetchone()['proofPoints']
+
+    overall_total_upvotes = total_review_upvotes + total_producer_review_upvotes + total_member_likes
+    overall_total_downvotes = total_review_downvotes + total_producer_review_downvotes + total_member_dislikes
+
+    # Calculate total points
+    total_points = user_points['currentPoints'] + (overall_total_upvotes * upvote_points) + (overall_total_downvotes * downvote_points)
+
+    return total_points
+    # Return the total points of the user
