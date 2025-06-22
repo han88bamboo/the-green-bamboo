@@ -855,6 +855,7 @@ def updateVenueStatus():
     venueName = data['newBusinessData']["businessName"]
     venueDesc = data['newBusinessData']["businessDesc"]
     originLocation = data['newBusinessData']["country"]
+    image = data['newBusinessData']["photo"]
     hashedPassword = data['newBusinessData']["hashedPassword"]
     claimStatus = data['newBusinessData']["claimStatus"]
     requestId = int(data['newBusinessData']["requestId"])
@@ -862,6 +863,31 @@ def updateVenueStatus():
     try:
         cur.execute('UPDATE venues SET "venueName" = %s, "venueDesc" = %s, "originLocation" = %s, "hashedPassword" = %s, "claimStatus" = %s, "requestId" = %s WHERE "id" = %s', (venueName, venueDesc, originLocation, hashedPassword, claimStatus, requestId, venueID))
         conn.commit()
+        
+        # Find all users who follow this venue
+        cur.execute(
+            '''
+            SELECT "userId"
+            FROM "usersFollowLists"
+            WHERE %s = ANY("venues")
+            ''',
+            (str(venueID),)
+        )
+        followers = cur.fetchall()
+
+        # Notify each follower
+        for row in followers:
+            notification_data = {
+                "userId":   row['userId'],
+                "userType": "user",
+                "notiTabs":"venues & producers",
+                "notiType":"status_update",
+                "image":   image,
+                "link":    f"/profile/venue/{venueID}/{venueName}",
+                "message": f"{venueName} updated their status."
+            }
+            print("Notification data for venue status update:", notification_data)
+            notifications.add_notification_to_db(notification_data)
 
         return jsonify(
             {

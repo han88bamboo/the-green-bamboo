@@ -4,12 +4,14 @@
 # -----------------------------------------------------------------------------------------
 
 import os
+import re
 import json
 import pytz
 import data
 import s3Images
 from flask import Blueprint, g, request, jsonify
-from datetime import datetime
+from datetime import datetime, timedelta
+from scripts import notifications
 # [OLD] TO BE DELETED FOR POSTGRES:
 # ------------------------------------------------------
 from bson import json_util
@@ -147,6 +149,7 @@ def createListings():
     rawBottle['producerID'] = int(rawBottle['producerID'])
     rawBottle['bottlerID'] = int(rawBottle['bottlerID']) if rawBottle['bottlerID'] != "" else None
     rawBottleName = rawBottle["listingName"]
+    print("data received:", rawBottle)
 
     try:
         # Check for duplicate listing
@@ -178,6 +181,53 @@ def createListings():
         
         cur.execute(sql, list(rawBottle.values()))
         new_id = cur.fetchone()['id']  # Corrected to access the first element
+
+        # Notification logic
+        cutoff = datetime.now(pytz.timezone('Etc/GMT-8')) - timedelta(hours=24)
+        
+        cur.execute(
+            'SELECT COUNT(*) FROM "listings" '
+            'WHERE "producerID" = %s AND "addedDate" >= %s',
+            (rawBottle['producerID'], cutoff)
+        )
+        recent_count = cur.fetchone()['count']
+        print(f"Recent count: {recent_count}")
+
+        cur.execute(
+            'SELECT "producerName" FROM "producers" WHERE id = %s',
+            (rawBottle['producerID'],)
+        )
+        producerName = cur.fetchone()['producerName']
+
+        if recent_count <= 2:
+            # build a URL-safe slug: lowercase, alphanumeric only
+            slug = re.sub(r'[^a-z0-9]+', '', rawBottleName.lower())
+
+            # fetch all users who follow this producer
+            cur.execute(
+                'SELECT "userId" FROM "usersFollowLists" '
+                'WHERE %s::text = ANY("producers")',
+                (str(rawBottle['producerID']),)
+            )
+            print("hello6")
+            followers = [row['userId'] for row in cur.fetchall()]
+            
+
+            # insert notifications
+            for uid in followers:
+                notification_data = {
+                    "userId":   uid,
+                    "userType": "user",
+                    "notiTabs": "venues & producers",                       # or "venues & producers"
+                    "notiType": "newDrink",
+                    "image":    rawBottle.get('photo'),
+                    "link":     f"/listing/view/{new_id}/{slug}",
+                    "message":  f"{producerName} added a new drink: {rawBottleName}"
+                }
+                print("Sending notification:", notification_data)
+                notifications.add_notification_to_db(notification_data)
+        
+        
         conn.commit()
 
         return jsonify(

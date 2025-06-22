@@ -421,6 +421,7 @@ def updateProducerStatus():
     producerName = data['newBusinessData']["businessName"]
     producerDesc = data['newBusinessData']["businessDesc"]
     originCountry = data['newBusinessData']["country"]
+    image = data['newBusinessData']["photo"]
     hashedPassword = data['newBusinessData']["hashedPassword"]
     claimStatus = data['newBusinessData']["claimStatus"]
 
@@ -439,6 +440,31 @@ def updateProducerStatus():
             (producerName, producerDesc, originCountry, hashedPassword, claimStatus, producerID)
         )
         conn.commit()
+
+        # Find all users who follow this producer
+        cur.execute(
+            '''
+            SELECT "userId"
+            FROM "usersFollowLists"
+            WHERE %s = ANY("producers")
+            ''',
+            (str(producerID),)
+        )
+        followers = cur.fetchall()
+
+        # Send each of them a notification
+        for row in followers:
+            notification_data = {
+                "userId":   row['userId'],        # the follower’s user ID
+                "userType": "user",
+                "notiTabs":"venues & producers",
+                "notiType":"status_update",
+                "image":   image,
+                "link":    f"/profile/producer/{producerID}/{producerName}",
+                "message": f"{producerName} updated their status."
+            }
+            print("Sending notification:", notification_data)
+            notifications.add_notification_to_db(notification_data)
 
         return jsonify(
             {
