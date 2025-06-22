@@ -1389,6 +1389,8 @@ def addClubMembers():
             return jsonify({
                 'error': 'No such club exist'
             }), 404
+            
+        club_name = club['clubName']
 
         # Step 2: Insert the new member into the clubMembers table
         for user in new_members_list:
@@ -1405,8 +1407,21 @@ def addClubMembers():
             if not user:
                 continue
 
-            cur.execute('INSERT INTO "clubInvites" ("clubID", "inviteeID", "inviteeUserType", "inviterID", "invtiterUserType", "inviteDate") VALUES (%s, %s, %s, %s, %s, %s)', (club_id, user_id, user_type, inviter_id, inviter_user_type, join_date,))
+            cur.execute('INSERT INTO "clubInvites" ("clubID", "inviteeID", "inviteeUserType", "inviterID", "inviterUserType", "inviteDate") VALUES (%s, %s, %s, %s, %s, %s)', (club_id, user_id, user_type, inviter_id, inviter_user_type, join_date,))
             conn.commit()
+
+            # Build and send notification
+            notification_data = {
+                "userId":   user_id,
+                "userType": user_type,
+                "notiTabs": "forYou",
+                "notiType": "club_invite",
+                "image":    None,
+                "link":     f"/club/view/{club_id}/{club_name}",
+                "message":  f"You have been invited to join '{club_name}'"
+            }
+            print("Notification data:", notification_data)
+            notifications.add_notification_to_db(notification_data)
 
         return jsonify({
             'message': 'New member added to the club'
@@ -1486,9 +1501,45 @@ def joinClub():
 
         # Get the member's ID in the clubMembers table
         cur.execute('SELECT id FROM "clubMembers" WHERE "clubID" = %s AND "userID" = %s AND "userType" = %s', (club_id, user_id, user_type,))
+        
+        member_id = cur.fetchone()['id']
+
+        # Build and insert the notification
+        owner_id = club['createdByID']
+        owner_type = club['createdByType']
+
+        club_name = club['clubName']
+        
+        print("Club name:", club_name)
+        print("Owner ID:", owner_id, "Owner Type:", owner_type)
+
+        if user_type == 'user':
+            cur.execute('SELECT username FROM "users" WHERE id = %s', (user_id,))
+            row = cur.fetchone()
+            member_username = row['username'] if row else 'Someone'
+        elif user_type == 'producer':
+            cur.execute('SELECT username FROM "producers" WHERE id = %s', (user_id,))
+            row = cur.fetchone()
+            member_username = row['username'] if row else 'Someone'
+        else:  # user_type == 'venue'
+            cur.execute('SELECT username FROM "venues" WHERE id = %s', (user_id,))
+            row = cur.fetchone()
+            member_username = row['username'] if row else 'Someone'
+
+        notification_data = {
+            "userId":   owner_id,
+            "userType": owner_type,         # 'producer' or 'venue'
+            "notiTabs": "forYou",
+            "notiType": "club_join",
+            "image":    None,
+            "link":     f"/club/view/{club_id}/{club_name}",
+            "message":  f"@{member_username} joined your club: {club_name}"
+        }
+        notifications.add_notification_to_db(notification_data)
+        
         return jsonify({
             'message': 'User joined the club successfully',
-            'memberID': cur.fetchone()['id']
+            'memberID': member_id
         }), 201
 
     except Exception as e:
@@ -1673,10 +1724,50 @@ def addComment():
         comment_id = cur.fetchone()['id']
         conn.commit()
 
-        # Step 4: Get the commenter's information
+        # Step 4: Notify the post owner if the commenter is not the poster
+        cur.execute('SELECT "posterID" FROM "clubPosts" WHERE id = %s', (post_id,))
+        row = cur.fetchone()
+        if row:
+            poster_member_id = row['posterID']
+            # 2) fetch poster’s account
+            cur.execute(
+                'SELECT "userID","userType" FROM "clubMembers" WHERE id = %s',
+                (poster_member_id,)
+            )
+            owner = cur.fetchone()
+            # 3) only notify if commenter != poster
+            if owner and poster_member_id != commenter_id:
+                # get commenter's display name
+                commenter_info = getUserInfo(cur, commenter_id)
+                if commenter_info:
+                    if commenter_info['userType']=='user':
+                        name_key = 'displayName'
+                    elif commenter_info['userType']=='producer':
+                        name_key = 'producerName'
+                    else:
+                        name_key = 'venueName'
+                    commenter_name = commenter_info.get(name_key, 'Someone')
+                else:
+                    commenter_name = 'Someone'
+
+                club_id = post['clubID']
+                
+                notification_data = {
+                    "userId":   owner['userID'],
+                    "userType": owner['userType'],
+                    "notiTabs": "forYou",
+                    "notiType": "club_post_comment",
+                    "image":    None,
+                    "link":     f"/club/{club_id}/post/{post_id}",
+                    "message":  f"{commenter_name} commented on your post"
+                }
+                print("Notification data:", notification_data)
+                notifications.add_notification_to_db(notification_data)
+
+        # Step 5: Get the commenter's information
         commenter_info = getUserInfo(cur, commenter_id)
 
-        # Step 5: Get user info and process points and badges
+        # Step 6: Get user info and process points and badges
         cur.execute('SELECT "userID", "userType" FROM "clubMembers" WHERE id = %s', (commenter_id,))
         user = cur.fetchone()
         
@@ -1884,6 +1975,36 @@ def acceptClubRequest():
         cur.execute('UPDATE "clubs" SET "totalMembers" = "totalMembers" + 1 WHERE id = %s', (club_id,))
         conn.commit()
 
+        # Step 7: Build and insert the notification
+        owner_id   = club['createdByID']
+        owner_type = club['createdByType']
+        club_name  = club['clubName']
+
+        # Look up the new member’s username
+        if user_type == 'user':
+            cur.execute('SELECT username FROM "users" WHERE id = %s', (requester_id,))
+            row = cur.fetchone()
+            member_username = row['username'] if row else 'Someone'
+        elif user_type == 'producer':
+            cur.execute('SELECT username FROM "producers" WHERE id = %s', (requester_id,))
+            row = cur.fetchone()
+            member_username = row['username'] if row else 'Someone'
+        else:  # 'venue'
+            cur.execute('SELECT username FROM "venues" WHERE id = %s', (requester_id,))
+            row = cur.fetchone()
+            member_username = row['username'] if row else 'Someone'
+
+        notification_data = {
+            "userId":   owner_id,
+            "userType": owner_type,
+            "notiTabs": "forYou",
+            "notiType": "club_join",
+            "image":    None,
+            "link":     f"/club/view/{club_id}/{club_name}",
+            "message":  f"@{member_username} joined your club: {club_name}"
+        }
+        notifications.add_notification_to_db(notification_data)
+
         return jsonify({
             'message': 'User accepted successfully'
         }), 200
@@ -1970,6 +2091,37 @@ def acceptClubInvite():
         # Step 6: Append 1 to the totalMembers in the clubs table
         cur.execute('UPDATE "clubs" SET "totalMembers" = "totalMembers" + 1 WHERE id = %s', (club_id,))
         conn.commit()
+
+        # Step 7: Build and insert the notification
+        owner_id   = club['createdByID']
+        owner_type = club['createdByType']
+        club_name  = club['clubName']
+
+        # Look up the new member’s username
+        if user_type == 'user':
+            cur.execute('SELECT username FROM "users" WHERE id = %s', (user_id,))
+            row = cur.fetchone()
+            member_username = row['username'] if row else 'Someone'
+        elif user_type == 'producer':
+            cur.execute('SELECT username FROM "producers" WHERE id = %s', (user_id,))
+            row = cur.fetchone()
+            member_username = row['username'] if row else 'Someone'
+        else:  # 'venue'
+            cur.execute('SELECT username FROM "venues" WHERE id = %s', (user_id,))
+            row = cur.fetchone()
+            member_username = row['username'] if row else 'Someone'
+
+        notification_data = {
+            "userId":   owner_id,
+            "userType": owner_type,
+            "notiTabs": "forYou",
+            "notiType": "club_join",
+            "image":    None,
+            "link":     f"/club/view/{club_id}/{club_name}",
+            "message":  f"@{member_username} joined your club: {club_name}"
+        }
+        print("Notification data:", notification_data)
+        notifications.add_notification_to_db(notification_data)
 
         return jsonify({
             'message': 'User joined the club successfully'
@@ -2522,6 +2674,49 @@ def likeUnlikeComment():
                     is_new_upvote=is_new_like, 
                     is_removed_upvote=is_removed_like
                 )
+
+        # Fetch club_id for notification link
+        cur.execute('SELECT "clubID" FROM "clubPosts" WHERE id = %s', (post_id,))
+        club_row = cur.fetchone()
+        club_id = club_row['clubID'] if club_row else None
+        
+        if is_new_like:
+            cur.execute(
+                'SELECT COUNT(*) AS cnt FROM "clubPostCommentsLikes" WHERE "commentID" = %s',
+                (comment_id,)
+            )
+            count = cur.fetchone()['cnt']
+            if count <= 3:
+                owner_member_id = comment['commenterID']
+                cur.execute(
+                    'SELECT "userID","userType" FROM "clubMembers" WHERE id = %s',
+                    (owner_member_id,)
+                )
+                owner = cur.fetchone()
+                if owner and owner_member_id != member_id:
+                    upvoter_info = getUserInfo(cur, member_id)
+                    if upvoter_info:
+                        if upvoter_info['userType'] == 'user':
+                            name_key = 'displayName'
+                        elif upvoter_info['userType'] == 'producer':
+                            name_key = 'producerName'
+                        else:
+                            name_key = 'venueName'
+                        upvoter_name = upvoter_info.get(name_key, 'Someone')
+                    else:
+                        upvoter_name = 'Someone'
+
+                    notification_data = {
+                        "userId":   owner['userID'],
+                        "userType": owner['userType'],
+                        "notiTabs": "forYou",
+                        "notiType": "club_comment_upvote",
+                        "image":    None,
+                        "link":     f"/club/{club_id}/post/{post_id}",
+                        "message":  f"{upvoter_name} upvoted your comment"
+                    }
+                    print("Notification data:", notification_data)
+                    notifications.add_notification_to_db(notification_data)
         
         # Prepare the response
         response_data = {

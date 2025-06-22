@@ -62,6 +62,7 @@ DROP TABLE IF EXISTS "pointsRecorder" CASCADE; -- ADDED BY SMU GROUP 3
 DROP TABLE IF EXISTS "pointSystemRules" CASCADE; -- ADDED BY SMU GROUP 3
 DROP TABLE IF EXISTS "venueReviews" CASCADE;
 DROP TABLE IF EXISTS "venueReviewsUserVotes" CASCADE;
+DROP TABLE IF EXISTS "userNotificationsRead" CASCADE;
 
 -- CREATE TABLES -- 
 -- ========= "accountRequests" =========
@@ -796,13 +797,13 @@ CREATE TABLE "goats" (
 -- ========= [NEW!] notifications =========
 CREATE TABLE "notifications" (
     "id" SERIAL PRIMARY KEY,
-    "userId" INTEGER,
+    "userId" INTEGER, -- User ID who receives the notification
     "userType" VARCHAR(50), -- e.g., 'producer', 'venue', 'user'
-    "notiType" VARCHAR(50), -- e.g., 'for you', 'venues & producers', 'news'
-    "relatedId" INTEGER, -- ID of the related entity (e.g., comments, likes, etc.)
-    "followers" INTEGER[], -- Array of user IDs who are followers of the related entity
+    "notiTabs" VARCHAR(50), -- e.g., 'forYou', 'venues & producers'
+    "notiType" VARCHAR(50), -- e.g., 'newEvent', 'clubPost', 'producerUpdate', 'venueUpdate', 'drinkReview'
     "image" TEXT, -- Image associated with the notification
     "link" TEXT, -- Link to the related entity
     "message" TEXT,
-    "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "read" BOOLEAN DEFAULT FALSE -- Indicates if the notification has been read
 );

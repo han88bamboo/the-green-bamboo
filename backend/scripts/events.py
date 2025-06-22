@@ -17,7 +17,7 @@ import os
 from flask import Blueprint, g, jsonify, request
 from datetime import datetime
 import re
-from scripts import badge_helpers
+from scripts import badge_helpers, notifications
 
 # Use to upload image to S3
 import s3Images
@@ -805,6 +805,38 @@ def createEvent():
                        (data['eventName'], data['eventDesc'], data['eventType'], data['eventStartDate'], data['eventEndDate'], data['eventStartTime'], data['eventEndTime'], data['eventLimit'], event_banner_pg, data['ticketed'], data['paidEvent'], data['eventLocation'], payment_link, data['eventOwnerID'], data['eventOwnerType'], created_date,))
         conn.commit()
 
+        # Get the ID of the newly created event
+        cursor.execute('SELECT LASTVAL()')
+        event_id = cursor.fetchone()['lastval']
+
+
+        # Step 6: Add notifications (1 record for 1 followers of the event owner)
+        if data['eventOwnerType'] in ['venue', 'producer']:
+
+            followers = notifications.get_followers(data['eventOwnerID'], data['eventOwnerType'])
+
+            for follower in followers:
+
+                # Get name of the event owner
+                if data['eventOwnerType'] == 'venue':
+                    name = owner_info['venueName']
+                elif data['eventOwnerType'] == 'producer':
+                    name = owner_info['producerName']
+
+                # Prepare data
+                data = {
+                    'userId': follower,
+                    'userType': 'user', 
+                    'notiTabs': 'Venue & Producers',
+                    'notiType': 'event',
+                    'image': None,
+                    'link': f'/events/{event_id}/{data["eventName"]}',
+                    'message': f'New event "{data["eventName"]}" created by {name}.',
+                    'createdAt': None,
+                }
+                # Create a notification for each follower
+                notifications.add_notification_to_db(data)
+
         return jsonify({'message': 'Event created successfully'}), 201
 
     except Exception as e:
@@ -1169,6 +1201,26 @@ def addAttendee():
         cursor.execute('UPDATE events SET "numAttendees" = "numAttendees" + 1 WHERE id = %s', (data['eventID'],))
         conn.commit()
 
+        cursor.execute(
+            'SELECT "eventName" FROM events WHERE id = %s',
+            (data['eventID'],)
+        )
+        ev = cursor.fetchone()
+        event_name = ev['eventName'] if ev and 'eventName' in ev else 'the event'
+
+        # Build and send notification
+        notification_data = {
+            "userId":    data['userID'],
+            "userType":  data['userType'],
+            "notiTabs":  "forYou",
+            "notiType":  "event_invite",
+            "image":     None,
+            "link":      f"/event/{data['eventID']}/{event_name}",
+            "message":   f"You have been invited to {event_name}"
+        }
+        print("data for notification: ", notification_data)
+        notifications.add_notification_to_db(notification_data)
+
         return jsonify({'message': 'Attendee added successfully'}), 201
 
     except Exception as e:
@@ -1303,6 +1355,26 @@ def updateAttendeeStatus():
                 user_id = attendee_info.get('userID')
                 if user_id:
                     badge_result = badge_helpers.process_event_attendance_badge(conn, cursor, user_id)
+
+                cursor.execute('SELECT username FROM users WHERE id = %s', (user_id,))
+                user_row = cursor.fetchone()
+                if user_row:
+                    # Get the username of the user
+                    user_username = user_row['username'] if user_row else "Someone"
+                            
+                # Notify user of badge
+                if badge_result:
+                    notification_data = {
+                        "userId":   user_id,
+                        "userType": "user",
+                        "notiTabs": "forYou",
+                        "notiType": "badge_earned",
+                        "image":    None,
+                        "link":     f"/profile/user/{user_id}/{user_username}",
+                        "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}."
+                    }
+                    print("notification data for badge: ", notification_data)
+                    notifications.add_notification_to_db(notification_data)
         
         response_data = {'message': 'Attendee status updated successfully'}
         

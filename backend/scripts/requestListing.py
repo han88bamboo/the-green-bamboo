@@ -10,7 +10,7 @@ import s3Images
 from bson import json_util
 from flask import Blueprint, g, request, jsonify
 from datetime import datetime
-from scripts import pointsHelperFunc, badge_helpers
+from scripts import pointsHelperFunc, badge_helpers, notifications
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -247,6 +247,27 @@ def requestEdits():
         cur.execute(sql, list(newRequest.values()))
         conn.commit()
 
+        # Build and insert notification for the producer who owns this listing
+
+        producerId = existingListing["producerID"]
+        listingName = existingListing["listingName"]
+
+        cur.execute('SELECT username FROM users WHERE id = %s', (newRequest["userID"],))
+        userRow = cur.fetchone()
+        userUsername = userRow["username"] if userRow else "Someone"
+
+        notification_data = {
+            "userId": producerId,
+            "userType": "producer",
+            "notiTabs": "forYou",
+            "notiType": "edit_request",
+            "image": None,
+            "link": f"/request/view",  # adjust this to the actual front-end route if needed
+            "message": f"@{userUsername} requested an edit for {listingName}"
+        }
+
+        notifications.add_notification_to_db(notification_data)
+
         return jsonify(
             {
                 "code": 201,
@@ -482,6 +503,26 @@ def requestReviewStatus(requestID):
                 (proofPoints['proofPoints'], user_id, 'user')
             )
             conn.commit()
+
+        cur.execute('SELECT username FROM users WHERE id = %s', (user_id,))
+        user_row = cur.fetchone()
+        if user_row:
+            # Get the username of the user
+            user_username = user_row['username'] if user_row else "Someone"
+            
+        # Notify if badge earned
+        if badge_result:
+            notification_data = {
+                "userId":   user_id,
+                "userType": "user",
+                "notiTabs": "forYou",
+                "notiType": "badge_earned",
+                "image":    None,
+                "link":     f"/profile/user/{user_id}/{user_username}",
+                "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}."
+            }
+            print("Adding notification for badge earned:", notification_data)
+            notifications.add_notification_to_db(notification_data)        
 
         # Prepare the response
         response_data = {

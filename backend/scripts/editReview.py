@@ -11,7 +11,7 @@ import json
 
 from scripts.adminFunctions import hash_password
 from scripts.createReview import create_username
-from scripts import badge_helpers
+from scripts import badge_helpers, notifications
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -113,7 +113,55 @@ def voteReview():
                     INSERT INTO "reviewsUserVotes" ("reviewId", upvotes, downvotes)
                     VALUES (%s, %s, %s);
                 """, (review_id, json.dumps(upvotes), json.dumps(downvotes)))
+            conn.commit()
 
+            cur.execute('SELECT "userID", "reviewTarget" FROM "reviews" WHERE id = %s', (review_id,))
+            owner_row = cur.fetchone()
+            if owner_row:
+                # Fetch the review owner's userID and reviewTarget
+                review_owner_id = owner_row["userID"]
+                review_target = owner_row["reviewTarget"]
+                
+                # fetch the listingName
+                cur.execute('SELECT "listingName" FROM "listings" WHERE id = %s', (review_target,))
+                listing_row = cur.fetchone()
+                listing_name = listing_row["listingName"] if listing_row else "your item"
+
+                # fetch the voter's username
+                cur.execute('SELECT username FROM users WHERE id = %s', (user_id,))
+                voter_row = cur.fetchone()
+                voter_username = voter_row["username"] if voter_row else "Someone"                
+            
+            # If an upvote was removed, delete any existing upvote notification for that review
+            if is_removed_upvote:
+                # Fetch the review owner’s userID
+                if owner_row:
+                    # Delete any existing "review_upvote" notification for this review
+                    cur.execute(
+                        'DELETE FROM "notifications" WHERE "userId" = %s AND "notiType" = %s AND "link" = %s',
+                        (review_owner_id, "review_upvote", f"/listing/view/{review_target}/{listing_name}")
+                    )
+                    conn.commit()
+            
+            # If a new upvote was added, insert a notification (up to the first 3 total)
+            if is_new_upvote:
+                total_upvotes = len(upvotes)
+                if total_upvotes <= 3:
+                    # fetch the review owner’s userID
+                    if owner_row:
+                        # send one notification
+                        notification_data = {
+                          "userId":   review_owner_id,
+                          "userType": "user",
+                          "notiTabs": "forYou",
+                          "notiType": "review_upvote",
+                          "image":    None,
+                          "link":     f"/listing/view/{review_target}/{listing_name}",
+                          "message":  f"@{voter_username} upvoted your review of {listing_name}"
+                        }
+                        print("Notification data: ", notification_data)
+                        notifications.add_notification_to_db(notification_data)      
+            
             # Get the review owner and creation date
             cur.execute(
                 'SELECT "userID", "createdDate" FROM "reviews" WHERE id = %s',
@@ -126,7 +174,13 @@ def voteReview():
             if review_row:
                 review_owner_id = review_row["userID"]
                 review_created = review_row["createdDate"]
-                
+
+                cur.execute('SELECT username FROM users WHERE id = %s', (review_owner_id,))
+                review_row = cur.fetchone()
+                if review_row:
+                    # Get the username of the user
+                    review_username = review_row['username'] if review_row else "Someone"       
+                             
                 # Convert the vote time to datetime object
                 upvote_dt = datetime.strptime(current_time, "%Y-%m-%d %H:%M:%S")
                 
@@ -141,6 +195,20 @@ def voteReview():
                         is_new_upvote=is_new_upvote, 
                         is_removed_upvote=is_removed_upvote
                     )
+                    
+                    if badge_result:
+                        # also notify the user they earned a badge
+                        notification_data = {
+                          "userId":   review_owner_id,
+                          "userType": "user",
+                          "notiTabs": "forYou",
+                          "notiType": "badge_earned",
+                          "image":    None,
+                          "link":     f"/profile/user/{review_owner_id}/{review_username}",
+                          "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}."
+                        }
+                        print("Badge notification data: ", notification_data)
+                        notifications.add_notification_to_db(notification_data)
             
             # Prepare the response
             response_data = {

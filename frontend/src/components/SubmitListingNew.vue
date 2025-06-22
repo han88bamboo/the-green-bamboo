@@ -184,6 +184,7 @@
                             <p class="text-start mb-1">New Producer Name <span class="text-danger">*</span></p>
                             <input list="producer-names" v-model="form['producerNew']" class="form-control" id="bottleName" placeholder="Enter Producer Name" @input="getProducerID">
                             <datalist id="producer-names">
+                                {{ producerList }}
                                 <option v-for="producer in producerList" :key="producer.producerName" :value="producer.producerName">
                                     {{ producer.producerName }}
                                 </option>
@@ -601,6 +602,8 @@
                                 this.drinkCategoriesList.push(drink.drinkType);
                             }
                         }
+                        // Add a '-' option for no drink type
+                        this.drinkCategoriesList.unshift("-");
                         this.drinkCategoriesList = this.drinkCategoriesList.sort();
                     } 
                     catch (error) {
@@ -610,13 +613,14 @@
                     // populate "drinkStyles" + "drinkStylesList" form data variable
                     try {
                         const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getTypeCategories`);
-                        console.log("Fetched Data:", response.data);  // Log data to Vue.js console
                         this.drinkStyles = response.data;
                         for (let drink of this.drinkStyles) {
                             if (this.types.length === 0 || this.types.includes(drink.typeCategory)) {
                                 this.drinkStylesList.push(drink.typeCategory);
                             }
                         }
+                        // Add a '-' option for no drink category
+                        this.drinkStylesList.unshift("-");
                         this.drinkStylesList = this.drinkStylesList.sort();
                     } 
                     catch (error) {
@@ -658,6 +662,18 @@
                         }
                         this.targetListing = response.data;
 
+                        // Get producer name
+                        if (this.targetListing.producerID) {
+                            const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUniqueProducersNamesID/dummy/` + this.targetListing.producerID);
+                            this.targetListing.producerName = response.data.producerName;
+                            this.targetListing.producerID = response.data.id;
+                        }
+
+                        // Get bottler ID if bottlerName is present
+                        if (this.targetListing.bottlerName) {
+                            const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUniqueBottlersNamesID/dummy/` + this.targetListing.bottlerName);
+                            this.targetListing.bottlerID = response.data.id;
+                        }
                         if (this.formType == "power") {
                             this.populateForm(this.targetListing);
                             this.form["officialDesc"] = this.targetListing.officialDesc;
@@ -666,6 +682,8 @@
                     catch (error) {
                         console.error(error);
                     }
+
+                    // 
                 }
 
                 // Only run when route params "requestID" is present (modifying previously submitted request / auto-filling form with request data)
@@ -710,8 +728,6 @@
 
                             // For request mode
                             if (this.formType == "req") {
-
-                                console.log("Debugging previousData.duplicateLink:", previousData["duplicateLink"]);
 
                                 // If set to duplicate mode, but duplicate link is not present, redirect to edit mode
                                 if (this.formMode == "dup" && !previousData["duplicateLink"].trim()) {
@@ -777,6 +793,9 @@
                     this.producerList = response.data.data;
                 } catch (error) {
                     console.error("Error fetching producer suggestions:", error);
+                    if (error.response && error.response.status === 404) {
+                        this.producerList = ["No producers with this search term found. Please try again with a different term."];
+                    } 
                 }
             },
 
@@ -809,12 +828,25 @@
 
             // Function to populate form with previous data
             populateForm(previousData) {
-                
+                console.log("Populating form with previous data:", previousData);
                 this.tempDrinkType = previousData.drinkType;
                 this.getDrinkCategoryList();
-                this.tempTypeCategory = previousData.typeCategory;
-                this.tempDrinkStyle = previousData.drinkStyle;
+
+                // If typeCategory is not present, set it to '-'
+                if (previousData.typeCategory == null || previousData.typeCategory == "") {
+                    this.tempTypeCategory = "-";
+                } else {
+                    this.tempTypeCategory = previousData.typeCategory;
+                }
+
                 this.getDrinkStyleList();
+
+                // If drinkStyle is not present, set it to '-'
+                if (previousData.drinkStyle == null || previousData.drinkStyle == "") {
+                    this.tempDrinkStyle = "-";
+                } else {
+                    this.tempDrinkStyle = previousData.drinkStyle;
+                }
 
                 this.form["sourceLink"] = previousData.sourceLink;
                 this.form["listingName"] = previousData.listingName;
@@ -838,13 +870,14 @@
                         }
                     }
                 } else {
-                    this.form["producerNew"] = this.producerList.find(producer => producer.id == previousData.producerID).producerName;
+                    this.form["producerNew"] = previousData.producerName;
                 }
 
                 // If independent bottler, fill in bottler
                 if (previousData.bottler != "OB") {
                     this.indOperator = true;
                     this.form["bottler"] = previousData.bottler;
+                    this.form["bottlerID"] = previousData.bottlerID;
                 } else {
                     this.indOperator = false;
                 }
@@ -882,6 +915,9 @@
             // Helper function to get drink category list for selected drink type ("tempDrinkType")
             getDrinkCategoryList() {
                 this.tempTypeCategoryList = this.drinkCategories.find(cat => cat.drinkType == this.tempDrinkType).typeCategory;
+
+                // Add a '-' option for no drink category
+                this.tempTypeCategoryList.unshift("-");
                 this.tempTypeCategory = "";
             },
 
@@ -896,6 +932,10 @@
 
 
                 this.tempDrinkStylesList = category ? category.drinkStyle : [];  // Ensure it doesn't break
+
+                // Add a '-' option for no drink style
+                this.tempDrinkStylesList.unshift("-");
+
                 // If category.drinkStyle is an array, pick first element; otherwise, set to empty string
                 this.tempDrinkStyle = (category && category.drinkStyle.length > 0) ? category.drinkStyle[0] : ""; 
             },
@@ -944,8 +984,6 @@
             async submitFunction(){
                 this.errors = [];
 
-                console.log("Debugging editDesc:", this.form["editDesc"] ?? "Value is undefined or null");
-                console.log("Debugging duplicateLink:", this.form["duplicateLink"] ?? "Value is undefined or null");
 
                 // Form Validation for Edit/Duplicate Request
                 if (this.formType == "req" && (this.formMode == "edit" || this.formMode == "dup")) {
@@ -1054,8 +1092,6 @@
                         if (this.formMode == "new") {
                             submitAPI = `${process.env.VUE_APP_API_URL}/requestListing/requestListing`
 
-                             // Debugging before trimming drinkStyle
-                            console.log("DEBUG: tempDrinkStyle before trim:", this.tempDrinkStyle);
                             if (this.tempDrinkStyle == null) {
                                 console.error("ERROR: tempDrinkStyle is null or undefined!");
                             }
@@ -1114,14 +1150,6 @@
 
                     } else if (this.formType == "power") {
                         // Debugging each form field before trimming
-                        console.log("Checking sourceLink:", this.form["sourceLink"]);
-                        console.log("Checking listingName:", this.form["listingName"]);
-                        console.log("Checking reviewLink:", this.form["reviewLink"]);
-                        console.log("Checking producerNew:", this.form["producerNew"]);
-                        console.log("Checking bottler:", this.form["bottler"]);
-                        console.log("Checking originCountry:", this.form["originCountry"]);
-                        console.log("Checking abv:", this.form["abv"]);
-                        console.log("Checking age:", this.form["age"]);
 
                         submitData = {
                             "sourceLink": (this.form["sourceLink"] || "").trim(),
