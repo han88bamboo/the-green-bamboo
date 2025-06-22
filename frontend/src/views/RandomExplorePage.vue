@@ -1142,16 +1142,30 @@
                               <!-- Image Section -->
                               <div class="text-center text-md-start">
                                 <div class="image-wrapper position-relative d-inline-block">
+                                  <!-- Case 1: User uploaded a photo -->
                                   <img
-                                    v-if="review['reviewTarget']['photo']"
-                                    :src="review['photo']"
+                                    v-if="review.photo && review.photo !== ''"
+                                    :src="review.photo"
                                     class="listing-image"
+                                    alt="Review Image"
                                   />
+
+                                  <!-- Case 2: No user photo, but target has one -->
+                                  <img
+                                    v-else-if="review.reviewTarget && review.reviewTarget.photo"
+                                    :src="review.reviewTarget.photo"
+                                    class="listing-image"
+                                    alt="Target Image"
+                                  />
+
+                                  <!-- Case 3: Fallback/default image -->
                                   <img
                                     v-else
                                     src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
                                     class="listing-image"
+                                    alt="Default Image"
                                   />
+
                                 </div>
                               </div>
                               <div class="detials-rating d-flex flex-column flex-md-row justify-content-between w-100">
@@ -1679,6 +1693,7 @@ export default {
             // Sort by addedDate (newest first)
             allDrinkShelf.sort((a, b) => new Date(b.addedDate) - new Date(a.addedDate));
 
+
             // Loop through allDrinkShelf to get the drink details and add to drinkShelf
             if (this.listings && this.listings.length > 0) {
               for (let drink of allDrinkShelf) {
@@ -1693,6 +1708,25 @@ export default {
                   console.error("Error retrieving listing details:", error);
                 }
               }
+            }
+
+            // Add drinks the user recently reviewed (latest 2)
+            try {
+              const response = await this.$axios.get(
+                `${process.env.VUE_APP_API_URL}/getData/getLatestReviewsDrinks/${this.userID}`
+              );
+
+              // Add to drinkShelf
+              this.drinkShelf = this.drinkShelf.concat(response.data);
+
+              // Sort drinkShelf by addedDate (newest first)
+              this.drinkShelf.sort((a, b) => new Date(b.addedDate) - new Date(a.addedDate));
+
+              // Get top 5
+              this.drinkShelf = this.drinkShelf.slice(0, 5);
+
+            } catch (error) {
+              console.error("Error retrieving user reviews for drink shelf:", error);
             }
 
           } else if (this.userType == "producer") {

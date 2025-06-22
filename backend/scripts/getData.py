@@ -9,7 +9,7 @@
 #           [Listings]
 #           /getListings (GET), /getListingsByIDs (POST), /getListing/<id> (GET), /getListingsBySearch (GET),
 #           /getListingsDetailedByID/<id> (GET), /getListingNamesDynamicSearch/<searchTerm> (GET), /getListingsNames/<search_term> (GET),
-#           /getRecentlyAddedListings (POST), 
+#           /getRecentlyAddedListings (POST), /getListingByName/<listing_name> (GET)
 
 #           [Producers]
 #           /getProducers (GET), /getProducer/<id> (GET), /getProducersByIDs (POST), /getProducersBySearch (GET),
@@ -26,6 +26,7 @@
 #           /getUserPhoto/<id>/<userType> (GET), /getUserByUsername/<username> (GET), /getUserFollowList/<id> (GET), 
 #           /checkFollowing/<userId>/<userType>/<followId>/<followType> (GET), /getUserReviewSummary/<id> (GET),
 #           /getUserDashBoardData/<id> (GET), /getRecentFollowersActivity/<id> (GET), /getRecentReviewsActivity/<id> (GET),
+#           /getLatestReviewsDrinks/<id> (GET),
 #           /getRecentUserActivity/<id> (GET), /getAllUserFollowingsIDs/<id> (GET),
 
 #           [Listing Reviews]
@@ -1599,13 +1600,13 @@ def getReviewsByUserIds():
         # --- Fetch latest reviews ---
         cursor.execute(f'''
             WITH latest_reviews AS (
-                SELECT "reviewDesc", "rating", "reviewTarget", "createdDate", "userID"
+                SELECT "reviewDesc", "rating", "reviewTarget", "createdDate", "userID", "photo"
                 FROM "reviews"
                 WHERE "userID" IN ({placeholders})
                 ORDER BY "createdDate" DESC
                 LIMIT 10
             )
-            SELECT "reviewDesc", "rating", "reviewTarget", "createdDate", "userID"
+            SELECT "reviewDesc", "rating", "reviewTarget", "createdDate", "userID", "photo"
             FROM latest_reviews
             ORDER BY "createdDate" DESC;
         ''', tuple(user_ids))
@@ -1622,7 +1623,7 @@ def getReviewsByUserIds():
 
         # --- Fetch user display info ---
         cursor.execute(f'''
-            SELECT "id", "displayName", "photo"
+            SELECT "id", "displayName"
             FROM "users"
             WHERE "id" IN ({placeholders})
         ''', tuple(user_ids))
@@ -4336,6 +4337,48 @@ def recent_review_activity(id):
     except Exception as e:
         print(f"Error in recent_review_activity: {str(e)}")
         return jsonify({"error": "An error occurred while fetching recent review activity."}), 500
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Get the listing details for listings that user has recently reviewed - lastest 5
+@blueprint.route('/getLatestReviewsDrinks/<id>', methods=['GET'])
+def get_latest_reviews_drinks(id):
+    conn = g.db
+    cursor = conn.cursor()
+
+    try:
+        # Step 1: Get the latest 3 reviews by the user
+        cursor.execute("""
+            SELECT r."reviewTarget", r."rating", r."createdDate", l."listingName", l."photo"
+            FROM reviews r
+            JOIN listings l ON r."reviewTarget" = l."id"
+            WHERE r."userID" = %s
+            ORDER BY r."createdDate" DESC
+            LIMIT 5
+        """, (id,))
+        reviews = cursor.fetchall()
+
+        if not reviews:
+            return jsonify([])
+
+        # Step 2: Prepare the response data
+        response_data = []
+        for review in reviews:
+            response_data.append({
+                'id': review['reviewTarget'],
+                'listingName': review['listingName'],
+                'createdDate': review['createdDate'],
+                'photo': review['photo']
+            })
+
+        return jsonify(response_data)
+    
+    except Exception as e:
+        print(f"Error in get_latest_reviews_drinks: {str(e)}")
+        return jsonify({"error": "An error occurred while fetching latest reviews drinks."}), 500
+    
+    finally:
+        cursor.close()
 
 
 # -----------------------------------------------------------------------------------------

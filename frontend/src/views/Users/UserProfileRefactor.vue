@@ -2759,9 +2759,9 @@ export default {
       drinkTypesDataLoaded: false,
 
       // Page Data
-      listingNames: [], // list of listing names
-      listingNamesDictionary: {}, // dictionary of listing names where key is listing name and value is listing ID - used to get listing ID from listing name to query database
-      listingIDDictionary: {}, // dictionary of listing IDs where key is listing ID and value is listing name - use to exclude listing names from searchResults
+      //listingNames: [], // list of listing names
+      //listingNamesDictionary: {}, // dictionary of listing names where key is listing name and value is listing ID - used to get listing ID from listing name to query database
+      //listingIDDictionary: {}, // dictionary of listing IDs where key is listing ID and value is listing name - use to exclude listing names from searchResults
 
       // User Data
       user: null,
@@ -2957,7 +2957,7 @@ export default {
     // load data from database
     async loadData() {
       try {
-        await this.getAllListingNames();
+        // await this.getAllListingNames();
 
         await Promise.all([this.getDisplayUserProfile(), this.getReviews()]);
 
@@ -3178,23 +3178,23 @@ export default {
     },
 
     // Listings Names
-    async getAllListingNames() {
-      try {
-        const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getAllListingsNames`
-        );
-        // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getAllListingsNames`);
+    // async getAllListingNames() {
+    //   try {
+    //     const response = await this.$axios.get(
+    //       `${process.env.VUE_APP_API_URL}/getData/getAllListingsNames`
+    //     );
+    //     // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getAllListingsNames`);
 
-        // Format the listingNames and listingNamesDictionary
-        for (const listing of response.data) {
-          this.listingNames.push(listing.listingName);
-          this.listingNamesDictionary[listing.listingName] = listing.id;
-          this.listingIDDictionary[listing.id] = listing.listingName;
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    },
+    //     // Format the listingNames and listingNamesDictionary
+    //     for (const listing of response.data) {
+    //       this.listingNames.push(listing.listingName);
+    //       this.listingNamesDictionary[listing.listingName] = listing.id;
+    //       this.listingIDDictionary[listing.id] = listing.listingName;
+    //     }
+    //   } catch (error) {
+    //     console.error(error);
+    //   }
+    // },
 
     // Listings in Bookmark Lists (separate from getListing as it also includes average ratings)
     async getBookmarkListings() {
@@ -4180,27 +4180,28 @@ export default {
 
     // ------------------ Add Bookmark List Functions ------------------
     removeExistingListingInList() {
-      // get all the listing IDs in the current list
-      const listingIDs = this.userBookmarks[this.currentList].listItems;
-      // add the listing names in the current list to the excludeListingNamesList array
-      for (const id of listingIDs) {
-        this.excludeListingNamesList.push(this.listingIDDictionary[id]);
-      }
+      // // get all the listing IDs in the current list
+      // const listingIDs = this.userBookmarks[this.currentList].listItems;
+      // // add the listing names in the current list to the excludeListingNamesList array
+      // for (const id of listingIDs) {
+      //   this.excludeListingNamesList.push(this.listingIDDictionary[id]);
+      // }
     },
 
-    searchResult() {
-      // First, filter out the excluded listings
-      const filteredListings = this.listingNames.filter(
-        (listing) => !this.excludeListingNamesList.includes(listing)
-      );
-
-      // Then, perform the search on the remaining listings
-      if (this.drinkSearch) {
-        this.drinkSearchResults = filteredListings.filter((listing) =>
-          listing.toLowerCase().includes(this.drinkSearch.toLowerCase())
+    async searchResult() {
+      
+      try {
+        const response = await this.$axios.get(
+            `${process.env.VUE_APP_API_URL}/getData/getListingsNames/${this.drinkSearch}`
         );
-      } else {
-        this.drinkSearchResults = filteredListings;
+
+        this.drinkSearchResults = response.data;
+
+      } catch (error) {
+        console.error(error);
+        if (error.response && error.response.status === 404) {
+          this.drinkSearchResults = ['No results found'];
+        } 
       }
     },
 
@@ -4298,16 +4299,14 @@ export default {
     async addDrinkToList(listName) {
       console.log("listName: ", listName);
       for (const drink of this.drinksToAdd) {
-        let addListingId = this.listingNamesDictionary[drink];
-        let itemExist = this.userBookmarks[listName].listItems.find(
-          (item) => item === addListingId
+        // Get the listing ID based on the drink name
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getListingByName/${drink}`
         );
-        if (!itemExist) {
-          this.userBookmarks[listName].listItems.push({
-            date: new Date(),
-            drinkId: addListingId,
-          });
-        }
+        this.userBookmarks[listName].listItems.push({
+          date: new Date(),
+          drinkId: response.data.id,
+        });
       }
 
       try {
