@@ -130,9 +130,13 @@ def fetch_top_5(cursor, table, drink_type=None, type_category=None):
     if drink_type in ['Whisky', 'Whiskey']:
         drink_type = ['Whisky', 'Whiskey']  
 
+    
+    # If drink_type is a string, convert it to a list
+    if isinstance(drink_type, str):
+        drink_type = [drink_type]
+
     try:
         if drink_type and drink_type != "Show All Types":
-
             # If only drink type is provided, filter by drink type
             if type_category == "Show All":
                 cursor.execute(f'''

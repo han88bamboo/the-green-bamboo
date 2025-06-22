@@ -47,16 +47,16 @@ def updateListing(id):
         cur.execute("SELECT * FROM listings WHERE \"listingName\" = %s", (updatedListingName,))
         existingBottle = cur.fetchone()
 
-        if existingBottle is not None and existingBottle['id'] != int(id):
-            return jsonify(
-                {   
-                    "code": 410,
-                    "data": {
-                        "listingName": updatedListingName
-                    },
-                    "message": "Bottle already exists."
-                }
-            ), 410
+        # if existingBottle is not None and existingBottle['id'] != int(id):
+        #     return jsonify(
+        #         {   
+        #             "code": 410,
+        #             "data": {
+        #                 "listingName": updatedListingName
+        #             },
+        #             "message": "Bottle already exists."
+        #         }
+        #     ), 410
         
         # If it's an existing bottle, delete the old image from S3 and upload the new one
         if existingBottle and updatedListing.get('photo'):
