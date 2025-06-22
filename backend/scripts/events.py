@@ -801,42 +801,80 @@ def createEvent():
         created_date = datetime.now().date()
 
         # Step 5: Insert the event into the database
-        cursor.execute('INSERT INTO events ("eventName", "eventDesc", "eventType", "eventStartDate", "eventEndDate", "eventStartTime", "eventEndTime", "eventLimit", "eventBanners", ticketed, "paidEvent", "eventLocation", "paymentLink", "eventOwnerID", "eventOwnerType", "numAttendees", "createdDate") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 0, %s)', 
-                       (data['eventName'], data['eventDesc'], data['eventType'], data['eventStartDate'], data['eventEndDate'], data['eventStartTime'], data['eventEndTime'], data['eventLimit'], event_banner_pg, data['ticketed'], data['paidEvent'], data['eventLocation'], payment_link, data['eventOwnerID'], data['eventOwnerType'], created_date,))
+        cursor.execute(
+            '''
+            INSERT INTO events
+              ("eventName", "eventDesc", "eventType",
+               "eventStartDate", "eventEndDate",
+               "eventStartTime", "eventEndTime",
+               "eventLimit", "eventBanners", ticketed,
+               "paidEvent", "eventLocation", "paymentLink",
+               "eventOwnerID", "eventOwnerType",
+               "numAttendees", "createdDate")
+            VALUES (
+              %s, %s, %s,
+              %s, %s,
+              %s, %s,
+              %s, %s, %s,
+              %s, %s, %s,
+              %s, %s,
+              0, %s
+            )
+            RETURNING id
+            ''',
+            (
+                data['eventName'], data['eventDesc'], data['eventType'],
+                data['eventStartDate'], data['eventEndDate'],
+                data['eventStartTime'], data['eventEndTime'],
+                data['eventLimit'], event_banner_pg, data['ticketed'],
+                data.get('paidEvent'), data.get('eventLocation'), payment_link,
+                data['eventOwnerID'], data['eventOwnerType'],
+                created_date
+            )
+        )
+        new_event = cursor.fetchone()
+        new_event_id = new_event['id']
         conn.commit()
+        print("hello1")
 
-        # Get the ID of the newly created event
-        cursor.execute('SELECT LASTVAL()')
-        event_id = cursor.fetchone()['lastval']
+        # Step 6: Notify all followers of the owner
+        # Determine display name
+        if data['eventOwnerType'] == 'user':
+            owner_name = owner_info['displayName']
+        elif data['eventOwnerType'] == 'producer':
+            owner_name = owner_info['producerName']
+        else:
+            owner_name = owner_info['venueName']
+        print("data: ", data)
+        # Fetch followers from usersFollowLists
+        key = str(data['eventOwnerID'])
+        if data['eventOwnerType'] == 'producer':
+            cursor.execute(
+                'SELECT "userId" FROM "usersFollowLists" WHERE %s = ANY(producers)',
+                (key,)
+            )
+        else:
+            cursor.execute(
+                'SELECT "userId" FROM "usersFollowLists" WHERE %s = ANY(venues)',
+                (key,)
+            )
+        print("hello2")
+        followers = cursor.fetchall()
+        print("Followers fetched:", followers)
 
-
-        # Step 6: Add notifications (1 record for 1 followers of the event owner)
-        if data['eventOwnerType'] in ['venue', 'producer']:
-
-            followers = notifications.get_followers(data['eventOwnerID'], data['eventOwnerType'])
-
-            for follower in followers:
-
-                # Get name of the event owner
-                if data['eventOwnerType'] == 'venue':
-                    name = owner_info['venueName']
-                elif data['eventOwnerType'] == 'producer':
-                    name = owner_info['producerName']
-
-                # Prepare data
-                data = {
-                    'userId': follower,
-                    'userType': 'user', 
-                    'notiTabs': 'Venue & Producers',
-                    'notiType': 'event',
-                    'image': None,
-                    'link': f'/events/{event_id}/{data["eventName"]}',
-                    'message': f'New event "{data["eventName"]}" created by {name}.',
-                    'createdAt': None,
-                }
-                # Create a notification for each follower
-                notifications.add_notification_to_db(data)
-
+        for f in followers:
+            notification_data = {
+                'userId': f['userId'],
+                'userType': 'user',
+                'notiTabs': 'venues & producers',
+                'notiType': 'event_created',
+                'image': None,
+                'link': f'/event/{new_event_id}/{data["eventName"]}',
+                'message': f'{owner_name} created a new event: {data["eventName"]}'
+            }
+            print(notification_data)
+            notifications.add_notification_to_db(notification_data)
+        
         return jsonify({'message': 'Event created successfully'}), 201
 
     except Exception as e:

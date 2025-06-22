@@ -120,6 +120,31 @@ def addUpdates():
         cur.execute('INSERT INTO "producersUpdates" ("date", "text", "photo", "producerId") VALUES (%s, %s, %s, %s)', (date, text, image64, producerID))
         conn.commit()
 
+        # Fetch producer name
+        cur.execute('SELECT "producerName" FROM producers WHERE id = %s', (producerID,))
+        producer_row = cur.fetchone()
+        producerName = producer_row['producerName'] if producer_row else "This producer"
+
+        # Notify all users who follow this producer
+        cur.execute(
+            'SELECT "userId" FROM "usersFollowLists" WHERE %s = ANY("producers")',
+            (str(producerID),)
+        )
+        followers = cur.fetchall()
+
+        for row in followers:
+            notification_data = {
+                "userId":   row['userId'],
+                "userType": "user",
+                "notiTabs": "venues & producers",
+                "notiType": "producer_update",
+                "image":    image64 or None,
+                "link":     f"/profile/producer/{producerID}/{producerName}",
+                "message":  f"{producerName} posted a new announcement."
+            }
+            print("Sending notification:", notification_data)
+            notifications.add_notification_to_db(notification_data)
+
         return jsonify(
             {   
                 "code": 201,
@@ -274,6 +299,36 @@ def sendAnswers():
     try:
         cur.execute('UPDATE "producersQuestionAnswers" SET "answer" = %s WHERE "producerId" = %s AND id = %s', (answer, producerID, questionsAnswersID))
         conn.commit()
+
+        # Fetch the original asker
+        cur.execute(
+            'SELECT "userId" FROM "producersQuestionAnswers" WHERE id = %s',
+            (questionsAnswersID,)
+        )
+        asker_row = cur.fetchone()
+        asker_id = asker_row['userId'] if asker_row else None
+
+        # Fetch producer's username for the notification message
+        cur.execute(
+            'SELECT username FROM producers WHERE id = %s',
+            (producerID,)
+        )
+        producer_row = cur.fetchone()
+        producer_username = producer_row['username'] if producer_row else ''
+
+        # Send notification back to the user who asked
+        if asker_id:
+            notification_data = {
+                "userId":   asker_id,
+                "userType": "user",
+                "notiTabs": "venues & producers",
+                "notiType": "producer_answer",
+                "image":    None,
+                "link":     f"/profile/producer/{producerID}/{producer_username}",
+                "message":  f"@{producer_username} answered your question"
+            }
+            print("Sending answer notification:", notification_data)
+            notifications.add_notification_to_db(notification_data)
 
         return jsonify(
             {   
