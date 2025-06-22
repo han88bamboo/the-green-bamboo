@@ -128,12 +128,12 @@ def remove_listing_from_table(cursor, table_name, listing_name):
 def fetch_top_5(cursor, table, drink_type=None, type_category=None):
 
     if drink_type in ['Whisky', 'Whiskey']:
-        drink_type = ['Whisky', 'Whiskey']  
+        drink_type_list = ['Whisky', 'Whiskey']  
 
     
     # If drink_type is a string, convert it to a list
     if isinstance(drink_type, str):
-        drink_type = [drink_type]
+        drink_type_list = [drink_type]
 
     try:
         if drink_type and drink_type != "Show All Types":
@@ -145,7 +145,7 @@ def fetch_top_5(cursor, table, drink_type=None, type_category=None):
                     WHERE "drinkType" IN %s
                     ORDER BY "counter" DESC
                     LIMIT 5
-                ''', (tuple(drink_type),))
+                ''', (tuple(drink_type_list),))
             else:
                 # If a specific type category is provided, filter by both drink type and type category
                 cursor.execute(f'''
@@ -154,7 +154,7 @@ def fetch_top_5(cursor, table, drink_type=None, type_category=None):
                     WHERE "drinkType" IN %s AND "typeCategory" = %s
                     ORDER BY "counter" DESC
                     LIMIT 5
-                ''', (tuple(drink_type), type_category,))
+                ''', (tuple(drink_type_list), type_category,))
         else:
             # If drink type is Show All Types, fetch top 5 without filtering by drink type
             cursor.execute(f'''
