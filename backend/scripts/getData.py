@@ -985,7 +985,6 @@ def getUniqueProducersNamesID(search_term, pid):
     search_term = search_term.strip().lower()
 
     try:
-
         # Retrieve producer name and ID is pid is not '0' - stop here since we only want to return this one
         if pid != '0':
             cursor.execute('SELECT "id", "producerName" FROM "producers" WHERE "id" = %s', (int(pid),))
@@ -999,10 +998,10 @@ def getUniqueProducersNamesID(search_term, pid):
                     "id": producer_data["id"],
                     "producerName": producer_data["producerName"]
                 })
-
+            
         # If pid is '0', search for producers by name to populate into the input field for suggestions [SubmitListingNew.vue]
         cursor.execute("""
-            SELECT "id", "producerName"
+            SELECT "id", "producerName", "isIndependentBottler"
             FROM "producers"
             WHERE "producerName" ILIKE %s
             LIMIT 30
@@ -1259,8 +1258,6 @@ def getListingsNames(search_term):
 
         # Convert into a list
         listings_data = [listing['listingName'] for listing in listings_data]
-        # Remove duplicates
-        listings_data = list(set(listings_data))
 
         return jsonify(listings_data), 200
 

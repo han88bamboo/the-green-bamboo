@@ -135,7 +135,7 @@ export default {
     computed: {
         // Set the photo URL to the default photo if it doesn't exist
         photoURL() {
-            return (this.listing.photo != "" && this.listing.photo != null) ? this.listing.photoURL : this.defaultPhoto;
+            return (this.listing.photo != "" && this.listing.photo != null) ? this.listing.photo : this.defaultPhoto;
         }
     },
     methods: {

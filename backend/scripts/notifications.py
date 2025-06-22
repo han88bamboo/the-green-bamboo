@@ -59,6 +59,53 @@ def add_notification_to_db(data):
     finally:
         cursor.close()
 
+
+
+# Helper function to get the list of users who follow a specific producer or venue
+def get_followers(user_id, user_type):
+    """
+    Returns a list of user IDs who follow the specified producer or venue.
+    Expects:
+        - user_id: ID of the producer or venue
+        - user_type: Type of the user (e.g., 'producers', 'venues')
+    """
+    conn = g.db
+    cursor = conn.cursor()
+
+    try:
+        if user_type == 'producers':
+            cursor.execute(
+                '''
+                SELECT "userId"
+                FROM "usersFollowLists"
+                WHERE %s IN ANY("producers")
+                ''',
+                (user_id,)
+            )
+
+        elif user_type == 'venues':
+            cursor.execute(
+                '''
+                SELECT "userId"
+                FROM "usersFollowLists"
+                WHERE %s IN ANY("venues")
+                ''',
+                (user_id,)
+            )
+        else:
+            print("Invalid user_type:", user_type)
+            return []
+
+        followers = cursor.fetchall()
+        return [row['userId'] for row in followers]
+
+    except Exception as e:
+        print("get_followers error:", str(e))
+        return []
+
+    finally:
+        cursor.close()
+
 # -----------------------------------------------------------------------------------------
 
 # [DELETE] /readNotifications

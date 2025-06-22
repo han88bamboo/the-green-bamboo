@@ -805,6 +805,38 @@ def createEvent():
                        (data['eventName'], data['eventDesc'], data['eventType'], data['eventStartDate'], data['eventEndDate'], data['eventStartTime'], data['eventEndTime'], data['eventLimit'], event_banner_pg, data['ticketed'], data['paidEvent'], data['eventLocation'], payment_link, data['eventOwnerID'], data['eventOwnerType'], created_date,))
         conn.commit()
 
+        # Get the ID of the newly created event
+        cursor.execute('SELECT LASTVAL()')
+        event_id = cursor.fetchone()['lastval']
+
+
+        # Step 6: Add notifications (1 record for 1 followers of the event owner)
+        if data['eventOwnerType'] in ['venue', 'producer']:
+
+            followers = notifications.get_followers(data['eventOwnerID'], data['eventOwnerType'])
+
+            for follower in followers:
+
+                # Get name of the event owner
+                if data['eventOwnerType'] == 'venue':
+                    name = owner_info['venueName']
+                elif data['eventOwnerType'] == 'producer':
+                    name = owner_info['producerName']
+
+                # Prepare data
+                data = {
+                    'userId': follower,
+                    'userType': 'user', 
+                    'notiTabs': 'Venue & Producers',
+                    'notiType': 'event',
+                    'image': None,
+                    'link': f'/events/{event_id}/{data["eventName"]}',
+                    'message': f'New event "{data["eventName"]}" created by {name}.',
+                    'createdAt': None,
+                }
+                # Create a notification for each follower
+                notifications.add_notification_to_db(data)
+
         return jsonify({'message': 'Event created successfully'}), 201
 
     except Exception as e:
