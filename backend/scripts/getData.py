@@ -1179,7 +1179,7 @@ def getAllProducers():
 # );
 
 
-# [GET] Get recent listing reviews by a specific user + top 5 listings based on the review ratings + number of reviews done (aka drink count)
+# [GET] Get recent listing reviews by a specific user + top 5 listings based on the review ratings by a specific user + number of reviews done (aka drink count)
 @blueprint.route("/getRecentListingReviews/<id>")
 def getRecentListingReviews(id):
 
@@ -1210,12 +1210,12 @@ def getRecentListingReviews(id):
         del review["upvotes"]
         del review["downvotes"]
 
-    # Retrieve top 5 listings based on the review ratings
+    # Retrieve top 5 listings based on the review ratings by the user
     with conn.cursor() as cursor:
         cursor.execute("""
-            SELECT "reviewTarget" FROM "reviews" WHERE "reviewType" = 'Listing' AND "rating" >= 8
+            SELECT "reviewTarget" FROM "reviews" WHERE "reviewType" = 'Listing' AND "userID" = %s
             LIMIT 10
-        """)
+        """, (id,))
         top_listings_data = cursor.fetchall()
 
     top_listings = []
