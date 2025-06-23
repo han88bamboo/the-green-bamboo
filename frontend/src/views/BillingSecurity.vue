@@ -62,7 +62,7 @@
                                                                                                                         borderWidth:'3px' }">
                         <span>
                             <h6> <b> Monthly plan </b> </h6>
-                            <p class="m-0"> $65 / Month </p> 
+                            <p class="m-0"> US$95 / Month </p> 
                             <small class="fst-italic p-0"> Billed monthly </small>
                         </span>
                     </button>
@@ -77,8 +77,8 @@
                             <div class="rounded col-5 text-center" style="background-color: green; color: white;">Save 23%</div>
                         </div>
                         <span>
-                            <p class="m-0"> $50 / Month </p> 
-                            <small class="fst-italic p-0"> $600 Billed annually </small>
+                            <p class="m-0"> US$85 / Month </p> 
+                            <small class="fst-italic p-0"> $960 Billed annually </small>
                         </span>
                     
                     </button>
@@ -397,7 +397,7 @@
                     theme: 'stripe',
                 };
 
-                this.elements = stripe.elements({clientSecret, appearance});
+                this.elements = stripe.elements({clientSecret, appearance, loader: 'auto', allowPromotionCodes: true});
                 const elements = this.elements;
 
                 const paymentElement = elements.create('payment');

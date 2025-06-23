@@ -156,29 +156,36 @@
                     :to="{ path: '/signup' }"
                     class="default-text-no-background"
                   >
-                    <button class="btn secondary-btn btn-sm px-5 fw-bold">
-                      Sign Up
+                    <button class="btn secondary-btn btn-sm px-5 fw-bold w-50">
+                      Sign Up for Free!
                     </button>
                   </router-link>
                 </div>
               </div>
-
+              <br>
               <!-- Business sign up -->
-              <div class="row pt-4 pb-3 mx-3">
-                <div class="col">
-                  <p class="fs-6 mobile-fs-7 fw-bold">
-                    
-                      <i>
-                        If you are a drinks brand, bottler or venue owner trying
-                        to create an account,
-                        <router-link
-                          :to="{ path: '/businessSignup' }"
-                          class="default-body-text-no-background"
-                          >click here</router-link
-                        >.
-                      </i>
-                    
-                  </p>
+              <div class="row pt-4 pb-3">
+                <div class="col-10 col-md-8 mx-auto">
+                  <div class="business-signup-card">
+                    <div class="row">
+                      <div class="col-md-8">
+                        <h5 class="text-start fw-bold mb-2">Brand or Venue Owner?</h5>
+                        <p class="text-start mb-2">Grow your business with a dedicated business profile.</p>
+                        <ul class="text-start ps-3 mb-3">
+                          <li>Be found by drinks lovers searching for new experiences</li>
+                          <li>Showcase your offerings with a customizable menu</li>
+                          <li>Connect with your audience and build your community</li>
+                        </ul>
+                      </div>
+                      <div class="col-md-4 d-flex align-items-center justify-content-center">
+                        <router-link :to="{ path: '/businessSignup' }" class="d-block w-100">
+                          <button class="btn secondary-btn fw-bold py-2 w-100">
+                            Drink-X for Business
+                          </button>
+                        </router-link>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </form>
@@ -246,6 +253,40 @@
   .background-login {
     background-image: none;
     background-color: white;
+  }
+}
+
+
+.business-signup-card {
+  background-color: white;
+  border: 2px solid #3CB371;
+  border-radius: 8px;
+  padding: 18px;
+  margin-bottom: 10px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  position: relative;
+}
+
+.business-signup-card::before {
+  content: "Business";
+  position: absolute;
+  top: -12px;
+  right: 20px;
+  background-color: #3CB371;
+  color: white;
+  font-size: 12px;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-weight: bold;
+}
+
+@media (max-width: 767px) {
+  .business-signup-card {
+    padding: 15px;
+  }
+  
+  .business-signup-card ul {
+    margin-bottom: 15px;
   }
 }
 </style>

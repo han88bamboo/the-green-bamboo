@@ -27,7 +27,7 @@
         <p v-if="resetStage == 'otp' && verifyErrorMessage" class="text-danger">{{verifyErrorMessage}}</p>
 
 
-
+        <br><br>
         <!-- 3rd Stage: Input boxes to enter new password -->
         New password: <br>
         <input type="password" v-if="resetStage == 'password'" v-model="newPassword" placeholder="Enter new password" class="rounded p-2" required> <br>

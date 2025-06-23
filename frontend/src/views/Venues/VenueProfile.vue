@@ -54,7 +54,7 @@
                     padding-bottom: 16px;
                     "
                 >
-                    Welcome to Drink-X. Grow your bar's presence!
+                    Welcome to Drink-X. Grow your venue's presence!
                 </h3>
 
         <div class="row fs-7">
@@ -593,11 +593,11 @@
                 <div class="row mt-3 mobile-mt-1" id="menu-section">
                     <div class="col-8 d-flex justify-content-start mobile-col-7 mobile-pe-0">
                         <!-- Toggle Bar Overview -->
-                        <button v-if="contentMode == 'overview'" class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'overview'"> Bar Overview </button>
-                        <button v-else class="btn inactive-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'overview'"> Bar Overview </button>
+                        <button v-if="contentMode == 'overview'" class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'overview'"> Venue Overview </button>
+                        <button v-else class="btn inactive-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'overview'"> Venue Overview </button>
                         <!-- Toggle Bar Menu -->
-                        <button  v-if="contentMode == 'menu'" class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'menu'"> Bar Menu </button>
-                        <button v-else class="btn inactive-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'menu'"> Bar Menu </button>
+                        <button  v-if="contentMode == 'menu'" class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'menu'"> Menu </button>
+                        <button v-else class="btn inactive-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'menu'"> Menu </button>
                         <!-- Toggle Venue Reviews -->
                         <button 
                         v-if="contentMode == 'venueReviews'" 
