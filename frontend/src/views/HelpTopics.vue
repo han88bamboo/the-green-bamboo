@@ -475,14 +475,19 @@ export default {
             <h5>What is the Explore page for?</h5>
             <p>The Explore page is your gateway to discovering the full world of drinks on Drink-X. Here, you can browse a wide range of alcoholic beverages—across all categories and styles. Click on any drink card to view detailed information, including its producer, region and style. You’ll also see reviews and ratings from other users, giving real feedback and their experience with these drinks.</p>
             <p>This is where you can learn more about what you’re drinking, find new favourites, and confidently consume your favourite drinks!</p>
+            <p><img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/2_Browsing_Drinks_-_Screen_Recording_2025-06-14_at_3.45.20_AM.mov.gif?v=1749846468" alt="" style="width: 100%; height: auto; display: block;"></p>
+
             <h5>What is the Best Of page for?</h5>
             <p>The Best Of page is where you’ll find the Drink-X community’s top picks across all categories of alcoholic drinks. It’s a showcase of the most celebrated bottles, as voted and curated by users like you. You can filter by drink type and category to see what’s trending—whether it’s “Desperate to Try” (bucket-list bottles), “Up and Coming” (underrated gems), or “Ride or Die” (all-time favorites).</p>
             <p>The Best Of page is perfect for discovering the community's most popular drinks, learning what makes them special, and finding your next must-try bottle based on collective community feedback.</p>
+            <p><img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/best_of.gif?v=1749966650" alt="" style="width: 100%; height: auto; display: block;"></p>
             <h5>What is the Club page for?</h5>
             <p>Clubs are groups where users, venues, and brands come together to share recommendations, discuss new releases, organise meetups, and celebrate any shared interest. You can browse and join clubs, see recent activity and posts from members, and even create your own club if you want to gather like-minded drinks explorers.</p> 
             <p>Each club features its own feed for discussions, event announcements, and exclusive updates. Whether you’re looking to connect with local enthusiasts, follow a bar’s fan group, or join a brand’s official club,  here is where you find your tribe and deepen your drinks journey.</p>
+            <p><img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/creation_of_club.gif?v=1749979055" alt="" style="width: 100%; height: auto; display: block;"></p>
             <h5>What are the badges on my profile page for, and how do I earn them?</h5>
             <p>Badges on your Drink-X profile are your personal trophies! Show off your journey, expertise, and adventures across all categories of drinks, and contributions to your community!</p>
+            <p><img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Screenshot_2025-06-23_at_6.53.44_PM.png?v=1750676275" alt="" style="width: 100%; height: auto; display: block;"></p>
             <p>There are two main types of badges:</p>
             <ul>
               <li><strong>Drink Type Badges</strong> reward you for reviewing different styles and categories of drinks. For instance, the <strong>Master of Malt</strong> badge tracks your whisky journey, the <strong>Ale-ficionado</strong> badge celebrates your exploration of different ales, while <strong>The Italian Job</strong> recognizes your experience with Italian cocktails like Negronis and Aperol Spritz.</li>
@@ -491,41 +496,56 @@ export default {
             <p>Each badge starts at Level 1 and can be leveled up, with higher levels requiring just a lil' more work. Your badges appear on your profile page, making your expertise visible to the public, and tracking your personal journey through the world of drinks!</p>
             <h5>What is the purpose of the "Follow" button on brand profile or venue profile pages? Why should I follow brands or venues on Drink-X?</h5>
             <p>The "Follow" button helps you stay connected your favourite brands and drinks venues. When you "Follow" a brand or venue, you’ll see their latest announcements, new releases, menu updates and upcoming events right in your feed, so you never miss out on them– whether they are special tastings, limited bottles, or exclusive offers. It’s the best way to stay in the loop!</p>
+            <p><img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/hennessy_8528cf6a-5fb0-471a-b07b-b71ccd96c883.gif?v=1749853718" alt="" style="width: 100%; height: auto; display: block;"></p>
             <h5>What is the purpose of the Q&A section on brand profile or venue profile pages?</h5>
             <p>Here, you can directly questions about anything—from a venue’s menu, opening hours, or upcoming events, to a brand’s products. Your questions are directly answered by venue managers or brand representatives, and both the questions and answers will then be visible to the whole community.</p>
+            <p><img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/q_a_making.gif?v=1750663165" alt="" style="width: 100%; height: auto; display: block;"></p>
             <h3 class="mt-5 anchor-target" id="venues" style="scroll-margin-top: 185px;">Venues (Bars, Bottle Shops, Drinks Event Organisers):</h3>
             <h5>Why should I put my venue on Drink-X?</h5>
             <p>Having your venue on Drink-X puts your venue's name and address on the map, standing out in front of a community of engaged drink lovers.</p>
             <p>Drink-X gives you a full suite of tools to help your venue stand out and attract more guests– including digital menus, an announcement space, Q&As, event promotion and club creation.</p> 
             <h5>How does the digital menu work?</h5>
             <p>Curate and update your online menu in real time to show its latest offerings. You can easily share your menu with current or prospective guests via a web link or a QR code (generated on Drink-X). Guests simply scan the QR code to view your always up-to-date menu on their phones.</p>
+            <p><img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/menu_creation.gif?v=1749971168" alt="" style="width: 100%; height: auto; display: block;"></p>
             <h5>How does the announcement space work?</h5>
             <p>You can post announcements right on your venue profile page. Your followers get immediately notified, so your regulars never miss out on what’s happening– whether it is a new arrival, special promotion or any other update about your venue.</p>
+            <p><img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/announcements.gif?v=1749972160" alt="" style="width: 100%; height: auto; display: block;"></p>
             <h5>How does the Q&A section help me?</h5>
             <p>Guests can directly ask you any questions. You can publicly respond to selected questions, which will then be available for all to see on your profile page. This helps you engage with your guests, build trust and show your hospitality.</p>
+            <p><img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/q_a.gif?v=1749979849" alt="" style="width: 100%; height: auto; display: block;"></p>
             <h5>What is the purpose of creating a club for my venue on Drink-X, and how does it benefit my venue?</h5>
             <p>Creating and managing a club on Drink-X is a powerful way to build a loyal community around your venue. Clubs can be formed as your venue’s own fan group or as a special interest group centered around any particular drinks or themes. This gives you a direct channel to connect with your most passionate guests and those who share a love for what you offer. You can also offer members of your club exclusive updates or special offers. It’s a great way to keep your regulars engaged and encourage repeat visits.</p>
+            <p><img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/creation_of_club.gif?v=1749979055" alt="" style="width: 100%; height: auto; display: block;"></p>
+
             <h5>What is the purpose of the Events section, and why should I create and promote events for my venue on Drink-X?</h5>
             <p>Events are a great way to bring people together and create memorable experiences at your venue – whether you're hosting tastings, masterclasses, launch parties, or celebrating an occassion. By promoting your events on Drink-X, you can reach a wider audience of engaged drinkers and fill those seats. Your events will appear on your profile page, and the main events calendar, making it easy for drinkers to discover what’s happening at your venue and RSVP with a tap.</p>
+            <p><img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/events.gif?v=1749973650" alt="" style="width: 100%; height: auto; display: block;"></p>
             <h5>What data and analytics do venues get on Drink-X?</h5>
             <p>Venues get access to insights on menu item popularity, review trends, and customer engagement. These analytics help you understand what’s working and how to improve your offerings.</p>
+            <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Screenshot_2025-06-23_at_3.33.22_PM.png?v=1750664011" alt="" style="margin: 0 auto; width: 40%; height: auto; display: block;">
             <h3 class="mt-5 anchor-target" id="brands" style="scroll-margin-top: 185px;">Brand Owners:</h3>
             <h5>Why should I put my brand on Drink-X?</h5>
             <p>Drink-X is your digital home for building a passionate community around your brand and products. By joining, you make your brand discoverable to thousands of engaged drinkers, showcase your full product lineup, and connect directly with fans. You gain tools to share your brand story, promote new releases, host events, and gather real feedback—all in one place. Drink-X helps you stand out in a crowded market and build lasting relationships with your audience.</p>
+
             <h5>What’s the purpose of placing my product portfolio on Drink-X, and how does it benefit me as a brand owner?</h5>
             <p>Your product catalogue is the heart of your brand profile on Drink-X. This is where you can showcase your entire product lineup on your brand's profile page— from core range to limited editions and new releases. You control the details, photos, and descriptions, ensuring your fans always see the most accurate and up-to-date information, directly from you.</p>
             <p>Once you add a product to your catalogue, it would also be featured in the main Explore page, where drinkers from all over the community can discover your products by name or style. This helps you reach new fans while keeping your loyal followers in the loop about what’s new and exciting from your brand.</p>
+            <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Adding_new_drinks.gif?v=1749985944" alt="" style="margin: 0 auto; width: 40%; height: auto; display: block;">
             <h5>How does the announcement space work?</h5>
             <p>You can post announcements right on your brand profile page. This is where you broadcast news, product launches, awards, and special updates directly to your followers. Your followers get immediately notified, so your fans never miss out on what’s happening. It’s the fastest way to keep your community in the loop and build excitement around your brand.</p>
+            <p><img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/hennessy_announcement.gif?v=1749986368" alt="" style="width: 100%; height: auto; display: block;"></p>
             <h5>How does the Q&A section help me?</h5>
             <p>This is your direct line to your fans. Fans can directly ask you any questions about your brand or products. You receive notifications for new questions and can reply publicly, building trust, transparency and engagement.</p>
+            <p><img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/business_Q_A.gif?v=1749993230" alt="" style="width: 100%; height: auto; display: block;"></p>
             <h5>What is the purpose of creating a club on Drink-X, and how does it benefit my brand?</h5>
             <p>Creating and managing a club on Drink-X is a powerful way to build a loyal, engaged community around your products and brand story. A club acts as your brand’s official fan group—a dedicated space where your biggest supporters, curious newcomers, and passionate drinkers can gather, connect, and celebrate what makes your brand unique. Post announcements, behind-the-scenes content, or reward your most dedicated fans with special offers.</p>
+            <p><img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/business_Creating_clubs.gif?v=1749991587" alt="" style="width: 100%; height: auto; display: block;"></p>
             <h5>What is the purpose of the Events section, and why should I create and promote events for my brand on Drink-X?</h5>
             <p>Events are a great way to bring people together and create memorable experiences around your brand – whether you're hosting tastings, masterclasses, launch parties, or winery/brewery openhouse days. By promoting your events on Drink-X, you can reach a wider audience of engaged drinkers, encourage RSVPs, and fill those seats. Your events will appear on your profile page, and the main events calendar, making it easy for drinkers to discover what’s happening at your venue and RSVP with a tap.</p>
+            <p><img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Creating_events.gif?v=1749990701" alt="" style="width: 100%; height: auto; display: block;"></p>
             <h5>What data and analytics do Brand Owners get on Drink-X?</h5>
             <p>Venues get access to insights on product popularity, review trends, most-discussed expressions and customer engagement. These analytics help you understand what’s working and how to improve your offerings.</p>
-
+            <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Screenshot_2025-06-23_at_3.34.00_PM.png?v=1750664047" alt="" style="margin: 0 auto; width: 40%; height: auto; display: block;">
             <!--anchor<h3>Account & Profile</h3>
             
             <h4>How do I create an account?</h4>
