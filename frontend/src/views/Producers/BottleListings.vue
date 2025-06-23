@@ -3506,9 +3506,9 @@ export default {
         if (this.user) {
           this.userBookmarks = this.user.drinkLists;
           if (Object.keys(this.userBookmarks).length > 0) {
-            
-            this.drinkList.haveTried = this.userBookmarks['Drinks I Have Tried'].listItems
-            this.drinkList.wantToTry = this.userBookmarks['Drinks I Want To Try'].listItems
+            this.drinkList.haveTried = this.userBookmarks?.['Drinks I Have Tried']?.listItems || [];
+            this.drinkList.wantToTry = this.userBookmarks?.['Drinks I Want To Try']?.listItems || [];
+
 
             // Convert them to list of listing IDs
             if (this.drinkList.haveTried) {
@@ -3528,7 +3528,6 @@ export default {
             }
           );
           this.users = this.users.concat(response.data);
-          console.log("Follow List Users:", this.users);
           this.followList = this.users.filter((user) => {
             return this.user.followLists.users.some(
               (item) => parseInt(item) === user.id
@@ -3654,7 +3653,6 @@ export default {
         // const maxDistance = 5000
         // create an object to store the distance of each venue from the current location
         let venueDistances = {};
-        console.log("Current Location:", this.currentLocation);
         this.venues.forEach(async (venue) => {
           const address = encodeURIComponent(venue.address);
           const response = await this.$axios.get(
@@ -3708,8 +3706,6 @@ export default {
           // sort the venues by distance
           let nearestBars = this.sortDistanceValues(venueDistances);
           this.nearestBars = nearestBars;
-
-          console.log("Nearest Bars:", this.nearestBars);
         });
       }
 
