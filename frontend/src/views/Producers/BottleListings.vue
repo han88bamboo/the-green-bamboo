@@ -497,7 +497,7 @@
                                   <div
                                     v-for="venue in venueListings"
                                     v-bind:key="venue.id"
-                                  >
+                                  > 
                                     <router-link
                                       :to="{
                                         path: '/profile/venue/' + venue.id + '/' + venue.venueName,
@@ -2903,9 +2903,9 @@
                 <!-- [function] where to try -->
                 <!-- [if] user does not allow location -->
                 <div v-if="nearestBars.length == 0">
-                  <div v-for="venue in venueListings" v-bind:key="venue.id">
+                  <div v-for="venue in venueListings" v-bind:key="venue.id"> 
                     <router-link
-                      :to="{ path: '/profile/venue/' + venue.id }"
+                      :to="{ path: '/profile/venue/' + venue.id + '/' + venue.venueName }"
                       class="reverse-clickable-text"
                     >
                       <p class="mb-1">{{ venue.venueName }}</p>
@@ -3025,7 +3025,7 @@
     <BookmarkModal
       v-if="user"
       :user="user"
-      :listingID="bookmarkListingID"
+      :listingID="listingIDAsInt"
       :key="bookmarkListingID ? 'modal-'+bookmarkListingID : 'modal-default'"
     />
   </div>
@@ -3270,6 +3270,9 @@ export default {
       });
       return tempLocation;
     },
+    listingIDAsInt() {
+      return parseInt(this.bookmarkListingID);
+    }
   },
   methods: {
     // fetch specific listing data
@@ -3418,6 +3421,7 @@ export default {
             dict[venue.address] = venue.id;
             return dict;
           }, {});
+
         }
         
       } catch (error) {
@@ -3501,12 +3505,17 @@ export default {
         this.user = this.users.find((user) => user.id == this.userID);
         if (this.user) {
           this.userBookmarks = this.user.drinkLists;
-          this.drinkList.haveTried = this.user.drinkList['Drinks I Have Tried'].listItems
-          this.drinkList.wantToTry = this.user.drinkList['Drinks I Want To Try'].listItems
+          this.drinkList.haveTried = this.userBookmarks['Drinks I Have Tried'].listItems
+          this.drinkList.wantToTry = this.userBookmarks['Drinks I Want To Try'].listItems
 
           // Convert them to list of listing IDs
-          this.drinkList.haveTried = this.drinkList.haveTried.map(item => item.drinkId);
-          this.drinkList.wantToTry = this.drinkList.wantToTry.map(item => item.drinkId);
+          if (this.drinkList.haveTried) {
+            this.drinkList.haveTried = this.drinkList.haveTried.map(item => item.drinkId);
+          }
+          if (this.drinkList.wantToTry) {
+            this.drinkList.wantToTry = this.drinkList.wantToTry.map(item => item.drinkId);
+          }
+          
 
           // Get follow list user details 
           const response = await this.$axios.post(
@@ -3640,7 +3649,7 @@ export default {
         // const maxDistance = 5000
         // create an object to store the distance of each venue from the current location
         let venueDistances = {};
-
+        console.log("Current Location:", this.currentLocation);
         this.venues.forEach(async (venue) => {
           const address = encodeURIComponent(venue.address);
           const response = await this.$axios.get(
@@ -3694,8 +3703,12 @@ export default {
           // sort the venues by distance
           let nearestBars = this.sortDistanceValues(venueDistances);
           this.nearestBars = nearestBars;
+
+          console.log("Nearest Bars:", this.nearestBars);
         });
       }
+
+      this.venueListings = this.venues
     },
 
     getProducerName(producerID) {

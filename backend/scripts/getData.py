@@ -1925,7 +1925,7 @@ def getVenuesWithSpecificListing(listingID):
                 id = venue['venueId']
 
                 cursor.execute("""
-                    SELECT "id", "venueName", "originLocation", "photo", "website" 
+                    SELECT "id", "venueName", "originLocation", "photo", "website" , "address"
                     FROM "venues"
                     WHERE "id" = %s;
                 """, (id,))
@@ -1938,7 +1938,8 @@ def getVenuesWithSpecificListing(listingID):
                         "venueName": venue_data["venueName"],
                         "originLocation": venue_data["originLocation"],
                         "photo": venue_data["photo"],
-                        "website": venue_data["website"]
+                        "website": venue_data["website"],
+                        "address": venue_data["address"]
                     })
 
             if not venues_data:
@@ -1946,6 +1947,7 @@ def getVenuesWithSpecificListing(listingID):
                     "code": 404,
                     "message": "No venue data found for the specified listing."
                 }), 404
+
 
             return jsonify(venues_data), 200
 
