@@ -3501,20 +3501,24 @@ export default {
             userIDs: this.allRelevantUserIDs,
           }
         );
-        this.users = response.data;        
+        this.users = response.data;
         this.user = this.users.find((user) => user.id == this.userID);
         if (this.user) {
           this.userBookmarks = this.user.drinkLists;
-          this.drinkList.haveTried = this.userBookmarks['Drinks I Have Tried'].listItems
-          this.drinkList.wantToTry = this.userBookmarks['Drinks I Want To Try'].listItems
+          if (Object.keys(this.userBookmarks).length > 0) {
+            
+            this.drinkList.haveTried = this.userBookmarks['Drinks I Have Tried'].listItems
+            this.drinkList.wantToTry = this.userBookmarks['Drinks I Want To Try'].listItems
 
-          // Convert them to list of listing IDs
-          if (this.drinkList.haveTried) {
-            this.drinkList.haveTried = this.drinkList.haveTried.map(item => item.drinkId);
+            // Convert them to list of listing IDs
+            if (this.drinkList.haveTried) {
+              this.drinkList.haveTried = this.drinkList.haveTried.map(item => item.drinkId);
+            }
+            if (this.drinkList.wantToTry) {
+              this.drinkList.wantToTry = this.drinkList.wantToTry.map(item => item.drinkId);
+            }
           }
-          if (this.drinkList.wantToTry) {
-            this.drinkList.wantToTry = this.drinkList.wantToTry.map(item => item.drinkId);
-          }
+          
           
 
           // Get follow list user details 
@@ -3524,6 +3528,7 @@ export default {
             }
           );
           this.users = this.users.concat(response.data);
+          console.log("Follow List Users:", this.users);
           this.followList = this.users.filter((user) => {
             return this.user.followLists.users.some(
               (item) => parseInt(item) === user.id
