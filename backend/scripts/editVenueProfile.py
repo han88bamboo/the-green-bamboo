@@ -10,6 +10,7 @@ import s3Images
 from flask import Blueprint, g, request, jsonify
 from datetime import datetime
 from scripts import pointsHelperFunc, badge_helpers, notifications
+import re
 
 
 file_name = os.path.basename(__file__)
@@ -48,7 +49,8 @@ def editDetails():
                 s3Images.deleteImageFromS3(existingVenue['photo'])
 
             if image64:
-                image64 = s3Images.uploadBase64ImageToS3(image64)
+                base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', image64)
+                image64 = s3Images.uploadBase64ImageToS3(base64_string)
 
             # Update the venue details in the database
             cur.execute(
@@ -118,7 +120,8 @@ def addUpdates():
 
         if existingVenue:
             if image64:
-                image64 = s3Images.uploadBase64ImageToS3(image64)
+                base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', image64)
+                image64 = s3Images.uploadBase64ImageToS3(base64_string)
 
             # Update the venue details in the database
             cur.execute(
@@ -911,7 +914,8 @@ def editUpdate():
                 s3Images.deleteImageFromS3(existingUpdate['photo'])
 
             if image64:
-                image64 = s3Images.uploadBase64ImageToS3(image64)
+                base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', image64)
+                image64 = s3Images.uploadBase64ImageToS3(base64_string)
 
             # Update the venue details in the database
             cur.execute(

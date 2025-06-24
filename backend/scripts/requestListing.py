@@ -11,6 +11,7 @@ from bson import json_util
 from flask import Blueprint, g, request, jsonify
 from datetime import datetime
 from scripts import pointsHelperFunc, badge_helpers, notifications
+import re
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -45,7 +46,8 @@ def requestListing():
         ), 400
 
     if rawRequest['photo']:
-        rawRequest['photo'] = s3Images.uploadBase64ImageToS3(rawRequest['photo'])
+        base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', rawRequest['photo'])
+        rawRequest['photo'] = s3Images.uploadBase64ImageToS3(base64_string)
 
     # Handle nullable foreign keys
     producerId = rawRequest.get('producerID') or None
@@ -146,7 +148,8 @@ def requestListingModify(requestID):
         if existingRequest:
             s3Images.deleteImageFromS3(existingRequest)
         if rawRequest['photo']:
-            rawRequest['photo'] = s3Images.uploadBase64ImageToS3(rawRequest['photo'])
+            base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', rawRequest['photo'])
+            rawRequest['photo'] = s3Images.uploadBase64ImageToS3(base64_string)
 
     producerId = rawRequest.get('producerID') or None
     userId = rawRequest.get('userID') or None

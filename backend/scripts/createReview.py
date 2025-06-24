@@ -8,6 +8,7 @@ import s3Images
 from flask import Blueprint, g, request, jsonify
 from datetime import datetime
 from scripts import pointsHelperFunc, badge_helpers, notifications
+import re
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -102,7 +103,8 @@ def createReviews():
 
     # Upload image into S3
     if raw_review['photo']:
-        raw_review['photo'] = s3Images.uploadBase64ImageToS3(raw_review['photo'])
+        base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', raw_review['photo'])
+        raw_review['photo'] = s3Images.uploadBase64ImageToS3(base64_string)
 
 
     # Prepare the insert SQL for reviews
@@ -334,9 +336,18 @@ def createProducerReviews():
                 (producer_id, user_id))
     if cur.fetchone()['exists']:
         return jsonify({"code": 400, "message": "Review already exists."}), 400
+    
+    photos = []
+
+    for photo in raw_review.get('photos', []):
+        if photo:
+            # Upload images & store their returned URLs
+            base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', photo)
+            uploaded_photo = s3Images.uploadBase64ImageToS3(base64_string)
+            photos.append(uploaded_photo)
 
     # Upload images & store their returned URLs
-    photos = [s3Images.uploadBase64ImageToS3(photo) for photo in raw_review.get('photos', []) if photo]
+    # photos = [s3Images.uploadBase64ImageToS3(photo) for photo in raw_review.get('photos', []) if photo]
 
     insert_review_sql = """
         INSERT INTO "producerReviews" ("userID", "producerID", "rating", "reviewDesc", "createdDate", "photos") 
@@ -393,9 +404,18 @@ def createVenueReviews():
     )
     if cur.fetchone()['exists']:
         return jsonify({"code": 400, "message": "Review already exists."}), 400
+    
+    photos = []
+
+    for photo in raw_review.get('photos', []):
+        if photo:
+            # Upload images & store their returned URLs
+            base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', photo)
+            uploaded_photo = s3Images.uploadBase64ImageToS3(base64_string)
+            photos.append(uploaded_photo)
 
     # Upload images & store their returned URLs
-    photos = [s3Images.uploadBase64ImageToS3(photo) for photo in raw_review.get('photos', []) if photo]
+    # photos = [s3Images.uploadBase64ImageToS3(photo) for photo in raw_review.get('photos', []) if photo]
 
     insert_review_sql = """
         INSERT INTO "venueReviews" ("userID", "venueID", "rating", "reviewDesc", "createdDate", "photos") 
