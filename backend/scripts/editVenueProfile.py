@@ -28,7 +28,6 @@ def editDetails():
     conn = g.db
     cur = conn.cursor()
     data = request.get_json()
-    print(data)
 
     venueID = int(data['venueID'])
     venueName = data['venueName']
@@ -47,7 +46,6 @@ def editDetails():
         if existingVenue:
             if existingVenue['photo']:
                 s3Images.deleteImageFromS3(existingVenue['photo'])
-
             if image64:
                 base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', image64)
                 image64 = s3Images.uploadBase64ImageToS3(base64_string)
