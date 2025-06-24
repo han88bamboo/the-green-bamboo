@@ -323,9 +323,9 @@
                               :value="type"
                             />
                             <label
-                              v-if="selectedDrinks.includes(type)"
+                              v-if="displayUserDrinkChoice.includes(type)"
                               class="btn primary-btn-less-round btn-sm"
-                              style="background-color: #f0b358;border:1px solid #f0b358;"
+                              style="background-color: #f0b358;border:1px solid #f0b358;color: black;"
                               :for="index"
                               >{{ type }}</label
                             >
