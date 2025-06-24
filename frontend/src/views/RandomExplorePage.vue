@@ -9,6 +9,22 @@
   min-height: 193px !important; 
 }
 
+
+
+.square::-webkit-scrollbar {
+  width: 8px;
+}
+
+.square::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
+
+.square::-webkit-scrollbar-thumb {
+  background-color: wheat; /* butter yellow */
+  border-radius: 10px;
+  opacity: 0.5;
+}
+
 @media (max-width: 768px) {
   /* Make card properly handle overflow */
   .card {
@@ -175,7 +191,7 @@
             <div v-if="userType == 'user' || userType == ''" class="row">
               <!-- [moderator] listing requests -->
               <div v-if="isAdmin || isModerator" class="col-12">
-                <div class="square primary-square-green-outline mb-3 shelf">
+                <div class="square primary-square-green-outline mb-3 shelf" style="min-height: 240px; max-height: 400px; overflow-y: auto;">
                   <!-- header text -->
                   <div class="p-3 square-inline text-start">
                     <span
@@ -228,7 +244,7 @@
               <!-- your drinks shelf -->
               <div class="col-12">
                 <div class="shelf mb-3 primary-square-green">
-                  <div class="square p-3 mb-3 text-start" style="height: 300px">
+                  <div class="square p-3 mb-3 text-start" style="min-height: 250px; max-height: 400px; overflow-y: auto; ">
                     <!-- header text -->
                     <div class="square-inline">
                       <router-link
@@ -331,7 +347,7 @@
               <!-- brands you follow -->
               <div class="col-12 ">
                 <div class="shelf primary-square-green">
-                  <div class="square p-3 mb-3 text-start" style="height: 300px">
+                  <div class="square p-3 mb-3 text-start" style="min-height: 250px; max-height: 400px; overflow-y: auto;">
                     <!-- header text -->
                     <div class="square-inline">
                       <h5 class="square-inline text-start mr-auto fw-bold">
@@ -450,9 +466,9 @@
             <!-- [producer] listing requests / fan questions / activity -->
             <div v-else-if="userType == 'producer'" class="row">
               <!-- listing requests -->
-              <div class="col-12 mb-5 shelf">
+              <div class="col-12">
                 <div
-                  class="square primary-square-green-outline rounded p-3 mb-3"
+                  class="square primary-square-green-outline shelf rounded p-3 mb-3"
                 >
                   <!--tzh changed to green outline -->
                   <!-- header text -->
@@ -512,30 +528,36 @@
                   <!-- header text -->
                   <div class="square-inline">
                     <span
-                      v-if="unansweredQuestions.length != 0"
+                      
                       class="square-inline text-start mr-auto"
                     >
-                      <h4>
-                        <span class="title-card-text">
-                          {{ unansweredQuestions.length }}
-                        </span>
-                        Pending Fan Questions For You
-                      </h4>
+                      <h5>
+                        Q&A With Your Fans 💬
+                      </h5>
                     </span>
-                    <h4 v-else class="square-inline text-start mr-auto">
-                      No New Fan Questions!
-                    </h4>
+                    
                   </div>
                   <!-- body -->
                   <div v-if="unansweredQuestions.length != 0">
-                    <div
+                    <div class="row"
                       style="
                         display: flex;
                         align-items: center;
                         justify-content: center;
                       "
                     >
-                      <router-link
+                      <span
+                        class="square-inline text-start mr-auto"
+                      >
+                        <p class="fw-normal">
+                          You Have Received
+                          <span class="title-card-text">
+                            {{ unansweredQuestions.length }}
+                          </span>
+                          Fan Submitted Question!
+                        </p>
+                      </span>                      
+                      <router-link                       
                         :to="{ path: '/Producers/ProducersQA/' + userID }"
                       >
                         <button
@@ -544,7 +566,33 @@
                         >
                           Respond to Q&A
                         </button>
+                      </router-link>                      
+                    </div>
+                  </div>
+                  <div v-else>
+                    <div class="row"
+                      style="
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                      "
+                    >
+                      <p class="square-inline text-start mr-auto fw-normal">
+                        No new fan questions at the moment! Post an update and get engaged!
+                      </p>  
+                      <router-link
+                        
+                        :to="profileURL"
+                      >
+                        <button
+                          class="btn secondary-btn-border btn-sm py-2 px-3"
+                          style="font-weight: bold"
+                        >
+                        Head to My Profile
+                        </button>
                       </router-link>
+
+                      
                     </div>
                   </div>
                 </div>
@@ -557,9 +605,9 @@
                   <!--tzh changed to green outline -->
                   <!-- header text -->
                   <div class="square-inline">
-                    <h4 class="square-inline text-start mr-auto">
-                      Activity on Your Listings
-                    </h4>
+                    <h5 class="square-inline text-start mr-auto">
+                      Activity on Your Listings 🔥
+                    </h5>
                   </div>
                   <!-- body -->
                   <div>
@@ -571,7 +619,7 @@
                       "
                     >
                       <router-link
-                        :to="{ path: '/profile/producer/' + userID }"
+                        :to="dashboardURL"
                       >
                         <button
                           class="btn secondary-btn-border btn-sm py-2 px-3"
@@ -591,35 +639,41 @@
               <!-- fan questions -->
               <div class="col-12">
                 <div
-                  class="square primary-square-green-outline rounded p-3 mb-3"
+                  class="square primary-square-green-outline rounded p-3 mb-3" style="min-height: 100px; max-height: 400px; overflow-y: auto;"
                 >
                   <!--tzh changed to green outline -->
                   <!-- header text -->
                   <div class="square-inline">
                     <span
-                      v-if="unansweredQuestions.length != 0"
+                      
                       class="square-inline text-start mr-auto"
                     >
-                      <h4>
-                        <span class="title-card-text">
-                          {{ unansweredQuestions.length }}
-                        </span>
-                        Pending Fan Questions For You
-                      </h4>
+                      <h5>
+                        Q&A With Your Fans 💬
+                      </h5>
                     </span>
-                    <h4 v-else class="square-inline text-start mr-auto">
-                      No New Fan Questions!
-                    </h4>
+                    
                   </div>
                   <!-- body -->
                   <div v-if="unansweredQuestions.length != 0">
-                    <div
+                    <div class="row"
                       style="
                         display: flex;
                         align-items: center;
                         justify-content: center;
                       "
                     >
+                      <span
+                        class="square-inline text-start mr-auto"
+                      >
+                        <p class="fw-normal">
+                          You Have Received
+                          <span class="title-card-text">
+                            {{ unansweredQuestions.length }}
+                          </span>
+                          Fan Submitted Question!
+                        </p>
+                      </span>    
                       <router-link :to="{ path: '/Venues/VenuesQA/' + userID }">
                         <button
                           class="btn secondary-btn-border btn-sm py-2 px-3"
@@ -630,6 +684,29 @@
                       </router-link>
                     </div>
                   </div>
+                  <div v-else>
+                    <div class="row"
+                      style="
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                      "
+                    >
+                      <p class="square-inline text-start mr-auto fw-normal">
+                        No new fan questions at the moment! Post an update and get engaged!
+                      </p>  
+                      <router-link
+                        :to="profileURL"
+                      >
+                        <button
+                          class="btn secondary-btn-border btn-sm py-2 px-3"
+                          style="font-weight: bold"
+                        >
+                        Head to My Profile
+                        </button>
+                      </router-link>
+                    </div>
+                    </div>
                 </div>
               </div>
               <!-- check ins at your venue -->
@@ -640,9 +717,9 @@
                   <!--tzh changed to green outline -->
                   <!-- header text -->
                   <div class="square-inline">
-                    <h4 class="square-inline text-start mr-auto">
-                      Activity on Your Listings
-                    </h4>
+                    <h5 class="square-inline text-start mr-auto">
+                      Activity at Your Venue 📍
+                    </h5>
                   </div>
                   <!-- body -->
                   <div>
@@ -653,7 +730,9 @@
                         justify-content: center;
                       "
                     >
-                      <router-link :to="{ path: '/profile/venue/' + userID }">
+                      <router-link
+                        :to="dashboardURL"
+                      >
                         <button
                           class="btn secondary-btn-border btn-sm py-2 px-3"
                           style="font-weight: bold"
@@ -661,6 +740,71 @@
                           View Dashboard
                         </button>
                       </router-link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- [non-logged in] your drinks shelf & brands you follow -->
+            <div v-else class="row">
+              <!-- your drinks shelf -->
+              <div class="col-12">
+                <div class="shelf mb-3 primary-square-green">
+                  <div class="square p-3 mb-3 text-start" style="min-height: 250px; max-height: 400px; overflow-y: auto; ">
+                    <!-- header text -->
+                    <div class="square-inline">
+                      <router-link
+                        :to="{
+                          path: '/profile/user/' + userID + '/' + username,
+                        }"
+                        class="reverse-clickable-text"
+                      >
+                        <h5
+                          class="square-inline text-start mr-auto reverse-clickable-text fw-bold"
+                        >
+                          Your Drinks Shelf
+                        </h5>
+                      </router-link>
+                    </div>
+                    <!-- body -->
+                    <div style="height: 85%">
+                      <!-- [if] drinks in drink shelf -->
+                      <p class="text-white">Create your account to start adding drink to your shelf. 🧃</p>
+                        <router-link :to="{ path: '/login' }">
+                          <button
+                            class="btn btn-shelf-login py-2 px-3"
+                            style="font-weight: bold"
+                          >
+                            Sign Up For Free
+                          </button>
+                        </router-link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- brands you follow -->
+              <div class="col-12 ">
+                <div class="shelf primary-square-green">
+                  <div class="square p-3 mb-3 text-start" style="min-height: 250px; max-height: 400px; overflow-y: auto;">
+                    <!-- header text -->
+                    <div class="square-inline">
+                      <h5 class="square-inline text-start mr-auto fw-bold">
+                        Brands You Follow
+                      </h5>
+                    </div>
+                    <!-- body -->
+                    <div style="height: 85% ">
+                      
+                      <p class="text-white">Create your account to follow your favourite brands! ⭐</p>
+                        <router-link :to="{ path: '/login' }">
+                          <button
+                            class="btn btn-shelf-login py-2 px-3"
+                            style="font-weight: bold"
+                          >
+                            Sign Up For Free
+                          </button>
+                        </router-link>
                     </div>
                   </div>
                 </div>
@@ -1142,16 +1286,30 @@
                               <!-- Image Section -->
                               <div class="text-center text-md-start">
                                 <div class="image-wrapper position-relative d-inline-block">
+                                  <!-- Case 1: User uploaded a photo -->
                                   <img
-                                    v-if="review['reviewTarget']['photo']"
-                                    :src="review['photo']"
+                                    v-if="review.photo && review.photo !== ''"
+                                    :src="review.photo"
                                     class="listing-image"
+                                    alt="Review Image"
                                   />
+
+                                  <!-- Case 2: No user photo, but target has one -->
+                                  <img
+                                    v-else-if="review.reviewTarget && review.reviewTarget.photo"
+                                    :src="review.reviewTarget.photo"
+                                    class="listing-image"
+                                    alt="Target Image"
+                                  />
+
+                                  <!-- Case 3: Fallback/default image -->
                                   <img
                                     v-else
                                     src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
                                     class="listing-image"
+                                    alt="Default Image"
                                   />
+
                                 </div>
                               </div>
                               <div class="detials-rating d-flex flex-column flex-md-row justify-content-between w-100">
@@ -1419,6 +1577,7 @@ export default {
     LoadingWithFunFact
   },
 
+   
   data() {
     return {
       dataLoaded: false,
@@ -1512,22 +1671,53 @@ export default {
       // for bookmark component
       bookmarkListingID: {},
 
+      //for redirecting to url:
+      profileURL: "",
+      dashboardURL: "",
+      dashboardWord: "",
+
       defaultProfilePhoto:
         "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739",
     };
   },
   mounted() {
-    // Load local storage variables
-    const accID = localStorage.getItem("88B_accID");
-    if (accID !== null) {
-      this.userID = localStorage.getItem("88B_accID");
+  // Load local storage variables
+  const accID = localStorage.getItem("88B_accID");
+  const accType = localStorage.getItem("88B_accType");
+  const accUsername = localStorage.getItem("88B_accUsername");
+
+  if (accID) {
+    this.userID = accID;
+  }
+
+  if (accType) {
+    this.userType = accType;
+  }
+
+  if (accUsername) {
+    this.username = accUsername;
+  }
+
+  // Define profileURL, dashboardURL, and dashboardWord
+  if (accID && accType && accUsername) {
+    if (accType === "user") {
+      this.profileURL = `/profile/user/${accID}/${accUsername}`;
+      this.dashboardURL = `/dashboard/user/${accID}`;
+      this.dashboardWord = "My Drink";
+    } else if (accType === "producer") {
+      this.profileURL = `/profile/producer/${accID}/${accUsername}`;
+      this.dashboardURL = `/Producers/ProducersDashboard/${accID}`;
+      this.dashboardWord = "My Brand";
+    } else if (accType === "venue") {
+      this.profileURL = `/profile/venue/${accID}/${accUsername}`;
+      this.dashboardURL = `/dashboard/venue/${accID}`;
+      this.dashboardWord = "My Venue";
     }
-    let userType = localStorage.getItem("88B_accType");
-    if (userType != null) {
-      this.userType = userType;
-    }
-    this.loadData();
-  },
+  }
+
+  this.loadData();
+},
+
   methods: {
     //remove %20 from url
     slugify(text) {
@@ -1598,10 +1788,11 @@ export default {
             `${process.env.VUE_APP_API_URL}/getData/getRequestsCount`,
             data
           );
+          
           this.requestListingsCount = response.data.requestListings;
           this.requestEditsCount = response.data.requestEdits;
           this.requestDupesCount = response.data.requestDupes;
-          this.totalRequests = this.requestListingsCount + this.requestEditsCount + this.requestDupesCount;
+          this.totalRequests = Number(this.requestListingsCount) + Number(this.requestEditsCount) + Number(this.requestDupesCount);
         }
 
       } catch (error) {
@@ -1679,6 +1870,7 @@ export default {
             // Sort by addedDate (newest first)
             allDrinkShelf.sort((a, b) => new Date(b.addedDate) - new Date(a.addedDate));
 
+
             // Loop through allDrinkShelf to get the drink details and add to drinkShelf
             if (this.listings && this.listings.length > 0) {
               for (let drink of allDrinkShelf) {
@@ -1693,6 +1885,25 @@ export default {
                   console.error("Error retrieving listing details:", error);
                 }
               }
+            }
+
+            // Add drinks the user recently reviewed (latest 2)
+            try {
+              const response = await this.$axios.get(
+                `${process.env.VUE_APP_API_URL}/getData/getLatestReviewsDrinks/${this.userID}`
+              );
+
+              // Add to drinkShelf
+              this.drinkShelf = this.drinkShelf.concat(response.data);
+
+              // Sort drinkShelf by addedDate (newest first)
+              this.drinkShelf.sort((a, b) => new Date(b.addedDate) - new Date(a.addedDate));
+
+              // Get top 5
+              this.drinkShelf = this.drinkShelf.slice(0, 5);
+
+            } catch (error) {
+              console.error("Error retrieving user reviews for drink shelf:", error);
             }
 
           } else if (this.userType == "producer") {

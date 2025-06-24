@@ -6,6 +6,7 @@ import os
 import s3Images
 from flask import Blueprint, g, request, jsonify
 from scripts import pointsHelperFunc, badge_helpers, notifications
+import re
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -26,8 +27,8 @@ def editDetails():
             existingUser = cursor.fetchone()
             if existingUser and existingUser['photo']:
                 s3Images.deleteImageFromS3(existingUser['photo'])
-
-            image64 = s3Images.uploadBase64ImageToS3(data['image64'])
+            base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', data['image64'])
+            image64 = s3Images.uploadBase64ImageToS3(base64_string)
 
             cursor.execute("UPDATE users SET photo = %s WHERE id = %s", (image64, userID))
         drinkChoice = data['drinkChoice']

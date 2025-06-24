@@ -771,7 +771,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
             // Search search term in listings [lazy loading]
             async searchListingsLazy(searchTerm) {
                 try {
-                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListings/getListingsBySearch?searchTerm=${searchTerm}&lastID=${this.lastListingID}`);
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingsBySearch?searchTerm=${searchTerm}&lastID=${this.lastListingID}`);
                     
                     this.resultListings = this.resultListings.concat(response.data);
                     this.originalResults = this.originalResults.concat(response.data);

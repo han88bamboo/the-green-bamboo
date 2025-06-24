@@ -14,6 +14,7 @@ from bson.objectid import ObjectId
 from datetime import datetime, timedelta
 from dotenv import load_dotenv # ADDED BY SMU GROUP 3
 import psycopg2 # ADDED BY SMU GROUP 3
+import re
 
 import secrets
 
@@ -59,7 +60,8 @@ def createAccount():
     
     # Handle photo upload if present
     if rawAccount['photo']:
-        rawAccount['photo'] = s3Images.uploadBase64ImageToS3(rawAccount['photo'])
+        base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', rawAccount['photo'])
+        rawAccount['photo'] = s3Images.uploadBase64ImageToS3(base64_string)
 
     # Prepare data for insertion
     columns = ['username', 'displayName', 'firstName', 'lastName', 'email', 'choiceDrinks', 'modType', 

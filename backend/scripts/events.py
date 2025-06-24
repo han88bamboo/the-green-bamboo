@@ -759,7 +759,8 @@ def createEvent():
 
             # Upload each image (base64Image) to S3
             for image in data['eventBanners']:
-                url = s3Images.uploadBase64ImageToS3(image)
+                base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', image)
+                url = s3Images.uploadBase64ImageToS3(base64_string)
                 if url:
                     event_banner.append(url)
 

@@ -7,7 +7,7 @@ import os
 import re
 import json
 import pytz
-import data
+import re
 import s3Images
 from flask import Blueprint, g, request, jsonify
 from datetime import datetime, timedelta
@@ -173,7 +173,8 @@ def createListings():
             rawBottle['abv'] = float(abv_value)
 
         if rawBottle['photo'] is not None and rawBottle['photo'] != "":
-            rawBottle['photo'] = s3Images.uploadBase64ImageToS3(rawBottle['photo'])
+            base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', rawBottle['photo'])
+            rawBottle['photo'] = s3Images.uploadBase64ImageToS3(base64_string)
 
         columns = ', '.join(f'"{col}"' for col in rawBottle.keys())
         placeholders = ', '.join(['%s'] * len(rawBottle))

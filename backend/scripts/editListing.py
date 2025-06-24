@@ -11,6 +11,7 @@ from flask import Blueprint, g, request, jsonify
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
 import pip._vendor.requests as requests
+import re
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -63,7 +64,8 @@ def updateListing(id):
             try:
                 if existingBottle['photo'] is not None and existingBottle['photo'] != '':
                     s3Images.deleteImageFromS3(existingBottle['photo'])
-                updatedListing['photo'] = s3Images.uploadBase64ImageToS3(updatedListing['photo'])
+                base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', updatedListing['photo'])
+                updatedListing['photo'] = s3Images.uploadBase64ImageToS3(base64_string)
             except Exception as e:
                 print(str(e))
                 return jsonify(

@@ -72,28 +72,102 @@
                             </p>
                         </div>
                         <h5 class="text-start mt-2 mb-3 mobile-fs-6">Apply for a Business Account to connect to a community of drink lovers and grow your business!</h5>
+                        <div class="container p-0 mt-3 mb-4">
+                        
+                        <div class="feature-table">
+                            <div class="row feature-row align-items-center py-2">
+                                <div class="col-9 text-start fw-bold">
+                                    Feature
+                                </div>
+                                <div class="col-3 text-center fw-bold">
+                                    Drink-X for Business
+                                </div>
+                            </div>
+                            <!-- Feature Row 1 -->
+                            <div class="row feature-row align-items-center py-2">
+                                <div class="col-9 text-start">
+                                    Be instantly found by numerous drinks lovers searching for venues, brands or their next favourite drink.
+                                </div>
+                                <div class="col-3 text-center">
+                                    <i class="bi bi-check-circle-fill" style="color: #3CB371; font-size: 1.2rem;"></i>
+                                </div>
+                            </div>
+                            
+                            <!-- Feature Row 2 -->
+                            <div class="row feature-row align-items-center py-2">
+                                <div class="col-9 text-start">
+                                    Showcase your offerings/menu on a live, easy-to-update menu.
+                                </div>
+                                <div class="col-3 text-center">
+                                    <i class="bi bi-check-circle-fill" style="color: #3CB371; font-size: 1.2rem;"></i>
+                                </div>
+                            </div>
+                            
+                            <!-- Feature Row 3 -->
+                            <div class="row feature-row align-items-center py-2">
+                                <div class="col-9 text-start">
+                                    Announce promotions and brand news directly to your fans.
+                                </div>
+                                <div class="col-3 text-center">
+                                    <i class="bi bi-check-circle-fill" style="color: #3CB371; font-size: 1.2rem;"></i>
+                                </div>
+                            </div>
+                            
+                            <!-- Feature Row 4 -->
+                            <div class="row feature-row align-items-center py-2">
+                                <div class="col-9 text-start">
+                                    Host and promote events with seamless RSVP tracking.
+                                </div>
+                                <div class="col-3 text-center">
+                                    <i class="bi bi-check-circle-fill" style="color: #3CB371; font-size: 1.2rem;"></i>
+                                </div>
+                            </div>
+                            
+                            <!-- Feature Row 5 -->
+                            <div class="row feature-row align-items-center py-2">
+                                <div class="col-9 text-start">
+                                    Manage your own brand community.
+                                </div>
+                                <div class="col-3 text-center">
+                                    <i class="bi bi-check-circle-fill" style="color: #3CB371; font-size: 1.2rem;"></i>
+                                </div>
+                            </div>
+                            
+                            <!-- Feature Row 6 -->
+                            <div class="row feature-row align-items-center py-2">
+                                <div class="col-9 text-start">
+                                    Directly address your customers' questions and build trust.
+                                </div>
+                                <div class="col-3 text-center">
+                                    <i class="bi bi-check-circle-fill" style="color: #3CB371; font-size: 1.2rem;"></i>
+                                </div>
+                            </div>
+                            
+                            <!-- Feature Row 7 -->
+                            <div class="row feature-row align-items-center py-2">
+                                <div class="col-9 text-start">
+                                    Gain actionable insights to see what's working – track views and identify your most popular offerings.
+                                </div>
+                                <div class="col-3 text-center">
+                                    <i class="bi bi-check-circle-fill" style="color: #3CB371; font-size: 1.2rem;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                         <div class="row justify-content-center mobile-view-show">
-                            <button class="btn rounded p-3 text-start mx-0 mb-3 col-5 me-2" @click="toggleMonthlyPricing" :style="{ backgroundColor: selectedMonthlyPricing ? '#DD9E54' :'white', 
-                                                                                                                                color: selectedMonthlyPricing ? 'white' :'black', 
-                                                                                                                                borderColor: '#DD9E54', 
-                                                                                                                                borderWidth:'3px' }">
-                                <span>
+                            <button class="btn rounded p-3 text-start mx-0 mb-3 col-5 me-2 pricing-plan-card strong-shadow" @click="toggleMonthlyPricing" :style="{ backgroundColor: selectedMonthlyPricing ? '#DD9E54' :'white', color: selectedMonthlyPricing ? 'white' :'black', borderColor: '#DD9E54', borderWidth:'3px' }"> <span>
                                     <h6> <b> Monthly plan </b> </h6>
-                                    <p class="m-0"> $65 / Month </p> 
+                                    <p class="m-0"> US$95 / Month </p> 
                                     <small class="fst-italic p-0"> Billed monthly </small>
                                     <h6 class="mt-2" style="color: green;"><b>Cancel anytime.</b></h6>
                                 </span>
                             </button>
-                            <button class="btn rounded p-3 text-start mx-0 mb-3 col-5" @click="toggleYearlyPricing" :style="{ backgroundColor: selectedYearlyPricing ? '#DD9E54' :'white', 
-                                                                                                                                color: selectedYearlyPricing ? 'white' :'black', 
-                                                                                                                                borderColor: '#DD9E54', 
-                                                                                                                                borderWidth:'3px' }">
-                                <span>
+                            <button class="btn rounded p-3 text-start mx-0 mb-3 col-5 pricing-plan-card strong-shadow" @click="toggleYearlyPricing" :style="{ backgroundColor: selectedYearlyPricing ? '#DD9E54' :'white', color: selectedYearlyPricing ? 'white' :'black',  borderColor: '#DD9E54', borderWidth:'3px' }">  <span>
                                     <h6> <b> Yearly plan </b> </h6> 
-                                    <p class="m-0"> $50 / Month </p> 
-                                    <small class="fst-italic p-0"> $600 Billed annually </small>
-                                    <h5 class="mt-2" style="color: green;"><b>Save 23%!</b></h5>
+                                    <p class="m-0"> US$80 / Month </p> 
+                                    <small class="fst-italic p-0"> US$960 Billed annually </small>
+                                    <h5 class="mt-2" style="color: green;"><b>Save 15%!</b></h5>
                                 </span>
                             
                             </button>
@@ -246,13 +320,13 @@
                         </div>
                         <div class="row justify-content-center mobile-view-hide">
                             <!-- <div class="col-xl-2 col-lg-1 col-md-1"></div> -->
-                            <button class="btn rounded p-3 text-start mx-3 mb-3 col-8" @click="toggleMonthlyPricing" :style="{ backgroundColor: selectedMonthlyPricing ? '#DD9E54' :'white', 
+                            <button class="btn rounded p-3 text-start mx-3 mb-3 col-8 pricing-plan-card strong-shadow" @click="toggleMonthlyPricing" :style="{ backgroundColor: selectedMonthlyPricing ? '#DD9E54' :'white', 
                                                                                                                                 color: selectedMonthlyPricing ? 'white' :'black', 
                                                                                                                                 borderColor: '#DD9E54', 
                                                                                                                                 borderWidth:'3px' }">
                                 <span>
                                     <h6> <b> Monthly plan </b> </h6>
-                                    <p class="m-0"> $65 / Month </p> 
+                                    <p class="m-0"> US$95 / Month </p> 
                                     <small class="fst-italic p-0"> Billed monthly </small>
                                     <h6 class="mt-1" style="color: green;"><b>Cancel anytime.</b></h6>
                                 </span>
@@ -260,7 +334,7 @@
                         </div>
                         <div class="row justify-content-center mobile-view-hide">
                             <!-- <div class="col-xl-2 col-lg-1 col-md-1"></div> -->
-                            <button class="btn rounded p-3 text-start mx-3 mb-3 col-8" @click="toggleYearlyPricing" :style="{ backgroundColor: selectedYearlyPricing ? '#DD9E54' :'white', 
+                            <button class="btn rounded p-3 text-start mx-3 mb-3 col-8 pricing-plan-card strong-shadow" @click="toggleYearlyPricing" :style="{ backgroundColor: selectedYearlyPricing ? '#DD9E54' :'white', 
                                                                                                                                 color: selectedYearlyPricing ? 'white' :'black', 
                                                                                                                                 borderColor: '#DD9E54', 
                                                                                                                                 borderWidth:'3px' }">
@@ -269,9 +343,9 @@
                                     
                                 </div>
                                 <span>
-                                    <p class="m-0"> $50 / Month </p> 
-                                    <small class="fst-italic p-0"> $600 Billed annually </small>
-                                    <h6 class="mt-2" style="color: green;"><b>Save 23%!</b></h6>
+                                    <p class="m-0"> US$80 / Month </p> 
+                                    <small class="fst-italic p-0"> US$960 Billed annually </small>
+                                    <h6 class="mt-2" style="color: green;"><b>Save 15%!</b></h6>
                                 </span>
                             
                             </button>
@@ -671,5 +745,61 @@
     background-image: none;
     background-color: wheat;
   }
+}
+
+.feature-row {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.feature-row:last-child {
+  border-bottom: none;
+}
+
+.feature-table {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 0 10px;
+  background-color: white;
+}
+
+
+.pricing-plan-card {
+  background-color: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 15px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.pricing-plan-card:hover {
+  border-color: #3CB371;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.pricing-plan-card.selected {
+  background-color: #f8fff9;
+  border: 2px solid #3CB371;
+  box-shadow: 0 4px 12px rgba(60,179,113,0.2);
+}
+
+.pricing-plan-card.selected::before {
+  content: "Selected";
+  position: absolute;
+  top: -12px;
+  right: 20px;
+  background-color: #3CB371;
+  color: white;
+  font-size: 12px;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-weight: bold;
+}
+
+.strong-shadow {
+  box-shadow: 0 8px 16px rgba(0,0,0,0.5) !important;
 }
 </style>

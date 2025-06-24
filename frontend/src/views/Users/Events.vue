@@ -109,14 +109,13 @@
 
                 <!-- YOUR UPCOMING EVENTS -->
                 <div class="collapse d-md-block my-4" id="sidebarContent">
-                    <h5 class="text-start fw-bold my-3">Your Upcoming Events <button v-if="pastEvents.length > 5" type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#upcomingEventsModal">View All</button></h5>
+                    <h5 class="text-start fw-bold my-3">Your Upcoming Events <button v-if="upcomingEvents.length > 5" type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#upcomingEventsModal">View All</button></h5>
 
                     <div v-if="upcomingEvents.length > 0">
                         <div v-for="event in upcomingEvents" class="event-club-box" :key="event.eventID">
-                        
                             <!-- Column 1: banner -->
                             <div style="flex: 0 0 40%; max-width: 40%; height: 100px;">
-                                <img v-if="event.eventBanners" :src="event.eventBanners[0]" class="img-fluid event-banner" alt="Event Banner" style="object-fit: contain; max-height: 100%;">
+                                <img v-if="event.eventBanners?.length" :src="event.eventBanners[0]" class="img-fluid event-banner" alt="Event Banner" style="object-fit: contain; max-height: 100%;">
                                 <img v-else :src="defaultEventBanner" class="img-fluid event-banner" alt="Event Banner" style="object-fit: cover">
                             </div>
 

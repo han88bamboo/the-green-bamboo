@@ -159,7 +159,14 @@ def getClubwSearch(id, search):
 
         # Step 1: Get the 20 clubs
         # ID: Used to define the starting ID to retrieve from
-        cur.execute('''SELECT * FROM "clubs" WHERE "clubName" ILIKE %s AND id >= %s ORDER BY "clubName" ILIKE %s DESC, "id" ASC LIMIT 20''', (f'%{search}%', id, f'%{search}%'))
+        cur.execute('''
+            SELECT * FROM "clubs"
+            WHERE ("clubName" ILIKE %s OR "clubDesc" ILIKE %s)
+            AND id >= %s
+            ORDER BY ("clubName" ILIKE %s OR "clubDesc" ILIKE %s) DESC, "id" ASC
+            LIMIT 20
+            ''', (f'%{search}%', f'%{search}%', id, f'%{search}%', f'%{search}%'))
+
         clubs_info = cur.fetchall()
 
         if not clubs_info:

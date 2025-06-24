@@ -382,7 +382,7 @@
                     <!-- Club Lists --> 
                     <!-- Bootstrap Horizontal Card for each club -->
                     <div class="row mt-3">
-                        <div v-for="club in filteredClubs" :key="club.id" class="col-md-6 mb-3 justify-content-center">
+                        <div v-for="club in clubs" :key="club.id" class="col-md-6 mb-3 justify-content-center">
                             <div class="rounded-4 shadow-sm p-3 h-100">
 
                                 <!-- Club Banner Image -->
@@ -899,13 +899,6 @@ export default {
                 "An error occurred while adding the comment. Please try again later."
                 );
             }
-        },
-    },
-
-    computed: {
-        // Function to filter clubs by excluding the clubs the user is already a member of
-        filteredClubs() {
-            return this.clubs.filter(club => !this.userClubs.includes(club.id));
         },
     },
 

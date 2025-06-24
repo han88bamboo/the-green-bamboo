@@ -1062,6 +1062,15 @@ export default {
 
         // Function to update event details
         async updateEvent() {
+            const toast = useToast();
+
+            // Show loading toast that stays until manually closed
+            const toastId = toast.info('Updating event details...', {
+                timeout: false,
+                closeOnClick: false,
+                pauseOnHover: true,
+            });
+
             try {
                 // Check if there is a change in the event description
                 const content = this.quill.getText(); // Get the plain text
@@ -1085,20 +1094,20 @@ export default {
                 } else {
                     // Check if the event time is valid
                     if (this.eventCopy.eventStartDate == currentDate && this.eventCopy.eventStartTime <= currentTime) {
-                        const toast = useToast();
+                        toast.dismiss(toastId);
                         toast.error('Event start time cannot be earlier than current time.');
                         return;
                     }
                     if (this.eventCopy.eventEndDate != null && this.eventCopy.eventEndDate != '' ) {
 
                         if (this.eventCopy.eventEndDate < this.eventCopy.eventStartDate) {
-                            const toast = useToast();
+                            toast.dismiss(toastId);
                             toast.error('Event end date cannot be earlier than event start date.');
                             return;
                         }
 
                         if (this.eventCopy.eventEndDate == this.eventCopy.eventStartDate && this.eventCopy.eventEndTime <= this.eventCopy.eventStartTime) {
-                            const toast = useToast();
+                            toast.dismiss(toastId);
                             toast.error('Event end time cannot be earlier than event start time.');
                             return;
                         }
@@ -1117,9 +1126,7 @@ export default {
                             continue;
                         }
 
-                        if (key == 'eventBanners') {
-                            console.log(this.eventCopy.eventBanners);
-                            console.log(this.event.eventBanners);   
+                        if (key == 'eventBanners') { 
                             if (this.eventCopy.eventBanners.length == 0 && this.event.eventBanners.length == 0) {
                                 continue; // Skip if no banners are uploaded
                             }
@@ -1130,7 +1137,7 @@ export default {
                 }
                 // Check if there are any changes
                 if (Object.keys(changedFields).length == 0) {
-                    const toast = useToast();
+                    toast.dismiss(toastId);
                     toast.info('No changes detected.');
                     return;
                 }
@@ -1143,13 +1150,13 @@ export default {
                 await this.$axios.put(`${process.env.VUE_APP_API_URL}/events/updateEvent`, changedFields)
                 .then((response) => {
                     if (response.status == 200) {
-                        const toast = useToast();
+                        toast.dismiss(toastId);
                         toast.success('Event details updated successfully!');
                         this.getEvent();
                     }
                     else {
                         console.log(response.data.message);
-                        const toast = useToast();
+                        toast.dismiss(toastId);
                         toast.error('Failed to update event details. Please try again!');
                     }
                 })
@@ -1157,7 +1164,7 @@ export default {
             }
             catch (error) {
                 console.log(error);
-                const toast = useToast();
+                toast.dismiss(toastId);
                 toast.error('Failed to update event details. Please try again!');
             }
         },

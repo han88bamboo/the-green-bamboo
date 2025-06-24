@@ -967,3 +967,39 @@ switched off faulty duplicate checking mechanism - it was causing photo misalign
 
 Nature of the changes (frontend / backend / database):
 backend
+
+
+
+# Update as of 22 June
+
+Coder: CP
+
+Purpose of the changes:
+bugfixes
+
+Nature of the changes (frontend / backend / database):
+front / backend
+
+# Update as of 23 June
+
+Coder: Kai
+
+Purpose of the changes:
+Explore page front end
+Fixed the spacing and height issues in the boxes "Drink Shelf", "Pending Listings", "Brands you Follow" 
+
+Nature of the changes (frontend / backend / database):
+front end
+
+
+
+# Update as of 23 June
+
+Coder: Han
+
+Purpose of the changes:
+helptopics.vue - about, support, FAQ
+changes to business sign up page
+
+Nature of the changes (frontend / backend / database):
+frontend

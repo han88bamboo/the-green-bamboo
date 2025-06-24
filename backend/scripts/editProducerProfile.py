@@ -8,6 +8,7 @@ from flask import Blueprint, g, request, jsonify
 from bson.objectid import ObjectId
 from datetime import datetime
 from scripts import pointsHelperFunc, badge_helpers, notifications
+import re
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -43,7 +44,9 @@ def editDetails():
             if data['image64']:
                 if(existingProducer['photo']):
                     s3Images.deleteImageFromS3(existingProducer['photo'])
-                image64 = s3Images.uploadBase64ImageToS3(data['image64'])
+
+                base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', data['image64'])
+                image64 = s3Images.uploadBase64ImageToS3(base64_string)
             else:
                 image64 = existingProducer['photo']
             cur.execute(
@@ -114,7 +117,8 @@ def addUpdates():
     image64 = ''
 
     if data.get('image64'):
-        image64 = s3Images.uploadBase64ImageToS3(data['image64'])
+        base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', data['image64'])
+        image64 = s3Images.uploadBase64ImageToS3(base64_string)
 
     try:
         cur.execute('INSERT INTO "producersUpdates" ("date", "text", "photo", "producerId") VALUES (%s, %s, %s, %s)', (date, text, image64, producerID))
@@ -661,7 +665,8 @@ def editUpdate():
 
             # Upload new image to S3 if it exists
             if image64:
-                image64 = s3Images.uploadBase64ImageToS3(image64)
+                base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', image64)
+                image64 = s3Images.uploadBase64ImageToS3(base64_string)
 
             # Update the producer's update in the database
             cur.execute(

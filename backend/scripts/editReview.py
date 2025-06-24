@@ -8,6 +8,7 @@ from flask import Blueprint, g, request, jsonify
 from bson.objectid import ObjectId
 from datetime import datetime, timedelta
 import json
+import re
 
 from scripts.adminFunctions import hash_password
 from scripts.createReview import create_username
@@ -371,7 +372,8 @@ def updateReview(id):
     if existing_review['photo'] and data['photo'] != existing_review['photo']:
         s3Images.deleteImageFromS3(existing_review['photo'])
     if data['photo'] and data['photo'] != existing_review['photo']:
-        data['photo'] = s3Images.uploadBase64ImageToS3(data['photo'])
+        base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', data['photo'])
+        data['photo'] = s3Images.uploadBase64ImageToS3(base64_string)
 
     tagged_users = data.get('taggedUsers', [])
     flavour_tags = data.get('flavourTag', [])
@@ -578,8 +580,19 @@ def updateProducerReview(id):
 
     Thread(target=async_delete_images, args=(old_photos,)).start()
 
+    new_photos = []
 
-    new_photos = [s3Images.uploadBase64ImageToS3(photo) for photo in data.get('photos', []) if photo]
+    for photo in data.get('photos', []):
+        if not is_empty_photo(photo):
+            # Upload the photo to S3
+            base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', photo)
+            photo = s3Images.uploadBase64ImageToS3(base64_string)
+            if photo:
+                new_photos.append(photo)
+        else:
+            photo = None
+    
+    # new_photos = [s3Images.uploadBase64ImageToS3(photo) for photo in data.get('photos', []) if photo]
 
     update_review_sql = """
         UPDATE "producerReviews"
@@ -727,7 +740,19 @@ def updateVenueReview(id):
 
     Thread(target=async_delete_images, args=(old_photos,)).start()
 
-    new_photos = [s3Images.uploadBase64ImageToS3(photo) for photo in data.get('photos', []) if photo]
+    new_photos = []
+
+    for photo in data.get('photos', []):
+        if not is_empty_photo(photo):
+            # Upload the photo to S3
+            base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', photo)
+            photo = s3Images.uploadBase64ImageToS3(base64_string)
+            if photo:
+                new_photos.append(photo)
+        else:
+            photo = None
+
+    # new_photos = [s3Images.uploadBase64ImageToS3(photo) for photo in data.get('photos', []) if photo]
 
     update_review_sql = """
         UPDATE "venueReviews"
