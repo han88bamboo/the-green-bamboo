@@ -982,21 +982,33 @@
                     </div>
 
                     <!-- col 2: your best rated categories -->
-                    <div class="card ms-5 p-3 col-5 text-start" style="color:black;"> <!-- padding classes added by tzh-->
-                        <h6 class="fw-bold mb-2">  Your Best Rated Categories </h6>
-                        <div class="text-start pb-2" v-for="(category, index) in top5BestReviewedCategories" v-bind:key="category">
-                            <div class="row ms-0 default-clickable-text "> 
-                                <div class="col-2 d-flex text-start justify-content-center rounded-circle me-1">
-                                    <h5 class="my-auto"> {{ index + 1 }} </h5>
-                                </div>
-                                <div class="col-10 shrink-width-on-dashboard" > <!-- style added by tzh-->
-                                    <b> {{ category.drinkType }} </b> 
-                                    <br>
-                                    Average Rating: {{ category.averageRating.toFixed(1) || "-" }} ★
-                                </div>
-                            </div>
+                    <!-- col 2: your best rated categories -->
+                    <div class="card ms-5 p-3 col-5 text-start" style="color:black;">
+                    <h6 class="fw-bold mb-2">Most Reviewed Categories</h6>
+
+                    <div
+                        class="text-start pb-2"
+                        v-for="(category, index) in top5BestReviewedCategories"
+                        :key="category"
+                    >
+                        <div class="d-flex align-items-center">
+                        <!-- Number Circle -->
+                        <div
+                            class="d-flex justify-content-center align-items-center rounded-circle"
+                            style="width: 30px; height: 30px; background-color: #f0b358; color: white; font-weight: bold;"
+                        >
+                            {{ index + 1 }}
+                        </div>
+
+                        <!-- Text content -->
+                        <div class="ms-3">
+                            <p class="mb-1 fw-bold">{{ category.drinkType }}</p>
+                            <p class="mb-0">{{ category.reviewCount || 0 }} reviews</p>
+                        </div>
                         </div>
                     </div>
+                    </div>
+
 
                 </div> <!-- end of row 2-->
 
@@ -1005,35 +1017,58 @@
 
                     <!-- col 1: your top venues -->
                     <div class="card ms-5 p-3 col-5 text-start" style="color:black;">
-                        <h6 class="fw-bold  mb-2"> Your Top Venues </h6>
-                        <div class="text-start pb-2" v-for="venue in top5Venues" v-bind:key="venue">
-                            <div class="row ms-0 default-clickable-text "> 
-                                <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
-                                    <h5 class="my-auto"> {{ top5Venues.indexOf(venue) + 1 }} </h5>
-                                </div>
-                                <div class="col-10 shrink-width-on-dashboard" >
-                                    <b> {{ venue.venueName }} </b> 
-                                    <br>
-                                </div>
-                            </div>
+                    <h6 class="fw-bold mb-2">Your Top Venues</h6>
+
+                    <div
+                        class="text-start pb-2"
+                        v-for="(venue, index) in top5Venues"
+                        :key="venue"
+                    >
+                        <div class="d-flex align-items-center">
+                        <!-- Number circle -->
+                        <div
+                            class="d-flex justify-content-center align-items-center rounded-circle me-3"
+                            style="width: 32px; height: 32px; background-color: #f0b358; color: white; font-weight: bold;"
+                        >
+                            {{ index + 1 }}
+                        </div>
+
+                        <!-- Venue name -->
+                        <div class="flex-grow-1">
+                            <p class="mb-0 fw-bold">{{ venue.venueName }}</p>
+                        </div>
                         </div>
                     </div>
+                    </div>
+
                     
                     <!-- col 2: your top brands -->
+                    <!-- col 2: your top brands -->
                     <div class="card ms-5 p-3 col-5 text-start" style="color:black;">
-                        <h6 class="fw-bold  mb-2">  Your Top Brands </h6>
-                        <div class="text-start pb-2" v-for="producer in top5Producers" v-bind:key="producer">
-                            <div class="row ms-0 default-clickable-text "> 
-                                <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
-                                    <h5 class="my-auto"> {{ top5Producers.indexOf(producer) + 1 }} </h5>
-                                </div>
-                                <div class="col-10 shrink-width-on-dashboard" >
-                                    <b> {{ producer.producerName }} </b> 
-                                    <br>
-                                </div>
-                            </div>
+                    <h6 class="fw-bold mb-2">Your Top Brands</h6>
+
+                    <div
+                        class="text-start pb-2"
+                        v-for="(producer, index) in top5Producers"
+                        :key="producer"
+                    >
+                        <div class="d-flex align-items-center">
+                        <!-- Number circle -->
+                        <div
+                            class="d-flex justify-content-center align-items-center rounded-circle me-3"
+                            style="width: 32px; height: 32px; background-color: #f0b358; color: white; font-weight: bold;"
+                        >
+                            {{ index + 1 }}
+                        </div>
+
+                        <!-- Producer name -->
+                        <div class="flex-grow-1">
+                            <p class="mb-0 fw-bold">{{ producer.producerName }}</p>
+                        </div>
                         </div>
                     </div>
+                    </div>
+
                 </div>
 
                 <!-- row 3: your top styles -->

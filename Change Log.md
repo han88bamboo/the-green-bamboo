@@ -1003,3 +1003,13 @@ changes to business sign up page
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 24 June
+
+Coder: Kai
+
+Purpose of the changes:
+fixed spacing and alignment on the user , venue, producer dashboards
+
+Nature of the changes (frontend / backend / database):
+frontend
