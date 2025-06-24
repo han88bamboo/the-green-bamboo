@@ -133,6 +133,31 @@ def addUpdates():
             )
             conn.commit()
 
+            # Fetch venue name
+            cur.execute('SELECT "venueName" FROM venues WHERE id = %s', (venueID,))
+            venue_row = cur.fetchone()
+            venueName = venue_row['venueName'] if venue_row else "This venue"
+
+            # Notify all users who follow this venue
+            cur.execute(
+                'SELECT "userId" FROM "usersFollowLists" WHERE %s = ANY("venues")',
+                (str(venueID),)
+            )
+            followers = cur.fetchall()
+
+            for row in followers:
+                notification_data = {
+                    "userId":   row['userId'],
+                    "userType": "user",
+                    "notiTabs": "venues & producers",
+                    "notiType": "venue_update",
+                    "image":    image64 or None,
+                    "link":     f"/profile/venue/{venueID}/{venueName}",
+                    "message":  f"{venueName} posted a new announcement."
+                }
+                print("Notification data for venue update:", notification_data)
+                notifications.add_notification_to_db(notification_data)
+
             return jsonify(
                 {
                     "code": 201,
@@ -306,6 +331,36 @@ def sendAnswers():
             (answer, venueID, questionsAnswersID)
         )
         conn.commit()
+
+        # Fetch the original asker
+        cur.execute(
+            'SELECT "userId" FROM "venuesQuestionAnswers" WHERE id = %s',
+            (questionsAnswersID,)
+        )
+        asker_row = cur.fetchone()
+        asker_id = asker_row['userId'] if asker_row else None
+
+        # Fetch venue's username for the notification message
+        cur.execute(
+            'SELECT username FROM venues WHERE id = %s',
+            (venueID,)
+        )
+        venue_row = cur.fetchone()
+        venue_username = venue_row['username'] if venue_row else ''
+
+        # Send notification back to the user who asked
+        if asker_id:
+            notification_data = {
+                "userId":   asker_id,
+                "userType": "user",
+                "notiTabs": "venues & producers",
+                "notiType": "venue_answer",
+                "image":    None,
+                "link":     f"/profile/venue/{venueID}/{venue_username}",
+                "message":  f"@{venue_username} answered your question"
+            }
+            print("Notification data for asker:", notification_data)
+            notifications.add_notification_to_db(notification_data)
 
         return jsonify(
             {
@@ -856,6 +911,7 @@ def updateVenueStatus():
     venueName = data['newBusinessData']["businessName"]
     venueDesc = data['newBusinessData']["businessDesc"]
     originLocation = data['newBusinessData']["country"]
+    image = data['newBusinessData']["photo"]
     hashedPassword = data['newBusinessData']["hashedPassword"]
     claimStatus = data['newBusinessData']["claimStatus"]
     requestId = int(data['newBusinessData']["requestId"])
@@ -863,6 +919,31 @@ def updateVenueStatus():
     try:
         cur.execute('UPDATE venues SET "venueName" = %s, "venueDesc" = %s, "originLocation" = %s, "hashedPassword" = %s, "claimStatus" = %s, "requestId" = %s WHERE "id" = %s', (venueName, venueDesc, originLocation, hashedPassword, claimStatus, requestId, venueID))
         conn.commit()
+        
+        # Find all users who follow this venue
+        cur.execute(
+            '''
+            SELECT "userId"
+            FROM "usersFollowLists"
+            WHERE %s = ANY("venues")
+            ''',
+            (str(venueID),)
+        )
+        followers = cur.fetchall()
+
+        # Notify each follower
+        for row in followers:
+            notification_data = {
+                "userId":   row['userId'],
+                "userType": "user",
+                "notiTabs":"venues & producers",
+                "notiType":"status_update",
+                "image":   image,
+                "link":    f"/profile/venue/{venueID}/{venueName}",
+                "message": f"{venueName} updated their status."
+            }
+            print("Notification data for venue status update:", notification_data)
+            notifications.add_notification_to_db(notification_data)
 
         return jsonify(
             {

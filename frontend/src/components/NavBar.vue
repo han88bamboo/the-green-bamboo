@@ -12,10 +12,7 @@
           <!-- logo -->
           <div class="d-flex align-items-center me-auto py-1">
             <router-link :to="'/'">
-              <img
-                src="../../Images/Logo/Drink-X Logo.png"
-                style="width: auto; height: 35px"
-              />
+              <img src="../../Images/Logo/Drink-X Logo.png" style="width: auto; height: 35px" />
             </router-link>
           </div>
 
@@ -72,184 +69,171 @@
                                   <img src="../../Images/Others/camera-white.png" style="width: 30px; height: 30px; margin-left: 10px;">
                               </button>
                       </div> -->
-            <SearchBar :showSurpriseButton="false" class="w-100"/>
+            <SearchBar :showSurpriseButton="false" class="w-100" />
           </div>
 
-        <div class="d-flex align-items-center ms-auto gap-2">
-          <!-- notification button -->
-          <div class="notification-dropdown me-2" v-if="accType != ''">
-            <button type="button" class="btn p-0 notification-btn" @click="toggleNotifications">
-              <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-bell"
-                viewBox="0 0 16 16">
-                <path
-                  d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2M8 1.918l-.797.161A4.002 4.002 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 0 0-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5.002 5.002 0 0 1 13 6c0 .88.32 4.2 1.22 6" />
-              </svg>
-              <span v-if="unreadCount > 0"
-                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                {{ unreadCount > 99 ? '99+' : unreadCount }}
-              </span>
-            </button>
+          <div class="d-flex align-items-center ms-auto gap-2">
+            <!-- notification button -->
+            <div class="notification-dropdown me-2" v-if="accType != ''">
+              <button type="button" class="btn p-0 notification-btn" @click="toggleNotifications">
+                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-bell"
+                  viewBox="0 0 16 16">
+                  <path
+                    d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2M8 1.918l-.797.161A4.002 4.002 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 0 0-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5.002 5.002 0 0 1 13 6c0 .88.32 4.2 1.22 6" />
+                </svg>
+                <span v-if="unreadCount > 0"
+                  class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                  {{ unreadCount > 99 ? '99+' : unreadCount }}
+                </span>
+              </button>
 
-            <!-- notification dropdown menu -->
-            <div v-if="showNotifications" class="notification-menu">
-              <div class="notification-mobile-header d-md-none">
-                <h5 class="text-center flex-grow-1 mb-0">Notifications</h5>
-                <button class="btn-close" @click="showNotifications = false">X</button>
-              </div>
-              <div class="notification-tabs">
-                <button class="notification-tab btn border-1 fw-bold" :class="{ active: activeTab === 'forYou' }"
-                  @click="activeTab = 'forYou'">
-                  For You
-                </button>
-                <button v-if="accType === 'user'" class="notification-tab btn border-1 fw-bold"
-                  :class="{ active: activeTab === 'venues' }" @click="activeTab = 'venues'">
-                  Venues & Producers
-                </button>
-                <button class="notification-tab btn border-1 fw-bold" :class="{ active: activeTab === 'news' }"
-                  @click="activeTab = 'news'">
-                  News
-                </button>
-              </div>
-              <div class="notification-content">
-                <!-- Loading state -->
-                <div v-if="!notificationsLoaded" class="p-3 text-center">
-                  <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                  </div>
+              <!-- notification dropdown menu -->
+              <div v-if="showNotifications" class="notification-menu rounded-4 shadow">
+                <div class="notification-mobile-header d-md-none">
+                  <h5 class="text-center flex-grow-1 mb-0">Notifications</h5>
+                  <button class="btn-close" @click="showNotifications = false">X</button>
                 </div>
-                <!-- Error state -->
-                <div v-else-if="notificationsError" class="p-3 text-center text-danger">
-                  {{ notificationsError }}
+                <div class="notification-tabs">
+                  <button class="notification-tab btn border-1 fw-bold" style="border-top-left-radius: .80rem" :class="{ active: activeTab === 'forYou' }"
+                    @click="activeTab = 'forYou'">
+                    For You
+                  </button>
+                  <button v-if="accType === 'user'" class="notification-tab btn border-1 fw-bold"
+                    :class="{ active: activeTab === 'venues' }" @click="activeTab = 'venues'">
+                    Venues & Producers
+                  </button>
+                  <button class="notification-tab btn border-1 fw-bold" style="border-top-right-radius: .80rem" :class="{ active: activeTab === 'news' }"
+                    @click="activeTab = 'news'">
+                    News
+                  </button>
                 </div>
-                <!-- For You Tab -->
-                <div v-if="activeTab === 'forYou'" class="tab-content">
-                  <div v-if="notifications.forYou && notifications.forYou.length === 0" class="p-3 text-center">
-                    No notifications to display
-                  </div>
-                  <div v-else v-for="(notification, index) in notifications.forYou" :key="index"
-                    class="notification-item" @click="onNotificationClick(notification, 'forYou')">
-                    <div class="container-fluid px-0">
-                      <div class="row align-items-center">
-
-                        <div class="col-10 col-sm-11">
-                          <div class="title">{{ notification.message }}</div>
-                          <div class="time">{{ getTimeDifference(notification.time) }}</div>
-                        </div>
-
-                        <div class="col-2 col-sm-1 d-flex justify-content-end">
-                          <span v-if="!notification.read" class="notification-dot"></span>
-                        </div>
-
-                      </div>
+                <div class="notification-content">
+                  <!-- Loading state -->
+                  <div v-if="!notificationsLoaded" class="p-3 text-center">
+                    <div class="spinner-border text-primary" role="status">
+                      <span class="visually-hidden">Loading...</span>
                     </div>
-                    <hr v-if="index < notifications.forYou.length - 1" class="notification-divider">
                   </div>
-                </div>
-
-                <!-- Venues & Producers Tab -->
-                <div v-if="activeTab === 'venues'" class="tab-content">
-                  <div v-if="notifications.venues && notifications.venues.length === 0" class="p-3 text-center">
-                    No notifications to display
+                  <!-- Error state -->
+                  <div v-else-if="notificationsError" class="p-3 text-center text-danger">
+                    {{ notificationsError }}
                   </div>
-                  <div v-else v-for="(notification, index) in notifications.venues" :key="index"
-                    class="notification-item with-logo" @click="onNotificationClick(notification, 'venues')">
-                    <div class="container-fluid px-0">
-                      <div class="row align-items-center">
+                  <!-- For You Tab -->
+                  <div v-if="activeTab === 'forYou'" class="tab-content">
+                    <div v-if="notifications.forYou && notifications.forYou.length === 0" class="p-3 text-center">
+                      No notifications to display
+                    </div>
+                    <div v-else v-for="(notification, index) in notifications.forYou" :key="index"
+                      class="notification-item" @click="onNotificationClick(notification, 'forYou')">
+                      <div class="container-fluid px-0">
+                        <div class="row align-items-center">
 
-                        <div class="col-10 col-sm-11">
-                          <div class="notification-logo">
-                            <img v-if="notification.logo" :src="notification.logo" alt="Venue logo" class="logo-image">
-                            <img v-else src="../../Images/Drinks/Placeholder.png" alt="Default logo" class="logo-image">
-                          </div>
-                          <div class="notification-content-text">
+                          <div class="col-10 col-sm-11">
                             <div class="title">{{ notification.message }}</div>
                             <div class="time">{{ getTimeDifference(notification.time) }}</div>
                           </div>
-                        </div>
 
-                        <div class="col-2 col-sm-1 d-flex justify-content-end">
-                          <span v-if="!notification.read" class="notification-dot"></span>
-                        </div>
-
-                      </div>
-                    </div>
-
-
-                    <hr v-if="index < notifications.venues.length - 1" class="notification-divider">
-                  </div>
-                </div>
-
-                <!-- News Tab -->
-                <div v-if="activeTab === 'news'" class="tab-content">
-                  <div v-if="notifications.news.filter(a => !a.read).length === 0" class="p-3 text-center">
-                    No news to display
-                  </div>
-                  <div v-else v-for="(article, index) in notifications.news.filter(a => !a.read)" :key="index"
-                    class="notification-item with-logo" @click="onNotificationClick(article, 'news')">
-                    <div class="container-fluid px-0">
-                      <div class="row align-items-center">
-
-                        <div class="col-10 col-sm-11">
-                          <div class="notification-logo">
-                            <img v-if="article.image" :src="article.image" alt="News logo" class="logo-image">
-                            <img v-else src="../../Images/Drinks/Placeholder.png" alt="Default logo" class="logo-image">
+                          <div class="col-2 col-sm-1 d-flex justify-content-end">
+                            <span v-if="!notification.read" class="notification-dot"></span>
                           </div>
-                          <div class="notification-content-text">
-                            <div class="title">{{ article.message }}</div>
-                            <div class="time">{{ getTimeDifference(article.time) }}</div>
-                          </div>
-                        </div>
 
-                        <div class="col-2 col-sm-1 d-flex justify-content-end">
-                          <span v-if="!article.read" class="notification-dot"></span>
                         </div>
-
                       </div>
+                      <hr v-if="index < notifications.forYou.length - 1" class="notification-divider">
                     </div>
+                  </div>
 
-                    <hr v-if="index < notifications.news.filter(a => !a.read).length - 1" class="notification-divider">
+                  <!-- Venues & Producers Tab -->
+                  <div v-if="activeTab === 'venues'" class="tab-content">
+                    <div v-if="notifications.venues && notifications.venues.length === 0" class="p-3 text-center">
+                      No notifications to display
+                    </div>
+                    <div v-else v-for="(notification, index) in notifications.venues" :key="index"
+                      class="notification-item with-logo" @click="onNotificationClick(notification, 'venues')">
+                      <div class="container-fluid px-0">
+                        <div class="row align-items-center">
+
+                          <div class="col-10 col-sm-11">
+                            <div class="notification-logo">
+                              <img v-if="notification.logo" :src="notification.logo" alt="Venue logo"
+                                class="logo-image">
+                              <img v-else src="../../Images/Drinks/Placeholder.png" alt="Default logo"
+                                class="logo-image">
+                            </div>
+                            <div class="notification-content-text">
+                              <div class="title">{{ notification.message }}</div>
+                              <div class="time">{{ getTimeDifference(notification.time) }}</div>
+                            </div>
+                          </div>
+
+                          <div class="col-2 col-sm-1 d-flex justify-content-end">
+                            <span v-if="!notification.read" class="notification-dot"></span>
+                          </div>
+
+                        </div>
+                      </div>
+
+
+                      <hr v-if="index < notifications.venues.length - 1" class="notification-divider">
+                    </div>
+                  </div>
+
+                  <!-- News Tab -->
+                  <div v-if="activeTab === 'news'" class="tab-content">
+                    <div v-if="notifications.news.filter(a => !a.read).length === 0" class="p-3 text-center">
+                      No news to display
+                    </div>
+                    <div v-else v-for="(article, index) in notifications.news.filter(a => !a.read)" :key="index"
+                      class="notification-item with-logo" @click="onNotificationClick(article, 'news')">
+                      <div class="container-fluid px-0">
+                        <div class="row align-items-center">
+
+                          <div class="col-10 col-sm-11">
+                            <div class="notification-logo">
+                              <img v-if="article.image" :src="article.image" alt="News logo" class="logo-image">
+                              <img v-else src="../../Images/Drinks/Placeholder.png" alt="Default logo"
+                                class="logo-image">
+                            </div>
+                            <div class="notification-content-text">
+                              <div class="title">{{ article.message }}</div>
+                              <div class="time">{{ getTimeDifference(article.time) }}</div>
+                            </div>
+                          </div>
+
+                          <div class="col-2 col-sm-1 d-flex justify-content-end">
+                            <span v-if="!article.read" class="notification-dot"></span>
+                          </div>
+
+                        </div>
+                      </div>
+
+                      <hr v-if="index < notifications.news.filter(a => !a.read).length - 1"
+                        class="notification-divider">
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- backdrop overlay -->
-          <div v-if="showNotifications" class="notification-backdrop" @click="showNotifications = false"></div>
+            <!-- backdrop overlay -->
+            <div v-if="showNotifications" class="notification-backdrop" @click="showNotifications = false"></div>
 
             <!-- profile icon -->
-            <button
-              v-if="onProfile"
-              type="button"
-              class="btn p-0 me-1"
-              @click="forceLoad(profileURL)"
-            >
-              <img
-                :src="computedPhoto"
-                style="width: 45px; height: 45px"
-                class="img-border"
-              />
+            <button v-if="onProfile" type="button" class="btn p-0 me-1" @click="forceLoad(profileURL)">
+              <img :src="computedPhoto" style="width: 45px; height: 45px" class="img-border" />
             </button>
 
             <router-link v-if="!onProfile" :to="profileURL">
               <button type="button" class="btn p-0 mobile-view-hide">
-                <img
-                  :src="computedPhoto"
-                  style="width: 45px; height: 45px"
-                  class="img-border"
-                />
+                <img :src="computedPhoto" style="width: 45px; height: 45px" class="img-border" />
               </button>
             </router-link>
 
 
             <!-- Navigation Button and Dropdown Menu - DESKTOP -->
             <div class="position-relative d-none d-md-block">
-              <button
-                class="navbar-toggler p-0 show mobile-view-hide"
-                type="button"
-                data-bs-toggle="dropdown"
-                aria-expanded="true"
-              >
+              <button class="navbar-toggler p-0 show mobile-view-hide" type="button" data-bs-toggle="dropdown"
+                aria-expanded="true">
                 <span class="navbar-toggler-icon"></span>
               </button>
 
@@ -261,221 +245,150 @@
                 </li>
                 <!-- My Profile -->
                 <li v-if="onProfile">
-                  <span class="dropdown-item" @click="forceLoad(profileURL)"
-                    >My Profile</span
-                  >
+                  <span class="dropdown-item" @click="forceLoad(profileURL)">My Profile</span>
                 </li>
                 <li v-if="!onProfile">
-                  <router-link :to="profileURL" class="dropdown-item"
-                    >My Profile</router-link
-                  >
+                  <router-link :to="profileURL" class="dropdown-item">My Profile</router-link>
                 </li>
                 <!-- User's Analytics-->
                 <li>
-                    <router-link :to="dashboardURL" class="dropdown-item"
-                      >{{ dashboardWord }} Analytics </router-link
-                    >
+                  <router-link :to="dashboardURL" class="dropdown-item">{{ dashboardWord }} Analytics </router-link>
                 </li>
                 <!-- Add New Product (Producers)-->
-                  <li
-                  v-if="onCreate && accType == 'producer'"
-                >
-                  <span class="dropdown-item" @click="forceLoad('/listing/create')"
-                    >Add A Product</span
-                  >
+                <li v-if="onCreate && accType == 'producer'">
+                  <span class="dropdown-item" @click="forceLoad('/listing/create')">Add A Product</span>
                 </li>
-                <li
-                  v-if="!onCreate && accType == 'producer'"
-                >
-                  <router-link :to="'/listing/create'" class="dropdown-item"
-                    >Add A Product</router-link
-                  >
+                <li v-if="!onCreate && accType == 'producer'">
+                  <router-link :to="'/listing/create'" class="dropdown-item">Add A Product</router-link>
                 </li>
                 <!-- Request New Listing (Users / Venues)-->
                 <li v-if="onRequest && ((accType === 'user' && !isAdmin && !isModerator) || accType === 'venue')">
-                  <span class="dropdown-item" @click="forceLoad('/request/new')"
-                    >Submit A Drink</span
-                  >
+                  <span class="dropdown-item" @click="forceLoad('/request/new')">Submit A Drink</span>
                 </li>
                 <li v-if="!onRequest && ((accType === 'user' && !isAdmin && !isModerator) || accType === 'venue')">
-                  <router-link :to="'/request/new'" class="dropdown-item"
-                    >Submit A Drink</router-link
-                  >
+                  <router-link :to="'/request/new'" class="dropdown-item">Submit A Drink</router-link>
                 </li>
-                <li v-if="isAdmin"><hr class="dropdown-divider" /></li>
+                <li v-if="isAdmin">
+                  <hr class="dropdown-divider" />
+                </li>
                 <!-- Create New Listing (Producers / Moderators / Admin)-->
-                <li
-                  v-if="
-                    onCreate && (accType == isAdmin || isModerator)
-                  "
-                >
-                  <span class="dropdown-item" @click="forceLoad('/listing/create')"
-                    >Create New Listing</span
-                  >
+                <li v-if="
+                  onCreate && (accType == isAdmin || isModerator)
+                ">
+                  <span class="dropdown-item" @click="forceLoad('/listing/create')">Create New Listing</span>
                 </li>
-                <li
-                  v-if="
-                    !onCreate && (accType == isAdmin || isModerator)
-                  "
-                >
-                  <router-link :to="'/listing/create'" class="dropdown-item"
-                    >Create New Listing</router-link
-                  >
+                <li v-if="
+                  !onCreate && (accType == isAdmin || isModerator)
+                ">
+                  <router-link :to="'/listing/create'" class="dropdown-item">Create New Listing</router-link>
                 </li>
                 <!-- View Requests -->
                 <li v-if="isAdmin || isModerator || accType == 'producer'">
-                  <router-link :to="'/request/view'" class="dropdown-item"
-                    >Review Requests</router-link
-                  >
+                  <router-link :to="'/request/view'" class="dropdown-item">Review Requests</router-link>
                 </li>
                 <!-- Admin Controls - ADMIN ONLY -->
                 <li v-if="isAdmin">
-                  <router-link :to="'/admin/dashboard'" class="dropdown-item"
-                    >Admin Controls</router-link
-                  >
+                  <router-link :to="'/admin/dashboard'" class="dropdown-item">Admin Controls</router-link>
                 </li>
                 <!-- Bulk Import Listings - ADMIN ONLY -->
                 <li v-if="isAdmin">
-                  <router-link :to="'/admin/importListings'" class="dropdown-item"
-                    >Import Listings</router-link
-                  >
+                  <router-link :to="'/admin/importListings'" class="dropdown-item">Import Listings</router-link>
                 </li>
                 <div class="mobile-view-show">
                   <li>
-                    <router-link :to="'/explore'" class="dropdown-item"
-                      >Explore</router-link
-                    >
+                    <router-link :to="'/explore'" class="dropdown-item">Explore</router-link>
                   </li>
                   <li>
-                    <router-link :to="'/best-of'" class="dropdown-item"
-                      >Best Of</router-link
-                    >
+                    <router-link :to="'/best-of'" class="dropdown-item">Best Of</router-link>
                   </li>
-                  
+
                   <li>
-                    <span
-                      @click="externalURL('https://88bamboo.co/')"
-                      class="dropdown-item"
-                      >Latest News</span
-                    >
+                    <span @click="externalURL('https://88bamboo.co/')" class="dropdown-item">Latest News</span>
                   </li>
                   <li v-if="onRequest && accType == 'user'">
-                    <span
-                      style="color: #d58d2d !important"
-                      @click="forceLoad('/request/new')"
-                      class="dropdown-item"
-                      >Submit A Drink</span
-                    >
+                    <span style="color: #d58d2d !important" @click="forceLoad('/request/new')"
+                      class="dropdown-item">Submit A Drink</span>
                   </li>
                   <li v-if="!onRequest && accType == 'user'">
-                    <router-link :to="'/request/new'"
-                      ><span class="dropdown-item" style="color: #d58d2d !important"
-                        >Submit A Drink</span
-                      ></router-link
-                    >
+                    <router-link :to="'/request/new'"><span class="dropdown-item"
+                        style="color: #d58d2d !important">Submit A Drink</span></router-link>
                   </li>
-                  <li
-                    v-if="
-                      onCreate && (accType == 'producer' || isAdmin || isModerator)
-                    "
-                  >
-                    <span
-                      style="color: #d58d2d !important"
-                      class="dropdown-item"
-                      @click="forceLoad('/listing/create')"
-                      >Add A New Drink</span
-                    >
-                  </li>
-                  <li
-                    v-if="
-                      !onCreate && (accType == 'producer' || isAdmin || isModerator)
-                    "
-                    :to="'/listing/create'"
-                  >
+                  <li v-if="
+                    onCreate && (accType == 'producer' || isAdmin || isModerator)
+                  ">
                     <span style="color: #d58d2d !important" class="dropdown-item"
-                      >Add A New Drink</span
-                    >
+                      @click="forceLoad('/listing/create')">Add A New Drink</span>
+                  </li>
+                  <li v-if="
+                    !onCreate && (accType == 'producer' || isAdmin || isModerator)
+                  " :to="'/listing/create'">
+                    <span style="color: #d58d2d !important" class="dropdown-item">Add A New Drink</span>
                   </li>
                   <li>
-                    <router-link :to="'/clubs/view'" class="dropdown-item"
-                      >Join Clubs</router-link
-                    >
+                    <router-link :to="'/clubs/view'" class="dropdown-item">Join Clubs</router-link>
                   </li>
                   <li>
-                    <router-link :to="'/events/view'" class="dropdown-item"
-                      >Find Events</router-link
-                    >
+                    <router-link :to="'/events/view'" class="dropdown-item">Find Events</router-link>
                   </li>
                 </div>
 
-                <li><hr class="dropdown-divider" /></li>
-                <li v-if="profileURL == '/login'">
-                  <router-link :to="'/login'" class="dropdown-item"
-                    >Login</router-link
-                  >
+                <li>
+                  <hr class="dropdown-divider" />
                 </li>
                 <li v-if="profileURL == '/login'">
-                  <router-link :to="'/signup'" class="fw-bold dropdown-item button"
-                    >Sign Up for Free</router-link
-                  >
+                  <router-link :to="'/login'" class="dropdown-item">Login</router-link>
+                </li>
+                <li v-if="profileURL == '/login'">
+                  <router-link :to="'/signup'" class="fw-bold dropdown-item button">Sign Up for Free</router-link>
                 </li>
                 <li v-if="profileURL != '/login'">
-                  <span
-                    class="dropdown-item"
-                    style="cursor: pointer"
-                    @click="logout"
-                    >Log Out</span
-                  >
+                  <span class="dropdown-item" style="cursor: pointer" @click="logout">Log Out</span>
                 </li>
               </ul>
             </div>
-            
+
             <!-- Navigation Button and Right Drawer Panel - MOBILE -->
-            <button
-              class="btn p-0 d-md-none"
-              type="button"
-              @click="showDrawer = true"
-            >
+            <button class="btn p-0 d-md-none" type="button" @click="showDrawer = true">
               <span class="navbar-toggler-icon"></span>
             </button>
-          
+
             <!-- Mobile Drawer MOBILE ONLY -->
             <div v-if="showDrawer" class="mobile-drawer d-md-none">
               <div class="drawer-header d-flex justify-content-between align-items-center px-3 pt-3">
                 <button class="fs-1 border-0 bg-transparent text-black" @click="showDrawer = false" aria-label="Close">
-                ×
+                  ×
                 </button>
               </div>
 
               <ul class="list-unstyled ps-4">
                 <!-- Home -->
-                <li class="drawer-section-title text-start"><router-link to="/" style="text-decoration: none">Home</router-link></li>
+                <li class="drawer-section-title text-start"><router-link to="/"
+                    style="text-decoration: none">Home</router-link></li>
 
                 <!-- Explore (Collapsible) -->
-                <li
-                  class="drawer-section-title mt-2 d-flex align-items-center"
-                  @click="toggleExplore"
-                >
+                <li class="drawer-section-title mt-2 d-flex align-items-center" @click="toggleExplore">
                   <span>Explore</span>
                   <span style="margin-left: 8px;">{{ showExplore ? '▾' : '▸' }}</span>
                 </li>
-                <li v-show="showExplore" class="text-start pt-1" ><router-link to="/explore" style="text-decoration: none; font-weight:normal">Trending Drinks</router-link></li>
-                <li v-show="showExplore" class="text-start"><router-link to="/best-of" style="text-decoration: none; font-weight:normal">Best Of</router-link></li>
-                <li v-show="showExplore" class="text-start"><router-link to="/best-of" style="text-decoration: none; font-weight:normal">Latest News</router-link></li>
+                <li v-show="showExplore" class="text-start pt-1"><router-link to="/explore"
+                    style="text-decoration: none; font-weight:normal">Trending Drinks</router-link></li>
+                <li v-show="showExplore" class="text-start"><router-link to="/best-of"
+                    style="text-decoration: none; font-weight:normal">Best Of</router-link></li>
+                <li v-show="showExplore" class="text-start"><router-link to="/best-of"
+                    style="text-decoration: none; font-weight:normal">Latest News</router-link></li>
 
                 <!-- My Stats (Collapsible) -->
-                <li
-                  class="drawer-section-title mt-2 d-flex align-items-center text-start"
-                  @click="toggleStats"
-                >
+                <li class="drawer-section-title mt-2 d-flex align-items-center text-start" @click="toggleStats">
                   <span>{{ dashboardWord }} Stats</span>
                   <span style="margin-left: 8px;">{{ showStats ? '▾' : '▸' }}</span>
                 </li>
-                <li v-show="showStats" class="text-start pt-1"><router-link :to="dashboardURL" style="text-decoration: none; font-weight: normal">{{ dashboardWord }} Profile</router-link></li>
-                <li v-show="showStats" class="text-start"><router-link :to="dashboardURL" style="text-decoration: none; font-weight: normal">{{ dashboardWord }} Dashboard</router-link></li>
+                <li v-show="showStats" class="text-start pt-1"><router-link :to="dashboardURL"
+                    style="text-decoration: none; font-weight: normal">{{ dashboardWord }} Profile</router-link></li>
+                <li v-show="showStats" class="text-start"><router-link :to="dashboardURL"
+                    style="text-decoration: none; font-weight: normal">{{ dashboardWord }} Dashboard</router-link></li>
 
                 <!-- Clubs and Events -->
-                
+
                 <li class="drawer-section-title pt-2 text-start">
                   <router-link to="/clubs/view" style="text-decoration: none">
                     {{ accType === 'producer' || accType === 'venue' ? 'Create A Club' : 'Join Clubs' }}
@@ -488,27 +401,31 @@
                   </router-link>
                 </li>
 
-                 <!-- Moderator Controls (Collapsible) -->
-                <li
-                  v-if="(accType === isAdmin || isModerator)"
-                  class="drawer-section-title mt-2 d-flex align-items-center text-start"
-                  @click="toggleAdmin"
-                >
+                <!-- Moderator Controls (Collapsible) -->
+                <li v-if="(accType === isAdmin || isModerator)"
+                  class="drawer-section-title mt-2 d-flex align-items-center text-start" @click="toggleAdmin">
                   <span>Moderator Controls</span>
                   <span style="margin-left: 8px;">{{ showAdmin ? '▾' : '▸' }}</span>
                 </li>
-                <li v-show="showAdmin"  v-if="(accType == isAdmin || isModerator)" class="text-start pt-1"><router-link :to="'/listing/create'" style="text-decoration: none; font-weight: normal">Create New Drink</router-link></li>
-                <li v-show="showAdmin" v-if="(accType == isAdmin || isModerator)" class="text-start"><router-link :to="'/request/view'" style="text-decoration: none; font-weight: normal">View Requests</router-link></li>
-                <li v-show="showAdmin" v-if="isAdmin" class="text-start"><router-link :to="'/admin/dashboard'" style="text-decoration: none; font-weight: normal">Admin Controls</router-link></li>
-                <li v-show="showAdmin" v-if="isAdmin" class="text-start"><router-link :to="'/admin/importListings'" style="text-decoration: none; font-weight: normal">Import Listings</router-link></li>
-                
-                </ul>
-                <hr class="m-0 mb-3" />
-                <ul class="list-unstyled ps-4">
+                <li v-show="showAdmin" v-if="(accType == isAdmin || isModerator)" class="text-start pt-1"><router-link
+                    :to="'/listing/create'" style="text-decoration: none; font-weight: normal">Create New
+                    Drink</router-link></li>
+                <li v-show="showAdmin" v-if="(accType == isAdmin || isModerator)" class="text-start"><router-link
+                    :to="'/request/view'" style="text-decoration: none; font-weight: normal">View Requests</router-link>
+                </li>
+                <li v-show="showAdmin" v-if="isAdmin" class="text-start"><router-link :to="'/admin/dashboard'"
+                    style="text-decoration: none; font-weight: normal">Admin Controls</router-link></li>
+                <li v-show="showAdmin" v-if="isAdmin" class="text-start"><router-link :to="'/admin/importListings'"
+                    style="text-decoration: none; font-weight: normal">Import Listings</router-link></li>
+
+              </ul>
+              <hr class="m-0 mb-3" />
+              <ul class="list-unstyled ps-4">
 
                 <!-- Submit / Add a Drink -->
                 <li v-if="((accType === 'user' && !isAdmin && !isModerator) || accType === 'venue')" class="text-start">
-                  <router-link to="/request/new" style="text-decoration: none; ">Submit A Drink</router-link></li>
+                  <router-link to="/request/new" style="text-decoration: none; ">Submit A Drink</router-link>
+                </li>
                 <li v-if="accType === 'producer'" class="text-start">
                   <router-link to="/listing/create" style="text-decoration: none;">Add New Product</router-link>
                 </li>
@@ -517,8 +434,11 @@
                 </li>
 
                 <!-- Auth -->
-                <div v-if="profileURL === '/login'" class=" py-2 text-start"><router-link to="/login" class="btn primary-btn-less-round-blue fw-bold text-start" style="text-decoration: none;">Sign Up</router-link></div>
-                <li v-if="profileURL !== '/login'" class="text-start pt-2 fw-bold"><span @click="logout" style="text-decoration: none">Log Out</span></li>
+                <div v-if="profileURL === '/login'" class=" py-2 text-start"><router-link to="/login"
+                    class="btn primary-btn-less-round-blue fw-bold text-start" style="text-decoration: none;">Sign
+                    Up</router-link></div>
+                <li v-if="profileURL !== '/login'" class="text-start pt-2 fw-bold"><span @click="logout"
+                    style="text-decoration: none">Log Out</span></li>
               </ul>
             </div>
 
@@ -561,9 +481,7 @@
         </div> -->
         <SearchBar :showSurpriseButton="false" class="w-100" />
       </div>
-      <div
-        class="mobile-view-hide container-fluid align-items-center col-12 gap-3"
-      >
+      <div class="mobile-view-hide container-fluid align-items-center col-12 gap-3">
         <router-link :to="'/explore'">
           <button class="btn primary-btn border-0 fw-bold" type="button">
             Explore
@@ -609,75 +527,47 @@
         </router-link>
 
 
-        <button
-          @click="forceLoad('/request/new')"
+        <button @click="forceLoad('/request/new')"
           v-if="onRequest && ((accType === 'user' && !isAdmin && !isModerator) || accType === 'venue')"
-          class="btn primary-btn border-0"
-          style="color:#027562; font-weight: 900" 
-          type="button"
-        >
+          class="btn primary-btn border-0" style="color:#027562; font-weight: 900" type="button">
           <!-- class="text-warning" style="color:#D58D2D !important;" -->
           Submit A Drink
         </button>
-        <router-link
-          v-if="!onRequest && ((accType === 'user' && !isAdmin && !isModerator) || accType === 'venue')"
-          :to="'/request/new'"
-        >
-          <button class="btn primary-btn border-0" style="color:#027562; font-weight: 900"  type="button">
+        <router-link v-if="!onRequest && ((accType === 'user' && !isAdmin && !isModerator) || accType === 'venue')"
+          :to="'/request/new'">
+          <button class="btn primary-btn border-0" style="color:#027562; font-weight: 900" type="button">
             <!-- class="text-warning" style="color:#D58D2D !important;" -->
             Submit A Drink
           </button>
         </router-link>
 
         <!-- Producers see "Add a Product" -->
-        <button
-          @click="forceLoad('/listing/create')"
-          v-if="onCreate && accType === 'producer'"
-          class="btn primary-btn border-0"
-          style="color:#027562; font-weight: 900"
-          type="button"
-        >
+        <button @click="forceLoad('/listing/create')" v-if="onCreate && accType === 'producer'"
+          class="btn primary-btn border-0" style="color:#027562; font-weight: 900" type="button">
           Add a Product
         </button>
 
-        <router-link
-            v-if="!onCreate && accType === 'producer'"
-            :to="'/listing/create'"
-          >
+        <router-link v-if="!onCreate && accType === 'producer'" :to="'/listing/create'">
           <button class="btn primary-btn border-0" style="color:#027562; font-weight: 900" type="button">
             Add a Product
           </button>
         </router-link>
 
         <!-- Admins & Moderators see "Add a New Drink" -->
-        <button
-          @click="forceLoad('/listing/create')"
-          v-if="onCreate && (isAdmin || isModerator)"
-          class="btn primary-btn border-0"
-          style="color:#027562; font-weight: 900"
-          type="button"
-        >
+        <button @click="forceLoad('/listing/create')" v-if="onCreate && (isAdmin || isModerator)"
+          class="btn primary-btn border-0" style="color:#027562; font-weight: 900" type="button">
           Add a New Drink
         </button>
 
-        <router-link
-          v-if="!onCreate && (isAdmin || isModerator)"
-          :to="'/listing/create'"
-        >
+        <router-link v-if="!onCreate && (isAdmin || isModerator)" :to="'/listing/create'">
           <button class="btn primary-btn border-0" style="color:#027562; font-weight: 900" type="button">
             Add a New Drink
           </button>
         </router-link>
 
 
-        <router-link
-          v-if="accType === 'venue'"
-          :to="profileURL"
-        >
-          <button 
-          class="btn primary-btn border-0"
-          style="color:#027562; font-weight: 900" 
-          type="button">
+        <router-link v-if="accType === 'venue'" :to="profileURL">
+          <button class="btn primary-btn border-0" style="color:#027562; font-weight: 900" type="button">
             Edit Menu
           </button>
         </router-link>
@@ -781,7 +671,7 @@ export default {
     }
   },
 
-  
+
   mounted() {
     // Obtain user's profile picture + set profile URL
     if (localStorage.getItem("88B_accID") != null) {
@@ -869,16 +759,16 @@ export default {
     },
 
     toggleExplore() {
-    this.showExplore = !this.showExplore;
-  },
+      this.showExplore = !this.showExplore;
+    },
 
-  toggleStats() {
-    this.showStats = !this.showStats;
-  },
+    toggleStats() {
+      this.showStats = !this.showStats;
+    },
 
-  toggleAdmin() {
-    this.showAdmin = !this.showAdmin;
-  },
+    toggleAdmin() {
+      this.showAdmin = !this.showAdmin;
+    },
     // for search feature
     // async fetchAllListings() {
     //   try {
@@ -980,7 +870,7 @@ export default {
       window.location.assign(url);
     },
 
-    toggleNotifications() {
+    async toggleNotifications() {
       this.showNotifications = !this.showNotifications;
       if (this.showNotifications) {
         if (!this.newsLoaded) {
@@ -988,6 +878,22 @@ export default {
         }
         if (!this.notificationsLoaded) {
           this.fetchNotifications();
+        }
+
+        const userId = parseInt(localStorage.getItem("88B_accID"), 10);
+        const userType = localStorage.getItem("88B_accType");
+        try {
+          await this.$axios.post(
+            `${process.env.VUE_APP_API_URL}/notifications/markAllRead`,
+            { userId, userType }
+          );
+          // 3) update local flags so the badge goes to zero immediately
+          this.notifications.forYou.forEach(n => n.read = true);
+          this.notifications.venues.forEach(n => n.read = true);
+          this.notifications.news.forEach(n => n.read = true);
+          this.unreadCount = this.countUnreadNotifications();
+        } catch (err) {
+          console.error("Failed to mark all notifications read:", err);
         }
       }
     },
@@ -1020,7 +926,7 @@ export default {
         this.notificationsError = "Failed to load notifications";
       }
     },
-    
+
 
     async fetchNewsRSS() {
       try {
@@ -1124,8 +1030,8 @@ export default {
       } else {
         return seconds + (seconds === 1 ? ' second ago' : ' seconds ago');
       }
-    }, 
-    
+    },
+
   },
 };
 </script>
@@ -1183,7 +1089,7 @@ input.form-control {
   background-color: #f8e5c5;
   z-index: 1050;
   overflow-y: auto;
-  box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .drawer-section-title {
@@ -1191,7 +1097,7 @@ input.form-control {
   font-size: 16px;
   letter-spacing: 0.5px;
   color: #222;
-  
+
 }
 
 .drawer-link,
@@ -1208,8 +1114,6 @@ input.form-control {
   color: #d58d2d !important;
   font-weight: 700;
 }
-
-
 
 .notification-dot {
   display: inline-block;
