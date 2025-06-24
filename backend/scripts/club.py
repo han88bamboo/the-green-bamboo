@@ -1894,6 +1894,37 @@ def requestToJoinClub():
         cur.execute('INSERT INTO "clubRequests" ("clubID", "userID", "userType", "requestDate") VALUES (%s, %s, %s, %s)', (club_id, user_id, user_type, request_date,))
         conn.commit()
 
+        # Step 4: Get the club admins
+        cur.execute('''SELECT "userID"
+                    FROM "clubMembers"
+                    WHERE "clubID" = %s
+                    AND "isAdmin" = TRUE;
+                    ''', (club_id,))
+        
+        club_admins = cur.fetchall()
+
+        if club_admins:
+            # Build notification data for each admin
+            club_name = club['clubName']
+
+            # Get the requester's username
+            username = user.get('username', 'Someone')
+            for admin in club_admins:
+                user_id = admin['userID']
+                user_type = 'user'  # Assuming all admins are users, adjust if needed
+
+                notification_data = {
+                    "userId":   user_id,
+                    "userType": user_type,
+                    "notiTabs": "forYou",
+                    "notiType": "club_request",
+                    "image":    None,
+                    "link":     f"/club/view/{club_id}/{club_name}",
+                    "message":  f"{username} have requested to join '{club_name}'"
+                }
+        
+                notifications.add_notification_to_db(notification_data)
+
         return jsonify({
             'message': 'Request to join the club sent successfully'
         }), 201
