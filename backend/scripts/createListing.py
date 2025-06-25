@@ -149,6 +149,9 @@ def createListings():
     rawBottle['producerID'] = int(rawBottle['producerID'])
     rawBottle['bottlerID'] = int(rawBottle['bottlerID']) if rawBottle['bottlerID'] != "" else None
     rawBottleName = rawBottle["listingName"]
+    
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
     print("data received:", rawBottle)
 
     try:
@@ -223,7 +226,8 @@ def createListings():
                     "notiType": "newDrink",
                     "image":    rawBottle.get('photo'),
                     "link":     f"/listing/view/{new_id}/{slug}",
-                    "message":  f"{producerName} added a new drink: {rawBottleName}"
+                    "message":  f"{producerName} added a new drink: {rawBottleName}",
+                    "createdAt": current_time,
                 }
                 print("Sending notification:", notification_data)
                 notifications.add_notification_to_db(notification_data)

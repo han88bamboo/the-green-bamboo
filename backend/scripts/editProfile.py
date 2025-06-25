@@ -6,6 +6,7 @@ import os
 import s3Images
 from flask import Blueprint, g, request, jsonify
 from scripts import pointsHelperFunc, badge_helpers, notifications
+from datetime import datetime
 import re
 
 file_name = os.path.basename(__file__)
@@ -191,6 +192,8 @@ def updateBookmark():
         if user_row:
             # Get the username of the user
             user_username = user_row['username'] if user_row else "Someone"
+        
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             
         # Notify if badge earned
         if badge_result:
@@ -201,7 +204,8 @@ def updateBookmark():
                 "notiType": "badge_earned",
                 "image":    None,
                 "link":     f"/profile/user/{userID}/{user_username}",
-                "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}."
+                "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}.",
+                "createdAt": current_time
             }
             print("Notification data:", notification_data)
             notifications.add_notification_to_db(notification_data)

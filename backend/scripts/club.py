@@ -1366,6 +1366,8 @@ def addClubMembers():
 
     try:
         data = request.get_json()
+        
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         # Get all the required data
         club_id = data['clubID']
@@ -1425,7 +1427,8 @@ def addClubMembers():
                 "notiType": "club_invite",
                 "image":    None,
                 "link":     f"/club/view/{club_id}/{club_name}",
-                "message":  f"You have been invited to join '{club_name}'"
+                "message":  f"You have been invited to join '{club_name}' club",
+                "createdAt": current_time
             }
             print("Notification data:", notification_data)
             notifications.add_notification_to_db(notification_data)
@@ -1472,6 +1475,8 @@ def joinClub():
         club_id = data['clubID']
         user_id = data['userID']
         user_type = data['userType']
+        
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         # Check if all the required data is provided
         if not club_id or not user_id or not user_type:
@@ -1540,7 +1545,8 @@ def joinClub():
             "notiType": "club_join",
             "image":    None,
             "link":     f"/club/view/{club_id}/{club_name}",
-            "message":  f"@{member_username} joined your club: {club_name}"
+            "message":  f"@{member_username} joined your club: {club_name}",
+            "createdAt": current_time
         }
         notifications.add_notification_to_db(notification_data)
         
@@ -1704,6 +1710,8 @@ def addComment():
         commenter_id = data['commenterID']
         post_id = data['postID']
         comment_content = data['commentContent']
+        
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         # Check if all the required data is provided
         if not commenter_id or not post_id or not comment_content:
@@ -1766,7 +1774,8 @@ def addComment():
                     "notiType": "club_post_comment",
                     "image":    None,
                     "link":     f"/club/{club_id}/post/{post_id}",
-                    "message":  f"{commenter_name} commented on your post"
+                    "message":  f"{commenter_name} commented on your post",
+                    "createdAt": current_time
                 }
                 print("Notification data:", notification_data)
                 notifications.add_notification_to_db(notification_data)
@@ -1864,6 +1873,8 @@ def requestToJoinClub():
         club_id = data['clubID']
         user_id = data['userID']
         user_type = data['userType']
+        
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         # Check if all the required data is provided
         if not club_id or not user_id or not user_type:
@@ -1926,7 +1937,8 @@ def requestToJoinClub():
                     "notiType": "club_request",
                     "image":    None,
                     "link":     f"/club/view/{club_id}/{club_name}",
-                    "message":  f"{username} have requested to join '{club_name}'"
+                    "message":  f"{username} have requested to join '{club_name}'",
+                    "createdAt": current_time
                 }
         
                 notifications.add_notification_to_db(notification_data)
@@ -1973,6 +1985,8 @@ def acceptClubRequest():
         requester_id = data['requesterID']
         user_type = data['userType']
         admin_id = data['adminID']
+        
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         # Check if all the required data is provided
         if not club_id or not requester_id or not user_type or not admin_id:
@@ -2022,8 +2036,6 @@ def acceptClubRequest():
         # Step 7: Build and insert the notification
         club_name  = club['clubName']
 
-        
-
         # Might be wrong because this should be for the person who requested to join the club
         notification_data = {
             "userId":   requester_id,
@@ -2032,7 +2044,8 @@ def acceptClubRequest():
             "notiType": "club_join",
             "image":    None,
             "link":     f"/club/view/{club_id}/{club_name}",
-            "message":  f"You have been accepted to join {club_name} club"
+            "message":  f"You have been accepted to join {club_name} club",
+            "createdAt": current_time
         }
         notifications.add_notification_to_db(notification_data)
 
@@ -2075,7 +2088,8 @@ def acceptClubInvite():
         user_type = data['userType']
         club_id = data['clubID']
 
-
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
         # Check if all the required data is provided
         if not user_id or not user_type or not club_id:
             return jsonify({
@@ -2149,7 +2163,8 @@ def acceptClubInvite():
             "notiType": "club_join",
             "image":    None,
             "link":     f"/club/view/{club_id}/{club_name}",
-            "message":  f"@{member_username} joined your club: {club_name}"
+            "message":  f"@{member_username} joined your club: {club_name}",
+            "createdAt": current_time
         }
         print("Notification data:", notification_data)
         notifications.add_notification_to_db(notification_data)
@@ -2630,6 +2645,8 @@ def likeUnlikeComment():
         post_id = data['postID']
         comment_id = data['commentID']
         member_id = data['memberID']
+        
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         # Check if all the required data is provided
         if not post_id or not comment_id or not member_id:
@@ -2744,7 +2761,8 @@ def likeUnlikeComment():
                         "notiType": "club_comment_upvote",
                         "image":    None,
                         "link":     f"/club/{club_id}/post/{post_id}",
-                        "message":  f"{upvoter_name} upvoted your comment"
+                        "message":  f"{upvoter_name} upvoted your comment",
+                        "createdAt": current_time
                     }
                     print("Notification data:", notification_data)
                     notifications.add_notification_to_db(notification_data)

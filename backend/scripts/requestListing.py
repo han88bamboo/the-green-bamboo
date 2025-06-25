@@ -240,6 +240,8 @@ def requestEdits():
         "duplicateLink": rawRequest.get("duplicateLink", ''),
         "sourceLink": rawRequest.get("sourceLink", '')
     }
+    
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     try:
         # Insert new edit request into the database
@@ -266,7 +268,8 @@ def requestEdits():
             "notiType": "edit_request",
             "image": None,
             "link": f"/request/view",  # adjust this to the actual front-end route if needed
-            "message": f"@{userUsername} requested an edit for {listingName}"
+            "message": f"@{userUsername} requested an edit for {listingName}",
+            "createdAt": current_time,
         }
 
         notifications.add_notification_to_db(notification_data)
@@ -444,6 +447,8 @@ def requestReviewStatus(requestID):
     updateRequest = request.get_json()
     targetCollection = updateRequest["targetCollection"]
     status = updateRequest["reviewStatus"]
+    
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     try:
         if targetCollection == "requestInaccuracy":
@@ -522,7 +527,8 @@ def requestReviewStatus(requestID):
                 "notiType": "badge_earned",
                 "image":    None,
                 "link":     f"/profile/user/{user_id}/{user_username}",
-                "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}."
+                "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}.",
+                "createdAt": current_time,
             }
             print("Adding notification for badge earned:", notification_data)
             notifications.add_notification_to_db(notification_data)        

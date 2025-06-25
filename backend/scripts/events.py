@@ -735,6 +735,8 @@ def createEvent():
 
     conn = g.db
     cursor = conn.cursor()
+    
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     try:
         # Step 1: Get the input data
@@ -871,7 +873,8 @@ def createEvent():
                 'notiType': 'event_created',
                 'image': None,
                 'link': f'/event/{new_event_id}/{data["eventName"]}',
-                'message': f'{owner_name} created a new event: {data["eventName"]}'
+                'message': f'{owner_name} created a new event: {data["eventName"]}',
+                'createdAt': current_time,
             }
             print(notification_data)
             notifications.add_notification_to_db(notification_data)
@@ -1196,6 +1199,8 @@ def addAttendee():
 
     conn = g.db
     cursor = conn.cursor()
+    
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     try:
         # Step 1: Get the input data
@@ -1255,7 +1260,8 @@ def addAttendee():
             "notiType":  "event_invite",
             "image":     None,
             "link":      f"/event/{data['eventID']}/{event_name}",
-            "message":   f"You have been invited to {event_name}"
+            "message":   f"You have been invited to '{event_name}' event",
+            "createdAt": current_time
         }
         print("data for notification: ", notification_data)
         notifications.add_notification_to_db(notification_data)
@@ -1336,6 +1342,8 @@ def updateAttendeeStatus():
     event_owner_id = data.get('eventOwnerID')
     event_owner_type = data.get('eventOwnerType')
     
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
     conn = g.db
     cursor = conn.cursor()
     
@@ -1410,7 +1418,8 @@ def updateAttendeeStatus():
                         "notiType": "badge_earned",
                         "image":    None,
                         "link":     f"/profile/user/{user_id}/{user_username}",
-                        "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}."
+                        "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}.",
+                        "createdAt": current_time
                     }
                     print("notification data for badge: ", notification_data)
                     notifications.add_notification_to_db(notification_data)

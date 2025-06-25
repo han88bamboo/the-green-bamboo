@@ -129,6 +129,9 @@ def createReviews():
         cur.execute('SELECT username FROM users WHERE id = %s', (user_id,))
         user_row = cur.fetchone()
         reviewer_username = user_row['username'] if user_row else "Someone"
+        
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
         for tagged_id in tagged_users:
             try:
                 tagged_id_int = int(tagged_id)
@@ -161,7 +164,8 @@ def createReviews():
                     "notiType": "user_tagged_review",
                     "image":    None,
                     "link":     f"/listing/view/{review_target}/{listing_name}",
-                    "message":  f"@{reviewer_username} mentioned you in a review of {listing_name}"
+                    "message":  f"@{reviewer_username} mentioned you in a review of {listing_name}",
+                    "createdAt": current_time,
                 }
                 print("Adding notification for tagged user:", notification_data)
                 notifications.add_notification_to_db(notification_data)

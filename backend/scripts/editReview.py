@@ -144,6 +144,7 @@ def voteReview():
                     )
                     conn.commit()
             
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             # If a new upvote was added, insert a notification (up to the first 3 total)
             if is_new_upvote:
                 total_upvotes = len(upvotes)
@@ -158,7 +159,8 @@ def voteReview():
                           "notiType": "review_upvote",
                           "image":    None,
                           "link":     f"/listing/view/{review_target}/{listing_name}",
-                          "message":  f"@{voter_username} upvoted your review of {listing_name}"
+                          "message":  f"@{voter_username} upvoted your review of {listing_name}",
+                          "createdAt": current_time
                         }
                         print("Notification data: ", notification_data)
                         notifications.add_notification_to_db(notification_data)      
@@ -206,7 +208,8 @@ def voteReview():
                           "notiType": "badge_earned",
                           "image":    None,
                           "link":     f"/profile/user/{review_owner_id}/{review_username}",
-                          "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}."
+                          "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}.",
+                          "createdAt": current_time
                         }
                         print("Badge notification data: ", notification_data)
                         notifications.add_notification_to_db(notification_data)

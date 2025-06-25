@@ -115,6 +115,8 @@ def addUpdates():
         # Find existing venue
         cur.execute('SELECT * FROM venues WHERE id = %s', (venueID,))
         existingVenue = cur.fetchone()
+        
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         if existingVenue:
             if image64:
@@ -153,7 +155,8 @@ def addUpdates():
                     "notiType": "venue_update",
                     "image":    image64 or None,
                     "link":     f"/profile/venue/{venueID}/{venueName}",
-                    "message":  f"{venueName} posted a new announcement."
+                    "message":  f"{venueName} posted a new announcement.",
+                    "createdAt": current_time,
                 }
                 print("Notification data for venue update:", notification_data)
                 notifications.add_notification_to_db(notification_data)
@@ -201,6 +204,7 @@ def sendQuestions():
     answer = data['answer']
     date = datetime.strptime(data['date'], "%Y-%m-%dT%H:%M:%S.%fZ")
     userID = int(data['userID'])
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     try:
         cur.execute(
@@ -234,7 +238,8 @@ def sendQuestions():
             "notiType": "venue_question",
             "image": None,                          # optional: you can pass an icon/thumbnail if desired
             "link": f"/Venues/VenuesQA/{venueID}",  # wherever you display the new question
-            "message": f"@{user_username} asked you a question"
+            "message": f"@{user_username} asked you a question",
+            "createdAt": current_time,
         }
         print("Notification data for venue:", notification_data)
         
@@ -274,7 +279,8 @@ def sendQuestions():
                 "notiType": "badge_earned",
                 "image":    None,
                 "link":     f"/profile/user/{userID}/{user_username}",
-                "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}."
+                "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}.",
+                "createdAt": current_time,
             }
             print("Notification data for badge:", notification_data)
             notifications.add_notification_to_db(notification_data)
@@ -320,6 +326,8 @@ def sendAnswers():
     venueID = int(data['venueID'])
     questionsAnswersID = int(data['questionsAnswersID'])
     answer = data['answer']
+    
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     try:
         cur.execute(
@@ -357,7 +365,8 @@ def sendAnswers():
                 "notiType": "venue_answer",
                 "image":    None,
                 "link":     f"/profile/venue/{venueID}/{venue_username}",
-                "message":  f"@{venue_username} answered your question"
+                "message":  f"@{venue_username} answered your question",
+                "createdAt": current_time,
             }
             print("Notification data for asker:", notification_data)
             notifications.add_notification_to_db(notification_data)
@@ -707,6 +716,8 @@ def addListingToMenu():
     itemPrice = data['itemPrice']
     servingType = int(data['servingType'])
     sectionName = data['sectionName']
+    
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     try:
         # Get sectionId based on the sectionName
@@ -759,7 +770,8 @@ def addListingToMenu():
             "notiType": "listingIncluded",
             "image": None,  # optional: e.g. listing_row["photo"] if you want the bottle’s image
             "link": f"/profile/venue/{venueID}/{venueName}",
-            "message": f"Your listing “{listingName}” has been added to {venueName}’s menu."
+            "message": f"Your listing “{listingName}” has been added to {venueName}’s menu.",
+            "createdAt": current_time,
         }
 
         notifications.add_notification_to_db(notification_data)
@@ -915,6 +927,8 @@ def updateVenueStatus():
     hashedPassword = data['newBusinessData']["hashedPassword"]
     claimStatus = data['newBusinessData']["claimStatus"]
     requestId = int(data['newBusinessData']["requestId"])
+    
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     try:
         cur.execute('UPDATE venues SET "venueName" = %s, "venueDesc" = %s, "originLocation" = %s, "hashedPassword" = %s, "claimStatus" = %s, "requestId" = %s WHERE "id" = %s', (venueName, venueDesc, originLocation, hashedPassword, claimStatus, requestId, venueID))
@@ -940,7 +954,8 @@ def updateVenueStatus():
                 "notiType":"status_update",
                 "image":   image,
                 "link":    f"/profile/venue/{venueID}/{venueName}",
-                "message": f"{venueName} updated their status."
+                "message": f"{venueName} updated their status.",
+                "createdAt": current_time,
             }
             print("Notification data for venue status update:", notification_data)
             notifications.add_notification_to_db(notification_data)

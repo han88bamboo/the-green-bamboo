@@ -136,6 +136,8 @@ def addUpdates():
         )
         followers = cur.fetchall()
 
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
         for row in followers:
             notification_data = {
                 "userId":   row['userId'],
@@ -144,7 +146,8 @@ def addUpdates():
                 "notiType": "producer_update",
                 "image":    image64 or None,
                 "link":     f"/profile/producer/{producerID}/{producerName}",
-                "message":  f"{producerName} posted a new announcement."
+                "message":  f"{producerName} posted a new announcement.",
+                "createdAt": current_time
             }
             print("Sending notification:", notification_data)
             notifications.add_notification_to_db(notification_data)
@@ -209,6 +212,8 @@ def sendQuestions():
         # producer_row = cur.fetchone()
         # producer_username = producer_row['username'] if producer_row else ""
 
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
         notification_data = {
             "userId":   producerID,
             "userType": "producer",
@@ -216,7 +221,8 @@ def sendQuestions():
             "notiType": "producer_question",
             "image":    None,
             "link":     f"/Producers/ProducersQA/{producerID}",
-            "message":  f"@{user_username} asked you a question"
+            "message":  f"@{user_username} asked you a question",
+            "createdAt": current_time
         }
         notifications.add_notification_to_db(notification_data)
 
@@ -254,7 +260,8 @@ def sendQuestions():
                 "notiType": "badge_earned",
                 "image":    None,
                 "link":     f"/profile/user/{userID}/{user_username}",
-                "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}."
+                "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}.",
+                "createdAt": current_time
             }
             print("Sending badge notification:", notification_data)
             notifications.add_notification_to_db(notification_data)
@@ -320,6 +327,8 @@ def sendAnswers():
         producer_row = cur.fetchone()
         producer_username = producer_row['username'] if producer_row else ''
 
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
         # Send notification back to the user who asked
         if asker_id:
             notification_data = {
@@ -329,7 +338,8 @@ def sendAnswers():
                 "notiType": "producer_answer",
                 "image":    None,
                 "link":     f"/profile/producer/{producerID}/{producer_username}",
-                "message":  f"@{producer_username} answered your question"
+                "message":  f"@{producer_username} answered your question",
+                "createdAt": current_time
             }
             print("Sending answer notification:", notification_data)
             notifications.add_notification_to_db(notification_data)
@@ -511,6 +521,8 @@ def updateProducerStatus():
         )
         followers = cur.fetchall()
 
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
         # Send each of them a notification
         for row in followers:
             notification_data = {
@@ -520,7 +532,8 @@ def updateProducerStatus():
                 "notiType":"status_update",
                 "image":   image,
                 "link":    f"/profile/producer/{producerID}/{producerName}",
-                "message": f"{producerName} updated their status."
+                "message": f"{producerName} updated their status.",
+                "createdAt": current_time
             }
             print("Sending notification:", notification_data)
             notifications.add_notification_to_db(notification_data)
