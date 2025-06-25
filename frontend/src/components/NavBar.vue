@@ -94,16 +94,16 @@
                   <button class="btn-close" @click="showNotifications = false">X</button>
                 </div>
                 <div class="notification-tabs">
-                  <button class="notification-tab btn border-1 fw-bold" style="border-top-left-radius: .80rem" :class="{ active: activeTab === 'forYou' }"
-                    @click="activeTab = 'forYou'">
+                  <button class="notification-tab btn border-1 fw-bold" style="border-top-left-radius: .80rem"
+                    :class="{ active: activeTab === 'forYou' }" @click="activeTab = 'forYou'">
                     For You
                   </button>
                   <button v-if="accType === 'user'" class="notification-tab btn border-1 fw-bold"
                     :class="{ active: activeTab === 'venues' }" @click="activeTab = 'venues'">
                     Venues & Producers
                   </button>
-                  <button class="notification-tab btn border-1 fw-bold" style="border-top-right-radius: .80rem" :class="{ active: activeTab === 'news' }"
-                    @click="activeTab = 'news'">
+                  <button class="notification-tab btn border-1 fw-bold" style="border-top-right-radius: .80rem"
+                    :class="{ active: activeTab === 'news' }" @click="activeTab = 'news'">
                     News
                   </button>
                 </div>
@@ -130,11 +130,11 @@
 
                           <div class="col-10 col-sm-11">
                             <div class="title">{{ notification.message }}</div>
-                            <div class="time">{{ getTimeDifference(notification.time) }}</div>
+                            <div class="time">{{ getTimeDifference(notification.createdAt) }}</div>
                           </div>
 
                           <div class="col-2 col-sm-1 d-flex justify-content-end">
-                            <span v-if="!notification.read" class="notification-dot"></span>
+                            <span v-if="notification.blueDot" class="notification-dot"></span>
                           </div>
 
                         </div>
@@ -162,12 +162,12 @@
                             </div>
                             <div class="notification-content-text">
                               <div class="title">{{ notification.message }}</div>
-                              <div class="time">{{ getTimeDifference(notification.time) }}</div>
+                              <div class="time">{{ getTimeDifference(notification.createdAt) }}</div>
                             </div>
                           </div>
 
                           <div class="col-2 col-sm-1 d-flex justify-content-end">
-                            <span v-if="!notification.read" class="notification-dot"></span>
+                            <span v-if="notification.blueDot" class="notification-dot"></span>
                           </div>
 
                         </div>
@@ -180,35 +180,35 @@
 
                   <!-- News Tab -->
                   <div v-if="activeTab === 'news'" class="tab-content">
-                    <div v-if="notifications.news.filter(a => !a.read).length === 0" class="p-3 text-center">
+                    <div v-if="notifications.news && notifications.news.length === 0" class="p-3 text-center">
                       No news to display
                     </div>
-                    <div v-else v-for="(article, index) in notifications.news.filter(a => !a.read)" :key="index"
-                      class="notification-item with-logo" @click="onNotificationClick(article, 'news')">
+                    <div v-else v-for="(notification, index) in notifications.news" :key="index"
+                      class="notification-item with-logo" @click="onNotificationClick(notification, 'news')">
                       <div class="container-fluid px-0">
                         <div class="row align-items-center">
 
                           <div class="col-10 col-sm-11">
                             <div class="notification-logo">
-                              <img v-if="article.image" :src="article.image" alt="News logo" class="logo-image">
+                              <img v-if="notification.image" :src="notification.image" alt="News logo"
+                                class="logo-image">
                               <img v-else src="../../Images/Drinks/Placeholder.png" alt="Default logo"
                                 class="logo-image">
                             </div>
                             <div class="notification-content-text">
-                              <div class="title">{{ article.message }}</div>
-                              <div class="time">{{ getTimeDifference(article.time) }}</div>
+                              <div class="title">{{ notification.message }}</div>
+                              <div class="time">{{ getTimeDifference(notification.createdAt) }}</div>
                             </div>
                           </div>
 
                           <div class="col-2 col-sm-1 d-flex justify-content-end">
-                            <span v-if="!article.read" class="notification-dot"></span>
+                            <span v-if="notification.blueDot" class="notification-dot"></span>
                           </div>
 
                         </div>
                       </div>
 
-                      <hr v-if="index < notifications.news.filter(a => !a.read).length - 1"
-                        class="notification-divider">
+                      <hr v-if="index < notifications.news.length - 1" class="notification-divider">
                     </div>
                   </div>
                 </div>
