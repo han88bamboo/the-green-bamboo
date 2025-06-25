@@ -1908,7 +1908,13 @@ def requestToJoinClub():
             club_name = club['clubName']
 
             # Get the requester's username
-            username = user.get('username', 'Someone')
+            if user_type == 'user':
+                username = user.get('username', 'Someone')
+            elif user_type == 'producer':
+                username = user.get('producerName', 'Someone')
+            else:  # user_type == 'venue'
+                username = user.get('venueName', 'Someone')
+
             for admin in club_admins:
                 user_id = admin['userID']
                 user_type = 'user'  # Assuming all admins are users, adjust if needed
@@ -2014,32 +2020,19 @@ def acceptClubRequest():
         conn.commit()
 
         # Step 7: Build and insert the notification
-        owner_id   = club['createdByID']
-        owner_type = club['createdByType']
         club_name  = club['clubName']
 
-        # Look up the new member’s username
-        if user_type == 'user':
-            cur.execute('SELECT username FROM "users" WHERE id = %s', (requester_id,))
-            row = cur.fetchone()
-            member_username = row['username'] if row else 'Someone'
-        elif user_type == 'producer':
-            cur.execute('SELECT username FROM "producers" WHERE id = %s', (requester_id,))
-            row = cur.fetchone()
-            member_username = row['username'] if row else 'Someone'
-        else:  # 'venue'
-            cur.execute('SELECT username FROM "venues" WHERE id = %s', (requester_id,))
-            row = cur.fetchone()
-            member_username = row['username'] if row else 'Someone'
+        
 
+        # Might be wrong because this should be for the person who requested to join the club
         notification_data = {
-            "userId":   owner_id,
-            "userType": owner_type,
+            "userId":   requester_id,
+            "userType": user_type,
             "notiTabs": "forYou",
             "notiType": "club_join",
             "image":    None,
             "link":     f"/club/view/{club_id}/{club_name}",
-            "message":  f"@{member_username} joined your club: {club_name}"
+            "message":  f"You have been accepted to join {club_name} club"
         }
         notifications.add_notification_to_db(notification_data)
 
