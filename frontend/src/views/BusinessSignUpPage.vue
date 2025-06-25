@@ -156,6 +156,7 @@
                     </div>
 
                         <div class="row justify-content-center mobile-view-show">
+                            <p style="color: red;">Please select one option</p> <br>
                             <button class="btn rounded p-3 text-start mx-0 mb-3 col-5 me-2 pricing-plan-card strong-shadow" @click="toggleMonthlyPricing" :style="{ backgroundColor: selectedMonthlyPricing ? '#DD9E54' :'white', color: selectedMonthlyPricing ? 'white' :'black', borderColor: '#DD9E54', borderWidth:'3px' }"> <span>
                                     <h6> <b> Monthly plan </b> </h6>
                                     <p class="m-0"> US$95 / Month </p> 

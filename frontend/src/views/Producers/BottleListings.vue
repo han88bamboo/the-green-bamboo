@@ -2201,10 +2201,10 @@
                       >
                         at
                         <router-link
-                          :to="'/profile/venue/' + checkVenue(review.address)"
+                          :to="'/profile/venue/' + checkVenue(review.address) + '/' + getVenueNameFromID(checkVenue(review.address))"
                           class="text-decoration-none text-dark"
                         >
-                          <b>{{ getVenueNameFromID(review.location) }}</b>
+                          <b>{{ getVenueNameFromID(checkVenue(review.address)) }} </b>
                         </router-link>
                       </span>
 
@@ -2515,37 +2515,38 @@
                         <div class="col-9">
                           <span
                             v-if="
-                              detailedReview.location !== '' &&
-                              checkVenue(detailedReview.location)
+                              detailedReview.address !== '' &&
+                              checkVenue(detailedReview.address)
                             "
                           >
                             <a style="color: inherit">
                               <router-link
                                 :to="
                                   '/profile/venue/' +
-                                  checkVenue(detailedReview.location)
+                                  checkVenue(detailedReview.address)
+                                  + '/' + getVenueNameFromID(checkVenue(detailedReview.address))
                                 "
                                 style="color: inherit"
                               >
                                 <b>{{
-                                  getVenueNameFromID(detailedReview.location)
-                                }}</b>
+                                  getVenueNameFromID(checkVenue(detailedReview.address))
+                                }} </b>
                                 <!--tzh testing code anchor-->
                               </router-link>
                             </a>
                           </span>
 
-                          <span v-else-if="detailedReview.location !== ''">
+                          <span v-else-if="detailedReview.address !== ''"> 
                             <a
                               :href="
                                 'https://www.google.com/maps/search/' +
-                                detailedReview.location
+                                detailedReview.address
                               "
                               style="color: inherit"
                               target="_blank"
                             >
                               <b>{{
-                                getVenueNameFromID(detailedReview.location)
+                                getVenueNameFromID(checkVenue(detailedReview.address))
                               }}</b>
                               <!--tzh testing code anchor-->
                             </a>
@@ -3741,9 +3742,11 @@ export default {
     },
 
     getVenueNameFromID(venueID) {
-      const venue = this.venues.find((venue) => {
-        return venue["id"] == venueID;
-      });
+      console.log("getVenueNameFromID called with venueID:", venueID);
+      console.log(this.venues);
+      const venue = this.venues.find(venue => venue.id === venueID);
+
+      console.log(venue);
       if (venue) {
         return venue["venueName"];
       }
@@ -4711,13 +4714,57 @@ export default {
       // else{
       //     return false;
       // }
-
-      if (place in this.addressDict) {
-        // have to get the id of the address
-        return this.addressDict[place];
-      } else {
-        return null;
+      function normalizeAddress(str) {
+        return str
+          .toLowerCase()
+          .replace(/[#,@&-]/g, '')       // remove more special chars like #,@,&,-
+          .replace(/[.,]/g, '')          // remove dots and commas
+          .replace(/\s+/g, ' ')          // collapse multiple spaces
+          .trim();
       }
+
+      const normalizedPlace = normalizeAddress(place);
+      console.log("Normalized search place:", normalizedPlace);
+
+      for (const key in this.addressDict) {
+        const normalizedKey = normalizeAddress(key);
+        console.log("Checking key:", key);
+        console.log("Normalized key:", normalizedKey);
+
+        if (normalizedKey.includes(normalizedPlace) || normalizedPlace.includes(normalizedKey)) {
+          console.log("Match found:", key);
+          return this.addressDict[key];
+        }
+      }
+
+      // Fallback: try token intersection for partial matches
+      const placeTokens = new Set(normalizedPlace.split(' '));
+
+      let bestMatchKey = null;
+      let bestMatchCount = 0;
+
+      for (const key in this.addressDict) {
+        const normalizedKey = normalizeAddress(key);
+        const keyTokens = new Set(normalizedKey.split(' '));
+        // Count intersection size
+        let intersectionCount = 0;
+        placeTokens.forEach(token => {
+          if (keyTokens.has(token)) intersectionCount++;
+        });
+
+        if (intersectionCount > bestMatchCount) {
+          bestMatchCount = intersectionCount;
+          bestMatchKey = key;
+        }
+      }
+
+      if (bestMatchCount > 0) {
+        console.log("Best fuzzy match:", bestMatchKey, "with", bestMatchCount, "tokens matched");
+        return this.addressDict[bestMatchKey];
+      }
+
+
+      return null; 
     },
 
     // to get webscrapped image data

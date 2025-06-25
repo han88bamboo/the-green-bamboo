@@ -55,6 +55,7 @@
 
             <!-- choose plan -->
             <div class="row justify-content-between">
+                <p style="color: red;">Please select one option</p> <br>
                 <div class="col-6">
                     <button class="btn rounded p-3 text-start mb-3 w-100" @click="toggleMonthlyPricing" :style="{ backgroundColor: selectedMonthlyPricing ? '#DD9E54' :'white', 
                                                                                                                         color: selectedMonthlyPricing ? 'white' :'black', 
