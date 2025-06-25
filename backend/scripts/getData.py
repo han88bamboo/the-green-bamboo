@@ -4042,7 +4042,7 @@ def getAllUserFollowingsIDs(id):
 #   - top 5 best rated category
 #   - top 5 venues where the user left the most reviews (checks the location column in the reviews table)
 #   - top 5 producers where the user left the most reviews (checks the producerId column in the reviews table)
-#   - top 5 drink styles which the user left the most reviews
+#   - top 5 drink styles which the user left the most reviews (drink styles)
 #   - total number of reviews the user has made
 #   - total number of followers the user has
 @blueprint.route("/getUserDashBoardData/<id>")
@@ -4093,13 +4093,13 @@ def getUserDashBoardData(id):
         cur.execute("""
             SELECT 
                 l."drinkType",
-                ROUND(AVG(r."rating")::numeric, 2) AS "averageRating"
+                COUNT(*) AS "reviewCount"
             FROM "reviews" r
             JOIN "listings" l ON r."reviewTarget" = l."id"
             WHERE r."userID" = %s
             AND r."reviewType" = 'Listing'
             GROUP BY l."drinkType"
-            ORDER BY "averageRating" DESC
+            ORDER BY "reviewCount" DESC
             LIMIT 5;
         """, (id,))
 
@@ -4142,18 +4142,24 @@ def getUserDashBoardData(id):
         # Step 6: Get the top 5 drink styles which the user left the most reviews
         cur.execute("""
             SELECT 
-                l."drinkType",
+                l."drinkStyle",
                 COUNT(r."id") AS "reviewCount"
             FROM "reviews" r
             JOIN "listings" l ON r."reviewTarget" = l."id"
             WHERE r."userID" = %s
             AND r."reviewType" = 'Listing'
-            GROUP BY l."drinkType"
+            AND l."drinkStyle" IS NOT NULL
+            AND l."drinkStyle" <> ''
+            AND l."drinkStyle" <> '-'
+            GROUP BY l."drinkStyle"
             ORDER BY "reviewCount" DESC
             LIMIT 5;
         """, (id,))
 
+
+
         top_drink_styles = cur.fetchall()
+        print(top_drink_styles)
 
         # Step 7: Get the total number of reviews the user has made
         cur.execute("""
@@ -4178,7 +4184,7 @@ def getUserDashBoardData(id):
         # Step 9: Prepare the final response data
         response_data = {
             "top5BestReviewedListings": top_5_best_reviewed_listings,
-            "top5BestRatedCategories": top_categories,
+            "top5MostReviewedCategories": top_categories,
             "top5Venues": top_venues,
             "top5Producers": top_producers,
             "top5DrinkStyles": top_drink_styles,
@@ -4323,7 +4329,7 @@ def recent_review_activity(id):
 
             for downvote in downvotes:
                 activities.append({
-                    'userID': int(downvote['userID']),
+                    'userID': int(downvote['userId']),
                     'reviewTarget': review_target_map.get(review_id),
                     'type': 'downvote',
                     'date': downvote['date']
@@ -5849,4 +5855,6 @@ def get_requests_count():
 
     finally:
         cur.close()
+
+
 

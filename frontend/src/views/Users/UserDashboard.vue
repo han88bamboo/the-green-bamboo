@@ -890,18 +890,16 @@
                         <!-- col 2: your best rated categories -->
                         <div id="BestRatedCategories" class="tab-pane fade  col-lg-5 col-md-12 col-sm-12 text-start pt-3 mx-3 ps-lg-0 pe-lg-0 mobile-mx-0"> <!-- padding classes added by tzh-->
                         
-                            <div class="text-start pb-2 card p-3 " v-for="(category, index) in top5BestReviewedCategories" v-bind:key="category">
+                            <div class="text-start pb-2 card p-3 " v-for="(category, index) in top5MostReviewedCategories" v-bind:key="category">
                                 <div class="row ms-0 default-clickable-text "> 
                                     <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
                                         <h5 class="my-auto"> {{ index + 1 }} </h5>
                                     </div>
                                     <div class="col-10 shrink-width-on-dashboard mobile-rating-smaller-text-2" > <!-- style added by tzh-->
-                                        <b> {{ category.drinkType }} </b> 
-                                        <br>
-                                        Average Rating: {{ category.averageRating.toFixed(1) || "-" }} 
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
-                                            <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                        </svg>
+                                        <div class="ms-3">
+                                            <p class="mb-1 fw-bold">{{ category.drinkType }}</p>
+                                            <p class="mb-0">{{ category.reviewCount || 0 }} reviews</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -988,9 +986,9 @@
 
                     <div
                         class="text-start pb-2"
-                        v-for="(category, index) in top5BestReviewedCategories"
+                        v-for="(category, index) in top5MostReviewedCategories"
                         :key="category"
-                    >
+                    > 
                         <div class="d-flex align-items-center">
                         <!-- Number Circle -->
                         <div
@@ -1087,6 +1085,15 @@
                                     <br>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Error message if top drink style is empty-->
+                        <div v-if="top5Styles.length === 0 && top5BestReviewedListings.length > 0" class="text-center text-muted mt-3">
+                            No styles found.
+                        </div>
+
+                        <div v-else class="text-center text-muted mt-3">
+                            Review listings to show results.
                         </div>
                     </div>
                 </div>
@@ -1459,7 +1466,7 @@
                 drinkCount: 0, // total number of listing reviews done by user
                 followerCount: 0, // total number of followers user has
                 top5BestReviewedListings: [], // top 5 best reviewed listings by user
-                top5BestReviewedCategories: [], // top 5 best reviewed categories by user
+                top5MostReviewedCategories: [], // top 5 most reviewed categories by user
                 top5Venues: [], // top 5 venues which user has tagged in listing reviews
                 top5Producers: [], // top 5 producers which user has reviewed based on the listing reviews
                 top5Styles: [], // top 5 styles (aka drink types) which user has reviewed based on the listing reviews
@@ -1775,14 +1782,14 @@
                 try {
                     const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUserDashBoardData/${this.displayUserID}`);
                     let response_Data = response.data.data;
-
+                    console.log("response_Data", response_Data);
                     this.followerCount = response_Data.totalFollowers
                     this.drinkCount = response_Data.totalReviews;
                     this.top5BestReviewedListings = response_Data.top5BestReviewedListings;
-                    this.top5BestReviewedCategories = response_Data.top5BestReviewedCategories; // not showing up
+                    this.top5MostReviewedCategories = response_Data.top5MostReviewedCategories; // not showing up
                     this.top5Venues = response_Data.top5Venues;
                     this.top5Producers = response_Data.top5Producers;
-                    this.top5Styles = response_Data.top5Styles;
+                    this.top5Styles = response_Data.top5DrinkStyles;
 
                     this.dataLoaded = true;
                 } 

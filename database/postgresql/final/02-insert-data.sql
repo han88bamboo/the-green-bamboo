@@ -2759,7 +2759,7 @@ INSERT INTO "venues" (
     "pin"
 ) VALUES (
     'Orh Gao Taproom', 
-    'Singapore', 
+    '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 
     'Bar', 
     'Singapore', 
     'Best venue for drinks', 
