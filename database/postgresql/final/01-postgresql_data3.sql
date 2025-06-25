@@ -236,7 +236,8 @@ CREATE TABLE "venues" (
     "username" VARCHAR(255),
     "publicHolidays" VARCHAR(255),
     "stripeCustomerId" VARCHAR(255),
-    "pin" VARCHAR(255)
+    "pin" VARCHAR(255),
+    "requestId" INTEGER -- [!] reference "accountRequests"
 );
 
 -- ========= "users" =========
@@ -805,5 +806,6 @@ CREATE TABLE "notifications" (
     "link" TEXT, -- Link to the related entity
     "message" TEXT,
     "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    "read" BOOLEAN DEFAULT FALSE -- Indicates if the notification has been read
+    "read" BOOLEAN DEFAULT FALSE, -- Indicates if the notification has been read
+    "blueDot" BOOLEAN DEFAULT TRUE -- Indicates if the blue dot should be shown
 );
