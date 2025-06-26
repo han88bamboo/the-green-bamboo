@@ -18,7 +18,7 @@
 #           /getProducerDashBoardData/<producerID> (GET), /getProducerLatestReviews/<producerID> (GET),
 
 #           [Venues]
-#           /getVenuesWithSpecificListing/<listingID> (GET), /getVenuesBySearch (GET), /getVenues (GET), 
+#           /getVenuesWithSpecificListing/<listingID> (GET), /getVenuesBySearch (GET), /getVenues (GET), /getVenuesByIds
 #           /getVenue/<id> (GET), /getVenuesAPI (GET), /getVenuesProfileViewsByVenue/<id> (GET),
 
 #           [Users]
@@ -2423,6 +2423,47 @@ def getVenues():
 
     finally:
         cur.close()
+
+
+# [GET] Get venues by IDs
+@blueprint.route("/getVenuesByIds", methods=['POST'])
+def getVenuesByIds():
+    conn = g.db
+    venue_ids = request.json.get('venueIDs', [])
+
+    if not venue_ids or len(venue_ids) == 0:
+        return jsonify({
+            "code": 404,
+            "message": "At least one venue ID is required."
+        }), 404
+
+    try:
+        with conn.cursor() as cursor:
+            # Retrieve venue information based on the provided IDs
+            cursor.execute('SELECT * FROM "venues" WHERE "id" IN %s', (tuple(venue_ids),))
+            venues_data = cursor.fetchall()
+
+            if not venues_data:
+                return jsonify([]), 404
+            
+            venues_list = []
+            for row in venues_data:
+                venue = {
+                "id": row["id"],
+                "venueName": row["venueName"],
+                "originLocation": row["originLocation"],
+                "photo": row["photo"],
+                "website": row["website"],
+                "address": row["address"]
+                }
+                venues_list.append(venue)
+
+        return jsonify(venues_list), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({"code": 500, "message": "An error occurred while fetching venues by IDs."}), 500
+
 
 # [GET] Specific Venue
 @blueprint.route("/getVenue/<id>")

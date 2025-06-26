@@ -2196,19 +2196,19 @@
                       <!-- Location -->
                       <span
                         v-if="
-                          review.location !== '' && checkVenue(review.address)
+                          review.location !== '' && checkVenue(review.address) != ''
                         "
                       >
                         at
                         <router-link
-                          :to="'/profile/venue/' + checkVenue(review.address) + '/' + getVenueNameFromID(checkVenue(review.address))"
+                          :to="'/profile/venue/' + checkVenue(review.address) + '/' + getVenueNameFromID(review.location)"
                           class="text-decoration-none text-dark"
                         >
-                          <b>{{ getVenueNameFromID(checkVenue(review.address)) }} </b>
+                          <b>{{ getVenueNameFromID(review.location) }} </b>
                         </router-link>
                       </span>
 
-                      <span v-else-if="review.location">
+                      <span v-else>
                         at
                         <a
                           :href="
@@ -3229,6 +3229,12 @@ export default {
       noMoreReviews: false,
       lastReviewID: 0,
       reviewsPerLoad: 20,
+      
+      // track venueIDs for retrieval
+      venueIDs: [],
+
+      // venue with drink list
+      venueWithDrinkList: [],
     };
   },
   mounted() {
@@ -3291,6 +3297,10 @@ export default {
           `${process.env.VUE_APP_API_URL}/getData/getVenuesWithSpecificListing/${this.listing_id}` // get venues with specific listing by listing_id
         );
         this.venues = response.data;
+        this.venueWithDrinkList = response.data;
+
+        // Add ids to venueIDs
+        this.venueIDs = this.venues.map((venue) => venue.id);
 
         if (this.venues != []) {
           this.locationOptions = response.data.map((item) => ({
@@ -3315,6 +3325,8 @@ export default {
         );
         this.reviews = response.data;
 
+        this.getMoreVenues(response.data); // get more venues which are tagged in the reviews
+        
         this.lastReviewID = this.reviews.length > 0 ? this.reviews[this.reviews.length - 1].id : 0;
 
         if (this.reviews.length < this.reviewsPerLoad) {
@@ -3432,7 +3444,7 @@ export default {
         this.producer_id = this.specified_listing.producerID; // find specified producer
         this.bottler_id = this.specified_listing.bottlerID; // find specified bottler
         
-        if (this.venues != []) {
+        if (this.venueWithDrinkList != []) {
           this.whereToTry(); // find where to try specified listing [RE-ENABLE WHEN VENUES HAVE MENU ATTRIBUTE]
         }
         
@@ -3625,6 +3637,8 @@ export default {
         );
         this.reviews = this.reviews.concat(response.data);
 
+        this.getMoreVenues(response.data); // get more venues which are tagged in the reviews
+
         if (response.data.length > 0) {
           this.lastReviewID = response.data[response.data.length - 1].id;
         } 
@@ -3647,7 +3661,7 @@ export default {
         // const maxDistance = 5000
         // create an object to store the distance of each venue from the current location
         let venueDistances = {};
-        this.venues.forEach(async (venue) => {
+        this.venueWithDrinkList.forEach(async (venue) => {
           const address = encodeURIComponent(venue.address);
           const response = await this.$axios.get(
             `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${apiKey}`
@@ -3703,7 +3717,7 @@ export default {
         });
       }
 
-      this.venueListings = this.venues
+      this.venueListings = this.venueWithDrinkList
     },
 
     getProducerName(producerID) {
@@ -4834,6 +4848,38 @@ export default {
           "Please enter a valid location, if not location will be left empty";
       }
     },
+
+    async getMoreVenues(reviews) {
+      // Loop through the reviews and extract the location (venue ID) and retrieve the venue data
+      let localVenueIDs = [];
+
+      reviews.forEach((review) => {
+        if (review.location && !localVenueIDs.includes(review.location)) {
+          if (!this.venueIDs.includes(review.location)) {
+            localVenueIDs.push(review.location);
+          }
+        }
+      });
+
+      // Fetch venue details for the unique venue IDs
+      try {
+        if (localVenueIDs.length > 0) {
+          const venueResponse = await this.$axios.post(
+            `${process.env.VUE_APP_API_URL}/getData/getVenuesByIds`,
+            { 'venueIDs': localVenueIDs }
+          );
+          // Add to this.venues array
+          this.venues = this.venues.concat(venueResponse.data);
+
+          // Update venueIDs with the new venues
+          this.venueIDs = this.venueIDs.concat(
+            venueResponse.data.map((venue) => venue.id)
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching venue details:", error);
+      }
+    }
 
   },
 };
