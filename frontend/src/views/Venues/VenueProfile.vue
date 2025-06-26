@@ -3384,7 +3384,7 @@
         },
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         mounted() {
-
+            
             // Check if route params "venueID" is present
             if (this.$route.params.venueID != "" && this.$route.params.venueID != undefined) {
                 this.targetVenue = this.$route.params.venueID;

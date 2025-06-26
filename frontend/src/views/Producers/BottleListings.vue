@@ -2515,24 +2515,12 @@
                         <div class="col-9">
                           <span
                             v-if="
-                              detailedReview.address !== '' &&
-                              checkVenue(detailedReview.address)
+                              detailedReview.location !== '' &&
+                              checkVenue(detailedReview.address) 
                             "
                           >
-                            <a style="color: inherit">
-                              <router-link
-                                :to="
-                                  '/profile/venue/' +
-                                  checkVenue(detailedReview.address)
-                                  + '/' + getVenueNameFromID(checkVenue(detailedReview.address))
-                                "
-                                style="color: inherit"
-                              >
-                                <b>{{
-                                  getVenueNameFromID(checkVenue(detailedReview.address))
-                                }} </b>
-                                <!--tzh testing code anchor-->
-                              </router-link>
+                            <a :href="venueLink" style="color: inherit">
+                              <b>{{ getVenueNameFromID(detailedReview.location) }}</b>
                             </a>
                           </span>
 
@@ -2546,8 +2534,8 @@
                               target="_blank"
                             >
                               <b>{{
-                                getVenueNameFromID(checkVenue(detailedReview.address))
-                              }}</b>
+                                getVenueNameFromID(detailedReview.location)
+                              }} </b>
                               <!--tzh testing code anchor-->
                             </a>
                           </span>
@@ -3273,7 +3261,11 @@ export default {
     },
     listingIDAsInt() {
       return parseInt(this.bookmarkListingID);
+    },
+    venueLink() {
+      return `/profile/venue/${this.detailedReview.location}/${this.getVenueNameFromID(this.detailedReview.location)}`;
     }
+
   },
   methods: {
     // fetch specific listing data
@@ -3292,6 +3284,31 @@ export default {
       // }
       // reviews
       // _id, userID, reviewTarget, date, rating, reviewDesc, taggedUsers, reviewTitle, reviewType, flavorTag, photo
+      // venues
+      // _id, venueName, venueDesc, originCountry, address, openingHours
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getVenuesWithSpecificListing/${this.listing_id}` // get venues with specific listing by listing_id
+        );
+        this.venues = response.data;
+
+        if (this.venues != []) {
+          this.locationOptions = response.data.map((item) => ({
+            name: item.venueName,
+            id: item.id,
+            address: item.address,
+          }));
+          this.addressDict = this.venues.reduce((dict, venue) => {
+            dict[venue.address] = venue.id;
+            return dict;
+          }, {});
+
+        }
+        
+      } catch (error) {
+        console.error(error);
+        this.dataLoaded = null;
+      }
       try {
         const response = await this.$axios.get(
           `${process.env.VUE_APP_API_URL}/getData/getReviewByTarget/${this.listing_id}/0`
@@ -3404,31 +3421,7 @@ export default {
         this.dataLoaded = null;
       }
 
-      // venues
-      // _id, venueName, venueDesc, originCountry, address, openingHours
-      try {
-        const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getVenuesWithSpecificListing/${this.listing_id}` // get venues with specific listing by listing_id
-        );
-        this.venues = response.data;
-
-        if (this.venues != []) {
-          this.locationOptions = response.data.map((item) => ({
-            name: item.venueName,
-            id: item.id,
-            address: item.address,
-          }));
-          this.addressDict = this.venues.reduce((dict, venue) => {
-            dict[venue.address] = venue.id;
-            return dict;
-          }, {});
-
-        }
-        
-      } catch (error) {
-        console.error(error);
-        this.dataLoaded = null;
-      }
+      
       // listings
       // _id, listingName, producerID, bottler, originCountry, drinkType, typeCategory, age, abv, reviewLink, officialDesc, sourceLink, photo
       try {
@@ -3742,15 +3735,14 @@ export default {
     },
 
     getVenueNameFromID(venueID) {
-      console.log("getVenueNameFromID called with venueID:", venueID);
-      console.log(this.venues);
-      const venue = this.venues.find(venue => venue.id === venueID);
-
-      console.log(venue);
-      if (venue) {
-        return venue["venueName"];
-      }
+        const venue = this.venues.find((venue) => {
+            return venue["id"] == venueID;
+        });
+        if (venue) {
+            return venue["venueName"];
+        }
     },
+
 
     // check if user has already added listing to shelf, add colour to button accordingly
     checkDrinkLists(listing) {
@@ -4064,6 +4056,7 @@ export default {
           upvotes: [],
         },
       };
+
       this.writeReview(submitAPI, submitData);
     },
 
@@ -4714,57 +4707,14 @@ export default {
       // else{
       //     return false;
       // }
-      function normalizeAddress(str) {
-        return str
-          .toLowerCase()
-          .replace(/[#,@&-]/g, '')       // remove more special chars like #,@,&,-
-          .replace(/[.,]/g, '')          // remove dots and commas
-          .replace(/\s+/g, ' ')          // collapse multiple spaces
-          .trim();
+      if (place in this.addressDict){
+
+          // have to get the id of the address
+          return this.addressDict[place];
       }
-
-      const normalizedPlace = normalizeAddress(place);
-      console.log("Normalized search place:", normalizedPlace);
-
-      for (const key in this.addressDict) {
-        const normalizedKey = normalizeAddress(key);
-        console.log("Checking key:", key);
-        console.log("Normalized key:", normalizedKey);
-
-        if (normalizedKey.includes(normalizedPlace) || normalizedPlace.includes(normalizedKey)) {
-          console.log("Match found:", key);
-          return this.addressDict[key];
-        }
+      else{
+          return null;
       }
-
-      // Fallback: try token intersection for partial matches
-      const placeTokens = new Set(normalizedPlace.split(' '));
-
-      let bestMatchKey = null;
-      let bestMatchCount = 0;
-
-      for (const key in this.addressDict) {
-        const normalizedKey = normalizeAddress(key);
-        const keyTokens = new Set(normalizedKey.split(' '));
-        // Count intersection size
-        let intersectionCount = 0;
-        placeTokens.forEach(token => {
-          if (keyTokens.has(token)) intersectionCount++;
-        });
-
-        if (intersectionCount > bestMatchCount) {
-          bestMatchCount = intersectionCount;
-          bestMatchKey = key;
-        }
-      }
-
-      if (bestMatchCount > 0) {
-        console.log("Best fuzzy match:", bestMatchKey, "with", bestMatchCount, "tokens matched");
-        return this.addressDict[bestMatchKey];
-      }
-
-
-      return null; 
     },
 
     // to get webscrapped image data

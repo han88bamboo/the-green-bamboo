@@ -2758,7 +2758,7 @@ INSERT INTO "venues" (
     "stripeCustomerId", 
     "pin"
 ) VALUES (
-    'Orh Gao Taproom', 
+    'Orh Gao Taproom Craft Beer Bar', 
     '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 
     'Bar', 
     'Singapore', 
