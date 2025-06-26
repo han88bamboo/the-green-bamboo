@@ -403,8 +403,160 @@ export default {
           title: 'Partner Center',
           lastUpdated: '20 May 2024',
           body: `
-            <h3>Partner Program Overview</h3>
-            <p>Join the Drink-X ecosystem and grow your business through our partner network:</p>
+          <p>Sections:</p>
+<ul>
+  <li><a href="#venues">Venue Owners</a></li>
+  <li><a href="#brands">Brand Owners</a></li>
+  
+</ul>
+            <h3 class="mt-5 anchor-target" id="venues" style="scroll-margin-top: 185px;">Level Up Your Venue with Drink-X!</h3>
+    <p>
+      Let's walk you through how a venue owner can use Drink-X to transform their business, boost discoverability, and build a loyal community. Let’s follow the journey of <strong>The Tipsy Tiger</strong>, a vibrant cocktail bar in the heart of the city, as they unlock the full power of Drink-X.
+    </p>
+
+    <h4>Step 1: Claiming Your Venue or Creating a New Profile</h4>
+    <p>
+      <strong>The Tipsy Tiger</strong> starts by searching for their bar on Drink-X. They find an unclaimed profile and click <b>“Claim This Business”</b>. After a quick verification, they’re in control! If their venue wasn’t listed, they could easily submit a new application and get set up in minutes.
+    </p>
+    <ul>
+      <li><b>Boost Your Discoverability:</b> Instantly, The Tipsy Tiger is visible to thousands of drink lovers searching for new places to explore.</li>
+      <li><b>Control Your Brand:</b> Only verified owners can update details, respond to reviews, and manage the venue’s digital presence.</li>
+    </ul>
+    <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/venue_sign_up.gif?v=1749980231" alt="" style="width: 100%; height: auto; display: block;">
+
+    <h4>Step 2: Curate a Live, Digital Menu</h4>
+    <p>
+      With their profile claimed, The Tipsy Tiger’s team heads to the <b>“Menu”</b> tab. They add their signature cocktails, rare spirits, and seasonal specials—organizing everything by category. Each listing includes tasting notes and photos, so guests know exactly what to expect.
+    </p>
+    <ul>
+      <li><b>Create Live Menus Accessible from Anywhere:</b> The menu is always up-to-date and can be shared via a QR code on tables, websites, or social media. No more printing new menus every week!</li>
+      <li><b>Enhance Customer Self-Service:</b> Each drink listing aggregates reviews and flavor tags from the community, helping guests discover new favorites and know what to order.</li>
+    </ul>
+    <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/menu_creation.gif?v=1749971168" alt="" style="width: 100%; height: auto; display: block;">
+
+    <h4>Step 3: Announcements & Q&As – Engage Your Fans</h4>
+    <p>
+      The Tipsy Tiger launches a new “Tropical Thursdays” promo. They post an announcement right from their profile—fans get notified instantly, and the news appears in their feeds. Curious guests ask questions in the Q&A section (“What’s the special this week?”), and the team replies directly, building trust and excitement.
+    </p>
+    <ul>
+      <li><b>Engage Your Existing Fans:</b> Announcements and Q&As let you communicate directly with your audience, answer questions, and keep everyone in the loop.</li>
+      <li><b>Build Loyalty:</b> Fans feel heard and valued, making them more likely to return and recommend your venue.</li>
+    </ul>
+    <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/announcements.gif?v=1749972160" alt="" style="width: 100%; height: auto; display: block;">
+    <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/q_a.gif?v=1749979849" alt="" style="width: 100%; height: auto; display: block;">
+
+    <h4>Step 4: Broadcast Events & Track RSVPs</h4>
+    <p>
+      Ready to host a whisky tasting night? The Tipsy Tiger creates an event on Drink-X, complete with date, time, and featured bottles. The event appears on their profile and in the main calendar—users RSVP with a tap, and the bar can see who’s coming.
+    </p>
+    <ul>
+      <li><b>Broadcast New Events:</b> Reach a wider audience and fill your seats by promoting tastings, launches, or parties.</li>
+      <li><b>Track Engagement:</b> See RSVPs in real time and follow up with attendees for future events or exclusive offers.</li>
+    </ul>
+    <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/events.gif?v=1749973650" alt="" style="width: 100%; height: auto; display: block;">
+
+    <h4>Step 5: Create a Club for Your Regulars</h4>
+    <p>
+      The Tipsy Tiger launches the “Tiger’s Den” club—a space for their biggest fans. Members get exclusive updates, early access to events, and special perks. The club grows into a vibrant community, with guests sharing stories and recommendations.
+    </p>
+    <ul>
+      <li><b>Broadcast New Events & Create Your Own Club:</b> Clubs turn casual guests into loyal regulars and brand ambassadors.</li>
+      <li><b>Reward Loyalty:</b> Offer club-only deals, badges, and shoutouts to keep your best customers coming back.</li>
+    </ul>
+    <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/creation_of_club.gif?v=1749979055" alt="" style="width: 100%; height: auto; display: block;">
+
+    <h4>Step 6: Unlock Insights & Analytics</h4>
+    <p>
+      The Tipsy Tiger checks their analytics dashboard to see which drinks are trending, how many guests viewed their menu, and which events drove the most RSVPs. These insights help them refine their offerings and marketing—so every night is a hit.
+    </p>
+    <ul>
+      <li><b>Boost Your Discoverability:</b> See what’s working, what’s popular, and where to focus your efforts for maximum impact.</li>
+      <li><b>Data-Driven Decisions:</b> Use real feedback and stats to improve your menu, events, and customer experience.</li>
+    </ul>
+    <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Screenshot_2025-06-23_at_3.33.22_PM.png?v=1750664011" alt="" style="margin: 0 auto; width: 40%; height: auto; display: block;">
+
+    <h3 class="mt-5">Ready to Put Your Venue on the Map?</h3>
+    <p>
+      Whether you’re just starting out or looking to take your bar to the next level, Drink-X gives you the tools to shine. From live menus and instant announcements to clubs and analytics, every feature is designed to help you <b>grow your business, delight your guests, and build a community that keeps coming back for more</b>.
+    </p>
+    <p>
+      <strong>Join Drink-X as a Partner Venue—let’s make every night unforgettable!</strong>
+    </p>
+<hr>
+ <h3 class="mt-5 anchor-target" id="brands" style="scroll-margin-top: 185px;">Take Your Brand to the Next Level with Drink-X</h3>
+ <p>
+      Let's we’ll follow the journey of <strong>Kendrick's Gin</strong> on Drink-X. See how they use every feature to boost discoverability, engage fans, and build a legendary community of gin lovers.
+    </p>  
+
+    <h4>Step 1: Claiming or Creating Your Brand Profile</h4>
+    <p>
+      <strong>Kendrick's Gin</strong> starts by searching for their brand on Drink-X. They spot an unclaimed profile and hit <b>“Claim This Business”</b>. After a quick verification, they’re in the driver’s seat! If their brand wasn’t listed, they could easily submit a new application and get set up in minutes.
+    </p>
+    <ul>
+      <li><b>Boost Your Discoverability:</b> Instantly, Kendrick's Gin is visible to thousands of curious drinkers searching for new gins to try.</li>
+      <li><b>Control Your Brand Story:</b> Only verified owners can update details, respond to reviews, and manage the brand’s digital presence.</li>
+    </ul>
+    <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/business_sign_up.gif?v=1749993538" alt="" style="width: 100%; height: auto; display: block;">
+
+    <h4>Step 2: Curate Your Product Catalog & Add New Expressions</h4>
+    <p>
+      With their profile claimed, Kendrick's Gin’s team heads to the <b>“All Expressions”</b> tab. They add their classic London Dry, the new Saffron Infusion, and a limited-edition Navy Strength—each with tasting notes, photos, and stories. Every bottle is now discoverable, reviewable, and ready to be added to drinkers’ wishlists.
+    </p>
+    <ul>
+      <li><b>Enhance Customer Self-Service:</b> Each product listing aggregates community reviews and flavor tags, so fans know what to expect before their first sip.</li>
+      <li><b>Boost Your Discoverability:</b> New releases and core range bottles are featured in the main Explore page, reaching new fans and gin explorers everywhere.</li>
+    </ul>
+    <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Adding_new_drinks.gif?v=1749985944" alt="" style="width: 100%; height: auto; display: block;">
+
+    <h4>Step 3: Announcements & Q&As – Engage Your Fans</h4>
+    <p>
+      Kendrick's Gin wins “Best Gin in Asia” and launches a new “Sichuan Peppercorn" cocktail kit. They post an announcement right from their brand page—fans get notified instantly, and the news appears in their feeds. Curious gin lovers ask questions in the Q&A section (“What botanicals do you use?”), and the team replies directly, building trust and excitement.
+    </p>
+    <ul>
+      <li><b>Engage Your Existing Fans:</b> Announcements and Q&As let you communicate directly with your audience, answer burning questions, and keep everyone in the loop.</li>
+      <li><b>Build Loyalty:</b> Fans feel connected to the brand, making them more likely to recommend Kendrick's Gin to friends and order it at their favorite bars.</li>
+    </ul>
+    <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/hennessy_announcement.gif?v=1749986368" alt="" style="width: 100%; height: auto; display: block;">
+    <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/business_Q_A.gif?v=1749993230" alt="" style="width: 100%; height: auto; display: block;">
+
+    <h4>Step 4: Broadcast Events & Track RSVPs</h4>
+    <p>
+      Ready to host a “Gin & Jazz” night or a virtual masterclass? Kendrick's Gin creates an event on Drink-X, complete with date, time, and featured cocktails. The event appears on their profile and in the main calendar—users RSVP with a tap, and the brand can see who’s coming.
+    </p>
+    <ul>
+      <li><b>Broadcast New Events:</b> Reach a wider audience and fill your guest list by promoting tastings, launches, or online experiences.</li>
+      <li><b>Track Engagement:</b> See RSVPs in real time and follow up with attendees for future launches or exclusive offers.</li>
+    </ul>
+    <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Creating_events.gif?v=1749990701" alt="" style="width: 100%; height: auto; display: block;">
+
+    <h4>Step 5: Create a Club for Your Superfans</h4>
+    <p>
+      Kendrick's Gin launches the “Kendrick's Society”—an exclusive club for their biggest supporters. Members get early access to new releases, behind-the-scenes updates, and special perks. The club grows into a lively community, with fans sharing cocktail recipes and stories.
+    </p>
+    <ul>
+      <li><b>Broadcast New Events & Create Your Own Club:</b> Clubs turn casual fans into loyal brand ambassadors and gin evangelists.</li>
+      <li><b>Reward Loyalty:</b> Offer club-only deals, badges, and shoutouts to keep your best customers coming back for more Kendrick's Gin magic.</li>
+    </ul>
+    <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/business_Creating_clubs.gif?v=1749991587" alt="" style="width: 100%; height: auto; display: block;">
+
+    <h4>Step 6: Unlock Insights & Analytics</h4>
+    <p>
+      Kendrick's Gin checks their analytics dashboard to see which gins are trending, how many fans viewed their product pages, and which events drove the most RSVPs. These insights help them refine their marketing and product lineup—so every launch is a smash hit.
+    </p>
+    <ul>
+      <li><b>Boost Your Discoverability:</b> See what’s working, what’s popular, and where to focus your efforts for maximum impact.</li>
+      <li><b>Data-Driven Decisions:</b> Use real feedback and stats to improve your products, events, and customer experience.</li>
+    </ul>
+    <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Screenshot_2025-06-23_at_3.34.00_PM.png?v=1750664047" alt="" style="margin: 0 auto; width: 40%; height: auto; display: block;">
+
+    <h3 class="mt-5">Ready to Make Your Brand Unforgettable?</h3>
+    <p>
+      Whether you’re a craft upstart or a global icon, Drink-X gives you the tools to shine. From live product catalogs and instant announcements to clubs and analytics, every feature is designed to help you <b>grow your brand, delight your fans, and build a community that keeps coming back for more</b>.
+    </p>
+    <p>
+      <strong>Join Drink-X as a Brand Partner—let’s make every bottle legendary!</strong>
+    </p>
+<!--            <p>Join the Drink-X ecosystem and grow your business through our partner network:</p>
             <ul>
               <li>
                 <strong>API Integration:</strong> Connect your systems with Drink-X data and functionality.
@@ -426,7 +578,7 @@ export default {
               <li>Schedule a consultation with our partnership team</li>
               <li>Develop an integration or collaboration plan</li>
               <li>Launch your partnership with marketing support</li>
-            </ol>
+            </ol>-->
           `
         },
         'about': {
@@ -821,35 +973,112 @@ export default {
           `
         },
         'terms': {
-          title: 'Terms of Service',
+          title: 'Drink-X Terms of Use',
           lastUpdated: '1 January 2024',
           body: `
             <h3>Drink-X Terms of Service</h3>
-            <p>Last Updated: January 1, 2024</p>
+            <p>Last Updated: 26 June 2025</p>
             
-            <h4>1. Acceptance of Terms</h4>
-            <p>By accessing or using Drink-X services, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services.</p>
-            
-            <h4>2. Description of Service</h4>
-            <p>Drink-X provides a platform for users to discover, review, and share information about beverages, venues, and related experiences. Our services may include mobile applications, websites, and other related features.</p>
-            
-            <h4>3. User Accounts</h4>
-            <p>You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You must be at least 18 years old to use Drink-X services.</p>
-            
-            <h4>4. User Content</h4>
-            <p>By posting content on Drink-X, you grant us a non-exclusive, worldwide, royalty-free license to use, modify, and display that content in connection with our services.</p>
-            
-            <h4>5. Prohibited Conduct</h4>
-            <p>Users may not:</p>
-            <ul>
-              <li>Post false, misleading, or defamatory content</li>
-              <li>Harass or bully other users</li>
-              <li>Use the service for any illegal purposes</li>
-              <li>Attempt to access other users' accounts</li>
-              <li>Post content that promotes excessive or irresponsible drinking</li>
-            </ul>
-            
-            <p><em>This is a summarized version. Please review the <a href="#">complete Terms of Service</a> for full details.</em></p>
+<p>Welcome to <strong>Drink-X</strong> (“<strong>Drink-X</strong>,” “we” or “us”) and our Website <strong>Terms of Use</strong> (these “<strong>Terms</strong>”). These Terms are important and affect your legal rights, so please read them carefully.</p>
+<p>By accessing or using <a href="https://www.drink-x.com/">https://www.drink-x.com/</a> or <a href="https://88bamboo.co/">https://88bamboo.co/</a>, the Drink-X application and various related services (collectively, the “<strong>Site</strong>”), including in particular registering an account on the Site, you agree to be bound by these Terms and all of the terms incorporated herein by reference.</p>
+<p>This Site is operated by 88 Bamboo Private Limited, and any references to <strong>Drink-X</strong> shall include a reference to 88 Bamboo Private Limited where applicable. The services offered through this Site are intended for individuals and businesses primarily located in the Asia-Pacific region.</p>
+<p>By accepting these Terms, you represent that (a) if you are accessing the Site from Singapore, you are at least 18 years of age or older or (b) if you are accessing the Site from another jurisdiction, you are of the legal drinking age in said jurisdiction (the “<strong>Minimum Legal Drinking Age</strong>”), and that, if you have accepted these Terms on behalf of any person or entity, you represent that you have legal authority to do so and that such person or entity agrees to be responsible to us if you or such person or entity violates these Terms.</p>
+<p>If you do not agree to every provision of these Terms, you may not, and we do not authorize you to, access or use the Site or any features provided on the Site.</p>
+<p>By accessing or using the Site, you represent and warrant that you have not been previously suspended or removed from the Site, or engaged in any activity that could result in a breach of these Terms.</p>
+<p>These Terms may be revised at any time for any reason, and <strong>Drink-X</strong> may provide you notice of these changes by any reasonable means, including by providing notice through the Site. You can determine when we last updated the Site by referring to the “<strong>Last Updated</strong>” legend at the top of these Terms. Except to the extent that your express consent to any revised Terms is required under data-protection law, by continuing to access, browse or use the Site, you confirm your acceptance of the revised Terms and all the terms incorporated herein by reference. We strongly recommend that you periodically visit this page of the Site to review these Terms. If you do not agree to the revised Terms, you may not access or use the Site.</p>
+
+<h5>2. Registration and Personal Data</h5>
+<p>In order to access and use certain areas or features of the Site, you will need to register for an account. Each registration is for a single user or single corporate entity only.</p>
+<p>By creating an account, you agree to (a) provide accurate, current and complete account information, (b) maintain and promptly update, as necessary, your account information, (c) maintain the security of your account credentials, (d) be responsible for the acts or omissions of any third party who has authority to access or use the Site on your behalf, and (e) immediately notify us if you discover or otherwise suspect any security breaches related to the Site or your account. Any changes to your registration information may be made by sending such changes to <a href="mailto:hi88bamboo@gmail.com">hi88bamboo@gmail.com</a>. If you provide information that is untrue, inaccurate, not current or incomplete, we may suspend or terminate your account and refuse any and all current or future use of the Site.</p>
+<p>By creating an account, you also consent to receive electronic communications from <strong>Drink-X</strong> (e.g., via email or by posting notices to the Site). These communications may include notices about your account (e.g., payment authorizations, password changes and other transactional information) and are part of your relationship with us. You agree that any notices, agreements, disclosures or other communications that we send to you electronically will satisfy any legal communication requirements, including, but not limited to, that such communications be in writing. You should maintain copies of electronic communications from us by printing a paper copy or saving an electronic copy. We may also send you promotional communications via email, including, but not limited to, newsletters, special offers, surveys and other news and information we think will be of interest to you. You may opt out of receiving these promotional emails at any time by following the unsubscribe instructions provided therein.</p>
+
+<h5>3. License to Access and Use the Site and Content</h5>
+<p>Unless otherwise indicated in writing by us, the Site and all content and other materials contained therein, including, without limitation, the Drink-X logo and all designs, text, graphics, pictures, information, data, software, <strong>User Content</strong> (as defined in Section&nbsp;6), other files and the selection and arrangement thereof (collectively, “<strong>Content</strong>”) are the property of <strong>Drink-X</strong> or our licensors or users, as applicable, and are protected by Singapore and international copyright and other laws.</p>
+<p>Subject to these Terms, you are hereby granted a personal, non-exclusive, non-transferable, non-sublicensable license to access and make personal, non-commercial use of the Site and Content. All rights not expressly granted herein are reserved. You do not acquire any ownership interest in the Site or Content under these Terms, or any other rights thereto other than to use the Site in accordance with the license granted, and subject to all terms, conditions and restrictions of these Terms.</p>
+<p>However, such license is subject to these Terms and does not include any right to, and you shall not, directly or indirectly: (a) sell, resell or use commercially the Site or Content, (b) distribute, publicly perform or publicly display any Content, (c) modify or otherwise make any derivative uses of the Site or Content, or any portion thereof, (d) use any data mining, robots or similar data-gathering or extraction methods, (e) download (other than page caching) any portion of the Site or Content, except as expressly permitted by us, (f) use the Site to stalk, threaten, or otherwise violate the rights of others, including without limitation others’ privacy rights or rights of publicity; (g) interfere with the Site or servers or networks used in connection with the Site; or (h) use the Site or Content other than for their intended purposes.</p>
+<p>Any use of the Site or Content other than as specifically authorized herein, without our prior written permission, is strictly prohibited and will terminate the license granted herein. Such unauthorized use may also violate applicable laws, including, without limitation, copyright and trademark laws and applicable communications regulations and statutes. Unless explicitly stated by us, nothing in these Terms shall be construed as conferring any right or license to any patent, trademark, copyright or other proprietary rights of <strong>Drink-X</strong> or any third party, whether by estoppel, implication or otherwise. This license is revocable at any time.</p>
+<p>You will not remove, alter or conceal any copyright, trademark, service mark or other proprietary rights notices incorporated in or accompanying the Content and you will not reproduce, modify, adapt, prepare derivative works based on, perform, display, publish, distribute, transmit, broadcast, sell, license or otherwise exploit the Content.</p>
+
+<h5>4. Trademarks</h5>
+<p>The Drink-X logo, and any other product or service names, trademarks, logos, or other indicia associated with <strong>Drink-X</strong> or 88 Bamboo (collectively, the “<strong>Marks</strong>”) that may appear on the Site are the property of Drink-X or its subsidiaries, affiliates or third parties, and may not be copied, imitated or used, in whole or in part, without our prior written permission. Nothing contained in the Site shall be construed as granting, by implication or otherwise, any license or right to use any such Mark without the prior written permission of Drink-X or such third party that may own such Mark. Your misuse of any such Mark, or any other Content, is strictly prohibited.</p>
+
+<h5>5. Legal Requirements; Privacy Policy</h5>
+<p><strong>Drink-X</strong> is committed to processing and protecting the personal data collected through the Site when you use the Site in compliance with its obligations under applicable privacy laws. Drink-X’s policy is to retain personal data necessary to provide our services, except that we may retain your personal data for longer periods where reasonably necessary to comply with our legal obligations (including law-enforcement requests), meet regulatory requirements, resolve disputes, maintain security, prevent fraud and abuse, enforce these Terms, or fulfill your request to “unsubscribe” from further messages from us. This policy applies to personal data that you or others provided to us and personal data generated or inferred from your use of our services. When Drink-X is the data controller, we will decide how your personal data is processed and for what purposes. For additional information about your rights and your personal data, what data is collected, how it is processed, protected, shared, and how long it is retained, please see the <a href="#privacy">Drink-X’s Privacy Policy</a>.</p>
+<p>Where Drink-X has a good-faith belief that such action is necessary to comply with a judicial proceeding, court order, warrant, administrative order, civil investigative demand, subpoena, or other valid process, Drink-X may disclose IP addresses, personal information, and any contents of the Site where it is legally compelled to do so, or to comply with the request of a regulatory authority of any jurisdiction.</p>
+<p>We implement a number of security features to help guarantee and ensure to the greatest extent possible that your information is safe. We use industry-standard technologies when transferring and receiving user data exchanged between Drink-X and third parties to ensure its security. User data may be stored on servers maintained by our third-party partners and subject to their security safeguards. All financial transactions are made securely. Please see Drink-X’s Privacy Policy for additional information relating to the privacy and security of information collected hereunder.</p>
+<p>The Site may include an electronic platform (the “<strong>Drink-X Shop</strong>”) for the purpose of connecting consumers of the Minimum Legal Drinking Age to merchants who engage in the sale, fulfillment, transportation and shipping services for alcoholic beverages (“<strong>Products</strong>”) through the Drink-X Shop. If you utilize the Drink-X Shop, you must first agree to any Drink-X Shop Terms. All orders initiated through the Drink-X Shop are accepted, reviewed, and ultimately fulfilled by a third-party merchant, and not Drink-X. All such activities are conducted solely between the consumer and the third-party merchant from the location of the applicable Product inventory to the shipping destination specified by the consumer. Consumers acknowledge and agree that merchants may specify additional terms for any such transaction. Drink-X itself does not make available, provide or sell alcoholic beverages or alcoholic-beverage fulfillment, transportation, or shipping services and is not a licensed alcoholic-beverage transportation carrier or retailer. Drink-X makes no representation as to any laws, rules or regulations of any jurisdiction regarding the sale, fulfillment, transportation, and/or shipping services for alcoholic beverages to any consumer. <strong>YOU HEREBY ACKNOWLEDGE AND AGREE THAT DRINK-X IS NOT ENGAGED IN OR RESPONSIBLE FOR THE SALE, SERVICE, SHIPPING AND/OR TRANSPORTATION OF ALCOHOLIC BEVERAGES.</strong></p>
+
+<h5>6. User Content</h5>
+<p>You are solely responsible and liable for all data, information and other materials (“<strong>User Content</strong>”) that you submit, upload, post, e-mail or otherwise transmit (“<strong>Transmit</strong>”) in connection with the Site. In addition, we have no control over, and shall have no liability for, any damages resulting from the use (including without limitation republication) or misuse by any third party of information made public through the Site. <strong>IF YOU CHOOSE TO SUBMIT TO US, OR OTHERWISE MAKE ANY USER CONTENT PUBLICLY AVAILABLE, YOU DO SO AT YOUR OWN RISK AND WE SHALL HAVE NO LIABILITY THEREFOR.</strong></p>
+<p>You agree that you will not, and will not permit anyone else to, directly or indirectly:</p>
+<p>• Transmit any User Content that is unlawful, harmful, threatening, abusive, hateful, obscene, harassing, tortious, defamatory, libelous, slanderous, pornographic, profane, vulgar, offensive, lewd, invasive of another’s privacy or racially, ethnically or otherwise objectionable;<br>
+• Transmit any User Content: (i) that you do not have the right to Transmit, under any law or contractual or fiduciary relationships, including, without limitation, any inside information or proprietary or confidential information; (ii) that infringes any patent, copyright, trademark or other intellectual-property right or misappropriates any trade secret or right of privacy of any third party; (iii) that constitutes unsolicited or unauthorized advertising or promotional materials, “spam,” “chain letters,” or pyramid schemes; or (iv) that contains any software routine, code, instruction or virus that is designed to disable, delete, modify, damage or erase software, hardware or data;<br>
+• Forge headers or otherwise manipulate identifiers in order to disguise any User Content Transmitted through the Site.</p>
+<p>Although we have no obligation to screen, edit or monitor User Content, we reserve the right, and have absolute discretion, to remove, screen or edit User Content posted or stored on the Site at any time and for any reason, and you are solely responsible for creating backup copies of and replacing any User Content you post or store on the Site at your sole cost and expense.</p>
+<p>We may, without notice, disable access to any content or your account to comply with any direction issued by a regulatory authority of any jurisdiction.</p>
+
+<h5>7. Rights in User Content</h5>
+<p>We do not claim any ownership interest in your User Content.</p>
+<p>However, by uploading, posting or submitting User Content to the Site or to our pages or feeds on third-party social-media platforms (e.g., Drink-X’s Facebook page, Instagram page, LinkedIn page or X feed), you hereby grant <strong>Drink-X</strong> a non-exclusive, royalty-free, worldwide, perpetual, irrevocable and fully sublicensable right, license and consent to use, reproduce, modify, adapt, publish, translate, create derivative works from, distribute, perform and publicly display your User Content, in whole or in part, in any manner or media and for any purpose whatsoever at our sole discretion, including, without limitation, for publicity, promotional, advertising, trade, business, illustration, artistic and other commercial and non-commercial purposes. This license and consent applies to your personal information that has been uploaded, posted or submitted as User Content on to any publicly accessible page on the Site. Otherwise, Drink-X will only share your personal information that you provide in accordance with our Privacy Policy.</p>
+<p>You acknowledge and agree that Drink-X may disclose or use any User Content that you Transmit for purposes that include, but are not limited to: (a) enforcing these Terms; (b) complying with any laws, regulations or rules of any government or agency; (c) responding to claims that any User Content violates the rights of third parties; or (d) protecting the rights or property of Drink-X, its customers or the public.</p>
+
+<h5>8. Feedback</h5>
+<p>Separate and apart from User Content, you can submit questions, comments, suggestions, ideas, original or creative materials or other information about <strong>Drink-X</strong>, the Site or the services (collectively, “<strong>Feedback</strong>”). Feedback is non-confidential and shall become the sole property of Drink-X. Drink-X shall own exclusive rights, including, without limitation, all intellectual-property rights, in and to such Feedback and shall be entitled to the unrestricted use and dissemination of this Feedback for any purpose, commercial or otherwise, without acknowledgment or compensation to you.</p>
+
+<h5>9. Linked Sites</h5>
+<p>We have not reviewed all of the websites linked to the Site and are not responsible for the content of any third-party pages, any other websites linked to the Site, or any products or services offered by third parties linked to the Site. Nothing in the Site, including, without limitation, any links to other websites, should be construed as an endorsement of any products, services or information of any other persons or companies by Drink-X. Your choice to access a link to any other website is at your own risk, and you agree to comply with all terms and conditions relating to such websites. Drink-X reserves the right not to link, or to remove the link, to a particular website at any time. Any links to third-party websites are provided as a convenience to you and are neither owned nor operated by Drink-X. We have no control over these linked websites and make no representations or warranties with respect to these linked websites or third-party products or services. Your viewing and use of any third-party websites is at your sole discretion and risk.</p>
+
+<h5>10. Indemnification</h5>
+<p>You shall indemnify, hold harmless, and, at <strong>Drink-X’s</strong> option, defend Drink-X from and against any and all losses, damages, liabilities, costs (including reasonable attorneys’ fees) (“<strong>Losses</strong>”) incurred by Drink-X resulting from any third-party claim, suit, action or proceeding relating to or arising from your use of the Site, any User Content that you Transmit to or through the Site, any Feedback you provide, any violation of these Terms by you, or any other act or omission by you, including your violation of any rights of another, arising from your use of the Site or any of its features. You further agree that Drink-X shall have control of the defense or settlement of any third-party claims, unless Drink-X exercises its option to require you to defend Drink-X. This indemnity is in addition to, and not in lieu of, any other indemnities set forth in a written agreement between you and Drink-X.</p>
+
+<h5>11. Disclaimers</h5>
+<p>The Site and the Content are provided on an “AS IS”, “AS AVAILABLE” and “WITH ALL FAULTS” basis. To the fullest extent permissible by law, <strong>Drink-X</strong> does not make any representations or warranties or endorsements of any kind whatsoever, express or implied, as to: (a) the Site; (b) the Content; (c) User Content; or (d) security associated with the transmission of information to the Site. In addition, Drink-X hereby disclaims all warranties, express or implied, including, but not limited to, the warranties of merchantability, fitness for a particular purpose, that any results will be achieved, non-infringement, title, custom, trade, quiet enjoyment, system integration and freedom from computer virus.</p>
+<p>Drink-X does not represent or warrant that the Site will be error-free or uninterrupted; that defects will be corrected; or that the Site or the server that makes the Site available is free from any harmful components, including, without limitation, viruses. Drink-X does not make any representations or warranties that the information (including any instructions) on the Site is accurate, complete, or useful. You acknowledge that your use of the Site is at your sole risk. Drink-X does not warrant that your use of the Site is lawful in any particular jurisdiction, and Drink-X specifically disclaims such warranties. Some jurisdictions limit or do not allow the disclaimer of implied or other warranties so the above disclaimer may not apply to you to the extent such jurisdiction's law is applicable to you and these Terms.</p>
+<p>BY ACCESSING OR USING THE SITE YOU REPRESENT AND WARRANT THAT YOUR ACTIVITIES ARE LAWFUL IN EVERY JURISDICTION WHERE YOU ACCESS OR USE THE SITE.</p>
+
+<h5>12. Limitation of Liability; Waiver</h5>
+<p>To the fullest extent permitted by applicable law, in no event shall <strong>Drink-X</strong> be liable for any indirect, special, incidental, or consequential damages of any kind (including, but not limited to, loss of revenue, income or profits, loss of use or data, loss or diminution in value of assets or securities, or damages for business interruption) arising out of or in any way related to the access to or use of the Site (including, but not limited to, User Content, and links to third-party sites), or the order, receipt or use of any product or service, or otherwise related to these Terms (including, but not limited to, any damages caused by or resulting from reliance on any information obtained from Drink-X, or from events beyond Drink-X’s reasonable control, such as Site interruptions, deletions of files or emails, errors or omissions, defects, bugs, viruses, Trojan horses, delays in operation or transmission or any failure of performance, whether or not resulting from acts of God, communications failure, theft, destruction or unauthorized access to Drink-X records, programs or systems), regardless of the form of action, whether based in contract, tort (including, but not limited to, simple negligence, whether active, passive or imputed) or any other legal or equitable theory (even if the party has been advised of the possibility of such damages and regardless of whether such damages were foreseeable).</p>
+<p>To the fullest extent permitted by applicable law, in no event shall the maximum aggregate liability of Drink-X arising out of or in any way related to the Site exceed the amount paid to Drink-X for any products or services in the ninety (90) days prior to the event giving rise to such liability. The foregoing limitations shall apply even in the event your remedies hereunder fail of their essential purpose, and the foregoing shall constitute Drink-X’s sole liability and obligation in respect hereof, regardless of the form of action, whether based in contract, tort (including, but not limited to, simple negligence, whether active, passive or imputed), or any other legal or equitable theory.</p>
+<p>YOU EXPRESSLY WAIVE AND RELEASE ANY AND ALL CLAIMS, NOW KNOWN OR HEREAFTER KNOWN, AGAINST DRINK-X AND ALL OTHER RELEASEES ARISING OUT OF OR ATTRIBUTABLE TO THE REGULATION AND CONTROL OF ALCOHOLIC BEVERAGES AND BY ACCEPTING THESE TERMS HEREBY ACKNOWLEDGE THAT DRINK-X HOLDS NO FEDERAL, STATE, PROVINCIAL, OR LOCAL ALCOHOL LICENSES, AND DRINK-X DOES NOT HANDLE THE MANUFACTURING, BOTTLING, SELLING OR DELIVERY OF ANY ALCOHOLIC BEVERAGES.</p>
+
+<h5>13. Dispute Resolution</h5>
+
+<p>You and Drink-X agree that any dispute arising out of or in connection with these Terms, including any question regarding its existence, validity or termination, may be referred by either party:</p>
+<p>(a) to the non-exclusive jurisdiction of the courts of Singapore, which the parties hereby submit to; or<br>
+(b) to arbitration administered by the <strong>Singapore International Arbitration Centre (SIAC)</strong> in accordance with the Arbitration Rules of the SIAC for the time being in force, which rules are deemed to be incorporated by reference into this clause.</p>
+<p>The seat of arbitration shall be Singapore. The tribunal shall consist of one (1) arbitrator. The language of the arbitration shall be English.</p>
+<p>If a party elects to commence arbitration under this clause, the other party shall not object to such election and shall be bound to resolve the dispute by arbitration accordingly.</p>
+
+<h5>14. Modifications to the Site</h5>
+<p>We reserve the right in our sole discretion to modify, suspend or discontinue, temporarily or permanently, the Site (or any features or parts thereof) at any time.</p>
+
+<h5>15. Special Admonitions for International Use</h5>
+<p>This Site is hosted in the Asia-Pacific region. If you are located outside of this region, and you provide us information or personal data, please be advised that any information you provide to us will be transferred to a server in the Asia-Pacific region and that by submitting information, you explicitly authorize such transfer.</p>
+
+<h5>16. Termination</h5>
+<p>Notwithstanding anything contained in these Terms, we reserve the right, without notice and in our sole discretion, to terminate your right to access or use the Site at any time and for any or no reason, and you acknowledge and agree that we shall have no liability or obligation to you in such event and that you will not be entitled to a refund of any amounts that you have already paid to us, to the fullest extent permitted by applicable law.</p>
+
+<h5>17. Governing Law and Jurisdiction</h5>
+<p><strong>Drink-X</strong> operates the Site from Singapore. These Terms and the transactions they contemplate, including without limitation their interpretation, construction, performance and enforcement, shall be governed by Singapore law. The International Convention on the Sale of Goods, and other international treaties that are not mandatory with respect to contracts made and performed entirely in Singapore shall not apply.</p>
+
+<h5>18. Notice</h5>
+<p>All notices, demands, or consents given by you under these Terms will be in writing and will be deemed given when delivered to Drink-X at the following contact: <a href="mailto:hi88bamboo@gmail.com">hi88bamboo@gmail.com</a>. Any notices to you may be made via either e-mail or postal mail to the address in Drink-X’s records or via posting on the Site. Please report any violations of these Terms to Drink-X at the contact listed above.</p>
+
+<h5>19. Severability</h5>
+<p>If any term, clause or provision of these Terms is held invalid or unenforceable, then that term, clause or provision will be severable from these Terms and will not affect the validity or enforceability of any remaining part of that term, clause or provision, or any other term, clause or provision of these Terms.</p>
+
+<h5>20. Procedure for Making Claims of Copyright Infringement</h5>
+<p>We expect users of the Site to respect the intellectual-property rights of others. If you believe in good faith that any of the content on the Site infringes your copyright, please provide us all of the information specified below.</p>
+<p>a. An electronic or physical signature of the person authorized to act on behalf of the owner of the copyright interest;<br>
+b. A description of the copyrighted work that you claim has been infringed;<br>
+c. A description of where the material that you claim is infringing is located on the Site;<br>
+d. Your address, telephone number and email address;<br>
+e. A statement by you that you have a good-faith belief that the disputed use is not authorized by the copyright owner, its agent or the law; and<br>
+f. A statement by you, made under penalty of perjury, that the information in the notice is accurate and that you are the copyright owner, or are authorized to act on behalf of the owner, of an exclusive right that is allegedly infringed.</p>
+
+<h5>21. Miscellaneous</h5>
+<p>These Terms constitute the entire agreement between you and <strong>Drink-X</strong> relating to your access to and use of the Site. These Terms, and any rights and licenses granted hereunder, may not be transferred or assigned by you without the prior written consent of Drink-X. No waiver of any provision of these Terms will constitute a waiver of such provision in any prior, concurrent or subsequent circumstance, and Drink-X’s failure to assert any right or provision under these Terms shall not constitute a waiver of such right or provision. Except as otherwise provided herein, these Terms are intended solely for the benefit of the parties and are not intended to confer third-party-beneficiary rights upon any other person or entity.</p>
+
           `
         },
         'privacy': {
@@ -857,7 +1086,7 @@ export default {
           lastUpdated: '1 January 2024',
           body: `
             <h3>Drink-X Privacy Policy</h3>
-            <p>Last Updated: January 1, 2024</p>
+            <p>Last Updated: 26 June 2025</p>
             
             <h4>1. Information We Collect</h4>
             <p>We collect the following types of information:</p>
@@ -888,7 +1117,102 @@ export default {
             <h4>4. Your Choices</h4>
             <p>You can manage your privacy settings within the app and request access to or deletion of your data.</p>
             
-            <p><em>This is a summarized version. Please review the <a href="#">complete Privacy Policy</a> for full details.</em></p>
+            <p><strong><em>This is a summarized version. Please review the complete Privacy Policy below for full details.</em></strong></p>
+            <hr>
+            <h5>What information we collect</h5>
+<p>We may collect the following information about you:</p>
+
+<h5>Information You Provide</h5>
+<p><strong>&bull; Your account information.</strong> You give us information when you register on the Site, including your username, password, date of birth (where applicable), email address and/or telephone number, information you disclose in your user account, and your photograph.</p>
+<p><strong>&bull; User content.</strong> We process the content you generate on the Site, including drink ratings, tasting notes, photographs you upload, venue tags, user tags, comments and the associated metadata (for example, the date, time, location, and device used to create the content) (“<strong>User Content</strong>”). Even if you are not a user, information about you may appear in User Content created or published by others on the Site.</p>
+<p><strong>&bull; Messages.</strong> We collect information you provide when you compose, send, or receive messages through the Site’s messaging functionalities and the associated metadata, subject to applicable laws.</p>
+<p><strong>&bull; Purchase information.</strong> When you make a purchase or payment on or through the Site, including when you purchase goods through our shopping features, your financial information (such as payment-card details and billing address) is collected by <strong>Stripe</strong>, while we may collect your delivery and contact information and the items you purchased.</p>
+<p><strong>&bull; Proof of identity or age.</strong> Because Drink-X relates to alcoholic beverages, we may require you to provide proof of identity or age to access the Site.</p>
+<p><strong>&bull; Correspondence.</strong> Information that you provide when you contact us for support or feedback.</p>
+<p><strong>&bull; Surveys and promotions.</strong> Information you provide through surveys, research, promotions, contests, challenges, competitions or events conducted or sponsored by us.</p>
+
+<h5>Automatically Collected Information</h5>
+<p><strong>&bull; Usage Information.</strong> We collect information regarding your use of the Site—e.g., how you interact with content, the advertisements you view, browsing and search history, the drinks you like or save, users you follow, and how you engage with the community.</p>
+<p><strong>&bull; Technical Information.</strong> We may collect certain information about the device you use to access the Site, such as your IP address, user-agent string, mobile carrier, time-zone settings, advertising identifiers, device model, operating system, network type, screen resolution, and app/file names and types.</p>
+<p><strong>&bull; Cookies.</strong> We and our service providers use cookies and similar technologies (“<strong>Cookies</strong>”) to collect information automatically, measure and analyse usage, enhance your experience, improve the Site, deliver advertising on and off the Site, and measure ad effectiveness. Web beacons (or “pixel tags”) recognise Cookies, record the time and date a page is viewed, and gather similar information.</p>
+
+<h5>How we use your information</h5>
+<p>We use your information to operate, improve, support and administer the Site, and to fulfil and enforce our Terms of Service. Specifically, we use the information we collect to:</p>
+<p>&bull;&nbsp;<strong>Provide and maintain</strong> Site functionality, fulfil product or service requests, troubleshoot, perform data analysis, testing and research, and solicit your feedback.</p>
+<p>&bull;&nbsp;<strong>Personalise content</strong> you see on the Site, e.g., services based on your country settings or content similar to that which you have liked.</p>
+<p>&bull;&nbsp;<strong>Send promotional materials</strong> (including by instant message or email) from us or on behalf of affiliates and trusted third parties.</p>
+<p>&bull;&nbsp;<strong>Improve and develop</strong> the Site and our products.</p>
+<p>&bull;&nbsp;<strong>Measure ad effectiveness</strong> and deliver advertising (including personalised ads) on and off the Site.</p>
+<p>&bull;&nbsp;<strong>Provide analytics</strong> so business users can understand how their products perform and better know their audience.</p>
+<p>&bull;&nbsp;<strong>Support social functions</strong> such as Find Friends, messaging, suggesting accounts, and sharing or downloading User Content.</p>
+<p>&bull;&nbsp;<strong>Enable interactive features</strong> you choose to use.</p>
+<p>&bull;&nbsp;<strong>Use User Content</strong> in our advertising and marketing campaigns.</p>
+<p>&bull;&nbsp;<strong>Detect and combat</strong> abuse, fraud, spam and illegal activity.</p>
+<p>&bull;&nbsp;<strong>Promote safety and security</strong> of the Site by scanning and reviewing content for policy violations.</p>
+<p>&bull;&nbsp;<strong>Verify your identity or age</strong>, communicate with you, enforce our Terms, provide location-based services, facilitate sales or promotions, and protect our legal rights.</p>
+
+<h5>How we share your information</h5>
+
+<h5>Business Partners</h5>
+<p>We share aggregated statistics and insights (e.g., views, likes, comments, shares) with advertisers, creators, partners and sellers to help them understand engagement with their content.</p>
+
+<h5>Service Providers</h5>
+<p>We share information with cloud hosts, content-moderation providers, marketing partners and similar vendors who support our business.</p>
+
+<h5>Payment processors and transaction-fulfilment providers</h5>
+<p>If you buy products through the Site, we share the relevant data with payment providers to complete the transaction.</p>
+
+<h5>Advertisers, Advertising Networks, Publishers &amp; Measurement Partners</h5>
+<p>We share information with these parties to show how ads perform, to help advertisers and publishers understand their audiences, and to enable ad bidding where permitted.</p>
+
+<h5>Independent Researchers</h5>
+<p>We may share information with vetted researchers to facilitate approved research projects.</p>
+
+<h5>Our Corporate Group</h5>
+<p>We share information within our corporate group to provide, improve and secure the Site.</p>
+
+<h5>For Legal Reasons</h5>
+<p>We may disclose information to law-enforcement or other authorities when required to:</p>
+<p>&bull;&nbsp;Comply with legal obligations or requests;<br>
+&bull;&nbsp;Enforce our Terms and policies;<br>
+&bull;&nbsp;Detect or prevent security, fraud or technical issues; or<br>
+&bull;&nbsp;Protect the rights, property or safety of us, our users or the public.</p>
+
+<h5>Public Profiles</h5>
+<p>If your profile is set to public, your content is visible to anyone on the Site and may be indexed by search engines or shared by third parties.</p>
+
+<h5>Sale, Merger or Other Business Transactions</h5>
+<p>We may disclose information in connection with the sale, merger or reorganisation of our business or assets, including in bankruptcy or similar proceedings.</p>
+
+<h5>Where we store your information</h5>
+<p>Your information may be stored on servers outside your country of residence (e.g., in Singapore, Malaysia, Ireland or the United States). We maintain global servers to deliver our services worldwide.</p>
+
+<h5>Your rights and choices</h5>
+<p>You may have rights under applicable law (e.g., to access, delete, update or rectify your data, and to lodge complaints). You can access or edit most account information by signing into Drink-X and can delete the User Content you uploaded.</p>
+
+<h5>The security of your information</h5>
+<p>We use reasonable measures (e.g., encryption for highly sensitive data such as passwords) to protect your information, but transmission over the internet is never completely secure. Any transmission is at your own risk.</p>
+
+<h5>How long we keep your information</h5>
+<p>We retain information as long as necessary to provide the Site and for the purposes set out in this Policy, to meet legal obligations, for legitimate business interests, and to establish or defend legal claims. Retention periods vary by data type and purpose.</p>
+
+<h5>No information relating to minors</h5>
+<p>Drink-X is not intended for, and should not be used by, anyone under the <strong>Minimum Legal Drinking Age</strong> in the relevant jurisdiction.</p>
+
+<h5>Privacy Policy update</h5>
+<p>We may update this Policy from time to time. When we do, we will revise the “Last Updated” date and post the new Policy (or otherwise notify you as required by law). Continued use of the Site after an update constitutes acceptance of the revised Policy.</p>
+
+<h5>Contact</h5>
+<p>If you have questions, comments, complaints or requests regarding this Privacy Policy, please contact our <strong>Data Protection Officer</strong> at <a href="mailto:han@88bamboo.co">han@88bamboo.co</a>. We will endeavour to respond promptly. This does not prejudice your right to raise a complaint with a relevant data-protection authority where applicable.</p>
+
+
+
+
+
+
+
+
+
           `
         },
         'login': {
