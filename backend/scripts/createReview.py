@@ -298,6 +298,20 @@ def createReviews():
 
             badges_awarded = badge_helpers.process_badges(conn, cur, user_id, badge_triggers)
 
+            # Notify user of badges earned
+            for badge in badges_awarded:
+                notification_data = {
+                    "userId": user_id,
+                    "userType": "user",
+                    "notiTabs": "forYou",
+                    "notiType": "badge_earned",
+                    "image": None,
+                    "link": f"/profile/user/{user_id}/{reviewer_username}",
+                    "message": f"Congratulations! You earned a badge: {badge['badgeName']}.",
+                    "createdAt": current_time
+                }
+                notifications.add_notification_to_db(notification_data)
+
             return jsonify({
                 "code": 201,
                 "data": raw_review['reviewDesc'],
