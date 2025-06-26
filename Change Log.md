@@ -1013,3 +1013,13 @@ fixed spacing and alignment on the user , venue, producer dashboards
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 26 June
+
+Coder: Han
+
+Purpose of the changes:
+Partner Center + Legal terms
+
+Nature of the changes (frontend / backend / database):
+frontend
