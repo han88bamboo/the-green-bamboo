@@ -256,6 +256,8 @@ def updateReview(id):
             "code": 400,
             "message": "Invalid date format."
         }), 400
+    
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     # Check if review exists
     cur.execute("""
@@ -480,6 +482,25 @@ def updateReview(id):
                 badge_updated = badge_helpers.update_badge_progress(conn, cur, user_id, 'FriendTagged', 'Action', -1)
                 if badge_updated:
                     badges_updated.append(badge_updated)
+
+            # — now send notifications for each badge just earned —
+            cur.execute('SELECT username FROM users WHERE id = %s', (user_id,))
+            user_row = cur.fetchone()
+            review_username = user_row['username'] if user_row else "Someone"
+
+            for badge in badges_updated:
+                notification_data = {
+                    "userId":   user_id,
+                    "userType": "user",
+                    "notiTabs": "forYou",
+                    "notiType": "badge_earned",
+                    "image":    None,
+                    "link":     f"/profile/user/{user_id}/{review_username}",
+                    "message":  f"Congratulations! You earned a badge: {badge['badgeName']}.",
+                    "createdAt": current_time
+                }
+                print("Badge notification data: ", notification_data)
+                notifications.add_notification_to_db(notification_data)
         
         return jsonify({
             "code": 200,

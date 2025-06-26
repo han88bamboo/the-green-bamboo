@@ -1587,6 +1587,7 @@ def addPost():
 
     try:
         data = request.get_json()
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         # Get all the required data
         poster_id = data['posterID']  # The member's ID in the clubMembers table
@@ -1661,6 +1662,26 @@ def addPost():
                 
                 # Process the ClubPost badge
                 badge_result = badge_helpers.process_club_post_badge(conn, cur, user_id)
+                
+                # Send badge notification 
+                if badge_result:
+                    # fetch username
+                    cur.execute('SELECT username FROM "users" WHERE id = %s', (user_id,))
+                    row = cur.fetchone()
+                    member_username = row['username'] if row else 'Someone'
+            
+                    notification_data = {
+                        "userId":   user_id,
+                        "userType": "user",
+                        "notiTabs": "forYou",
+                        "notiType": "badge_earned",
+                        "image":    None,
+                        "link":     f"/profile/user/{user_id}/{member_username}",
+                        "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}.",
+                        "createdAt": current_time
+                    }
+                    print("Badge notification data:", notification_data)
+                    notifications.add_notification_to_db(notification_data)
 
         # Prepare the response
         response_data = {
@@ -1813,6 +1834,23 @@ def addComment():
                 
                 # Process the Comment badge
                 badge_result = badge_helpers.process_comment_badge(conn, cur, user_id)
+                
+                if badge_result:
+                    cur.execute('SELECT username FROM "users" WHERE id = %s', (user_id,))
+                    row = cur.fetchone()
+                    commenter_username = row['username'] if row else 'Someone'
+                    notification_data = {
+                        "userId":   user_id,
+                        "userType": "user",
+                        "notiTabs": "forYou",
+                        "notiType": "badge_earned",
+                        "image":    None,
+                        "link":     f"/profile/user/{user_id}/{commenter_username}",
+                        "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}.",
+                        "createdAt": current_time
+                    }
+                    print("Badge notification data:", notification_data)
+                    notifications.add_notification_to_db(notification_data)
 
         # Prepare the response
         response_data = {
@@ -2722,6 +2760,29 @@ def likeUnlikeComment():
                     is_new_upvote=is_new_like, 
                     is_removed_upvote=is_removed_like
                 )
+                
+        if badge_result:
+            # badge goes to the comment-owner:
+            cur.execute('SELECT "userID" FROM "clubMembers" WHERE id = %s', (commenter_id,))
+            owner = cur.fetchone()
+            if owner and owner['userID']:
+                user_id = owner['userID']
+                cur.execute('SELECT username FROM "users" WHERE id = %s', (user_id,))
+                row = cur.fetchone()
+                owner_username = row['username'] if row else 'Someone'
+                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                notification_data = {
+                    "userId":   user_id,
+                    "userType": "user",
+                    "notiTabs": "forYou",
+                    "notiType": "badge_earned",
+                    "image":    None,
+                    "link":     f"/profile/user/{user_id}/{owner_username}",
+                    "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}.",
+                    "createdAt": current_time
+                }
+                print("Badge notification data:", notification_data)
+                notifications.add_notification_to_db(notification_data)
 
         # Fetch club_id for notification link
         cur.execute('SELECT "clubID" FROM "clubPosts" WHERE id = %s', (post_id,))
