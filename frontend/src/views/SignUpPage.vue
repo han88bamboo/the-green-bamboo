@@ -235,24 +235,25 @@
                       </div>
                     </div>
                   </div>
-                  <!-- Input: Password -->
+
+                  <!-- Input: Password with strength check -->
                   <div class="row pt-2">
                     <div class="d-grid gap-2 col-xl-5 col-md-7 col-9 mx-auto">
-                      <div class="form-floating">
-                        <input
-                          type="password"
-                          class="form-control form-box-outline"
-                          v-model="password"
-                          id="password"
-                          placeholder="Password"
-                        />
-                        <label for="password"> Password </label>
-                        <span v-if="missingPassword" class="text-danger"
-                          >Please enter a password.</span
-                        >
-                      </div>
+                      <!-- <PWStrengthChecker v-model="password"/> -->
+                      <!-- Listen to individual events -->
+                      <PWStrengthChecker 
+                        @password-change="password = $event"
+                        @strength-change="passwordStrength = $event"
+                      />
+                      <span v-if="missingPassword" class="text-danger">
+                        Please enter a password.
+                      </span>
+                      <span v-if="weakPassword && !missingPassword" class="text-danger">
+                        Please use password that meets the requirement.
+                      </span>
                     </div>
-                  </div>
+                  </div>                 
+                  
                   <!-- Input: Repeat Password -->
                   <div class="row pt-2">
                     <div class="d-grid gap-2 col-xl-5 col-md-7 col-9 mx-auto">
@@ -475,6 +476,7 @@
 <script>
 // import components used
 import NavBar from "@/components/NavBar.vue";
+import PWStrengthChecker from "@/components/PWStrengthChecker.vue";
 import ReusablePopup from "@/components/ReusablePopup.vue";
 import OnboardPopup from "@/components/OnboardPopup.vue";
 import FooterBar from "@/components/FooterBar.vue";
@@ -483,6 +485,7 @@ export default {
   name: "SignUpPage",
   components: {
     NavBar,
+    PWStrengthChecker,
     ReusablePopup,
     OnboardPopup,
     FooterBar
@@ -503,6 +506,7 @@ export default {
       displayName: "",
       email: "",
       password: "",
+      passwordStrength: 0,
       passwordRepeat: "",
       firstName: "",
       lastName: "",
@@ -521,6 +525,7 @@ export default {
       invalidEmail: false,
       passwordMismatch: false,
       missingPassword: false,
+      weakPassword: false,
       missingPasswordRepeat: false,
       missingFirstName: false,
       missingLastName: false,
@@ -654,7 +659,12 @@ export default {
       if (this.password !== this.passwordRepeat) {
         this.passwordMismatch = true;
         errorCount++;
+      } else{
+        if (this.passwordStrength < 5) {
+          this.weakPassword = true;
+          errorCount++;}
       }
+
       if (this.password == "") {
         this.missingPassword = true;
         errorCount++;

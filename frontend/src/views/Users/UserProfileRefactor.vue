@@ -1029,6 +1029,7 @@
                         !(
                           confirmChangePassword ||
                           passwordError ||
+                          samePasswordError || 
                           passwordSuccess ||
                           passwordMismatch
                         )
@@ -1037,28 +1038,47 @@
                       <p class="text-start mb-1">
                         Old Password: <span class="text-danger">*</span>
                       </p>
-                      <input
+                      <!-- <input
                         type="password"
                         v-model="oldPassword"
                         class="form-control"
                         id="oldPassword"
                         placeholder="Enter Previous Password"
-                      />
+                      /> -->
+
+                      <div class="form-floating">
+                        <input
+                          type="password"
+                          id="oldPassword"
+                          v-model="oldPassword"
+                          class="form-control form-box-outline"
+                          placeholder="Enter Previous Password"
+                        />
+                        <label for="oldPassword"> Enter Previous Password </label>
+                      </div>
+
+
                       <p class="text-start mt-3 mb-1">
                         New Password: <span class="text-danger">*</span>
                       </p>
-                      <input
+                      <!-- <input
                         type="password"
                         v-model="newPassword"
                         class="form-control"
                         id="newPassword"
                         placeholder="Enter New Password"
+                      /> -->
+                      <PWStrengthChecker 
+                        @password-change="password = $event"
+                        @strength-change="passwordStrength = $event"
                       />
                     </div>
                     <div
                       v-if="
                         confirmChangePassword &&
-                        !(passwordError || passwordSuccess || passwordMismatch)
+                        !(passwordError || passwordSuccess || 
+                          passwordMismatch || samePasswordError 
+                        )
                       "
                     >
                       <b>Are you sure you want to change password?</b>
@@ -1156,11 +1176,25 @@
                       please try again!
                     </p>
                     <p
+                      v-if="samePasswordError"
+                      class="text-danger  fw-bold fs-5"
+                    >
+                      You should not use the same password as your old password.
+                    </p>
+                    <p
                       v-if="passwordMismatch"
                       class="text-danger fst-italic fw-bold fs-5"
                     >
                       Old password do not match, please try again
                     </p>
+                    <p
+                      v-if="(passwordStrength > 0 && passwordStrength < 5) &&
+                      weakPasswordError"
+                      class="text-danger fst-italic fw-bold fs-5"
+                    >
+                      Please use password that meets the requirement.
+                    </p>
+                  
                   </div>
 
                   <div class="modal-footer">
@@ -1178,8 +1212,6 @@
                       Return
                     </button>
 
-                    
-
                     <!-- Change password first confirmation and second confirmation -->
                     <button
                       v-if="
@@ -1187,6 +1219,7 @@
                         !(
                           confirmChangePassword ||
                           passwordError ||
+                          samePasswordError ||
                           passwordSuccess ||
                           passwordMismatch ||
                           resettingPassword
@@ -1203,6 +1236,7 @@
                         confirmChangePassword &&
                         !(
                           passwordError ||
+                          samePasswordError ||
                           passwordSuccess ||
                           passwordMismatch ||
                           resettingPassword
@@ -2719,6 +2753,7 @@
 
 <script>
 import NavBar from "@/components/NavBar.vue";
+import PWStrengthChecker from "@/components/PWStrengthChecker.vue";
 import FooterBar from "@/components/FooterBar.vue";
 import { useToast } from "vue-toastification";
 import EventBox from "@/components/EventBox.vue";
@@ -2730,6 +2765,7 @@ export default {
   name: "UserProfileRefactor",
   components: {
     NavBar,
+    PWStrengthChecker,
     FooterBar,
     EventBox,
     BookmarkModal,
@@ -2823,10 +2859,14 @@ export default {
 
       // Change password variables
       oldPassword: "",
-      newPassword: "",
+      //newPassword: "",
+      password: "",
+      passwordStrength: 0,
       changingPassword: "",
       confirmChangePassword: false,
       confirmResetPassword: false,
+      weakPasswordError: false,
+      samePasswordError: false,
       passwordError: false,
       passwordSuccess: false,
       passwordMismatch: false,
@@ -3764,7 +3804,10 @@ export default {
     // Reset Change Password variables
     resetChangePassword() {
       if (this.passwordError || this.passwordSuccess || this.passwordMismatch) {
+        this.passwordStrength = 0;
+        this.weakPasswordError = false;
         this.passwordError = false;
+        this.samePasswordError = false;
         this.passwordMismatch = false;
         this.passwordSuccess = false;
         this.confirmChangePassword = false;
@@ -3777,7 +3820,10 @@ export default {
     // To return to previous step to choose if change or reset password
     selectPasswordMode() {
       if (this.confirmChangePassword || this.confirmResetPassword) {
+        this.passwordStrength = 0;
+        this.weakPasswordError = false;
         this.passwordError = false;
+        this.samePasswordError = false;
         this.passwordMismatch = false;
         this.passwordSuccess = false;
         this.confirmChangePassword = false;
@@ -3790,7 +3836,11 @@ export default {
 
     // Function to check if old and new password is entered
     updatePassword() {
-      if (this.oldPassword == "" || this.newPassword == "") {
+      // if (this.oldPassword == "" || this.newPassword == "") {
+      //   alert("One of the passwords is empty, please check again");
+      //   return null;
+      // }
+      if (this.oldPassword == "" || this.password == "") {
         alert("One of the passwords is empty, please check again");
         return null;
       }
@@ -3814,8 +3864,23 @@ export default {
 
     // Function to update password
     async confirmUpdatePassword() {
+      // if your old password new new password is the same, dont waste resource
+      if (this.oldPassword === this.password) {
+        this.samePasswordError = true;
+        // same password error, no need to send request
+        return;
+      }
+
+      if (this.passwordStrength < 5) {
+        // cannot update to weak password
+        this.weakPasswordError = true; // Display error message for weak password
+        // we can get away without defining a custom error code 
+        // when it 0 its empty string when it is anything less than 5 it is a weak password
+        return;
+      }
+
       let oldHash = this.hashPassword(this.user.username, this.oldPassword);
-      let newHash = this.hashPassword(this.user.username, this.newPassword);
+      let newHash = this.hashPassword(this.user.username, this.password);
       let submitURL =
         `${process.env.VUE_APP_API_URL}/authcheck/editPassword/` + this.user.id;
       // let submitURL = `http://127.0.0.1:5000/authcheck/editPassword/` + this.user.id
