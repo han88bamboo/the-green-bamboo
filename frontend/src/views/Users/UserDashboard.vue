@@ -942,14 +942,14 @@
 
                         <!-- col 1: review count -->
                         <div class="card ms-5 p-3 col-5 text-start" style="color:black;">
-                            <h6 class="fw-bold">Review Count</h6>
+                            <h6 class="fw-bold" style="justify-content: flex-start; width: 100%;">Review Count</h6>
                             <Line :data="reviewsData" :options="chartOptions"></Line>
                         </div>
                         
                         
                         <!-- col 2: spread of ratings -->
                         <div class="card ms-5 p-3 col-5 text-start" style="color:black;">
-                            <h6 class="fw-bold">Spread of Ratings</h6>
+                            <h6 class="fw-bold" style="justify-content: flex-start; width: 100%;">Spread of Ratings</h6>
                             <Bar :data="ratingsData" :options="chartOptions" />
                         </div>
 
@@ -960,8 +960,8 @@
 
                     <!-- col 1: your best rated drinks -->
                     <div class="card ms-5 p-3 col-5 text-start" style="color:black;">
-                        <h6 class="fw-bold  mb-2">  Best Rated Drinks </h6>
-                        <div class="text-start pb-2" v-for="listing in top5BestReviewedListings" v-bind:key="listing.id">
+                        <h6 class="fw-bold  mb-2" style="justify-content: flex-start; width: 100%;">  Best Rated Drinks </h6>
+                        <div class="text-start pb-2"  v-for="listing in top5BestReviewedListings" v-bind:key="listing.id" style="justify-content: flex-start; width: 100%;">
                             <router-link :to="{ path: '/listing/view/' + listing.id +'/' + slugify(listing.listingName) }" class="reverse-clickable-text">
                                 <div class="d-flex align-items-center">
                                     <!-- <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;"> -->
@@ -982,10 +982,10 @@
                     <!-- col 2: your best rated categories -->
                     <!-- col 2: your best rated categories -->
                     <div class="card ms-5 p-3 col-5 text-start" style="color:black;">
-                    <h6 class="fw-bold mb-2">Most Reviewed Categories</h6>
+                    <h6 class="fw-bold mb-2" style="justify-content: flex-start; width: 100%;">Most Reviewed Categories</h6>
 
                     <div
-                        class="text-start pb-2"
+                        class="text-start pb-2" style="justify-content: flex-start; width: 100%;"
                         v-for="(category, index) in top5MostReviewedCategories"
                         :key="category"
                     > 
@@ -1015,12 +1015,13 @@
 
                     <!-- col 1: your top venues -->
                     <div class="card ms-5 p-3 col-5 text-start" style="color:black;">
-                    <h6 class="fw-bold mb-2">Your Top Venues</h6>
+                    <h6 class="fw-bold mb-2" style="justify-content: flex-start; width: 100%;">Your Top Venues</h6>
 
                     <div
                         class="text-start pb-2"
                         v-for="(venue, index) in top5Venues"
-                        :key="venue"
+                        :key="venue" 
+                        style="justify-content: flex-start; width: 100%;"
                     >
                         <div class="d-flex align-items-center">
                         <!-- Number circle -->
@@ -1043,12 +1044,13 @@
                     <!-- col 2: your top brands -->
                     <!-- col 2: your top brands -->
                     <div class="card ms-5 p-3 col-5 text-start" style="color:black;">
-                    <h6 class="fw-bold mb-2">Your Top Brands</h6>
+                    <h6 class="fw-bold mb-2" style="justify-content: flex-start; width: 100%;">Your Top Brands</h6>
 
                     <div
                         class="text-start pb-2"
                         v-for="(producer, index) in top5Producers"
                         :key="producer"
+                        style="justify-content: flex-start; width: 100%;"
                     >
                         <div class="d-flex align-items-center">
                         <!-- Number circle -->
@@ -1074,14 +1076,14 @@
 
                     <!-- col 1: your top venues -->
                     <div class="card ms-5 p-3 col-5 text-start" style="color:black;">
-                        <h6 class="fw-bold  mb-2">  Your Top Styles </h6>
-                        <div class="text-start pb-2" v-for="listing in top5Styles" v-bind:key="listing">
+                        <h6 class="fw-bold  mb-2" style="justify-content: flex-start; width: 100%;">  Your Top Styles </h6>
+                        <div class="text-start pb-2" v-for="listing in top5Styles" v-bind:key="listing" style="justify-content: flex-start; width: 100%;">
                             <div class="row ms-0 default-clickable-text "> 
                                 <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
                                     <h5 class="my-auto"> {{ top5Styles.indexOf(listing) + 1 }} </h5>
                                 </div>
                                 <div class="col-10 shrink-width-on-dashboard" >
-                                    <b> {{ listing.style }} </b> 
+                                    <b> {{ listing.drinkStyle }} </b> 
                                     <br>
                                 </div>
                             </div>
