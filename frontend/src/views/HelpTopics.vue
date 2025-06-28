@@ -415,6 +415,8 @@ export default {
     </p>
 
     <h4>Step 1: Claiming Your Venue or Creating a New Profile</h4>
+    <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Partner_Center_-_tipsy_tiger_-_unclaimed.png?v=1751065147" alt="" style="width: 100%; height: auto; display: block;">
+
     <p>
       <strong>The Tipsy Tiger</strong> starts by searching for their bar on Drink-X. They find an unclaimed profile and click <b>“Claim This Business”</b>. After a quick verification, they’re in control! If their venue wasn’t listed, they could easily submit a new application and get set up in minutes.
     </p>
@@ -424,7 +426,7 @@ export default {
     </ul>
     <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/venue_sign_up.gif?v=1749980231" alt="" style="width: 100%; height: auto; display: block;">
 
-    <h4>Step 2: Curate a Live, Digital Menu</h4>
+    <h4 class="mt-5">Step 2: Curate a Live, Digital Menu</h4>
     <p>
       With their profile claimed, The Tipsy Tiger’s team heads to the <b>“Menu”</b> tab. They add their signature cocktails, rare spirits, and seasonal specials—organizing everything by category. Each listing includes tasting notes and photos, so guests know exactly what to expect.
     </p>
@@ -434,7 +436,7 @@ export default {
     </ul>
     <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/menu_creation.gif?v=1749971168" alt="" style="width: 100%; height: auto; display: block;">
 
-    <h4>Step 3: Announcements & Q&As – Engage Your Fans</h4>
+    <h4 class="mt-5">Step 3: Announcements & Q&As – Engage Your Fans</h4>
     <p>
       The Tipsy Tiger launches a new “Tropical Thursdays” promo. They post an announcement right from their profile—fans get notified instantly, and the news appears in their feeds. Curious guests ask questions in the Q&A section (“What’s the special this week?”), and the team replies directly, building trust and excitement.
     </p>
@@ -445,7 +447,7 @@ export default {
     <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/announcements.gif?v=1749972160" alt="" style="width: 100%; height: auto; display: block;">
     <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/q_a.gif?v=1749979849" alt="" style="width: 100%; height: auto; display: block;">
 
-    <h4>Step 4: Broadcast Events & Track RSVPs</h4>
+    <h4 class="mt-5">Step 4: Broadcast Events & Track RSVPs</h4>
     <p>
       Ready to host a whisky tasting night? The Tipsy Tiger creates an event on Drink-X, complete with date, time, and featured bottles. The event appears on their profile and in the main calendar—users RSVP with a tap, and the bar can see who’s coming.
     </p>
@@ -455,7 +457,7 @@ export default {
     </ul>
     <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/events.gif?v=1749973650" alt="" style="width: 100%; height: auto; display: block;">
 
-    <h4>Step 5: Create a Club for Your Regulars</h4>
+    <h4 class="mt-5">Step 5: Create a Club for Your Regulars</h4>
     <p>
       The Tipsy Tiger launches the “Tiger’s Den” club—a space for their biggest fans. Members get exclusive updates, early access to events, and special perks. The club grows into a vibrant community, with guests sharing stories and recommendations.
     </p>
@@ -465,7 +467,7 @@ export default {
     </ul>
     <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/creation_of_club.gif?v=1749979055" alt="" style="width: 100%; height: auto; display: block;">
 
-    <h4>Step 6: Unlock Insights & Analytics</h4>
+    <h4 class="mt-5">Step 6: Unlock Insights & Analytics</h4>
     <p>
       The Tipsy Tiger checks their analytics dashboard to see which drinks are trending, how many guests viewed their menu, and which events drove the most RSVPs. These insights help them refine their offerings and marketing—so every night is a hit.
     </p>
@@ -482,13 +484,17 @@ export default {
     <p>
       <strong>Join Drink-X as a Partner Venue—let’s make every night unforgettable!</strong>
     </p>
+    <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Partner_Center_tipsy_tiger_-_claimed.png?v=1751065147" alt="" style="width: 100%; height: auto; display: block;">
+
 <hr>
  <h3 class="mt-5 anchor-target" id="brands" style="scroll-margin-top: 185px;">Take Your Brand to the Next Level with Drink-X</h3>
  <p>
       Let's we’ll follow the journey of <strong>Kendrick's Gin</strong> on Drink-X. See how they use every feature to boost discoverability, engage fans, and build a legendary community of gin lovers.
     </p>  
 
-    <h4>Step 1: Claiming or Creating Your Brand Profile</h4>
+    <h4 class="mt-5">Step 1: Claiming or Creating Your Brand Profile</h4>
+    <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Partner_Center_-_kendricks_gin_unclaimed.png?v=1751065147" alt="" style="width: 100%; height: auto; display: block;">
+
     <p>
       <strong>Kendrick's Gin</strong> starts by searching for their brand on Drink-X. They spot an unclaimed profile and hit <b>“Claim This Business”</b>. After a quick verification, they’re in the driver’s seat! If their brand wasn’t listed, they could easily submit a new application and get set up in minutes.
     </p>
@@ -498,7 +504,7 @@ export default {
     </ul>
     <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/business_sign_up.gif?v=1749993538" alt="" style="width: 100%; height: auto; display: block;">
 
-    <h4>Step 2: Curate Your Product Catalog & Add New Expressions</h4>
+    <h4 class="mt-5">Step 2: Curate Your Product Catalog & Add New Expressions</h4>
     <p>
       With their profile claimed, Kendrick's Gin’s team heads to the <b>“All Expressions”</b> tab. They add their classic London Dry, the new Saffron Infusion, and a limited-edition Navy Strength—each with tasting notes, photos, and stories. Every bottle is now discoverable, reviewable, and ready to be added to drinkers’ wishlists.
     </p>
@@ -508,7 +514,7 @@ export default {
     </ul>
     <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Adding_new_drinks.gif?v=1749985944" alt="" style="width: 100%; height: auto; display: block;">
 
-    <h4>Step 3: Announcements & Q&As – Engage Your Fans</h4>
+    <h4 class="mt-5">Step 3: Announcements & Q&As – Engage Your Fans</h4>
     <p>
       Kendrick's Gin wins “Best Gin in Asia” and launches a new “Sichuan Peppercorn" cocktail kit. They post an announcement right from their brand page—fans get notified instantly, and the news appears in their feeds. Curious gin lovers ask questions in the Q&A section (“What botanicals do you use?”), and the team replies directly, building trust and excitement.
     </p>
@@ -519,7 +525,7 @@ export default {
     <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/hennessy_announcement.gif?v=1749986368" alt="" style="width: 100%; height: auto; display: block;">
     <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/business_Q_A.gif?v=1749993230" alt="" style="width: 100%; height: auto; display: block;">
 
-    <h4>Step 4: Broadcast Events & Track RSVPs</h4>
+    <h4 class="mt-5">Step 4: Broadcast Events & Track RSVPs</h4>
     <p>
       Ready to host a “Gin & Jazz” night or a virtual masterclass? Kendrick's Gin creates an event on Drink-X, complete with date, time, and featured cocktails. The event appears on their profile and in the main calendar—users RSVP with a tap, and the brand can see who’s coming.
     </p>
@@ -529,7 +535,7 @@ export default {
     </ul>
     <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Creating_events.gif?v=1749990701" alt="" style="width: 100%; height: auto; display: block;">
 
-    <h4>Step 5: Create a Club for Your Superfans</h4>
+    <h4 class="mt-5">Step 5: Create a Club for Your Superfans</h4>
     <p>
       Kendrick's Gin launches the “Kendrick's Society”—an exclusive club for their biggest supporters. Members get early access to new releases, behind-the-scenes updates, and special perks. The club grows into a lively community, with fans sharing cocktail recipes and stories.
     </p>
@@ -539,7 +545,7 @@ export default {
     </ul>
     <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/business_Creating_clubs.gif?v=1749991587" alt="" style="width: 100%; height: auto; display: block;">
 
-    <h4>Step 6: Unlock Insights & Analytics</h4>
+    <h4 class="mt-5">Step 6: Unlock Insights & Analytics</h4>
     <p>
       Kendrick's Gin checks their analytics dashboard to see which gins are trending, how many fans viewed their product pages, and which events drove the most RSVPs. These insights help them refine their marketing and product lineup—so every launch is a smash hit.
     </p>
@@ -556,6 +562,8 @@ export default {
     <p>
       <strong>Join Drink-X as a Brand Partner—let’s make every bottle legendary!</strong>
     </p>
+    <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Partner_Center_-_kendricks_gin_claimed.png?v=1751065148" alt="" style="width: 100%; height: auto; display: block;">
+
 <!--            <p>Join the Drink-X ecosystem and grow your business through our partner network:</p>
             <ul>
               <li>

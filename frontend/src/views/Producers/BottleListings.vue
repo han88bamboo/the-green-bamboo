@@ -2199,9 +2199,9 @@
                           review.location !== '' && checkVenue(review.address) != ''
                         "
                       >
-                        at
+                        at 
                         <router-link
-                          :to="'/profile/venue/' + checkVenue(review.address) + '/' + getVenueNameFromID(review.location)"
+                          :to="'/profile/venue/' + review.location + '/' + getVenueNameFromID(review.location)"
                           class="text-decoration-none text-dark"
                         >
                           <b>{{ getVenueNameFromID(review.location) }} </b>
@@ -2516,7 +2516,7 @@
                           <span
                             v-if="
                               detailedReview.location !== '' &&
-                              checkVenue(detailedReview.address) 
+                              checkVenue(detailedReview.address) != '' 
                             "
                           >
                             <a :href="venueLink" style="color: inherit">
@@ -3346,7 +3346,7 @@ export default {
         }, []);
 
         // Add current userID to the list of relevant user IDs
-        if (this.userID) {
+        if (this.userID && this.userID !== "defaultUser") {
           this.allRelevantUserIDs.push(this.userID);
         }
 

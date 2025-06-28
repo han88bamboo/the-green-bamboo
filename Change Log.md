@@ -1023,3 +1023,13 @@ Partner Center + Legal terms
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 28 June - deployed with no issues
+
+Coder: Han
+
+Purpose of the changes:
+fixed bug where venue link wasn't working / usernames weren't showing up for non-logged in user
+
+Nature of the changes (frontend / backend / database):
+frontend

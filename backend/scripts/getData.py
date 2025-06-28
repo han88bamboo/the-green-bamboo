@@ -4795,7 +4795,7 @@ def getListingsName():
     return jsonify(listing_names)
 
 # -----------------------------------------------------------------------------------------
-# [GET] Get Listings from a randomly selected date -- ADDED BY SMU GROUP 3
+# [GET] Get Listings from a randomly selected date -- ADDED BY SMU GROUP 3 - logic for randomisation
 @blueprint.route("/getRandomListings")
 def getRandomListings():
     conn = g.db
