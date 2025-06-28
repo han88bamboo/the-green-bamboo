@@ -1033,3 +1033,15 @@ fixed bug where venue link wasn't working / usernames weren't showing up for non
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 29 June 
+
+Coder: Jun Wei
+
+Purpose of the changes:
+- Enabled users to key in coupon code for Stripe payment, applying the appropriate discounts
+- Fixed Stripe api version usage to prevent bugs from appearing due to change in response format by Stripe (Version being used is "2025-05-28.basil")
+
+Nature of the changes (frontend / backend / database):
+frontend
+backend

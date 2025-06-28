@@ -75,7 +75,7 @@ app.config['MAIL_DEFAULT_SENDER'] = os.getenv("hellodrinkx@gmail.com")
 mail = Mail(app)
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
-
+stripe.api_version = "2025-05-28.basil"
 
 # Make `db` accessible via Flask's `g` object
 @app.before_request
