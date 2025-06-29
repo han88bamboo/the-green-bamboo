@@ -1439,11 +1439,12 @@
                 }, 
                 checkBusinessExist(businessLink) {
                     if (businessLink) {
-                        const businessID = businessLink.split("/").pop()
-                        if (this.producers.find(producer => producer.id == businessID)) {
+                        // const businessID = businessLink.split("/").pop()
+                        const businessId = parseInt(businessLink.match(/\d+/)[0])
+                        if (this.producers.find(producer => producer.id == businessId)) {
                             return true;
                         }
-                        if (this.venues.find(venue => venue.id == businessID)) {
+                        if (this.venues.find(venue => venue.id == businessId)) {
                             return true;
                         }
                     }
@@ -1471,7 +1472,8 @@
                         const businessExist = this.checkBusinessExist(request.businessLink);
 
                         if (businessExist) {
-                            const businessID = request.businessLink.split("/").pop()
+                            // const businessID = request.businessLink.split("/").pop()
+                            const businessID = parseInt(businessLink.match(/\d+/)[0])
                             this.businessName = request.businessName;
                             this.tempPassword = "admin1234" // TZH removed this.hashPassword(request.businessName).toString();
                             this.tempPassword = this.tempPassword.replace(/-/g, '');
