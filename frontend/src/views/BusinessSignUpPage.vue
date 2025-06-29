@@ -239,9 +239,6 @@
                                 </div>
                             </div>
 
-
-
-                        
                         <!-- Input: Is business account on the site already, provide link -->
                             <div class="form-group mb-3">
                                 <p class="text-start mb-1">Is your brand/venue profile already on the site? If yes, Enter Link:</p>
@@ -582,7 +579,7 @@
                     errorCount++
                 }
 
-                console.log(1)
+                // console.log(1)
 
                 // First name validation
                 if(this.firstName == ''){
@@ -615,7 +612,8 @@
                 let businessId =null
 
                 if(this.businessLink!=''){
-                    businessId = this.businessLink.split("/").pop()
+                    // businessId = this.businessLink.split("/").pop()
+                    businessId = parseInt(this.businessLink.match(/\d+/)[0])
                 }
                 if (this.businessType == 'venue'){
                     this.isIndependentBottler = false
@@ -644,8 +642,8 @@
                     "isNew": true
                 }
                 this.createAccount(submitAPI,submitData)
-                console.log(submitData)
-                console.log(errorCount)
+                // console.log(submitData)
+                // console.log(errorCount)
             },
 
             async createAccount(submitAPI,submitData){
@@ -657,7 +655,7 @@
                         this.reviewResponseCode = response.data.code
                     })
                     .catch((error)=>{
-                        console.log(error);
+                        // console.log(error);
                         this.reviewResponseCode = error.response.data.code
                         this.submitForm = false
                     });

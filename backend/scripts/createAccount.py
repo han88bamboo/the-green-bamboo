@@ -148,8 +148,8 @@ def createAccountRequest():
     conn = g.db
     cur = conn.cursor()
     rawAccount = request.get_json()
-    rawEmail = rawAccount['email']
 
+    rawEmail = rawAccount['email']
     rawAccount['joinDate'] = datetime.strptime(rawAccount['joinDate'], "%Y-%m-%dT%H:%M:%S.%fZ")
 
     try:
@@ -167,11 +167,15 @@ def createAccountRequest():
                 }
             ), 400
         
-        columns = ', '.join(f'"{key}"' for key in rawAccount.keys())
+        # Extract only the values that correspond to database columns
+        values = [rawAccount.get(col) for col in rawAccount]
+
+        # Create the SQL with explicit column names
+        columns = ', '.join(f'"{col}"' for col in rawAccount)
         placeholders = ', '.join(['%s'] * len(rawAccount))
         sql = f'INSERT INTO "accountRequests" ({columns}) VALUES ({placeholders})'
 
-        cur.execute(sql, list(rawAccount.values()))
+        cur.execute(sql, values)
         conn.commit()
 
         return jsonify( 
