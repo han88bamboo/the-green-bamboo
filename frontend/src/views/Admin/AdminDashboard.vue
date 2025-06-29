@@ -1473,7 +1473,7 @@
 
                         if (businessExist) {
                             // const businessID = request.businessLink.split("/").pop()
-                            const businessID = parseInt(businessLink.match(/\d+/)[0])
+                            const businessID = parseInt(request.businessLink.match(/\d+/)[0])
                             this.businessName = request.businessName;
                             this.tempPassword = "admin1234" // TZH removed this.hashPassword(request.businessName).toString();
                             this.tempPassword = this.tempPassword.replace(/-/g, '');
