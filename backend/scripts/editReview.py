@@ -416,7 +416,7 @@ def updateReview(id):
             cur.execute("""
                 UPDATE "pointsRecorder"
                 SET "currentPoints" = "currentPoints" + %s
-                WHERE "id" = %s
+                WHERE "userID" = %s
             """, (modify_point, data.get('userID')))
             conn.commit()
 
@@ -669,7 +669,7 @@ def updateProducerReview(id):
             cur.execute("""
                 UPDATE "pointsRecorder"
                 SET "currentPoints" = "currentPoints" + %s
-                WHERE "id" = %s
+                WHERE "userID" = %s
             """, (modify_point, data.get('userID')))
             conn.commit()
 

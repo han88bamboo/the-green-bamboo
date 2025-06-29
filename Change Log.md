@@ -1046,7 +1046,7 @@ Nature of the changes (frontend / backend / database):
 frontend
 backend
 
-# Update as of 29 June - deployed 
+# Update as of 29 June 
 
 Coder: Ming Sheng
 
@@ -1055,3 +1055,15 @@ fixed code allowing for the claiming of business profiles
 
 Nature of the changes (frontend / backend / database):
 frontend, backend
+
+# a ton of other changes 
+
+# Update as of 30 June - deployed 
+
+Coder: Han
+
+Purpose of the changes:
+fixed error where by points aren't showing up for reviews
+
+Nature of the changes (frontend / backend / database):
+backend

@@ -217,7 +217,8 @@ def createReviews():
 
         # Update user points
         if total_points:
-            cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE id = %s AND "userType" = %s', (total_points, user_id, 'user',))
+            cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s AND "userType" = %s', (total_points, user_id, 'user',))
+
             conn.commit()
 
         # Badge Processing
@@ -393,7 +394,7 @@ def createProducerReviews():
             total_points += cur.fetchone()['proofPoints']
 
         # Update user points
-        cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE id = %s AND "userType" = %s', (total_points, user_id, 'user',))
+        cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s AND "userType" = %s', (total_points, user_id, 'user',))
         conn.commit()
 
         return jsonify({"code": 201, "data": raw_review['reviewDesc'], "pointsEarned": total_points}), 201
@@ -468,7 +469,7 @@ def createVenueReviews():
             total_points += cur.fetchone()['proofPoints']
 
         # Update user points
-        cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE id = %s AND "userType" = %s', (total_points, user_id, 'user',))
+        cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s AND "userType" = %s', (total_points, user_id, 'user',))
         conn.commit()
         
         return jsonify({"code": 201, "data": raw_review['reviewDesc']}), 201
