@@ -1045,3 +1045,13 @@ Purpose of the changes:
 Nature of the changes (frontend / backend / database):
 frontend
 backend
+
+# Update as of 29 June - deployed 
+
+Coder: Ming Sheng
+
+Purpose of the changes:
+fixed code allowing for the claiming of business profiles
+
+Nature of the changes (frontend / backend / database):
+frontend, backend
