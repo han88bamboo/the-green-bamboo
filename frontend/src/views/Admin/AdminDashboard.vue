@@ -1786,8 +1786,9 @@
 
                     const emailDetails = {
                         recipient: request.email,
-                        subject: "Reset Your Password with Drink X",
-                        message: `Hi ${request.firstName}, \n\nClick on the link below to reset your password: \n${link} \n\nIf you did not initiate this request, please contact us immediately. \n\nThank you, \nDrinkX`
+                        subject: "Set Up Your Drink-X Business Account", //Reset Your Password with Drink X
+                        message: `Hi ${request.firstName}, \n\nYour request to create a business account on Drink X has been approved! 
+                        Click on the link below to complete your account setup and create your password: \n${link} \n\nIf you did not initiate this request, please contact us immediately. \n\nThank you, \nDrink-X` //...reset your password
                     };
                     try {
                         await this.$axios.post(`${process.env.VUE_APP_API_URL}/createAccount/sendEmail`, emailDetails);
