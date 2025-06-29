@@ -242,6 +242,7 @@
                 }
 
                 // await this.create_subscription();
+                await this.applyCoupon();
                 // this.paymentElement();
             }
 
@@ -250,12 +251,16 @@
 
         },
         methods: {
-            async toggleYearlyPricing(){
+            async wipeStripe(){
                 this.invalidCoupon=false;
                 this.failedStripe=false;
                 this.isFullDiscount=false;
                 this.paymentAmount = null
                 this.unmountPayment();
+            },
+            async toggleYearlyPricing(){
+                this.wipeStripe();
+                this.couponCode=""
                 if(this.selectedMonthlyPricing && !this.selectedYearlyPricing){
                     this.selectedMonthlyPricing= false
                 }
@@ -263,9 +268,12 @@
                     this.selectedYearlyPricing=false
                 }else{
                     this.selectedYearlyPricing = true
+                    this.applyCoupon()
                 }
             },
             async toggleMonthlyPricing(){
+                this.wipeStripe();
+                this.couponCode=""
                 if(this.selectedYearlyPricing && ! this.selectedMonthlyPricing){
                     this.selectedYearlyPricing= false
                 }
@@ -273,14 +281,11 @@
                     this.selectedMonthlyPricing=false
                 }else{
                     this.selectedMonthlyPricing = true
+                    this.applyCoupon()
                 }
             },
             async applyCoupon(){
-                this.invalidCoupon=false;
-                this.failedStripe=false;
-                this.isFullDiscount=false;
-                this.paymentAmount = null;
-                this.unmountPayment();
+                this.wipeStripe();
                 try{
                     let couponResponseCode = null
                     const response = await this.create_subscription()
