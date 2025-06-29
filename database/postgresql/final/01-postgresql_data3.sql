@@ -405,7 +405,7 @@ CREATE TABLE "reviews" (
     "reviewType" VARCHAR(255),
     "createdDate" TIMESTAMP,
     "language" VARCHAR(255),
-    "finish" VARCHAR(255),
+    "finish" VARCHAR(750),
     "willRecommend" BOOLEAN NULL,
     "wouldBuyAgain" BOOLEAN NULL,
     -- "userVotes" SERIAL, -- [!] reference "reviewsUserVotes" FK
@@ -413,9 +413,9 @@ CREATE TABLE "reviews" (
     "flavourTag" TEXT[], -- Contains "flavourTags"("id")s
     "photo" TEXT,
     "colour" VARCHAR(7),
-    "aroma" VARCHAR(255),
+    "aroma" VARCHAR(750),
     "location" INTEGER REFERENCES "venues"("id") ON DELETE SET NULL, -- [!] references "venues" FK
-    "taste" VARCHAR(255),
+    "taste" VARCHAR(750),
     "observationTag" TEXT[], -- Contains "observationTags"("id")s
     "address" VARCHAR(255)
 );
