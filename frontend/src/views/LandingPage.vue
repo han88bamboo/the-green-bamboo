@@ -1,4 +1,23 @@
 <template>
+    <!-- JSON LD starts here -->
+    <!-- from https://stackoverflow.com/questions/67860467/how-to-add-json-ld-to-vue-3 -->
+    <teleport to="head">
+        <component :is="'script'" type="application/ld+json">
+            {
+                "@context": "https://schema.org",
+                "@type": "WebSite",
+                "url": "https://www.drink-x.com/",
+                "name": "Drink-X",
+                "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://www.drink-x.com/search?q={search_term_string}",
+                "query-input": "required name=search_term_string"
+                }
+            }
+        </component>
+    </teleport>
+    <!-- JSON LD Ends here -->
+
     <NavBar />
 
     <!-- Hero Section with Search -->
@@ -921,11 +940,12 @@
 </template>
 
 <script>
+import { useHead, useSeoMeta } from '@unhead/vue'
+
 import NavBar from "@/components/NavBar.vue";
 import SearchBar from "@/components/SearchBar.vue";
 import FooterBar from "@/components/FooterBar.vue";
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
-
 
 export default {
     components: {
@@ -933,6 +953,30 @@ export default {
         SearchBar,
         FooterBar,
         LoadingWithFunFact,
+    },
+    setup() {
+        /* SEO section Starts */ 
+        useHead({
+            title: 'Drink-X',
+            meta: [
+                { name: 'description', content: 'A World of Drinks. Just Look It Up.' },
+                { name: 'image', content: ''}
+            ],
+            htmlAttrs: { lang: 'en-US' }, // BCP 47 language code
+            link: [{
+                rel: 'canonical',
+                content: 'https://www.drink-x.com'
+            }]
+        }),
+        useSeoMeta({
+            titleTemplate: '%s | A World of Drinks. Just Look It Up.',
+            title: 'Drink-X',
+            // og title is not effected by titleTemplate, we can use template params here if we need
+            ogTitle: 'Welcome to Drink-X.',
+            // explicit twitter title is only needed when we want to display something just for X
+            twitterTitle: 'Hey X! Welcome to Drink-X!',
+        })
+        /* SEO section Ends */
     },
     data() {
         return {

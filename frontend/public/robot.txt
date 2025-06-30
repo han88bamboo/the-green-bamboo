@@ -1,0 +1,9 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: GPTBot
+User-agent: Claude-Web
+User-agent: CCBot
+User-agent: Google-Extended
+Disallow: /
+
+# Point to your sitemap
+Sitemap: https://drink-x.com/sitemap.xml
