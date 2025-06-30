@@ -564,22 +564,31 @@
                         style="font-weight: bold; background-color:rgb(249, 115, 106);">
                         Following
                         </button>
-                
-                        <!-- Review Button -->
-                        <button
-                        v-if="userType == 'user' && userID !== 'defaultUser' && !inEdit"
-                        class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2 "
-                        data-bs-toggle="modal"
-                        data-bs-target="#venueReviewModal"
-                        style="font-weight: bold;">
-                        Review Venue
-                        </button>
-                        <button
-                        v-else-if="userType == 'user' && userID !== 'defaultUser' && inEdit"
-                        class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2 "
-                        style="font-weight: bold; background-color: rgb(249, 115, 106);">
-                        Venue Reviewed
-                        </button>
+ 
+                          <!-- Review button: logged in + not editing -->
+  <button
+    v-if="userType === 'user' && userID !== 'defaultUser' && !inEdit"
+    class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
+    data-bs-toggle="modal"
+    data-bs-target="#venueReviewModal"
+    style="font-weight: bold;"
+  >
+    Review Venue
+  </button>
+
+  <!-- Review button: logged in + editing -->
+  <button
+    v-if="userType === 'user' && userID !== 'defaultUser' && inEdit"
+    class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
+    style="font-weight: bold; background-color: rgb(249, 115, 106);"
+  >
+    Venue Reviewed
+  </button>
+  
+
+
+                        
+
                     </div>
                     </div>
 
@@ -1374,7 +1383,7 @@
 
                         <!-- Message about Expanding / Collapsing Sections -->
                         <div v-else class="row my-2">
-                            <p class="text-start fw-bold fst-italic m-0 mobile-view-hide">Click on each menu section's name to expand or hide its contents!</p>
+                            <p class="text-start fw-bold fst-italic m-0 mobile-view-hide">Click on each menu section's name to expand or hide its contents! </p>
                         </div>
 
                         <!-- MENU FACTIONS -->
@@ -1573,8 +1582,8 @@
 
                         <!-- Message about Expanding / Collapsing Sections -->
                         <div v-else class="row my-2">
-                            <p class="text-start fw-bold fst-italic m-0 mobile-view-hide">
-                                Click on each menu section's name to expand or hide its contents!
+                            <p class="text-start  fw-bold m-0 mobile-view-hide" style="color: #ae3e3e">
+                                Important Note: To add an item, make sure you have a menu Section created first. If adding a new Section, remember to click <b> Save </b> first, before adding new Drink Items to that Section.
                             </p>
                         </div>
 
@@ -1915,8 +1924,8 @@
                                     <div class="modal-body">
 
                                         <!-- Note -->
-                                        <p class="fst-italic text-primary-emphasis">All newly added menu items are set to appear last in your selected target section.<br>Please modify them to your own satisfaction later!</p>
-
+                                        <p class="fw-bold" style="color: #ae3e3e ">You will need an existing Menu Section to be created first before you can start adding menu items to your menu!</p>
+                                        <p class="fw-bold" style="color: #ae3e3e ">If you have just added a new Menu Section, remember to click "Save" first before adding a new menu item.</p>
                                         <!-- [input] bottle name -->
                                         <div class="form-group mb-3">
                                             <p class="text-start mb-1">Bottle Listing ID (Search by Name) <span class="text-danger">*</span></p>
@@ -2116,7 +2125,7 @@
                     <div class="row text-start" style="padding-left: 0.75em">
                         <div class="col">
                         <div class="row justify-content-start align-items-start mt-2">
-                            <!-- Add new review button (only if user is logged in + not editing) -->
+                            <!-- Add new review button -->
                             <div
                             v-if="userType === 'user' && user_id !== 'defaultUser' && !inEdit"
                             class="mobile-col-3 col-sm-6 col-md-4 col-lg-2 mobile-px-1"
@@ -2139,6 +2148,8 @@
                                 />
                             </svg>
                             </div>
+
+                            
 
                             <!-- (Optional) preview the first few review images -->
                             <div
@@ -3005,13 +3016,13 @@
         </div>
         </div>
         <!-- Error Message -->
-        <div class="text-danger fst-italic fw-bold fs-3 modal-content" v-if="errorSubmission"> 
+        <div class="text-danger fw-bold fs-6 modal-content" v-if="errorSubmission"> 
         <div v-if="errorMessage" class="row"> 
             <span v-if="!inEdit">An error occurred while attempting to submit, please try again!</span>
             <span v-else>An error occurred while attempting to update, please try again!</span>
             <br>
             <button class="btn primary-btn btn-sm" @click="reset">
-            <span class="fs-5 fst-italic">Retry your submission here!</span>
+            <span class="fs-7 fst-italic">Retry here!</span>
             </button>
         </div>
         <div v-if="duplicateEntry">
@@ -4716,7 +4727,7 @@
                     }
                 }
                 catch (error) {
-                    alert("An error occurred while attempting to add the item, please try again!");
+                    alert("An error occurred while attempting to add the item, please try again! You may have tried to add a Drink Item to a new Menu Section that has not been saved yet. Please save the new Menu Section first, then click 'Edit Menu' again to add your drink item.");
                     // console.error(error);
                 }
 
