@@ -3003,6 +3003,9 @@ export default {
 
         await this.getListing();
 
+        // Get proof points
+        await this.getProofPoints();
+
         if (this.userID) {
           if (this.ownProfile) {
             this.user = this.displayUser;
@@ -3019,8 +3022,7 @@ export default {
             }
           }
 
-          // Get proof points
-          this.getProofPoints();
+          
 
           // check if current user is following the user being viewed
           if (this.userType === "user") {

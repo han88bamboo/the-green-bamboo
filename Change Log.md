@@ -1083,3 +1083,13 @@ Purpose of the changes:
 
 Nature of the changes (frontend / backend / database):
 front end
+
+# Update as of 1 Jul - deployed 
+
+Coder: Han
+
+Purpose of the changes:
+minor fix to allow logged-out users to see points
+
+Nature of the changes (frontend / backend / database):
+frontend
