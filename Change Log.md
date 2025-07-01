@@ -1067,3 +1067,19 @@ fixed error where by points aren't showing up for reviews
 
 Nature of the changes (frontend / backend / database):
 backend
+
+# Update as of 30th June 
+
+Coder: Kai
+
+Purpose of the changes:
+- Hide where to buy on the bottle listings (Kai) 
+- To start tagging friends, follow them first!  (Kai) 
+- Ride or Die - change to The Essentials  (kai) 
+- “No results found” in the search bar - to remove it  (kai) 
+- “Please select a plan” - make it bold, bigger, above the options (Kai) 
+- Successful signup “mb-10” (Kai) 
+- Venue Edit Menu: Add in a section to explain the sequence to adding new menu times  (Kai) 
+
+Nature of the changes (frontend / backend / database):
+front end

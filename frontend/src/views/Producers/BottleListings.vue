@@ -428,7 +428,7 @@
                     <div class="modal-body">
                       <div class="col-sm-12 col-md-9 col-lg-3">
                         <!-- where to buy -->
-                        <div class="row">
+                        <div class="row mobile-view-hide">
                           <div
                             class="square primary-square-green rounded p-3 mb-3 text-start"
                             style="
@@ -1411,7 +1411,7 @@
                           v-model="friendTag"
                           class="form-control input-with-icon"
                           id="friendTag"
-                          placeholder="Tag friends"
+                          placeholder="Tag friends (To start tagging friends, follow them first! )"
                           v-on:input="updateFriendTag"
                         />
                         <datalist id="filteredFollowList">
@@ -2832,42 +2832,7 @@
       </div>
       <!-- where to buy & where to try & 88 bamboo's review -->
       <div class="col-sm-12 col-md-9 col-lg-3 mobile-view-hide">
-        <!-- where to buy -->
-        <div class="row">
-          <div
-            class="square primary-square-green rounded p-3 mb-3 text-start"
-            style="
-              height: 250px;
-              border-radius: 10px;
-              box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.4);
-            "
-          >
-            <!-- header text -->
-            <div class="square-inline text-start">
-              <h4 class="mr-auto">Where to Buy</h4>
-            </div>
-            <!-- body -->
-            <div style="height: 85%">
-              <div
-                class="text-start pt-2 overflow-auto"
-                style="max-height: 100%"
-              >
-                <!-- [function] where to buy -->
-                <div v-for="producer in producerListings" v-bind:key="producer">
-                  <router-link
-                    :to="{ path: '/profile/producer/' + producer }"
-                    class="reverse-clickable-text"
-                  >
-                    <p>{{ getProducerName(producer) }}</p>
-                  </router-link>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <!-- not sure what this line supposed to do -->
-        <!-- {{ drinkList }} -->
 
         <!-- where to try -->
         <div class="row">
@@ -2947,6 +2912,40 @@
                       </p>
                     </router-link>
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- where to buy -->
+        <div class="row mobile-view-show">
+          <div
+            class="square primary-square-green rounded p-3 mb-3 text-start"
+            style="
+              height: 250px;
+              border-radius: 10px;
+              box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.4);
+            "
+          >
+            <!-- header text -->
+            <div class="square-inline text-start">
+              <h4 class="mr-auto">Where to Buy</h4>
+            </div>
+            <!-- body -->
+            <div style="height: 85%">
+              <div
+                class="text-start pt-2 overflow-auto"
+                style="max-height: 100%"
+              >
+                <!-- [function] where to buy -->
+                <div v-for="producer in producerListings" v-bind:key="producer">
+                  <router-link
+                    :to="{ path: '/profile/producer/' + producer }"
+                    class="reverse-clickable-text"
+                  >
+                    <p>{{ getProducerName(producer) }}</p>
+                  </router-link>
                 </div>
               </div>
             </div>

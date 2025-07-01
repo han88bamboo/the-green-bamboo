@@ -120,7 +120,7 @@
 
                 <!-- Goats -> Change to Ride or Die -->
                 <div class="mb-3 mb-md-5">
-                    <h5 class="ms-3 mb-3 fw-bold mobile-fs-6">Ride or Die</h5>
+                    <h5 class="ms-3 mb-3 fw-bold mobile-fs-6">The Essentials</h5>
                         <div v-if="top5Listings.goats?.length > 0"  class="row gx-3 px-3">
                             <div
                                 v-for="listing in top5Listings['goats']"
@@ -131,7 +131,7 @@
                             </div>
                         </div>
                         <div v-else>
-                            <p class="ms-3">No Ride or Dies found for the selected drink type and category.</p>
+                            <p class="ms-3">No Essentials found for the selected drink type and category.</p>
                         </div>
                 </div>
                 </div>
