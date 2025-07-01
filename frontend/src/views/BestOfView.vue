@@ -1,7 +1,7 @@
 <template>
     <NavBar />
         <div class="d-flex align-items-center justify-content-center login-header-banner">
-            <img src="@/assets/Best-Of.png" alt="Banner" />
+            <img src="@/assets/Best-Of.webp" alt="Banner" />
             </div>
         <!-- Display when data is still loading -->
         <div

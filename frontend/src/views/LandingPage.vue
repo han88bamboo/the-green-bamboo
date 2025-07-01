@@ -957,10 +957,14 @@ export default {
     setup() {
         /* SEO section Starts */ 
         useHead({
-            title: 'Drink-X',
+            title: 'Drink-X | Home',
             meta: [
                 { name: 'description', content: 'A World of Drinks. Just Look It Up.' },
-                { name: 'image', content: ''}
+                { property: 'og:title', content: 'Drink-X | Home' },
+                { property: 'og:description', content: 'A World of Drinks. Just Look It Up.' },
+                { property: 'og:image', content: '' },
+                { name: 'twitter:card', content: 'summary_large_image' },
+                { name: 'twitter:image', content: '' }
             ],
             htmlAttrs: { lang: 'en-US' }, // BCP 47 language code
             link: [{
