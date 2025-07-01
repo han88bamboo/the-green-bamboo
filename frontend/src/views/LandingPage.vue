@@ -1,41 +1,19 @@
 <template>
-    <!-- JSON LD starts here -->
-    <!-- from https://stackoverflow.com/questions/67860467/how-to-add-json-ld-to-vue-3 -->
-    <teleport to="head">
-        <component :is="'script'" type="application/ld+json">
-            {
-                "@context": "https://schema.org",
-                "@type": "WebSite",
-                "url": "https://www.drink-x.com/",
-                "name": "Drink-X",
-                "potentialAction": {
-                "@type": "SearchAction",
-                "target": "https://www.drink-x.com/search?q={search_term_string}",
-                "query-input": "required name=search_term_string"
-                }
-            }
-        </component>
-    </teleport>
-    <!-- JSON LD Ends here -->
-
     <NavBar />
 
     <!-- Hero Section with Search -->
     <div class="hero-section text-center">
-        <img
-            src="../../Images/Background/Landing Page Hero Image.png"
-            class="hero-bg"
-            style="filter: brightness(0.7);"
-            alt="Background"
-        />
-        <div class="container position-absolute top-50 start-50 translate-middle text-white d-flex flex-column align-items-center px-3">
+        <img src="../../Images/Background/Landing Page Hero Image.png" class="hero-bg" style="filter: brightness(0.7);"
+            alt="Background" />
+        <div
+            class="container position-absolute top-50 start-50 translate-middle text-white d-flex flex-column align-items-center px-3">
             <h1 class="mb-4 fw-bold display-5 mobile-fs-4">
-            A World of Drinks. Just Look It Up.
+                A World of Drinks. Just Look It Up.
             </h1>
             <div class="row justify-content-center w-100">
-            <div class="col-12 col-md-8 col-lg-6">
-                <SearchBar />
-            </div>
+                <div class="col-12 col-md-8 col-lg-6">
+                    <SearchBar />
+                </div>
             </div>
         </div>
     </div>
@@ -64,8 +42,7 @@
                         </button>
                     </router-link>
                     <router-link :to="'/login'" class="text-link">
-                        <h6
-                            class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height">
+                        <h6 class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height">
                             Log Your Drink Reviews and Share Your Favorites
                         </h6>
                     </router-link>
@@ -84,8 +61,7 @@
                         </button>
                     </router-link>
                     <router-link :to="'/clubs/view'" class="text-link">
-                        <h6
-                            class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height">
+                        <h6 class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height">
                             Find Your Communities and Join Events
                         </h6>
                     </router-link>
@@ -104,8 +80,7 @@
                         </button>
                     </router-link>
                     <router-link :to="'/explore'" class="text-link">
-                        <h6
-                            class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height">
+                        <h6 class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height">
                             Discover New Drinks and Find Crowdsourced Reviews
                         </h6>
                     </router-link>
@@ -123,8 +98,7 @@
                         </button>
                     </router-link>
                     <router-link :to="'/clubs/view'" class="text-link">
-                        <h6
-                            class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height">
+                        <h6 class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height">
                             Connect With Your Favorite Bars and Brands
                         </h6>
                     </router-link>
@@ -142,8 +116,7 @@
                         </button>
                     </router-link>
                     <router-link :to="'/clubs/view'" class="text-link">
-                        <h6
-                            class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height">
+                        <h6 class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height">
                             Find Nearby Producers and Venues
                         </h6>
                     </router-link>
@@ -161,8 +134,7 @@
                         </button>
                     </router-link>
                     <router-link :to="safeProfileRoute" class="text-link">
-                        <h6
-                            class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height">
+                        <h6 class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height">
                             Start Collecting Points and Badges From Your First Review
                         </h6>
                     </router-link>
@@ -179,9 +151,10 @@
                 <!-- Trending and Description in One Row -->
                 <div class="d-md-flex text-start gap-3 mb-3">
                     <h3 class="mobile-fs-4 fw-bold mb-1" style="color: #027562;">Trending</h3>
-                    <h5 class="mt-2 mobile-fs-6 fw-bold fst-italic" style="color: black;">"Who is saying what now?" </h5>
+                    <h5 class="mt-2 mobile-fs-6 fw-bold fst-italic" style="color: black;">"Who is saying what now?"
+                    </h5>
                 </div>
-                
+
                 <!-- Trending Observation Tags -->
                 <div class="d-none d-md-flex flex-wrap justify-content-start">
                     <button v-for="tag in tags" :key="tag" class="btn btn-warning rounded-pill m-2"
@@ -194,18 +167,11 @@
                     data-bs-interval="3000">
                     <div class="carousel-inner">
                         <div class="carousel-item active">
-                             <div class="d-flex flex-row overflow-visible gap-1">
-                                <div
-                                v-for="(tag, index) in tags.slice(0, 3)"
-                                :key="index"
-                                class="tag-container"
-                                >
-                                    <button
-                                        class="btn btn-warning rounded-pill"
-                                        :class="{ selected: tag === selectedTag }"
-                                        @click="goSearchTag(tag)"
-                                        style="min-height: 20px"
-                                    >
+                            <div class="d-flex flex-row overflow-visible gap-1">
+                                <div v-for="(tag, index) in tags.slice(0, 3)" :key="index" class="tag-container">
+                                    <button class="btn btn-warning rounded-pill"
+                                        :class="{ selected: tag === selectedTag }" @click="goSearchTag(tag)"
+                                        style="min-height: 20px">
                                         {{ tag }}
                                     </button>
                                 </div>
@@ -239,13 +205,17 @@
                 <!-- Mobile View -->
                 <div class="d-md-none">
                     <div class="d-flex flex-row flex-wrap justify-content-center w-100">
-                        <div v-for="listing in listings.slice(0,4)" :key="listing.id" class="d-flex flex-column align-items-center">
-                            <div class="drink-photo-container-row image-container-150 mb-2" style="width: 150px" @click="goSearchListing(listing)">
+                        <div v-for="listing in listings.slice(0, 4)" :key="listing.id"
+                            class="d-flex flex-column align-items-center">
+                            <div class="drink-photo-container-row image-container-150 mb-2" style="width: 150px"
+                                @click="goSearchListing(listing)">
                                 <img v-if="listing['photo']" :src="listing['photo']" class="img-fluid rounded mb-2"
                                     style="max-height: 100px; object-fit: contain;" />
-                                <img v-else src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739" class="img-fluid rounded mb-2"
-                                    style="max-height: 100px; object-fit: contain;" />
-                                <div class="fw-semibold mobile-rating-smaller-text-2 listing-text">{{ listing['listingName'] }}</div>
+                                <img v-else
+                                    src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
+                                    class="img-fluid rounded mb-2" style="max-height: 100px; object-fit: contain;" />
+                                <div class="fw-semibold mobile-rating-smaller-text-2 listing-text">{{
+                                    listing['listingName'] }}</div>
                             </div>
                         </div>
                     </div>
@@ -253,27 +223,15 @@
 
                 <!-- Desktop View -->
                 <div class="d-none d-md-flex justify-content-center flex-wrap pb-2 pt-4">
-                <div
-                    v-for="listing in listings.slice(0,5)"
-                    :key="listing.id"
-                    class="text-center mx-1 listing-item"
-                    style="width: 120px;"
-                    @click="goSearchListing(listing)"
-                >
-                    <img
-                    v-if="listing['photo']"
-                    :src="listing['photo']"
-                    class="img-fluid rounded mb-2"
-                    style="max-height: 120px; object-fit: contain;"
-                    />
-                    <img
-                    v-else
-                    src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
-                    class="img-fluid rounded mb-2"
-                    style="max-height: 120px; object-fit: contain;"
-                    />
-                    <div class="fw-semibold small listing-text">{{ listing['listingName'] }}</div>
-                </div>
+                    <div v-for="listing in listings.slice(0, 5)" :key="listing.id" class="text-center mx-1 listing-item"
+                        style="width: 120px;" @click="goSearchListing(listing)">
+                        <img v-if="listing['photo']" :src="listing['photo']" class="img-fluid rounded mb-2"
+                            style="max-height: 120px; object-fit: contain;" />
+                        <img v-else
+                            src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
+                            class="img-fluid rounded mb-2" style="max-height: 120px; object-fit: contain;" />
+                        <div class="fw-semibold small listing-text">{{ listing['listingName'] }}</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -290,8 +248,9 @@
 
         <div class="container pb-4">
             <!-- Loading Spinner -->
-            <div v-if="loading" class="d-flex flex-column justify-content-center align-items-center" style="min-height: 10rem;">
-            <LoadingWithFunFact />
+            <div v-if="loading" class="d-flex flex-column justify-content-center align-items-center"
+                style="min-height: 10rem;">
+                <LoadingWithFunFact />
             </div>
 
             <!-- Content (only shown when not loading) -->
@@ -310,7 +269,7 @@
                                 v-for="(article, artIndex) in category.latest_news.slice(0, 4)"
                                 :key="'latest-' + artIndex">
                                 <div class="card h-100 shadow" style="background-color: transparent">
-                                    
+
                                     <div class="d-sm-block">
                                         <img :src="article.image_url" class="card-img-top" alt="News Image"
                                             style="height: 180px; object-fit: cover" />
@@ -342,13 +301,14 @@
                                         <div class="row g-0">
                                             <div class="col-4">
                                                 <div style="width: 110px; height: 110px; overflow: hidden;">
-                                                        <img :src="article.image_url" class="img-fluid w-100 h-100" alt="News Image"
-                                                            style="object-fit: cover;" />
-                                                    </div>
+                                                    <img :src="article.image_url" class="img-fluid w-100 h-100"
+                                                        alt="News Image" style="object-fit: cover;" />
+                                                </div>
                                             </div>
                                             <div class="col-8 px-2">
-                                                    <h6 class="ps-1 pt-2 d-flex fw-bold" style="color: rgb(2, 117, 98)">New Releases</h6>
-                                                    <div class="p-0 ps-1 d-flex justify-content-center"
+                                                <h6 class="ps-1 pt-2 d-flex fw-bold" style="color: rgb(2, 117, 98)">New
+                                                    Releases</h6>
+                                                <div class="p-0 ps-1 d-flex justify-content-center"
                                                     style="height: 100%">
                                                     <h6 class=" text-muted text-start mb-0">
                                                         {{
@@ -367,8 +327,8 @@
                                         </div>
                                     </div>
                                     <a :href="article.link" target="_blank" class="stretched-link"></a>
-                                </div>   
-                            </div>   
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </template>
@@ -415,13 +375,14 @@
                                             <div class="row g-0">
                                                 <div class="col-4">
                                                     <div style="width: 110px; height: 110px; overflow: hidden;">
-                                                        <img :src="article.image_url" class="img-fluid w-100 h-100" alt="News Image"
-                                                            style="object-fit: cover;" />
+                                                        <img :src="article.image_url" class="img-fluid w-100 h-100"
+                                                            alt="News Image" style="object-fit: cover;" />
                                                     </div>
-                                                    
+
                                                 </div>
                                                 <div class="col-8 px-2">
-                                                    <h6 class="ps-1 pt-2 d-flex fw-bold" style="color: rgb(2, 117, 98)">Deepdive</h6>
+                                                    <h6 class="ps-1 pt-2 d-flex fw-bold" style="color: rgb(2, 117, 98)">
+                                                        Deepdive</h6>
                                                     <div class="p-0 ps-1 d-flex justify-content-center"
                                                         style="height: 100%">
                                                         <h6 class="fst-italic text-muted text-start mb-0">
@@ -458,8 +419,7 @@
                             <div class="row">
                                 <!-- Desktop view: 3 latest reviews -->
                                 <div class="mobile-view-hide col-12 col-lg-4 col-sm-6 mb-3"
-                                    v-for="(article, artIndex) in reviews.slice(0, 3)"
-                                    :key="'review-' + artIndex">
+                                    v-for="(article, artIndex) in reviews.slice(0, 3)" :key="'review-' + artIndex">
                                     <div class="card h-100 shadow" style="background-color: transparent">
                                         <div class="d-none d-sm-block">
                                             <img :src="article.image_url" class="card-img-top" alt="News Image"
@@ -485,8 +445,7 @@
                                 </div>
                                 <!-- Mobile view: only 1 latest review -->
                                 <div class="mobile-view-show col-12 col-lg-4 col-sm-6 mb-3"
-                                    v-for="(article, artIndex) in reviews.slice(0, 1)"
-                                    :key="'review-' + artIndex">
+                                    v-for="(article, artIndex) in reviews.slice(0, 1)" :key="'review-' + artIndex">
                                     <div class="card h-100 shadow" style="background-color: transparent">
                                         <div class="d-sm-none border-0">
                                             <div class="row g-0">
@@ -497,7 +456,8 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-8 px-2">
-                                                    <h6 class="ps-1 pt-2 d-flex fw-bold" style="color: rgb(2, 117, 98)">Taste Test</h6>
+                                                    <h6 class="ps-1 pt-2 d-flex fw-bold" style="color: rgb(2, 117, 98)">
+                                                        Taste Test</h6>
                                                     <div class="p-0 ps-1 d-flex justify-content-center"
                                                         style="height: 100%">
                                                         <h6 class="fst-italic text-muted text-start mb-0">
@@ -523,7 +483,7 @@
                         </div>
                     </template>
                 </div>
-                
+
                 <!-- New request For UI -->
                 <div class="row">
                     <!-- Features Section -->
@@ -571,7 +531,8 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-8 px-2">
-                                                    <h6 class="ps-1 pt-2 d-flex fw-bold" style="color: rgb(2, 117, 98)">Features</h6>
+                                                    <h6 class="ps-1 pt-2 d-flex fw-bold" style="color: rgb(2, 117, 98)">
+                                                        Features</h6>
                                                     <div class="p-0 ps-1 d-flex justify-content-center"
                                                         style="height: 100%">
                                                         <h6 class="text-muted text-start mb-0">
@@ -641,7 +602,8 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-8 px-2">
-                                                    <h6 class="ps-1 pt-2 d-flex fw-bold" style="color: rgb(2, 117, 98)">Interview</h6>
+                                                    <h6 class="ps-1 pt-2 d-flex fw-bold" style="color: rgb(2, 117, 98)">
+                                                        Interview</h6>
                                                     <div class="p-0 ps-1 d-flex justify-content-center"
                                                         style="height: 100%">
                                                         <h6 class="text-muted text-start mb-0">
@@ -711,7 +673,8 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-8 px-2">
-                                                    <h6 class="ps-1 pt-2 d-flex fw-bold" style="color: rgb(2, 117, 98)">Escapades</h6>
+                                                    <h6 class="ps-1 pt-2 d-flex fw-bold" style="color: rgb(2, 117, 98)">
+                                                        Escapades</h6>
                                                     <div class="p-0 ps-1 d-flex justify-content-center"
                                                         style="height: 100%">
                                                         <h6 class="text-muted text-start mb-0">
@@ -721,7 +684,7 @@
                                                                     .slice(0, 11)
                                                                     .join(" ") +
                                                                 (article.title.split(" ")
-                                                                    .length >11
+                                                                    .length > 11
                                                                     ? "..."
                                                                     : "")
                                                             }}
@@ -820,115 +783,118 @@
                 <div class="col-1 mobile-view-hide"></div>
                 <!-- Feature 1 -->
                 <div class="col-lg-2 col-md-4 col-6 mb-4">
-                <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                     <div class="d-flex flex-lg-column flex-row align-items-center h-100">
-                        <router-link :to="'/login'">
-                            <button class="btn border-0 fw-bold tilt-hover" type="button">
-                                <div class="mb-lg-3 icon-container">
-                                    <img src="../../Images/Landing Page/footer1.png" alt="Log Reviews"
-                                        class="img-fluid" />
-                                </div>
-                            </button>
-                        </router-link>
-                        <router-link :to="'/login'" class="text-link">
-                            <h6
-                                class="mb-0 mobile-rating-smaller-text-2 text-lg-center text-start d-flex align-items-center caption-height">
-                                Boost Your Discoverability to New Customers
-                            </h6>
-                        </router-link>
+                        <div class="d-flex flex-lg-column flex-row align-items-center h-100">
+                            <router-link :to="'/login'">
+                                <button class="btn border-0 fw-bold tilt-hover" type="button">
+                                    <div class="mb-lg-3 icon-container">
+                                        <img src="../../Images/Landing Page/footer1.png" alt="Log Reviews"
+                                            class="img-fluid" />
+                                    </div>
+                                </button>
+                            </router-link>
+                            <router-link :to="'/login'" class="text-link">
+                                <h6
+                                    class="mb-0 mobile-rating-smaller-text-2 text-lg-center text-start d-flex align-items-center caption-height">
+                                    Boost Your Discoverability to New Customers
+                                </h6>
+                            </router-link>
+                        </div>
                     </div>
-                </div>
                 </div>
                 <!-- Feature 2 -->
                 <div class="col-lg-2 col-md-4 col-6 mb-4">
-                <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                     <div class="d-flex flex-lg-column flex-row align-items-center h-100">
-                        <router-link :to="'/clubs/view'">
-                            <button class="btn border-0 fw-bold tilt-hover" type="button">
-                                <div class="mb-lg-3 icon-container">
-                                    <img src="../../Images/Landing Page/Layer2.png" alt="Find Communities"
-                                        class="img-fluid" />
-                                </div>
-                            </button>
-                        </router-link>
-                        <router-link :to="'/clubs/view'" class="text-link">
-                            <h6
-                                class="mb-0 mobile-rating-smaller-text-2 text-lg-center text-start d-flex align-items-center caption-height">
-                                Engage Your Existing Fans with Direct Chat
-                            </h6>
-                        </router-link>
+                        <div class="d-flex flex-lg-column flex-row align-items-center h-100">
+                            <router-link :to="'/clubs/view'">
+                                <button class="btn border-0 fw-bold tilt-hover" type="button">
+                                    <div class="mb-lg-3 icon-container">
+                                        <img src="../../Images/Landing Page/Layer2.png" alt="Find Communities"
+                                            class="img-fluid" />
+                                    </div>
+                                </button>
+                            </router-link>
+                            <router-link :to="'/clubs/view'" class="text-link">
+                                <h6
+                                    class="mb-0 mobile-rating-smaller-text-2 text-lg-center text-start d-flex align-items-center caption-height">
+                                    Engage Your Existing Fans with Direct Chat
+                                </h6>
+                            </router-link>
+                        </div>
                     </div>
-                </div>
                 </div>
                 <!-- Feature 3 -->
                 <div class="col-lg-2 col-md-4 col-6 mb-4">
-                <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                     <div class="d-flex flex-lg-column flex-row align-items-center h-100">
-                        <router-link :to="'/explore'">
-                            <button class="btn border-0 fw-bold tilt-hover" type="button">
-                                <div class="mb-lg-3 icon-container">
-                                    <img src="../../Images/Landing Page/footer3.png" alt="Discover Drinks"
-                                        class="img-fluid" />
-                                </div>
-                            </button>
-                        </router-link>
-                        <router-link :to="'/explore'" class="text-link">
-                            <h6
-                                class="mb-0 mobile-rating-smaller-text-2 text-lg-center text-start d-flex align-items-center caption-height">
-                                Create Live Menus Accessible from Anywhere via QR Code
-                            </h6>
-                        </router-link>
+                        <div class="d-flex flex-lg-column flex-row align-items-center h-100">
+                            <router-link :to="'/explore'">
+                                <button class="btn border-0 fw-bold tilt-hover" type="button">
+                                    <div class="mb-lg-3 icon-container">
+                                        <img src="../../Images/Landing Page/footer3.png" alt="Discover Drinks"
+                                            class="img-fluid" />
+                                    </div>
+                                </button>
+                            </router-link>
+                            <router-link :to="'/explore'" class="text-link">
+                                <h6
+                                    class="mb-0 mobile-rating-smaller-text-2 text-lg-center text-start d-flex align-items-center caption-height">
+                                    Create Live Menus Accessible from Anywhere via QR Code
+                                </h6>
+                            </router-link>
+                        </div>
                     </div>
-                </div>
                 </div>
 
                 <!-- Feature 4 -->
                 <div class="col-lg-2 col-md-4 col-6 mb-4">
-                <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                     <div class="d-flex flex-lg-column flex-row align-items-center h-100">
-                        <router-link :to="'/clubs/view'">
-                            <button class="btn border-0 fw-bold tilt-hover" type="button">
-                                <div class="mb-lg-3 icon-container">
-                                    <img src="../../Images/Landing Page/footer4.png" alt="Connect" class="img-fluid" />
-                                </div>
-                            </button>
-                        </router-link>
-                        <router-link :to="'/clubs/view'" class="text-link">
-                            <h6
-                                class="mb-0 mobile-rating-smaller-text-2 text-lg-center text-start d-flex align-items-center caption-height">
-                                Enhance Customer Self-Service with Drink Listings Aggregating Flavours to Expect
-                            </h6>
-                        </router-link>
+                        <div class="d-flex flex-lg-column flex-row align-items-center h-100">
+                            <router-link :to="'/clubs/view'">
+                                <button class="btn border-0 fw-bold tilt-hover" type="button">
+                                    <div class="mb-lg-3 icon-container">
+                                        <img src="../../Images/Landing Page/footer4.png" alt="Connect"
+                                            class="img-fluid" />
+                                    </div>
+                                </button>
+                            </router-link>
+                            <router-link :to="'/clubs/view'" class="text-link">
+                                <h6
+                                    class="mb-0 mobile-rating-smaller-text-2 text-lg-center text-start d-flex align-items-center caption-height">
+                                    Enhance Customer Self-Service with Drink Listings Aggregating Flavours to Expect
+                                </h6>
+                            </router-link>
+                        </div>
                     </div>
-                </div>
                 </div>
 
                 <!-- Feature 5 -->
                 <div class="col-lg-2 col-md-4 col-6 mb-4">
-                <div class="d-flex flex-lg-column flex-row align-items-center h-100">
                     <div class="d-flex flex-lg-column flex-row align-items-center h-100">
-                        <router-link :to="'/clubs/view'">
-                            <button class="btn border-0 fw-bold tilt-hover" type="button">
-                                <div class="mb-lg-3 icon-container">
-                                    <img src="../../Images/Landing Page/footer5.png" alt="Connect" class="img-fluid" />
-                                </div>
-                            </button>
-                        </router-link>
-                        <router-link :to="'/clubs/view'" class="text-link">
-                            <h6
-                                class="mb-0 mobile-rating-smaller-text-2 text-lg-center text-start d-flex align-items-center caption-height">
-                                Broadcast New Events & Create Your Own Club for Customers to Join
-                            </h6>
-                        </router-link>
+                        <div class="d-flex flex-lg-column flex-row align-items-center h-100">
+                            <router-link :to="'/clubs/view'">
+                                <button class="btn border-0 fw-bold tilt-hover" type="button">
+                                    <div class="mb-lg-3 icon-container">
+                                        <img src="../../Images/Landing Page/footer5.png" alt="Connect"
+                                            class="img-fluid" />
+                                    </div>
+                                </button>
+                            </router-link>
+                            <router-link :to="'/clubs/view'" class="text-link">
+                                <h6
+                                    class="mb-0 mobile-rating-smaller-text-2 text-lg-center text-start d-flex align-items-center caption-height">
+                                    Broadcast New Events & Create Your Own Club for Customers to Join
+                                </h6>
+                            </router-link>
+                        </div>
                     </div>
-                </div>
                 </div>
                 <!-- Desktop Spacer -->
                 <div class="col-1 mobile-view-hide"></div>
 
             </div>
             <router-link :to="'/businessSignup'">
-                <button class="btn btn-warning fw-bold btn-lg text-white" style="background-color: #83a9e8; margin-top: 20px"
+                <button class="btn btn-warning fw-bold btn-lg text-white"
+                    style="background-color: #83a9e8; margin-top: 20px"
                     aria-label="Try Out Your Drink-X Business Account">
                     Try Out Your Drink-X Business Account
                 </button>
@@ -941,6 +907,7 @@
 
 <script>
 import { useHead, useSeoMeta } from '@unhead/vue'
+import { computed } from 'vue'
 
 import NavBar from "@/components/NavBar.vue";
 import SearchBar from "@/components/SearchBar.vue";
@@ -955,31 +922,142 @@ export default {
         LoadingWithFunFact,
     },
     setup() {
-        /* SEO section Starts */ 
+        // Computed property for structured data
+        const structuredData = computed(() => {
+            const data = {
+                "@context": "https://schema.org",
+                "@type": "WebSite",
+                "name": 'Drink-X | A World of Drinks - Just Look It Up!',
+                "image": 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Drink-X_Banner_Image.png?v=1751344950',
+                "description": 'Discover your next great drink! Sign up for free - log your drink reviews, discover new brands, and explore your next go-to bar.',
+                "url": 'https://www.drink-x.com',
+                "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://www.drink-x.com/search?q={search_term_string}",
+                "query-input": "required name=search_term_string"
+                }
+            }
+            return JSON.stringify(data)
+        })
+
+        // Computed property for dynamic robots content
+        const robotsContent = computed(() => {
+            const robots = []
+
+            // Basic indexing
+            robots.push('index')
+            robots.push('follow')
+
+            // Image indexing
+            robots.push('max-image-preview:large')
+
+            // Snippet control
+            robots.push('max-snippet:-1') // No limit on snippet length
+            robots.push('max-video-preview:-1') // No limit on video preview
+
+            return robots.join(', ')
+        })
+
+        /* SEO section Starts */
         useHead({
             title: 'Drink-X | Home',
+            // Custom meta tags that useSeoMeta doesn't cover
             meta: [
-                { name: 'description', content: 'A World of Drinks. Just Look It Up.' },
-                { property: 'og:title', content: 'Drink-X | Home' },
-                { property: 'og:description', content: 'A World of Drinks. Just Look It Up.' },
-                { property: 'og:image', content: '' },
-                { name: 'twitter:card', content: 'summary_large_image' },
-                { name: 'twitter:image', content: '' }
+                {
+                    name: 'author',
+                    content: 'drink-x'
+                },
+                {
+                    name: 'robots',
+                    content: robotsContent
+                },
+                {
+                    name: 'googlebot',
+                    content: robotsContent // Specific for Google
+                },
+                {
+                    name: 'bingbot',
+                    content: robotsContent // Specific for Bing
+                },
+                // Additional SEO meta tags
+                {
+                    name: 'distribution',
+                    content: 'global'
+                }
+            ],
+
+            // Link tags
+            link: [
+                {
+                    rel: 'canonical',
+                    href: 'https://drink-x.com'
+                },
+                {
+                    rel: 'preload',
+                    href: 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Drink-X_Banner_Image.png?v=1751344950',
+                    as: 'image',
+                }
+            ],
+
+            // JSON-LD structured data for rich snippets
+            script: [
+                {
+                    type: 'application/ld+json',
+                    innerHTML: structuredData
+                }
             ],
             htmlAttrs: { lang: 'en-US' }, // BCP 47 language code
-            link: [{
-                rel: 'canonical',
-                content: 'https://www.drink-x.com'
-            }]
+            // meta: [
+            //     { name: 'description', content: 'Discover your next great drink! Sign up for free - log your drink reviews, discover new brands, and explore your next go-to bar.' },
+            //     { property: 'og:title', content: 'Drink-X | A World of Drinks - Just Look It Up!' },
+            //     { property: 'og:description', content: 'Discover your next great drink! Sign up for free - log your drink reviews, discover new brands, and explore your next go-to bar.' },
+            //     { property: 'og:image', content: 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Drink-X_Banner_Image.png?v=1751344950' },
+            //     { name: 'twitter:card', content: 'summary_large_image' },
+            //     { name: 'twitter:image', content: 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Drink-X_Banner_Image.png?v=1751344950' }
+            // ],
+            // link: [{
+            //     rel: 'canonical',
+            //     content: 'https://www.drink-x.com'
+            // }]
         }),
-        useSeoMeta({
-            titleTemplate: '%s | A World of Drinks. Just Look It Up.',
-            title: 'Drink-X',
-            // og title is not effected by titleTemplate, we can use template params here if we need
-            ogTitle: 'Welcome to Drink-X.',
-            // explicit twitter title is only needed when we want to display something just for X
-            twitterTitle: 'Hey X! Welcome to Drink-X!',
-        })
+            // useSeoMeta for SEO and social media optimization
+            useSeoMeta({
+                // Basic SEO
+                title: 'Drink-X | A World of Drinks - Just Look It Up!',
+                description: 'Discover your next great drink! Sign up for free - log your drink reviews, discover new brands, and explore your next go-to bar.',
+
+                // Open Graph (Facebook, LinkedIn, etc.)
+                ogTitle: 'Drink-X | A World of Drinks - Just Look It Up!',
+                ogDescription: 'Discover your next great drink! Sign up for free - log your drink reviews, discover new brands, and explore your next go-to bar.',
+                ogImage: 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Drink-X_Banner_Image.png?v=1751344950',
+                ogImageWidth: '1200',
+                ogImageHeight: '630',
+                ogUrl: 'https://www.drink-x.com',
+                ogType: 'website',
+                ogSiteName: 'drink-x',
+                ogLocale: 'en_US',
+
+                // Twitter Card
+                twitterCard: 'summary_large_image',
+                twitterSite: '@yourhandle',
+                twitterCreator: '@yourhandle',
+                twitterTitle: 'https://www.drink-x.com',
+                twitterDescription: 'Discover your next great drink! Sign up for free - log your drink reviews, discover new brands, and explore your next go-to bar.',
+                twitterImage: 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Drink-X_Banner_Image.png?v=1751344950',
+                twitterImageAlt: computed(() => `Drink-X banner`),
+
+                // Additional social platforms
+                articleAuthor: 'drink-x.com',
+                articlePublisher: '88bamboo.com',
+
+                // Canonical URL
+                canonical: 'https://drink-x.com',
+
+                // Robots
+                // robots: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
+                // Enhanced robots directive
+                robots: robotsContent
+            })
         /* SEO section Ends */
     },
     data() {
@@ -1031,21 +1109,20 @@ export default {
         this.loadData();
     },
     computed: {
-    safeProfileRoute() {
-      // If userID is not present, route to signup instead
-      console.log("User ID:", this.userID);
-      return this.userID ? `/profile/user/${this.userID}/${this.username}` : '/signup';
-    }
-  },
+        safeProfileRoute() {
+            // If userID is not present, route to signup instead
+            console.log("User ID:", this.userID);
+            return this.userID ? `/profile/user/${this.userID}/${this.username}` : '/signup';
+        }
+    },
     methods: {
-
-
         slugify(text) {
-                return text
-                    .toString()
-                    .toLowerCase()
-                    .replace(/\s+/g, '')
-                    .replace(/[^\w]/g, ''); },
+            return text
+                .toString()
+                .toLowerCase()
+                .replace(/\s+/g, '')
+                .replace(/[^\w]/g, '');
+        },
         // Load data from the database (e.g., profile picture)
         async loadData(url) {
             try {
@@ -1132,7 +1209,7 @@ export default {
             try {
                 this.selectedListing = listing;
                 console.log("listing:", listing);
-                this.$router.push({ path: '/listing/view/' + listing.id + '/' + this.slugify(listing.listingName)});
+                this.$router.push({ path: '/listing/view/' + listing.id + '/' + this.slugify(listing.listingName) });
             } catch (error) {
                 console.error("Error navigating to listing:", error);
             }
@@ -1276,16 +1353,16 @@ button.btn.selected {
 
 /* For trending bottle listings */
 .listing-text:hover {
-  color: green;
-  cursor: pointer;
+    color: green;
+    cursor: pointer;
 }
 
 .listing-item img {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .listing-item:hover img {
-  transform: scale(1.08);
+    transform: scale(1.08);
 }
 
 
@@ -1320,28 +1397,28 @@ button.btn.selected {
 }
 
 .hero-section {
-  position: relative;
-  width: 100%;
-  padding-top: 70%; /* mobile default: 3:6 = 1:2 */
-  overflow: hidden;
+    position: relative;
+    width: 100%;
+    padding-top: 70%;
+    /* mobile default: 3:6 = 1:2 */
+    overflow: hidden;
 }
 
 @media (min-width: 768px) {
-  .hero-section {
-    padding-top: 28%; /* desktop: 2:6 = 1:3 */
-  }
+    .hero-section {
+        padding-top: 28%;
+        /* desktop: 2:6 = 1:3 */
+    }
 }
 
 .hero-bg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  filter: brightness(0.7);
-  z-index: -1;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.7);
+    z-index: -1;
 }
-
-
 </style>
