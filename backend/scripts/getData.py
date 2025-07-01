@@ -2988,46 +2988,65 @@ def getRequestEdits():
 def getRequestEditsByRole(role, id):
     conn = g.db
     cursor = conn.cursor()
+    print(f"==== getRequestEditsByRole called with role={role}, id={id} ====")
+
 
     # Return data arrays
     request_edits_data = []
     request_dups_data = []
 
     try:
+        print(f"Converting ID {id} to integer")
         id = int(id)  # Ensure ID is an integer
+        print(f"ID successfully converted to {id}")
 
         if role == 'producer':
             # Validate producer exists
+            print(f"PRODUCER PATH: Validating producer with ID {id}")
             cursor.execute("""SELECT * FROM "producers" WHERE "id" = %s""", (id,))
             producer_data = cursor.fetchone()
 
             if producer_data is None:
+                print(f"ERROR: Producer with ID {id} not found in database")
                 return jsonify({"code": 404, "message": "Producer not found."}), 404
 
+            print(f"Producer exists: {producer_data.get('producerName', 'Unknown name')}")
+
             # Fetch unreviewed edits for this producer
+            print(f"Fetching unreviewed edits for producer {id}")
             cursor.execute("""
                 SELECT * FROM "requestEdits"
                 WHERE "producerID" = %s AND "reviewStatus" = false
             """, (id,))
             request_edits_raw = cursor.fetchall()
+            print(f"Found {len(request_edits_raw) if request_edits_raw else 0} unreviewed edits")
 
         elif role == 'user':
+            print(f"USER PATH: Fetching user info for ID {id}")
+
             # Fetch user info
             cursor.execute("""SELECT "isAdmin", "modType" FROM "users" WHERE "id" = %s""", (id,))
             user_data = cursor.fetchone()
 
             if user_data is None:
+                print(f"ERROR: User with ID {id} not found in database")
                 return jsonify({"code": 404, "message": "User not found."}), 404
+            
+            print(f"User exists: isAdmin={user_data['isAdmin']}, modType={user_data['modType']}")
 
             if user_data['isAdmin']:
+                print("Admin user: fetching all unreviewed edits")
                 # Admin gets all unreviewed edits
                 cursor.execute("""SELECT * FROM "requestEdits" WHERE "reviewStatus" = false""")
                 request_edits_raw = cursor.fetchall()
+                print(f"Found {len(request_edits_raw) if request_edits_raw else 0} unreviewed edits for admin")
 
             else:
                 # Standard user: fetch edits by user or by drinkType from modType
+                print("Standard user: filtering by user or modType")
                 mod_type = user_data['modType']
                 if mod_type:
+                    print(f"User has modType: {mod_type}")
                     placeholders = ','.join(['%s'] * len(mod_type))
                     query = f"""
                         SELECT re.*
@@ -3038,25 +3057,34 @@ def getRequestEditsByRole(role, id):
                         )
                     """
                     params = [id] + mod_type
+                    print(f"Executing query with parameters: {params}")
                     cursor.execute(query, params)
                 else:
+                    print(f"User has no modType, only fetching own requests")
                     # No modType: only include own requests
                     cursor.execute("""
                         SELECT * FROM "requestEdits"
                         WHERE "reviewStatus" = false AND "userID" = %s
                     """, (id,))
                 request_edits_raw = cursor.fetchall()
+                print(f"Found {len(request_edits_raw) if request_edits_raw else 0} unreviewed edits for standard user")
 
         else:
+            print(f"ERROR: Invalid role specified: {role}")
             return jsonify({"code": 400, "message": "Invalid role specified."}), 400
 
         if not request_edits_raw:
+            print("No request edits found, returning empty arrays")
             return jsonify({"requestEdits": [], "requestDups": []}), 200
 
         # Enrich and split request data
+        print(f"Beginning to enrich and split {len(request_edits_raw)} request edits")
         for request_edit in request_edits_raw:
             listing_id = request_edit['listingID']
+            print(f"Edit has listingID: {listing_id}")
+
             if listing_id:
+                print(f"Fetching data for listing ID {listing_id}")
                 cursor.execute("""
                     SELECT "listingName", "photo", "producerID"
                     FROM "listings"
@@ -3065,22 +3093,31 @@ def getRequestEditsByRole(role, id):
                 listing_data = cursor.fetchone()
 
                 if listing_data:
+                    print(f"Found listing: {listing_data['listingName']}")
                     request_edit['listingName'] = listing_data['listingName']
                     request_edit['listingPhoto'] = listing_data['photo']
                     request_edit['producerID'] = listing_data['producerID']
+                else:
+                    print(f"WARNING: No listing found for ID {listing_id}")
 
             # Get producer name
             producer_id = request_edit.get('producerID')
+            print(f"Edit has producerID: {producer_id}")
             if producer_id:
+                print(f"Fetching data for producer ID {producer_id}")
                 cursor.execute("""SELECT "producerName" FROM "producers" WHERE "id" = %s""", (producer_id,))
                 producer_info = cursor.fetchone()
+                
                 request_edit['producerName'] = producer_info['producerName'] if producer_info else "Unknown Producer"
             else:
+                print(f"WARNING: No producer found for ID {producer_id}")
                 request_edit['producerName'] = "Unknown Producer"
 
             # Get requester username
             requester_id = request_edit.get('userID')
+            print(f"Edit has userID: {requester_id}")
             if requester_id:
+                print(f"Fetching username for user ID {requester_id}")
                 cursor.execute("""SELECT "username" FROM "users" WHERE "id" = %s""", (requester_id,))
                 requester_info = cursor.fetchone()
                 request_edit['requesterUsername'] = requester_info['username'] if requester_info else '(Anonymous)'
@@ -3100,6 +3137,7 @@ def getRequestEditsByRole(role, id):
 
     except Exception as e:
         print("Error in getRequestEditsByRole:", str(e))
+        print(f"TRACEBACK: {traceback.format_exc()}")
         return jsonify({
             "code": 500,
             "message": "An error occurred while fetching request edits by role."
