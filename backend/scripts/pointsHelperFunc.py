@@ -210,6 +210,28 @@ def get_current_proof_points(user_id):
                 total_producer_review_upvotes += 0
                 total_producer_review_downvotes += 0
 
+
+    # Get the venue review id for producer reviews made by user
+    cursor.execute('SELECT id FROM "venueReviews" WHERE "userID" = %s', (user_id,))
+    venue_review_ids = cursor.fetchall()
+
+    # Loop through each venue review id and compile number of upvotes and downvotes for each venue review
+    total_venue_review_upvotes = 0
+    total_venue_review_downvotes = 0
+
+    if venue_review_ids:
+        for venue_review_id in venue_review_ids:
+            vr_id = venue_review_id['id']
+            cursor.execute('SELECT "upvotes", "downvotes" FROM "venueReviewsUserVotes" WHERE "reviewId" = %s', (vr_id,))
+            votes = cursor.fetchone()
+
+            if votes:
+                total_venue_review_upvotes += len(votes['upvotes'])
+                total_venue_review_downvotes += len(votes['downvotes'])
+            else:
+                total_venue_review_upvotes += 0
+                total_venue_review_downvotes += 0
+
     # Get the member ids of the user 
     cursor.execute('SELECT id FROM "clubMembers" WHERE "userID" = %s', (user_id,))
     member_ids = cursor.fetchall()
@@ -265,8 +287,8 @@ def get_current_proof_points(user_id):
     cursor.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = 9')
     downvote_points = cursor.fetchone()['proofPoints']
 
-    overall_total_upvotes = total_review_upvotes + total_producer_review_upvotes + total_member_likes
-    overall_total_downvotes = total_review_downvotes + total_producer_review_downvotes + total_member_dislikes
+    overall_total_upvotes = total_review_upvotes + total_producer_review_upvotes + total_venue_review_upvotes + total_member_likes
+    overall_total_downvotes = total_review_downvotes + total_producer_review_downvotes + total_venue_review_downvotes + total_member_dislikes
 
     # Calculate total points
     total_points = user_points['currentPoints'] + (overall_total_upvotes * upvote_points) + (overall_total_downvotes * downvote_points)
