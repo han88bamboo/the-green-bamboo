@@ -2199,7 +2199,10 @@
                                 <span class="ms-2">
                                     {{ getUserPointsFromReview(review) }}
                                 </span>
-                                {{ getUserRankFromReview(review)}}
+                                <span :style="{ color: getUserRankColor(review) }">
+                                    {{ getUserRankFromReview(review)}}
+                                </span>
+                                
                                 &nbsp;rated
                                 <span style="color: #f0b358">★</span>
                                 <span style="font-weight: bold">{{ review.rating }}</span> Stars
@@ -3472,7 +3475,6 @@
                 return "(unknown user)";
             },
 
-            // Need refactor
             getUserPointsFromReview(review) {
                 const user = this.users.find((user) => {
                     return user["id"] == review["userID"];
@@ -3482,15 +3484,24 @@
                 }
             },
 
-            // Need refactor
             getUserRankFromReview(review) {
                 const user = this.users.find((user) => {
                     return user["id"] == review["userID"];
                 });
                 if (user) {
-                    return user["proofRank"];
+                    return user["proofRank"][0];
                 }
             },
+
+            getUserRankColor(review) {
+                const user = this.users.find((user) => {
+                    return user["id"] == review["userID"];
+                });
+                if (user) {
+                    return user["proofRank"][1];
+                }
+            },
+
 
             clearPhoto() {
                 this.reviewImages64 = [];
