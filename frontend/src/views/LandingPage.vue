@@ -3,7 +3,7 @@
 
     <!-- Hero Section with Search -->
     <div class="hero-section text-center">
-        <img src="../../Images/Background/Landing Page Hero Image.png" class="hero-bg" style="filter: brightness(0.7);"
+        <img src="../../Images/Background/landing_page_hero_image.webp" class="hero-bg" style="filter: brightness(0.7);"
             alt="Background" />
         <div
             class="container position-absolute top-50 start-50 translate-middle text-white d-flex flex-column align-items-center px-3">
@@ -906,6 +906,7 @@
 </template>
 
 <script>
+// important for SEO mangament
 import { useHead, useSeoMeta } from '@unhead/vue'
 import { computed } from 'vue'
 
@@ -960,7 +961,7 @@ export default {
 
         /* SEO section Starts */
         useHead({
-            title: 'Drink-X | Home',
+            title: 'Drink-X | A World of Drinks - Just Look It Up!',
             // Custom meta tags that useSeoMeta doesn't cover
             meta: [
                 {
@@ -993,10 +994,15 @@ export default {
                     href: 'https://drink-x.com'
                 },
                 {
-                    rel: 'preload',
+                    loading: 'lazy',
                     href: 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Drink-X_Banner_Image.png?v=1751344950',
                     as: 'image',
                 }
+                // {
+                //     rel: 'preload',
+                //     href: '../Images/Background/landing_page_hero_image.webp',
+                //     as: 'image'
+                // }
             ],
 
             // JSON-LD structured data for rich snippets
