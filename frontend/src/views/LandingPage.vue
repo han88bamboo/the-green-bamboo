@@ -1,10 +1,10 @@
 <template>
     <NavBar />
-
+    <main>
     <!-- Hero Section with Search -->
-    <div class="hero-section text-center">
+    <section class="hero-section text-center">
         <img src="../../Images/Background/landing_page_hero_image.webp" class="hero-bg" style="filter: brightness(0.7);"
-            alt="Background" />
+            alt="A bartender pouring a cocktail in a dimly lit bar, with the text 'A World of Drinks. Just Look It Up.' overlaid." />
         <div
             class="container position-absolute top-50 start-50 translate-middle text-white d-flex flex-column align-items-center px-3">
             <h1 class="mb-4 fw-bold display-5 mobile-fs-4">
@@ -16,16 +16,16 @@
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 
     <!-- Hero End -->
 
     <!-- Icon Section -->
-    <div class="container py-4">
+    <section class="container py-4">
         <div class="row g-2">
             <!-- Desktop View -->
             <div class="d-none d-md-flex align-items-start gap-3 mb-3">
-                <h3 class="fw-bold mb-0" style="color: #027562;">Our Features</h3>
+                <h2 class="fw-bold mb-0" style="color: #027562;">Our Features</h2>
             </div>
             <!-- Mobile View -->
             <div class="d-md-none">
@@ -37,14 +37,14 @@
                     <router-link :to="'/login'">
                         <button class="btn border-0 fw-bold tilt-hover" type="button">
                             <div class="mb-lg-3 icon-container">
-                                <img src="../../Images/Landing Page/Layer1.png" alt="Log Reviews" class="img-fluid" />
+                                <img src="../../Images/Landing Page/Layer1.png" alt="Log your drink reviews and share your favorites" class="img-fluid" loading="lazy" />
                             </div>
                         </button>
                     </router-link>
                     <router-link :to="'/login'" class="text-link">
-                        <h6 class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height">
+                        <h3 class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height h6">
                             Log Your Drink Reviews and Share Your Favorites
-                        </h6>
+                        </h3>
                     </router-link>
                 </div>
             </div>
@@ -55,15 +55,15 @@
                     <router-link :to="'/clubs/view'">
                         <button class="btn border-0 fw-bold tilt-hover" type="button">
                             <div class="mb-lg-3 icon-container">
-                                <img src="../../Images/Landing Page/Layer2.png" alt="Find Communities"
-                                    class="img-fluid" />
+                                <img src="../../Images/Landing Page/Layer2.png" alt="Find your communities and join events"
+                                    class="img-fluid" loading="lazy" />
                             </div>
                         </button>
                     </router-link>
                     <router-link :to="'/clubs/view'" class="text-link">
-                        <h6 class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height">
+                        <h3 class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height h6">
                             Find Your Communities and Join Events
-                        </h6>
+                        </h3>
                     </router-link>
                 </div>
             </div>
@@ -74,15 +74,15 @@
                     <router-link :to="'/explore'">
                         <button class="btn border-0 fw-bold tilt-hover" type="button">
                             <div class="mb-lg-3 icon-container">
-                                <img src="../../Images/Landing Page/Layer3.png" alt="Discover Drinks"
-                                    class="img-fluid" />
+                                <img src="../../Images/Landing Page/Layer3.png" alt="Discover new drinks and find crowdsourced reviews"
+                                    class="img-fluid" loading="lazy" />
                             </div>
                         </button>
                     </router-link>
                     <router-link :to="'/explore'" class="text-link">
-                        <h6 class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height">
+                        <h3 class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height h6">
                             Discover New Drinks and Find Crowdsourced Reviews
-                        </h6>
+                        </h3>
                     </router-link>
                 </div>
             </div>
@@ -93,14 +93,14 @@
                     <router-link :to="'/clubs/view'">
                         <button class="btn border-0 fw-bold tilt-hover" type="button">
                             <div class="mb-lg-3 icon-container">
-                                <img src="../../Images/Landing Page/Layer4.png" alt="Connect" class="img-fluid" />
+                                <img src="../../Images/Landing Page/Layer4.png" alt="Connect with your favorite bars and brands" class="img-fluid" loading="lazy" />
                             </div>
                         </button>
                     </router-link>
                     <router-link :to="'/clubs/view'" class="text-link">
-                        <h6 class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height">
+                        <h3 class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height h6">
                             Connect With Your Favorite Bars and Brands
-                        </h6>
+                        </h3>
                     </router-link>
                 </div>
             </div>
@@ -111,14 +111,14 @@
                     <router-link :to="'/clubs/view'">
                         <button class="btn border-0 fw-bold tilt-hover" type="button">
                             <div class="mb-lg-3 icon-container">
-                                <img src="../../Images/Landing Page/Layer5.png" alt="Connect" class="img-fluid" />
+                                <img src="../../Images/Landing Page/Layer5.png" alt="Find nearby producers and venues" class="img-fluid" loading="lazy" />
                             </div>
                         </button>
                     </router-link>
                     <router-link :to="'/clubs/view'" class="text-link">
-                        <h6 class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height">
+                        <h3 class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height h6">
                             Find Nearby Producers and Venues
-                        </h6>
+                        </h3>
                     </router-link>
                 </div>
             </div>
@@ -129,30 +129,30 @@
                     <router-link :to="safeProfileRoute">
                         <button class="btn border-0 fw-bold tilt-hover" type="button">
                             <div class="mb-lg-3 icon-container">
-                                <img src="../../Images/Landing Page/Layer6.png" alt="Connect" class="img-fluid" />
+                                <img src="../../Images/Landing Page/Layer6.png" alt="Start collecting points and badges from your first review" class="img-fluid" loading="lazy" />
                             </div>
                         </button>
                     </router-link>
                     <router-link :to="safeProfileRoute" class="text-link">
-                        <h6 class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height">
+                        <h3 class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height h6">
                             Start Collecting Points and Badges From Your First Review
-                        </h6>
+                        </h3>
                     </router-link>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
     <!-- Icon End -->
 
     <!-- Trending Section -->
-    <div style="background-color: wheat;">
+    <section style="background-color: wheat;">
         <div class="container p-4">
             <div class="container pb-0">
                 <!-- Trending and Description in One Row -->
                 <div class="d-md-flex text-start gap-3 mb-3">
-                    <h3 class="mobile-fs-4 fw-bold mb-1" style="color: #027562;">Trending</h3>
-                    <h5 class="mt-2 mobile-fs-6 fw-bold fst-italic" style="color: black;">"Who is saying what now?"
-                    </h5>
+                    <h2 class="mobile-fs-4 fw-bold mb-1" style="color: #027562;">Trending</h2>
+                    <h3 class="mt-2 mobile-fs-6 fw-bold fst-italic h5" style="color: black;">"Who is saying what now?"
+                    </h3>
                 </div>
 
                 <!-- Trending Observation Tags -->
@@ -210,12 +210,13 @@
                             <div class="drink-photo-container-row image-container-150 mb-2" style="width: 150px"
                                 @click="goSearchListing(listing)">
                                 <img v-if="listing['photo']" :src="listing['photo']" class="img-fluid rounded mb-2"
-                                    style="max-height: 100px; object-fit: contain;" />
+                                    style="max-height: 100px; object-fit: contain;" loading="lazy" :alt="listing.listingName" />
                                 <img v-else
                                     src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
-                                    class="img-fluid rounded mb-2" style="max-height: 100px; object-fit: contain;" />
+                                    class="img-fluid rounded mb-2" style="max-height: 100px; object-fit: contain;" loading="lazy" alt="Default drink image" />
                                 <div class="fw-semibold mobile-rating-smaller-text-2 listing-text">{{
-                                    listing['listingName'] }}</div>
+                                    listing['listingName'] }}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -226,20 +227,20 @@
                     <div v-for="listing in listings.slice(0, 5)" :key="listing.id" class="text-center mx-1 listing-item"
                         style="width: 120px;" @click="goSearchListing(listing)">
                         <img v-if="listing['photo']" :src="listing['photo']" class="img-fluid rounded mb-2"
-                            style="max-height: 120px; object-fit: contain;" />
+                            style="max-height: 120px; object-fit: contain;" loading="lazy" :alt="listing.listingName" />
                         <img v-else
                             src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
-                            class="img-fluid rounded mb-2" style="max-height: 120px; object-fit: contain;" />
+                            class="img-fluid rounded mb-2" style="max-height: 120px; object-fit: contain;" loading="lazy" alt="Default drink image" />
                         <div class="fw-semibold small listing-text">{{ listing['listingName'] }}</div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
     <!-- Trending End -->
 
     <!-- Editorial Section -->
-    <div class="container p-4 pb-2">
+    <section class="container p-4 pb-2">
         <div class="d-sm-none border-0 mb-3">
             <h2 class="mobile-fs-4 fw-bold mb-1" style="text-align: left; padding-left: 10px; color: #027562;">
                 Latest Drink Buzz
@@ -268,14 +269,14 @@
                             <div class="col-12 col-sm-6 col-lg-3 mb-3 mobile-view-hide"
                                 v-for="(article, artIndex) in category.latest_news.slice(0, 4)"
                                 :key="'latest-' + artIndex">
-                                <div class="card h-100 shadow" style="background-color: transparent">
+                                <article class="card h-100 shadow" style="background-color: transparent">
 
                                     <div class="d-sm-block">
-                                        <img :src="article.image_url" class="card-img-top" alt="News Image"
-                                            style="height: 180px; object-fit: cover" />
+                                        <img :src="article.image_url" class="card-img-top" :alt="article.title"
+                                            style="height: 180px; object-fit: cover" loading="lazy" />
                                         <div class="card-body d-flex flex-column justify-content-between"
                                             style="height: 100px">
-                                            <h6 class="text-muted text-start">
+                                            <h3 class="text-muted text-start h6">
                                                 {{
                                                     article.title
                                                         .split(" ")
@@ -286,31 +287,31 @@
                                                         ? "..."
                                                         : "")
                                                 }}
-                                            </h6>
+                                            </h3>
                                             <a :href="article.link" target="_blank" class="stretched-link"></a>
                                         </div>
                                     </div>
-                                </div>
+                                </article>
                             </div>
                             <!-- Mobile view (latest 2 news articles) -->
                             <div class="d-sm-none col-12 col-sm-6 col-lg-3 mb-3"
                                 v-for="(article, artIndex) in category.latest_news.slice(0, 2)"
                                 :key="'latest-' + artIndex">
-                                <div class="card h-100 shadow" style="background-color: transparent">
+                                <article class="card h-100 shadow" style="background-color: transparent">
                                     <div class=" border-0">
                                         <div class="row g-0">
                                             <div class="col-4">
                                                 <div style="width: 110px; height: 110px; overflow: hidden;">
                                                     <img :src="article.image_url" class="img-fluid w-100 h-100"
-                                                        alt="News Image" style="object-fit: cover;" />
+                                                        :alt="article.title" style="object-fit: cover;" loading="lazy" />
                                                 </div>
                                             </div>
                                             <div class="col-8 px-2">
-                                                <h6 class="ps-1 pt-2 d-flex fw-bold" style="color: rgb(2, 117, 98)">New
-                                                    Releases</h6>
+                                                <h3 class="ps-1 pt-2 d-flex fw-bold h6" style="color: rgb(2, 117, 98)">New
+                                                    Releases</h3>
                                                 <div class="p-0 ps-1 d-flex justify-content-center"
                                                     style="height: 100%">
-                                                    <h6 class=" text-muted text-start mb-0">
+                                                    <h4 class=" text-muted text-start mb-0 h6">
                                                         {{
                                                             article.title
                                                                 .split(" ")
@@ -321,13 +322,13 @@
                                                                 ? "..."
                                                                 : "")
                                                         }}
-                                                    </h6>
+                                                    </h4>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                     <a :href="article.link" target="_blank" class="stretched-link"></a>
-                                </div>
+                                </article>
                             </div>
                         </div>
                     </div>
@@ -347,14 +348,14 @@
                                 <div class="col-12 col-lg-12 col-sm-6 mb-3"
                                     v-for="(article, artIndex) in category.spotlight.slice(0, 1)"
                                     :key="'spotlight-' + artIndex">
-                                    <div class="card h-100 shadow" style="background-color: transparent">
+                                    <article class="card h-100 shadow" style="background-color: transparent">
                                         <!-- Desktop view -->
                                         <div class="d-none d-sm-block">
-                                            <img :src="article.image_url" class="card-img-top" alt="News Image"
-                                                style="height: 180px; object-fit: cover;" />
+                                            <img :src="article.image_url" class="card-img-top" :alt="article.title"
+                                                style="height: 180px; object-fit: cover;" loading="lazy" />
                                             <div class="card-body d-flex flex-column justify-content-between"
                                                 style="height: 100px">
-                                                <h6 class="fst-italic text-muted text-start">
+                                                <h3 class="fst-italic text-muted text-start h6">
                                                     {{
                                                         article.title
                                                             .split(" ")
@@ -365,7 +366,7 @@
                                                             ? "..."
                                                             : "")
                                                     }}
-                                                </h6>
+                                                </h3>
                                                 <a :href="article.link" target="_blank" class="stretched-link"></a>
                                             </div>
                                         </div>
@@ -376,16 +377,16 @@
                                                 <div class="col-4">
                                                     <div style="width: 110px; height: 110px; overflow: hidden;">
                                                         <img :src="article.image_url" class="img-fluid w-100 h-100"
-                                                            alt="News Image" style="object-fit: cover;" />
+                                                            :alt="article.title" style="object-fit: cover;" loading="lazy" />
                                                     </div>
 
                                                 </div>
                                                 <div class="col-8 px-2">
-                                                    <h6 class="ps-1 pt-2 d-flex fw-bold" style="color: rgb(2, 117, 98)">
-                                                        Deepdive</h6>
+                                                    <h3 class="ps-1 pt-2 d-flex fw-bold h6" style="color: rgb(2, 117, 98)">
+                                                        Deepdive</h3>
                                                     <div class="p-0 ps-1 d-flex justify-content-center"
                                                         style="height: 100%">
-                                                        <h6 class="fst-italic text-muted text-start mb-0">
+                                                        <h4 class="fst-italic text-muted text-start mb-0 h6">
                                                             {{
                                                                 article.title
                                                                     .split(" ")
@@ -396,13 +397,13 @@
                                                                     ? "..."
                                                                     : "")
                                                             }}
-                                                        </h6>
+                                                        </h4>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                         <a :href="article.link" target="_blank" class="stretched-link"></a>
-                                    </div>
+                                    </article>
                                 </div>
                             </div>
                         </div>
@@ -420,13 +421,13 @@
                                 <!-- Desktop view: 3 latest reviews -->
                                 <div class="mobile-view-hide col-12 col-lg-4 col-sm-6 mb-3"
                                     v-for="(article, artIndex) in reviews.slice(0, 3)" :key="'review-' + artIndex">
-                                    <div class="card h-100 shadow" style="background-color: transparent">
+                                    <article class="card h-100 shadow" style="background-color: transparent">
                                         <div class="d-none d-sm-block">
-                                            <img :src="article.image_url" class="card-img-top" alt="News Image"
-                                                style="height: 180px; object-fit: cover;" />
+                                            <img :src="article.image_url" class="card-img-top" :alt="article.title"
+                                                style="height: 180px; object-fit: cover;" loading="lazy" />
                                             <div class="card-body d-flex flex-column justify-content-between"
                                                 style="height: 100px">
-                                                <h6 class="fst-italic text-muted text-start">
+                                                <h3 class="fst-italic text-muted text-start h6">
                                                     {{
                                                         article.title
                                                             .split(" ")
@@ -437,30 +438,30 @@
                                                             ? "..."
                                                             : "")
                                                     }}
-                                                </h6>
+                                                </h3>
                                                 <a :href="article.link" target="_blank" class="stretched-link"></a>
                                             </div>
                                         </div>
-                                    </div>
+                                    </article>
                                 </div>
                                 <!-- Mobile view: only 1 latest review -->
                                 <div class="mobile-view-show col-12 col-lg-4 col-sm-6 mb-3"
                                     v-for="(article, artIndex) in reviews.slice(0, 1)" :key="'review-' + artIndex">
-                                    <div class="card h-100 shadow" style="background-color: transparent">
+                                    <article class="card h-100 shadow" style="background-color: transparent">
                                         <div class="d-sm-none border-0">
                                             <div class="row g-0">
                                                 <div class="col-4">
                                                     <div style="width: 110px; height: 110px; overflow: hidden;">
-                                                        <img :src="article.image_url" class="img-fluid" alt="News Image"
-                                                            style="height: 120px; object-fit: cover;" />
+                                                        <img :src="article.image_url" class="img-fluid" :alt="article.title"
+                                                            style="height: 120px; object-fit: cover;" loading="lazy" />
                                                     </div>
                                                 </div>
                                                 <div class="col-8 px-2">
-                                                    <h6 class="ps-1 pt-2 d-flex fw-bold" style="color: rgb(2, 117, 98)">
-                                                        Taste Test</h6>
+                                                    <h3 class="ps-1 pt-2 d-flex fw-bold h6" style="color: rgb(2, 117, 98)">
+                                                        Taste Test</h3>
                                                     <div class="p-0 ps-1 d-flex justify-content-center"
                                                         style="height: 100%">
-                                                        <h6 class="fst-italic text-muted text-start mb-0">
+                                                        <h4 class="fst-italic text-muted text-start mb-0 h6">
                                                             {{
                                                                 article.title
                                                                     .split(" ")
@@ -471,13 +472,13 @@
                                                                     ? "..."
                                                                     : "")
                                                             }}
-                                                        </h6>
+                                                        </h4>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                         <a :href="article.link" target="_blank" class="stretched-link"></a>
-                                    </div>
+                                    </article>
                                 </div>
                             </div>
                         </div>
@@ -498,14 +499,14 @@
                                 <div class="col-12 col-lg-12 col-sm-6 mb-3"
                                     v-for="(article, artIndex) in category.features.slice(0, 1)"
                                     :key="'features-' + artIndex">
-                                    <div class="card h-100 shadow" style="background-color: transparent">
+                                    <article class="card h-100 shadow" style="background-color: transparent">
                                         <!-- Desktop view -->
                                         <div class="d-none d-sm-block">
-                                            <img :src="article.image_url" class="card-img-top" alt="News Image"
-                                                style="height: 180px; object-fit: cover;" />
+                                            <img :src="article.image_url" class="card-img-top" :alt="article.title"
+                                                style="height: 180px; object-fit: cover;" loading="lazy" />
                                             <div class="card-body d-flex flex-column justify-content-between"
                                                 style="height: 100px">
-                                                <h6 class="fst-italic text-muted text-start">
+                                                <h3 class="fst-italic text-muted text-start h6">
                                                     {{
                                                         article.title
                                                             .split(" ")
@@ -516,7 +517,7 @@
                                                             ? "..."
                                                             : "")
                                                     }}
-                                                </h6>
+                                                </h3>
                                                 <a :href="article.link" target="_blank" class="stretched-link"></a>
                                             </div>
                                         </div>
@@ -526,16 +527,16 @@
                                             <div class="row g-0">
                                                 <div class="col-4">
                                                     <div style="width: 110px; height: 110px; overflow: hidden;">
-                                                        <img :src="article.image_url" class="img-fluid" alt="News Image"
-                                                            style="height: 120px; object-fit: cover;" />
+                                                        <img :src="article.image_url" class="img-fluid" :alt="article.title"
+                                                            style="height: 120px; object-fit: cover;" loading="lazy" />
                                                     </div>
                                                 </div>
                                                 <div class="col-8 px-2">
-                                                    <h6 class="ps-1 pt-2 d-flex fw-bold" style="color: rgb(2, 117, 98)">
-                                                        Features</h6>
+                                                    <h3 class="ps-1 pt-2 d-flex fw-bold h6" style="color: rgb(2, 117, 98)">
+                                                        Features</h3>
                                                     <div class="p-0 ps-1 d-flex justify-content-center"
                                                         style="height: 100%">
-                                                        <h6 class="text-muted text-start mb-0">
+                                                        <h4 class="text-muted text-start mb-0 h6">
                                                             {{
                                                                 article.title
                                                                     .split(" ")
@@ -546,13 +547,13 @@
                                                                     ? "..."
                                                                     : "")
                                                             }}
-                                                        </h6>
+                                                        </h4>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                         <a :href="article.link" target="_blank" class="stretched-link"></a>
-                                    </div>
+                                    </article>
                                 </div>
                             </div>
                         </div>
@@ -569,14 +570,14 @@
                                 <div class="col-12 col-lg-12 col-sm-6 mb-3"
                                     v-for="(article, artIndex) in category.interviews.slice(0, 1)"
                                     :key="'interviews-' + artIndex">
-                                    <div class="card h-100 shadow" style="background-color: transparent">
+                                    <article class="card h-100 shadow" style="background-color: transparent">
                                         <!-- Desktop view -->
                                         <div class="d-none d-sm-block">
-                                            <img :src="article.image_url" class="card-img-top" alt="News Image"
-                                                style="height: 180px; object-fit: cover;" />
+                                            <img :src="article.image_url" class="card-img-top" :alt="article.title"
+                                                style="height: 180px; object-fit: cover;" loading="lazy" />
                                             <div class="card-body d-flex flex-column justify-content-between"
                                                 style="height: 100px">
-                                                <h6 class="fst-italic text-muted text-start">
+                                                <h3 class="fst-italic text-muted text-start h6">
                                                     {{
                                                         article.title
                                                             .split(" ")
@@ -587,7 +588,7 @@
                                                             ? "..."
                                                             : "")
                                                     }}
-                                                </h6>
+                                                </h3>
                                                 <a :href="article.link" target="_blank" class="stretched-link"></a>
                                             </div>
                                         </div>
@@ -597,16 +598,16 @@
                                             <div class="row g-0">
                                                 <div class="col-4">
                                                     <div style="width: 110px; height: 110px; overflow: hidden;">
-                                                        <img :src="article.image_url" class="img-fluid" alt="News Image"
-                                                            style="height: 120px; object-fit: cover;" />
+                                                        <img :src="article.image_url" class="img-fluid" :alt="article.title"
+                                                            style="height: 120px; object-fit: cover;" loading="lazy" />
                                                     </div>
                                                 </div>
                                                 <div class="col-8 px-2">
-                                                    <h6 class="ps-1 pt-2 d-flex fw-bold" style="color: rgb(2, 117, 98)">
-                                                        Interview</h6>
+                                                    <h3 class="ps-1 pt-2 d-flex fw-bold h6" style="color: rgb(2, 117, 98)">
+                                                        Interview</h3>
                                                     <div class="p-0 ps-1 d-flex justify-content-center"
                                                         style="height: 100%">
-                                                        <h6 class="text-muted text-start mb-0">
+                                                        <h4 class="text-muted text-start mb-0 h6">
                                                             {{
                                                                 article.title
                                                                     .split(" ")
@@ -617,13 +618,13 @@
                                                                     ? "..."
                                                                     : "")
                                                             }}
-                                                        </h6>
+                                                        </h4>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                         <a :href="article.link" target="_blank" class="stretched-link"></a>
-                                    </div>
+                                    </article>
                                 </div>
                             </div>
                         </div>
@@ -640,14 +641,14 @@
                                 <div class="col-12 col-lg-12 col-sm-6 mb-3"
                                     v-for="(article, artIndex) in category.escapades.slice(0, 1)"
                                     :key="'escapades-' + artIndex">
-                                    <div class="card h-100 shadow" style="background-color: transparent">
+                                    <article class="card h-100 shadow" style="background-color: transparent">
                                         <!-- Desktop view -->
                                         <div class="d-none d-sm-block">
-                                            <img :src="article.image_url" class="card-img-top" alt="News Image"
-                                                style="height: 180px; object-fit: cover;" />
+                                            <img :src="article.image_url" class="card-img-top" :alt="article.title"
+                                                style="height: 180px; object-fit: cover;" loading="lazy" />
                                             <div class="card-body d-flex flex-column justify-content-between"
                                                 style="height: 100px">
-                                                <h6 class="fst-italic text-muted text-start">
+                                                <h3 class="fst-italic text-muted text-start h6">
                                                     {{
                                                         article.title
                                                             .split(" ")
@@ -658,7 +659,7 @@
                                                             ? "..."
                                                             : "")
                                                     }}
-                                                </h6>
+                                                </h3>
                                                 <a :href="article.link" target="_blank" class="stretched-link"></a>
                                             </div>
                                         </div>
@@ -668,16 +669,16 @@
                                             <div class="row g-0">
                                                 <div class="col-4">
                                                     <div style="width: 110px; height: 110px; overflow: hidden;">
-                                                        <img :src="article.image_url" class="img-fluid" alt="News Image"
-                                                            style="height: 120px; object-fit: cover;" />
+                                                        <img :src="article.image_url" class="img-fluid" :alt="article.title"
+                                                            style="height: 120px; object-fit: cover;" loading="lazy" />
                                                     </div>
                                                 </div>
                                                 <div class="col-8 px-2">
-                                                    <h6 class="ps-1 pt-2 d-flex fw-bold" style="color: rgb(2, 117, 98)">
-                                                        Escapades</h6>
+                                                    <h3 class="ps-1 pt-2 d-flex fw-bold h6" style="color: rgb(2, 117, 98)">
+                                                        Escapades</h3>
                                                     <div class="p-0 ps-1 d-flex justify-content-center"
                                                         style="height: 100%">
-                                                        <h6 class="text-muted text-start mb-0">
+                                                        <h4 class="text-muted text-start mb-0 h6">
                                                             {{
                                                                 article.title
                                                                     .split(" ")
@@ -688,13 +689,13 @@
                                                                     ? "..."
                                                                     : "")
                                                             }}
-                                                        </h6>
+                                                        </h4>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                         <a :href="article.link" target="_blank" class="stretched-link"></a>
-                                    </div>
+                                    </article>
                                 </div>
                             </div>
                         </div>
@@ -711,14 +712,14 @@
                                 <div class="col-12 col-lg-12 col-sm-6 mb-3"
                                     v-for="(article, artIndex) in category.whats_on.slice(0, 1)"
                                     :key="'whats_on-' + artIndex">
-                                    <div class="card h-100 shadow" style="background-color: transparent">
+                                    <article class="card h-100 shadow" style="background-color: transparent">
                                         <!-- Desktop view -->
                                         <div class="d-none d-sm-block">
-                                            <img :src="article.image_url" class="card-img-top" alt="News Image"
-                                                style="height: 180px; object-fit: cover;" />
+                                            <img :src="article.image_url" class="card-img-top" :alt="article.title"
+                                                style="height: 180px; object-fit: cover;" loading="lazy" />
                                             <div class="card-body d-flex flex-column justify-content-between"
                                                 style="height: 100px">
-                                                <h6 class="fst-italic text-muted text-start">
+                                                <h3 class="fst-italic text-muted text-start h6">
                                                     {{
                                                         article.title
                                                             .split(" ")
@@ -729,41 +730,11 @@
                                                             ? "..."
                                                             : "")
                                                     }}
-                                                </h6>
+                                                </h3>
                                                 <a :href="article.link" target="_blank" class="stretched-link"></a>
                                             </div>
                                         </div>
-
-                                        <!-- Mobile view: Removed What's Hapenning for Now
-                                        <div class="d-sm-none border-0">
-                                            <div class="row g-0">
-                                                <div class="col-4">
-                                                    <div style="width: 120px; height: 110px; overflow: hidden;">
-                                                        <img :src="article.image_url" class="img-fluid" alt="News Image"
-                                                            style="height: 120px; object-fit: cover;" />
-                                                    </div>
-                                                </div>
-                                                <div class="col-8 ps-2">
-                                                    <div class="card-body px-0 d-flex justify-content-center"
-                                                        style="height: 100%">
-                                                        <h6 class="fst-italic text-muted text-start mb-0">
-                                                            {{
-                                                                article.title
-                                                                    .split(" ")
-                                                                    .slice(0, 20)
-                                                                    .join(" ") +
-                                                                (article.title.split(" ")
-                                                                    .length > 20
-                                                                    ? "..."
-                                                                    : "")
-                                                            }}
-                                                        </h6>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div> 
-                                        <a :href="article.link" target="_blank" class="stretched-link"></a>-->
-                                    </div>
+                                    </article>
                                 </div>
                             </div>
                         </div>
@@ -771,11 +742,11 @@
                 </div>
             </template>
         </div>
-    </div>
+    </section>
     <!-- Editorial End -->
-
+    </main>
     <!-- Business Account Section -->
-    <footer class="text-white" style="background-color: #BAC9E5;">
+    <section class="text-white" style="background-color: #BAC9E5;">
         <div class="container py-4">
             <h2 class="my-3 fw-bold display-5 mobile-fs-4" style="color:black">Are you a business owner?</h2>
             <div class="row g-2">
@@ -788,16 +759,16 @@
                             <router-link :to="'/login'">
                                 <button class="btn border-0 fw-bold tilt-hover" type="button">
                                     <div class="mb-lg-3 icon-container">
-                                        <img src="../../Images/Landing Page/footer1.png" alt="Log Reviews"
-                                            class="img-fluid" />
+                                        <img src="../../Images/Landing Page/footer1.png" alt="Boost your discoverability to new customers"
+                                            class="img-fluid" loading="lazy" />
                                     </div>
                                 </button>
                             </router-link>
                             <router-link :to="'/login'" class="text-link">
-                                <h6
-                                    class="mb-0 mobile-rating-smaller-text-2 text-lg-center text-start d-flex align-items-center caption-height">
+                                <h3
+                                    class="mb-0 mobile-rating-smaller-text-2 text-lg-center text-start d-flex align-items-center caption-height h6">
                                     Boost Your Discoverability to New Customers
-                                </h6>
+                                </h3>
                             </router-link>
                         </div>
                     </div>
@@ -809,16 +780,16 @@
                             <router-link :to="'/clubs/view'">
                                 <button class="btn border-0 fw-bold tilt-hover" type="button">
                                     <div class="mb-lg-3 icon-container">
-                                        <img src="../../Images/Landing Page/Layer2.png" alt="Find Communities"
-                                            class="img-fluid" />
+                                        <img src="../../Images/Landing Page/Layer2.png" alt="Engage your existing fans with direct chat"
+                                            class="img-fluid" loading="lazy" />
                                     </div>
                                 </button>
                             </router-link>
                             <router-link :to="'/clubs/view'" class="text-link">
-                                <h6
-                                    class="mb-0 mobile-rating-smaller-text-2 text-lg-center text-start d-flex align-items-center caption-height">
+                                <h3
+                                    class="mb-0 mobile-rating-smaller-text-2 text-lg-center text-start d-flex align-items-center caption-height h6">
                                     Engage Your Existing Fans with Direct Chat
-                                </h6>
+                                </h3>
                             </router-link>
                         </div>
                     </div>
@@ -830,16 +801,16 @@
                             <router-link :to="'/explore'">
                                 <button class="btn border-0 fw-bold tilt-hover" type="button">
                                     <div class="mb-lg-3 icon-container">
-                                        <img src="../../Images/Landing Page/footer3.png" alt="Discover Drinks"
-                                            class="img-fluid" />
+                                        <img src="../../Images/Landing Page/footer3.png" alt="Create live menus accessible from anywhere via QR code"
+                                            class="img-fluid" loading="lazy" />
                                     </div>
                                 </button>
                             </router-link>
                             <router-link :to="'/explore'" class="text-link">
-                                <h6
-                                    class="mb-0 mobile-rating-smaller-text-2 text-lg-center text-start d-flex align-items-center caption-height">
+                                <h3
+                                    class="mb-0 mobile-rating-smaller-text-2 text-lg-center text-start d-flex align-items-center caption-height h6">
                                     Create Live Menus Accessible from Anywhere via QR Code
-                                </h6>
+                                </h3>
                             </router-link>
                         </div>
                     </div>
@@ -852,16 +823,16 @@
                             <router-link :to="'/clubs/view'">
                                 <button class="btn border-0 fw-bold tilt-hover" type="button">
                                     <div class="mb-lg-3 icon-container">
-                                        <img src="../../Images/Landing Page/footer4.png" alt="Connect"
-                                            class="img-fluid" />
+                                        <img src="../../Images/Landing Page/footer4.png" alt="Enhance customer self-service with drink listings aggregating flavours to expect"
+                                            class="img-fluid" loading="lazy" />
                                     </div>
                                 </button>
                             </router-link>
                             <router-link :to="'/clubs/view'" class="text-link">
-                                <h6
-                                    class="mb-0 mobile-rating-smaller-text-2 text-lg-center text-start d-flex align-items-center caption-height">
+                                <h3
+                                    class="mb-0 mobile-rating-smaller-text-2 text-lg-center text-start d-flex align-items-center caption-height h6">
                                     Enhance Customer Self-Service with Drink Listings Aggregating Flavours to Expect
-                                </h6>
+                                </h3>
                             </router-link>
                         </div>
                     </div>
@@ -874,16 +845,16 @@
                             <router-link :to="'/clubs/view'">
                                 <button class="btn border-0 fw-bold tilt-hover" type="button">
                                     <div class="mb-lg-3 icon-container">
-                                        <img src="../../Images/Landing Page/footer5.png" alt="Connect"
-                                            class="img-fluid" />
+                                        <img src="../../Images/Landing Page/footer5.png" alt="Broadcast new events & create your own club for customers to join"
+                                            class="img-fluid" loading="lazy" />
                                     </div>
                                 </button>
                             </router-link>
                             <router-link :to="'/clubs/view'" class="text-link">
-                                <h6
-                                    class="mb-0 mobile-rating-smaller-text-2 text-lg-center text-start d-flex align-items-center caption-height">
+                                <h3
+                                    class="mb-0 mobile-rating-smaller-text-2 text-lg-center text-start d-flex align-items-center caption-height h6">
                                     Broadcast New Events & Create Your Own Club for Customers to Join
-                                </h6>
+                                </h3>
                             </router-link>
                         </div>
                     </div>
@@ -900,7 +871,7 @@
                 </button>
             </router-link>
         </div>
-    </footer>
+    </section>
     <!-- Footer End -->
     <FooterBar />
 </template>
@@ -965,6 +936,10 @@ export default {
             // Custom meta tags that useSeoMeta doesn't cover
             meta: [
                 {
+                    name: 'keywords',
+                    content: 'drink reviews, cocktail recipes, spirits, whiskey, gin, rum, vodka, tequila, bars, producers, alcohol, beverages'
+                },
+                {
                     name: 'author',
                     content: 'drink-x'
                 },
@@ -994,15 +969,10 @@ export default {
                     href: 'https://drink-x.com'
                 },
                 {
-                    loading: 'lazy',
-                    href: 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Drink-X_Banner_Image.png?v=1751344950',
-                    as: 'image',
+                    rel: 'preload',
+                    href: '../../Images/Background/landing_page_hero_image.webp',
+                    as: 'image'
                 }
-                // {
-                //     rel: 'preload',
-                //     href: '../Images/Background/landing_page_hero_image.webp',
-                //     as: 'image'
-                // }
             ],
 
             // JSON-LD structured data for rich snippets
@@ -1013,18 +983,6 @@ export default {
                 }
             ],
             htmlAttrs: { lang: 'en-US' }, // BCP 47 language code
-            // meta: [
-            //     { name: 'description', content: 'Discover your next great drink! Sign up for free - log your drink reviews, discover new brands, and explore your next go-to bar.' },
-            //     { property: 'og:title', content: 'Drink-X | A World of Drinks - Just Look It Up!' },
-            //     { property: 'og:description', content: 'Discover your next great drink! Sign up for free - log your drink reviews, discover new brands, and explore your next go-to bar.' },
-            //     { property: 'og:image', content: 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Drink-X_Banner_Image.png?v=1751344950' },
-            //     { name: 'twitter:card', content: 'summary_large_image' },
-            //     { name: 'twitter:image', content: 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Drink-X_Banner_Image.png?v=1751344950' }
-            // ],
-            // link: [{
-            //     rel: 'canonical',
-            //     content: 'https://www.drink-x.com'
-            // }]
         }),
             // useSeoMeta for SEO and social media optimization
             useSeoMeta({
