@@ -9,6 +9,15 @@ body {
 
 }
 
+html {
+  overflow-x:hidden;
+}
+
+.navbar-container, .navbar, {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 .body-login {
   /* background-image: url("../../Images/Background/SignupLogin.png");
   background-size: cover;
@@ -597,6 +606,12 @@ body {
     justify-content: flex-end !important;
     align-items: center !important;
   }
+}
+
+/* This makes pop up windows on mobile that are too lengthy scrollable for moible */
+.modal-body-scrollable {
+  max-height: 70vh;
+  overflow-y: auto;
 }
 
 .search-bar {
@@ -1760,6 +1775,7 @@ button.primary-square:hover {
 .producer-bottle-listing-page-image {
   max-width: 240px;
   height: 240px;
+  object-fit: cover; /* Ensures the image covers the entire area without stretching */
   border-radius:10px;
   box-shadow: rgba(0, 0, 0.4, 0.4) 0px 4px 4px; /* kai added box shadow o the producer bottle listing */
 }

@@ -490,7 +490,7 @@
                     <!-- col 2: best rated drinks on the menu -->
                     <div class="card p-3 col-5 text-start" style="color:black;">
                         <h6 class="fw-bold"> Best Rated Drinks </h6>
-                        <div class="text-start pb-2" v-for="listing in listingsBestRated" v-bind:key="listing.id">
+                        <div class="text-start pb-2" v-for="listing in listingsBestRated" v-bind:key="listing.id" style="justify-content: flex-start; width: 100%;">
                             <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
                                 <div class="d-flex align-items-center">
                                     <!-- <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;"> -->
@@ -510,7 +510,7 @@
                     <!-- col 1: most reviewed drinks on the menu -->
                     <div class="card p-3 col-5 text-start" style="color:black;">
                         <h6 class="fw-bold"> Most Reviewed Drinks </h6>
-                        <div class="text-start pb-2" v-for="listing in listingsMostReviewed" v-bind:key="listing.id">
+                        <div class="text-start pb-2" v-for="listing in listingsMostReviewed" v-bind:key="listing.id" style="justify-content: flex-start; width: 100%;">
                             <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
                                 <div class="d-flex align-items-center">
                                     <!-- <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;"> -->
@@ -533,6 +533,7 @@
     class="text-start pb-2"
     v-for="(section, index) in sectionsMostReviewed"
     :key="section.id"
+    style="justify-content: flex-start; width: 100%;"
   >
     <div class="d-flex align-items-start">
       <!-- Number Circle -->
@@ -560,6 +561,7 @@
                         class="text-start pb-2"
                         v-for="(section, index) in sectionsBestRated"
                         :key="section.id"
+                        style="justify-content: flex-start; width: 100%;"
                     >
                         <div class="d-flex align-items-start">
                         <!-- Number Circle -->
@@ -590,7 +592,7 @@
 
                     <!-- Number of Menu Items + Unique Drinks -->
                     <div class="text-start pb-2">
-                        <div class="d-flex align-items-start">
+                        <div class="d-flex align-items-start" style="justify-content: flex-start; width: 100%;">
                         <!-- Circle -->
                         <div
                             class="d-flex justify-content-center align-items-center rounded-circle me-3"

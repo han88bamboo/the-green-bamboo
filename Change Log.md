@@ -1107,3 +1107,22 @@ mobile version link for venues searched was broken
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 4 July
+
+Coder: Kai
+
+Purpose of the changes:
+Fixed the following front end errors 
+- Menu Itme Preview on Add Menu Modal on Mobile
+- Fix Anchoring issue (hopefully)
+- Fix Photo Constrained Rendering on Venue / Brand 
+- Fixed Photo not loading on Mobile for Venue / Brand Overview
+- Fixed Photo Constrained On Venue / Brand Profile Pictures
+
+Swapped ordering of menu and venue overview on Venue Profile 
+
+Implemented scrollable Pop Up Modals CSS styling because some pop up windows are not scrollable on Mobile View 
+
+Nature of the changes (frontend / backend / database):
+frontend

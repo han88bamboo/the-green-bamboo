@@ -870,7 +870,7 @@
                         <!-- col 1: your best rated drinks -->
                         <div id="BestRatedExpressions" class="tab-pane fade show active col-lg-5 col-md-12 col-sm-12 text-start pt-2 mx-3 ps-lg-0 pe-lg-0 mobile-mx-0">
                             <div class="text-start pb-2 card p-3 " v-for="listing in top5BestReviewedListings" v-bind:key="listing.id">
-                                <router-link :to="{ path: '/listing/view/' + listing.id + '/' + listing.listingName.replace(/[^a-zA-Z0-9]/g, '') }" class="reverse-clickable-text">
+                                <router-link :to="{ path: '/listing/view/' + listing.id + '/' + listing.listingName.replace(/[^a-zA-Z0-9]/g, '') }" class="reverse-clickable-text" style="justify-content: flex-start; width: 100%;">
                                     <div class="d-flex align-items-center">
                                         <!-- <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;"> -->
                                         <img :src="(listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;">
@@ -891,12 +891,12 @@
                         <div id="BestRatedCategories" class="tab-pane fade  col-lg-5 col-md-12 col-sm-12 text-start pt-3 mx-3 ps-lg-0 pe-lg-0 mobile-mx-0"> <!-- padding classes added by tzh-->
                         
                             <div class="text-start pb-2 card p-3 " v-for="(category, index) in top5MostReviewedCategories" v-bind:key="category">
-                                <div class="row ms-0 default-clickable-text "> 
+                                <div class="row ms-0 default-clickable-text " style="justify-content: flex-start; width: 100%;"> 
                                     <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
                                         <h5 class="my-auto"> {{ index + 1 }} </h5>
                                     </div>
                                     <div class="col-10 shrink-width-on-dashboard mobile-rating-smaller-text-2" > <!-- style added by tzh-->
-                                        <div class="ms-3">
+                                        <div>
                                             <p class="mb-1 fw-bold">{{ category.drinkType }}</p>
                                             <p class="mb-0">{{ category.reviewCount || 0 }} reviews</p>
                                         </div>
@@ -908,7 +908,7 @@
                         <!-- col 3: your top venues -->
                         <div id="YourTopVenues" class="tab-pane fade  col-lg-5 col-md-12 col-sm-12 text-start pt-3 mx-3 ps-lg-0 pe-lg-0 mobile-mx-0"> <!-- padding classes added by tzh-->
                             <div class="text-start pb-2 card p-3 " v-for="venue in top5Venues" v-bind:key="venue">
-                                <div class="row ms-0 default-clickable-text "> 
+                                <div class="row ms-0 default-clickable-text " style="justify-content: flex-start; width: 100%;"> 
                                     <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
                                         <h6 class="my-auto"> {{ top5Venues.indexOf(venue) + 1 }} </h6>
                                     </div>
@@ -923,7 +923,7 @@
                          <!-- col 4: your top brands -->
                         <div id="YourTopBrands" class="tab-pane fade  col-lg-5 col-md-12 col-sm-12 text-start pt-3 mx-3 ps-lg-0 pe-lg-0 mobile-mx-0"> <!-- padding classes added by tzh-->
                             <div class="text-start pb-2 card p-3 " v-for="producer in top5Producers" v-bind:key="producer">
-                            <div class="row ms-0 default-clickable-text "> 
+                            <div class="row ms-0 default-clickable-text " style="justify-content: flex-start; width: 100%;"> 
                                 <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
                                     <h5 class="my-auto"> {{ top5Producers.indexOf(producer) + 1 }} </h5>
                                 </div>

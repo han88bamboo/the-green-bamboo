@@ -601,12 +601,12 @@
                 <!-- START Content Buttons (Bar Overview / Bar Menu / Venue Reviews / Review a venue button) -->
                 <div class="row mt-3 mobile-mt-1" id="menu-section">
                     <div class="col-8 d-flex justify-content-start mobile-col-7 mobile-pe-0">
-                        <!-- Toggle Bar Overview -->
-                        <button v-if="contentMode == 'overview'" class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'overview'"> Venue Overview </button>
-                        <button v-else class="btn inactive-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'overview'"> Venue Overview </button>
                         <!-- Toggle Bar Menu -->
                         <button  v-if="contentMode == 'menu'" class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'menu'"> Menu </button>
                         <button v-else class="btn inactive-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'menu'"> Menu </button>
+                        <!-- Toggle Bar Overview -->
+                        <button v-if="contentMode == 'overview'" class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'overview'"> Venue Overview </button>
+                        <button v-else class="btn inactive-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'overview'"> Venue Overview </button>
                         <!-- Toggle Venue Reviews -->
                         <button 
                         v-if="contentMode == 'venueReviews'" 
@@ -1921,7 +1921,7 @@
                                     </div>
 
                                     <!-- Modal Body -->
-                                    <div class="modal-body">
+                                    <div class="modal-body modal-body-scrollable">
 
                                         <!-- Note -->
                                         <p class="fw-bold" style="color: #ae3e3e ">You will need an existing Menu Section to be created first before you can start adding menu items to your menu!</p>
@@ -1985,8 +1985,8 @@
                                         <div v-if="Object.keys(this.newMenuItemTarget).length !== 0" class="col-12 my-3">
                                             <hr>
                                             <p class="text-secondary-emphasis fw-bold fst-italic">Menu Item Preview:</p>
-
-                                            <div class="row">
+                                            <!-- DESKTOP -->
+                                            <div class="row mobile-view-hide">
 
                                                 <!-- Item Image -->
                                                 <div class="col-2 image-container text-center mx-auto">
@@ -2024,11 +2024,8 @@
 
                                                         <!-- Item Rating -->
                                                         <div class="col-2">
-                                                            <p class="fs-3 fw-bold rating-text text-end">
-                                                                {{ newMenuItemTarget.avgRating }}
-                                                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16">
-                                                                    <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                                                </svg>
+                                                            <p class="fs-3 fw-bold rating-text text-start">
+                                                                {{ newMenuItemTarget.avgRating }}  ★
                                                             </p>
                                                         </div>
 
@@ -2042,14 +2039,63 @@
                                                             <p class="text-start fs-5 fw-bold default-text-no-background">$ {{ newMenuItemPrice || "-" }} / {{ servingTypes.find(i => i.id == newMenuItemServingType).servingType || "-" }}</p>
                                                         </div>
 
-                                                        <!-- See User Reviews -->
-                                                        <div class="col-4">
-                                                            <button type="button" class="btn primary-btn-outline-thick p-1 px-2" style="font-size:80%;" > See User Reviews </button>
-                                                        </div>
+                                                        
 
                                                     </div>
 
                                                 </div>
+
+                                            </div>
+                                            <!-- MOBILE -->
+                                            <div class="row mobile-view-show">
+
+                                                <!-- Item Image -->
+                                                <div class=" mobile-col-3 image-container text-center mx-auto">
+                                                    <!-- <img :src=" 'data:image/jpeg;base64,' + ( newMenuItemTarget.photo || defaultPhoto)" style="width: 150px; height: 150px;"> -->
+                                                    <img :src="( newMenuItemTarget.photo || defaultPhoto)" class="producer-bottle-listing-page-bottle-image">
+                                                </div>
+
+                                                <!-- Item Information -->
+                                                
+                                                <div class="mobile-col-8 mobile-pe-0 mobile-ps-2 me-2">
+                                                    <div class="row">
+
+                                                        <!-- Item Name -->
+                                                        <div class="mobile-mb-1">
+                                                                <p class="mobile-fs-6 fs-5 fw-bold text-start text-decoration-underline m-0" style="margin-bottom:0.3rem;">{{ newMenuItemTarget.listingName }}</p>
+                                                        </div>
+
+                                                        <!-- Item Details -->
+                                                        <div class="row">
+                                                            <!-- Item Producer / Drink Type / Type Category / ABV / Country -->
+                                                                <p class="text-start mb-1 mobile-fs-7" >
+                                                                    <span v-if="newMenuItemTarget.producerName">{{ newMenuItemTarget.producerName }} | </span>
+                                                                    <span v-if="newMenuItemTarget.drinkType">{{ newMenuItemTarget.drinkType }} | </span>
+                                                                    <span v-if="newMenuItemTarget.typeCategory">{{ newMenuItemTarget.typeCategory }} | </span>
+                                                                    <span v-if="newMenuItemTarget.abv">{{ newMenuItemTarget.abv }} ABV | </span>
+                                                                    <span v-if="newMenuItemTarget.originCountry">{{ newMenuItemTarget.originCountry }}</span>
+                                                                </p>
+                                                        </div>
+
+                                                        <!-- Item Rating -->
+                                                        <div class="d-flex align-items-center gap-1">
+                                                            <p class="fs-3 fw-bold rating-text mb-0">
+                                                                {{ newMenuItemTarget.avgRating }} ★
+                                                            </p>
+                                                        </div>
+
+                                                    
+
+                                                        <!-- Item Menu Details -->
+                                                        <div class="d-flex align-items-center gap-1">
+
+                                                            <!-- Item Price / Item Serving Type -->
+                                                            <p class="text-start mobile-rating-smaller-text-2 fw-bold default-text-no-background mb-0">$ {{ newMenuItemPrice || "-" }} / {{ servingTypes.find(i => i.id == newMenuItemServingType).servingType || "-" }}</p>
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
 
                                             </div>
                                         </div>
@@ -3224,7 +3270,7 @@
                 // flags
                 dataLoaded: false,
                 venueExists: null,
-                contentMode: 'overview',
+                contentMode: 'menu',
                 qaMode: 'answered',
                 loggedIn: false,
                 selfView: false,
