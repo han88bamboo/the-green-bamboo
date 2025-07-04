@@ -1093,3 +1093,17 @@ minor fix to allow logged-out users to see points
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 4 Jul - deployed 
+
+Coder: Han
+
+Purpose of the changes:
+minor frontend bugfixes:
+for the mobile nav bar for a normal logged in  set "My Drink Profile" to redirect to the user profile instead of the user dashboard 
+mobile version link for venues searched was broken
+"Add list" button on mobile doesn't show the pop up window.
+
+
+Nature of the changes (frontend / backend / database):
+frontend
