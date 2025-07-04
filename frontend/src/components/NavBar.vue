@@ -381,11 +381,17 @@
                 <li class="drawer-section-title mt-2 d-flex align-items-center text-start" @click="toggleStats">
                   <span>{{ dashboardWord }} Stats</span>
                   <span style="margin-left: 8px;">{{ showStats ? '▾' : '▸' }}</span>
+                </li> 
+                <li v-show="showStats" class="text-start pt-1">
+                  <router-link :to="profileURL"
+                    style="text-decoration: none; font-weight: normal">{{ dashboardWord }} Profile
+                  </router-link>
                 </li>
-                <li v-show="showStats" class="text-start pt-1"><router-link :to="dashboardURL"
-                    style="text-decoration: none; font-weight: normal">{{ dashboardWord }} Profile</router-link></li>
-                <li v-show="showStats" class="text-start"><router-link :to="dashboardURL"
-                    style="text-decoration: none; font-weight: normal">{{ dashboardWord }} Dashboard</router-link></li>
+                <li v-show="showStats" class="text-start">
+                  <router-link :to="dashboardURL"
+                    style="text-decoration: none; font-weight: normal">{{ dashboardWord }} Dashboard
+                  </router-link>
+                </li>
 
                 <!-- Clubs and Events -->
 

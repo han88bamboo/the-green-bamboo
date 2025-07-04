@@ -1341,7 +1341,7 @@
               padding: 16px;
               background-color: #ffffff;
             "
-            class="mb-4 mobile-view-hide"
+            class="mb-4 Xmobile-view-hide"
             >
             <!-- Welcome section -->
             <div style="margin-bottom: 24px" >
