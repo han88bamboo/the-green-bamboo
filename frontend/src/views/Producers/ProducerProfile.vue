@@ -656,7 +656,7 @@
 
             <!-- Review Button -->
             <button
-              v-if="!inEdit"
+              v-if="userType === 'user' && user_id !== 'defaultUser' && !inEdit"
               class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
               data-bs-toggle="modal"
               data-bs-target="#reviewModal"
@@ -664,12 +664,21 @@
             >
               Review Producer
             </button>
+
             <button
-              v-else
+              v-else-if="inEdit"
               class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
               style="font-weight: bold; background-color: rgb(249, 115, 106);"
             >
               Reviewed!
+            </button>
+            <button
+              v-else
+              class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
+              style="font-weight: bold;"
+              @click="$router.push('/login')"
+            >
+              Review Producer
             </button>
           </div>
         </div>
