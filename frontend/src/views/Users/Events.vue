@@ -52,10 +52,16 @@
 
                 <div class="d-flex flex-wrap gap-2">
                     <!-- Create Event Button (Triggers Modal) -->
-                    <button class="btn primary-btn-less-round-blue btn-lg mobile-rating-smaller-text-2 fw-bold"
+                    <button v-if="userType !== 'defaultUser'" class="btn primary-btn-less-round-blue btn-lg mobile-rating-smaller-text-2 fw-bold"
                     @click="handleCreateEventClick">
                         + Create Event
                     </button>
+                    <button v-else
+                    class="btn primary-btn-less-round-blue btn-lg mobile-rating-smaller-text-2 fw-bold"
+                    @click="$router.push('/login')">
+                        + Create Event
+                    </button>
+    
                     <!-- View Upcoming Events Toggle Button -->
                     <button 
                       class="btn primary-btn-less-round-blue d-md-none mobile-rating-smaller-text-2" 
