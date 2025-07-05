@@ -51,10 +51,15 @@
 
                     <div class="d-flex flex-wrap gap-2 pb-3">
                         <!-- Create Club Button -->
-                        <button
+                        <button  v-if="userType !== 'defaultUser'"
                         class="btn primary-btn-less-round-blue btn-lg mobile-rating-smaller-text-2 fw-bold"
                         @click="canCreateClub ? createClub() : showClubLimitError = true"
                         >+ Create Club</button>
+                         <button v-else
+                            class="btn primary-btn-less-round-blue btn-lg mobile-rating-smaller-text-2 fw-bold"
+                            @click="$router.push('/login')">
+                            + Create Club
+                         </button>
                         <!-- View My Clubs Toggle Button -->
                         <button 
                         class="btn primary-btn-less-round-blue d-md-none mobile-rating-smaller-text-2" 
