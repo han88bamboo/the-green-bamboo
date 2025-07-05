@@ -13,9 +13,9 @@ html {
   overflow-x:hidden;
 }
 
-.navbar-container, .navbar, {
+.navbar-container, .navbar {
   max-width: 100%;
-  overflow-x: hidden;
+  /* overflow-x: hidden; */
 }
 
 .body-login {
