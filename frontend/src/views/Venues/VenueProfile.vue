@@ -565,9 +565,9 @@
                         Following
                         </button>
  
-                          <!-- Review button: logged in + not editing -->
+  <!-- Review button: logged in + not editing -->
   <button
-    v-if="userType === 'user' && userID !== 'defaultUser' && !inEdit"
+    v-if="userType === 'user' && user_id !== 'defaultUser' && !inEdit"
     class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
     data-bs-toggle="modal"
     data-bs-target="#venueReviewModal"
@@ -575,7 +575,16 @@
   >
     Review Venue
   </button>
-
+  <!-- Logged-out users -->
+  <button
+    v-else
+        class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
+        @click="$router.push('/login')"
+        style="font-weight: bold;"
+    >
+        Review Venue
+  </button>
+   
   <!-- Review button: logged in + editing -->
   <button
     v-if="userType === 'user' && userID !== 'defaultUser' && inEdit"
@@ -3241,7 +3250,7 @@
             return {
                 updateID: null,
                 users: [],
-                user_id: "", 
+                user_id: "defaultUser", 
 
                 // to get producer's answered questions
                 showQnA: false,
