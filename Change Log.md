@@ -1126,3 +1126,13 @@ Implemented scrollable Pop Up Modals CSS styling because some pop up windows are
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 6 July
+
+Coder: Han
+
+Purpose of the changes:
+new partner center pages
+
+Nature of the changes (frontend / backend / database):
+frontend + index plus creation of new files in view
