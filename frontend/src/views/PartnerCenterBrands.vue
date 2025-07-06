@@ -1,212 +1,342 @@
 <template>
   <div>
     <NavBar />
-    
-    <div class="partner-container">
-      <div class="container py-4">
-        <div class="row">
-          <!-- Left Sidebar -->
-          <div class="col-lg-3 col-md-4">
-            <div class="partner-sidebar mb-4">
-              <h5 class="sidebar-heading mb-3">Partner with Drink-X</h5>
-              <ul class="list-unstyled">
-                <li v-for="(section, index) in partnerSections" :key="index">
-                  <router-link 
-                    :to="section.path"
-                    class="sidebar-link" 
-                    :class="{ 'active': isActive(section.path) }">
-                    {{ section.title }}
-                  </router-link>
-                </li>
-              </ul>
+    <section class="hero-wrapper position-relative">
+      <div class="container">
+        <div class="d-flex flex-wrap align-items-center">
+          <div class="col-1 mobile-view-hide"></div>
+          <!-- RIGHT COLUMN: IMAGE -->
+          <div class="col-8 py-4 text-start" style="min-height:250px">
+            <div class="container position-relative">
+              <br class="mobile-view-hide">
+              <h1 class="fw-bold my-3"><span style="color: #104c8b;">Drink-X</span> for Brands</h1>
+              <h4 class="mb-4  mobile-fs-4">
+                Learn how Drink-X helps put your brand under the spotlight, connect with your fans, and grow your community.
+              </h4>
+              <p class="mb-4">
+              <a href="/partner" style="color: grey; text-decoration: none;">
+                ↩ Return to Partner Center
+              </a>
+            </p>
             </div>
           </div>
+          <div class="col-1 mobile-view-show"></div>
+          <!-- LEFT COLUMN: TEXT -->
+          <div class="col-10 col-md-5 text-center text-md-start mb-3 mb-md-0">
+            
+          </div>
+          <div class="col-1"></div>
+
           
-          <!-- Right Content Area -->
-          <div class="col-lg-9 col-md-8">
-            <div class="partner-content">
-              <div class="content-container">
-                <h2 class="content-title">Brand Partnerships</h2>
-                <div class="content-meta">
-                  <span class="update-date">Last updated: June 26, 2025</span>
-                </div>
-                
-                <hr class="my-3">
-                
-                <div class="content-body">
-                  <h3>Take Your Brand to the Next Level with Drink-X</h3>
-                  <p>
-                    Whether you're a heritage distillery, a craft upstart, or an independent bottler, 
-                    Drink-X is your digital home for connecting with drink lovers and building your brand's story.
-                  </p>
-                  
-                  <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Screenshot_2025-06-23_at_3.39.23_PM.png?v=1750664370" 
-                       alt="Brand Partner Dashboard" style="width: 80%; height: auto; display: block; margin: 0 auto 20px;">
-                  
-                  <h3>Powerful Tools for Brands</h3>
-                  <div class="row mt-4">
-                    <div class="col-md-6 mb-4">
-                      <div class="card h-100">
-                        <div class="card-body">
-                          <h4 class="h5 fw-bold" style="color: #027562;">Product Catalog</h4>
-                          <p>Showcase your full lineup with detailed information and beautiful photos.</p>
-                          <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Adding_new_drinks.gif?v=1749985944" 
-                               alt="Product Catalog" style="width: 100%; height: auto; display: block; margin-top: 10px;">
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div class="col-md-6 mb-4">
-                      <div class="card h-100">
-                        <div class="card-body">
-                          <h4 class="h5 fw-bold" style="color: #027562;">Announcements & News</h4>
-                          <p>Share updates, launches, and news directly with your followers.</p>
-                          <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/hennessy_announcement.gif?v=1749986368" 
-                               alt="Announcements" style="width: 100%; height: auto; display: block; margin-top: 10px;">
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div class="col-md-6 mb-4">
-                      <div class="card h-100">
-                        <div class="card-body">
-                          <h4 class="h5 fw-bold" style="color: #027562;">Fan Engagement</h4>
-                          <p>Answer questions, get feedback, and build trust with your audience.</p>
-                          <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/business_Q_A.gif?v=1749993230" 
-                               alt="Q&A" style="width: 100%; height: auto; display: block; margin-top: 10px;">
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div class="col-md-6 mb-4">
-                      <div class="card h-100">
-                        <div class="card-body">
-                          <h4 class="h5 fw-bold" style="color: #027562;">Brand Community</h4>
-                          <p>Create a club for your biggest fans and brand ambassadors.</p>
-                          <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/business_Creating_clubs.gif?v=1749991587" 
-                               alt="Clubs" style="width: 100%; height: auto; display: block; margin-top: 10px;">
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <h3 class="mt-5">Partnership Plans</h3>
-                  <div class="row mt-3">
-                    <div class="col-md-4 mb-4">
-                      <div class="card h-100">
-                        <div class="card-header bg-light">
-                          <h4 class="my-0 fw-normal">Basic</h4>
-                        </div>
-                        <div class="card-body">
-                          <h1 class="card-title">Free</h1>
-                          <ul class="list-unstyled mt-3 mb-4">
-                            <li>Brand Profile</li>
-                            <li>Limited Product Listings</li>
-                            <li>Community Q&A</li>
-                            <li>Basic Analytics</li>
-                          </ul>
-                          <router-link to="/businessSignup" class="btn btn-outline-success w-100">Sign Up</router-link>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div class="col-md-4 mb-4">
-                      <div class="card h-100 border-success">
-                        <div class="card-header bg-success text-white">
-                          <h4 class="my-0 fw-normal">Premium</h4>
-                        </div>
-                        <div class="card-body">
-                          <h1 class="card-title">$49<small class="text-muted fw-light">/mo</small></h1>
-                          <ul class="list-unstyled mt-3 mb-4">
-                            <li>Everything in Basic</li>
-                            <li>Unlimited Product Listings</li>
-                            <li>Fan Club Creation</li>
-                            <li>Event Promotion</li>
-                            <li>Advanced Analytics</li>
-                          </ul>
-                          <router-link to="/businessSignup" class="btn btn-success w-100">Get Started</router-link>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div class="col-md-4 mb-4">
-                      <div class="card h-100">
-                        <div class="card-header bg-light">
-                          <h4 class="my-0 fw-normal">Enterprise</h4>
-                        </div>
-                        <div class="card-body">
-                          <h1 class="card-title">Custom</h1>
-                          <ul class="list-unstyled mt-3 mb-4">
-                            <li>Everything in Premium</li>
-                            <li>Multiple Brand Management</li>
-                            <li>API Access</li>
-                            <li>Dedicated Support</li>
-                            <li>Custom Integrations</li>
-                          </ul>
-                          <router-link to="/businessSignup" class="btn btn-outline-success w-100">Contact Us</router-link>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <h3 class="mt-5">Success Story</h3>
-                  <div class="card mb-4">
-                    <div class="card-body">
-                      <h4 class="h5 fw-bold" style="color: #027562;">Kendrick's Gin: Building a Loyal Community</h4>
-                      <p>
-                        After joining Drink-X, Kendrick's Gin saw a 45% increase in brand engagement and a 30% growth in 
-                        their online community. Their fan club now has over 5,000 members who actively participate in 
-                        tastings and special events.
-                      </p>
-                      <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Partner_Center_-_kendricks_gin_unclaimed.png?v=1751065147" 
-                           alt="Kendrick's Gin Case Study" style="width: 100%; height: auto; display: block; margin-top: 10px;">
-                    </div>
-                  </div>
-                  
-                  <div class="mt-5 text-center">
-                    <router-link to="/help/brands" class="btn btn-link">Learn more about brand features</router-link>
-                  </div>
-                </div>
-              </div>
+        </div>
+      </div>
+      
+      <!-- Juicebox image -->
+      <img src="../assets/Brand_Juicebox.png" alt="Juicebox"
+        class="juicebox-img">
+      <!-- Red sloped block -->
+      <div class="red-slope"></div>
+    </section>
+    <section class="features text-center py-4" style="background-color: #104c8b;">
+      <div class="container">
+        <h2 class="mobile-fs-2 fw-bold my-4" style="color:white">Drink-X Business Allows You To</h2>
+        <div class="row row-cols-3 g-3">
+          <!-- Feature 1 -->
+          <div class="col">
+            <div class="p-3 h-100 d-flex flex-column align-items-center justify-content-center" style="background: white; border: 2px solid #f0b358; border-radius: 10px;">
+              <img src="../../Images/Landing Page/Layer5.png" alt="List Venue" class="img-fluid mb-2" style="max-width: 80px;">
+              <p class="default-body-text-no-background mb-0 fw-bold mobile-rating-smaller-text-2">📍🌟 Claim Your Brand & Get Your Expressions Seen</p>
+            </div>
+          </div>
+
+          <!-- Feature 2 -->
+          <div class="col">
+            <div class="p-3 h-100 d-flex flex-column align-items-center justify-content-center" style="background: white; border: 2px solid #f0b358; border-radius: 10px;">
+              <img src="../../Images/Landing Page/Layer2.png" alt="Show Menu" class="img-fluid mb-2" style="max-width: 80px;">
+              <p class="default-body-text-no-background mb-0 fw-bold mobile-rating-smaller-text-2">🍾 Showcase Your Drinks and Make Your Bottles Unmissable</p>
+            </div>
+          </div>
+
+          <!-- Feature 3 -->
+          <div class="col">
+            <div class="p-3 h-100 d-flex flex-column align-items-center justify-content-center" style="background: white; border: 2px solid #f0b358; border-radius: 10px;">
+              <img src="../../Images/Landing Page/footer4.png" alt="Q&As" class="img-fluid mb-2" style="max-width: 80px;">
+              <p class="default-body-text-no-background mb-0 fw-bold mobile-rating-smaller-text-2">💬  Engage Existing Fans with Q&As & Live Updates</p>
+            </div>
+          </div>
+
+          <!-- Feature 4 -->
+          <div class="col">
+            <div class="p-3 h-100 d-flex flex-column align-items-center justify-content-center" style="background: white; border: 2px solid #f0b358; border-radius: 10px;">
+              <img src="../../Images/Landing Page/footer5.png" alt="Host Events" class="img-fluid mb-2" style="max-width: 80px;">
+              <p class="default-body-text-no-background mb-0 fw-bold mobile-rating-smaller-text-2">🍾  Host Events That Get Glasses Filled</p>
+            </div>
+          </div>
+
+          <!-- Feature 5 -->
+          <div class="col">
+            <div class="p-3 h-100 d-flex flex-column align-items-center justify-content-center" style="background: white; border: 2px solid #f0b358; border-radius: 10px;">
+              <img src="../assets/defaultGroupBanner.png" alt="Fan Club" class="img-fluid mb-2 rounded" style="max-width: 120px;">
+              <p class="default-body-text-no-background mb-0 fw-bold mobile-rating-smaller-text-2">🏃 Create Your Own Fan Club</p>
+            </div>
+          </div>
+
+          <!-- Feature 6 -->
+          <div class="col">
+            <div class="p-3 h-100 d-flex flex-column align-items-center justify-content-center" style="background: white; border: 2px solid #f0b358; border-radius: 10px;">
+              <img src="../../Images/Landing Page/insights.png" alt="Insights" class="img-fluid mb-2 rounded" style="max-width: 120px;">
+              <p class="default-body-text-no-background mb-0 fw-bold mobile-rating-smaller-text-2">📊 Unlock Insights Into Your Drinks To Fuel Demand</p>
             </div>
           </div>
         </div>
+        
       </div>
-    </div>
+    </section>
+    <section class="steps text-center pt-4" style="background-color: #f5eace;">
+      <div class="container">
+      <div class="d-flex flex-wrap align-items-center">
+        <div class="col-1 mobile-view-hide"></div>
+        <div class="col-5 col-md-6 text-start text-md-start mobile-ms-2">
+          <h2 class="mobile-fs-3 mobile-my-3 fw-bold mb-2">Wondering how it all works?</h2>
+          <h4 class="mobile-fs-6"><i>Follow Richard, brand manager of Kendrick's Gin, as he sets up a Drink-X Business Account and uses it to grow his brand.</i></h4>
+        </div>
+        <div class="col-1 mobile-view-hide"></div>
+        <div class="col-4 col-md-4 text-center text-md-start">
+          <img src="../assets/Brand_Richard.png" alt="Annie from Leaky Cauldron"
+            class="img-fluid rounded" style="max-width: 250px;">
+        </div>
+        <div class="col-1 mobile-view-hide"></div>
+      </div>
+      </div>
+    </section>
+    <section class="steps text-center pt-4" style="background-color:  whitesmoke;">
+      <div class="container">
+      <div class="d-flex flex-wrap align-items-center">
+        <div class="col-1 mobile-view-hide"></div>
+        <div class="col-12 col-md-5 text-start text-md-start mobile-ms-2">
+          <h3 class="mobile-fs-4 mobile-my-3 fw-bold mb-2">🌟 Claim Your Brand & Get Your Brand Seen</h3>
+          <p class="mobile-rating-smaller-text-2">
+            Richard heads to the sign up page to register his brand's profile. He fills in the basic details like name, address, and contact information, selects "Brand / Producer" Profile Type, and picks from the monthly or annual Drink-X Business Account plan. 
+            
+            Once submitted, the Drink-X team reviews his details and sends him an email with an approval link. She clicks into it to complete her registration, and she's in!
+            <br><br>Kendrick's Gin becomes instantly discoverable by anyone searching on Drink-X by drink type, vibe, location, or special offerings.
+            <br>
+            <br>
+             <b>👉 More visibility, more fans.</b></p>
+        </div>
+        <div class="col-1 mobile-view-hide"></div>
+        <div class="col-12 col-md-5 text-center text-md-start">
+          <video autoplay loop muted playsinline class="img-fluid rounded" style="max-width: 400px;">
+          <source src="https://cdn.shopify.com/videos/c/o/v/1867a3d81ca14fb4b3a1219183aaa423.mp4" type="video/mp4">
+        </video>
+          
+        </div>
+        <div class="col-1 mobile-view-hide"></div>
+      </div>
+      </div>
+    </section>
+    <section class="steps text-center pt-4" style="background-color:  whitesmoke;">
+      <div class="container">
+      <div class="d-flex flex-wrap align-items-center">
+        <div class="col-1 mobile-view-hide"></div>
+        <div class="col-12 col-md-5 text-start text-md-start mobile-ms-2">
+          <h3 class="mobile-fs-4 mobile-my-3 fw-bold mb-2">🍾 Showcase Your Products and Make Your Bottles Unmissable</h3>
+          <p class="mobile-rating-smaller-text-2">
+            Now it’s time to curate Kendrick's Gin's range of expressions. New Kendrick Gin expressions on Drink-X’s database of drinks are automatically tagged to Kendrick's Gin's profile page. 
+
+<br><br>
+Richard can easily add new expressions and update existing ones with rich descriptions, striking bottle images, and added details that spark curiosity. 
+            <br>
+            <br>
+             <b>👉 Browsable from anywhere. Editable within seconds. Instantly reflected to all users. </b></p>
+        </div>
+        <div class="col-1 mobile-view-hide"></div>
+        <div class="col-12 col-md-5 text-center text-md-start">
+          <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Adding_new_drinks.gif?v=1749985944" alt="Venue Menu Creation Demo"
+            class="img-fluid rounded" style="max-width: 400px;">
+        </div>
+        <div class="col-1 mobile-view-hide"></div>
+      </div>
+      </div>
+    </section>
+    <section class="steps text-center pt-4" style="background-color: whitesmoke;">
+      <div class="container">
+      <div class="d-flex flex-wrap align-items-center">
+        <div class="col-1 mobile-view-hide"></div>
+        <div class="col-12 col-md-5 text-start text-md-start mobile-ms-2">
+          <h3 class="mobile-fs-4 mobile-my-3 fw-bold mb-2">💬  Interact with Fans with Q&As & Live Updates</h3>
+          <p class="mobile-rating-smaller-text-2">
+            As brand manager, Richard wants to keep Kendrick's Gin fans engaged and excited. He uses Drink-X’s Q&A feature to answer questions about the brand, its expressions, and upcoming releases.
+<br><br>
+When Kendrick's Gin's fan post their questions, Richard and his team receives a notification and respond directly from the Drink-X app. Their answers are instantly visible to all fans.
+            <br>
+            <br>
+             <b>👉 Fan feel heard, hyped, and ready to seek out your brand in stores!</b></p>
+        </div>
+        <div class="col-1 mobile-view-hide"></div>
+        <div class="col-12 col-md-5 text-center text-md-start">
+          <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/hennessy_announcement.gif?v=1749986368" alt="Venue Q&A and Announcements Demo"
+            class="img-fluid rounded" style="max-width: 400px;">
+        </div>
+        <div class="col-1 mobile-view-hide"></div>
+      </div>
+      </div>
+    </section>
+    <section class="steps text-center pt-4" style="background-color: whitesmoke;">
+      <div class="container">
+      <div class="d-flex flex-wrap align-items-center">
+        <div class="col-1 mobile-view-hide"></div>
+        <div class="col-12 col-md-5 text-start text-md-start mobile-ms-2">
+          <h3 class="mobile-fs-4 mobile-my-3 fw-bold mb-2">📊 Unlock Insights Into Your Drinks To Fuel Demand</h3>
+          <p class="mobile-rating-smaller-text-2">
+            Which of Kendrick's Gin's releases are getting noticed? What did people think of the latest Kendrick's Sloe Gin? Richard now gains access to Drink-X’s personalized brand analytics dashboard to get real feedback on customer demand and preferences. 
+<br><br>
+Richard can see which expressions are getting the most attention, which ones are being rated the highest, and how many people are engaging with Kendrick's Gin's content.
+           <br>
+            <br>
+             <b>👉 Less guesswork. Simplified decision making.</b></p>
+        </div>
+        <div class="col-1 mobile-view-hide"></div>
+        <div class="col-12 col-md-5 text-center text-md-start">
+          
+          <video autoplay loop muted playsinline class="img-fluid rounded" style="max-width: 400px;">
+          <source src="https://cdn.shopify.com/videos/c/o/v/fda636e9f73a4382af99ec834d1ac84b.mp4" type="video/mp4">
+        </video>
+        </div>
+        <div class="col-1 mobile-view-hide"></div>
+      </div>
+      </div>
+    </section>
+    
+     <section class="steps text-center pt-4" style="background-color:  whitesmoke;">
+      <div class="container">
+      <div class="d-flex flex-wrap align-items-center">
+        <div class="col-1 mobile-view-hide"></div>
+        <div class="col-12 col-md-5 text-start text-md-start mobile-ms-2">
+          <h3 class="mobile-fs-4 mobile-my-3 fw-bold mb-2">🎉 Host Events That Get Glasses Filled</h3>
+          <p class="mobile-rating-smaller-text-2">
+            Richard and his team are planning a series of bartender teach-ins and customer tastings to showcase Kendrick's Gin's latest expressions. They create various event listings on Drink-X, complete with details like date, time, location, and a description of what attendees can expect.
+<br><br>
+Event links on Drink-X are shareable, allowing interested attendees to help spread the word and find a plus one (or two or three!) to join them! 
+            <br>
+            <br>
+             <b>👉 Attract more event patrons!</b></p>
+        </div>
+        <div class="col-1 mobile-view-hide"></div>
+        <div class="col-12 col-md-5 text-center text-md-start">
+          <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Creating_events.gif?v=1749990701" alt="Venue Event Creation demo"
+            class="img-fluid rounded" style="max-width: 400px;">
+        </div>
+        <div class="col-1 mobile-view-hide"></div>
+      </div>
+      </div>
+    </section>
+    <section class="steps text-center pt-4" style="background-color:  whitesmoke;">
+      <div class="container">
+      <div class="d-flex flex-wrap align-items-center">
+        <div class="col-1 mobile-view-hide"></div>
+        <div class="col-12 col-md-5 text-start text-md-start mobile-ms-2">
+          <h3 class="mobile-fs-4 mobile-my-3 fw-bold mb-2">🏃 Create Your Own Fan Club For Your Loyal Regulars</h3>
+          <p class="mobile-rating-smaller-text-2">
+            Building a community of loyal fans is key to Kendrick's Gin's success. Richard creates a dedicated fan club on Drink-X, giving fans the ultimate insider experience.
+            <br><br>
+            Fans can join the club, receive exclusive updates, and engage with Kendrick's Gin's team directly. Richard can also share special offers and promotions exclusively with club members.
+            <br>
+            <br>
+             <b>👉 High engagement!</b></p>
+        </div>
+        <div class="col-1 mobile-view-hide"></div>
+        <div class="col-12 col-md-5 text-center text-md-start">
+          <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/business_Creating_clubs.gif?v=1749991587" alt="Annie from Leaky Cauldron"
+            class="img-fluid rounded" style="max-width: 400px;">
+        </div>
+        <div class="col-1 mobile-view-hide"></div>
+      </div>
+      </div>
+    </section>
+   
+    <br>
+    <section class="steps text-center pt-4" style="background-color: white;">
+      <div class="container">
+      <div class="d-flex flex-wrap align-items-center">
+        <div class="col-1"></div>
+        <div class="col-10 col-md-6 text-start text-md-start mb-3">
+          <h2 class="mobile-fs- mobile-my-3 fw-bold mb-2">Start your journey with <span style="color: #104c8b;">Drink-X</span></h2>
+          <div class="default-body-text-no-background mb-2"><strong>Step 1: Search for your brand on Drink-X.com.</strong> <br>•	If your brand profile already exists, click on "Claim This Business" and be redirected to a sign up link. <br>
+•	If your brand profile doesn’t exist yet, click the Sign Up button below directly. </div>
+
+          <div class="default-body-text-no-background mb-2"><strong>Step 2: Submit the registration form.</strong><br> Our team will review it within 3 working days!</div>
+          <div class="default-body-text-no-background mb-2"><strong>Step 3: Once approved, fill in your password and payment details and you’re all set! </strong><br> Once your registration is reviewed, you will receive an email with a link to set your login in details and confirm payment. Once submitted, you are now in and ready to access all features on Drink-X for Brands!</div>
+          <a href="/businessSignup" class="fw-bold btn primary-btn-less-round-blue btn-md my-2">Sign Up Now</a>
+        </div>
+        <div class="col-1 "></div>
+        <div class="col-12 col-md-3 justify-content-center mt-2">
+        <video autoplay loop muted playsinline class="img-fluid" style="max-width: 300px;">
+          <source src="https://cdn.shopify.com/videos/c/o/v/675f2034ce254d1986a66641d026c761.mp4" type="video/mp4">
+        </video>
+        </div>
+        <div class="col-1"></div>
+      </div>
+      </div>
+    </section>
     
     <FooterBar />
   </div>
 </template>
+
+
 
 <script>
 import NavBar from '@/components/NavBar.vue';
 import FooterBar from '@/components/FooterBar.vue';
 
 export default {
-  name: 'PartnerCenterBrands',
+  name: 'DrinkXForVenue',
   components: {
     NavBar,
-    FooterBar
-  },
-  data() {
-    return {
-      partnerSections: [
-        { title: 'Partner Center', path: '/partner' },
-        { title: 'Venues', path: '/partner/venues' },
-        { title: 'Brands', path: '/partner/brands' },
-        { title: 'Festivals & Events', path: '/partner/festivals' }
-      ]
-    };
-  },
-  methods: {
-    isActive(path) {
-      return this.$route.path === path;
-    }
+    FooterBar,
+    
   }
 };
 </script>
 
 <style scoped>
+
+  .hero-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+.red-slope {
+  position: absolute;
+  bottom: -40px; /* Push slope down below the hero section */
+  left: 0;
+  width: 100%;
+  height: 120px;
+  background: #104c8b;
+  clip-path: polygon(100% 0, 0 60%, 0 100%, 100% 100%);
+  z-index: 1;
+}
+
+.juicebox-img {
+  position: absolute;
+  bottom: 50px;
+  right: 30px; /* Slight padding from the right edge for balance */
+  width: 150px; /* Or larger if needed for impact */
+  z-index: 3; /* Ensure it's above the red slope */
+  transform: translateY(30%); /* Nudge it downward to float over the slope */
+}
+
+
+.hero {
+  background-color: #f0b35820;
+}
+.features {
+  background-color: #fffaf0;
+}
+.story {
+  background-color: #f9f9f9;
+}
 .partner-container {
   padding-top: 30px;
   min-height: calc(100vh - 200px);

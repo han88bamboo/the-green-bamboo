@@ -49,9 +49,10 @@
         <div class="col footer-col">
           <!--<h5>Section</h5>-->
           <ul class="nav flex-column" style="font-weight: bold; ">
-            <li class="nav-item mb-2  justify-content-start" style="display: flex !important;"><a href="/help/venues" class="nav-link p-0 text-black">Drink-X for Venues</a></li>
-            <li class="nav-item mb-2  justify-content-start" style="display: flex !important;"><a href="/help/brands" class="nav-link p-0 text-black">Drink-X for Brands</a></li>
-            <li class="nav-item mb-2  justify-content-start" style="display: flex !important;"><a href="/help/partner" class="nav-link p-0 text-black">Partner Center</a></li>
+            <li class="nav-item mb-2  justify-content-start" style="display: flex !important;"><a href="/partner" class="nav-link p-0 text-black">Partner Center</a></li>
+            <li class="nav-item mb-2  justify-content-start" style="display: flex !important;"><a href="/partner/venues" class="nav-link p-0 text-black">Drink-X for Venues</a></li>
+            <li class="nav-item mb-2  justify-content-start" style="display: flex !important;"><a href="/partner/brands" class="nav-link p-0 text-black">Drink-X for Brands</a></li>
+            
           
           </ul>
         </div>

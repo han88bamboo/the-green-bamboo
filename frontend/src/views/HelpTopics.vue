@@ -1,7 +1,8 @@
  <template>
   <div>
     <NavBar />
-    
+
+
     <div class="help-container">
       <div class="container py-4">
         <div class="row">
@@ -60,13 +61,14 @@ export default {
   },
   data() {
     return {
+      activeDropdown: 'brands', // will be 'brands', 'venues', or 'festival'
       currentSection: this.$route.params.section || 'features',
       helpSections: [
         { id: 'features', title: 'Features' },
-        { id: 'venues', title: 'Drink-X for Venues' },
-        { id: 'brands', title: 'Drink-X for Brands' },
+        //{ id: 'venues', title: 'Drink-X for Venues' },
+        //{ id: 'brands', title: 'Drink-X for Brands' },
         { id: 'whats-new', title: 'What\'s New' },
-        { id: 'partner', title: 'Partner Center' },
+        //{ id: 'partner', title: 'Partner Center' },
         { id: 'about', title: 'About' },
         { id: 'faqs', title: 'FAQs' },
         { id: 'support', title: 'Support' },
@@ -1261,14 +1263,21 @@ f. A statement by you, made under penalty of perjury, that the information in th
     }
   },
   methods: {
-    setCurrentSection(sectionId) {
-      this.currentSection = sectionId;
-      // Update URL if using Vue Router
-      if (this.$router) {
-        this.$router.push({ name: 'help', params: { section: sectionId } });
-      }
+  toggleDropdown(target) {
+    if (this.activeDropdown === target) {
+      this.activeDropdown = null;  // clicking the same one again closes it
+    } else {
+      this.activeDropdown = target;  // open the clicked one
     }
   },
+  setCurrentSection(sectionId) {
+    this.currentSection = sectionId;
+    // Update URL if using Vue Router
+    if (this.$router) {
+      this.$router.push({ name: 'help', params: { section: sectionId } });
+    }
+  },
+
   created() {
     // Initialize section from URL if available
     if (this.$route && this.$route.params && this.$route.params.section) {
@@ -1278,6 +1287,11 @@ f. A statement by you, made under penalty of perjury, that the information in th
       }
     }
   }
+},
+  mounted() {
+  // Your mounted logic here if any
+  console.log('HelpTopics component mounted');
+}
 };
 </script>
 
@@ -1421,6 +1435,26 @@ f. A statement by you, made under penalty of perjury, that the information in th
 .anchor-target {
   scroll-margin-top: 90px; /* adjust this value as needed */
 }
+
+.toggle-link {
+  cursor: pointer;
+  color: #000000; /* Bootstrap primary blue or pick your brand color */
+  text-decoration: underline;
+  transition: color 0.2s ease, text-decoration-color 0.2s ease;
+}
+
+.toggle-link:hover {
+  color: white; /* Darker blue on hover */
+  text-decoration-color: #white; /* Optional: sync underline color on hover */
+}
+
+.toggle-link.active {
+  color: white; /* Active color (e.g., orange or your brand highlight) */
+  text-decoration: none;
+  font-weight: bold;
+  border-bottom: 2px solid white; /* subtle indicator */
+}
+
 </style>
 
 <comment>    // <h4 class="mt-5 anchor-target" id="insights" style="scroll-margin-top: 185px;">📊 Track Your Venue’s Impact</h4>

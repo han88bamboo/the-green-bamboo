@@ -1142,6 +1142,8 @@ introduce new search component to return bottle producer and venue listing.
 parallel api calling with promise.all 
 logic handling in landing page. 
 
+# Update as of 6 July
+
 Coder: Han
 
 Purpose of the changes:
@@ -1149,3 +1151,15 @@ new partner center pages
 
 Nature of the changes (frontend / backend / database):
 frontend + index plus creation of new files in view
+
+# Update as of 6 July
+
+Coder: Kai 
+
+Purpose of the changes:
+- Created a new partner center with links to Drink-X for Brands / Venue / Festival Organisers. 
+- Adjusted the footer bar to reflect new links 
+- I've adjusted the links in the footer header accordingly to the Partner Centre pages : So now all the stuff like FAQs, Privacy Policy, Terms of Use stuff remains under www.drink-x.com/help , but the Business account related stuff goes under www.drink-x.com/partner
+
+Nature of the changes:
+Frontend
