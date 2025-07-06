@@ -1129,6 +1129,19 @@ frontend
 
 # Update as of 6 July
 
+Coder: MS
+
+Purpose of the changes:
+search bar funtionality and postgresql search optimization 
+
+Nature of the changes (frontend / backend / database):
+postgresql - create trigram index strategry to index based on listing, producer, venue name
+backend - getData.py - implement fuzzy search with similarity score function for bottle,producer and venue listing search
+frontend - AutocompleteSearch.vue, NavBar.vue, LandingPage.vue 
+introduce new search component to return bottle producer and venue listing.
+parallel api calling with promise.all 
+logic handling in landing page. 
+
 Coder: Han
 
 Purpose of the changes:
