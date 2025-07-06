@@ -645,6 +645,54 @@ def getListingByName(listing_name):
 # ----------------------
 # [OLD] TO BE DELETED:
 # ----------------------
+# [GET] Get all listings names test
+@blueprint.route('/producer-listings', methods=['GET'])
+def get_producer_listings():
+    conn = g.db
+    """Get producer ttle listings with search functionality"""
+    try:
+        # Get query parameters
+        query = request.args.get('q', '').strip()
+        limit = int(request.args.get('limit', 3))
+
+        # Validate query
+        if not query:
+            return jsonify([])
+        
+        # run similarity search 
+        sql = """
+            SELECT "id", "producerName", "originCountry",
+                    similarity("producerName", %s) as sim_score
+            FROM producers 
+            WHERE similarity("producerName", %s) > 0.2 
+            ORDER BY sim_score 
+            DESC LIMIT %s;
+        """
+
+        with conn.cursor() as cursor:
+            cursor.execute(sql, (query, query, limit))
+            rows = cursor.fetchall()
+
+        # if nothing was found
+        if not rows:
+            return jsonify([]), 200
+
+        result = [
+            {
+                "id": row["id"], 
+                "producerName": row["producerName"], 
+                "originCountry": row["originCountry"]
+            } 
+            for row in rows
+        ]
+
+        return jsonify(result), 200
+    
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        # print("something went wrong" + str(e), flush=True)
+        return jsonify({"error": str(e)}), 500
 
 # [GET] Producers
 @blueprint.route("/getProducers")
@@ -1234,6 +1282,56 @@ def getRecentListingReviews(id):
                     "topListings" : top_listings,
                     "drinkCount" : drink_count["count"]}), 200
     
+# [GET] Get all listings names test
+@blueprint.route('/bottle-listings', methods=['GET'])
+def get_bottle_listings():
+    conn = g.db
+    """Get bottle listings with search functionality"""
+    try:
+        # Get query parameters
+        query = request.args.get('q', '').strip()
+        limit = int(request.args.get('limit', 3))
+
+        # Validate query
+        if not query:
+            return jsonify([])
+        
+        # run similarity search 
+        sql = """
+            SELECT "id", "listingName", "typeCategory", "originCountry", 
+                    similarity("listingName", %s) as sim_score 
+            FROM listings 
+            WHERE similarity("listingName", %s) > 0.2 
+            ORDER BY sim_score 
+            DESC LIMIT %s;
+        """
+
+        with conn.cursor() as cursor:
+            cursor.execute(sql, (query, query, limit))
+            rows = cursor.fetchall()
+
+        # if nothing was found
+        if not rows:
+            return jsonify([]), 200
+
+        result = [
+            {
+                "id": row["id"], 
+                "listingName": row["listingName"], 
+                "typeCategory": row["typeCategory"],
+                "originCountry": row["originCountry"]
+            } 
+            for row in rows
+        ]
+
+        return jsonify(result), 200
+    
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        # print("something went wrong" + str(e), flush=True)
+        return jsonify({"error": str(e)}), 500
+
 
 # [GET] Get all listings names
 @blueprint.route("/getListingsNames/<search_term>")
@@ -1959,6 +2057,54 @@ def getVenuesWithSpecificListing(listingID):
             "error": str(e)
         }), 500
 
+# [GET] Get all listings names test
+@blueprint.route('/venue-listings', methods=['GET'])
+def get_venue_listings():
+    conn = g.db
+    """Get venue listings with search functionality"""
+    try:
+        # Get query parameters
+        query = request.args.get('q', '').strip()
+        limit = int(request.args.get('limit', 3))
+
+        # Validate query
+        if not query:
+            return jsonify([])
+        
+        # run similarity search 
+        sql = """
+            SELECT "id", "venueName", "originLocation",
+                    similarity("venueName", %s) as sim_score
+            FROM venues 
+            WHERE similarity("venueName", %s) > 0.2 
+            ORDER BY sim_score 
+            DESC LIMIT %s;
+        """
+
+        with conn.cursor() as cursor:
+            cursor.execute(sql, (query, query, limit))
+            rows = cursor.fetchall()
+
+        # if nothing was found
+        if not rows:
+            return jsonify([]), 200
+
+        result = [
+            {
+                "id": row["id"], 
+                "venueName": row["venueName"], 
+                "originLocation": row["originLocation"]
+            } 
+            for row in rows
+        ]
+
+        return jsonify(result), 200
+    
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        # print("something went wrong" + str(e), flush=True)
+        return jsonify({"error": str(e)}), 500
 
 # [GET] Get venues by search term
 @blueprint.route("/getVenuesBySearch", methods=['GET'])

@@ -69,7 +69,8 @@
                                   <img src="../../Images/Others/camera-white.png" style="width: 30px; height: 30px; margin-left: 10px;">
                               </button>
                       </div> -->
-            <SearchBar :showSurpriseButton="false" class="w-100" />
+            <!-- <SearchBar :showSurpriseButton="false" class="w-100" /> --> 
+            <AutocompleteSearch @select="$emit('search-selection', $event)" />
           </div>
 
           <div class="d-flex align-items-center ms-auto gap-2">
@@ -485,7 +486,8 @@
             v-on:click="goSearch"
           />
         </div> -->
-        <SearchBar :showSurpriseButton="false" class="w-100" />
+        <!-- <SearchBar :showSurpriseButton="false" class="w-100" /> -->
+        <AutocompleteSearch @select="$emit('search-selection', $event)" />
       </div>
       <div class="mobile-view-hide container-fluid align-items-center col-12 gap-3">
         <router-link :to="'/explore'">
@@ -583,12 +585,15 @@
 </template>
 
 <script>
-import SearchBar from './SearchBar.vue';
+// import SearchBar from './SearchBar.vue';
+import AutocompleteSearch from './AutocompleteSearch.vue';
 
 export default {
   name: "NavBar",
+  emits: ['search-selection'],
   components: {
-    SearchBar,
+    // SearchBar,
+    AutocompleteSearch,
   },
   data() {
     return {

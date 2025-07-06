@@ -2,7 +2,7 @@
 DROP TABLE IF EXISTS "notifications" CASCADE;
 DROP TABLE IF EXISTS "eventAttendees" CASCADE;
 DROP TABLE IF EXISTS "events" CASCADE;
-DROP TABLE IF EXISTs "clubPostCommentsLikes" CASCADE;
+DROP TABLE IF EXISTS "clubPostCommentsLikes" CASCADE;
 DROP TABLE IF EXISTS "clubPostCommentsDislikes" CASCADE;
 DROP TABLE IF EXISTS "clubPostComments" CASCADE;
 DROP TABLE IF EXISTS "clubPostsLikes" CASCADE;
@@ -63,6 +63,9 @@ DROP TABLE IF EXISTS "pointSystemRules" CASCADE; -- ADDED BY SMU GROUP 3
 DROP TABLE IF EXISTS "venueReviews" CASCADE;
 DROP TABLE IF EXISTS "venueReviewsUserVotes" CASCADE;
 DROP TABLE IF EXISTS "userNotificationsRead" CASCADE;
+
+-- to enable trigram index for fuzzy search
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 -- CREATE TABLES -- 
 -- ========= "accountRequests" =========
@@ -213,6 +216,10 @@ CREATE TABLE "producers" (
     "stripeCustomerId" VARCHAR(255)
 );
 
+-- Create a GIN index on listingName for trigram fuzzy search
+CREATE INDEX idx_producers_name_trgm ON "producers" USING gin ("producerName" gin_trgm_ops);
+
+
 -- ========= "venues" =========
 CREATE TABLE "venues" (
     "id" SERIAL PRIMARY KEY,
@@ -239,6 +246,10 @@ CREATE TABLE "venues" (
     "pin" VARCHAR(255),
     "requestId" INTEGER -- [!] reference "accountRequests"
 );
+
+-- create index 
+-- Create a GIN index on listingName for trigram fuzzy search
+CREATE INDEX idx_venues_name_trgm ON "venues" USING gin ("venueName" gin_trgm_ops);
 
 -- ========= "users" =========
 CREATE TABLE "users" (
@@ -355,8 +366,14 @@ CREATE TABLE "listings" (
     "reviewLink" VARCHAR(255),
     "sourceLink" VARCHAR(255),
     "photo" TEXT,
-    "drinkStyle" VARCHAR(255) -- added by tzh 
+    "drinkStyle" VARCHAR(255) -- added by tzh
 );
+
+-- create index 
+-- CREATE INDEX idx_listings_search_vector 
+-- ON "listings" USING GIN("searchVector");
+-- Create a GIN index on listingName for trigram fuzzy search
+CREATE INDEX idx_listings_name_trgm ON "listings" USING gin ("listingName" gin_trgm_ops);
 
 -- ========= "modRequests" =========
 CREATE TABLE "modRequests" (

@@ -1,5 +1,5 @@
 <template>
-    <NavBar />
+    <NavBar @search-selection="handleSelection"/>
     <main>
     <!-- Hero Section with Search -->
     <section class="hero-section text-center">
@@ -12,7 +12,7 @@
             </h1>
             <div class="row justify-content-center w-100">
                 <div class="col-12 col-md-8 col-lg-6">
-                    <SearchBar />
+                    <SearchBar :showSurpriseButton="true" class="w-100" /> 
                 </div>
             </div>
         </div>
@@ -1023,6 +1023,74 @@ export default {
                 robots: robotsContent
             })
         /* SEO section Ends */
+
+        /* Searchbar handler functions stars here */
+        const handleSelection = (selection) => {
+            console.log('Selection received:', selection)
+
+            // Add more detailed logging to debug
+            console.log('Selection item:', selection.item)
+            console.log('Selection type:', selection.type)
+
+            // Set the search input to the selected item's name
+            const itemName = getItemNameByType(selection.item, selection.type)
+            
+            console.log('Extracted item name:', itemName)
+            
+            // Call goSearch to navigate to search page
+            goSearch(itemName)
+        }
+        
+        const getItemNameByType = (item, type) => {
+            console.log('getItemNameByType called with:', { item, type })
+            
+            if (!item) {
+                console.warn('Item is null or undefined')
+                return 'Unknown Item'
+            }
+
+            switch (type) {
+                case 'listings':
+                    return item.listingName || item.name 
+                case 'venues':
+                    return item.venueName || item.name
+                case 'producers':
+                    return item.producerName || item.name 
+                default:
+                    // Fallback: try common name properties
+                    return item.name || item.listingName || item.venueName || item.producerName 
+            }
+        }    
+
+        const goSearch = (itemName) => {
+            console.log('goSearch called with:', itemName)
+            
+            if (!itemName || itemName.trim() === "" || itemName === "Unknown Item") {
+                console.warn('Invalid item name for search:', itemName)
+                return
+            }
+
+            // Remove any '/' from search input
+            const cleanItemName = itemName.replace(/\//g, "")
+            console.log('Clean item name:', cleanItemName)
+
+            // If already on search page, refresh the page with new search input
+            if (window.location.pathname.split("/")[1] === "search") {
+                console.log('Already on search page, redirecting to:', `/search/${cleanItemName}`)
+                window.location.href = `/search/${cleanItemName}`
+            } else {
+                // Re-route to search page using window.location (since we don't have router in setup)
+                console.log('Redirecting to search page:', `/search/${cleanItemName}`)
+                window.location.href = `/search/${cleanItemName}`
+            }
+        }
+        /* Searchbar handler functions ends here */    
+
+        return {
+            // Search functionality
+            handleSelection,
+            goSearch,
+        }
     },
     data() {
         return {
@@ -1109,6 +1177,10 @@ export default {
             }
 
             try {
+                if (this.userID === null || this.userID === "") {
+                    return;
+                }
+
                 const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUser/${this.userID}`);
                 this.user = response.data;
                 if (this.user) {
