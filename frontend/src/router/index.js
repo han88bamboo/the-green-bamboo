@@ -349,8 +349,35 @@ const routes = [
     path: '/help/:section',
     name: 'helpSection',
      component: () => import('@/views/HelpTopics.vue')
+  },
+  // ----------------- Partner Center Page (top level) --------------------
+  
+  {
+    path: '/partner',
+    name: 'partnerCenter',
+     component: () => import('@/views/PartnerCenter.vue')
+  },
+// ----------------- Partner Center Page (venues) --------------------
+  
+  {
+    path: '/partner/venues',
+    name: 'partnerCenterVenues',
+     component: () => import('@/views/PartnerCenterVenues.vue')
+  },
+  // ----------------- Partner Center Page (brands) --------------------
+  
+  {
+    path: '/partner/brands',
+    name: 'partnerCenterBrands',
+     component: () => import('@/views/PartnerCenterBrands.vue')
+  },
+  // ----------------- Partner Center Page (festivals) --------------------
+  
+  {
+    path: '/partner/festivals',
+    name: 'partnerCenterFestivals',
+     component: () => import('@/views/PartnerCenterFestivals.vue')
   }
-
 ];
 
 const router = createRouter({
