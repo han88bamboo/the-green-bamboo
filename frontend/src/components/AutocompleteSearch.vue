@@ -527,11 +527,11 @@ export default {
   font-weight: 400;
 }
 
-input.form-control {
-    border: none; /* Match the outer border color */
-    box-shadow: none !important; /* Remove the inner shadow */
-    outline: none; /* Remove the focus outline */
-}
+/* input.form-control {
+    border: none; 
+    box-shadow: none !important; 
+    outline: none; 
+} */
 
 /* Mobile-first responsive adjustments */
 @media (max-width: 576px) {
