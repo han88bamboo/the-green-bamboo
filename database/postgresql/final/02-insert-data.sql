@@ -2772,6 +2772,22 @@ INSERT INTO "venues" (
     'Not open on Christmas', 
     NULL, 
     NULL
+), 
+(
+    'Test Venue',
+    '1 Dragon City',
+    'Bar',
+    'Singapore',
+    'A popular test venue for unit testing and staging purposes.',
+    '934896143', -- hashed password
+    NULL, 
+    true, 
+    NULL, 
+    'Cannot reserve anything', 
+    'testvenueuser', 
+    'Not open on Christmas', 
+    NULL, 
+    NULL
 );
 
 INSERT INTO "producersQuestionAnswers" (

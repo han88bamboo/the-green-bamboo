@@ -3025,6 +3025,9 @@ export default {
               }
             } catch (error) {
               console.error("Error in getDistance request:", error);
+
+              // If there's an error, just add to nearestBars with no distance
+              venueDistances[venue.id] = 5000; // Default distance if API fails
             }
           }
           // if (venue.distance != null && venue.distance != undefined && venue.distance < maxDistance){
