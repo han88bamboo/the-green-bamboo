@@ -1169,7 +1169,8 @@
 
                 <!-- Bar Menu -->
                 <div v-if="contentMode == 'menu'" id="menu">
-
+                    <!-- Menu section wrapper with relative positioning -->
+                    <div class="menu-wrapper position-relative">
                     <!-- ------- START Menu Lock Message (Venue Unclaimed) ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
                     <!-- Menu Lock Message (Venue Unclaimed) MOBILE VIEW ONLY -->
@@ -1599,7 +1600,7 @@
                         <!-- ------- START Menu Sections ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
                         <!-- Menu Sections -->
-                        <draggable v-model="editMenu" item-key="sectionOrder" @start="drag=true" @end="drag=false" v-bind="dragOptions">
+                        <draggable v-model="editMenu" item-key="sectionOrder" @start="dragStart" @end="dragEnd" v-bind="dragOptions">
                             <template #item="{element: menuSection}">
                                 <div class="row mb-2">
 
@@ -1679,7 +1680,7 @@
                                         <!-- ------- START Section Contents ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
                                         <!-- Section Contents xyz-->
-                                        <draggable v-model="menuSection.sectionMenu" item-key="itemOrder" @start="drag=true" @end="drag=false" v-bind="dragOptions">
+                                        <draggable v-model="menuSection.sectionMenu" item-key="itemOrder" @start="dragItemStart(menuSection)" @end="dragItemEnd(menuSection)" v-bind="dragOptions">
                                             <template #item="{element: menuItem}">
                                                 <div class="col-12 my-3">
                                                     <div class="row mobile-view-show">
@@ -2160,7 +2161,20 @@
                     </div>
 
                     <!-- ------- END Menu View (Editing) ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
-
+                    <!-- Menu-specific loading overlay -->
+                    <div class="menu-loading-overlay" :class="{ 'visible': showMenuLoadingOverlay }">
+                        <div>
+                        <span class="spinner">⟳</span>
+                        Please wait...
+                        </div>
+                    </div>
+                    <!-- Invalid area message overlay -->
+                    <div class="menu-loading-overlay" :class="{ 'visible': invalidAreaMessageVisible }">
+                    <div>
+                        Invalid area, please try again.
+                    </div>
+                    </div>
+                    </div>
                 </div>
 
                 <!-- ------- END Bar Menu ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
@@ -3437,19 +3451,32 @@
                 // truncation of official description <!-- tzh added  --->
                 showFullItemDescription: false,
 
-                userType: 'user'
+                userType: 'user',
+
+                showMenuLoadingOverlay: false,
+
+                invalidAreaMessageVisible: false,
+
+                dragOptions: {
+                    animation: 350,
+                    group: "menuSections",
+                    disabled: false,
+                    ghostClass: "ghost",
+                    revertOnSpill: true,       // Return items to original position when dropped outside valid containers
+                    fallbackOnBody: true,      // Allow ghost element to appear on body when outside valid areas
+                    onSpill: function() {       // Handle drops outside valid containers
+                        // Just let revertOnSpill do its job
+                        this.showInvalidAreaMessage();
+                        return false;   
+                    }.bind(this)
+                },
+
+                menuSnapshot: null
             }
         },
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         computed: {
-            dragOptions() {
-                return {
-                    animation: 350,
-                    group: "menuSections",
-                    disabled: false,
-                    ghostClass: "ghost"
-                };
-            },
+            
         },
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         mounted() {
@@ -3502,7 +3529,28 @@
                 this.userName = userName;
             }
 
+            // Add a global error handler for drag operations
+            window.addEventListener('error', this.handleDragError);
 
+            // Add unhandled rejection handler for Promise errors
+            window.addEventListener('unhandledrejection', (event) => {
+                if (event.reason && this.handleDragError({ error: event.reason })) {
+                    event.preventDefault();
+                }
+            });
+            
+            // Add Vue error handler
+            this.$root.$on('error', (error) => {
+                this.handleDragError({ error });
+            });
+        },
+        beforeUnmount() {
+            // Remove the event listener when component is destroyed
+            window.removeEventListener('error', this.handleDragError);
+            window.removeEventListener('unhandledrejection', this.handleDragError);
+
+            // Clean up Vue error handler
+            this.$root.$off('error');
         },
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         methods: {
@@ -4819,7 +4867,16 @@
 
             // Enable Edit Menu Mode
             async enableEditMenuMode() {
+                // First show the overlay to prevent interaction
+                this.showMenuLoadingOverlay = true;
+                
+                // Set edit mode flag
                 this.editMenuMode = true;
+
+                // Hide the overlay after 1.5 seconds
+                setTimeout(() => {
+                    this.showMenuLoadingOverlay = false;
+                }, 1500);
             },
 
             // Update Menu
@@ -5633,6 +5690,77 @@
                 menuSection.classList.remove('highlight-section');
                 }, 3000);
             }
+            },
+            // Add to your methods object
+            showInvalidAreaMessage() {
+                this.invalidAreaMessageVisible = true;
+                
+                setTimeout(() => {
+                    this.invalidAreaMessageVisible = false;
+                }, 1000);
+            },
+
+        // Add this new method to handle drag errors
+            handleDragError(event) {
+                // Check for error in both error event formats
+                const errorMsg = (event.error?.toString() || event.message || "");
+                
+               // More permissive error detection - catch any length-related errors during menu operations
+                if (errorMsg.includes("Cannot read properties") && errorMsg.includes("length") && 
+                    this.editMenuMode) {  // Check if we're in edit mode rather than drag state
+                    
+                    // Prevent default error handling
+                    if (event.preventDefault) {
+                        event.preventDefault();
+                    }
+                    
+                    // Show invalid area message
+                    this.showInvalidAreaMessage();
+                    
+                    // Reset the drag operation
+                    this.drag = false;
+                    
+                    // Reset the menu to its original state
+                    this.resetEditMenu();
+                    
+                    return true;
+                }
+                return false;
+            },
+
+            // Add these methods to the methods section
+            dragStart() {
+                this.drag = true;
+                // Take a snapshot of the current menu structure
+                this.menuSnapshot = JSON.stringify(this.editMenu);
+            },
+
+            dragEnd() {
+                // Check if the menu structure changed after drag
+                const currentMenu = JSON.stringify(this.editMenu);
+                if (this.menuSnapshot === currentMenu) {
+                    // No change occurred - likely an invalid drop
+                    this.showInvalidAreaMessage();
+                }
+                this.drag = false;
+                this.menuSnapshot = null;
+            },
+
+            dragItemStart(menuSection) {
+                this.drag = true;
+                // Take a snapshot of the current section's items
+                this.menuSnapshot = JSON.stringify(menuSection.sectionMenu);
+            },
+
+            dragItemEnd(menuSection) {
+                // Check if the section's items changed after drag
+                const currentSection = JSON.stringify(menuSection.sectionMenu);
+                if (this.menuSnapshot === currentSection) {
+                    // No change occurred - likely an invalid drop
+                    this.showInvalidAreaMessage();
+                }
+                this.drag = false;
+                this.menuSnapshot = null;
             }
         }
     }
@@ -5654,5 +5782,44 @@
   animation: highlightBorder 1s ease-out infinite;
   border: 2px solid #FFC107;
   border-radius: 5px;
+}
+/* Menu-specific overlay styling */
+.menu-wrapper {
+  position: relative; /* Creates positioning context for absolute overlay */
+}
+
+.menu-loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.menu-loading-overlay.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.menu-loading-overlay .spinner {
+  margin-right: 10px;
+  animation: spin 1s infinite linear;
+  display: inline-block;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 </style>

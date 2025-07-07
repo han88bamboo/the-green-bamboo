@@ -1163,3 +1163,17 @@ Purpose of the changes:
 
 Nature of the changes:
 Frontend
+
+
+
+# Update as of 7 July
+
+Coder: Han
+
+Purpose of the changes:
+error handling for dragging and dropping menu operations
+
+Nature of the changes (frontend / backend / database):
+frontend 
+
+
