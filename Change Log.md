@@ -1177,3 +1177,10 @@ Nature of the changes (frontend / backend / database):
 frontend 
 
 
+Coder : MS 
+
+Purpose of the changes:
+Moved search selection and navigation logic from LandingPage.vue to a new composable (useSearch.js) and updated NavBar.vue to use this composable. 
+
+Nature of the changes (frontend / backend / database):
+frontend 

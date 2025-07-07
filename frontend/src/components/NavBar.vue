@@ -17,60 +17,9 @@
           </div>
 
           <div class="col-6 mobile-view-hide d-flex align-items-center justify-content-center">
-            <!-- search bar with suggestions -tzh added mobile-view-hide  -->
-            <!-- <div
-              class="col-8 position-relative search-bar d-flex"
-              style="height: 50px"
-            >
-              <div class="w-100 position-relative">
-                <input
-                  class="form-control fst-italic"
-                  style="border: none; height: 100%; line-height: 50px; padding: 0 1rem;"
-                  type="text"
-                  placeholder="Go for it!"
-                  v-model="searchInput"
-                  v-on:keyup.enter="goSearch"
-                  v-on:input="getSuggestions"
-                  autocomplete="off"
-                />
-                <div
-                  class="autocomplete-container position-absolute w-100"
-                  v-if="showSuggestions && filteredSuggestions.length > 0"
-                >
-                  <ul class="list-group">
-                    <li
-                      class="list-group-item list-group-item-action text-start"
-                      v-for="(suggestion, index) in filteredSuggestions"
-                      :key="index"
-                      v-on:click="selectSuggestion(suggestion)"
-                      :class="{ active: selectedIndex === index }"
-                      v-on:mouseover="selectedIndex = index"
-                    >
-                      {{ suggestion }}
-                    </li>
-                  </ul>
-                </div>
-              </div>
-              <img
-                src="../../Images/Others/search-green.png"
-                style="
-                  width: 25px;
-                  height: 25px;
-                  margin: 0px 10px;
-                  align-self: center;
-                "
-                v-on:click="goSearch"
-              />
-            </div> -->
-            <!-- camera button -->
-            <!-- <div class="col mobile-view-hide">
-                              <button class="btn primary-btn-less-round-green d-flex align-items-center" style="height: 50px; margin-left: 10px; padding: 0px 15px;" v-on:click="imageSearch">
-                                  <span>Scan bottle</span>
-                                  <img src="../../Images/Others/camera-white.png" style="width: 30px; height: 30px; margin-left: 10px;">
-                              </button>
-                      </div> -->
-            <!-- <SearchBar :showSurpriseButton="false" class="w-100" /> --> 
-            <AutocompleteSearch @select="$emit('search-selection', $event)" />
+            <!-- <SearchBar :showSurpriseButton="false" class="w-100" /> -->
+            <!-- <AutocompleteSearch @select="$emit('search-selection', $event)" /> -->
+            <AutocompleteSearch @select="handleSelection" />
           </div>
 
           <div class="d-flex align-items-center ms-auto gap-2">
@@ -382,15 +331,15 @@
                 <li class="drawer-section-title mt-2 d-flex align-items-center text-start" @click="toggleStats">
                   <span>{{ dashboardWord }} Stats</span>
                   <span style="margin-left: 8px;">{{ showStats ? '▾' : '▸' }}</span>
-                </li> 
+                </li>
                 <li v-show="showStats" class="text-start pt-1">
-                  <router-link :to="profileURL"
-                    style="text-decoration: none; font-weight: normal">{{ dashboardWord }} Profile
+                  <router-link :to="profileURL" style="text-decoration: none; font-weight: normal">{{ dashboardWord }}
+                    Profile
                   </router-link>
                 </li>
                 <li v-show="showStats" class="text-start">
-                  <router-link :to="dashboardURL"
-                    style="text-decoration: none; font-weight: normal">{{ dashboardWord }} Dashboard
+                  <router-link :to="dashboardURL" style="text-decoration: none; font-weight: normal">{{ dashboardWord }}
+                    Dashboard
                   </router-link>
                 </li>
 
@@ -487,7 +436,8 @@
           />
         </div> -->
         <!-- <SearchBar :showSurpriseButton="false" class="w-100" /> -->
-        <AutocompleteSearch @select="$emit('search-selection', $event)" />
+        <!-- <AutocompleteSearch @select="$emit('search-selection', $event)" /> -->
+        <AutocompleteSearch @select="handleSelection" />
       </div>
       <div class="mobile-view-hide container-fluid align-items-center col-12 gap-3">
         <router-link :to="'/explore'">
@@ -588,12 +538,24 @@
 // import SearchBar from './SearchBar.vue';
 import AutocompleteSearch from './AutocompleteSearch.vue';
 
+import { useSearch } from '@/composables/navbar/useSearch';
+
 export default {
   name: "NavBar",
-  emits: ['search-selection'],
+  // emits: ['search-selection'],
   components: {
     // SearchBar,
     AutocompleteSearch,
+  },
+  setup() {
+    /* Searchbar handler functions stars here */
+    const { handleSelection } = useSearch()
+    /* Searchbar handler functions ends here */
+
+    return {
+      // Search functionality
+      handleSelection
+    }
   },
   data() {
     return {
