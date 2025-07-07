@@ -126,7 +126,11 @@
                                         </button>
                                     </div>
                                 </div>
-                                
+
+                                <!-- UnRSVP Button -->
+                                <div v-if="rsvpStatus && !selfView">
+                                    <button class="btn btn-danger fw-bold" data-bs-toggle="modal" data-bs-target="#unRSVPConfirmationModal">UnRSVP</button>
+                                </div>                                
 
                                 <!-- Invite Button -->
                                 <div>
@@ -509,6 +513,28 @@
                 </div>
             </div>
         </div>
+
+        <!-- UnRSVP Confirmation Modal Start -->
+        <div class="modal fade" id="unRSVPConfirmationModal" tabindex="-1" aria-labelledby="unRSVPConfirmationModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="unRSVPConfirmationModalLabel">UnRSVP Confirmation</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="fw-bold">Are you sure you want to unRSVP from this event?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-danger" @click="unRSVPEvent" data-bs-dismiss="modal">UnRSVP</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- UnRSVP Confirmation Modal End -->
+
+
         <!-- Prompt Purchase Modal Start -->
         <div class="modal fade" id="promptPurchaseModal" tabindex="-1" aria-labelledby="promptPurchaseModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
@@ -1013,6 +1039,44 @@ export default {
                         console.log(response.data.message);
                         const toast = useToast();
                         toast.error('RSVP failed. Please try again!');
+                    }
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+            }
+            catch (error) {
+                console.log(error);
+            }
+        },
+
+        // Function to unRSVP from the event
+        unRSVPEvent() {
+            // Check if the user has already logged in
+            if (this.userType == 'defaultUser') {
+                // Redirect to login page
+                this.$router.push('/login');
+                return;
+            }
+            try {
+                this.$axios.delete(`${process.env.VUE_APP_API_URL}/events/removeAttendee`, {
+                    data: {
+                        eventID: this.event.id,
+                        userID: this.userID,
+                        userType: this.userType
+                    }
+                })
+                .then((response) => {
+                    if (response.status == 200) {
+                        const toast = useToast();
+                        toast.success('UnRSVP successful!');
+                        this.getAttendees();
+                        this.rsvpStatus = false;
+                    }
+                    else {
+                        console.log(response.data.message);
+                        const toast = useToast();
+                        toast.error('UnRSVP failed. Please try again!');
                     }
                 })
                 .catch((error) => {
