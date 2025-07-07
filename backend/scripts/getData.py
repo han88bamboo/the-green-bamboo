@@ -54,7 +54,7 @@
 #           /getFlavourTags (GET), /getSubTags (GET), /getObservationTags (GET),
 #           /getColours (GET), /getSpecialColours (GET), /getLanguages (GET),
 #           /getServingTypes (GET), /getLatestNews (GET), /getRequestInaccuracyByVenue/<id> (GET),
-#           /getUserNames (GET), /getQuestionsUpdates (GET), /getRequestsCount (POST),
+#           /getUserNames (GET), /getQuestionsUpdates (GET), /getRequestsCount (POST), /getUserNamesDynamic/<search_Term> (GET),
 # -----------------------------------------------------------------------------------------
 
 # pip install python-bsonjs
@@ -6085,5 +6085,36 @@ def get_requests_count():
     finally:
         cur.close()
 
+# ------------------------------------------------------------------------------------------
+# [GET] Get User Names Dynamic
+# Purpose: Get user names dynamically based on search term
+@blueprint.route('/getUserNamesDynamic/<search_term>', methods=['GET'])
+def getUserNamesDynamic(search_term):
 
+    conn = g.db
+    cur = conn.cursor()
+    try:
 
+        cur.execute("""
+            SELECT id, username, photo, "displayName"
+            FROM users
+            WHERE username ILIKE %s
+            ORDER BY username
+            LIMIT 15
+        """, ('%' + search_term + '%',))
+        user_names = cur.fetchall()
+
+        if not user_names:
+            return jsonify({}), 200
+
+        return jsonify(user_names), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({
+            'code': 500,
+            'message': 'An error occurred fetching requests count.'
+        }), 500
+
+    finally:
+        cur.close()

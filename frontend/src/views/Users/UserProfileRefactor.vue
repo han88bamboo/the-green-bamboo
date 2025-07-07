@@ -1545,7 +1545,7 @@
                       </div>
                     </div>
                   </div>
-                                    <!-- add a friend modal -->
+                  <!-- add a friend modal -->
                   <div class="modal fade" id="addFriendModal" tabindex="-1" aria-labelledby="addFriendModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered modal-lg">
                       <div class="modal-content">
@@ -1623,6 +1623,17 @@
                                   >
                                     Following
                                   </button>
+                                </div>
+                              </div>
+
+                              <!-- No suggestions found -->
+                              <div
+                                v-if="showUserSuggestions && filteredUserSuggestions.length === 0"
+                                class="position-absolute w-100 mt-1 bg-white border rounded shadow-sm p-2"
+                                style="z-index: 1000;"
+                              >
+                                <div class="text-muted text-center">
+                                  No users found. Try searching for a different name.
                                 </div>
                               </div>
                               
@@ -2930,7 +2941,6 @@ export default {
 
       //  new properties for user search
       userSearchInput: "",
-      allUsernames: [],
       filteredUserSuggestions: [],
       showUserSuggestions: false,
       selectedUserIndex: -1,
@@ -2982,7 +2992,7 @@ export default {
     this.loadData();
 
     // Fetch usernames when component mounts
-    this.fetchAllUsernames(); 
+    // this.fetchAllUsernames(); 
     
     // Add event listeners for user search
     document.addEventListener("click", this.handleUserSearchClickOutside);
@@ -4494,49 +4504,72 @@ export default {
     },
 
     // Fetch all usernames from backend
-    async fetchAllUsernames() {
+    // async fetchAllUsernames() {
+    //   try {
+    //     this.isUserSearchFetching = true;
+    //     const response = await this.$axios.get(
+    //       `${process.env.VUE_APP_API_URL}/getData/getAllUsernames`
+    //     );
+    //     console.log("API response:", response.data); // See what data is returned
+    //     this.allUsernames = Array.isArray(response.data) ? response.data : [];
+    //   } catch (error) {
+    //     console.error("Error fetching usernames:", error);
+    //     this.allUsernames = [];
+    //   } finally {
+    //     this.isUserSearchFetching = false;
+    //   }
+    // },
+
+    // Filter suggestions based on input (old method)
+    // getUserSuggestions() {
+    //   if (this.userSearchInput.trim().length === 0) {
+    //     this.showUserSuggestions = false;
+    //     this.filteredUserSuggestions = [];
+    //     return;
+    //   }
+
+    //   const searchTerm = this.userSearchInput.toLowerCase();
+      
+    //   // First prioritize exact matches at the start
+    //   const startsWithMatches = this.allUsernames.filter(user => 
+    //     user.username.toLowerCase().startsWith(searchTerm) || 
+    //     user.displayName.toLowerCase().startsWith(searchTerm)
+    //   );
+      
+    //   // Then add partial matches
+    //   const containsMatches = this.allUsernames.filter(user => 
+    //     (user.username.toLowerCase().includes(searchTerm) || 
+    //     user.displayName.toLowerCase().includes(searchTerm)) && 
+    //     !user.username.toLowerCase().startsWith(searchTerm) &&
+    //     !user.displayName.toLowerCase().startsWith(searchTerm)
+    //   );
+      
+    //   // Combine matches with priority order and limit to 7
+    //   this.filteredUserSuggestions = [...startsWithMatches, ...containsMatches].slice(0, 7);
+    //   this.showUserSuggestions = this.filteredUserSuggestions.length > 0;
+    // },
+
+    // Filter suggestions based on input (new method)
+    async getUserSuggestions() {
       try {
-        this.isUserSearchFetching = true;
+        if (this.userSearchInput.trim().length === 0) {
+          this.showUserSuggestions = false;
+          this.filteredUserSuggestions = [];
+          return;
+        }
+
+        const searchTerm = this.userSearchInput.toLowerCase();
+
         const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getAllUsernames`
+          `${process.env.VUE_APP_API_URL}/getData/getUserNamesDynamic/${searchTerm}`
         );
-        console.log("API response:", response.data); // See what data is returned
-        this.allUsernames = Array.isArray(response.data) ? response.data : [];
-      } catch (error) {
-        console.error("Error fetching usernames:", error);
-        this.allUsernames = [];
-      } finally {
-        this.isUserSearchFetching = false;
-      }
-    },
 
-    // Filter suggestions based on input
-    getUserSuggestions() {
-      if (this.userSearchInput.trim().length === 0) {
-        this.showUserSuggestions = false;
-        this.filteredUserSuggestions = [];
-        return;
+        this.filteredUserSuggestions = response.data
+        this.showUserSuggestions = this.filteredUserSuggestions.length > 0;
       }
-
-      const searchTerm = this.userSearchInput.toLowerCase();
-      
-      // First prioritize exact matches at the start
-      const startsWithMatches = this.allUsernames.filter(user => 
-        user.username.toLowerCase().startsWith(searchTerm) || 
-        user.displayName.toLowerCase().startsWith(searchTerm)
-      );
-      
-      // Then add partial matches
-      const containsMatches = this.allUsernames.filter(user => 
-        (user.username.toLowerCase().includes(searchTerm) || 
-        user.displayName.toLowerCase().includes(searchTerm)) && 
-        !user.username.toLowerCase().startsWith(searchTerm) &&
-        !user.displayName.toLowerCase().startsWith(searchTerm)
-      );
-      
-      // Combine matches with priority order and limit to 7
-      this.filteredUserSuggestions = [...startsWithMatches, ...containsMatches].slice(0, 7);
-      this.showUserSuggestions = this.filteredUserSuggestions.length > 0;
+      catch (error) {
+        console.error("Error fetching user suggestions:", error);
+      }
     },
 
     // Navigate to selected user profile in a new tab
