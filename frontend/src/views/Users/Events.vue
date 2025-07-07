@@ -643,6 +643,7 @@
                     <div>
                         <!-- Events You're Organising Tab -->
                         <div v-if="activeUserEventsTab === 'organising'">
+                            {{ organisingEvents.length > 0 ? '' : 'No events found.' }}
                             <div v-if="organisingEvents.length > 0" class="mt-4">
                                 <!-- Upcoming Events You're Organising -->
                                 <div v-if="organisingEvents.filter(event => new Date(event.eventStartDate) >= new Date()).length > 0">
@@ -730,9 +731,15 @@
 
                                                 <!-- Event Details -->
                                                 <p class="text-muted small mb-2">
-                                                    {{ formatDate(event.eventStartDate) }} |
-                                                    {{ formatTime(event.eventStartTime) }} -
-                                                    {{ formatTime(event.eventEndTime) }} |
+                                                    {{ formatDate(event.eventStartDate) }} 
+                                                    <span v-if="event.eventStartTime">
+                                                        |
+                                                        {{ formatTime(event.eventStartTime) }} 
+                                                    </span>
+                                                    <span v-if="event.eventEndTime">
+                                                        <span v-if="event.eventStartTime">-</span>
+                                                        {{ formatTime(event.eventEndTime) }}
+                                                    </span> |
                                                     {{ event.eventType }}
                                                 </p>
 

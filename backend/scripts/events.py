@@ -1465,12 +1465,19 @@ def getUserOrganisingEvents(user_id, user_type):
             ev = {}
             ev['eventID'] = event['id']
             ev['eventName'] = event['eventName']
-            ev['eventDesc'] = event['eventDesc']
+            ev['eventDesc'] = event['eventDesc'].replace('<p>', '').replace('</p>', '')
+
             ev['eventType'] = event['eventType']
             ev['eventStartDate'] = event['eventStartDate'].strftime('%Y-%m-%d')
-            ev['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
-            ev['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
-            ev['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+
+            if event['eventEndDate'] is not None:
+                ev['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
+
+            if event['eventStartTime'] is not None:
+                ev['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
+
+            if event['eventEndTime'] is not None:
+                ev['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
             ev['eventBanners'] = event['eventBanners']
             ev['eventLocation'] = event['eventLocation']
             ev['numAttendees'] = event['numAttendees']
