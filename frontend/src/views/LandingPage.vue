@@ -12,7 +12,21 @@
             </h1>
             <div class="row justify-content-center w-100">
                 <div class="col-12 col-md-8 col-lg-6">
-                    <SearchBar :showSurpriseButton="true" class="w-100" /> 
+                    <!-- <SearchBar :showSurpriseButton="true" class="w-100" /> -->
+                    <AutocompleteSearch @select="handleSelection" />
+
+                    <!-- surprise me button -->
+                    <div class="col-12 align-items-center justify-content-center ">
+                        <router-link :to="'/explore'">
+                            <button
+                                class="btn btn-md text-white fw-bold"
+                                style="background-color: #83a9e8; margin-top: 1rem;"
+                                aria-label="Surprise Me!"
+                            >
+                                Surprise Me!
+                            </button>
+                        </router-link>
+                    </div>
                 </div>
             </div>
         </div>
@@ -880,18 +894,17 @@
 // important for SEO mangament
 import { useHead, useSeoMeta } from '@unhead/vue'
 import { computed } from 'vue'
+import { useSearch } from '@/composables/navbar/useSearch'; 
 
 import NavBar from "@/components/NavBar.vue";
-import SearchBar from "@/components/SearchBar.vue";
+import AutocompleteSearch from '@/components/AutocompleteSearch.vue';
 import FooterBar from "@/components/FooterBar.vue";
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
-
-// import { useSearch } from '@/composables/navbar/useSearch'; 
 
 export default {
     components: {
         NavBar,
-        SearchBar,
+        AutocompleteSearch,
         FooterBar,
         LoadingWithFunFact,
     },
@@ -1025,6 +1038,15 @@ export default {
                 robots: robotsContent
             })
         /* SEO section Ends */
+
+        /* Searchbar handler functions stars here */
+        const { handleSelection } = useSearch()
+        /* Searchbar handler functions ends here */    
+
+        return {
+            // Search functionality
+            handleSelection
+        }
     },
     data() {
         return {
@@ -1371,7 +1393,7 @@ button.btn.selected {
     width: 100%;
     padding-top: 70%;
     /* mobile default: 3:6 = 1:2 */
-    overflow: hidden;
+    /* overflow: hidden; */
 }
 
 @media (min-width: 768px) {
