@@ -1185,3 +1185,11 @@ finding SQL search query bottle neck of not utilizing indexed column, adjusted S
 
 Nature of the changes (frontend / backend / database):
 frontend 
+
+Coder : Kai 
+
+Purpose of the changes:
+Created new Badges and Point System page and populated it with visual elements. Still work in progress but main content is now there. 
+
+Nature of the changes (frontend / backend / database):
+frontend 
