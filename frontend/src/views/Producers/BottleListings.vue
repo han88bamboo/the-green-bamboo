@@ -343,7 +343,7 @@
                                 </div>
                                 <!-- [else] user allows location -->
                                 <div v-else>
-                                  <div v-for="(distance, venueID) in nearestBars" v-bind:key="venueID">
+                                  <div v-for="([venueID]) in nearestBars" :key="venueID">
                                     <router-link :to="{
                                       path: '/profile/venue/' + venueID + '/' + getVenueNameFromID(venueID),
                                     }" class="reverse-clickable-text">
@@ -1968,7 +1968,7 @@ tag, index
                 </div>
                 <!-- [else] user allows location -->
                 <div v-else>
-                  <div v-for="(distance, venueID) in nearestBars" v-bind:key="venueID">
+                  <div v-for="([venueID]) in nearestBars" v-bind:key="venueID">
                     <router-link :to="{ path: '/profile/venue/' + venueID + '/' + getVenueNameFromID(venueID) }" class="reverse-clickable-text">
                       <p class="mb-4">
                         <u> {{ getVenueNameFromID(venueID) }} </u>
@@ -4003,10 +4003,11 @@ export default {
     },
 
     sortDistanceValues(distanceObject) {
-      let sortedDistanceValues = Object.fromEntries(
-        Object.entries(distanceObject).sort(([, a], [, b]) => a - b)
-      );
-      return sortedDistanceValues;
+      const validEntries = Object.entries(distanceObject)
+        .filter(([, val]) => typeof val === 'number' && !isNaN(val))
+        .sort(([, a], [, b]) => a - b);
+
+      return validEntries; // <-- return array instead of object
     },
 
     // For review tag location
