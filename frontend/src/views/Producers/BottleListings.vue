@@ -3027,7 +3027,7 @@ export default {
               console.error("Error in getDistance request:", error);
 
               // If there's an error, just add to nearestBars with no distance
-              venueDistances[venue.id] = 9999; // Default distance if API fails
+              venueDistances[venue.id] = 99999999; // Default distance if API fails
 
               this.venueDetails[venue.id] = {
                 distance: "NA",
