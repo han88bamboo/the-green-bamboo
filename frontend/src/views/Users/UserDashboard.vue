@@ -84,7 +84,7 @@
                                                 {{ getTimeDifference(activity.date) }}
                                             </i>
                                         </div>
-                                        <div v-else>
+                                        <div v-else-if="activity.type === 'bookmark'">
                                             <i>
                                                 You added
                                                 <b>
@@ -99,6 +99,14 @@
                                                     </router-link>
                                                 </b>
                                                 <br />{{ getTimeDifference(activity.date) }}
+                                            </i>
+                                        </div>
+                                        <div v-else-if="activity.type === 'follow'">
+                                            <i> 
+                                                You started following 
+                                                <router-link :to="{ path: '/profile/user/' + activity.userID + '/' + slugify(activity.username) }" class="reverse-clickable-text">
+                                                    @<b> {{ activity.username }} </b>
+                                                </router-link>
                                             </i>
                                         </div>
                                     </div>
@@ -723,7 +731,7 @@
                                                 {{ getTimeDifference(activity.date) }}
                                             </i>
                                         </div>
-                                        <div v-else>
+                                        <div v-else-if="activity.type == 'bookmark'">
                                             <i>
                                                 You added
                                                 <b>
@@ -738,6 +746,15 @@
                                                     </router-link>
                                                 </b>
                                                 <br />{{ getTimeDifference(activity.date) }}
+                                            </i>
+                                        </div>
+                                        <div v-else-if="activity.type === 'follow'">
+                                            <i> 
+                                                You started following 
+                                                <router-link :to="{ path: '/profile/user/' + activity.userID }" class="default-clickable-text">
+                                                    @<b> {{ activity.username }} </b>
+                                                </router-link>
+                                                {{ getTimeDifference(activity.date) }}
                                             </i>
                                         </div>
                                     </div>
@@ -1834,6 +1851,7 @@
                 try {
                     const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getRecentUserActivity/${this.displayUserID}`);
                     this.recentUserActivity = response.data;
+                    console.log("recentUserActivity", this.recentUserActivity);
 
                     this.dataLoaded = true;
                 } 

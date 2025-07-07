@@ -4444,35 +4444,7 @@ def recent_follower_activity(id):
 
 
     try:
-        # 1. Last 2 followed user IDs by current user
-        cursor.execute("""
-            SELECT users
-            FROM "usersFollowLists"
-            WHERE "userId" = %s
-        """, (id,))
-        result = cursor.fetchone()
-
-        followers = []
-        if result:
-            followed_ids = result['users']
-            last_two_ids = followed_ids[-2:] if len(followed_ids) >= 2 else followed_ids
-
-            for followed_id in last_two_ids:
-                # Get username for followed user
-                cursor.execute("""
-                    SELECT "username"
-                    FROM users
-                    WHERE "id" = %s
-                """, (int(followed_id),))
-                user_result = cursor.fetchone()
-                if user_result:
-                    followers.append({
-                        'userID': int(followed_id),
-                        'username': user_result['username'],
-                        'type': 'follow',
-                        'date': datetime.utcnow() # Placeholder date, do not have actual follow date as it is not stored
-                    })
-
+        
         # 2. Reviews where user was tagged
         cursor.execute("""
             SELECT r."userID", r."reviewTarget", r."createdDate", l."listingName"
@@ -4490,8 +4462,7 @@ def recent_follower_activity(id):
             'type': 'tag'
         } for row in tagged_rows]
 
-        # Combine & sort
-        activities = followers + tags
+        activities = tags
         activities.sort(key=lambda x: x['date'], reverse=True)
 
         # Limit to top 10 latest activities
@@ -4671,10 +4642,43 @@ def recent_user_activity(id):
                     'date': item['addedDate']
                 })
 
-        # 4. Sort by date desc and limit top 10
+        # 5. Get user's recent follows
+        follow_activity = []
+        cursor.execute("""
+            SELECT "users"
+            FROM "usersFollowLists"
+            WHERE "userId" = %s
+        """, (id,))
+
+        follow_rows = cursor.fetchall()
+        if follow_rows:
+            followed_users = follow_rows[0]['users'][-2:] if follow_rows[0]['users'] else []
+
+            for followed_id in followed_users:
+                cursor.execute("""
+                    SELECT "username", "photo"
+                    FROM users
+                    WHERE "id" = %s
+                """, (followed_id,))
+                user_data = cursor.fetchone()
+
+                if user_data:
+                    follow_activity.append({
+                        'type': 'follow',
+                        'userID': followed_id,
+                        'username': user_data['username'],
+                        'photo': user_data['photo'],
+                        'date': None  # Placeholder date, do not have actual follow date as it is not stored
+                    })
+        
+
+        # 5. Sort by date desc and limit top 10
         activities = [a for a in activities if a['date'] is not None]
         activities.sort(key=lambda x: x['date'], reverse=True)
-        activities = activities[:10]
+        activities = activities[:8]
+
+        # Add follow activities to the main activities list (put at the top)
+        activities = follow_activity + activities
 
         cursor.close()
         return jsonify(activities)
