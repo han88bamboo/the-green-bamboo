@@ -377,6 +377,13 @@ const routes = [
     path: '/partner/festivals',
     name: 'partnerCenterFestivals',
      component: () => import('@/views/PartnerCenterFestivals.vue')
+  },
+   // ----------------- Badges and Points --------------------
+  
+  {
+    path: '/badges-and-points',
+    name: 'badgesAndPoints',
+     component: () => import('@/views/BadgesAndPoints.vue')
   }
 ];
 
