@@ -1181,6 +1181,7 @@ Coder : MS
 
 Purpose of the changes:
 Moved search selection and navigation logic from LandingPage.vue to a new composable (useSearch.js) and updated NavBar.vue to use this composable. 
+finding SQL search query bottle neck of not utilizing indexed column, adjusted SQL query to optimize search time
 
 Nature of the changes (frontend / backend / database):
 frontend 

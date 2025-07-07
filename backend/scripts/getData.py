@@ -659,14 +659,14 @@ def get_producer_listings():
         if not query:
             return jsonify([])
         
-        # run similarity search 
+        # Optimized query using trigram index for fuzzy string matching
         sql = """
             SELECT "id", "producerName", "originCountry",
-                    similarity("producerName", %s) as sim_score
-            FROM producers 
-            WHERE similarity("producerName", %s) > 0.2 
-            ORDER BY sim_score 
-            DESC LIMIT %s;
+                similarity("producerName", %s) as sim_score
+            FROM producers
+            WHERE "producerName" %% %s
+            ORDER BY sim_score DESC
+            LIMIT %s;
         """
 
         with conn.cursor() as cursor:
@@ -1295,15 +1295,15 @@ def get_bottle_listings():
         # Validate query
         if not query:
             return jsonify([])
-        
-        # run similarity search 
+
+        # Optimized query using trigram index for fuzzy string matching
         sql = """
-            SELECT "id", "listingName", "typeCategory", "originCountry", 
-                    similarity("listingName", %s) as sim_score 
-            FROM listings 
-            WHERE similarity("listingName", %s) > 0.2 
-            ORDER BY sim_score 
-            DESC LIMIT %s;
+            SELECT "id", "listingName", "typeCategory", "originCountry",
+                similarity("listingName", %s) as sim_score
+            FROM listings
+            WHERE "listingName" %% %s
+            ORDER BY sim_score DESC
+            LIMIT %s;
         """
 
         with conn.cursor() as cursor:
@@ -2071,14 +2071,14 @@ def get_venue_listings():
         if not query:
             return jsonify([])
         
-        # run similarity search 
+        # Optimized query using trigram index for fuzzy string matching
         sql = """
             SELECT "id", "venueName", "originLocation",
-                    similarity("venueName", %s) as sim_score
-            FROM venues 
-            WHERE similarity("venueName", %s) > 0.2 
-            ORDER BY sim_score 
-            DESC LIMIT %s;
+                similarity("venueName", %s) as sim_score
+            FROM venues
+            WHERE "venueName" %% %s
+            ORDER BY sim_score DESC
+            LIMIT %s;
         """
 
         with conn.cursor() as cursor:
