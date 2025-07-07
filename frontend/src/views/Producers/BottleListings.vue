@@ -345,7 +345,7 @@
                                 <div v-else>
                                   <div v-for="(distance, venueID) in nearestBars" v-bind:key="venueID">
                                     <router-link :to="{
-                                      path: '/profile/venue/' + venueID,
+                                      path: '/profile/venue/' + venueID + '/' + getVenueNameFromID(venueID),
                                     }" class="reverse-clickable-text">
                                       <p class="mb-4">
                                         <u>
@@ -1969,7 +1969,7 @@ tag, index
                 <!-- [else] user allows location -->
                 <div v-else>
                   <div v-for="(distance, venueID) in nearestBars" v-bind:key="venueID">
-                    <router-link :to="{ path: '/profile/venue/' + venueID }" class="reverse-clickable-text">
+                    <router-link :to="{ path: '/profile/venue/' + venueID + '/' + getVenueNameFromID(venueID) }" class="reverse-clickable-text">
                       <p class="mb-4">
                         <u> {{ getVenueNameFromID(venueID) }} </u>
                         <br />
@@ -3028,6 +3028,11 @@ export default {
 
               // If there's an error, just add to nearestBars with no distance
               venueDistances[venue.id] = 5000; // Default distance if API fails
+
+              this.venueDetails[venue.id] = {
+                distance: "5000m (default)",
+                duration: "Unknown",
+              };
             }
           }
           // if (venue.distance != null && venue.distance != undefined && venue.distance < maxDistance){
