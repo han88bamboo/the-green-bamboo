@@ -1445,7 +1445,7 @@ f. A statement by you, made under penalty of perjury, that the information in th
 
 .toggle-link:hover {
   color: white; /* Darker blue on hover */
-  text-decoration-color: #white; /* Optional: sync underline color on hover */
+  text-decoration-color: white; /* Optional: sync underline color on hover */
 }
 
 .toggle-link.active {

@@ -370,7 +370,7 @@ export default {
 
 .toggle-link:hover {
   color: white; /* Darker blue on hover */
-  text-decoration-color: #white; /* Optional: sync underline color on hover */
+  text-decoration-color: white; /* Optional: sync underline color on hover */
 }
 
 .toggle-link.active {
