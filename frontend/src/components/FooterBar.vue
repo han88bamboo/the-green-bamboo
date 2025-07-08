@@ -42,7 +42,7 @@
             
             <li class="nav-item mb-2  justify-content-start" style="display: flex !important;"><a href="/help/features" class="nav-link p-0 text-black">Features</a></li>
             <li class="nav-item mb-2 justify-content-start" style="display: flex !important;"><a href="/help/whats-new" class="nav-link p-0 text-black">What's New</a></li>
-            
+            <li class="nav-item mb-2 justify-content-start" style="display: flex !important;"><a href="/badges-and-points" class="nav-link p-0 text-black">Badges and Points</a></li>
           </ul>
         </div>
   

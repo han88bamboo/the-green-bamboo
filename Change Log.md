@@ -1193,3 +1193,13 @@ Created new Badges and Point System page and populated it with visual elements. 
 
 Nature of the changes (frontend / backend / database):
 frontend 
+
+# Update as of 8 July
+
+Coder: Kai
+
+Purpose of the changes:
+Finalising content on Badges and Points
+
+Nature of the changes (frontend / backend / database):
+frontend 
