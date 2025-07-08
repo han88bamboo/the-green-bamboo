@@ -48,7 +48,6 @@ data() {
 methods: {
   onSearch() {
     this.$emit("search", this.searchText);
-    console.log("Search Text:", this.searchText);
   },
   async onClose() {
     this.$emit("close");

@@ -878,7 +878,6 @@ export default {
       const accID = localStorage.getItem("88B_accID");
       const accType = localStorage.getItem("88B_accType");
 
-      console.log("Fetching notifications for:", accType, accID);
 
       try {
         const response = await this.$axios.get(
@@ -890,7 +889,6 @@ export default {
         this.notifications.news = response.data.news || [];
         this.notificationsLoaded = true;
 
-        console.log("Notifications fetched:", this.notifications);
 
         // Calculate unread count
         this.unreadCount = this.countUnreadNotifications();

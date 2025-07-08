@@ -156,7 +156,6 @@ export default {
                 response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/events/getUserEvents/` + this.targetUserID + "/" + this.targetUserType + "/0");
                 this.events = response.data;
                 this.events = response.data.events;
-                console.log(this.events);
             }
             catch (error) {
                 console.error(error);
