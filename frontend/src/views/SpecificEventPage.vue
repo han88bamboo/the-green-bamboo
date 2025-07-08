@@ -129,7 +129,7 @@
 
                                 <!-- UnRSVP Button -->
                                 <div v-if="rsvpStatus && !selfView">
-                                    <button class="btn btn-danger fw-bold" data-bs-toggle="modal" data-bs-target="#unRSVPConfirmationModal">UnRSVP</button>
+                                    <button class="btn btn-danger fw-bold" data-bs-toggle="modal" data-bs-target="#unRSVPConfirmationModal">Withdraw RSVP</button>
                                 </div>                                
 
                                 <!-- Invite Button -->
@@ -519,15 +519,15 @@
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="unRSVPConfirmationModalLabel">UnRSVP Confirmation</h5>
+                        <h5 class="modal-title" id="unRSVPConfirmationModalLabel">Withdraw Attendance Confirmation</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <p class="fw-bold">Are you sure you want to unRSVP from this event?</p>
+                        <p class="fw-bold">Are you sure you want to withdraw your attendance from this event?</p>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-danger" @click="unRSVPEvent" data-bs-dismiss="modal">UnRSVP</button>
+                        <button type="button" class="btn btn-danger" @click="unRSVPEvent" data-bs-dismiss="modal">Withdraw RSVP</button>
                     </div>
                 </div>
             </div>
