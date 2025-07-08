@@ -1673,7 +1673,7 @@
                                     <div class="collapse" :id="'collapseEditMenuSection' + menuSection.sectionOrder">
 
                                         <!-- No Section Contents to Show -->
-                                        <div v-if="menuSection.sectionMenu.length == 0" class="col-12 my-3">
+                                        <div v-if="Array.isArray(menuSection?.sectionMenu) && menuSection.sectionMenu.length === 0" class="col-12 my-3">
                                             <p class="text-center fst-italic m-0">No menu items to show! Search for a drink to add above.</p>
                                         </div>
 
@@ -3529,28 +3529,28 @@
                 this.userName = userName;
             }
 
-            // Add a global error handler for drag operations
-            window.addEventListener('error', this.handleDragError);
+            // // Add a global error handler for drag operations
+            // window.addEventListener('error', this.handleDragError);
 
-            // Add unhandled rejection handler for Promise errors
-            window.addEventListener('unhandledrejection', (event) => {
-                if (event.reason && this.handleDragError({ error: event.reason })) {
-                    event.preventDefault();
-                }
-            });
+            // // Add unhandled rejection handler for Promise errors
+            // window.addEventListener('unhandledrejection', (event) => {
+            //     if (event.reason && this.handleDragError({ error: event.reason })) {
+            //         event.preventDefault();
+            //     }
+            // });
             
-            // Add Vue error handler
-            this.$root.$on('error', (error) => {
-                this.handleDragError({ error });
-            });
+            // // Add Vue error handler
+            // this.$root.$on('error', (error) => {
+            //     this.handleDragError({ error });
+            // });
         },
         beforeUnmount() {
             // Remove the event listener when component is destroyed
-            window.removeEventListener('error', this.handleDragError);
-            window.removeEventListener('unhandledrejection', this.handleDragError);
+            // window.removeEventListener('error', this.handleDragError);
+            // window.removeEventListener('unhandledrejection', this.handleDragError);
 
             // Clean up Vue error handler
-            this.$root.$off('error');
+            // this.$root.$off('error');
         },
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         methods: {
@@ -4837,7 +4837,10 @@
 
                     if (response.status == 201) {
                         const toast = useToast();
-                        toast.success("Successfully added listing to menu.");                  
+                        toast.success("Successfully added listing to menu.");   
+                        
+                        // Reload page
+                        this.$router.go(0);
                     }
                 }
                 catch (error) {
@@ -5700,33 +5703,33 @@
                 }, 1000);
             },
 
-        // Add this new method to handle drag errors
-            handleDragError(event) {
-                // Check for error in both error event formats
-                const errorMsg = (event.error?.toString() || event.message || "");
+            // Add this new method to handle drag errors
+            // handleDragError(event) {
+            //     // Check for error in both error event formats
+            //     const errorMsg = (event.error?.toString() || event.message || "");
                 
-               // More permissive error detection - catch any length-related errors during menu operations
-                if (errorMsg.includes("Cannot read properties") && errorMsg.includes("length") && 
-                    this.editMenuMode) {  // Check if we're in edit mode rather than drag state
+            //    // More permissive error detection - catch any length-related errors during menu operations
+            //     if (errorMsg.includes("Cannot read properties") && errorMsg.includes("length") && 
+            //         this.editMenuMode) {  // Check if we're in edit mode rather than drag state
                     
-                    // Prevent default error handling
-                    if (event.preventDefault) {
-                        event.preventDefault();
-                    }
+            //         // Prevent default error handling
+            //         if (event.preventDefault) {
+            //             event.preventDefault();
+            //         }
                     
-                    // Show invalid area message
-                    this.showInvalidAreaMessage();
+            //         // Show invalid area message
+            //         this.showInvalidAreaMessage();
                     
-                    // Reset the drag operation
-                    this.drag = false;
+            //         // Reset the drag operation
+            //         this.drag = false;
                     
-                    // Reset the menu to its original state
-                    this.resetEditMenu();
+            //         // Reset the menu to its original state
+            //         this.resetEditMenu();
                     
-                    return true;
-                }
-                return false;
-            },
+            //         return true;
+            //     }
+            //     return false;
+            // },
 
             // Add these methods to the methods section
             dragStart() {

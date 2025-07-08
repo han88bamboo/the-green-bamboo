@@ -58,10 +58,10 @@ def requestListing():
             INSERT INTO "requestListings" (
                 "listingName", bottler, "drinkType", "sourceLink", "brandRelation", 
                 "reviewStatus", "userID", photo, "originCountry", "producerID", 
-                "producerNew", "typeCategory", abv, age, "reviewLink"
+                "producerNew", "typeCategory", abv, age, "reviewLink", "drinkStyle", "bottlerID"
             ) VALUES (%s, %s, %s, %s, %s, 
                       %s, %s, %s, %s, %s, 
-                      %s, %s, %s, %s, %s)
+                      %s, %s, %s, %s, %s, %s, %s)
             RETURNING id;
         """, (
             rawRequestName,
@@ -78,7 +78,9 @@ def requestListing():
             rawRequest['typeCategory'],
             rawRequest['abv'],
             rawRequest['age'],
-            rawRequest['reviewLink']
+            rawRequest['reviewLink'],
+            rawRequest.get('drinkStyle', ''),
+            rawRequest.get('bottlerID', None)
         ))
 
         conn.commit()

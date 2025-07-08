@@ -182,7 +182,7 @@
                         <!-- set name only, then before submitting request, put the id, save computation -->
                         <div class="form-group mb-3" v-else>
                             <p class="text-start mb-1">New Producer Name <span class="text-danger">*</span></p>
-                            <input list="producer-names" v-model="form['producerNew']" class="form-control" id="bottleName" placeholder="Enter Producer Name" @input="getProducerID">
+                            <input list="producer-names" v-model="form['producerNew']" autocomplete="off" class="form-control" id="bottleName" placeholder="Enter Producer Name" @input="getProducerID">
                             <datalist id="producer-names">
                                 {{ producerList }}
                                 <option v-for="producer in producerList" :key="producer.producerName" :value="producer.producerName">
@@ -315,7 +315,7 @@
                         <!-- (ONLY IF above toggled to "Yes") Input Text for Independent Bottler -->
                         <div class="form-group mb-3" v-if="indOperator">
                             <p class="text-start mb-1">If yes, who is the independent bottler? <span class="text-danger">*</span></p>
-                            <input type="text" list="bottler-names" class="form-control" v-model="form['bottler']" :disabled="!indOperator" id="bottlerName" placeholder="Enter Bottler Name" @input="getBottlerID">
+                            <input type="text" list="bottler-names" class="form-control" v-model="form['bottler']" :disabled="!indOperator" id="bottlerName" placeholder="Enter Bottler Name" @input="getBottlerID" autocomplete="off">
                             <datalist id="bottler-names">
                                 <option v-for="bottler in bottlersList" :key="bottler.producerName" :value="bottler.producerName">
                                     {{ bottler.producerName }}
@@ -470,15 +470,14 @@
                     "listingName": "",
                     "officialDesc": "",
                     "reviewLink": "",
-                    "producerNew": "", // mutually exclusive with producerID  (exactly one of them will be blank)
+                    "producerNew": "", 
                     "bottler": "",
                     "originCountry": "",
                     "abv": "",
                     "age": "",
                     "brandRelation": "Others",
-
                     "userID": "",
-                    "producerID": "", // mutually exclusive with producerNew (exactly one of them will be blank)
+                    "producerID": "",
                     "bottlerID": "",
                     "listingID": "",
                     "photo": "",
@@ -509,15 +508,15 @@
             }
         },
         watch: {
-            // Watch for changes in form['bottler'] to retrieve relevant bottlers information
+            // Watch for changes in formMode and formType to load data accordingly
             'form.bottler'(newVal) {
-                if (newVal.length >= 2) {
+                if (newVal && newVal.length >= 2) {
                     this.fetchBottlerSuggestions(newVal);
                 }
             },
-            // Watch for changes in form['producerNew'] to retrieve relevant producer information
+            // Watch for changes in producerNew to fetch suggestions
             'form.producerNew'(newVal) {
-                if (newVal.length >= 2) {
+                if (newVal && newVal.length >= 2) {
                     this.fetchProducerSuggestions(newVal);
                 }
             },
@@ -674,10 +673,10 @@
                             const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUniqueBottlersNamesID/dummy/` + this.targetListing.bottlerName);
                             this.targetListing.bottlerID = response.data.id;
                         }
-                        if (this.formType == "power") {
-                            this.populateForm(this.targetListing);
-                            this.form["officialDesc"] = this.targetListing.officialDesc;
-                        }
+                        // if (this.formType == "power") {
+                        //     this.populateForm(this.targetListing);
+                        //     this.form["officialDesc"] = this.targetListing.officialDesc;
+                        // }
                     } 
                     catch (error) {
                         console.error(error);
@@ -688,11 +687,11 @@
 
                 // Only run when route params "requestID" is present (modifying previously submitted request / auto-filling form with request data)
                 if (this.prevListing) {
-
                     // [REQ / POWER NEW] Retrieve previously submitted new listing request data
                     if (this.formMode == "new") {
                         try {
                             const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getRequestListing/` + this.$route.params.requestID);
+                            
                             if (Array.isArray(response.data) && response.data.length == 0) {
                                 throw "Request not found!";
                             }
@@ -828,7 +827,6 @@
 
             // Function to populate form with previous data
             populateForm(previousData) {
-                console.log("Populating form with previous data:", previousData);
                 this.tempDrinkType = previousData.drinkType;
                 this.getDrinkCategoryList();
 
@@ -855,23 +853,24 @@
                 this.form["producerID"] = previousData.producerID;
                 this.form["photo"] = previousData.photo;
 
-                // Check if producerID is blank
-                if (this.form["producerID"] == "" || this.form["producerID"] == null) {
-                    this.form["producerNew"] = previousData.producerNew;
-                    // The code below... is it necessary?
-                    if (this.formMode != "new") {
-                        if (this.formType == "req") {
-                            // In request mode, fill in producerNew
-                            this.form["producerNew"] = previousData.producerNew;
-                            this.tempProducer = "Other";
-                        } else if (this.formType == "power") {
-                            // In actual listing mode, fill in tempProducer
-                            this.tempProducer = previousData.producerNew;
-                        }
-                    }
-                } else {
-                    this.form["producerNew"] = previousData.producerName;
-                }
+                // // Check if producerID is blank
+                // if (this.form["producerID"] == "" || this.form["producerID"] == null) {
+                //     this.form["producerNew"] = previousData.producerNew;
+                //     // The code below... is it necessary?
+                //     if (this.formMode != "new") {
+                //         if (this.formType == "req") {
+                //             // In request mode, fill in producerNew
+                //             this.form["producerNew"] = previousData.producerNew;
+                //             this.tempProducer = "Other";
+                //         } else if (this.formType == "power") {
+                //             // In actual listing mode, fill in tempProducer
+                //             this.tempProducer = previousData.producerNew;
+                //         }
+                //     }
+                // } else {
+                    
+                // }
+                this.form["producerNew"] = previousData.producerNew;
 
                 // If independent bottler, fill in bottler
                 if (previousData.bottler != "OB") {
@@ -886,7 +885,7 @@
                 if (toString(previousData.abv).includes("%")) {
                     this.form["abv"] = parseFloat(previousData.abv.slice(0, -1));
                 } else {
-                    this.form["abv"] = previousData.abv;
+                    this.form["abv"] = parseFloat(previousData.abv);
                 }
 
                 // If age has value, change age to number.
@@ -961,24 +960,43 @@
 
             // Helper function to get producerID from tempProducer
             getProducerID() {
-                let producer = this.producerList.find(producer => producer.producerName == this.form['producerNew'])
-                if (producer) {
-                    this.form['producerID'] = producer.id;
-                }
-                else {
-                    this.form['producerID'] = ""
+                // Ensure producerList is an array and input is valid
+                if (Array.isArray(this.producerList) && this.form['producerNew']) {
+                    const producer = this.producerList.find(
+                        item => item?.producerName === this.form['producerNew']
+                    );
+
+                    if (producer) {
+                        this.form['producerID'] = producer.id;
+                    } else {
+                        this.form['producerID'] = "";
+                    }
+                } else {
+                    // Log a warning and clear the field to prevent errors
+                    console.warn("Producer list or input is invalid:", this.producerList, this.form['producerNew']);
+                    this.form['producerID'] = "";
                 }
             },
 
             getBottlerID() {
-                let bottler = this.bottlersList.find(producer => producer.producerName == this.form['bottler'])
-                if (bottler) {
-                    this.form['bottlerID'] = bottler.id;
-                }
-                else {
-                    this.form['bottlerID'] = ""
+                // Validate that bottlersList is an array and form.bottler is a non-empty string
+                if (Array.isArray(this.bottlersList) && this.form['bottler']) {
+                    const bottler = this.bottlersList.find(
+                        producer => producer?.producerName === this.form['bottler']
+                    );
+
+                    if (bottler) {
+                        this.form['bottlerID'] = bottler.id;
+                    } else {
+                        this.form['bottlerID'] = "";
+                    }
+                } else {
+                    // Handle case where data is not ready or invalid
+                    console.warn("Bottler list or bottler input is missing or invalid");
+                    this.form['bottlerID'] = "";
                 }
             },
+
 
             // Function to submit form
             async submitFunction(){
@@ -1095,7 +1113,7 @@
                             if (this.tempDrinkStyle == null) {
                                 console.error("ERROR: tempDrinkStyle is null or undefined!");
                             }
-
+                            
                             submitData = {
                                 "sourceLink": this.form["sourceLink"].trim(),
                                 "listingName": this.form["listingName"].trim(),
