@@ -1213,3 +1213,13 @@ to allow ratings to be stored as decimals
 
 Nature of the changes (frontend / backend / database):
 frontend , backend, database
+
+# Update as of 9 July
+
+Coder: Han
+
+Purpose of the changes:
+applied autocomplete search to onboarding flow
+
+Nature of the changes (frontend / backend / database):
+frontend
