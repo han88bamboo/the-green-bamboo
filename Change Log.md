@@ -1203,3 +1203,13 @@ Finalising content on Badges and Points
 
 Nature of the changes (frontend / backend / database):
 frontend 
+
+# Update as of 9 July
+
+Coder: Han
+
+Purpose of the changes:
+to allow ratings to be stored as decimals
+
+Nature of the changes (frontend / backend / database):
+frontend , backend, database
