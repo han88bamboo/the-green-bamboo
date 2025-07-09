@@ -386,7 +386,7 @@ def updateReview(id):
 
     update_review_sql = """
         UPDATE "reviews"
-        SET "userID" = %s, "reviewTarget" = %s, "rating" = %s, "reviewDesc" = %s, "reviewType" = %s, "createdDate" = %s,
+        SET "userID" = %s, "reviewTarget" = %s, "rating" = %s::DECIMAL(3,1), "reviewDesc" = %s, "reviewType" = %s, "createdDate" = %s,
             "language" = %s, "finish" = %s, "willRecommend" = %s, "wouldBuyAgain" = %s, "taggedUsers" = %s, "flavourTag" = %s,
             "photo" = %s, "colour" = %s, "aroma" = %s, "taste" = %s, "observationTag" = %s, "location" = %s, "address" = %s
         WHERE "id" = %s

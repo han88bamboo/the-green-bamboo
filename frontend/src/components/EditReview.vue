@@ -226,7 +226,7 @@
                                         <label for="customRange" class="form-label fw-bold">1</label>
                                     </div>
                                     <div class="col">
-                                        <input v-model="rating" type="range" class="form-range" min="1" max="10" step="0.5" id="customRange">
+                                        <input v-model="rating" type="range" class="form-range" min="1" max="10" step="0.1" id="customRange">
                                     </div>
                                     <div class="col-auto">
                                         <label for="customRange" class="form-label fw-bold">10</label>

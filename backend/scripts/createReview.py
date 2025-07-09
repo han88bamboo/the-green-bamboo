@@ -111,7 +111,7 @@ def createReviews():
     insert_review_sql = """INSERT INTO reviews ("userID", "reviewTarget", "rating", "reviewDesc", "reviewType", "createdDate", 
                           language, finish, "willRecommend", "wouldBuyAgain", "taggedUsers", "flavourTag", photo, colour, 
                           aroma, taste, "observationTag", location, address)
-                          VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+                          VALUES (%s, %s, %s::DECIMAL(3,1), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
     review_values = (user_id, review_target, float(raw_review['rating']), raw_review['reviewDesc'], raw_review['reviewType'],
                      created_date, raw_review['language'], raw_review['finish'], will_recommend,
                      would_buy_again, tagged_users, flavour_tags, raw_review['photo'],
