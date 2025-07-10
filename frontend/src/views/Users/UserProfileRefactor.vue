@@ -3011,7 +3011,7 @@ export default {
 
         await Promise.all([this.getDisplayUserProfile(), this.getReviews()]);
 
-        await this.getListing();
+        await this.getListing(this.listingIDs);
 
         // Get proof points
         await this.getProofPoints();
@@ -3205,12 +3205,16 @@ export default {
     },
 
     // Listings (get only listings that are in the recent reviews, top 5 listings, and bookmark lists)
-    async getListing() {
+    async getListing(listingIDs) {
       try {
-        const response = await this.$axios.post(
-          `${process.env.VUE_APP_API_URL}/getData/getListingsByIDs`,
-          { listingIDs: this.listingIDs }
-        );
+        // Assuming you have an endpoint that can take multiple IDs
+        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingsByIDs`, {
+          params: new URLSearchParams(listingIDs.map(id => ['ids', id]))
+        });
+        // const response = await this.$axios.post(
+        //   `${process.env.VUE_APP_API_URL}/getData/getListingsByIDs`,
+        //   { listingIDs: this.listingIDs }
+        // );
         // const response = await this.$axios.post(`http://127.0.0.1:5000/getData/getListingsByIDs`, { 'listingIDs': this.listingIDs });
         this.listings = response.data;
 

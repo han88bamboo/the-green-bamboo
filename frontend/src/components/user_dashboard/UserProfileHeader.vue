@@ -16,7 +16,8 @@
 
         <!-- Row 2: Return to Profile (Desktop only) -->
         <div class="row pt-3 d-none d-lg-block">
-            <button type="button" class="btn tertiary-btn-blue-outline rounded-0 default-clickable-text" @click="goBack">
+            <button type="button" class="btn tertiary-btn-blue-outline rounded-0 default-clickable-text"
+                @click="toProfile">
                 Return to profile
             </button>
         </div>
@@ -32,8 +33,11 @@ export default {
         defaultProfilePhoto: { type: String, required: true }
     },
     methods: {
-        goBack() {
-            this.$router.go(-1);
+        toProfile() {
+            const userId = this.user.id;
+            const username = this.user.username;
+
+            this.$router.push(`/profile/user/${userId}/${username}`);
         }
     }
 }
