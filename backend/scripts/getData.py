@@ -1658,7 +1658,21 @@ def getReviews(id):
 
     sql = """
         SELECT 
-            COUNT(*) as total_reviews, 
+            COUNT(*) as total_reviews,
+            ARRAY[
+                COUNT(CASE WHEN EXTRACT(MONTH FROM "createdDate") = 1 THEN 1 END),
+                COUNT(CASE WHEN EXTRACT(MONTH FROM "createdDate") = 2 THEN 1 END),
+                COUNT(CASE WHEN EXTRACT(MONTH FROM "createdDate") = 3 THEN 1 END),
+                COUNT(CASE WHEN EXTRACT(MONTH FROM "createdDate") = 4 THEN 1 END),
+                COUNT(CASE WHEN EXTRACT(MONTH FROM "createdDate") = 5 THEN 1 END),
+                COUNT(CASE WHEN EXTRACT(MONTH FROM "createdDate") = 6 THEN 1 END),
+                COUNT(CASE WHEN EXTRACT(MONTH FROM "createdDate") = 7 THEN 1 END),
+                COUNT(CASE WHEN EXTRACT(MONTH FROM "createdDate") = 8 THEN 1 END),
+                COUNT(CASE WHEN EXTRACT(MONTH FROM "createdDate") = 9 THEN 1 END),
+                COUNT(CASE WHEN EXTRACT(MONTH FROM "createdDate") = 10 THEN 1 END),
+                COUNT(CASE WHEN EXTRACT(MONTH FROM "createdDate") = 11 THEN 1 END),
+                COUNT(CASE WHEN EXTRACT(MONTH FROM "createdDate") = 12 THEN 1 END)
+            ] as monthly_distribution, 
             ARRAY[ 
                 COUNT(CASE WHEN rating >= 1 AND rating < 2 THEN 1 END), 
                 COUNT(CASE WHEN rating >= 2 AND rating < 3 THEN 1 END), 
@@ -1687,11 +1701,13 @@ def getReviews(id):
             if reviews_data is None:
                 review_data = {
                     "total_reviews": 0,
+                    "monthly_distribution": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                     "rating_distribution": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
                 }
             else:
                 review_data = {
                     "total_reviews": reviews_data["total_reviews"],
+                    "monthly_distribution": reviews_data["monthly_distribution"],
                     "rating_distribution": reviews_data["rating_distribution"]
                 }
 
@@ -4704,6 +4720,10 @@ def recent_user_activity(id):
                 SELECT "users" FROM "usersFollowLists" WHERE "userId" = %s
             """, (id,))
             follow_rows = cursor.fetchall()
+            
+            # Initialize followed_users_ids as empty list
+            followed_users_ids = []
+            
             if follow_rows and follow_rows[0]['users']:
                 # Get last 2 followed users
                 followed_users_ids = follow_rows[0]['users'][-2:]
@@ -4712,19 +4732,20 @@ def recent_user_activity(id):
                 cursor.execute("""
                     SELECT id, username, photo FROM users WHERE id = ANY(%s)
                 """, (followed_users_ids,))
-            # consolidate user data
-            users_data = {user['id']: user for user in cursor.fetchall()}
-            
-            for user_id in followed_users_ids:
-                if user_id in users_data:
-                    user = users_data[user_id]
-                    follow_activity.append({
-                        'type': 'follow',
-                        'userID': user_id,
-                        'username': user['username'],
-                        'photo': user['photo'],
-                        'date': None 
-                    })
+                
+                # consolidate user data
+                users_data = {user['id']: user for user in cursor.fetchall()}
+                
+                for user_id in followed_users_ids:
+                    if user_id in users_data:
+                        user = users_data[user_id]
+                        follow_activity.append({
+                            'type': 'follow',
+                            'userID': user_id,
+                            'username': user['username'],
+                            'photo': user['photo'],
+                            'date': None 
+                        })
 
             final_activities = follow_activity + activities
             

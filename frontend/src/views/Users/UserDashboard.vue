@@ -77,10 +77,13 @@
                             <div class="col-12 col-lg-6 mb-4">
                                 <div class="card p-3 h-100 d-flex flex-column">
                                     <h6 class="fw-bold mb-3">Review Count</h6>
-                                    <div class="d-flex justify-content-center align-items-center flex-grow-1">
+                                    <div class="d-flex justify-content-center align-items-center mb-3">
                                         <div class="text-center fw-bold" style="color: #ffc107; font-size: 2.5rem;">
                                             {{ this.reviews.total_reviews || 0 }}
                                         </div>
+                                    </div>
+                                    <div class="chart-container flex-grow-1">
+                                        <Bar :data="monthlyRatingCount" :options="chartOptions" />
                                     </div>
                                 </div>
                             </div>
@@ -177,7 +180,7 @@
                                     </div>
                                     <!-- Error message if top drink style is empty-->
                                     <div v-if="top5Styles.length === 0" class="text-center text-muted mt-3">
-                                        No styles found.
+                                        Review listings to show results.
                                     </div>
                                 </div>
                             </div>
@@ -206,6 +209,8 @@ import ActivityFeed from '@/components/user_dashboard/ActivityFeed.vue';
 import LeaderboardSection from '@/components/user_dashboard/LeaderboardSection.vue';
 import LeaderboardEditModal from '@/components/user_dashboard/LeaderboardEditModal.vue';
 
+import { useToast } from "vue-toastification";
+import { Bar } from 'vue-chartjs'
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -215,8 +220,6 @@ import {
     Tooltip,
     Legend
 } from 'chart.js'
-import { useToast } from "vue-toastification";
-import { Bar } from 'vue-chartjs'
 
 ChartJS.register(
     CategoryScale,
@@ -239,7 +242,6 @@ export default {
         LeaderboardSection,
         LeaderboardEditModal,
         Bar,
-        // Line,
     },
     data() {
         return {
@@ -281,6 +283,7 @@ export default {
             // --- Charting --- initialized to 0 
             reviews: {
                 total_reviews: 0,
+                monthly_distribution: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                 rating_distribution: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             },
 
@@ -305,7 +308,7 @@ export default {
                     y: {
                         beginAtZero: true,
                         display: false, // Hide Y-axis
-                        max: 20 // Set a reasonable max for better visual proportion
+                        max: 12 // Set a reasonable max for better visual proportion
                     },
                     x: {
                         grid: {
@@ -321,8 +324,8 @@ export default {
                 },
                 layout: {
                     padding: {
-                        top: 10,
-                        bottom: 10
+                        top: 5,
+                        bottom: 5
                     }
                 }
             },
@@ -338,6 +341,41 @@ export default {
                 followerCount: this.followerCount,
                 totalBadges: this.totalBadges,
             };
+        },
+        monthlyRatingCount() {
+            return {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                datasets: [{
+                    data: this.reviews.rating_distribution,
+                    backgroundColor: [
+                        '#e9ecef', // Light gray for empty bars
+                        '#ffc107',
+                        '#ffc107',
+                        '#ffc107',
+                        '#ffc107',
+                        '#ffc107',
+                        '#ffc107',
+                        '#ffc107',
+                        '#ffc107',
+                        '#ffc107',
+                    ],
+                    borderColor: [
+                        '#ffb300',
+                        '#ffb300',
+                        '#ffb300',
+                        '#ffb300',
+                        '#ffb300',
+                        '#ffb300',
+                        '#ffb300',
+                        '#ffb300',
+                        '#ffb300',
+                        '#ffb300'
+                    ],
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    barThickness: 20
+                }]
+            }
         },
         ratingsData() {
             return {
@@ -374,6 +412,7 @@ export default {
                 }]
             }
         }
+
     },
     async mounted() {
         this.userID = localStorage.getItem('88B_accID');
