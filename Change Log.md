@@ -1223,3 +1223,20 @@ applied autocomplete search to onboarding flow
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 10 July 
+
+Coder: MS 
+
+Purpose of the changes:
+- revamp userDashboard.vue
+  front end:
+  - rework on overall flow to better managed view and optimize for speed
+  - removed all irrelevant codes from all components
+  - break down into components and migrate into user_dashboard folder for better folder structure
+  backend:
+  - refactored endpoints for better efficiency and readability. (introduced CTE, merged SQL for better calling effeciency)
+- Updates AutocompleteSearch to use 'drinkType' instead of 'typeCategory'.
+
+Nature of the changes (frontend / backend / database):
+frontend, backend and database 

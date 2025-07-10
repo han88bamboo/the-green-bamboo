@@ -271,9 +271,9 @@ CREATE TABLE "users" (
     "pin" VARCHAR(255),
     "choiceFlavours" TEXT[], -- SMU Group 3 added in "choiceFlavours"
     "preferences" TEXT[],-- SMU Group 3 added in "preferences"
-    "grails" TEXT[], -- SMU Group 3 added in "grails"
-    "upAndComing" TEXT[], -- SMU Group 3 added in "upAndComing"
-    "goats" TEXT[] -- SMU Group 3 added in "goats"
+    "grails" TEXT[], -- SMU Group 3 added in "grails" - remove this to decouple db
+    "upAndComing" TEXT[], -- SMU Group 3 added in "upAndComing" - remove this to decouple db
+    "goats" TEXT[] -- SMU Group 3 added in "goats" - remove this to decouple db
 );
 
 -- ========= "userBadges" =========
@@ -443,6 +443,16 @@ CREATE TABLE "reviewsUserVotes" (
     "upvotes" JSONB DEFAULT '[]', -- Contains "users"("id")s and date
     "downvotes" JSONB DEFAULT '[]', -- Contains "users"("id")s and date
     "reviewId" INTEGER REFERENCES "reviews"("id") on DELETE SET NULL -- [!] reference "reviews" FK
+);
+
+-- ========= "userLeaderboard" ========= to store user's favourite
+CREATE TABLE "userLeaderboard" (
+    "user_id" INTEGER REFERENCES "users"("id") ON DELETE CASCADE,
+    "listing_id" INTEGER REFERENCES "listings"("id") ON DELETE CASCADE,
+    "category" VARCHAR(20),  -- e.g. 'grails', 'upAndComing', 'goats'
+    "sort_order" INTEGER,    -- whatever user listed will always be kept in order
+    "added_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY ("user_id", "listing_id", "category")
 );
 
 CREATE TABLE "producerReviews" (

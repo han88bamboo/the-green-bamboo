@@ -57,7 +57,7 @@
           >
             <div class="d-flex justify-content-between align-items-center w-100">
               <span class="fw-small text-dark item-name">{{ item.listingName }}</span>
-              <small class="text-muted item-detail">{{ item.originCountry || item.typeCategory }}</small>
+              <small class="text-muted item-detail">{{ item.originCountry || item.drinkType }}</small>
             </div>
           </div>
           <div class="dropdown-divider my-1" v-if="results.venues.length > 0 || results.producers.length > 0"></div>

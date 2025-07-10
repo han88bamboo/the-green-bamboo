@@ -152,53 +152,52 @@ def get_og_image(url):
 def parse_json(data):
     return json.loads(json_util.dumps(data))
 
-# Helper function to fetch user data from the database
-def fetch_user_data(cursor, user_id):
-    cursor.execute('SELECT * FROM "users" WHERE "id" = %s', (user_id,))
-    user_data = cursor.fetchone()
-
-    return user_data
-
 # Helper function to fetch drink lists for a user
 def fetch_drink_lists(cursor, user_id):
-    # First, get all drink lists for the user
-    cursor.execute("""
-        SELECT "id", "listName", "listDesc"
-        FROM "usersDrinkLists"
-        WHERE "userId" = %s
-    """, (user_id,))
-    
-    drink_lists_data = cursor.fetchall()
     result = {}
-
-    for row in drink_lists_data:
-        list_id = row["id"]
-        list_name = row["listName"]
-
-        # Initialize the list in the result dictionary
-        result[list_name] = {
-            "listDesc": row["listDesc"],
-            "listItems": [],
-        }
-
-        # Fetch the drinks for this list, along with their addedDate
+    try: 
+        # Single query using LEFT JOIN to get all data at once
         cursor.execute("""
-            SELECT "drinkId", "addedDate"
-            FROM "usersDrinkListItems"
-            WHERE "listId" = %s
-            ORDER BY "addedDate" DESC
-        """, (list_id,))
+            SELECT 
+                udl."id" as list_id,
+                udl."listName",
+                udl."listDesc",
+                udli."drinkId",
+                udli."addedDate"
+            FROM "usersDrinkLists" udl
+            LEFT JOIN "usersDrinkListItems" udli ON udl."id" = udli."listId"
+            WHERE udl."userId" = %s
+            ORDER BY udl."listName", udli."addedDate" DESC
+        """, (user_id,))
         
-        drinks_data = cursor.fetchall()
-
-        # Add drinks to the list
-        result[list_name]["listItems"] = [
-            {"drinkId": row["drinkId"], "addedDate": row["addedDate"]}
-            for row in drinks_data
-        ]
-
-    return result
-
+        rows = cursor.fetchall()
+        
+        # Process results in a single pass
+        for row in rows:
+            list_name = row["listName"]
+            
+            # Initialize list if not exists
+            if list_name not in result:
+                result[list_name] = {
+                    "listDesc": row["listDesc"],
+                    "listItems": []
+                }
+            
+            # Add drink item if it exists (LEFT JOIN may return NULL for empty lists)
+            if row["drinkId"] is not None:
+                result[list_name]["listItems"].append({
+                    "drinkId": row["drinkId"],
+                    "addedDate": row["addedDate"]
+                })
+        
+        return result
+    
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        # print("something went wrong" + str(e), flush=True)
+        return result
+    
 # Helper function to fetch follow lists for a user
 def fetch_follow_lists(cursor, user_id):
     cursor.execute("""
@@ -273,24 +272,100 @@ def getListings():
 
 
 # -----------------------------------------------------------------------------------------
-# [POST] Listings by IDs
-@blueprint.route("/getListingsByIDs", methods=['POST'])
+# [GET] Listings by user id
+@blueprint.route("/lbListings", methods=['GET'])
+def lbListings():
+    conn = g.db
+    try:
+        # Get query parameters
+        user_id = request.args.get('id', '').strip()
+
+        sql = """
+            SELECT "user_id", "listing_id", "category"
+            FROM "userLeaderboard"
+            WHERE "user_id" = %s
+            ORDER BY "sort_order" ASC; 
+        """
+
+        with conn.cursor() as cursor:
+            cursor.execute(sql, (user_id,))
+            rows = cursor.fetchall()
+
+        # if nothing was found
+        if not rows:
+            return jsonify([]), 200
+
+        # Initialize lists
+        grails = []
+        upAndComing = []
+        goats = []
+
+        # Loop through rows and sort into respective lists
+        for row in rows:
+            listing_id = row["listing_id"]
+            category = row["category"]
+            if category == 'grails':
+                grails.append(listing_id)
+            elif category == 'upAndComing':
+                upAndComing.append(listing_id)
+            elif category == 'goats':
+                goats.append(listing_id)
+
+        # Return as JSON response
+        return jsonify({
+            "userID": user_id,
+            "grails": grails,
+            "upAndComing": upAndComing,
+            "goats": goats
+        }), 200
+    
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        # print("something went wrong" + str(e), flush=True)
+        return jsonify({"error": str(e)}), 500
+
+
+@blueprint.route("/getListingsByIDs", methods=['GET'])
 def getListingsByIDs():
     conn = g.db
 
-    listing_ids = request.json.get('listingIDs', [])
+    try:
+        # Convert query parameters from strings to integers
+        raw_ids = request.args.getlist('ids')
+        listing_ids = [int(i) for i in raw_ids]
 
-    if not listing_ids:
-        return jsonify([]), 404
+        if not listing_ids:
+            return jsonify([]), 200
 
-    with conn.cursor() as cursor:
-        cursor.execute('SELECT * FROM "listings" WHERE "id" IN %s', (tuple(listing_ids),))
-        listings_data = cursor.fetchall()
-    
-    if not listings_data:
-        return jsonify([])
+        sql = """
+            SELECT "id", "listingName", "drinkType", 
+                "originCountry", "bottler", "photo"
+            FROM listings
+            WHERE "id" IN %s;
+        """
 
-    return jsonify(listings_data)
+        with conn.cursor() as cursor:
+            cursor.execute(sql, (tuple(listing_ids),))
+            rows = cursor.fetchall()
+
+        result = [
+            {
+                "id": row["id"], 
+                "listingName": row["listingName"], 
+                "drinkType": row.get("drinkType", ""),
+                "originCountry": row.get("originCountry", ""),
+                "bottler": row.get("bottler", ""),
+                "photo": row.get("photo", ""),
+            } 
+            for row in rows
+        ]
+
+        return jsonify(result), 200
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
 
 # -----------------------------------------------------------------------------------------
 # [GET] Get Listings from db where id> last item in list
@@ -1298,8 +1373,8 @@ def get_bottle_listings():
 
         # Optimized query using trigram index for fuzzy string matching
         sql = """
-            SELECT "id", "listingName", "typeCategory", "originCountry",
-                similarity("listingName", %s) as sim_score
+            SELECT "id", "listingName", "drinkType", "originCountry", "bottler",
+                "photo", similarity("listingName", %s) as sim_score
             FROM listings
             WHERE "listingName" %% %s
             ORDER BY sim_score DESC
@@ -1318,8 +1393,10 @@ def get_bottle_listings():
             {
                 "id": row["id"], 
                 "listingName": row["listingName"], 
-                "typeCategory": row["typeCategory"],
-                "originCountry": row["originCountry"]
+                "drinkType": row.get("drinkType", ""),
+                "originCountry": row.get("originCountry", ""),
+                "photo": row.get("photo", ""),
+                "bottler": row.get("bottler", "")
             } 
             for row in rows
         ]
@@ -1575,31 +1652,55 @@ def getUserReviewSummary(id):
     })
 
 # [GET] Reviews
-@blueprint.route("/getReviews")
-def getReviews():
+@blueprint.route("/getReviews/<int:id>")
+def getReviews(id):
     conn = g.db
-    
-    with conn.cursor() as cursor:
-        cursor.execute("""
-            SELECT "reviews".*, "reviewsUserVotes"."upvotes", "reviewsUserVotes"."downvotes"
-            FROM "reviews"
-            LEFT JOIN "reviewsUserVotes" ON "reviews"."id" = "reviewsUserVotes"."reviewId"
-        """)
 
-        reviews_data = cursor.fetchall()
-    
-    if not reviews_data:
-        return jsonify([])
+    sql = """
+        SELECT 
+            COUNT(*) as total_reviews, 
+            ARRAY[ 
+                COUNT(CASE WHEN rating >= 1 AND rating < 2 THEN 1 END), 
+                COUNT(CASE WHEN rating >= 2 AND rating < 3 THEN 1 END), 
+                COUNT(CASE WHEN rating >= 3 AND rating < 4 THEN 1 END), 
+                COUNT(CASE WHEN rating >= 4 AND rating < 5 THEN 1 END), 
+                COUNT(CASE WHEN rating >= 5 AND rating < 6 THEN 1 END), 
+                COUNT(CASE WHEN rating >= 6 AND rating < 7 THEN 1 END), 
+                COUNT(CASE WHEN rating >= 7 AND rating < 8 THEN 1 END), 
+                COUNT(CASE WHEN rating >= 8 AND rating < 9 THEN 1 END), 
+                COUNT(CASE WHEN rating >= 9 AND rating < 10 THEN 1 END), 
+                COUNT(CASE WHEN rating >= 10 THEN 1 END) 
+            ] as rating_distribution 
+        FROM "reviews" 
+        WHERE "userID" = %s;
+    """
+    try: 
+        # Validate that id is a positive integer
+        if not isinstance(id, int) or id <= 0:
+            return jsonify({"code": 400, "message": "Invalid user ID"}), 400 
 
-    for review in reviews_data:
-        review["userVotes"] = {
-            "upvotes": review["upvotes"] if review["upvotes"] else [],
-            "downvotes": review["downvotes"] if review["downvotes"] else []
-        }
-        del review["upvotes"]
-        del review["downvotes"]
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.execute(sql, (id,))
+            reviews_data = cursor.fetchone()
 
-    return jsonify(reviews_data)
+            # Handle case where user has no reviews
+            if reviews_data is None:
+                review_data = {
+                    "total_reviews": 0,
+                    "rating_distribution": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                }
+            else:
+                review_data = {
+                    "total_reviews": reviews_data["total_reviews"],
+                    "rating_distribution": reviews_data["rating_distribution"]
+                }
+
+            return jsonify(review_data)
+        
+    except Exception as e:
+        print(f"Error fetching recently added listings: {str(e)}")
+        return jsonify({"code": 500, "message": "An error occurred while fetching recently added listings."}), 500
+
 
 # [POST] Reviews by listing IDs
 @blueprint.route("/getReviewsByListingIDs", methods=['POST'])
@@ -2306,9 +2407,19 @@ def getUserFollowListDetails():
 def getUser(id):
     conn = g.db
     
+    sql = """ 
+        SELECT "id", "username", "displayName", "choiceDrinks", "modType", "photo", 
+        "joinDate", "firstName", "lastName", "isAdmin", "birthday", "choiceFlavours",
+        "preferences", "grails", "upAndComing", "goats"
+        FROM "users"
+        WHERE "id" = %s
+    """  
+
     try:
         with conn.cursor() as cursor:
-            user_data = fetch_user_data(cursor, id)
+            cursor.execute(sql, (id, ))
+            user_data = cursor.fetchone()
+
             if not user_data:
                 return jsonify({}), 404
 
@@ -2316,20 +2427,6 @@ def getUser(id):
             user_data["followLists"] = fetch_follow_lists(cursor, id)
             user_data['proofRank'] = pointsHelperFunc.get_rank_by_user_id(id)
             user_data['currentPoints'] = pointsHelperFunc.get_current_proof_points(id)
-
-            # Remove unnecessary fields
-            del user_data["hashedPassword"]
-            del user_data["birthday"]
-            del user_data["email"]
-            del user_data["pin"]
-
-            # Make sure these fields exist (even if empty)
-            if 'grails' not in user_data:
-                user_data['grails'] = []
-            if 'upAndComing' not in user_data:
-                user_data['upAndComing'] = []
-            if 'goats' not in user_data:
-                user_data['goats'] = []
 
         return jsonify(user_data), 200
 
@@ -4256,10 +4353,6 @@ def getAllUserFollowingsIDs(id):
     finally:
         cur.close()
 
-
-
-
-
 # -----------------------------------------------------------------------------------------
 # [GET] Get user dashboard data
 # Data includes: 
@@ -4273,165 +4366,135 @@ def getAllUserFollowingsIDs(id):
 @blueprint.route("/getUserDashBoardData/<id>")
 def getUserDashBoardData(id):
     conn = g.db
-    cur = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
-        # Step 1: Check if id is a valid user in the table
-        cur.execute('SELECT * FROM "users" WHERE "id" = %s', (id,))
-        user_data = cur.fetchone()
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            # Single query to get all dashboard data at once
+            cursor.execute("""
+                WITH user_check AS (
+                    SELECT 1 as exists FROM "users" WHERE "id" = %s
+                ),
+                user_reviews AS (
+                    SELECT 
+                        r."id" as review_id,
+                        r."reviewTarget",
+                        r."rating",
+                        r."location",
+                        l."listingName",
+                        l."photo",
+                        l."drinkType",
+                        l."drinkStyle",
+                        l."producerID",
+                        p."producerName",
+                        v."venueName"
+                    FROM "reviews" r
+                    JOIN "listings" l ON r."reviewTarget" = l."id"
+                    LEFT JOIN "producers" p ON l."producerID" = p."id"
+                    LEFT JOIN "venues" v ON r."location" = v."id"
+                    WHERE r."userID" = %s
+                    AND r."reviewType" = 'Listing'
+                ),
+                top_listings AS (
+                    SELECT 
+                        "reviewTarget" as id,
+                        "rating",
+                        "listingName",
+                        "photo",
+                        ROW_NUMBER() OVER (ORDER BY "rating" DESC) as rn
+                    FROM user_reviews
+                    WHERE "rating" IS NOT NULL
+                    ORDER BY "rating" DESC
+                    LIMIT 5
+                ),
+                top_categories AS (
+                    SELECT 
+                        "drinkType",
+                        COUNT(*) as "reviewCount"
+                    FROM user_reviews
+                    WHERE "drinkType" IS NOT NULL
+                    GROUP BY "drinkType"
+                    ORDER BY "reviewCount" DESC
+                    LIMIT 5
+                ),
+                top_venues AS (
+                    SELECT 
+                        "location" as "venueId",
+                        "venueName",
+                        COUNT(*) as "reviewCount"
+                    FROM user_reviews
+                    WHERE "location" IS NOT NULL
+                    GROUP BY "location", "venueName"
+                    ORDER BY "reviewCount" DESC
+                    LIMIT 5
+                ),
+                top_producers AS (
+                    SELECT 
+                        "producerID" as "producerId",
+                        "producerName",
+                        COUNT(*) as "reviewCount"
+                    FROM user_reviews
+                    WHERE "producerID" IS NOT NULL
+                    GROUP BY "producerID", "producerName"
+                    ORDER BY "reviewCount" DESC
+                    LIMIT 5
+                ),
+                top_drink_styles AS (
+                    SELECT 
+                        "drinkStyle",
+                        COUNT(*) as "reviewCount"
+                    FROM user_reviews
+                    WHERE "drinkStyle" IS NOT NULL 
+                    AND "drinkStyle" <> '' 
+                    AND "drinkStyle" <> '-'
+                    GROUP BY "drinkStyle"
+                    ORDER BY "reviewCount" DESC
+                    LIMIT 5
+                ),
+                total_reviews AS (
+                    SELECT COUNT(*) as "totalReviews"
+                    FROM "reviews"
+                    WHERE "userID" = %s
+                ),
+                total_followers AS (
+                    SELECT COUNT(*) as "totalFollowers"
+                    FROM "usersFollowLists"
+                    WHERE "users" @> ARRAY[%s]::TEXT[]
+                )
+                SELECT 
+                    (SELECT array_to_json(array_agg(row_to_json(t))) FROM (
+                        SELECT "id", "rating", "listingName", "photo"
+                        FROM top_listings WHERE rn <= 5
+                    ) t) as top_listings,
+                    (SELECT array_to_json(array_agg(row_to_json(t))) FROM top_categories t) as top_categories,
+                    (SELECT array_to_json(array_agg(row_to_json(t))) FROM top_venues t) as top_venues,
+                    (SELECT array_to_json(array_agg(row_to_json(t))) FROM top_producers t) as top_producers,
+                    (SELECT array_to_json(array_agg(row_to_json(t))) FROM top_drink_styles t) as top_drink_styles,
+                    (SELECT "totalReviews" FROM total_reviews) as total_reviews,
+                    (SELECT "totalFollowers" FROM total_followers) as total_followers,
+                    (SELECT exists FROM user_check) as user_exists
+            """, (id, id, id, id))
 
-        if user_data is None:
-            return jsonify(
-                {
-                    "code": 404,
-                    "message": "User not found."
+            result = cursor.fetchone()
+            
+            if not result['user_exists']:
+                return jsonify({"code": 404, "message": "User not found."}), 404
+
+            return jsonify({
+                "code": 200,
+                "data": {
+                    "top5BestReviewedListings": result['top_listings'] or [],
+                    "top5MostReviewedCategories": result['top_categories'] or [],
+                    "top5Venues": result['top_venues'] or [],
+                    "top5Producers": result['top_producers'] or [],
+                    "top5DrinkStyles": result['top_drink_styles'] or [],
+                    "totalReviews": result['total_reviews'] or 0,
+                    "totalFollowers": result['total_followers'] or 0
                 }
-            ), 404
-        
-        # Step 2: Get the top 5 best rated listings from the top 5 reviews of the user
-        cur.execute("""
-            SELECT "reviewTarget", "rating" from "reviews" 
-            WHERE "userID" = %s 
-            ORDER BY "rating" DESC
-            LIMIT 5
-        """, (id,))
-
-        top_reviews = cur.fetchall()
-
-        # Loop through the top reviews and get the listing data (name, photo, id and rating)
-        top_5_best_reviewed_listings = []
-
-        for review in top_reviews:
-            listing_id = review['reviewTarget']
-
-            # Get the listing data
-            cur.execute('SELECT "listingName", "photo", "id" FROM "listings" WHERE "id" = %s', (listing_id,))
-            listing_data = cur.fetchone()
-
-            # Add rating to the listing data
-            if listing_data:
-                listing_data['rating'] = review['rating']
-
-            top_5_best_reviewed_listings.append(listing_data)
-
-        # Step 3: Get the top 5 best rated categories by the user (reviews joined with listings)
-        cur.execute("""
-            SELECT 
-                l."drinkType",
-                COUNT(*) AS "reviewCount"
-            FROM "reviews" r
-            JOIN "listings" l ON r."reviewTarget" = l."id"
-            WHERE r."userID" = %s
-            AND r."reviewType" = 'Listing'
-            GROUP BY l."drinkType"
-            ORDER BY "reviewCount" DESC
-            LIMIT 5;
-        """, (id,))
-
-        top_categories = cur.fetchall()
-
-        # Step 4: Get the top 5 venues where the user left the most reviews (group by location and count reviews)
-        cur.execute("""
-            SELECT 
-                v."id" AS "venueId",
-                v."venueName",
-                COUNT(r."id") AS "reviewCount"
-            FROM "reviews" r
-            JOIN "venues" v ON r."location" = v."id"
-            WHERE r."userID" = %s
-            AND r."reviewType" = 'Listing'
-            GROUP BY v."id", v."venueName"
-            ORDER BY "reviewCount" DESC
-            LIMIT 5;
-        """, (id,))
-
-        top_venues = cur.fetchall()
-
-        # Step 5: Get the top 5 producers where the user left the most reviews
-        cur.execute("""
-            SELECT 
-                p."id" AS "producerId",
-                p."producerName",
-                COUNT(r."id") AS "reviewCount"
-            FROM "reviews" r
-            JOIN "listings" l ON r."reviewTarget" = l."id"
-            JOIN "producers" p ON l."producerID" = p."id"
-            WHERE r."userID" = %s
-            GROUP BY p."id", p."producerName"
-            ORDER BY "reviewCount" DESC
-            LIMIT 5;
-        """, (id,))
-
-        top_producers = cur.fetchall()
-
-        # Step 6: Get the top 5 drink styles which the user left the most reviews
-        cur.execute("""
-            SELECT 
-                l."drinkStyle",
-                COUNT(r."id") AS "reviewCount"
-            FROM "reviews" r
-            JOIN "listings" l ON r."reviewTarget" = l."id"
-            WHERE r."userID" = %s
-            AND r."reviewType" = 'Listing'
-            AND l."drinkStyle" IS NOT NULL
-            AND l."drinkStyle" <> ''
-            AND l."drinkStyle" <> '-'
-            GROUP BY l."drinkStyle"
-            ORDER BY "reviewCount" DESC
-            LIMIT 5;
-        """, (id,))
-
-
-
-        top_drink_styles = cur.fetchall()
-        print(top_drink_styles)
-
-        # Step 7: Get the total number of reviews the user has made
-        cur.execute("""
-            SELECT COUNT(*) AS "totalReviews"
-            FROM "reviews"
-            WHERE "userID" = %s
-        """, (id,))
-
-        total_reviews_data = cur.fetchone()
-        total_reviews = total_reviews_data['totalReviews'] if total_reviews_data else 0
-
-        # Step 8: Get the total number of followers the user has
-        cur.execute("""
-            SELECT COUNT(*)
-            FROM "usersFollowLists"
-            WHERE "users" @> ARRAY[%s]::TEXT[];
-        """, (str(id),))
-
-        total_followers_data = cur.fetchone()
-        total_followers = total_followers_data['count'] if total_followers_data else 0
-
-        # Step 9: Prepare the final response data
-        response_data = {
-            "top5BestReviewedListings": top_5_best_reviewed_listings,
-            "top5MostReviewedCategories": top_categories,
-            "top5Venues": top_venues,
-            "top5Producers": top_producers,
-            "top5DrinkStyles": top_drink_styles,
-            "totalReviews": total_reviews,
-            "totalFollowers": total_followers
-        }
-
-        return jsonify({
-            "code": 200,
-            "data": response_data
-        }), 200
+            }), 200
 
     except Exception as e:
-        print(str(e))
-        return jsonify(
-            {
-                "code": 500,
-                "message": "An error occurred retrieving the user data."
-            }
-        ), 500
-    finally:
-        cur.close()
+        print(f"Error in getUserDashBoardData: {str(e)}")
+        return jsonify({"code": 500, "message": "An error occurred retrieving the user data."}), 500
 
 
 # -----------------------------------------------------------------------------------------
@@ -4441,7 +4504,6 @@ def recent_follower_activity(id):
 
     conn = g.db
     cursor = conn.cursor()
-
 
     try:
         
@@ -4479,67 +4541,58 @@ def recent_follower_activity(id):
 # -----------------------------------------------------------------------------------------
 # [GET] Get recent reviews activity for a user
 @blueprint.route('/getRecentReviewsActivity/<id>', methods=['GET'])
-def recent_review_activity(id):
-
+def recent_review_activity_optimized(id):
     conn = g.db
-    cursor = conn.cursor()
-
+    
     try:
-
-        # Step 1: Get user's reviews (IDs and their listing targets)
-        cursor.execute("""
-            SELECT r."id", r."reviewTarget"
-            FROM reviews r
-            WHERE r."userID" = %s
-        """, (id,))
-        review_rows = cursor.fetchall()
-
-        review_ids = [row['id'] for row in review_rows]
-        review_target_map = {row['id']: row['reviewTarget'] for row in review_rows}
-
-        if not review_ids:
-            return jsonify([])
-
-        # Step 2: Get votes from reviewsUserVotes
-        cursor.execute(f"""
-            SELECT "reviewId", "upvotes", "downvotes"
-            FROM "reviewsUserVotes"
-            WHERE "reviewId" IN %s
-        """, (tuple(review_ids),))
-        vote_rows = cursor.fetchall()
-
-        activities = []
-
-        for row in vote_rows:
-            review_id = row['reviewId']
-            upvotes = row['upvotes'] or []
-            downvotes = row['downvotes'] or []
-
-            for upvote in upvotes:
-                activities.append({
-                    'userID': int(upvote['userId']),
-                    'reviewTarget': review_target_map.get(review_id),
-                    'type': 'upvote',
-                    'date': upvote['date']
-                })
-
-            for downvote in downvotes:
-                activities.append({
-                    'userID': int(downvote['userId']),
-                    'reviewTarget': review_target_map.get(review_id),
-                    'type': 'downvote',
-                    'date': downvote['date']
-                })
-
-        # Step 3: Sort and return top 10
-        activities.sort(key=lambda x: x['date'], reverse=True)
-        top_10 = activities[:10]
-
-        cursor.close()
-        return jsonify(top_10)
-
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor: 
+            # Single query that extracts and flattens all vote activities
+            cursor.execute("""
+                WITH recent_reviews AS (
+                    SELECT r."id", r."reviewTarget"
+                    FROM reviews r
+                    WHERE r."userID" = %s
+                    ORDER BY r."createdDate" DESC
+                    LIMIT 10
+                ),
+                vote_activities AS (
+                    SELECT 
+                        rr."reviewTarget",
+                        jsonb_array_elements(COALESCE(ruv."upvotes", '[]'::jsonb)) AS vote_data,
+                        'upvote' AS vote_type
+                    FROM recent_reviews rr
+                    JOIN "reviewsUserVotes" ruv ON rr."id" = ruv."reviewId"
+                    WHERE jsonb_array_length(COALESCE(ruv."upvotes", '[]'::jsonb)) > 0
+                    
+                    UNION ALL
+                    
+                    SELECT 
+                        rr."reviewTarget",
+                        jsonb_array_elements(COALESCE(ruv."downvotes", '[]'::jsonb)) AS vote_data,
+                        'downvote' AS vote_type
+                    FROM recent_reviews rr
+                    JOIN "reviewsUserVotes" ruv ON rr."id" = ruv."reviewId"
+                    WHERE jsonb_array_length(COALESCE(ruv."downvotes", '[]'::jsonb)) > 0
+                )
+                SELECT 
+                    (vote_data->>'userId')::int AS "userID",
+                    "reviewTarget",
+                    vote_type AS "type",
+                    vote_data->>'date' AS "date"
+                FROM vote_activities
+                ORDER BY vote_data->>'date' DESC
+                LIMIT 10;
+            """, (id,))
+            
+            activities = cursor.fetchall()
+            
+            # Convert to list of dictionaries
+            result = [dict(activity) for activity in activities]
+            
+            return jsonify(result)
+        
     except Exception as e:
-        print(f"Error in recent_review_activity: {str(e)}")
+        print(f"Error in recent_review_activity_optimized: {str(e)}")
         return jsonify({"error": "An error occurred while fetching recent review activity."}), 500
 
 
@@ -4589,100 +4642,100 @@ def get_latest_reviews_drinks(id):
 # [GET] Get recent user activity for a user
 @blueprint.route('/getRecentUserActivity/<id>', methods=['GET'])
 def recent_user_activity(id):
-
     conn = g.db
-    cursor = conn.cursor()
-
-    activities = []
-
+    
     try:
-        # 1. Get user reviews
-        cursor.execute("""
-            SELECT r."reviewTarget", r."rating", r."createdDate", l."listingName"
-            FROM reviews r
-            JOIN listings l ON r."reviewTarget" = l."id"
-            WHERE r."userID" = %s
-        """, (id,))
-        reviews = cursor.fetchall()
-
-        for review in reviews:
-            rating = review['rating']
-            createdDate = review['createdDate']
-            activities.append({
-                'type': 'review',
-                'listingID': review['reviewTarget'],
-                'listingName': review['listingName'],
-                'rating': rating,
-                'date': createdDate
-            })
-
-
-        # 2. Get user's drink lists
-        cursor.execute("""
-            SELECT id, "listName"
-            FROM "usersDrinkLists"
-            WHERE "userId" = %s
-        """, (id,))
-        user_lists = cursor.fetchall()  # list of (listId, listName)
-
-        # 3. For each list, get the drink items
-        for list in user_lists:
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor: 
+            # Single query using UNION ALL to combine all activities
             cursor.execute("""
-                SELECT "drinkId", "addedDate"
-                FROM "usersDrinkListItems"
-                WHERE "listId" = %s
-            """, (list['id'],))
-            list_items = cursor.fetchall()
+                WITH user_reviews AS (
+                    SELECT 
+                        'review' as activity_type,
+                        r."reviewTarget" as "listingID",
+                        l."listingName",
+                        r."rating",
+                        NULL as "listName",
+                        r."createdDate" as activity_date
+                    FROM reviews r
+                    JOIN listings l ON r."reviewTarget" = l."id"
+                    WHERE r."userID" = %s
+                    ORDER BY r."createdDate" DESC
+                    LIMIT 5
+                ),
+                user_bookmarks AS (
+                    SELECT 
+                        'bookmark' as activity_type,
+                        udli."drinkId" as "listingID",
+                        l."listingName",
+                        NULL::numeric as rating,
+                        udl."listName",
+                        udli."addedDate" as activity_date
+                    FROM "usersDrinkLists" udl
+                    JOIN "usersDrinkListItems" udli ON udl."id" = udli."listId"
+                    LEFT JOIN listings l ON udli."drinkId" = l."id"
+                    WHERE udl."userId" = %s
+                    AND udli."addedDate" IS NOT NULL
+                    ORDER BY udli."addedDate" DESC
+                    LIMIT 20  -- Get more bookmarks since we'll limit to 10 total
+                ),
+                combined_activities AS (
+                    SELECT * FROM user_reviews
+                    UNION ALL
+                    SELECT * FROM user_bookmarks
+                )
+                SELECT 
+                    activity_type as "type",
+                    "listingID",
+                    "listingName",
+                    rating,
+                    "listName",
+                    activity_date as "date"
+                FROM combined_activities
+                WHERE activity_date IS NOT NULL
+                ORDER BY activity_date DESC
+                LIMIT 10;
+            """, (id, id))
+            
+            activities = cursor.fetchall()
 
-            for item in list_items:
-                activities.append({
-                    'type': 'bookmark',
-                    'listingID': item['drinkId'],
-                    'listName': list['listName'],
-                    'date': item['addedDate']
-                })
-
-        # 5. Get user's recent follows
-        follow_activity = []
-        cursor.execute("""
-            SELECT "users"
-            FROM "usersFollowLists"
-            WHERE "userId" = %s
-        """, (id,))
-
-        follow_rows = cursor.fetchall()
-        if follow_rows:
-            followed_users = follow_rows[0]['users'][-2:] if follow_rows[0]['users'] else []
-
-            for followed_id in followed_users:
+            # 2. Fetch the "follow" activity separately (like the original code)
+            follow_activity = []
+            cursor.execute("""
+                SELECT "users" FROM "usersFollowLists" WHERE "userId" = %s
+            """, (id,))
+            follow_rows = cursor.fetchall()
+            if follow_rows and follow_rows[0]['users']:
+                # Get last 2 followed users
+                followed_users_ids = follow_rows[0]['users'][-2:]
+            
+                # Use a single query to get details for these users
                 cursor.execute("""
-                    SELECT "username", "photo"
-                    FROM users
-                    WHERE "id" = %s
-                """, (followed_id,))
-                user_data = cursor.fetchone()
-
-                if user_data:
+                    SELECT id, username, photo FROM users WHERE id = ANY(%s)
+                """, (followed_users_ids,))
+            # consolidate user data
+            users_data = {user['id']: user for user in cursor.fetchall()}
+            
+            for user_id in followed_users_ids:
+                if user_id in users_data:
+                    user = users_data[user_id]
                     follow_activity.append({
                         'type': 'follow',
-                        'userID': followed_id,
-                        'username': user_data['username'],
-                        'photo': user_data['photo'],
-                        'date': None  # Placeholder date, do not have actual follow date as it is not stored
+                        'userID': user_id,
+                        'username': user['username'],
+                        'photo': user['photo'],
+                        'date': None 
                     })
+
+            final_activities = follow_activity + activities
+            
+            # Final cleanup of None values from the combined list
+            result = []
+            for activity in final_activities:
+                activity_dict = {k: v for k, v in activity.items() if v is not None}
+                result.append(activity_dict)
+            
+            return jsonify(result)
         
-
-        # 5. Sort by date desc and limit top 10
-        activities = [a for a in activities if a['date'] is not None]
-        activities.sort(key=lambda x: x['date'], reverse=True)
-        activities = activities[:8]
-
-        # Add follow activities to the main activities list (put at the top)
-        activities = follow_activity + activities
-
-        cursor.close()
-        return jsonify(activities)
-    
     except Exception as e:
         print(f"Error in recent_user_activity: {str(e)}")
         return jsonify({"error": "An error occurred while fetching recent user activity."}), 500
