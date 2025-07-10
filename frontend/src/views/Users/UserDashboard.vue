@@ -346,7 +346,7 @@ export default {
             return {
                 labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                 datasets: [{
-                    data: this.reviews.rating_distribution,
+                    data: this.reviews.monthly_distribution,
                     backgroundColor: [
                         '#e9ecef', // Light gray for empty bars
                         '#ffc107',
