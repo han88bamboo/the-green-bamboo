@@ -52,6 +52,7 @@ def requestListing():
     # Handle nullable foreign keys
     producerId = rawRequest.get('producerID') or None
     userId = rawRequest.get('userID') or None
+    bottler_id = rawRequest.get('bottlerID') or None
 
     try:
         cursor.execute("""
@@ -80,7 +81,7 @@ def requestListing():
             rawRequest['age'],
             rawRequest['reviewLink'],
             rawRequest.get('drinkStyle', ''),
-            rawRequest.get('bottlerID', None)
+            bottler_id
         ))
 
         conn.commit()
