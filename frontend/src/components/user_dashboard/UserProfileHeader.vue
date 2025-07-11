@@ -7,10 +7,10 @@
                 <img :src="user.photo || defaultProfilePhoto" alt="User profile photo" class="profile-img">
             </div>
             <div class="col-8 ms-3 text-start text-dark">
-                <h3 class="mb-1">{{ user.displayName }}</h3>
-                {{ stats.drinkCount }} Drinks Tasted<br>
-                {{ stats.followerCount }} Followers<br>
-                {{ stats.totalBadges }} Badges Unlocked
+                <h3 class="mb-1">{{ user.displayName || 'Loading ...' }}</h3>
+                {{ stats.drinkCount || '0' }} Drinks Tasted<br>
+                {{ stats.followerCount || '0' }} Followers<br>
+                {{ stats.totalBadges || '0' }} Badges Unlocked
             </div>
         </div>
 

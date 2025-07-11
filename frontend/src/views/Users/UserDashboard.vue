@@ -3,13 +3,13 @@
         <NavBar />
 
         <!-- Display when data is still loading -->
-        <LoadingWithFunFact v-if="dataLoaded === false" />
+        <!-- <LoadingWithFunFact v-if="dataLoaded === false" /> -->
 
         <!-- Display when data fails to load -->
-        <ErrorDisplay v-if="dataLoaded === null" @go-back="this.$router.go(-1)" @go-home="this.$router.push('/')" />
+        <!-- <ErrorDisplay v-if="dataLoaded === null" @go-back="this.$router.go(-1)" @go-home="this.$router.push('/')" /> -->
 
-        <!-- Main Content -->
-        <div v-if="user && dataLoaded" class="user-dashboard-page">
+        <!-- Main Content v-if="user && dataLoaded" -->
+        <div class="user-dashboard-page">
             <div class="container text-start py-5">
                 <div class="row">
 
@@ -20,12 +20,15 @@
 
                         <!-- Desktop-only Activity Feeds -->
                         <div class="d-none d-lg-block mt-4">
-                            <ActivityFeed class="mb-3" title="Your Recent Activity" :activities="recentUserActivity"
-                                :current-user-id="userID" />
-                            <ActivityFeed class="mb-3" title="Recent Activity on Your Reviews"
-                                :activities="recentReviewActivity" :current-user-id="userID" />
-                            <ActivityFeed class="mb-3" title="Recent Activity from Your Followers"
-                                :activities="recentFollowerActivity" :current-user-id="userID" />
+                            <ActivityFeed class="mb-3" title="Your Recent Activity" :activities="recentUserActivity" 
+                                :current-user-id="userID" :loading="userActState.loading" :error="userActState.error"
+                            />
+                            <ActivityFeed class="mb-3" title="Recent Activity on Your Reviews" :activities="recentReviewActivity" 
+                                :current-user-id="userID" :loading="reviewActState.loading" :error="reviewActState.error"
+                            />
+                            <ActivityFeed class="mb-3" title="Recent Activity from Your Followers" :activities="recentFollowerActivity" 
+                                :current-user-id="userID" :loading="followerActState.loading" :error="followerActState.error"
+                            />
                         </div>
                     </div>
 
@@ -56,18 +59,21 @@
                                 </li>
                             </ul>
                             <div class="tab-content pt-3">
+
                                 <div class="tab-pane fade show active" id="mobile-user-activity" role="tabpanel">
-                                    <ActivityFeed title="Your Recent Activity" :activities="recentUserActivity"
-                                        :current-user-id="userID" />
+                                    <ActivityFeed class="mb-3" title="Your Recent Activity" :activities="recentUserActivity" 
+                                        :current-user-id="userID" :loading="userActState.loading" :error="userActState.error"
+                                    />
                                 </div>
                                 <div class="tab-pane fade" id="mobile-review-activity" role="tabpanel">
                                     <ActivityFeed title="Activity on Your Reviews" :activities="recentReviewActivity"
-                                        :current-user-id="userID" />
+                                        :current-user-id="userID" :loading="reviewActState.loading" :error="reviewActState.error"/>
                                 </div>
                                 <div class="tab-pane fade" id="mobile-follower-activity" role="tabpanel">
-                                    <ActivityFeed title="Recent Activity from Your Followers"
-                                        :activities="recentFollowerActivity" :current-user-id="userID" />
+                                    <ActivityFeed title="Recent Activity from Your Followers" :activities="recentFollowerActivity" 
+                                        :current-user-id="userID" :loading="followerActState.loading" :error="followerActState.error"/>
                                 </div>
+
                             </div>
                         </div>
 
@@ -202,8 +208,8 @@
 // --- IMPORTS ---
 import NavBar from '@/components/NavBar.vue';
 import FooterBar from '@/components/FooterBar.vue';
-import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
-import ErrorDisplay from '@/components/user_dashboard/ErrorDisplay.vue';
+// import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
+// import ErrorDisplay from '@/components/user_dashboard/ErrorDisplay.vue';
 import UserProfileHeader from '@/components/user_dashboard/UserProfileHeader.vue';
 import ActivityFeed from '@/components/user_dashboard/ActivityFeed.vue';
 import LeaderboardSection from '@/components/user_dashboard/LeaderboardSection.vue';
@@ -235,8 +241,7 @@ export default {
     components: {
         NavBar,
         FooterBar,
-        LoadingWithFunFact,
-        ErrorDisplay,
+        // LoadingWithFunFact,
         UserProfileHeader,
         ActivityFeed,
         LeaderboardSection,
@@ -246,7 +251,7 @@ export default {
     data() {
         return {
             // --- Core State ---
-            dataLoaded: false,
+            // dataLoaded: false,
             userID: null,
             userType: null,
             displayUserID: null,
@@ -265,6 +270,20 @@ export default {
             top5Venues: [],
             top5Producers: [],
             top5Styles: [],
+
+            // --- Activity data state --- 
+            userActState: {
+                loading: false,
+                error: null
+            },
+            reviewActState: {
+                loading: false,
+                error: null
+            },
+            followerActState: {
+                loading: false,
+                error: null
+            },
 
             // --- Activity Feeds Data ---
             recentUserActivity: [],
@@ -431,7 +450,7 @@ export default {
     methods: {
         // --- DATA FETCHING ---
         async loadData() {
-            this.dataLoaded = false;
+            // this.dataLoaded = false;
             try {
                 // Fetch all data in parallel for better performance
                 await Promise.all([
@@ -442,10 +461,10 @@ export default {
                     this.fetchDisplayUserRecentActivity(),
                     this.fetchRawReviewsForCharts(),
                 ]);
-                this.dataLoaded = true;
+                // this.dataLoaded = true;
             } catch (error) {
                 console.error("Failed to load dashboard data:", error);
-                this.dataLoaded = null; // Trigger error display
+                // this.dataLoaded = true;
             }
         },
         async fetchDisplayUserDetails() {
@@ -469,7 +488,9 @@ export default {
                 throw new Error(`HTTP ${api_response.status}: ${api_response.statusText}`)
             }
             const data = await api_response.json();
-            const merged_listings = [...data["grails"], ...data["upAndComing"], ...data["goats"]];
+            const merged_listings = [...(data["grails"] || []), 
+                ...(data["upAndComing"] || []), 
+                ...(data["goats"] || [])];
 
             // fetch full listing call it once instead of multiple calls
             const detailed_list = await this.fetchFullListingDetails(merged_listings || []);
@@ -514,23 +535,103 @@ export default {
             this.top5Styles = responseData.top5DrinkStyles;
         },
         async fetchDisplayUserRecentFollowerActivity() {
-            const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getRecentFollowersActivity/${this.displayUserID}`);
-            this.recentFollowerActivity = response.data;
+            this.userActState.loading = true;
+            this.userActState.error = null;
+            
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getRecentFollowersActivity/${this.displayUserID}`);
+                this.recentFollowerActivity = response.data;
+                // console.log("follower")
+                // console.log(this.recentFollowerActivity)
+        
+            } catch (error) {
+                //console.error("Failed to load recent activity:", error);
+                this.userActState.error = "Failed to load recent activity. Please try again later.";
+                
+                // Specific error handling
+                if (!navigator.onLine) {
+                    this.userActState.error = "No internet connection. Please check your connection and try again.";
+                } else if (error.response) {
+                    // Server responded but with error status
+                    if (error.response.status === 404) {
+                        this.userActState.error = "Activity data not found.";
+                    } else if (error.response.status >= 500) {
+                        this.userActState.error = "Server error. Please try again later.";
+                    }
+                } else if (error.code === "ECONNABORTED") {
+                    this.userActState.error = "Request timed out. Please try again.";
+                } else if (error.message.includes("Network Error") || error.message.includes("ERR_CONNECTION_REFUSED")) {
+                    this.userActState.error = "Unable to connect to the server.";
+                }
+            } finally {
+                this.userActState.loading = false;
+            }
         },
         async fetchDisplayUserRecentReviewActivity() {
-            const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getRecentReviewsActivity/${this.displayUserID}`);
-            this.recentReviewActivity = response.data;
+            this.reviewActState.loading = true;
+            this.reviewActState.error = null;
+
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getRecentReviewsActivity/${this.displayUserID}`);
+                this.recentReviewActivity = response.data;
+            } catch (error) {
+                // console.log("Failed to load recent activity:", error)
+                // console.error("Failed to load recent activity:", error);
+                this.reviewActState.error = "Failed to load recent activity. Please try again later.";
+                
+                // Specific error handling
+                if (!navigator.onLine) {
+                    this.reviewActState.error = "No internet connection. Please check your connection and try again.";
+                } else if (error.response) {
+                    // Server responded but with error status
+                    if (error.response.status === 404) {
+                        this.reviewActState.error = "Activity data not found.";
+                    } else if (error.response.status >= 500) {
+                        this.reviewActState.error = "Server error. Please try again later.";
+                    }
+                } else if (error.code === "ECONNABORTED") {
+                    this.reviewActState.error = "Request timed out. Please try again.";
+                } else if (error.message.includes("Network Error") || error.message.includes("ERR_CONNECTION_REFUSED")) {
+                    this.reviewActState.error = "Unable to connect to the server.";
+                }
+            } finally {
+                this.reviewActState.loading = false;
+            }
         },
         async fetchDisplayUserRecentActivity() {
-            const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getRecentUserActivity/${this.displayUserID}`);
-            this.recentUserActivity = response.data;
+            this.followerActState.loading = true;
+            this.followerActState.error = null;
+
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getRecentUserActivity/${this.displayUserID}`);
+                this.recentUserActivity = response.data;
+            } catch (error) {
+                // console.log("Failed to load recent activity:", error)
+                // console.error("Failed to load recent activity:", error);
+                this.followerActState.error = "Failed to load recent activity. Please try again later.";
+                
+                // Specific error handling
+                if (!navigator.onLine) {
+                    this.followerActState.error = "No internet connection. Please check your connection and try again.";
+                } else if (error.response) {
+                    // Server responded but with error status
+                    if (error.response.status === 404) {
+                        this.followerActState.error = "Activity data not found.";
+                    } else if (error.response.status >= 500) {
+                        this.followerActState.error = "Server error. Please try again later.";
+                    }
+                } else if (error.code === "ECONNABORTED") {
+                    this.followerActState.error = "Request timed out. Please try again.";
+                } else if (error.message.includes("Network Error") || error.message.includes("ERR_CONNECTION_REFUSED")) {
+                    this.followerActState.error = "Unable to connect to the server.";
+                }
+            } finally {
+                this.followerActState.loading = false;
+            }
         },
         async fetchRawReviewsForCharts() {
             const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getReviews/${this.displayUserID}`);
             this.reviews = response.data;
-            // console.log("---------------------------")
-            // console.log(this.reviews)
-            // console.log("---------------------------")
         },
 
         // --- LEADERBOARD & MODAL HANDLERS ---

@@ -1250,3 +1250,17 @@ making welcome sections collapsible in the ProducerProfile, UserProfileRefactor 
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 11 July 
+
+Coder : MS 
+
+Purpose of the changes:
+- Added loading and error states to ActivityFeed component and integrated them into UserDashboard. Backend query for recent follower activity now returns username and limits results in SQL. 
+- removed block wise loading state introduced component wise loading state to keep modern application build design
+- tag activity fix to return username
+- fix for follower activity assigning to the wrong api 
+- fix leaderboard listing racing issue causing the dashboard to fail 
+
+Nature of the changes (frontend / backend / database):
+frontend , backend

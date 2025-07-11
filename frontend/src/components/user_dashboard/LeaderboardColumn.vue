@@ -6,7 +6,7 @@
                 <h6 class="fw-bold">{{ title }} {{ emoji }}</h6>
             </div>
 
-            <div v-if="items.length === 0" class="text-center my-2 small mobile-rating-smaller-text-2 flex-grow-1 d-flex align-items-center justify-content-center">
+            <div v-if="items.length === 0" class="text-center my-2 small mobile-rating-smaller-text-2 d-flex align-items-center justify-content-center">
                 {{ placeholder }}
             </div>
             <div v-else class="d-flex flex-column flex-grow-1">

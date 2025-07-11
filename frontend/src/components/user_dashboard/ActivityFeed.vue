@@ -1,3 +1,4 @@
+
 <!-- src/components/dashboard/ActivityFeed.vue -->
 <template>
     <div class="activity-feed-card">
@@ -5,9 +6,28 @@
             <h5 class="square-inline text-start mr-auto">{{ title }}</h5>
         </div>
         <div class="feed-body">
-            <div v-if="!activities || activities.length === 0" class="text-muted fst-italic">
+            <!-- Loading State -->
+            <div v-if="loading" class="text-center py-2">
+                <div class="spinner-border spinner-border-sm text-light me-2" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <span class="text-muted fst-italic">Loading recent activity...</span>
+            </div>
+
+            <!-- Error State -->
+            <div v-else-if="error" class="text-center py-2">
+                <div class="text-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    {{ error }}
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div v-else-if="!activities || activities.length === 0" class="text-muted fst-italic">
                 No recent activity.
             </div>
+
+            <!-- Activity List -->
             <div v-else class="overflow-auto" style="max-height: 100%;">
                 <div v-for="activity in activities" :key="activity.id || activity.date" class="py-2">
                     <!-- Your Activity -->
@@ -38,7 +58,18 @@
 
 <script>
 // You should move these to a central utility file, e.g., `src/utils/formatters.js`
-const slugify = (text) => text.toString().toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '').replace(/--+/g, '-').replace(/^-+/, '').replace(/-+$/, '');
+const slugify = (text) => {
+  if (!text) return '';
+  return text
+    .toString()
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w-]+/g, '')
+    .replace(/--+/g, '-')
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
+};
+
 const getTimeDifference = (date) => { 
     const now = new Date();
     const target = new Date(date);
@@ -74,7 +105,9 @@ export default {
     props: {
         title: { type: String, required: true },
         activities: { type: Array, required: true },
-        currentUserId: { type: [String, Number], required: true }
+        currentUserId: { type: [String, Number], required: true },
+        loading: { type: Boolean, default: false },
+        error: { type: String, default: null }
     },
     methods: {
         slugify,
@@ -111,5 +144,27 @@ export default {
 }
 .reverse-clickable-text:hover {
     color: #F0B358;
+}
+
+/* Loading spinner styling */
+.spinner-border {
+    width: 1rem;
+    height: 1rem;
+    border-width: 0.125rem;
+}
+
+/* Error state styling */
+.text-danger {
+    color: #ff7f7f !important;
+}
+
+.btn-outline-light {
+    border-color: rgba(255, 255, 255, 0.5);
+    color: white;
+}
+
+.btn-outline-light:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: white;
 }
 </style>
