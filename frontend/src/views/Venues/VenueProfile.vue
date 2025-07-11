@@ -34,6 +34,15 @@
 
             <!-- Venue Information -->
             <div class="col-xl-9 col-12 px-3 px-lg-4">
+                <button v-if="selfView" class="mb-3 d-lg-none btn w-100 text-start d-flex justify-content-between align-items-center welcome-toggle" 
+                        type="button" 
+                        data-bs-toggle="collapse" 
+                        data-bs-target="#welcomeCollapse" 
+                        aria-expanded="false" 
+                        aria-controls="welcomeCollapse">
+                    <span class="fw-bold">Welcome to Drink-X. Grow your venue's presence!</span>
+                    <i class="bi bi-chevron-down"></i>
+                </button>
                 <!-- Welcome Section for Venue Owners -->
                 <div v-if="selfView"
                 style="
@@ -43,7 +52,8 @@
                     background-color: #ffffff;
                     margin-bottom: 20px;
                 "
-                class="mb-4 "
+                class="mb-4 collapse d-lg-block"
+                id="welcomeCollapse"
                 >
 
                 <h3
@@ -53,6 +63,7 @@
                     border-bottom: 1px solid #e0e0e0;
                     padding-bottom: 16px;
                     "
+                    class="mobile-view-hide"
                 >
                     Welcome to Drink-X. Grow your venue's presence!
                 </h3>
@@ -5824,5 +5835,36 @@
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+/* Welcome section collapse button styling */
+.welcome-toggle {
+  background-color: #f0b358 !important; /* Match the yellow/orange background */
+  border: 1px solid #e0a043 !important; /* Add a border with slightly darker shade */
+  color: #212529 !important; /* Darker text color */
+  border-radius: 0.25rem !important; /* Match the border radius */
+  font-weight: bold !important; /* Make text bold */
+  padding: 0.5rem 1rem !important; /* Adjust padding */
+  transition: all 0.3s ease;
+}
+
+.welcome-toggle:hover {
+  background-color: #e5a443 !important; /* Slightly darker on hover */
+  border-color: #d89932 !important;
+}
+
+/* Handle border radius changes when expanded */
+.welcome-toggle[aria-expanded="true"] {
+  border-radius: 0.25rem 0.25rem 0 0 !important;
+}
+
+/* Rotate arrow when expanded */
+.welcome-toggle[aria-expanded="true"] .bi-chevron-down {
+  transform: rotate(180deg);
+  transition: transform 0.3s ease;
+}
+
+.welcome-toggle .bi-chevron-down {
+  transition: transform 0.3s ease;
 }
 </style>

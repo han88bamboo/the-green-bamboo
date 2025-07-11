@@ -1331,6 +1331,18 @@
           </div>
         </div>
 
+        <!-- Mobile Toggle Button (only visible below 992px) -->
+        <div v-if="ownProfile" class="d-lg-none px-3 py-2">
+          <button class="btn w-100 text-start d-flex justify-content-between align-items-center welcome-toggle" 
+                  type="button" 
+                  data-bs-toggle="collapse" 
+                  data-bs-target="#welcomeCollapse" 
+                  aria-expanded="false" 
+                  aria-controls="welcomeCollapse">
+            <span class="fw-bold">Welcome to Drink-X. Let's get started!</span>
+            <i class="bi bi-chevron-down"></i>
+          </button>
+        </div>
         <!-- Welcome section and Reviews/Lists -->
         <div class="col-12 col-md-8">
           <!-- Welcome Section -->
@@ -1341,10 +1353,12 @@
               padding: 16px;
               background-color: #ffffff;
             "
-            class="mb-4 Xmobile-view-hide"
+            class="mb-4 Xmobile-view-hide collapse d-lg-block" 
+            id="welcomeCollapse"
             >
+
             <!-- Welcome section -->
-            <div style="margin-bottom: 24px" >
+            <div style="margin-bottom: 24px" class="mobile-view-hide" >
               <div
                 style="
                   position: relative;
@@ -1376,6 +1390,7 @@
                 border-bottom: 1px solid #e0e0e0;
                 padding-bottom: 16px;
               "
+              class="mobile-view-hide"
             >
               Welcome to Drink-X. Let's get started!
             </h3>
@@ -1730,6 +1745,7 @@
                 </div>
               </div>
             </div>
+            
           </div>
 
           <!-- reviews and lists -->
@@ -4733,5 +4749,31 @@ export default {
 #userSearchContainer .btn-sm {
   font-size: 0.75rem;
   padding: 0.25rem 0.5rem;
+}
+
+/* Welcome section collapse button styling */
+.welcome-toggle {
+  background-color: #f0b358 !important; /* Match the yellow/orange background */
+  border: 1px solid #e0a043 !important; /* Add a border with slightly darker shade */
+  color: #212529 !important; /* Darker text color */
+  border-radius: 0.25rem !important; /* Match the border radius */
+  font-weight: bold !important; /* Make text bold */
+  padding: 0.5rem 1rem !important; /* Adjust padding */
+  transition: all 0.3s ease;
+}
+
+.welcome-toggle:hover {
+  background-color: #e5a443 !important; /* Slightly darker on hover */
+  border-color: #d89932 !important;
+}
+
+/* Rotate arrow when expanded */
+.welcome-toggle[aria-expanded="true"] .bi-chevron-down {
+  transform: rotate(180deg);
+  transition: transform 0.3s ease;
+}
+
+.welcome-toggle .bi-chevron-down {
+  transition: transform 0.3s ease;
 }
 </style>

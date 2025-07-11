@@ -1240,3 +1240,13 @@ Purpose of the changes:
 
 Nature of the changes (frontend / backend / database):
 frontend, backend and database 
+
+# Update as of 10 July 
+
+Coder: Han
+
+Purpose of the changes:
+making welcome sections collapsible in the ProducerProfile, UserProfileRefactor and VenueProfile
+
+Nature of the changes (frontend / backend / database):
+frontend
