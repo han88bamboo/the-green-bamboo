@@ -4519,35 +4519,38 @@ def getUserDashBoardData(id):
 def recent_follower_activity(id):
 
     conn = g.db
-    cursor = conn.cursor()
 
     try:
-        
-        # 2. Reviews where user was tagged
-        cursor.execute("""
-            SELECT r."userID", r."reviewTarget", r."createdDate", l."listingName"
-            FROM reviews r
-            JOIN listings l ON r."reviewTarget" = l."id"
-            WHERE r."reviewType" = 'Listing'
-            AND %s = ANY(r."taggedUsers")
-        """, (id,))
-        tagged_rows = cursor.fetchall()
-        tags = [{
-            'userID': row['userID'],
-            'listingID': row['reviewTarget'],
-            'listingName': row['listingName'],
-            'date': row['createdDate'],
-            'type': 'tag'
-        } for row in tagged_rows]
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            # 2. Reviews where user was tagged
+            cursor.execute("""
+                SELECT r."userID", r."reviewTarget", r."createdDate"
+                    , l."listingName", u."username"
+                FROM reviews r
+                JOIN listings l ON r."reviewTarget" = l."id"
+                JOIN users u ON r."userID" = u."id"
+                WHERE r."reviewType" = 'Listing'
+                AND %s = ANY(r."taggedUsers")
+                ORDER BY r."createdDate" DESC
+                LIMIT 10
+            """, (id,))
+            tagged_rows = cursor.fetchall()
+            tags = [{
+                'userID': row['userID'],
+                'username': row['username'],
+                'listingID': row['reviewTarget'],
+                'listingName': row['listingName'],
+                'date': row['createdDate'],
+                'type': 'tag'
+            } for row in tagged_rows]
 
-        activities = tags
-        activities.sort(key=lambda x: x['date'], reverse=True)
+            activities = tags
+            # activities.sort(key=lambda x: x['date'], reverse=True)
 
-        # Limit to top 10 latest activities
-        activities = activities[:10]
+            # # Limit to top 10 latest activities
+            # activities = activities[:10]
 
-        cursor.close()
-        return jsonify(activities)
+            return jsonify(activities)
     
     except Exception as e:
         print(f"Error in recent_follower_activity: {str(e)}")
@@ -4730,8 +4733,8 @@ def recent_user_activity(id):
             
                 # Use a single query to get details for these users
                 cursor.execute("""
-                    SELECT id, username, photo FROM users WHERE id = ANY(%s)
-                """, (followed_users_ids,))
+                    SELECT "id", "username", "photo" FROM "users" WHERE id IN %s
+                """, (tuple(followed_users_ids),))
                 
                 # consolidate user data
                 users_data = {user['id']: user for user in cursor.fetchall()}
