@@ -836,3 +836,13 @@ CREATE TABLE "notifications" (
     "read" BOOLEAN DEFAULT FALSE, -- Indicates if the notification has been read
     "blueDot" BOOLEAN DEFAULT TRUE -- Indicates if the blue dot should be shown
 );
+
+-- ========== [NEW!] latestFollowers =========
+-- This table stores the latest followers for each user
+CREATE TABLE "latestUserFollowers" (
+    "id" SERIAL PRIMARY KEY,
+    "userId" INTEGER REFERENCES "users"("id") ON DELETE CASCADE, -- User who is following someone
+    "followingId" INTEGER REFERENCES "users"("id") ON DELETE CASCADE, -- User being followed
+    "followDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Date when the follow occurred
+    UNIQUE ("userId", "followingId") -- Ensure no duplicate follows
+);

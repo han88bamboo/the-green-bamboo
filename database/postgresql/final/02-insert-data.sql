@@ -4025,3 +4025,10 @@ VALUES
 (5, 'user', 'venues & producers', 'newEvent', NULL, '/event/10/Cider Festival', 'Orh Gao Taproom is hosting a new event: Cider Festival on June 20, 2025 at 02:00 PM', '2025-05-04 18:45:31'),
 (5, 'user', 'venues & producers', 'newEvent', NULL, '/event/8/IPA Showcase', 'Don’t miss the IPA Showcase!', '2025-05-03 18:45:31'),
 (5, 'user', 'venues & producers', 'newEvent', NULL, '/event/6/Ladies Night - Margaritas Galore', 'Ladies Night - Margaritas Galore happening soon!', '2025-05-02 18:45:31');
+
+
+-- [NEW!] "latestUserFollowers" - ADDED BY CP
+INSERT INTO "latestUserFollowers"(
+    "userId", "followingId", "followDate")
+VALUES
+    (5, 1, '2025-07-11 18:45:31.403');

@@ -4544,11 +4544,30 @@ def recent_follower_activity(id):
                 'type': 'tag'
             } for row in tagged_rows]
 
-            activities = tags
-            # activities.sort(key=lambda x: x['date'], reverse=True)
+            # Get the users who is now following the current user
+            cursor.execute("""
+                SELECT f."userId", f."followDate", u."username"
+                FROM "latestUserFollowers" f
+                JOIN users u ON f."userId" = u.id
+                WHERE f."followingId" = %s
+                ORDER BY f."followDate" DESC
+                LIMIT 5
+            """, (id,))
+            follow_rows = cursor.fetchall()
+            follows = [{
+                'userID': row['userId'],
+                'username': row['username'],
+                'date': row['followDate'],
+                'type': 'follow'
+            } for row in follow_rows]
 
-            # # Limit to top 10 latest activities
-            # activities = activities[:10]
+            activities = follows + tags
+
+            # Sort activities by date in descending order
+            activities.sort(key=lambda x: x['date'], reverse=True)
+
+            # Limit to 10 results
+            activities = activities[:10]
 
             return jsonify(activities)
     
@@ -4604,7 +4623,33 @@ def recent_review_activity_optimized(id):
             """, (id,))
             
             activities = cursor.fetchall()
-            
+
+            # Limit to 10 results
+            activities = activities[:10]
+            # Loop through all activities to get the user and listing information
+            for activity in activities:
+                
+                userID = activity['userID']
+                listingID = activity['reviewTarget']
+
+                # Get the username for the userID
+                cursor.execute("""
+                    SELECT "username" FROM "users" WHERE "id" = %s
+                """, (userID,))
+                user_row = cursor.fetchone()
+
+                if user_row:
+                    activity['username'] = user_row['username']
+
+                # Get the listing name for the listingID
+                cursor.execute("""
+                    SELECT "listingName" FROM "listings" WHERE "id" = %s
+                """, (listingID,))
+                listing_row = cursor.fetchone()
+
+                if listing_row:
+                    activity['listingName'] = listing_row['listingName']
+
             # Convert to list of dictionaries
             result = [dict(activity) for activity in activities]
             
@@ -4719,45 +4764,40 @@ def recent_user_activity(id):
 
             # 2. Fetch the "follow" activity separately (like the original code)
             follow_activity = []
+
             cursor.execute("""
-                SELECT "users" FROM "usersFollowLists" WHERE "userId" = %s
+                SELECT u."id", u."username", f."followDate"
+                FROM "latestUserFollowers" f
+                JOIN users u ON f."followingId" = u."id"
+                WHERE f."userId" = %s
+                ORDER BY f."followDate" DESC
+                LIMIT 5
             """, (id,))
-            follow_rows = cursor.fetchall()
-            
-            # Initialize followed_users_ids as empty list
-            followed_users_ids = []
-            
-            if follow_rows and follow_rows[0]['users']:
-                # Get last 2 followed users
-                followed_users_ids = follow_rows[0]['users'][-2:]
-            
-                # Use a single query to get details for these users
-                cursor.execute("""
-                    SELECT "id", "username", "photo" FROM "users" WHERE id IN %s
-                """, (tuple(followed_users_ids),))
-                
-                # consolidate user data
-                users_data = {user['id']: user for user in cursor.fetchall()}
-                
-                for user_id in followed_users_ids:
-                    if user_id in users_data:
-                        user = users_data[user_id]
-                        follow_activity.append({
-                            'type': 'follow',
-                            'userID': user_id,
-                            'username': user['username'],
-                            'photo': user['photo'],
-                            'date': None 
-                        })
+            users_data = cursor.fetchall()
+
+            if users_data:
+                for user in users_data:
+                    follow_activity.append({
+                        'type': 'follow',
+                        'userID': user['id'],
+                        'username': user['username'],
+                        'date': user['followDate'], 
+                    })
 
             final_activities = follow_activity + activities
+
+            # Sort the final activities by date in descending order
+            final_activities.sort(key=lambda x: x['date'], reverse=True)
+
+            # Limit to 10 results
+            final_activities = final_activities[:10]
             
             # Final cleanup of None values from the combined list
             result = []
             for activity in final_activities:
                 activity_dict = {k: v for k, v in activity.items() if v is not None}
                 result.append(activity_dict)
-            
+
             return jsonify(result)
         
     except Exception as e:

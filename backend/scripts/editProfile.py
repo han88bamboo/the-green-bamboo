@@ -249,7 +249,6 @@ def updateFollowList():
     conn = g.db
     cur = conn.cursor()
     data = request.get_json()
-    print(data)
 
     userID = int(data['userID'])
     action = data['action']
@@ -281,9 +280,51 @@ def updateFollowList():
         if action == "unfollow":
             if str(followerID) in target_list:
                 target_list.remove(str(followerID))
+
+                # Remove the follower from latestUserFollowers table
+                if target == 'users':
+                    cur.execute(
+                        'DELETE FROM "latestUserFollowers" WHERE "userId" = %s AND "followingId" = %s',
+                        (userID, followerID)
+                    )
         else:
             if str(followerID) not in target_list:
                 target_list.append(str(followerID))
+
+                # Add the follower to latestUserFollowers table
+                if target == 'users':
+                    # Ensure we do not exceed 10 followers
+                    # Step 1: Check follower count
+                    cur.execute(
+                        'SELECT COUNT(*) FROM "latestUserFollowers" WHERE "userId" = %s',
+                        (userID,)
+                    )
+                    count = cur.fetchone()['count']
+
+                    # Step 2: If already 10 followers, delete the oldest one
+                    if count >= 10:
+                        cur.execute(
+                            '''
+                            WITH to_delete AS (
+                                SELECT id FROM "latestUserFollowers"
+                                WHERE "userId" = %s
+                                ORDER BY "followDate" ASC
+                                LIMIT 1
+                            )
+                            DELETE FROM "latestUserFollowers" WHERE id IN (SELECT id FROM to_delete)
+                            ''',
+                            (userID,)
+                        )
+
+                    # Step 3: Insert new follower (optional conflict resolution)
+                    cur.execute(
+                        '''
+                        INSERT INTO "latestUserFollowers" ("userId", "followingId")
+                        VALUES (%s, %s)
+                        ON CONFLICT DO NOTHING
+                        ''',
+                        (userID, followerID)
+                    )
 
         if row:
             cur.execute(

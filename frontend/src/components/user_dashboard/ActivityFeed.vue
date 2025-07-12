@@ -40,12 +40,16 @@
 
                     <!-- Activity on Your Reviews -->
                     <div v-else-if="activity.type === 'upvote' || activity.type === 'downvote'">
-                        <i>Someone <span :style="{ color: activity.type === 'upvote' ? '#90ee90' : '#ff7f7f' }">{{ activity.type }}d</span> your review on <router-link :to="listingUrl(activity, activity.reviewTarget)" class="reverse-clickable-text"><u>{{ activity.listingName }}</u></router-link> {{ getTimeDifference(activity.date) }}</i>
+                        <i><router-link :to="profileUrl(activity)" class="reverse-clickable-text">@<b>{{ activity.username }}</b></router-link> <span :style="{ color: activity.type === 'upvote' ? '#90ee90' : '#ff7f7f' }">{{ activity.type }}d</span> your review of <router-link :to="listingUrl(activity, activity.reviewTarget)" class="reverse-clickable-text"><u>{{ activity.listingName }}</u></router-link> {{ getTimeDifference(activity.date) }}</i>
                     </div>
 
                     <!-- Follower Activity -->
                     <div v-else-if="activity.type === 'follow'">
-                        <i><router-link :to="profileUrl(activity)" class="reverse-clickable-text">@<b>{{ activity.username }}</b></router-link> started following you {{ getTimeDifference(activity.date) }}</i>
+                        <i v-if="title === 'Recent Activity from Your Followers'">
+                            <router-link :to="profileUrl(activity)" class="reverse-clickable-text">@<b>{{ activity.username }}</b></router-link> started following you {{ getTimeDifference(activity.date) }}
+                        </i>
+
+                        <i v-else> You are now following <router-link :to="profileUrl(activity)" class="reverse-clickable-text">@<b>{{ activity.username }}</b></router-link> {{ getTimeDifference(activity.date) }}</i>
                     </div>
                     <div v-else-if="activity.type === 'tag'">
                         <i><router-link :to="profileUrl(activity)" class="reverse-clickable-text">@<b>{{ activity.username }}</b></router-link> tagged you in a review on <router-link :to="listingUrl(activity)" class="reverse-clickable-text"><u>{{ activity.listingName }}</u></router-link> {{ getTimeDifference(activity.date) }}</i>
