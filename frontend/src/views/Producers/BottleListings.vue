@@ -1486,6 +1486,13 @@
                         style="background-color: #f0b358; color: black">
                         Moderator
                       </span>
+                      
+                      <!-- User Title (ambassador) -->
+                      <span v-if="checkAmbassadorFromUserID(review.userID)" class="badge rounded-pill ms-2"
+                        style="background-color: #ff3e31; color: white">
+                        Ambassador
+                      </span>
+
                     </div>
 
                     <!-- Edit & Delete Buttons -->
@@ -3308,6 +3315,14 @@ export default {
       });
       if (user) {
         return user["modType"].length > 0;
+      }
+    },
+    checkAmbassadorFromUserID(userID) {
+      const user = this.users.find((user) => {
+        return user["id"] == userID;
+      });
+      if (user) {
+        return user["ambassador"] === true;
       }
     },
 

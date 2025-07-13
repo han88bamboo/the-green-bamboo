@@ -78,6 +78,19 @@
                 >
                   ★ Moderator
                 </button>
+
+                <!-- User Title (ambassador) -->
+                <span v-if="displayUser && displayUser.ambassador === true" class="badge rounded-pill ms-2"
+                  style="background-color: #ff3e31; color: white">
+                  Ambassador
+                </span>
+
+                <!-- Add this temporarily to debug -->
+                <div style="display: none;">
+                  {{ displayUser && typeof displayUser.ambassador }} - 
+                  {{ displayUser && JSON.stringify(displayUser.ambassador) }}
+                </div>
+                
                 <br class="mobile-view-hide"/>
                 <button
                 v-if="ownProfile && user"

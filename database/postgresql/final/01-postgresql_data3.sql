@@ -273,7 +273,9 @@ CREATE TABLE "users" (
     "preferences" TEXT[],-- SMU Group 3 added in "preferences"
     "grails" TEXT[], -- SMU Group 3 added in "grails" - remove this to decouple db
     "upAndComing" TEXT[], -- SMU Group 3 added in "upAndComing" - remove this to decouple db
-    "goats" TEXT[] -- SMU Group 3 added in "goats" - remove this to decouple db
+    "goats" TEXT[], -- SMU Group 3 added in "goats" - remove this to decouple db
+    "blueDot" BOOLEAN DEFAULT TRUE, -- Indicates if the blue dot should be shown
+    "ambassador" BOOLEAN DEFAULT FALSE 
 );
 
 -- ========= "userBadges" =========
