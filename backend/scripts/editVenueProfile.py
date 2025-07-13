@@ -31,6 +31,7 @@ def editDetails():
 
     venueID = int(data['venueID'])
     venueName = data['venueName']
+    venueType = data['venueType']
     venueDesc = data['venueDesc']
     originLocation = data['originLocation']
     image64 = data.get('image64', '')
@@ -56,6 +57,7 @@ def editDetails():
                 UPDATE venues 
                 SET 
                     "venueName" = %s,
+                    "venueType" = %s,
                     "venueDesc" = %s,
                     "originLocation" = %s,
                     "yearOpened" = %s,
@@ -64,7 +66,7 @@ def editDetails():
                     "photo" = %s
                 WHERE id = %s
                 """,
-                (venueName, venueDesc, originLocation, yearOpened, openForReservations, website, image64, venueID)
+                (venueName, venueType, venueDesc, originLocation, yearOpened, openForReservations, website, image64, venueID)
             )
             conn.commit()
 

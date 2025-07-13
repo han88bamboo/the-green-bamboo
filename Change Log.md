@@ -1285,3 +1285,25 @@ added support help button in navbar
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+
+# Update as of 12 July 
+
+Coder: Han
+
+Purpose of the changes:
+ambassador badge functionality for bottlelistings and user profile 
+
+Nature of the changes (frontend / backend / database):
+frontend, backend
+
+
+# Update as of 13 July 
+
+Coder: Han
+
+Purpose of the changes:
+Venue type field
+
+Nature of the changes (frontend / backend / database):
+frontend

@@ -451,7 +451,6 @@
                             </div>
 
                             <!-- ------- START Producer ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
-
                             <!-- Producer -->
                             <div class="row">
                                 <!--<div class="col-12"> -->
@@ -468,8 +467,26 @@
                                 <!--</div>-->
                             </div>
 
-                            <!-- ------- END Producer / START Description tzh to edit ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+                            <!-- ------- END Producer / START Venue Type   ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
+                            <!-- Venue Type -->
+                            <div class="row">
+                                <div class="col-12 pe-lg-0 ps-0">
+                                    <!-- [if] editing -->
+                                    <div v-if="editProfile">
+                                        <label for="venueTypeInput"> Venue Type </label>
+                                        <input type="text" class="form-control mb-3" id="venueTypeInput" aria-describedby="venueType" v-model="editVenueType">
+                                    </div>
+                                    <!-- [else] not editing -->
+                                    <div v-else class="ps-0 pe-0">
+                                        <p class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">
+                                            <strong>Venue Type:</strong> {{ targetVenue["venueType"] || "Not specified" }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ------- END Venue Type / START Description   ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
                             <!-- Description -->
                             <div class="row scrollable">
                                 <div class="col-12 pe-lg-0 ps-0">
@@ -3315,6 +3332,7 @@
 
                 // Editable fields
                 editVenueName: '',
+                editVenueType: '',
                 editVenueDesc: '',
                 editCountry: '',
                 editYearOpened: null,
@@ -3639,6 +3657,7 @@
                         this.editProfilePhoto = this.targetVenue["photo"];
                         this.targetVenueOriginalPhoto =this.targetVenue["photo"];
                         this.editVenueName = this.targetVenue["venueName"];
+                        this.editVenueType = this.targetVenue['venueType']; 
                         this.editVenueDesc = this.targetVenue["venueDesc"];
                         this.editCountry = this.targetVenue["originLocation"];
                         this.editYearOpened = this.targetVenue["yearOpened"];
@@ -4407,6 +4426,7 @@
                             venueID: this.targetVenue['id'],
                             image64: this.editProfilePhoto,
                             venueName: this.editVenueName,
+                            venueType: this.editVenueType,
                             venueDesc: this.editVenueDesc,
                             originLocation: this.editCountry,
                             yearOpened: this.editYearOpened,
