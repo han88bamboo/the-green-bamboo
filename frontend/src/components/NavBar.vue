@@ -23,6 +23,16 @@
           </div>
 
           <div class="d-flex align-items-center ms-auto gap-2">
+            <!-- help button -->
+            <div class="me-2" v-if="accType != ''">
+              <button type="button" class="btn p-0 help-btn" data-bs-toggle="modal" data-bs-target="#help-modal">
+                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-question-circle"
+                  viewBox="0 0 16 16">
+                  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                  <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
+                </svg>
+              </button>
+            </div>
             <!-- notification button -->
             <div class="notification-dropdown me-2" v-if="accType != ''">
               <button type="button" class="btn p-0 notification-btn" @click="toggleNotifications">
@@ -690,6 +700,33 @@
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Help Modal -->
+    <div class="modal fade" id="help-modal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="helpModalLabel">Need Help?</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>If you have any support queries, please email us at 
+              <a :href="'mailto:hellodrinkx@gmail.com?subject=Drink-X Support Request: &body=I am having trouble with...'">
+                hellodrinkx@gmail.com
+              </a> 
+              and we will respond as soon as we can within several days.
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <a :href="'mailto:hellodrinkx@gmail.com?subject=Drink-X Support Request: &body=I am having trouble with...'" 
+               class="btn btn-primary">
+              Send Email
+            </a>
           </div>
         </div>
       </div>
@@ -1370,5 +1407,14 @@
       margin-right: 8px;
       /* to vertically align with text: */
       vertical-align: middle;
+    }
+    
+    .help-btn {
+      transition: transform 0.2s;
+    }
+    
+    .help-btn:hover {
+      transform: scale(1.1);
+      color: #027562;
     }
     </style>

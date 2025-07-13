@@ -1264,3 +1264,24 @@ Purpose of the changes:
 
 Nature of the changes (frontend / backend / database):
 frontend , backend
+
+# Update as of 12 July 
+
+Coder: Han
+
+Purpose of the changes:
+find friends feature on navbar
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+
+# Update as of 12 July 
+
+Coder: Han
+
+Purpose of the changes:
+added support help button in navbar 
+
+Nature of the changes (frontend / backend / database):
+frontend
