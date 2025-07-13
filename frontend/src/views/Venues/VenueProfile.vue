@@ -2939,7 +2939,7 @@
                                 <!-- Buttons -->
                                 <div class="pb-1 mobile-rating-smaller-text-2" v-if="selfView || powerView">
                                     <!-- [if] not editing -->
-                                    <button v-if="!editOpeningHours" type="button" class="btn btn-warning rounded-0 reverse-clickable-text  mobile-rating-smaller-text-2" @click="editOpeningHours = true; checkOpeningHours()">
+                                    <button v-if="!editOpeningHours" type="button" class="btn btn-warning rounded-0 reverse-clickable-text  mobile-rating-smaller-text-2" @click="editOpeningHours = true; newOpeningHours = Object.keys(openingHours).length ? JSON.parse(JSON.stringify(openingHours)) : { 'Monday': ['09:00', '18:00'], 'Tuesday': ['09:00', '18:00'], 'Wednesday': ['09:00', '18:00'], 'Thursday': ['09:00', '18:00'], 'Friday': ['09:00', '18:00'], 'Saturday': ['09:00', '18:00'], 'Sunday': ['09:00', '18:00'] }; checkOpeningHours()">
                                         Edit
                                     </button>
                                     <!-- [else] if editing -->
@@ -2975,7 +2975,8 @@
                                 <div v-else>
                                     <div class="default-text-no-background  mobile-rating-smaller-text-2" v-for = "(hours, day) in openingHours" v-bind:key="day">
                                         <span>{{ day }}: </span>
-                                        <p class="d-inline">{{ hours[0] }} - {{ hours[1] }}</p>
+                                        <p class="d-inline" v-if="hours[0] === '00:00' && hours[1] === '00:00'">Closed</p>
+                                        <p class="d-inline" v-else>{{ formatTime(hours[0]) }} - {{ formatTime(hours[1]) }}</p>
                                     </div>
                                 </div>
 
@@ -4592,31 +4593,27 @@
             checkOpeningHours() {
                 // Reset error flag
                 this.editOpeningHoursError = false;
-
+            
                 for (let day in this.newOpeningHours) {
-                    const timeSlots = this.newOpeningHours[day];
-
-                    // Skip if there are no opening hours for the day
-                    if (!timeSlots || timeSlots.length < 2) {
-                        continue;
+                    // Get the error span
+                    let errorSpan = document.getElementById(day + 'error');
+                    
+                    // Hide the error message initially
+                    if (errorSpan) {
+                        errorSpan.classList.add('d-none');
                     }
-
-                    // Get start and end time values safely
-                    const startTimeValue = parseInt(timeSlots[0].replace(/:/g, ''));
-                    const endTimeValue = parseInt(timeSlots[1].replace(/:/g, ''));
-                    const errorElement = document.getElementById(day + 'error');
-
-                    // Check if start time is before end time
-                    if (startTimeValue >= endTimeValue) {
+                    
+                    // Get the start and end times for this day
+                    let start = this.newOpeningHours[day][0];
+                    let end = this.newOpeningHours[day][1];
+                    
+                    // Check if end time is after start time
+                    // Special case: "00:00" to "00:00" means "Closed" and is valid
+                    if (start && end && start >= end && !(start === "00:00" && end === "00:00")) {
                         this.editOpeningHoursError = true;
-                        if (errorElement) {
-                            errorElement.classList.remove('d-none');
-                            errorElement.innerText = "Start time must be before end time!";
-                        }
-                    } else {
-                        if (errorElement) {
-                            errorElement.classList.add('d-none');
-                            errorElement.innerText = "";
+                        if (errorSpan) {
+                            errorSpan.textContent = "Start time must be before end time!";
+                            errorSpan.classList.remove('d-none');
                         }
                     }
                 }
@@ -5795,6 +5792,20 @@
                 }
                 this.drag = false;
                 this.menuSnapshot = null;
+            },
+            formatTime(time) {
+                if (!time) return '';
+                
+                // Parse hours and minutes
+                const [hours, minutes] = time.split(':');
+                const hour = parseInt(hours, 10);
+                
+                // Convert to 12-hour format
+                const period = hour >= 12 ? 'PM' : 'AM';
+                const twelveHour = hour % 12 || 12; // Convert 0 to 12
+                
+                // Format the time as "h:mm AM/PM"
+                return `${twelveHour}:${minutes} ${period}`;
             }
         }
     }

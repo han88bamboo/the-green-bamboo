@@ -1307,3 +1307,14 @@ Venue type field
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+
+# Update as of 13 July 
+
+Coder: Han
+
+Purpose of the changes:
+Venue opening hours fix
+
+Nature of the changes (frontend / backend / database):
+frontend

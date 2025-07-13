@@ -2553,3 +2553,8 @@ nav a.router-link-exact-active.dropdown-item {
 .fs-8 {
   font-size: 0.75rem !important; /* 12px */
 }
+
+.form-control{
+  padding: 0.25rem 0.5rem !important; /* Adjust padding for better alignment */
+  font-size: 0.875rem !important; /* 14px */
+}
