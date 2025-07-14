@@ -1505,7 +1505,7 @@
                       <div class="modal-content">
                         <div class="modal-header">
                           <h1 class="modal-title fs-5" id="exampleModalLabel">
-                            Create New List
+                            Create New Drinks List
                           </h1>
                           <button
                             type="button"
@@ -1517,7 +1517,7 @@
                         <div class="modal-body">
                           <div class="mb-3">
                             <label for="basic-url" class="form-label"
-                              >List Name</label
+                              >Drinks List Name</label
                             >
                             <div class="input-group mb-3">
                               <input
@@ -1539,7 +1539,7 @@
 
                           <div class="mb-3">
                             <label for="basic-url" class="form-label"
-                              >List Description</label
+                              >Drinks List Description</label
                             >
                             <div class="input-group mb-3">
                               <textarea
@@ -1788,8 +1788,8 @@
               }"
               @click="switchTab('lists')"
             >
-              <span v-if="ownProfile">My Drink List</span>
-              <span v-if="!ownProfile">Drink List</span>
+              <span v-if="ownProfile">My Drinks List</span>
+              <span v-if="!ownProfile">Drinks List</span>
             </button>
 
             <!-- My Badges button -->
@@ -2027,7 +2027,7 @@
                       @click="viewList(name)"
                       style="cursor: pointer; font-weight:bold"
                     >
-                      {{ name }}
+                      Drinks List: {{ name }}
                     </h5>
                     <span v-if="bookmarkList.listItems.length > 1">
                       {{ bookmarkList.listItems.length }} items in list
@@ -2287,7 +2287,7 @@
                 <div class="row mb-4 mobile-mt-2">
                   <div class="col-5 mobile-col-7">
                     <h5 class="mobile-fs-5">
-                      <b>{{ currentList }}</b>
+                      <b>Drinks List: {{ currentList }}</b>
                     </h5>
                   </div>
                   <div
@@ -2364,7 +2364,7 @@
                           d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8m15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-4.5-.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5z"
                         />
                       </svg>
-                      <span class="mobile-view-hide">&nbsp;Back to Lists</span>
+                      <span class="mobile-view-hide">&nbsp;Back to Drinks Lists</span>
                     </button>
 
                     <!-- Share Menu Modal (QR Code) -->
@@ -2382,7 +2382,7 @@
                               class="modal-title fs-5"
                               id="shareMenuModalLabel"
                             >
-                              Drink List QR Code
+                              Drinks List QR Code
                             </h1>
                             <button
                               type="button"
