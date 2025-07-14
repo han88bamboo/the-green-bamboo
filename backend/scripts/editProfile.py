@@ -75,10 +75,10 @@ def editDetails():
     
     finally:
         cursor.close()
-    
+
 # -----------------------------------------------------------------------------------------
-# [POST] Update user bookmark
-# - Update user bookmark with new details
+# [POST] Update user producer bookmark
+# - Update user producer bookmark with new details
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/updateProducerBookmark', methods=['POST'])
 def updateProducerBookmark():
@@ -90,24 +90,17 @@ def updateProducerBookmark():
     try:
         cursor = conn.cursor()
 
-        # Fetch existing drink lists for the user
-        cursor.execute('SELECT "id", "listName" FROM "usersProducerLists" WHERE "userId" = %s', (userID,))
+        # Fetch existing producer lists for the user
+        cursor.execute('SELECT "id", "listName" FROM "userProducerLists" WHERE "userId" = %s', (userID,))
         existing_lists = {row['listName']: row['id'] for row in cursor.fetchall()}
 
         bookmark_list_names = set(bookmark.keys())
         existing_list_names = set(existing_lists.keys())
 
-        # Counter to track the number of lists to delete
-        num_lists_to_delete_count = 0
-
-        # Counter to track the number of lists to add
-        num_lists_to_add_count = 0
-
         # Identify lists to delete (if not in new bookmark)
         lists_to_delete = existing_list_names - bookmark_list_names
         for listName in lists_to_delete:
-            cursor.execute('DELETE FROM "usersProducerLists" WHERE "userId" = %s AND "listName" = %s', (userID, listName))
-            num_lists_to_delete_count += 1
+            cursor.execute('DELETE FROM "userProducerLists" WHERE "userId" = %s AND "listName" = %s', (userID, listName))
 
         for listName, listData in bookmark.items():
             listItems = listData["listItems"]
@@ -118,115 +111,44 @@ def updateProducerBookmark():
 
                 # Update existing list desc
                 cursor.execute(
-                    'UPDATE "usersProducerLists" SET "listDesc" = %s WHERE "id" = %s',
+                    'UPDATE "userProducerLists" SET "listDesc" = %s WHERE "id" = %s',
                     (listData["listDesc"], list_id)
                 )
             else:
                 cursor.execute(
-                    'INSERT INTO "usersProducerLists" ("userId", "listName", "listDesc") VALUES (%s, %s, %s) RETURNING "id"',
+                    'INSERT INTO "userProducerLists" ("userId", "listName", "listDesc") VALUES (%s, %s, %s) RETURNING "id"',
                     (userID, listName, listData["listDesc"],)
                 )
                 list_id = cursor.fetchone()["id"]
-                num_lists_to_add_count += 1
 
             # Delete existing items in the list (to avoid duplicates)
-            cursor.execute('DELETE FROM "usersProducerListItems" WHERE "listId" = %s', (list_id,))
+            cursor.execute('DELETE FROM "userProducerListItems" WHERE "listId" = %s', (list_id,))
 
-            # Insert new drinks with their addedDate, using NOW() if missing
+            # Insert new producers with their addedDate, using NOW() if missing
             for item in listItems:
                 added_date = item.get("addedDate", None)  # Get addedDate, default to None
                 if added_date:
                     cursor.execute(
-                        'INSERT INTO "usersProducerListItems" ("listId", "producerId", "addedDate") VALUES (%s, %s, %s)',
+                        'INSERT INTO "userProducerListItems" ("listId", "producerId", "addedDate") VALUES (%s, %s, %s)',
                         (list_id, item["producerId"], added_date)
                     )
                 else:
                     cursor.execute(
-                        'INSERT INTO "usersProducerListItems" ("listId", "producerId", "addedDate") VALUES (%s, %s, NOW())',
+                        'INSERT INTO "userProducerListItems" ("listId", "producerId", "addedDate") VALUES (%s, %s, NOW())',
                         (list_id, item["producerId"])
                     )
 
         conn.commit()
-
-        # Initialize variables for points and badge processing
-        points_earned = 0
-        badge_result = None
-
-        # Update proofPoints and process badges
-        if (num_lists_to_delete_count > 0 or num_lists_to_add_count > 0) and (num_lists_to_delete_count - num_lists_to_add_count) != 0:
-
-            # Get the proofPoints for creating a new list
-            cursor.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE "id" = 14')
-            proofPoints = cursor.fetchone()
-
-            if proofPoints:
-                # Calculate net points earned
-                points_earned = (num_lists_to_add_count - num_lists_to_delete_count) * proofPoints['proofPoints']
-
-                # Only award points if positive and user hasn't reached max
-                if points_earned > 0:
-                    if pointsHelperFunc.check_max_proof_points(userID):
-                        return jsonify({
-                            "code": 201,
-                            "data": {
-                                "userID": userID,
-                                "bookmark": bookmark
-                            },
-                            "message": "Max points reached."
-                        }), 201
-
-                # Update user points (can be positive or negative)
-                cursor.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s AND "userType" = %s',
-                               (points_earned, userID, 'user'))
-                conn.commit()
-
-                print(f"User {userID} earned {points_earned} points for editing the number of lists.")
-
-            # Process PublicList badge based on net list changes
-            net_list_change = num_lists_to_add_count - num_lists_to_delete_count
-            if net_list_change != 0:
-                badge_result = badge_helpers.process_public_list_badge(conn, cursor, userID, net_list_change)
-
-        cursor.execute('SELECT username FROM users WHERE id = %s', (userID,))
-        user_row = cursor.fetchone()
-        if user_row:
-            # Get the username of the user
-            user_username = user_row['username'] if user_row else "Someone"
-
-        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-        # Notify if badge earned
-        if badge_result:
-            notification_data = {
-                "userId":   userID,
-                "userType": "user",
-                "notiTabs": "forYou",
-                "notiType": "badge_earned",
-                "image":    None,
-                "link":     f"/profile/user/{userID}/{user_username}",
-                "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}.",
-                "createdAt": current_time
-            }
-            print("Notification data:", notification_data)
-            notifications.add_notification_to_db(notification_data)
-
-        # Prepare the response
-        response_data = {
-            "code": 201,
-            "data": {
-                "userID": userID,
-                "bookmark": bookmark
-            }
-        }
-
-        if points_earned != 0:
-            response_data["pointsEarned"] = points_earned
-
-        if badge_result:
-            response_data["badgeAwarded"] = badge_result
-
         cursor.close()
-        return jsonify(response_data), 201
+        return jsonify(
+            {
+                "code": 201,
+                "data": {
+                    "userID": userID,
+                    "bookmark": bookmark
+                }
+            }
+        ), 201
 
     except Exception as e:
         print("Update producer bookmark error:", str(e))
@@ -240,6 +162,10 @@ def updateProducerBookmark():
             "message": "An error occurred updating the producer lists."
         }), 500
 
+# -----------------------------------------------------------------------------------------
+# [POST] Update user bookmark
+# - Update user bookmark with new details
+# - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/updateBookmark', methods=['POST'])
 def updateBookmark():
     conn = g.db

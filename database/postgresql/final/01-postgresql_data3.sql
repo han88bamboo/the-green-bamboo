@@ -47,8 +47,8 @@ DROP TABLE IF EXISTS "tokens" CASCADE;
 DROP TABLE IF EXISTS "users" CASCADE;
 DROP TABLE IF EXISTS "usersDrinkLists" CASCADE;
 DROP TABLE IF EXISTS "usersDrinkListItems" CASCADE;
-DROP TABLE IF EXISTS "usersProducerLists" CASCADE;
-DROP TABLE IF EXISTS "usersProducerListItems" CASCADE;
+DROP TABLE IF EXISTS "userProducerLists" CASCADE;
+DROP TABLE IF EXISTS "userProducerListItems" CASCADE;
 DROP TABLE IF EXISTS "usersFollowLists" CASCADE;
 DROP TABLE IF EXISTS "venueUpdateLikes" CASCADE;
 DROP TABLE IF EXISTS "venues" CASCADE;
@@ -262,7 +262,8 @@ CREATE TABLE "users" (
     "modType" TEXT[],
     "photo" TEXT,
     "hashedPassword" VARCHAR(255),
-    -- "drinkLists" SERIAL, -- [!] reference "usersDrinkLists" not needed since user followlist ref users
+    "drinkLists" JSONB,
+    "producerLists" JSONB,
     "joinDate" TIMESTAMP,
     -- "followLists" SERIAL, -- [!] reference "usersFollowLists"
     "firstName" VARCHAR(255),
@@ -416,8 +417,8 @@ CREATE TABLE "usersDrinkListItems" (
     UNIQUE ("listId", "drinkId")
 );
 
--- ========= "usersProducerLists" =========
-CREATE TABLE "usersProducerLists" (
+-- ========= "userProducerLists" =========
+CREATE TABLE "userProducerLists" (
     "id" SERIAL PRIMARY KEY,
     "userId" INTEGER REFERENCES "users"("id") ON DELETE SET NULL,
     "listName" TEXT,
@@ -425,10 +426,10 @@ CREATE TABLE "usersProducerLists" (
     UNIQUE ("userId", "listName")
 );
 
--- ========= "usersProducerListItems" =========
-CREATE TABLE "usersProducerListItems" (
+-- ========= "userProducerListItems" =========
+CREATE TABLE "userProducerListItems" (
     "id" SERIAL PRIMARY KEY,
-    "listId" INTEGER REFERENCES "usersProducerLists"("id") ON DELETE CASCADE,
+    "listId" INTEGER REFERENCES "userProducerLists"("id") ON DELETE CASCADE,
     "producerId" INTEGER REFERENCES "producers"("id") ON DELETE CASCADE,
     "addedDate" TIMESTAMP,
     UNIQUE ("listId", "producerId")
