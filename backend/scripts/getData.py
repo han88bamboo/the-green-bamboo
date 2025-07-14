@@ -197,52 +197,6 @@ def fetch_drink_lists(cursor, user_id):
         traceback.print_exc()
         # print("something went wrong" + str(e), flush=True)
         return result
-
-# Helper function to fetch producer lists for a user
-def fetch_producer_lists(cursor, user_id):
-    result = {}
-    try:
-        # Single query using LEFT JOIN to get all data at once
-        cursor.execute("""
-            SELECT
-                upl."id" as list_id,
-                upl."listName",
-                upl."listDesc",
-                upli."producerId",
-                upli."addedDate"
-            FROM "usersProducerLists" upl
-            LEFT JOIN "usersProducerListItems" upli ON upl."id" = upli."listId"
-            WHERE upl."userId" = %s
-            ORDER BY upl."listName", upli."addedDate" DESC
-        """, (user_id,))
-
-        rows = cursor.fetchall()
-
-        # Process results in a single pass
-        for row in rows:
-            list_name = row["listName"]
-
-            # Initialize list if not exists
-            if list_name not in result:
-                result[list_name] = {
-                    "listDesc": row["listDesc"],
-                    "listItems": []
-                }
-
-            # Add producer item if it exists (LEFT JOIN may return NULL for empty lists)
-            if row["producerId"] is not None:
-                result[list_name]["listItems"].append({
-                    "producerId": row["producerId"],
-                    "addedDate": row["addedDate"]
-                })
-
-        return result
-
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        # print("something went wrong" + str(e), flush=True)
-        return result
     
 # Helper function to fetch follow lists for a user
 def fetch_follow_lists(cursor, user_id):
@@ -2377,7 +2331,6 @@ def getUsers():
                 user_id = user_data['id']
                 
                 user_data["drinkLists"] = fetch_drink_lists(cursor, user_id)
-                user_data["producerLists"] = fetch_producer_lists(cursor, user_id)
                 user_data["followLists"] = fetch_follow_lists(cursor, user_id)
 
 
@@ -2416,7 +2369,6 @@ def getUsersFromList():
             user_id = user_data['id']
             
             user_data["drinkLists"] = fetch_drink_lists(cursor, user_id)
-            user_data["producerLists"] = fetch_producer_lists(cursor, user_id)
             user_data["followLists"] = fetch_follow_lists(cursor, user_id)
             user_data['proofRank'] = pointsHelperFunc.get_rank_by_user_id(user_id)
             user_data['currentPoints'] = pointsHelperFunc.get_current_proof_points(user_id)
@@ -2488,7 +2440,6 @@ def getUser(id):
                 return jsonify({}), 404
 
             user_data["drinkLists"] = fetch_drink_lists(cursor, id)
-            user_data["producerLists"] = fetch_producer_lists(cursor, id)
             user_data["followLists"] = fetch_follow_lists(cursor, id)
             user_data['proofRank'] = pointsHelperFunc.get_rank_by_user_id(id)
             user_data['currentPoints'] = pointsHelperFunc.get_current_proof_points(id)
@@ -2549,7 +2500,6 @@ def getUserByUsername(username):
             del user_data["pin"]
 
             user_data["drinkLists"] = fetch_drink_lists(cursor, user_id)
-            user_data["producerLists"] = fetch_producer_lists(cursor, user_id)
             user_data["followLists"] = fetch_follow_lists(cursor, user_id)
 
         return jsonify(user_data), 200
