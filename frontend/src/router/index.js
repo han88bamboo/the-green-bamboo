@@ -95,6 +95,11 @@ const routes = [
     component: () => import("../views/Users/UserProfileRefactor.vue"),
   },
   {
+    path: "/profile/user/:userID/:username/producer_list/:listName",
+    name: "UserProducerList",
+    component: () => import("../views/Users/UserProfileRefactor.vue"),
+  },
+  {
     path: "/profile/producer/:producerID/:username",
     name: "profileproducer",
 

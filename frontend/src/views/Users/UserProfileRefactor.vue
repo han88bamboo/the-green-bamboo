@@ -2350,10 +2350,6 @@
 
 
 
-
-
-
-
               <!-- display all producer lists -->
               <div
                 v-for="(producerList, name, index) in displayUserProducerBookmarks"
@@ -2362,107 +2358,74 @@
                 class="row mb-3"
               >
                 <div class="col-3 mobile-col-4 mobile-pe-2">
-                  <img
-                    :src="'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/producer_default.png?v=1751547309'"
-                    alt=""
-                    class="bottle-img rounded me-3"
+                  <img 
+                    :src="producers && producers.length > 0 && producerList.listItems && producerList.listItems.length > 0 && getProducerFromID(producerList.listItems[0].producerId) ? getProducerFromID(producerList.listItems[0].producerId).photo || defaultProfilePhoto : defaultProfilePhoto"
+                    alt="Producer List" 
+                    class="img-fluid rounded"
+                    style="width: 100%; height: 100px; object-fit: cover;" 
                   />
                 </div>
                 <div class="col-9 mobile-col-8 mobile-ps-1">
-                  <h5
-                    class="mt-1 mobile-fs-6"
-                    style="cursor: pointer; font-weight:bold"
-                  >
-                    {{ name }}
-                  </h5>
-                  <span v-if="producerList.listItems && producerList.listItems.length > 1">
-                    {{ producerList.listItems.length }} producers in list
-                  </span>
-                  <span v-else-if="producerList.listItems && producerList.listItems.length === 1">
-                    {{ producerList.listItems.length }} producer in list
-                  </span>
-                  <span v-else>
-                    0 producers in list
-                  </span>
-                  <div
-                    style="font-style: italic;"
-                  >
-                    {{ producerList.listDesc }}
-                  </div>
-                  <div style="display: flex; margin-top: auto" class="mb-1" v-if="ownProfile">
-                    <button
-                      class="btn tertiary-btn-blue me-1"
-                      data-bs-toggle="modal"
-                      :data-bs-target="'#editProducerListModal' + index"
+                  <h5 class="mb-1 fw-bold">{{ name }}</h5>
+                  <p class="mb-1">{{ producerList.listDesc }}</p>
+                  <p class="mb-0">
+                    <small>{{ producerList.listItems ? producerList.listItems.length : 0 }} Producers</small>
+                  </p>
+                  <div class="mt-2">
+                    <button 
+                      class="btn primary-btn-green-thin-outline btn-sm me-1" 
+                      @click="viewProducerList(name)"
+                    >
+                      View Details
+                    </button>
+                    <button 
+                      v-if="ownProfile" 
+                      class="btn primary-btn-green-thin-outline btn-sm me-1"
+                      data-bs-toggle="modal" 
+                      :data-bs-target="'#editProducerList' + index"
                     >
                       Edit
                     </button>
-                    <button
-                      class="btn tertiary-btn-blue"
-                      data-bs-toggle="modal"
-                      :data-bs-target="'#deleteProducerListModal' + index"
+                    <button 
+                      v-if="ownProfile" 
+                      class="btn btn-danger btn-sm"
+                      data-bs-toggle="modal" 
+                      :data-bs-target="'#deleteProducerList' + index"
                     >
                       Delete
                     </button>
                   </div>
                 </div>
-
+                
                 <!-- edit producer list modal -->
                 <div
                   v-if="ownProfile"
                   class="modal fade"
-                  :id="'editProducerListModal' + index"
+                  :id="'editProducerList' + index"
                   tabindex="-1"
-                  aria-labelledby="exampleModalLabel"
+                  aria-labelledby="editProducerListLabel"
                   aria-hidden="true"
                 >
-                  <div class="modal-dialog modal-dialog-centered">
+                  <div class="modal-dialog">
                     <div class="modal-content">
                       <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="exampleModalLabel">Edit Producer List</h1>
-                        <button
-                          type="button"
-                          class="btn-close"
-                          data-bs-dismiss="modal"
-                          aria-label="Close"
-                        ></button>
+                        <h5 class="modal-title" id="editProducerListLabel">Edit Producer List</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                       </div>
                       <div class="modal-body">
                         <div class="mb-3">
                           <label for="editProducerListName" class="form-label">List Name</label>
-                          <input
-                            type="text"
-                            class="form-control"
-                            id="editProducerListName"
-                            v-model="editListName"
-                          />
-                          <div class="text-danger">{{ editListNameError }}</div>
+                          <input type="text" class="form-control" id="editProducerListName" v-model="editListName" @focus="resetEditList(name, producerList.listDesc)">
+                          <div class="text-danger" v-if="editListNameError">{{ editListNameError }}</div>
                         </div>
                         <div class="mb-3">
                           <label for="editProducerListDesc" class="form-label">List Description</label>
-                          <textarea
-                            class="form-control"
-                            id="editProducerListDesc"
-                            rows="3"
-                            v-model="editListDesc"
-                          ></textarea>
+                          <textarea class="form-control" id="editProducerListDesc" rows="3" v-model="editListDesc"></textarea>
                         </div>
                       </div>
                       <div class="modal-footer">
-                        <button
-                          type="button"
-                          class="btn btn-secondary"
-                          data-bs-dismiss="modal"
-                        >
-                          Close
-                        </button>
-                        <button
-                          type="button"
-                          class="btn btn-primary"
-                          @click="editProducerList(name)"
-                        >
-                          Save changes
-                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn primary-btn-green" @click="editProducerList(name)">Save changes</button>
                       </div>
                     </div>
                   </div>
@@ -2472,47 +2435,29 @@
                 <div
                   v-if="ownProfile"
                   class="modal fade"
-                  :id="'deleteProducerListModal' + index"
+                  :id="'deleteProducerList' + index"
                   tabindex="-1"
-                  aria-labelledby="exampleModalLabel"
+                  aria-labelledby="deleteProducerListLabel"
                   aria-hidden="true"
                 >
-                  <div class="modal-dialog modal-dialog-centered">
+                  <div class="modal-dialog">
                     <div class="modal-content">
                       <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="exampleModalLabel">Delete Producer List</h1>
-                        <button
-                          type="button"
-                          class="btn-close"
-                          data-bs-dismiss="modal"
-                          aria-label="Close"
-                        ></button>
+                        <h5 class="modal-title" id="deleteProducerListLabel">Delete Producer List</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                       </div>
                       <div class="modal-body">
-                        Are you sure you want to delete this list?
+                        <p>Are you sure you want to delete this producer list: <strong>{{ name }}</strong>?</p>
+                        <p>This action cannot be undone.</p>
                       </div>
                       <div class="modal-footer">
-                        <button
-                          type="button"
-                          class="btn btn-secondary"
-                          data-bs-dismiss="modal"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="button"
-                          class="btn btn-danger"
-                          @click="deleteProducerList(name)"
-                          data-bs-dismiss="modal"
-                        >
-                          Delete
-                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-danger" @click="deleteProducerList(name)" data-bs-dismiss="modal">Delete</button>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-
 
 
 
@@ -2597,6 +2542,146 @@
                         </button>
                       </div>
                     </div>
+                  </div>
+                </div>
+              <!-- add producer modal -->
+              <div 
+                class="modal fade" 
+                id="addProducerModal" 
+                tabindex="-1" 
+                aria-labelledby="addProducerModalLabel" 
+                aria-hidden="true"
+              >
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="addProducerModalLabel">Add Producer to List</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="mb-3">
+                        <label for="producerSearch" class="form-label">Search for producers</label>
+                        <input type="text" class="form-control" id="producerSearch" v-model="producerSearch" 
+                               @input="searchProducerResult" placeholder="Enter producer name">
+                      </div>
+                      <div class="search-results mt-2">
+                        <div v-if="producerSearchResults.length === 0 && producerSearch.length > 0" class="text-muted">
+                          No producers found.
+                        </div>
+                        <div v-for="(producer, index) in producerSearchResults" :key="index" class="mb-2">
+                          <div class="d-flex justify-content-between align-items-center">
+                            <span>{{ producer.producerName }}</span>
+                            <button @click="selectProducer(producer.producerName)" class="btn btn-sm primary-btn-green">
+                              Add
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <hr />
+                      <h6 class="mb-3">Selected Producers:</h6>
+                      <div v-if="producersToAdd.length === 0" class="text-muted">
+                        No producers selected.
+                      </div>
+                      <div v-for="(producer, index) in producersToAdd" :key="index" class="mb-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                          <span>{{ producer }}</span>
+                          <button @click="removeSelectedProducer(producerName)" class="btn btn-sm btn-danger">
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                      <button type="button" class="btn primary-btn-green" @click="addProducerToList(currentProducerList)">
+                        Add to List
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              </div>
+
+              <!-- individual producer list tab -->
+              <div
+                v-if="activeTab == 'producer_list' && displayUser.producerLists"
+                id="producer_list"
+              >
+                <!-- list name, back to lists & add producer to list & share button -->
+                <div class="row mb-4 mobile-mt-2">
+                  <div class="col-12 col-md-6">
+                    <h4 class="fw-bold mb-1">{{ currentProducerList }}</h4>
+                    <p class="mb-1">
+                      {{ displayUserProducerBookmarks[currentProducerList].listDesc }}
+                    </p>
+                    <button
+                      class="btn primary-btn-green-thin-outline mb-2"
+                      @click="switchTab('producer_lists')"
+                    >
+                      <i class="bi bi-arrow-left"></i> Back to Producer Lists
+                    </button>
+                  </div>
+                  <div class="col-12 col-md-6 text-end">
+                    <button
+                      v-if="ownProfile"
+                      class="btn primary-btn-green-thin-outline mx-1"
+                      data-bs-toggle="modal"
+                      data-bs-target="#addProducerModal"
+                    >
+                      <i class="bi bi-plus"></i> Add Producer
+                    </button>
+                    <button
+                      class="btn primary-btn-green-thin-outline mx-1"
+                      @click="updateCurrentURL(); copyToClipboard(currentURL)"
+                    >
+                      <i class="bi bi-share"></i> Share
+                    </button>
+                  </div>
+                </div>
+              
+                <!-- list details -->
+                <div
+                  v-for="(producerItem, index) in displayUserProducerBookmarks[currentProducerList].listItems"
+                  :key="index"
+                  class="row mb-3 border-bottom pb-3"
+                >
+                  <div class="col-3 text-center">
+                    <router-link
+                      v-if="getProducerFromID(producerItem.producerId)"
+                      :to="`/profile/producer/${producerItem.producerId}/${getProducerFromID(producerItem.producerId).username}`"
+                    >
+                      <img
+                        :src="getProducerFromID(producerItem.producerId).photo || defaultProfilePhoto"
+                        alt="Producer"
+                        class="img-fluid rounded"
+                        style="max-height: 100px; object-fit: cover"
+                      />
+                    </router-link>
+                  </div>
+                  <div class="col-7">
+                    <h5 class="mb-1">
+                      <router-link
+                        v-if="getProducerFromID(producerItem.producerId)"
+                        :to="`/profile/producer/${producerItem.producerId}/${getProducerFromID(producerItem.producerId).username}`"
+                        class="text-decoration-none text-dark"
+                      >
+                        {{ getProducerFromID(producerItem.producerId).producerName }}
+                      </router-link>
+                    </h5>
+                    <p class="text-muted mb-1">
+                      {{ getProducerFromID(producerItem.producerId)?.originCountry || 'Unknown country' }}
+                    </p>
+                    <p class="mb-0">
+                      <small>Added on: {{ new Date(producerItem.addedDate).toLocaleDateString() }}</small>
+                    </p>
+                  </div>
+                  <div v-if="ownProfile" class="col-2 text-end">
+                    <button
+                      class="btn btn-danger btn-sm"
+                      @click="deleteProducerFromList(currentProducerList, producerItem.producerId)"
+                    >
+                      <i class="bi bi-trash"></i>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -3305,6 +3390,15 @@ export default {
       selectedUserIndex: -1,
       isUserSearchFetching: false,
       totalPointsValue: 0, // Assuming this is used elsewhere
+
+      // Producer List Management Variables
+      producerSearch: "",
+      producerSearchResults: [],
+      producersToAdd: [],
+      excludeProducerList: [],
+      currentProducerList: "",
+      bookmarkProducerID: null,
+
     };
   },
   mounted() {
@@ -3356,6 +3450,37 @@ export default {
     // Add event listeners for user search
     document.addEventListener("click", this.handleUserSearchClickOutside);
     document.addEventListener("keydown", this.handleUserSearchKeyDown);
+  
+  // get displayUserID from URL
+    try {
+      this.displayUserID = this.$route.params.userID;
+      this.routeUsername = this.$route.params.username;
+      if (this.displayUserID === this.userID) {
+        this.ownProfile = true;
+      }
+    } catch (error) {
+      console.error(error);
+    }
+
+    // get list name from URL
+    try {
+      if (this.$route.params.listName) {
+        this.currentList = this.$route.params.listName;
+        this.activeTab = "list";
+      } else if (this.$route.path.includes('/producer_list/')) {
+        // Extract producer list name from URL
+        const path = this.$route.path;
+        const producerListNameEncoded = path.substring(path.indexOf('/producer_list/') + 15);
+        this.currentProducerList = decodeURIComponent(producerListNameEncoded);
+        this.activeTab = "producer_list";
+      } else {
+        this.currentList = "";
+        this.currentProducerList = "";
+      }
+    } catch (error) {
+      console.error(error);
+    }
+
   },
   beforeUnmount() {
   // Remove event listeners to prevent memory leaks
@@ -4631,6 +4756,45 @@ export default {
       }
     },
 
+    // view specific producer list
+    
+    viewProducerList(name) {
+      if (name === "producer_lists") {
+        this.activeTab = "producer_lists";
+        this.$router.push(
+          "/profile/user/" + this.displayUserID + "/" + this.displayUser.username
+        );
+      } else {
+        this.activeTab = "producer_list";
+        this.currentProducerList = name;
+        this.$router.push(
+          "/profile/user/" + this.displayUserID + "/" + this.displayUser.username + "/producer_list/" + encodeURIComponent(name)
+        );
+        
+        if (this.ownProfile) {
+          this.removeExistingProducersInList();
+        }
+      }
+    },
+    
+    // Helper function to remove existing producers from search results
+    removeExistingProducersInList() {
+      this.excludeProducerList = [];
+      
+      // Get all producer IDs in the current list
+      if (this.currentProducerList && this.userProducerBookmarks[this.currentProducerList]) {
+        const producerItems = this.userProducerBookmarks[this.currentProducerList].listItems;
+        
+        // Add the producer names to the exclude list
+        for (const item of producerItems) {
+          const producer = this.producers.find(p => p.id === item.producerId);
+          if (producer) {
+            this.excludeProducerList.push(producer.producerName);
+          }
+        }
+      }
+    },
+
     // ------------------ Add Bookmark List Functions ------------------
     removeExistingListingInList() {
       // // get all the listing IDs in the current list
@@ -4655,6 +4819,47 @@ export default {
         if (error.response && error.response.status === 404) {
           this.drinkSearchResults = ['No results found'];
         } 
+      }
+    },
+ 
+    async searchProducerResult() {
+      if (this.producerSearch.trim().length < 2) {
+        this.producerSearchResults = [];
+        return;
+      }
+      
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getProducersBySearch?searchTerm=${this.producerSearch}`
+        );
+        
+        // Filter out producers that are already in the list
+        this.producerSearchResults = response.data.filter(producer => 
+          !this.excludeProducerList.includes(producer.producerName)
+        );
+      } catch (error) {
+        console.error(error);
+        if (error.response && error.response.status === 404) {
+          this.producerSearchResults = ['No results found'];
+        }
+      }
+    },
+
+    // producer selection handler
+    
+    selectProducer(producerName) {
+      if (!this.producersToAdd.includes(producerName)) {
+        this.producersToAdd.push(producerName);
+      }
+      this.producerSearch = "";
+      this.producerSearchResults = [];
+    },
+    
+    // Add this function to remove a producer from the selection
+    removeSelectedProducer(producerName) {
+      const index = this.producersToAdd.indexOf(producerName);
+      if (index !== -1) {
+        this.producersToAdd.splice(index, 1);
       }
     },
 
@@ -4819,6 +5024,68 @@ export default {
       window.location.reload();
     },
 
+    // add producer to list
+    
+    async addProducerToList(listName) {
+      console.log("Adding producers to list:", listName);
+      const currentDate = new Date().toISOString();
+      
+      for (const producerName of this.producersToAdd) {
+        try {
+          // Find the producer by name to get its ID
+          const producer = this.producers.find(p => p.producerName === producerName);
+          
+          if (producer) {
+            // Check if producer is already in the list
+            const alreadyInList = this.userProducerBookmarks[listName].listItems.some(
+              item => item.producerId === producer.id
+            );
+            
+            if (!alreadyInList) {
+              this.userProducerBookmarks[listName].listItems.push({
+                producerId: producer.id,
+                addedDate: currentDate
+              });
+            }
+          }
+        } catch (error) {
+          console.error(`Error adding producer ${producerName}:`, error);
+        }
+      }
+      
+      try {
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/editProfile/updateProducerBookmark`,
+          {
+            userID: this.userID,
+            bookmark: this.userProducerBookmarks,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        console.log("Producer bookmark updated:", response.data);
+        
+        // Show success message
+        const toast = useToast();
+        toast.success("Producers added to list successfully!");
+        
+        // Reset variables
+        this.producersToAdd = [];
+        this.producerSearch = "";
+        this.producerSearchResults = [];
+        
+        // Reload the page to reflect changes
+        window.location.reload();
+      } catch (error) {
+        console.error("Error updating producer bookmark:", error);
+        const toast = useToast();
+        toast.error("Failed to add producers to list. Please try again.");
+      }
+    },    
+
     // ------------------ Delete Drink from List Functions ------------------
     async deleteFromList(listName, listingID) {
       // param: objectId
@@ -4844,6 +5111,47 @@ export default {
         console.log(response.data);
       } catch (error) {
         console.error(error);
+      }
+    },
+
+    // delete producer from list function
+    
+    async deleteProducerFromList(listName, producerId) {
+      // Find the index of the producer to remove
+      const index = this.userProducerBookmarks[listName].listItems.findIndex(
+        item => item.producerId === producerId
+      );
+      
+      if (index !== -1) {
+        // Remove the producer from the list
+        this.userProducerBookmarks[listName].listItems.splice(index, 1);
+        
+        try {
+          const response = await this.$axios.post(
+            `${process.env.VUE_APP_API_URL}/editProfile/updateProducerBookmark`,
+            {
+              userID: this.userID,
+              bookmark: this.userProducerBookmarks,
+            },
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+          console.log("Producer removed from list:", response.data);
+          
+          // Show success message
+          const toast = useToast();
+          toast.success("Producer removed from list successfully!");
+          
+          // No need to reload if we're just removing an item - update UI directly
+          // You can reload if needed: window.location.reload();
+        } catch (error) {
+          console.error("Error updating producer bookmark:", error);
+          const toast = useToast();
+          toast.error("Failed to remove producer from list. Please try again.");
+        }
       }
     },
 
