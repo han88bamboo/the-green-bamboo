@@ -75,6 +75,92 @@ def editDetails():
     
     finally:
         cursor.close()
+
+# -----------------------------------------------------------------------------------------
+# [POST] Update user producer bookmark
+# - Update user producer bookmark with new details
+# - Possible return codes: 201 (Updated), 500 (Error during update)
+@blueprint.route('/updateProducerBookmark', methods=['POST'])
+def updateProducerBookmark():
+    conn = g.db
+    data = request.get_json()
+    userID = int(data['userID'])
+    bookmark = data['bookmark']
+
+    try:
+        cursor = conn.cursor()
+
+        # Fetch existing producer lists for the user
+        cursor.execute('SELECT "id", "listName" FROM "userProducerLists" WHERE "userId" = %s', (userID,))
+        existing_lists = {row['listName']: row['id'] for row in cursor.fetchall()}
+
+        bookmark_list_names = set(bookmark.keys())
+        existing_list_names = set(existing_lists.keys())
+
+        # Identify lists to delete (if not in new bookmark)
+        lists_to_delete = existing_list_names - bookmark_list_names
+        for listName in lists_to_delete:
+            cursor.execute('DELETE FROM "userProducerLists" WHERE "userId" = %s AND "listName" = %s', (userID, listName))
+
+        for listName, listData in bookmark.items():
+            listItems = listData["listItems"]
+
+            # If list exists, use its ID; otherwise, create a new one
+            if listName in existing_lists:
+                list_id = existing_lists[listName]
+
+                # Update existing list desc
+                cursor.execute(
+                    'UPDATE "userProducerLists" SET "listDesc" = %s WHERE "id" = %s',
+                    (listData["listDesc"], list_id)
+                )
+            else:
+                cursor.execute(
+                    'INSERT INTO "userProducerLists" ("userId", "listName", "listDesc") VALUES (%s, %s, %s) RETURNING "id"',
+                    (userID, listName, listData["listDesc"],)
+                )
+                list_id = cursor.fetchone()["id"]
+
+            # Delete existing items in the list (to avoid duplicates)
+            cursor.execute('DELETE FROM "userProducerListItems" WHERE "listId" = %s', (list_id,))
+
+            # Insert new producers with their addedDate, using NOW() if missing
+            for item in listItems:
+                added_date = item.get("addedDate", None)  # Get addedDate, default to None
+                if added_date:
+                    cursor.execute(
+                        'INSERT INTO "userProducerListItems" ("listId", "producerId", "addedDate") VALUES (%s, %s, %s)',
+                        (list_id, item["producerId"], added_date)
+                    )
+                else:
+                    cursor.execute(
+                        'INSERT INTO "userProducerListItems" ("listId", "producerId", "addedDate") VALUES (%s, %s, NOW())',
+                        (list_id, item["producerId"])
+                    )
+
+        conn.commit()
+        cursor.close()
+        return jsonify(
+            {
+                "code": 201,
+                "data": {
+                    "userID": userID,
+                    "bookmark": bookmark
+                }
+            }
+        ), 201
+
+    except Exception as e:
+        print("Update producer bookmark error:", str(e))
+        conn.rollback()
+        return jsonify({
+            "code": 500,
+            "data": {
+                "userID": userID,
+                "bookmark": bookmark
+            },
+            "message": "An error occurred updating the producer lists."
+        }), 500
     
 # -----------------------------------------------------------------------------------------
 # [POST] Update user bookmark
