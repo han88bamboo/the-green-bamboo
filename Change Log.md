@@ -1319,7 +1319,7 @@ Venue opening hours fix
 Nature of the changes (frontend / backend / database):
 frontend
 
-# Update as of 14 July  - deployed but with bugs on producer list
+# Update as of 14 July  - deployed 
 
 Coder: Han
 
@@ -1328,3 +1328,14 @@ partial dev for producer list
 
 Nature of the changes (frontend / backend / database):
 frontend, backend
+
+
+# Update as of 14 July  - deployed 
+
+Coder: Han
+
+Purpose of the changes:
+caching of fields for new listing submission
+
+Nature of the changes (frontend / backend / database):
+frontend

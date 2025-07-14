@@ -485,6 +485,14 @@
             };
         },
         mounted() {
+            // Restore cached form data immediately
+            const cachedForm = localStorage.getItem('cachedListingForm');
+            if (cachedForm) {
+                this.form = JSON.parse(cachedForm);
+                this.tempDrinkType = localStorage.getItem('cachedListingTempDrinkType') || "";
+                this.tempTypeCategory = localStorage.getItem('cachedListingTempTypeCategory') || "";
+                this.tempDrinkStyle = localStorage.getItem('cachedListingTempDrinkStyle') || "";
+            }
 
             // Get userID
             this.form['userID'] = localStorage.getItem('88B_accID');
@@ -508,6 +516,23 @@
             }
         },
         watch: {
+            form: {
+                handler(newData) {
+                    localStorage.setItem('cachedListingForm', JSON.stringify(newData));
+                },
+                deep: true,
+            },
+
+            tempDrinkType(newVal) {
+                localStorage.setItem('cachedListingTempDrinkType', newVal);
+            },
+            tempTypeCategory(newVal) {
+                localStorage.setItem('cachedListingTempTypeCategory', newVal);
+            },
+            tempDrinkStyle(newVal) {
+                localStorage.setItem('cachedListingTempDrinkStyle', newVal);
+            },
+
             // Watch for changes in formMode and formType to load data accordingly
             'form.bottler'(newVal) {
                 if (newVal && newVal.length >= 2) {
@@ -576,6 +601,9 @@
             
             // Function to load form data
             async loadData(){
+               
+                const cachedForm = localStorage.getItem('cachedListingForm');
+                const hasCache = !!cachedForm;
 
                 // Only run when listing detail form is required
                 if (this.formType == "power" || this.formMode == "new") {
@@ -629,6 +657,15 @@
                     if (localStorage.getItem('88B_accType') == "producer") {
                         this.getProducerName();
                     }
+
+
+                if (hasCache) {
+                    // Already restored in mounted()
+                    this.fillForm = true; // Ensure form is visible after restoring cache
+                    this.dataLoaded = true;
+                    return; // Skip the rest of loadData to avoid overwriting cached data
+                }
+
 
                     // populate "producerList" form data variable
                     // try {
@@ -896,14 +933,27 @@
 
             // Helper function to reset form (by refreshing page)
             reset(){
-                if (this.successSubmission == true && this.prevListing == true) {
-                    // Remove requestID router param from current path
-                    let newPath = this.$route.path.split("/").slice(0, -1).join("/");
-                    window.location.replace(newPath);
-                }
-                else {
-                    this.$router.go(0);
-                }
+            // Only clear cache if submission was successful
+            if (this.successSubmission == true && this.prevListing == true) {
+                localStorage.removeItem('cachedListingForm');
+                localStorage.removeItem('cachedListingTempDrinkType');
+                localStorage.removeItem('cachedListingTempTypeCategory');
+                localStorage.removeItem('cachedListingTempDrinkStyle');
+                // Remove requestID router param from current path
+                let newPath = this.$route.path.split("/").slice(0, -1).join("/");
+                window.location.replace(newPath);
+            }
+            else if (this.successSubmission == true) {
+                localStorage.removeItem('cachedListingForm');
+                localStorage.removeItem('cachedListingTempDrinkType');
+                localStorage.removeItem('cachedListingTempTypeCategory');
+                localStorage.removeItem('cachedListingTempDrinkStyle');
+                this.$router.go(0);
+            }
+            else {
+                // On error, just reload the page, keep cache
+                this.$router.go(0);
+            }
             },
 
             // Helper function to return to previous page
@@ -1263,6 +1313,10 @@
                 if (responseCode == 201) {
                     this.successSubmission = true; // Display success message
                     this.submitForm = false; // Hide submission in progress message
+                    localStorage.removeItem('cachedListingForm');
+                    localStorage.removeItem('cachedListingTempDrinkType');
+                    localStorage.removeItem('cachedListingTempTypeCategory');
+                    localStorage.removeItem('cachedListingTempDrinkStyle');
                 } else {
                     this.errorSubmission = true; // Display error message
                     this.submitForm = false; // Hide submission in progress message
