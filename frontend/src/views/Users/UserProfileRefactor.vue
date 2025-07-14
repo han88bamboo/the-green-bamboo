@@ -2544,62 +2544,6 @@
                     </div>
                   </div>
                 </div>
-              <!-- add producer modal -->
-              <div 
-                class="modal fade" 
-                id="addProducerModal" 
-                tabindex="-1" 
-                aria-labelledby="addProducerModalLabel" 
-                aria-hidden="true"
-              >
-                <div class="modal-dialog modal-dialog-centered modal-lg">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h5 class="modal-title" id="addProducerModalLabel">Add Producer to List</h5>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                      <div class="mb-3">
-                        <label for="producerSearch" class="form-label">Search for producers</label>
-                        <input type="text" class="form-control" id="producerSearch" v-model="producerSearch" 
-                               @input="searchProducerResult" placeholder="Enter producer name">
-                      </div>
-                      <div class="search-results mt-2">
-                        <div v-if="producerSearchResults.length === 0 && producerSearch.length > 0" class="text-muted">
-                          No producers found.
-                        </div>
-                        <div v-for="(producer, index) in producerSearchResults" :key="index" class="mb-2">
-                          <div class="d-flex justify-content-between align-items-center">
-                            <span>{{ producer.producerName }}</span>
-                            <button @click="selectProducer(producer.producerName)" class="btn btn-sm primary-btn-green">
-                              Add
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                      <hr />
-                      <h6 class="mb-3">Selected Producers:</h6>
-                      <div v-if="producersToAdd.length === 0" class="text-muted">
-                        No producers selected.
-                      </div>
-                      <div v-for="(producer, index) in producersToAdd" :key="index" class="mb-2">
-                        <div class="d-flex justify-content-between align-items-center">
-                          <span>{{ producer }}</span>
-                          <button @click="removeSelectedProducer(producerName)" class="btn btn-sm btn-danger">
-                            Remove
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                      <button type="button" class="btn primary-btn-green" @click="addProducerToList(currentProducerList)">
-                        Add to List
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
               </div>
 
               <!-- individual producer list tab -->
@@ -2682,6 +2626,63 @@
                     >
                       <i class="bi bi-trash"></i>
                     </button>
+                  </div>
+                </div>
+              
+                <!-- add producer modal -->
+                <div 
+                  class="modal fade" 
+                  id="addProducerModal" 
+                  tabindex="-1" 
+                  aria-labelledby="addProducerModalLabel" 
+                  aria-hidden="true"
+                >
+                  <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title" id="addProducerModalLabel">Add Producer to List</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                        <div class="mb-3">
+                          <label for="producerSearch" class="form-label">Search for producers</label>
+                          <input type="text" class="form-control" id="producerSearch" v-model="producerSearch" 
+                                @input="searchProducerResult" placeholder="Enter producer name">
+                        </div>
+                        <div class="search-results mt-2">
+                          <div v-if="producerSearchResults.length === 0 && producerSearch.length > 0" class="text-muted">
+                            No producers found.
+                          </div>
+                          <div v-for="(producer, index) in producerSearchResults" :key="index" class="mb-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                              <span>{{ producer.producerName }}</span>
+                              <button @click="selectProducer(producer.producerName)" class="btn btn-sm primary-btn-green">
+                                Add
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                        <hr />
+                        <h6 class="mb-3">Selected Producers:</h6>
+                        <div v-if="producersToAdd.length === 0" class="text-muted">
+                          No producers selected.
+                        </div>
+                        <div v-for="(producer, index) in producersToAdd" :key="index" class="mb-2">
+                          <div class="d-flex justify-content-between align-items-center">
+                            <span>{{ producer }}</span>
+                            <button @click="removeSelectedProducer(producerName)" class="btn btn-sm btn-danger">
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn primary-btn-green" @click="addProducerToList(currentProducerList)">
+                          Add to List
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
