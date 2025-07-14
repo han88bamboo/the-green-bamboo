@@ -262,8 +262,7 @@ CREATE TABLE "users" (
     "modType" TEXT[],
     "photo" TEXT,
     "hashedPassword" VARCHAR(255),
-    "drinkLists" JSONB,
-    "producerLists" JSONB,
+    -- "drinkLists" SERIAL, -- [!] reference "usersDrinkLists" not needed since user followlist ref users
     "joinDate" TIMESTAMP,
     -- "followLists" SERIAL, -- [!] reference "usersFollowLists"
     "firstName" VARCHAR(255),

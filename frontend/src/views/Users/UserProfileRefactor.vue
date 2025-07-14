@@ -448,49 +448,6 @@
                     </button>
                   </div>
                 </div>
-
-                <!-- display all producer lists -->
-                <div
-                  v-for="(bookmarkList, name, index) in displayUserProducerBookmarks"
-                  :key="name"
-                  style="display: flex"
-                  class="row mb-3"
-                >
-                  <div class="col-3 mobile-col-4 mobile-pe-2">
-                    <img
-                      :src="
-                        bookmarkList.listItems.length > 0
-                          ? getProducerFromID(bookmarkList.listItems[0].producerId).photo || defaultDrinkImage
-                          : defaultDrinkImage
-                      "
-                      alt=""
-                      class="bottle-img rounded me-3"
-                    />
-                  </div>
-                  <div class="col-9 mobile-col-8 mobile-ps-1">
-                    <h5
-                      class="mt-1 mobile-fs-6"
-                      style="cursor: pointer; font-weight:bold"
-                    >
-                      Producers List: {{ name }}
-                    </h5>
-                    <span v-if="bookmarkList.listItems.length > 1">
-                      {{ bookmarkList.listItems.length }} items in list
-                    </span>
-                    <span v-else>
-                      {{ bookmarkList.listItems.length }} item in list
-                    </span>
-                    <div
-                      style="
-                        max-height: 48px;
-                        overflow-y: auto;
-                        font-style: italic;
-                      "
-                    >
-                      {{ bookmarkList.listDesc }}
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
             <!-- editProfileModal end -->
@@ -1973,7 +1930,7 @@
                   data-bs-toggle="modal"
                   data-bs-target="#createNewListModal"
                 >
-                  Create New Drinks List
+                  Create New List
                 </button>
 
                 <!-- create new list modal -->
@@ -1988,7 +1945,7 @@
                     <div class="modal-content">
                       <div class="modal-header">
                         <h1 class="modal-title fs-5" id="exampleModalLabel">
-                          Create New Drinks List
+                          Create New List
                         </h1>
                         <button
                           type="button"
@@ -2053,6 +2010,115 @@
                           Save changes
                         </button>
                       </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- display all lists -->
+                <div
+                  v-for="(bookmarkList, name, index) in displayUserProducerBookmarks"
+                  :key="name"
+                  style="display: flex"
+                  class="row mb-3"
+                >
+                  <div class="col-3 mobile-col-4 mobile-pe-2">
+                    <img
+                      :src="
+                        bookmarkList.listItems.length > 0
+                          ? producers.find(p => p.id === bookmarkList.listItems[0]?.producerId)?.photo || defaultDrinkImage
+                          : defaultDrinkImage
+                      "
+                      alt=""
+                      class="bottle-img rounded me-3"
+                    />
+                  </div>
+                  <div class="col-9 mobile-col-8 mobile-ps-1">
+                    <h5
+                      class="mt-1 mobile-fs-6"
+                      @click="viewProducerList(name)"
+                      style="cursor: pointer; font-weight:bold"
+                    >
+                      Producers List: {{ name }}
+                    </h5>
+                    <span v-if="bookmarkList.listItems.length > 1">
+                      {{ bookmarkList.listItems.length }} items in list
+                    </span>
+                    <span v-else>
+                      {{ bookmarkList.listItems.length }} item in list
+                    </span>
+                    <div
+                      style="
+                        max-height: 48px;
+                        overflow-y: auto;
+                        font-style: italic;
+                      "
+                    >
+                      {{ bookmarkList.listDesc }}
+                    </div>
+                    <div style="display: flex; margin-top: auto" class="mb-1">
+                      <b
+                        ><a
+                          class="me-2 mt-2 mobile-view-hide"
+                          @click="viewProducerList(name)"
+                          href="#"
+                          style="color: #027562"
+                          >View List</a
+                        ></b
+                      >
+                      <b
+                        ><a
+                          class="me-2 mobile-view-show"
+                          @click="viewProducerList(name)"
+                          href="#"
+                          style="color: #027562"
+                          >View</a
+                        ></b
+                      >
+                      <b
+                        ><a
+                          v-if="ownProfile"
+                          class="mobile-view-hide me-2"
+                          style="color: #027562"
+                          href="#"
+                          data-bs-toggle="modal"
+                          :data-bs-target="`#editProducerListModal${index}`"
+                          @click="resetEditProducerList(name, bookmarkList.listDesc)"
+                          >Edit List</a
+                        ></b
+                      >
+                      <b
+                        ><a
+                          v-if="ownProfile"
+                          class="mobile-view-hide"
+                          href="#"
+                          style="color: #027562"
+                          data-bs-toggle="modal"
+                          :data-bs-target="`#deleteProducerListModal${index}`"
+                          >Delete List</a
+                        ></b
+                      >
+                      <b
+                        ><a
+                          v-if="ownProfile"
+                          class="mobile-view-show me-2"
+                          href="#"
+                          data-bs-toggle="modal"
+                          style="color: #027562"
+                          :data-bs-target="`#editProducerListModal${index}`"
+                          @click="resetEditProducerList(name, bookmarkList.listDesc)"
+                          >Edit</a
+                        ></b
+                      >
+                      <b
+                        ><a
+                          v-if="ownProfile"
+                          class="mobile-view-show"
+                          href="#"
+                          style="color: #027562"
+                          data-bs-toggle="modal"
+                          :data-bs-target="`#deleteProducerListModal${index}`"
+                          >Delete</a
+                        ></b
+                      >
                     </div>
                   </div>
                 </div>
@@ -2332,12 +2398,154 @@
                     </div>
                   </div>
                   <!-- modal end -->
+
+                  <!-- edit producer list modal start -->
+                  <div
+                    class="modal fade"
+                    :id="`editProducerListModal${index}`"
+                    tabindex="-1"
+                    aria-labelledby="exampleModalLabel"
+                    aria-hidden="true"
+                  >
+                    <div class="modal-dialog modal-dialog-centered">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h1 class="modal-title fs-5" id="exampleModalLabel">
+                            Edit List
+                          </h1>
+                          <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+                          ></button>
+                        </div>
+                        <div class="modal-body">
+                          <div class="mb-3">
+                            <label for="basic-url" class="form-label"
+                              >List Name</label
+                            >
+                            <div class="input-group mb-3">
+                              <input
+                                v-model="editProducerListName"
+                                type="text"
+                                class="form-control"
+                                :placeholder="name"
+                                aria-label="Username"
+                                aria-describedby="basic-addon1"
+                              />
+                            </div>
+                            <div
+                              v-if="editProducerListNameError"
+                              class="text-danger text-sm"
+                            >
+                              *{{ editProducerListNameError }}
+                            </div>
+                          </div>
+
+                          <div class="mb-3">
+                            <label for="basic-url" class="form-label"
+                              >List Description</label
+                            >
+                            <div class="input-group mb-3">
+                              <textarea
+                                v-model="editProducerListDesc"
+                                type="text"
+                                class="form-control"
+                                :placeholder="bookmarkList.listDesc"
+                                aria-label="Username"
+                                aria-describedby="basic-addon1"
+                                rows="5"
+                              ></textarea>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="modal-footer">
+                          <button
+                            type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal"
+                          >
+                            Close
+                          </button>
+                          <button
+                            type="button"
+                            class="btn btn-primary"
+                            @click="editProducerList(name)"
+                          >
+                            Save changes
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- modal end -->
+
+                  <!-- delete producer list modal start -->
+                  <div
+                    class="modal fade"
+                    :id="`deleteProducerListModal${index}`"
+                    tabindex="-1"
+                    aria-labelledby="exampleModalLabel"
+                    aria-hidden="true"
+                  >
+                    <div class="modal-dialog modal-dialog-centered">
+                      <div class="modal-content">
+                        <div class="text-end mt-2 me-2">
+                          <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"
+                          ></button>
+                        </div>
+
+                        <div class="text-center">
+                          <img
+                            src="../../../Images/Others/cancel.png"
+                            alt=""
+                            class="rounded-circle border border-dark text-center"
+                            style="width: 100px; height: 100px"
+                          />
+                          <h3>Are you sure?</h3>
+                          <br />
+                          <p>
+                            Do you really want to delete
+                            <b
+                              ><i>{{ name }}</i></b
+                            >?
+                          </p>
+                        </div>
+                        <div style="display: inline" class="text-center mb-4">
+                          <button
+                            type="button"
+                            class="btn btn-secondary me-3"
+                            data-bs-dismiss="modal"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="button"
+                            class="btn btn-danger"
+                            data-bs-dismiss="modal"
+                            @click="deleteProducerList(name)"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- modal end -->
                 </div>
                 <br>
               </div>
 
-              <!-- producer lists tab -->
-              <div v-if="activeTab == 'producer_lists'" id="producer_lists">
+              <!-- individual list tab -->
+              <div
+                v-if="activeTab == 'producer_lists'"
+                id="producer_lists"
+              >
                 <button
                   v-if="ownProfile"
                   type="button"
@@ -2372,7 +2580,7 @@
                       <div class="modal-body">
                         <div class="mb-3">
                           <label for="basic-url" class="form-label"
-                            >List Name</label
+                            >Producers List Name</label
                           >
                           <div class="input-group mb-3">
                             <input
@@ -2394,7 +2602,7 @@
 
                         <div class="mb-3">
                           <label for="basic-url" class="form-label"
-                            >List Description</label
+                            >Producers List Description</label
                           >
                           <div class="input-group mb-3">
                             <textarea
@@ -3115,6 +3323,11 @@ export default {
       editListNameError: "",
       editListDesc: "",
 
+      // Edit Producer Bookmark Variables
+      editProducerListName: "",
+      editProducerListNameError: "",
+      editProducerListDesc: "",
+
       // Add Drinks to List Variables
       excludeListingNamesList: [],
       drinksToAdd: [],
@@ -3248,7 +3461,7 @@ export default {
           this.getFlavourTag(), // added by group 3 edit profile
           this.getObservationTags(), // added by group 3 for the edit profile
           this.getUserBadges(),
-          this.getProducers(),
+          this.getProducers()
         ]);
 
         await this.getReviewsSummary();
@@ -3301,9 +3514,7 @@ export default {
 
         // get display user bookmark lists
         this.displayUserBookmarks = this.displayUser.drinkLists;
-        if (this.displayUser.producerLists) {
-          this.displayUserProducerBookmarks = this.displayUser.producerLists;
-        }
+        this.displayUserProducerBookmarks = this.displayUser.producerLists;
         console.log("Display User Bookmarks:", this.displayUserBookmarks);
         console.log("Display User Producer Bookmarks:", this.displayUserProducerBookmarks);
 
@@ -3312,9 +3523,7 @@ export default {
 
         if (this.ownProfile) {
           this.userBookmarks = this.displayUserBookmarks;
-          if (this.displayUser.producerLists) {
-            this.userProducerBookmarks = this.displayUser.producerLists;
-          }
+          this.userProducerBookmarks = this.displayUserProducerBookmarks;
           this.user = this.displayUser;
         }
 
@@ -4002,6 +4211,41 @@ export default {
       window.location.reload();
     },
 
+    async addNewProducerList() {
+      if (this.userProducerBookmarks[this.newProducerListName]) {
+        this.newProducerListNameError = "List name already exists";
+        return;
+      } else if (this.newProducerListName === "") {
+        this.newProducerListNameError = "List name cannot be empty";
+        return;
+      }
+
+      this.newProducerListNameError = "";
+      this.userProducerBookmarks[this.newProducerListName] = {};
+      this.userProducerBookmarks[this.newProducerListName].listDesc = this.newProducerListDesc;
+      this.userProducerBookmarks[this.newProducerListName].listItems = [];
+
+      try {
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/editProfile/updateProducerBookmark`,
+          {
+            userID: this.userID,
+            bookmark: this.userProducerBookmarks,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        console.log("bookmark: " + response.data);
+      } catch (error) {
+        console.error(error);
+      }
+
+      window.location.reload();
+    },
+
     // reset edit profile form
     cancelChanges() {
       this.selectedDrinks = this.user.choiceDrinks;
@@ -4427,12 +4671,6 @@ export default {
       );
     },
 
-    getProducerFromID(producerID) {
-      return this.producers.find(
-        (producer) => producer.id === parseInt(producerID)
-      );
-    },
-
     // Changes the url to the selected list
     viewList(name) {
       if (name == "lists") {
@@ -4522,19 +4760,58 @@ export default {
       window.location.reload();
     },
 
-    async addNewProducerList() {
-      if (this.userProducerBookmarks[this.newProducerListName]) {
-        this.newProducerListNameError = "List name already exists";
+    // ------------------ Producer List Functions ------------------
+    viewProducerList(name) {
+      if (name == "producer_lists") {
+        this.activeTab = "producer_lists";
+        this.$router.push(
+          "/profile/user/" +
+            this.displayUserID +
+            "/" +
+            this.displayUser.username
+        );
+      } else {
+        this.activeTab = "producer_list";
+        this.currentList = name;
+        this.$router.push(
+          "/profile/user/" +
+            this.displayUserID +
+            "/" +
+            this.displayUser.username +
+            name
+        );
+      }
+    },
+
+    resetEditProducerList(listName, listDesc) {
+      this.editProducerListName = listName;
+      this.editProducerListDesc = listDesc;
+      this.editProducerListNameError = "";
+    },
+
+    async editProducerList(currentListName) {
+      if (this.editProducerListName === "") {
+        this.editProducerListNameError = "List name cannot be empty";
         return;
-      } else if (this.newProducerListName === "") {
-        this.newProducerListNameError = "List name cannot be empty";
+      } else if (
+        this.editProducerListName !== currentListName &&
+        this.userProducerBookmarks[this.editProducerListName]
+      ) {
+        this.editProducerListNameError = "List name already exists";
         return;
       }
 
-      this.newProducerListNameError = "";
-      this.userProducerBookmarks[this.newProducerListName] = {};
-      this.userProducerBookmarks[this.newProducerListName].listDesc = this.newProducerListDesc;
-      this.userProducerBookmarks[this.newProducerListName].listItems = [];
+      this.editProducerListNameError = "";
+
+      if (this.editProducerListName !== currentListName) {
+        this.userProducerBookmarks[this.editProducerListName] = {};
+        this.userProducerBookmarks[this.editProducerListName].listDesc = this.editProducerListDesc;
+        this.userProducerBookmarks[this.editProducerListName].listItems =
+          this.userProducerBookmarks[currentListName].listItems;
+        delete this.userProducerBookmarks[currentListName];
+      }
+
+      this.userProducerBookmarks[this.editProducerListName].listDesc = this.editProducerListDesc;
 
       try {
         const response = await this.$axios.post(
@@ -4549,7 +4826,7 @@ export default {
             },
           }
         );
-        console.log("producer bookmark: " + response.data);
+        console.log("bookmark" + response.data);
       } catch (error) {
         console.error(error);
       }
@@ -4557,6 +4834,29 @@ export default {
       window.location.reload();
     },
 
+    async deleteProducerList(listName) {
+      delete this.userProducerBookmarks[listName];
+
+      try {
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/editProfile/updateProducerBookmark`,
+          {
+            userID: this.userID,
+            bookmark: this.userProducerBookmarks,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        console.log(response.data);
+      } catch (error) {
+        console.error(error);
+      }
+
+      window.location.reload();
+    },
     // ------------------ Edit Bookmark List Functions ------------------
 
     // reset form details
