@@ -988,27 +988,30 @@ def getProducersByIDs():
                 }
             ]), 404
         
-        producers_data = {}
+        producers_data = []
         for id in producer_ids:
-            cursor.execute('SELECT "id", "producerName", "photo" FROM "producers" WHERE "id" = %s', (id,))
+            cursor.execute('SELECT "id", "producerName" FROM "producers" WHERE "id" = %s', (id,))
             producer_data = cursor.fetchone()
 
             if producer_data:
-                producers_data[producer_data["id"]] = {
+                producers_data.append({
                     "id": producer_data["id"],
-                    "producerName": producer_data["producerName"],
-                    "photo": producer_data["photo"]
-                }
+                    "producerName": producer_data["producerName"]
+                })
 
         if not producers_data:
-            return jsonify(
+            return jsonify([
                 {
                     "code": 404,
                     "message": "No producers found for the provided IDs."
                 }
-            ), 404
+            ]), 404
 
-        return jsonify(producers_data), 200
+        return jsonify({
+            "code": 200,
+            "message": "Producers fetched successfully.",
+            "data": producers_data
+        }), 200
     
     except Exception as e:
         print(str(e))
