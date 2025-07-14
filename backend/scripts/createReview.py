@@ -73,15 +73,15 @@ def createReviews():
     will_recommend = raw_review.get('willRecommend')
     would_buy_again = raw_review.get('wouldBuyAgain')
 
-    if will_recommend is None:
-        will_recommend = None
-    else:
-        will_recommend = bool(will_recommend == 'true')
+    # if will_recommend is None:
+    #     will_recommend = None
+    # else:
+    #     will_recommend = bool(will_recommend == 'true')
 
-    if would_buy_again is None:
-        would_buy_again = None
-    else:
-        would_buy_again = bool(would_buy_again == 'true')
+    # if would_buy_again is None:
+    #     would_buy_again = None
+    # else:
+    #     would_buy_again = bool(would_buy_again == 'true')
 
     # Insert new venue if necessary
     venue_id = None
