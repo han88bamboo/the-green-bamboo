@@ -1398,7 +1398,7 @@ frontend
 Coder: Han
 
 Purpose of the changes:
-fixed 88b reviews on bottleListings not resolving to chinese / jap characters
+fixed 88b reviews on bottleListings not resolving to chinese / jap characters and permitting venue hours beyond midnight
 
 Nature of the changes (frontend / backend / database):
 frontend
