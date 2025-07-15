@@ -1392,3 +1392,13 @@ bottle review submission failure data caching
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 15 July  - deployed 
+
+Coder: Han
+
+Purpose of the changes:
+fixed 88b reviews on bottleListings not resolving to chinese / jap characters
+
+Nature of the changes (frontend / backend / database):
+frontend

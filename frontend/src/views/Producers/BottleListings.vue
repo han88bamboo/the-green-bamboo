@@ -3779,14 +3779,16 @@ export default {
       if (this.specified_listing["reviewLink"] != null) {
         let unformattedLink = this.specified_listing["reviewLink"];
         // extract segment after the last "/"
-        const segment = unformattedLink.substring(
+        let segment = unformattedLink.substring(
           unformattedLink.lastIndexOf("/") + 1
         );
+        // decode percent-encoded characters
+        segment = decodeURIComponent(segment);
         // split the segment by "-"
         const words = segment.split("-");
         // capitalize the first letter of each word
         const capitalizedWords = words.map(
-          (word) => word.charAt(0).toUpperCase() + word.slice(1)
+          word => /^[a-zA-Z]/.test(word) ? word.charAt(0).toUpperCase() + word.slice(1) : word
         );
         // join the words back together with spaces
         this.deepDiveLinkFormatted = capitalizedWords.join(" ");
