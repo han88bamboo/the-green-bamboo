@@ -1065,11 +1065,11 @@
             const userId = parseInt(localStorage.getItem("88B_accID"), 10);
             const userType = localStorage.getItem("88B_accType");
 
-            // 4) POST to /notifications/news to insert/update in DB
+            // 4) POST to /notifications/insertNews to insert/update in DB
             if (userId && userType) {
               try {
                 await this.$axios.post(
-                  `${process.env.VUE_APP_API_URL}/notifications/news`,
+                  `${process.env.VUE_APP_API_URL}/notifications/insertNews`,
                   { userId, userType, articles: upsertArticles }
                 );
               } catch (err) {
