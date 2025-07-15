@@ -1369,3 +1369,16 @@ Admin dashboard, some code fixes pending and online regression test needed for e
 
 Nature of the changes (frontend / backend / database):
 frontend, backend
+
+# Update as of 15 July 
+Coder: Kai 
+
+Purpose of the changes:
+- 88 Bamboo's Review on Drink Listing now pulling Article Title instead of URL 
+- Text wrap for Venue Resvation / Opening hours Details and for 88 Bamboo's Review 
+- Removed "at" for reviews
+- Removed "Venue Type" words, and just show the type in italics with a margin under before the description
+- Enlarging “Extend Review” button to widen across the page and bold and increase text size
+
+Nature of the changes (frontend / backend / database):
+frontend

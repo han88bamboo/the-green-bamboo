@@ -540,7 +540,7 @@ html {
 
 .tertiary-square-btn {
   color: whitesmoke;
-  background-color: #535c72;
+  background-color: grey;
 }
 
 .tertiary-square-btn:hover {
@@ -2056,6 +2056,9 @@ button.primary-square:hover {
 
 .text-body-secondary {
   color: black !important;
+   word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
 }
 
 .text-color-black {

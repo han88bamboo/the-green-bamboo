@@ -406,6 +406,7 @@
                                   </div>
                                   <div class="col-lg-8 col-md-12">
                                     {{ deepDiveLinkFormatted }}
+                                    {{ ogTitle[specified_listing.reviewLink] || deepDiveLinkFormatted }}
                                   </div>
                                 </div>
                               </a>
@@ -920,10 +921,11 @@
                             </div>
                           </div>
                         </div>
-
+                        
                         <input list="filteredFollowList" v-model="friendTag" class="form-control input-with-icon"
-                          id="friendTag" placeholder="Tag friends (To start tagging friends, follow them first! )"
+                          id="friendTag" placeholder="Tag friends"
                           v-on:input="updateFriendTag" />
+                        <p class="text-start fs-7" style="color:grey">To start tagging friends, follow them first!</p>
                         <datalist id="filteredFollowList">
                           <option v-for="user in filteredUsers" :key="user.id" :value="user.username">
                             {{ user.username }}
@@ -952,8 +954,8 @@
                         </div>
                         <div class="row">
                           <div class="col-6 col-md-12 d-flex justify-content-start">
-                            <button v-if="selectedLocation !== ''" class="btn text-start mb-1"
-                              style="background-color: #535c72; color: white" @click="clearLocation">
+                            <button v-if="selectedLocation !== ''" class="btn tertiary-square-btn mb-1 mobile-rating-smaller-text-2"
+                               @click="clearLocation">
                               Clear Selection
                             </button>
                           </div>
@@ -1013,7 +1015,7 @@
                   <!-- Buttons to expand -->
                   <div v-if="!extendReview" class="col justify-content-start mb-3 text-start">
                     <div class="col-md-12 text-center">
-                      <button class="btn secondary-btn-less-round btn-sm" @click="controlModal" style="color: black">
+                      <button class="btn primary-btn-less-round-blue btn-md fw-bold" style="color:white" @click="controlModal" >
                         Extend Review &#9660;
                       </button>
                     </div>
@@ -1021,7 +1023,7 @@
                   <!-- Button to collapse -->
                   <div v-if="extendReview" class="col justify-content-start mb-3 text-start">
                     <div class="col-md-12 text-center">
-                      <button class="btn secondary-btn-less-round btn-sm" @click="controlModal" style="color: black">
+                      <button class="btn primary-btn-less-round-blue btn-md fw-bold" style="color:white" @click="controlModal">
                         Condense Review &#9650;
                       </button>
                     </div>
@@ -1072,8 +1074,7 @@
                       }"></button>
                     </div>
                     <div v-if="selectedColour !== ''" class="col-md-4">
-                      <button @click="clearColour" class="btn text-start mb-1"
-                        style="background-color: #535c72; color: white">
+                      <button @click="clearColour" class="btn tertiary-square-btn mb-1 mobile-rating-smaller-text-2">
                         Clear Selection
                       </button>
                     </div>
@@ -1454,9 +1455,7 @@
                       <b>{{ review["rating"] }}</b> Stars
 
                       <!-- Location -->
-                      <span v-if="
-                        review.location !== '' && checkVenue(review.address) != ''
-                      ">
+                      <span v-if="review.location && checkVenue(review.address) !== ''">
                         at
                         <router-link
                           :to="'/profile/venue/' + review.location + '/' + getVenueNameFromID(review.location)"
@@ -1465,20 +1464,20 @@
                         </router-link>
                       </span>
 
-                      <span v-else>
-                        at
+                      <!--<span v-else> KAI REMOVED - CHECKING WITH CP ON THE NEED FOR THIS SECTION
+                        
                         <a :href="'https://www.google.com/maps/search/' +
                           review.location
                           " class="text-decoration-none text-dark" target="_blank">
-                          <b>{{ review.location }}</b>
+                          at <b>{{ review.location }}</b>
                         </a>
-                      </span>
+                      </span>-->
 
                       <!-- Tagged Friends -->
                       <span v-if="
                         review.taggedUsers && review.taggedUsers.length > 0
                       ">
-                        drank with {{ review.taggedUsers.length }} others
+                        and drank with {{ review.taggedUsers.length }} others
                       </span>
 
                       <!-- User Title -->
@@ -2502,6 +2501,7 @@ export default {
 
       // for the review cover image
       ogImage: {},
+      ogTitle: {}, // store SEO titles here
 
       // for review location
       locationOnWebsite: true,
@@ -4072,6 +4072,42 @@ export default {
       }
       else {
         return null;
+      }
+    },
+    // to get webscraped SEO title
+    getOGTitle(url) {
+      if (url != null) {
+        this.$axios({
+          url: url.startsWith("https://88bamboo.co/")
+            ? url.replace("https://88bamboo.co/", "/api/")
+            : url,
+          method: "get",
+          headers: {
+            accept: "*/*",
+          },
+        })
+          .then((res) => {
+            const html = res.data;
+
+            // Try Open Graph title first
+            const ogTitleRegex = /<meta property="og:title" content="([^"]+)"\/?>/i;
+            let match = html.match(ogTitleRegex);
+
+            // If OG title not found, fallback to <title>
+            if (!match) {
+              const titleTagRegex = /<title>(.*?)<\/title>/i;
+              match = html.match(titleTagRegex);
+            }
+
+            const title = match ? match[1] : null;
+            this.ogTitle = {
+              ...this.ogTitle,
+              [url]: title
+            };
+          })
+          .catch((err) => {
+            console.log("Error fetching title:", err);
+          });
       }
     },
 

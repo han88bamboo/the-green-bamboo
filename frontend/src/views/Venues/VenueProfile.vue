@@ -480,7 +480,7 @@
                                     <!-- [else] not editing -->
                                     <div v-else class="ps-0 pe-0">
                                         <p class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">
-                                            <strong>Venue Type:</strong> {{ targetVenue["venueType"] || "Not specified" }}
+                                            <i>{{ targetVenue["venueType"] || "" }}</i> 
                                         </p>
                                     </div>
                                 </div>
