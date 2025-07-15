@@ -3289,6 +3289,8 @@ export default {
           this.selectedLocation = selectedLocation[0].name;
           // this.selectedLocationaddress=selectedLocation[0].address
         }
+        // Clear cache when editing an existing review
+        this.clearReviewCache();
       }
 
       return specificReview;
@@ -4319,7 +4321,7 @@ export default {
     restoreReviewCache() {
         const cacheKey = `reviewCache_${this.listing_id}_${this.userID}`;
         const cached = localStorage.getItem(cacheKey);
-        if (cached) {
+        if (cached && !this.inEdit) {
           try {
             const data = JSON.parse(cached);
             // Only restore if not in edit mode (or as needed)
