@@ -2539,6 +2539,9 @@ export default {
       this.bookmarkListingID = this.listing_id;
       // Check if listing exists in database
       this.checkListingExists();
+
+      // Restore cached review data if present
+      this.restoreReviewCache();
     } catch (error) {
       console.error(error);
     }
@@ -2575,6 +2578,41 @@ export default {
         averageRating: Math.round(averageRating * 10) / 10 // Round to 1 decimal
       }
     }
+  },
+  watch: {
+    // Watch all relevant fields and cache them
+    reviewDesc: 'cacheReviewForm',
+    selectedLanguage: 'cacheReviewForm',
+    rating: 'cacheReviewForm',
+    selectedColour: 'cacheReviewForm',
+    aroma: 'cacheReviewForm',
+    taste: 'cacheReviewForm',
+    finish: 'cacheReviewForm',
+    wouldRecommend: 'cacheReviewForm',
+    wouldBuyAgain: 'cacheReviewForm',
+    selectedFlavourTags: {
+      handler: 'cacheReviewForm',
+      deep: true
+    },
+    finalSelectedFlavourTags: {
+      handler: 'cacheReviewForm',
+      deep: true
+    },
+    selectedObservations: {
+      handler: 'cacheReviewForm',
+      deep: true
+    },
+    friendTagList: {
+      handler: 'cacheReviewForm',
+      deep: true
+    },
+    showFriendTagList: {
+      handler: 'cacheReviewForm',
+      deep: true
+    },
+    selectedLocation: 'cacheReviewForm',
+    selectedLocationAddress: 'cacheReviewForm',
+    image64: 'cacheReviewForm'
   },
   methods: {
     // fetch specific listing data
@@ -3492,6 +3530,7 @@ export default {
       if (this.reviewResponseCode == 200) {
         this.successSubmission = true; // Display success message
         this.addingReview = false; // Hide submission in progress message
+        this.clearReviewCache();
       } else {
         this.errorSubmission = true; // Display error message
         this.addingReview = false; // Hide submission in progress message
@@ -3504,6 +3543,10 @@ export default {
       return response;
     },
 
+    clearReviewCache() {
+      const cacheKey = `reviewCache_${this.listing_id}_${this.userID}`;
+      localStorage.removeItem(cacheKey);
+    },
     async writeReview(submitAPI, submitData) {
       const response = await this.$axios
         .post(submitAPI, submitData)
@@ -3517,6 +3560,7 @@ export default {
       if (this.reviewResponseCode == 201) {
         this.successSubmission = true; // Display success message
         this.addingReview = false; // Hide submission in progress message
+        this.clearReviewCache(); 
       } else {
         this.errorSubmission = true; // Display error message
         this.addingReview = false; // Hide submission in progress message
@@ -3757,6 +3801,16 @@ export default {
       this.toggleError = false;
       this.inToggle = true;
     },
+
+    reset() {
+        // Restore cached review data
+        this.restoreReviewCache();
+        // Reset error flags so the modal shows the form again
+        this.errorSubmission = false;
+        this.errorMessage = false;
+        this.duplicateEntry = false;
+        this.addingReview = true;
+      },
 
     async updateToggle() {
       let responseCode = "";
@@ -4259,8 +4313,59 @@ export default {
       } catch (error) {
         console.error("Error fetching venue details:", error);
       }
-    }
-
+    },
+    restoreReviewCache() {
+        const cacheKey = `reviewCache_${this.listing_id}_${this.userID}`;
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          try {
+            const data = JSON.parse(cached);
+            // Only restore if not in edit mode (or as needed)
+            this.selectedLanguage = data.selectedLanguage || "English";
+            this.reviewDesc = data.reviewDesc || "";
+            this.rating = data.rating || 5;
+            this.selectedColour = data.selectedColour || "";
+            this.aroma = data.aroma || "";
+            this.taste = data.taste || "";
+            this.finish = data.finish || "";
+            this.wouldRecommend = data.wouldRecommend;
+            this.wouldBuyAgain = data.wouldBuyAgain;
+            this.selectedFlavourTags = data.selectedFlavourTags || [];
+            this.finalSelectedFlavourTags = data.finalSelectedFlavourTags || [];
+            this.selectedObservations = data.selectedObservations || [];
+            this.friendTagList = data.friendTagList || [];
+            this.showFriendTagList = data.showFriendTagList || [];
+            this.selectedLocation = data.selectedLocation || "";
+            this.selectedLocationAddress = data.selectedLocationAddress || "";
+            this.image64 = data.image64 || null;
+          } catch (e) {
+            // If cache is corrupted, ignore
+          }
+        }
+      },
+    cacheReviewForm() {
+        const cacheKey = `reviewCache_${this.listing_id}_${this.userID}`;
+        const data = {
+          selectedLanguage: this.selectedLanguage,
+          reviewDesc: this.reviewDesc,
+          rating: this.rating,
+          selectedColour: this.selectedColour,
+          aroma: this.aroma,
+          taste: this.taste,
+          finish: this.finish,
+          wouldRecommend: this.wouldRecommend,
+          wouldBuyAgain: this.wouldBuyAgain,
+          selectedFlavourTags: this.selectedFlavourTags,
+          finalSelectedFlavourTags: this.finalSelectedFlavourTags,
+          selectedObservations: this.selectedObservations,
+          friendTagList: this.friendTagList,
+          showFriendTagList: this.showFriendTagList,
+          selectedLocation: this.selectedLocation,
+          selectedLocationAddress: this.selectedLocationAddress,
+          image64: this.image64
+        };
+        localStorage.setItem(cacheKey, JSON.stringify(data));
+      }
   },
 };
 </script>
