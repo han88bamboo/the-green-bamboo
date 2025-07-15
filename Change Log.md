@@ -1412,3 +1412,13 @@ tweaked the rendering of bottle images on the search results
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 16 July 
+
+Coder: Han
+
+Purpose of the changes:
+ensure caching and pulling of data from listings while editing works
+
+Nature of the changes (frontend / backend / database):
+frontend

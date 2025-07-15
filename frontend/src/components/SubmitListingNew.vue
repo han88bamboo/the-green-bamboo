@@ -602,6 +602,18 @@
             // Function to load form data
             async loadData(){
                
+                console.log('SubmitListingNew.vue loadData started');
+                console.log('Form Mode:', this.formMode);
+                console.log('Listing ID from route:', this.$route.params.listingID);
+               
+                // Clear cache if editing or duplicating
+                if (this.formMode === "edit" || this.formMode === "dup") {
+                    localStorage.removeItem('cachedListingForm');
+                    localStorage.removeItem('cachedListingTempDrinkType');
+                    localStorage.removeItem('cachedListingTempTypeCategory');
+                    localStorage.removeItem('cachedListingTempDrinkStyle');
+                }
+
                 const cachedForm = localStorage.getItem('cachedListingForm');
                 const hasCache = !!cachedForm;
 
@@ -659,7 +671,8 @@
                     }
 
 
-                if (hasCache) {
+                if (hasCache && !(this.formMode === "edit" || this.formMode === "dup")) 
+                {
                     // Already restored in mounted()
                     this.fillForm = true; // Ensure form is visible after restoring cache
                     this.dataLoaded = true;
@@ -689,10 +702,14 @@
                 // Only run when editing listing / proposing edit / reporting duplicate (listingID is present in route params)
                 if (this.formMode == "edit" || this.formMode == "dup") {
                     this.form["listingID"] = this.$route.params.listingID;
+                    // Add this log:
+                    console.log('Before API call to getListing');
 
                     // Get target listing
                     try {
                         const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListing/` + this.$route.params.listingID);
+                        console.log('API Response for getListing:', response.data);
+                       
                         if (Array.isArray(response.data) && response.data.length == 0) {
                             throw "Listing not found!";
                         }
@@ -710,12 +727,30 @@
                             const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUniqueBottlersNamesID/dummy/` + this.targetListing.bottlerName);
                             this.targetListing.bottlerID = response.data.id;
                         }
+
+                        
+                        if (this.targetListing.producerID) {
+                            const producerResp = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUniqueProducersNamesID/dummy/` + this.targetListing.producerID);
+                            this.producerList = [producerResp.data];
+                            this.form['producerNew'] = producerResp.data.producerName;
+
+                            console.log('Fetched producer:', producerResp.data);
+                            console.log('producerList:', this.producerList);
+                            console.log('form[\'producerNew\']:', this.form['producerNew']);
+                        }
+                        
                         if (this.formType == "power") {
                             this.populateForm(this.targetListing);
                             this.form["officialDesc"] = this.targetListing.officialDesc;
+
+                            // Set producerNew after populateForm to ensure it is not overwritten
+                            if (this.producerList.length > 0) {
+                                this.form['producerNew'] = this.producerList[0].producerName;
+                            }
                         }
                     } 
                     catch (error) {
+                        console.log('In catch block', error);
                         console.error(error);
                     }
 
@@ -864,6 +899,8 @@
 
             // Function to populate form with previous data
             populateForm(previousData) {
+                console.log('Populating form with data:', previousData);
+               
                 this.tempDrinkType = previousData.drinkType;
                 this.getDrinkCategoryList();
 
