@@ -2561,3 +2561,8 @@ nav a.router-link-exact-active.dropdown-item {
   padding: 0.25rem 0.5rem !important; /* Adjust padding for better alignment */
   font-size: 0.875rem !important; /* 14px */
 }
+
+.form-floating>.form-control:not(:placeholder-shown) {
+  padding-top: 1.625rem !important;
+  padding-bottom: .625rem !important;
+}
