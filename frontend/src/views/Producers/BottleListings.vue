@@ -2527,62 +2527,6 @@ export default {
       venueWithDrinkList: [],
     };
   },
-  watch: {
-    reviewDesc(newData) {
-        this.updateCachedReview();
-    },
-    rating(newData) {
-        this.updateCachedReview();
-    },
-    selectedLanguage(newData) {
-        this.updateCachedReview();
-    },
-    selectedColour(newData) {
-        this.updateCachedReview();
-    },
-    image64(newData) {
-        this.updateCachedReview();
-    },
-    selectedObservations: {
-        handler(newData) {
-            this.updateCachedReview();
-        },
-        deep: true,
-    },
-    selectedFlavourTags: {
-        handler(newData) {
-            this.updateCachedReview();
-        },
-        deep: true,
-    },
-    aroma(newData) {
-        this.updateCachedReview();
-    },
-    taste(newData) {
-        this.updateCachedReview();
-    },
-    finish(newData) {
-        this.updateCachedReview();
-    },
-    wouldRecommend(newData) {
-        this.updateCachedReview();
-    },
-    wouldBuyAgain(newData) {
-        this.updateCachedReview();
-    },
-    extendReview(newData) {
-        this.updateCachedReview();
-    },
-    selectedLocation(newData) {
-        this.updateCachedReview();
-    },
-    friendTagList: {
-        handler(newData) {
-            this.updateCachedReview();
-        },
-        deep: true,
-    },
-  },
   mounted() {
     try {
       // Get the query string parameters (listing ID) from the URL
@@ -2597,40 +2541,6 @@ export default {
       this.checkListingExists();
     } catch (error) {
       console.error(error);
-    }
-
-    // Restore cached form data immediately
-    const cachedReview = localStorage.getItem('cachedReview');
-    if (cachedReview) {
-        const reviewData = JSON.parse(cachedReview);
-        this.selectedLanguage = reviewData.selectedLanguage;
-        this.reviewDesc = reviewData.reviewDesc;
-        this.rating = reviewData.rating;
-        this.selectedColour = reviewData.selectedColour;
-        this.image64 = reviewData.image64;
-        this.selectedImage = reviewData.selectedImage;
-        this.photo = reviewData.photo;
-        this.observationTags = reviewData.observationTags;
-        this.selectedObservations = reviewData.selectedObservations;
-        this.flavorTags = reviewData.flavorTags;
-        this.subTags = reviewData.subTags;
-        this.selectedFlavourTags = reviewData.selectedFlavourTags;
-        this.finalSelectedFlavourTags = reviewData.finalSelectedFlavourTags;
-        this.aroma = reviewData.aroma;
-        this.taste = reviewData.taste;
-        this.finish = reviewData.finish;
-        this.wouldRecommend = reviewData.wouldRecommend;
-        this.wouldBuyAgain = reviewData.wouldBuyAgain;
-        this.extendReview = reviewData.extendReview;
-        this.locationOptions = reviewData.locationOptions;
-        this.locationSearchTerm = reviewData.locationSearchTerm;
-        this.tagLocation = reviewData.tagLocation;
-        this.selectedLocation = reviewData.selectedLocation;
-        this.selectedLocationAddress = reviewData.selectedLocationAddress;
-        this.selectedLocationId = reviewData.selectedLocationId;
-        this.extendObservation = reviewData.extendObservation;
-        this.friendTagList = reviewData.friendTagList;
-        this.showFriendTagList = reviewData.showFriendTagList;
     }
   },
   computed: {
@@ -3507,40 +3417,6 @@ export default {
       this.writeReview(submitAPI, submitData);
     },
 
-    updateCachedReview() {
-        const reviewData = {
-            selectedLanguage: this.selectedLanguage,
-            reviewDesc: this.reviewDesc,
-            rating: this.rating,
-            selectedColour: this.selectedColour,
-            image64: this.image64,
-            selectedImage: this.selectedImage,
-            photo: this.photo,
-            observationTags: this.observationTags,
-            selectedObservations: this.selectedObservations,
-            flavorTags: this.flavorTags,
-            subTags: this.subTags,
-            selectedFlavourTags: this.selectedFlavourTags,
-            finalSelectedFlavourTags: this.finalSelectedFlavourTags,
-            aroma: this.aroma,
-            taste: this.taste,
-            finish: this.finish,
-            wouldRecommend: this.wouldRecommend,
-            wouldBuyAgain: this.wouldBuyAgain,
-            extendReview: this.extendReview,
-            locationOptions: this.locationOptions,
-            locationSearchTerm: this.locationSearchTerm,
-            tagLocation: this.tagLocation,
-            selectedLocation: this.selectedLocation,
-            selectedLocationAddress: this.selectedLocationAddress,
-            selectedLocationId: this.selectedLocationId,
-            extendObservation: this.extendObservation,
-            friendTagList: this.friendTagList,
-            showFriendTagList: this.showFriendTagList,
-        };
-        localStorage.setItem('cachedReview', JSON.stringify(reviewData));
-    },
-
     editReview() {
       if (this.reviewDesc.length < 20) {
         this.reviewDescError =
@@ -3616,7 +3492,6 @@ export default {
       if (this.reviewResponseCode == 200) {
         this.successSubmission = true; // Display success message
         this.addingReview = false; // Hide submission in progress message
-        localStorage.removeItem('cachedReview');
       } else {
         this.errorSubmission = true; // Display error message
         this.addingReview = false; // Hide submission in progress message
@@ -3642,7 +3517,6 @@ export default {
       if (this.reviewResponseCode == 201) {
         this.successSubmission = true; // Display success message
         this.addingReview = false; // Hide submission in progress message
-        localStorage.removeItem('cachedReview');
       } else {
         this.errorSubmission = true; // Display error message
         this.addingReview = false; // Hide submission in progress message
@@ -3813,45 +3687,6 @@ export default {
     // view detailed review
     updateDetailedReview(review) {
       this.detailedReview = review;
-    },
-
-    reset() {
-        this.errorSubmission = false;
-        this.addingReview = true;
-        this.errorMessage = false;
-        this.duplicateEntry = false;
-        const cachedReview = localStorage.getItem('cachedReview');
-        if (cachedReview) {
-            const reviewData = JSON.parse(cachedReview);
-            this.selectedLanguage = reviewData.selectedLanguage;
-            this.reviewDesc = reviewData.reviewDesc;
-            this.rating = reviewData.rating;
-            this.selectedColour = reviewData.selectedColour;
-            this.image64 = reviewData.image64;
-            this.selectedImage = reviewData.selectedImage;
-            this.photo = reviewData.photo;
-            this.observationTags = reviewData.observationTags;
-            this.selectedObservations = reviewData.selectedObservations;
-            this.flavorTags = reviewData.flavorTags;
-            this.subTags = reviewData.subTags;
-            this.selectedFlavourTags = reviewData.selectedFlavourTags;
-            this.finalSelectedFlavourTags = reviewData.finalSelectedFlavourTags;
-            this.aroma = reviewData.aroma;
-            this.taste = reviewData.taste;
-            this.finish = reviewData.finish;
-            this.wouldRecommend = reviewData.wouldRecommend;
-            this.wouldBuyAgain = reviewData.wouldBuyAgain;
-            this.extendReview = reviewData.extendReview;
-            this.locationOptions = reviewData.locationOptions;
-            this.locationSearchTerm = reviewData.locationSearchTerm;
-            this.tagLocation = reviewData.tagLocation;
-            this.selectedLocation = reviewData.selectedLocation;
-            this.selectedLocationAddress = reviewData.selectedLocationAddress;
-            this.selectedLocationId = reviewData.selectedLocationId;
-            this.extendObservation = reviewData.extendObservation;
-            this.friendTagList = reviewData.friendTagList;
-            this.showFriendTagList = reviewData.showFriendTagList;
-        }
     },
 
     reloadRoute() {
