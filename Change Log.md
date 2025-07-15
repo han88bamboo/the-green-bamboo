@@ -1350,3 +1350,13 @@ recent activity copied over to userProfileRefactor.vue
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 15 July  - deployed 
+
+Coder: Han
+
+Purpose of the changes:
+news notifications
+
+Nature of the changes (frontend / backend / database):
+frontend
