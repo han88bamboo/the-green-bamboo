@@ -244,6 +244,12 @@ const routes = [
   },
 
   {
+    path: "/admin/dashboard2",
+    name: "admindashboard2",
+    component: () => import("../views/Admin/AdminDashboard_refac.vue"),
+  },
+
+  {
     path: "/admin/importListings",
     name: "adminimportlistings",
     component: () => import("../views/Admin/ImportListings.vue"),
