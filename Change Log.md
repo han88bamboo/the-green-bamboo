@@ -1360,3 +1360,12 @@ news notifications
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 15 July 
+Coder: MS 
+
+Purpose of the changes:
+Admin dashboard, some code fixes pending and online regression test needed for existing components.
+
+Nature of the changes (frontend / backend / database):
+frontend, backend

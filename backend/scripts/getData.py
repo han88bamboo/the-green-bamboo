@@ -1765,6 +1765,379 @@ def getReviews(id):
         return jsonify({"code": 500, "message": "An error occurred while fetching recently added listings."}), 500
 
 
+# [GET] Admin dashboard review statistics
+@blueprint.route("/getSignupStats", methods=['GET'])
+def getSignupStats():
+    conn = g.db
+    # Get the date parameters from query string
+    start_date = request.args.get('startDate')
+    end_date = request.args.get('endDate')
+
+    # Convert ISO dates to date strings for better compatibility
+    from datetime import datetime
+    if start_date and end_date:
+        start_date_obj = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+        end_date_obj = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+        
+        start_date_str = start_date_obj.strftime('%Y-%m-%d')
+        end_date_str = end_date_obj.strftime('%Y-%m-%d')
+    else:
+        return jsonify({"error": "startDate and endDate parameters are required"}), 400
+
+
+    try: 
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            # Get total reviews count
+            total_sql = """
+                SELECT 
+                    'Total Signups' as category,
+                    (
+                        COALESCE((SELECT COUNT(*) FROM "users" 
+                                WHERE "joinDate" IS NOT NULL 
+                                AND ("isAdmin" IS FALSE OR "isAdmin" IS NULL)
+                                AND DATE("joinDate") BETWEEN %s AND %s), 0) +
+                        COALESCE((SELECT COUNT(*) FROM "venues" 
+                                WHERE "claimStatusCheckDate" IS NOT NULL
+                                AND DATE("claimStatusCheckDate") BETWEEN %s AND %s), 0) +
+                        COALESCE((SELECT COUNT(*) FROM "producers" 
+                                WHERE "claimStatusCheckDate" IS NOT NULL
+                                AND DATE("claimStatusCheckDate") BETWEEN %s AND %s), 0)
+                    ) as "total_count";
+            """
+            cursor.execute(total_sql, (start_date_str, end_date_str, start_date_str, 
+                                       end_date_str, start_date_str, end_date_str))
+            total_result = cursor.fetchone()
+            total_signups = total_result['total_count'] if total_result else 0
+            
+            # Get daily signup data with cumulative counts and fill missing dates with 0
+            sql = """
+                WITH daily_signups AS (
+                    SELECT
+                        DATE("joinDate") as signup_date,
+                        'users' as entity_type,
+                        COUNT(*) as daily_count
+                    FROM "users"
+                    WHERE "joinDate" IS NOT NULL AND ("isAdmin" IS FALSE OR "isAdmin" IS NULL)
+                    AND DATE("joinDate") BETWEEN %s AND %s
+                    GROUP BY DATE("joinDate")
+
+                    UNION ALL
+
+                    SELECT
+                        DATE("claimStatusCheckDate") as signup_date,
+                        'venues' as entity_type,
+                        COUNT(*) as daily_count
+                    FROM "venues"
+                    WHERE "claimStatusCheckDate" IS NOT NULL
+                    AND DATE("claimStatusCheckDate") BETWEEN %s AND %s
+                    GROUP BY DATE("claimStatusCheckDate")
+
+                    UNION ALL
+
+                    SELECT
+                        DATE("claimStatusCheckDate") as signup_date,
+                        'producers' as entity_type,
+                        COUNT(*) as daily_count
+                    FROM "producers"
+                    WHERE "claimStatusCheckDate" IS NOT NULL
+                    AND DATE("claimStatusCheckDate") BETWEEN %s AND %s
+                    GROUP BY DATE("claimStatusCheckDate")
+                ),
+                all_dates AS (
+                    SELECT generate_series(
+                        %s::date,
+                        %s::date,
+                        '1 day'::interval
+                    )::date as signup_date
+                ),
+                entity_types AS (
+                    SELECT unnest(ARRAY['users', 'venues', 'producers']) as entity_type
+                ),
+                complete_data AS (
+                    SELECT
+                        ad.signup_date,
+                        et.entity_type,
+                        COALESCE(ds.daily_count, 0) as daily_count
+                    FROM all_dates ad
+                    CROSS JOIN entity_types et
+                    LEFT JOIN daily_signups ds ON ad.signup_date = ds.signup_date
+                                              AND et.entity_type = ds.entity_type
+                )
+                SELECT
+                    signup_date,
+                    entity_type,
+                    daily_count,
+                    SUM(daily_count) OVER (
+                        PARTITION BY entity_type
+                        ORDER BY signup_date
+                        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+                    ) as cumulative_count
+                FROM complete_data
+                ORDER BY signup_date DESC, entity_type;
+            """
+            cursor.execute(sql, (start_date_str, end_date_str, start_date_str, end_date_str, 
+                                 start_date_str, end_date_str, start_date_str, end_date_str))
+            all_data = cursor.fetchall()
+
+            qualified_sql = """
+                SELECT COUNT(*) AS "qualified_user_count"
+                FROM (
+                SELECT 
+                    "userID"
+                FROM "pointsRecorder"
+                WHERE "userType" = 'user'
+                GROUP BY "userID"
+                HAVING SUM("currentPoints") >= 100
+                ) AS sub;
+            """
+            cursor.execute(qualified_sql)
+            qualified_user = cursor.fetchone()
+            
+            # Process data by entity type
+            users_data = []
+            venues_data = []
+            producers_data = []
+            
+            for row in all_data:
+                data_point = {
+                    "date": str(row['signup_date']), 
+                    "count": row['daily_count'],
+                    "cumulative_count": row['cumulative_count']
+                }
+                
+                if row['entity_type'] == 'users':
+                    users_data.append(data_point)
+                elif row['entity_type'] == 'venues':
+                    venues_data.append(data_point)
+                elif row['entity_type'] == 'producers':
+                    producers_data.append(data_point)
+            
+            signup_data = {
+                "total_signups": total_signups,
+                "users": users_data,
+                "producers": producers_data,
+                "venues": venues_data,
+                "qualified_user": qualified_user['qualified_user_count']
+            }
+            
+            return jsonify(signup_data)
+            
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        # Log the error appropriately
+        print(f"Error in getReviews: {str(e)}")
+        return jsonify({"error": "Failed to fetch review statistics"}), 500
+
+
+# [GET] Admin dashboard review statistics
+@blueprint.route("/getReviewStats", methods=['GET'])
+def getReviewStats():
+    conn = g.db
+
+    # Get the date parameters from query string
+    start_date = request.args.get('startDate')
+    end_date = request.args.get('endDate')
+
+    # Convert ISO dates to date strings for better compatibility
+    from datetime import datetime
+    if start_date and end_date:
+        start_date_obj = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+        end_date_obj = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+        
+        start_date_str = start_date_obj.strftime('%Y-%m-%d')
+        end_date_str = end_date_obj.strftime('%Y-%m-%d')
+    else:
+        return jsonify({"error": "startDate and endDate parameters are required"}), 400
+
+    try: 
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            # Single query to get all stats
+            combined_sql = """
+                SELECT 
+                  COALESCE((
+                    SELECT COUNT(*) FROM "reviews"
+                        WHERE DATE("createdDate") BETWEEN %s AND %s), 0) AS user_review,
+                  COALESCE((
+                    SELECT COUNT(*) FROM "producerReviews"
+                        WHERE DATE("createdDate") BETWEEN %s AND %s), 0) AS producer_review,
+                  COALESCE((
+                    SELECT COUNT(*) FROM "venueReviews"
+                        WHERE DATE("createdDate") BETWEEN %s AND %s), 0) AS venue_review,
+                  COALESCE((
+                    SELECT COUNT(*) FROM "listings"
+                        WHERE DATE("addedDate") BETWEEN %s AND %s), 0) AS total_listings,
+                  COALESCE((
+                    SELECT COUNT(*) FROM "clubs" 
+                        WHERE "totalMembers" >= 2
+                        AND DATE("dateCreated") BETWEEN %s AND %s), 0) AS total_clubs;
+            """
+            cursor.execute(combined_sql, (start_date_str, end_date_str, start_date_str, end_date_str, 
+                                 start_date_str, end_date_str, start_date_str, end_date_str, start_date_str, end_date_str))
+            final_result = cursor.fetchone() or {}
+
+        return jsonify(final_result), 200
+    
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+# [GET] Admin dashboard business claimed status 
+@blueprint.route("/getClaimStats", methods=['GET'])
+def getClaimStats():
+    conn = g.db
+    
+    # Get the date parameters from query string
+    start_date = request.args.get('startDate')
+    end_date = request.args.get('endDate')
+
+    # Convert ISO dates to date strings for better compatibility
+    from datetime import datetime
+    if start_date and end_date:
+        start_date_obj = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+        end_date_obj = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+        
+        start_date_str = start_date_obj.strftime('%Y-%m-%d')
+        end_date_str = end_date_obj.strftime('%Y-%m-%d')
+    else:
+        return jsonify({"error": "startDate and endDate parameters are required"}), 400
+    
+    try: 
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            # Single query to get both venues and producers stats
+            # combined_sql = """
+            #     SELECT
+            #         -- Venues percentages
+            #         ROUND(
+            #             ((SELECT COUNT(CASE WHEN "claimStatus" = TRUE THEN 1 END) FROM "venues") * 100.0 /
+            #              NULLIF((SELECT COUNT(CASE WHEN "claimStatus" IS NOT NULL THEN 1 END) FROM "venues"), 0)), 2
+            #         ) as venues_claimed_percentage,
+            #         ROUND(
+            #             ((SELECT COUNT(CASE WHEN "claimStatus" = FALSE THEN 1 END) FROM "venues") * 100.0 /
+            #              NULLIF((SELECT COUNT(CASE WHEN "claimStatus" IS NOT NULL THEN 1 END) FROM "venues"), 0)), 2
+            #         ) as venues_unclaimed_percentage,
+            #         -- Producers percentages
+            #         ROUND(
+            #             ((SELECT COUNT(CASE WHEN "claimStatus" = TRUE THEN 1 END) FROM "producers") * 100.0 /
+            #              NULLIF((SELECT COUNT(CASE WHEN "claimStatus" IS NOT NULL THEN 1 END) FROM "producers"), 0)), 2
+            #         ) as producers_claimed_percentage,
+            #         ROUND(
+            #             ((SELECT COUNT(CASE WHEN "claimStatus" = FALSE THEN 1 END) FROM "producers") * 100.0 /
+            #              NULLIF((SELECT COUNT(CASE WHEN "claimStatus" IS NOT NULL THEN 1 END) FROM "producers"), 0)), 2
+            #         ) as producers_unclaimed_percentage;
+            # """
+            combined_sql = """
+                WITH venues_filtered AS (
+                    SELECT "claimStatus"
+                    FROM "venues"
+                    WHERE DATE("claimStatusCheckDate") BETWEEN %s AND %s
+                    AND "claimStatus" IS NOT NULL
+                ),
+                producers_filtered AS (
+                    SELECT "claimStatus"
+                    FROM "producers"
+                    WHERE DATE("claimStatusCheckDate") BETWEEN %s AND %s
+                    AND "claimStatus" IS NOT NULL
+                ),
+                venue_stats AS (
+                    SELECT 
+                        COUNT(CASE WHEN "claimStatus" = TRUE THEN 1 END) as claimed_count,
+                        COUNT(CASE WHEN "claimStatus" = FALSE THEN 1 END) as unclaimed_count,
+                        COUNT(*) as total_count
+                    FROM venues_filtered
+                ),
+                producer_stats AS (
+                    SELECT 
+                        COUNT(CASE WHEN "claimStatus" = TRUE THEN 1 END) as claimed_count,
+                        COUNT(CASE WHEN "claimStatus" = FALSE THEN 1 END) as unclaimed_count,
+                        COUNT(*) as total_count
+                    FROM producers_filtered
+                )
+                SELECT
+                    COALESCE(ROUND((v.claimed_count * 100.0 / NULLIF(v.total_count, 0)), 2), 0) as venues_claimed_percentage,
+                    COALESCE(ROUND((v.unclaimed_count * 100.0 / NULLIF(v.total_count, 0)), 2), 0) as venues_unclaimed_percentage,
+                    COALESCE(ROUND((p.claimed_count * 100.0 / NULLIF(p.total_count, 0)), 2), 0) as producers_claimed_percentage,
+                    COALESCE(ROUND((p.unclaimed_count * 100.0 / NULLIF(p.total_count, 0)), 2), 0) as producers_unclaimed_percentage
+                FROM venue_stats v, producer_stats p;
+            """
+            cursor.execute(combined_sql, (
+                start_date_str, end_date_str,  # venues date range
+                start_date_str, end_date_str   # producers date range
+            ))
+            result = cursor.fetchone() or {}
+
+            # Format the result as requested (numeric values)
+            final_result = {
+                'venues': {
+                    'claimed': result.get('venues_claimed_percentage', 0),
+                    'unclaimed': result.get('venues_unclaimed_percentage', 0)
+                },
+                'producers': {
+                    'claimed': result.get('producers_claimed_percentage', 0),
+                    'unclaimed': result.get('producers_unclaimed_percentage', 0)
+                }
+            }
+
+        return jsonify(final_result), 200
+    
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+@blueprint.route("/getFutureEventsCount", methods=['GET'])
+def getFutureEventsCount():
+    conn = g.db
+    
+    # Get the date parameters from query string
+    start_date = request.args.get('startDate')
+    end_date = request.args.get('endDate')
+
+    # Convert ISO dates to date strings for better compatibility
+    from datetime import datetime
+    if start_date and end_date:
+        start_date_obj = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+        end_date_obj = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+        
+        start_date_str = start_date_obj.strftime('%Y-%m-%d')
+        end_date_str = end_date_obj.strftime('%Y-%m-%d')
+    else:
+        return jsonify({"error": "startDate and endDate parameters are required"}), 400
+    
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            count_sql = """
+                SELECT 
+                    (SELECT COUNT(*)
+                        FROM "events" 
+                        WHERE DATE("eventStartDate") BETWEEN %s AND %s
+                    ) as active_events_count, 
+                    (SELECT COUNT(*) FROM "events" WHERE DATE("createdDate") BETWEEN %s AND %s
+                    ) as all_events_count
+            """
+            cursor.execute(count_sql, (
+                start_date_str, end_date_str,  # venues date range
+                start_date_str, end_date_str   # producers date range
+            ))
+            result = cursor.fetchone() or {}
+            
+            # Format the result as requested (numeric values)
+            final_result = {
+                'active_events_count': result.get('active_events_count', 0),
+                'all_events_count': result.get('all_events_count', 0)
+            }
+
+            return jsonify(final_result), 200
+    
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
 # [POST] Reviews by listing IDs
 @blueprint.route("/getReviewsByListingIDs", methods=['POST'])
 def getReviewsByListingIDs():
@@ -3498,6 +3871,7 @@ def getFlavourTags():
         return jsonify([])
 
     return jsonify(flavour_tags_data)
+
 # -----------------------------------------------------------------------------------------
 # [GET] subTags
 @blueprint.route("/getSubTags")
