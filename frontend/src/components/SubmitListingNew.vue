@@ -484,7 +484,7 @@
                 },
             };
         },
-        mounted() {
+        async mounted() {
             // Restore cached form data immediately
             const cachedForm = localStorage.getItem('cachedListingForm');
             if (cachedForm) {
@@ -509,10 +509,10 @@
 
             // Power user check
             if (this.formType == "power") {
-                this.checkPower();
+                await this.checkPower();
             } else {
                 // Load data
-                this.loadData();
+                await this.loadData();
             }
         },
         watch: {
@@ -710,10 +710,10 @@
                             const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUniqueBottlersNamesID/dummy/` + this.targetListing.bottlerName);
                             this.targetListing.bottlerID = response.data.id;
                         }
-                        // if (this.formType == "power") {
-                        //     this.populateForm(this.targetListing);
-                        //     this.form["officialDesc"] = this.targetListing.officialDesc;
-                        // }
+                        if (this.formType == "power") {
+                            this.populateForm(this.targetListing);
+                            this.form["officialDesc"] = this.targetListing.officialDesc;
+                        }
                     } 
                     catch (error) {
                         console.error(error);
