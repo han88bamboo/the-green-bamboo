@@ -1402,3 +1402,13 @@ fixed 88b reviews on bottleListings not resolving to chinese / jap characters an
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 15 July 
+
+Coder: Kai
+
+Purpose of the changes:
+tweaked the rendering of bottle images on the search results 
+
+Nature of the changes (frontend / backend / database):
+frontend
