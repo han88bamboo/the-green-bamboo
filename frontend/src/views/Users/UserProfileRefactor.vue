@@ -1954,13 +1954,136 @@
                   displayName="Favourite Listings"
                   columnWidth="165px"
                 />
+                
+                <h5 class="text-body-secondary text-start py-2">
+                  <b> Recent Activity </b>
+                </h5>
+                <div>
+                  <div class="square-inline pb-2">
+                      <h5 class="square-inline text-start mr-auto">Your Recent Activity</h5>
+                  </div>
+                  <div class="feed-body">
+                      <!-- Loading State -->
+                      <div v-if="loadingRecentUserActivity" class="text-center py-2">
+                          <div class="spinner-border spinner-border-sm text-dark me-2" role="status">
+                              <span class="visually-hidden">Loading...</span>
+                          </div>
+                          <span class="text-muted fst-italic">Loading recent activity...</span>
+                      </div>
 
-                <ListingRowDisplayUserProfile
-                  :listingArr="recentActivity"
-                  :producers="producers"
-                  displayName="Recent Activity"
-                  columnWidth="165px"
-                />
+                      <!-- Error State -->
+                      <div v-else-if="errorRecentUserActivity" class="text-center py-2">
+                          <div class="text-danger">
+                              <i class="fas fa-exclamation-triangle me-2"></i>
+                              {{ errorRecentUserActivity }}
+                          </div>
+                      </div>
+
+                      <!-- Empty State -->
+                      <div v-else-if="!recentUserActivity || recentUserActivity.length === 0" class="text-muted fst-italic">
+                          No recent activity.
+                      </div>
+
+                      <!-- Activity List -->
+                      <div v-else class="overflow-auto" style="max-height: 100%;">
+                          <div v-for="activity in recentUserActivity" :key="activity.id || activity.date" class="py-2">
+                              <!-- Your Activity -->
+                              <div v-if="activity.type === 'review'">
+                                  <i>You rated <b><router-link :to="listingUrl(activity)" class="clickable-text"><u>{{ activity.listingName }}</u></router-link> <span style="color: #F0B358">{{ activity.rating }} stars</span></b> {{ getTimeDifference(activity.date) }}</i>
+                              </div>
+                              <div v-else-if="activity.type === 'list_add'">
+                                  <i>You added <b><router-link :to="listingUrl(activity)" class="clickable-text"><u>{{ activity.listingName }}</u></router-link></b> to your list: <b><router-link :to="listUrl(activity)" class="clickable-text"><u><span style="color: #F0B358;">{{ activity.listName }}</span></u></router-link></b><br />{{ getTimeDifference(activity.date) }}</i>
+                              </div>
+                              <div v-if="activity.type === 'follow'">
+                                <i>
+                                  You are now following
+                                  <router-link :to="profileUrl(activity)" class="reverse-clickable-text">
+                                    @<b>{{ activity.username }}</b>
+                                  </router-link>
+                                  {{ getTimeDifference(activity.date) }}
+                                </i>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+                </div>
+                <div>
+                  <div class="square-inline pb-2">
+                      <h5 class="square-inline text-start mr-auto">Recent Activity on Your Reviews</h5>
+                  </div>
+                  <div class="feed-body">
+                      <!-- Loading State -->
+                      <div v-if="loadingRecentReviewsActivity" class="text-center py-2">
+                          <div class="spinner-border spinner-border-sm text-dark me-2" role="status">
+                              <span class="visually-hidden">Loading...</span>
+                          </div>
+                          <span class="text-muted fst-italic">Loading recent activity...</span>
+                      </div>
+
+                      <!-- Error State -->
+                      <div v-else-if="errorRecentReviewsActivity" class="text-center py-2">
+                          <div class="text-danger">
+                              <i class="fas fa-exclamation-triangle me-2"></i>
+                              {{ errorRecentReviewsActivity }}
+                          </div>
+                      </div>
+
+                      <!-- Empty State -->
+                      <div v-else-if="!recentReviewsActivity || recentReviewsActivity.length === 0" class="text-muted fst-italic">
+                          No recent activity.
+                      </div>
+
+                      <!-- Activity List -->
+                      <div v-else class="overflow-auto" style="max-height: 100%;">
+                          <div v-for="activity in recentReviewsActivity" :key="activity.id || activity.date" class="py-2">
+                              <!-- Activity on Your Reviews -->
+                              <div v-if="activity.type === 'upvote' || activity.type === 'downvote'">
+                                  <i><router-link :to="profileUrl(activity)" class="clickable-text">@<b>{{ activity.username }}</b></router-link> <span :style="{ color: activity.type === 'upvote' ? '#90ee90' : '#ff7f7f' }">{{ activity.type }}d</span> your review of <router-link :to="listingUrl(activity, activity.reviewTarget)" class="clickable-text"><u>{{ activity.listingName }}</u></router-link> {{ getTimeDifference(activity.date) }}</i>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+                </div>
+                <div>
+                  <div class="square-inline pb-2">
+                      <h5 class="square-inline text-start mr-auto">Recent Activity from Your Followers</h5>
+                  </div>
+                  <div class="feed-body">
+                      <!-- Loading State -->
+                      <div v-if="loadingRecentFollowersActivity" class="text-center py-2">
+                          <div class="spinner-border spinner-border-sm text-dark me-2" role="status">
+                              <span class="visually-hidden">Loading...</span>
+                          </div>
+                          <span class="text-muted fst-italic">Loading recent activity...</span>
+                      </div>
+
+                      <!-- Error State -->
+                      <div v-else-if="errorRecentFollowersActivity" class="text-center py-2">
+                          <div class="text-danger">
+                              <i class="fas fa-exclamation-triangle me-2"></i>
+                              {{ errorRecentFollowersActivity }}
+                          </div>
+                      </div>
+
+                      <!-- Empty State -->
+                      <div v-else-if="!recentFollowersActivity || recentFollowersActivity.length === 0" class="text-muted fst-italic">
+                          No recent activity.
+                      </div>
+
+                      <!-- Activity List -->
+                      <div v-else class="overflow-auto" style="max-height: 100%;">
+                          <div v-for="activity in recentFollowersActivity" :key="activity.id || activity.date" class="py-2">
+                              <!-- Follower Activity -->
+                              <div v-if="activity.type === 'follow'">
+                                  <i><router-link :to="profileUrl(activity)" class="clickable-text">@<b>{{ activity.username }}</b></router-link> started following you {{ getTimeDifference(activity.date) }}</i>
+                              </div>
+                              <div v-else-if="activity.type === 'tag'">
+                                  <i><router-link :to="profileUrl(activity)" class="clickable-text">@<b>{{ activity.username }}</b></router-link> tagged you in a review on <router-link :to="listingUrl(activity)" class="clickable-text"><u>{{ activity.listingName }}</u></router-link> {{ getTimeDifference(activity.date) }}</i>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+                </div>
                 <br>
               </div>
 
@@ -3287,7 +3410,15 @@ export default {
       top5ListingsData: [], // contains top 5 listings data
 
       // Recent Activity information
-      recentActivity: [],
+      recentUserActivity: [],
+      recentReviewsActivity: [],
+      recentFollowersActivity: [],
+      loadingRecentUserActivity: false,
+      loadingRecentReviewsActivity: false,
+      loadingRecentFollowersActivity: false,
+      errorRecentUserActivity: null,
+      errorRecentReviewsActivity: null,
+      errorRecentFollowersActivity: null,
 
       // Add or remove moderator variables
       successRemoveMod: false,
@@ -3546,6 +3677,9 @@ export default {
           this.getObservationTags(), // added by group 3 for the edit profile
           this.getUserBadges(),
           this.getProducers(),
+          this.getRecentUserActivity(),
+          this.getRecentReviewsActivity(),
+          this.getRecentFollowersActivity(),
         ]);
 
         await this.getReviewsSummary();
@@ -3773,8 +3907,53 @@ export default {
       }
     },
 
-    // Recent Activity (not implemented yet)
-    async getRecentActivity() {},
+    async getRecentUserActivity() {
+      this.loadingRecentUserActivity = true;
+      this.errorRecentUserActivity = null;
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getRecentUserActivity/${this.displayUserID}`
+        );
+        this.recentUserActivity = response.data;
+      } catch (error) {
+        console.error("Error fetching recent user activity:", error);
+        this.errorRecentUserActivity = "Failed to load recent user activity.";
+      } finally {
+        this.loadingRecentUserActivity = false;
+      }
+    },
+
+    async getRecentReviewsActivity() {
+      this.loadingRecentReviewsActivity = true;
+      this.errorRecentReviewsActivity = null;
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getRecentReviewsActivity/${this.displayUserID}`
+        );
+        this.recentReviewsActivity = response.data;
+      } catch (error) {
+        console.error("Error fetching recent reviews activity:", error);
+        this.errorRecentReviewsActivity = "Failed to load recent reviews activity.";
+      } finally {
+        this.loadingRecentReviewsActivity = false;
+      }
+    },
+
+    async getRecentFollowersActivity() {
+      this.loadingRecentFollowersActivity = true;
+      this.errorRecentFollowersActivity = null;
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getRecentFollowersActivity/${this.displayUserID}`
+        );
+        this.recentFollowersActivity = response.data;
+      } catch (error) {
+        console.error("Error fetching recent followers activity:", error);
+        this.errorRecentFollowersActivity = "Failed to load recent followers activity.";
+      } finally {
+        this.loadingRecentFollowersActivity = false;
+      }
+    },
 
     // Badges
     async getBadges() {
@@ -5428,6 +5607,61 @@ export default {
 
 
     // Edit producer list
+    slugify(text) {
+      if (!text) return '';
+      return text
+        .toString()
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^\w-]+/g, '')
+        .replace(/--+/g, '-')
+        .replace(/^-+/, '')
+        .replace(/-+$/, '');
+    },
+
+    getTimeDifference(date) { 
+        const now = new Date();
+        const target = new Date(date);
+        const diffMs = now - target;
+        
+        // Handle negative differences (future dates)
+        if (diffMs < 0) {
+            return 'in the future';
+        }
+        
+        // Time intervals in milliseconds
+        const intervals = [
+            { unit: 'year', ms: 365.25 * 24 * 60 * 60 * 1000 },
+            { unit: 'month', ms: 30.44 * 24 * 60 * 60 * 1000 },
+            { unit: 'day', ms: 24 * 60 * 60 * 1000 },
+            { unit: 'hour', ms: 60 * 60 * 1000 },
+            { unit: 'minute', ms: 60 * 1000 },
+            { unit: 'second', ms: 1000 }
+        ];
+        
+        for (const { unit, ms } of intervals) {
+            const value = Math.floor(diffMs / ms);
+            if (value > 0) {
+                return `${value} ${unit}${value === 1 ? '' : 's'} ago`;
+            }
+        }
+        
+        return 'just now';
+    },
+
+    listingUrl(activity, idOverride = null) {
+        const id = idOverride || activity.listingID;
+        return `/listing/view/${id}/${this.slugify(activity.listingName)}`;
+    },
+
+    listUrl(activity) {
+        return `/profile/user/${this.userID}/${this.slugify(activity.listName)}`;
+    },
+
+    profileUrl(activity) {
+        return `/profile/user/${activity.userID}/${this.slugify(activity.username)}`;
+    },
+
     async editProducerList(currentListName) {
       if (this.editListName === "") {
         this.editListNameError = "List name cannot be empty";
