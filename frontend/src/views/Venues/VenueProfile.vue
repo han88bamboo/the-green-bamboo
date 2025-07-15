@@ -4607,15 +4607,18 @@
                     let start = this.newOpeningHours[day][0];
                     let end = this.newOpeningHours[day][1];
                     
-                    // Check if end time is after start time
-                    // Special case: "00:00" to "00:00" means "Closed" and is valid
-                    if (start && end && start >= end && !(start === "00:00" && end === "00:00")) {
+                    // Allow "Closed"
+                    if (start && end && start === "00:00" && end === "00:00") continue;
+
+
+                    if (start && end && start >= end && !(end > "00:00" && end <= "03:00")) 
+                        {
                         this.editOpeningHoursError = true;
                         if (errorSpan) {
                             errorSpan.textContent = "Start time must be before end time!";
                             errorSpan.classList.remove('d-none');
                         }
-                    }
+                        }
                 }
             },
             
