@@ -1339,3 +1339,14 @@ caching of fields for new listing submission
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+
+# Update as of 14 July  - deployed 
+
+Coder: Han
+
+Purpose of the changes:
+recent activity copied over to userProfileRefactor.vue
+
+Nature of the changes (frontend / backend / database):
+frontend
