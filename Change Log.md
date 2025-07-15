@@ -1382,3 +1382,13 @@ Purpose of the changes:
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 15 July  - deployed 
+
+Coder: Han
+
+Purpose of the changes:
+bottle review submission failure data caching 
+
+Nature of the changes (frontend / backend / database):
+frontend
