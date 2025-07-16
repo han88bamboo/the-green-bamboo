@@ -1459,8 +1459,10 @@ frontend, backend
 Coder: MS
 
 Purpose of the changes:
-Update on cummulative counts for dashboards
-merging of admin_dashboard still a WIP as a side project for now.
+- Reworks backend endpoints and frontend components to separate and clarify business account and review statistics. 
+- Updates chart rendering logic for improved reactivity and performance, adds cumulative review and business account growth charts, and cleans up data structure usage in both backend and frontend. 
+- optimize Chart.js bundling in vue.config.js.
+- merging of admin_dashboard still a WIP as a side project for now.
 
 Nature of the changes (frontend / backend / database):
 frontend, backend

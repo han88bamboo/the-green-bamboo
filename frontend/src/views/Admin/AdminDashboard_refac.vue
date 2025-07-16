@@ -5,7 +5,7 @@
   <div class="container pt-3">
 
     <!-- Main Content -->
-    <div v-if="!isLoading && !loadError">
+    <div v-if="!loadError">
       <h1 class="fw-bold fs-1 m-0">Admin Dashboard</h1>
       
       <div>
