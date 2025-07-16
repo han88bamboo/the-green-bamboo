@@ -1386,11 +1386,14 @@
                       </svg>
                     </div>
                   </div>
-                  <!-- Display up to 5 photos -->
-                  <div v-for="review in filteredReviewsWithImages.slice(0, 5)" :key="review"
-                    class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 mobile-px-1">
-                    <img :src="review['photo'] || defaultPhoto" alt="" class="review-image" />
+                  <div
+                    v-for="review in filteredReviewsWithImages"
+                    :key="review.id"
+                    class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 mobile-px-1"
+                  >
+                    <img :src="review.photo" alt="Review photo" class="review-image" />
                   </div>
+
                 </div>
 
                 <!-- If user is not logged in -->
@@ -1822,7 +1825,7 @@
                         </div>
                         <div class="col-9">
                           <span v-for="(
-tag, index
+                            tag, index
                             ) in detailedReview.observationTag" :key="index" class="badge rounded-pill me-2"
                             style="background-color: #f0b358; color: black">{{ tag }}</span>
                           <!--tzh changed grey to #F0B358-->
@@ -3907,11 +3910,11 @@ export default {
     getFilteredReviewsWithImages() {
       let allReviews = this.filteredReviews;
       let reviewsWithImages = allReviews.filter(
-        (review) => review.photo !== null
+        (review) => review.photo && review.photo.trim() !== ''
       );
       // if reviewsWithImages more than 6, get the first 6
-      if (reviewsWithImages.length > 6) {
-        this.filteredReviewsWithImages = reviewsWithImages.slice(0, 6);
+      if (reviewsWithImages.length > 5) {
+        this.filteredReviewsWithImages = reviewsWithImages.slice(0, 5);
       } else {
         this.filteredReviewsWithImages = reviewsWithImages;
       }

@@ -315,8 +315,8 @@
                 </div>
 
                 <!-- Error message for error retrieving recommended events -->
-                <div v-if="recommendedEventsError" class="collapse d-md-block my-4" id="sidebarContent">
-                    <h5 class="mobile-fs-6">{{ recommendedEventsError }}</h5>
+                <div v-if="recommendedEventsError" class="collapse text-start d-md-block my-4" id="sidebarContent">
+                    <p class="mobile-rating-smaller-text-2 ">{{ recommendedEventsError }}</p>
                 </div>
             </div>
 

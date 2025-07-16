@@ -183,7 +183,7 @@
                         <div class="carousel-item active">
                             <div class="d-flex flex-row overflow-visible gap-1">
                                 <div v-for="(tag, index) in tags.slice(0, 3)" :key="index" class="tag-container">
-                                    <button class="btn btn-warning rounded-pill"
+                                    <button class="btn btn-warning rounded-pill mobile-rating-smaller-text-2"
                                         :class="{ selected: tag === selectedTag }" @click="goSearchTag(tag)"
                                         style="min-height: 20px">
                                         {{ tag }}

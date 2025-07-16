@@ -96,7 +96,7 @@
                             </div>
                         </div>
                         <div v-else>
-                            <p class="ms-3">No grails found for the selected drink type and category.</p>
+                            <p class="ms-3 mobile-rating-smaller-text-2">No grails found for the selected drink type and category.</p>
                         </div>
 
                     </div>
@@ -114,7 +114,7 @@
                             </div>
                         </div>
                         <div v-else>
-                            <p class="ms-3">No Up And Coming listings found for the selected drink type and category.</p>
+                            <p class="ms-3 mobile-rating-smaller-text-2">No Up And Coming listings found for the selected drink type and category.</p>
                         </div>
                 </div>
 
@@ -131,7 +131,7 @@
                             </div>
                         </div>
                         <div v-else>
-                            <p class="ms-3">No Essentials found for the selected drink type and category.</p>
+                            <p class="ms-3 mobile-rating-smaller-text-2">No Essentials found for the selected drink type and category.</p>
                         </div>
                 </div>
                 </div>

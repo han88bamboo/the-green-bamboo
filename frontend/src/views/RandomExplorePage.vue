@@ -1231,17 +1231,18 @@
                   class="mobile-ps-0 mobile-pe-0"
                 >
                   <!-- latest reviews from users the current user is following -->
-                  <h5 class="text-body-secondary text-start pt-3">
+                  <h5 class="text-body-secondary text-start pt-3 mobile-ms-2">
                     <b> Latest Reviews from Followed Users</b>
                   </h5>
                   <!-- v-loop for each review -->
                   <div class="containerS text-start">
-                    <h5
+                    <p
                       v-if="latestReviews.length == 0"
                       style="display: inline-block"
+                      class="mobile-rating-smaller-text-2 mobile-ms-2"
                     >
                       There is no listing available for the selected filter
-                    </h5>
+                    </p>
                     
                     <!-- NEW CARD LAYOUT FOR LATEST REVIEWS -->
                     <div
@@ -1398,26 +1399,28 @@
                   </div>
 
                   <!-- recently added  -->
-                  <h5 class="text-body-secondary text-start pt-3 mt-3">
+                  <h5 class="text-body-secondary text-start pt-3 mt-3 mobile-ms-2">
                     <b> Recently Added </b>
                   </h5>
                   <!-- v-loop for each listing -->
                   <div class="container text-start">
-                    <h5
+                    <p
                       v-if="recentlyAdded == ''"
                       style="display: inline-block"
+                      class="mobile-rating-smaller-text-2"
                     >
                       There is no listing available for the selected filter
-                    </h5>
-                    <h5
+                    </p>
+                    <p
                       v-if="
                         recentlyAdded == '' ||
                         (selectedDrinkType != '' && filteredRecentlyAdded == '')
                       "
                       style="display: inline-block"
+                      class="mobile-rating-smaller-text-2"
                     >
                       There is no listing available for the selected filter
-                    </h5>
+                    </p>
                     
                     <!-- NEW CARD LAYOUT FOR RECENTLY ADDED -->
                     

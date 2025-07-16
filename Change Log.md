@@ -1466,3 +1466,13 @@ Purpose of the changes:
 
 Nature of the changes (frontend / backend / database):
 frontend, backend
+
+# Update as of 16 July
+
+Coder: Kai
+
+Purpose of the changes:
+neatening up front end font sizing 
+
+Nature of the changes (frontend / backend / database):
+frontend

@@ -1467,7 +1467,7 @@
 
                         <!-- No Menu Sections to Show -->
                         <div v-if="searchMenuResults.length == 0" class="row my-4">
-                            <p class="text-center fs-5 fst-italic m-0">No menu sections to show! Try clearing your search.</p>
+                            <p class="text-center mobile-rating-smaller-text-2 fst-italic m-0">No menu sections to show! Try clearing your search.</p>
                         </div>
 
                         <!-- Message about Expanding / Collapsing Sections -->
@@ -1666,7 +1666,7 @@
 
                         <!-- No Menu Sections to Show -->
                         <div v-if="editMenu.length == 0" class="row my-4">
-                            <p class="text-center fs-5 fst-italic m-0">No menu sections to show! Click "Add New Section" to get started.</p>
+                            <p class="text-center mobile-rating-smaller-text-2 fst-italic m-0">No menu sections to show! Click "Add New Section" to get started.</p>
                         </div>
 
                         <!-- Message about Expanding / Collapsing Sections -->
