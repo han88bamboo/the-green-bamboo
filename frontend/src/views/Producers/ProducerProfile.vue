@@ -265,10 +265,60 @@
                 </router-link>
                 </div>
             </div>
-
+            <!-- Action Item 6 -->
+            <div
+                style="
+                display: flex;
+                align-items: flex-start;
+                gap: 16px;
+                margin-bottom: 16px;
+                "
+            >
+                <img
+                src="/CurateMenu.png"
+                style="
+                    width: 64px;
+                    height: 64px;
+                    object-fit: contain;
+                    border-radius: 4px;
+                "
+                alt="Claim a free venue account"
+                />
+                <div class="text-start">
+                <p class="mobile-rating-smaller-text-2 mb-2 text-start">
+                    <strong>Claim Free Venue Account</strong> A Venue Account allows you to curate an online menu and show fans what you're pouring at your bar, restaurant or bottle shop! (PS: Same brand only!)
+                </p>
+                <button
+                    class="btn btn-warning btn-sm rounded fw-bold fs-8"
+                    data-bs-toggle="modal"
+                    data-bs-target="#venueClaimModal"
+                >
+                    Claim Account
+                </button>
+                </div>
+            </div>
           </div>
         </div>
-      </div>
+        <div class="modal fade" id="venueClaimModal" tabindex="-1" aria-labelledby="venueClaimModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="venueClaimModalLabel">Claim Free Venue Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                Each Brand Account on Drink-X is entitled to claim <b>one free Venue Account</b> for a single location. Send us an email, and our team will get back to you within a few days!
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" @click="openVenueClaimEmail">
+                  Claim Account
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
 
         <!-- header -->
         <div class="row">
@@ -6223,7 +6273,31 @@ export default {
           qnaSection.classList.remove('highlight-section');
         }, 3000);
       }
-    }
+    },
+    openVenueClaimEmail() {
+    const subject = encodeURIComponent("I'd like to claim a free Venue Account");
+    const body = encodeURIComponent(
+      `Hi Drink-X Team,
+
+I hold a Brand Account. I would like to claim a free Venue Account under the same brand.
+
+Please find my details below:
+
+- Link to my existing Brand Account:
+- My Business/Venue Name: 
+- Business Description:
+- Country:
+- Official Address on Google Maps:
+- My First Name:
+- My Last Name:
+- My Relationship to Brand/Venue:
+- My Email Address:
+- My Contact Number:
+
+Thank you!`
+    );
+    window.location.href = `mailto:hellodrinkx@gmail.com?subject=${subject}&body=${body}`;
+  }
   },
 };
 </script>
