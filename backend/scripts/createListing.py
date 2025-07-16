@@ -175,9 +175,13 @@ def createListings():
             abv_value = rawBottle['abv'].replace('%', '')  # Remove the '%' sign
             rawBottle['abv'] = float(abv_value)
 
+        # uploading as base64 image
         if rawBottle['photo'] is not None and rawBottle['photo'] != "":
+            import re
             base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', rawBottle['photo'])
             rawBottle['photo'] = s3Images.uploadBase64ImageToS3(base64_string)
+        else:
+            rawBottle['photo'] = "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
 
         columns = ', '.join(f'"{col}"' for col in rawBottle.keys())
         placeholders = ', '.join(['%s'] * len(rawBottle))

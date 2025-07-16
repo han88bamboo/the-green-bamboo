@@ -1422,3 +1422,13 @@ ensure caching and pulling of data from listings while editing works
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 16 July 
+
+Coder: Han
+
+Purpose of the changes:
+ensuring admin can upload images for listings
+
+Nature of the changes (frontend / backend / database):
+frontend, backend

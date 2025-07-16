@@ -62,10 +62,11 @@ def updateListing(id):
         # If it's an existing bottle, delete the old image from S3 and upload the new one
         if existingBottle and updatedListing.get('photo'):
             try:
-                if existingBottle['photo'] is not None and existingBottle['photo'] != '':
-                    s3Images.deleteImageFromS3(existingBottle['photo'])
-                base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', updatedListing['photo'])
-                updatedListing['photo'] = s3Images.uploadBase64ImageToS3(base64_string)
+                # Upload new image if it's base64, otherwise keep as is
+                import re
+                if updatedListing['photo'].startswith('data:image'):
+                    base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', updatedListing['photo'])
+                    updatedListing['photo'] = s3Images.uploadBase64ImageToS3(base64_string)
             except Exception as e:
                 print(str(e))
                 return jsonify(
