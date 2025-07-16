@@ -200,7 +200,7 @@
 
                         <!-- Input: Independent Bottler -->
                             <div v-if="businessType=='producer'" class="row justify-content-start mb-3 text-start">
-                                <p class="text-start mb-1">Is your business an Independent Bottler? <span style="color: red;">*</span></p>
+                                <p class="text-start mb-1">Is your business an Independent Bottler? <span style="color: red;">*</span> (If you're unsure, you're most likely not an Independent Bottler — please select “No” by default.)</p>
                                 <div class="col-md-12 justify-content-between">
                                     <div class="form-check form-check-inline">
                                         <input class="form-check-input" type="radio" id="inlineCheckbox1" v-model="isIndependentBottler" :value="true" name="Yes">

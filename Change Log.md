@@ -1432,3 +1432,13 @@ ensuring admin can upload images for listings
 
 Nature of the changes (frontend / backend / database):
 frontend, backend
+
+# Update as of 16 July 
+
+Coder: Han
+
+Purpose of the changes:
+claim free brand / venue account
+
+Nature of the changes (frontend / backend / database):
+frontend
