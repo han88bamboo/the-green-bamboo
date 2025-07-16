@@ -589,18 +589,26 @@ def getListingsBySearch():
         search = f'%{searchTerm}%'
 
         # Searches for listings by name, origin country, drink type, or type category, starting from the lastID
+        # cursor.execute("""
+        #     SELECT * FROM "listings"
+        #     WHERE (
+        #         "listingName" ILIKE %s OR
+        #         "originCountry" ILIKE %s OR
+        #         "drinkType" ILIKE %s OR
+        #         "typeCategory" ILIKE %s
+        #     )
+        #     AND "id" > %s
+        #     ORDER BY "id" ASC
+        #     LIMIT 30
+        # """, (search, search, search, search, lastID))
         cursor.execute("""
-            SELECT * FROM "listings"
-            WHERE (
-                "listingName" ILIKE %s OR
-                "originCountry" ILIKE %s OR
-                "drinkType" ILIKE %s OR
-                "typeCategory" ILIKE %s
-            )
+            SELECT *, similarity("listingName", %s) as sim_score
+            FROM "listings"
+            WHERE "listingName" %% %s
             AND "id" > %s
-            ORDER BY "id" ASC
+            ORDER BY sim_score DESC
             LIMIT 30
-        """, (search, search, search, search, lastID))
+        """, (searchTerm, searchTerm, lastID))
 
         listings_data = cursor.fetchall()
 

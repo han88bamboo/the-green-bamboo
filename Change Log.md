@@ -1442,3 +1442,14 @@ claim free brand / venue account
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+
+# Update as of 16 July -deployed with no issues
+
+Coder: Han
+
+Purpose of the changes:
+update of autocomplete and search logic
+
+Nature of the changes (frontend / backend / database):
+frontend, backend

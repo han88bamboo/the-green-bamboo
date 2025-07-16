@@ -132,7 +132,9 @@ export default {
   name: 'AutocompleteSearch',
   emits: ['select'],
   setup(props, { emit }) {
-    const returnCount = 3
+    const listingsReturnCount = 6
+    const venuesReturnCount = 3
+    const producersReturnCount = 3
     const searchInput = ref(null)
     const searchQuery = ref('')
     const showResults = ref(false)
@@ -168,7 +170,7 @@ export default {
 
     // API calls
     const getBottleListings = async (query, signal) => {
-      const api_endpoint = `${process.env.VUE_APP_API_URL}/getData/bottle-listings?q=${encodeURIComponent(query)}&limit=${returnCount}`
+      const api_endpoint = `${process.env.VUE_APP_API_URL}/getData/bottle-listings?q=${encodeURIComponent(query)}&limit=${listingsReturnCount}`
       const response = await fetch(api_endpoint, {
         signal,
       })
@@ -186,7 +188,7 @@ export default {
 
     const getVenueListings = async (query, signal) => {
       // Replace with your actual API endpoint get_venue_listings
-      const response = await fetch(`${process.env.VUE_APP_API_URL}/getData/venue-listings?q=${encodeURIComponent(query)}&limit=${returnCount}`, {
+      const response = await fetch(`${process.env.VUE_APP_API_URL}/getData/venue-listings?q=${encodeURIComponent(query)}&limit=${venuesReturnCount}`, {
         signal
       })
       if (response.status === 404) {
@@ -201,7 +203,7 @@ export default {
 
     const getProducerListings = async (query, signal) => {
       // Replace with your actual API endpoint
-      const response = await fetch(`${process.env.VUE_APP_API_URL}/getData/producer-listings?q=${encodeURIComponent(query)}&limit=${returnCount}`, {
+      const response = await fetch(`${process.env.VUE_APP_API_URL}/getData/producer-listings?q=${encodeURIComponent(query)}&limit=${producersReturnCount}`, {
         signal
       })
       if (response.status === 404) {
