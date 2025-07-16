@@ -1453,3 +1453,14 @@ update of autocomplete and search logic
 
 Nature of the changes (frontend / backend / database):
 frontend, backend
+
+# Update as of 16 July
+
+Coder: MS
+
+Purpose of the changes:
+Update on cummulative counts for dashboards
+merging of admin_dashboard still a WIP as a side project for now.
+
+Nature of the changes (frontend / backend / database):
+frontend, backend

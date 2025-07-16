@@ -146,11 +146,14 @@ export default {
             review_data: {
                 loading: true, 
                 error: '',
-                user_review: 0,
+                listing_review: 0,
                 producer_review: 0,
                 venue_review: 0, 
                 total_listings: 0, 
-                total_clubs: 0
+                total_clubs: 0,
+                lr_counts: [],  // listing reviews cummulative count
+                pr_counts: [],  // producer reviews cummulative count
+                vr_counts: [],  // venue reviews cummulative count 
             },
 
             event_data: {
@@ -163,6 +166,7 @@ export default {
             business_data: {
                 loading: true, 
                 error: '',
+                total_signups: 0,
                 producers: [],
                 venues: [], 
             }, 
@@ -243,10 +247,6 @@ export default {
                 this.review_data = responses[1];
                 this.business_data = responses[2];
                 this.event_data = responses[3];
-
-                console.log(this.signup_data)
-                console.log(this.business_data)
-
             } catch (error) {
                 console.error("Failed to load dashboard data:", error);
             }

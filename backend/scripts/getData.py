@@ -1803,23 +1803,25 @@ def getSignupStats():
                         COALESCE((SELECT COUNT(*) FROM "users" 
                                 WHERE "joinDate" IS NOT NULL 
                                 AND ("isAdmin" IS FALSE OR "isAdmin" IS NULL)
-                                AND DATE("joinDate") BETWEEN %s AND %s), 0) +
-                        COALESCE((SELECT COUNT(*) FROM "venues" 
-                                WHERE "claimStatusCheckDate" IS NOT NULL
-                                AND DATE("claimStatusCheckDate") BETWEEN %s AND %s), 0) +
-                        COALESCE((SELECT COUNT(*) FROM "producers" 
-                                WHERE "claimStatusCheckDate" IS NOT NULL
-                                AND DATE("claimStatusCheckDate") BETWEEN %s AND %s), 0)
+                                AND DATE("joinDate") BETWEEN %s AND %s), 0) 
                     ) as "total_count";
             """
-            cursor.execute(total_sql, (start_date_str, end_date_str, start_date_str, 
-                                       end_date_str, start_date_str, end_date_str))
+            cursor.execute(total_sql, (start_date_str, end_date_str))
             total_result = cursor.fetchone()
             total_signups = total_result['total_count'] if total_result else 0
             
             # Get daily signup data with cumulative counts and fill missing dates with 0
             sql = """
-                WITH daily_signups AS (
+                WITH baseline_counts AS (
+                    SELECT 
+                        'users' as entity_type,
+                        COUNT(*) as baseline_count
+                    FROM "users"
+                    WHERE "joinDate" IS NOT NULL 
+                    AND ("isAdmin" IS FALSE OR "isAdmin" IS NULL)
+                    AND DATE("joinDate") < %s  -- before start date
+                ),
+                daily_signups AS (
                     SELECT
                         DATE("joinDate") as signup_date,
                         'users' as entity_type,
@@ -1828,28 +1830,6 @@ def getSignupStats():
                     WHERE "joinDate" IS NOT NULL AND ("isAdmin" IS FALSE OR "isAdmin" IS NULL)
                     AND DATE("joinDate") BETWEEN %s AND %s
                     GROUP BY DATE("joinDate")
-
-                    UNION ALL
-
-                    SELECT
-                        DATE("claimStatusCheckDate") as signup_date,
-                        'venues' as entity_type,
-                        COUNT(*) as daily_count
-                    FROM "venues"
-                    WHERE "claimStatusCheckDate" IS NOT NULL
-                    AND DATE("claimStatusCheckDate") BETWEEN %s AND %s
-                    GROUP BY DATE("claimStatusCheckDate")
-
-                    UNION ALL
-
-                    SELECT
-                        DATE("claimStatusCheckDate") as signup_date,
-                        'producers' as entity_type,
-                        COUNT(*) as daily_count
-                    FROM "producers"
-                    WHERE "claimStatusCheckDate" IS NOT NULL
-                    AND DATE("claimStatusCheckDate") BETWEEN %s AND %s
-                    GROUP BY DATE("claimStatusCheckDate")
                 ),
                 all_dates AS (
                     SELECT generate_series(
@@ -1859,7 +1839,7 @@ def getSignupStats():
                     )::date as signup_date
                 ),
                 entity_types AS (
-                    SELECT unnest(ARRAY['users', 'venues', 'producers']) as entity_type
+                    SELECT unnest(ARRAY['users']) as entity_type
                 ),
                 complete_data AS (
                     SELECT
@@ -1873,18 +1853,18 @@ def getSignupStats():
                 )
                 SELECT
                     signup_date,
-                    entity_type,
+                    cd.entity_type, 
                     daily_count,
                     SUM(daily_count) OVER (
-                        PARTITION BY entity_type
+                        PARTITION BY cd.entity_type 
                         ORDER BY signup_date
                         ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
-                    ) as cumulative_count
-                FROM complete_data
-                ORDER BY signup_date DESC, entity_type;
+                    ) + COALESCE(bc.baseline_count, 0) as cumulative_count
+                FROM complete_data cd
+                LEFT JOIN baseline_counts bc ON cd.entity_type = bc.entity_type
+                ORDER BY signup_date DESC, cd.entity_type;
             """
-            cursor.execute(sql, (start_date_str, end_date_str, start_date_str, end_date_str, 
-                                 start_date_str, end_date_str, start_date_str, end_date_str))
+            cursor.execute(sql, (start_date_str, start_date_str, end_date_str, start_date_str, end_date_str))
             all_data = cursor.fetchall()
 
             qualified_sql = """
@@ -1923,8 +1903,6 @@ def getSignupStats():
             signup_data = {
                 "total_signups": total_signups,
                 "users": users_data,
-                "producers": producers_data,
-                "venues": venues_data,
                 "qualified_user": qualified_user['qualified_user_count']
             }
             
@@ -1965,7 +1943,7 @@ def getReviewStats():
                 SELECT 
                   COALESCE((
                     SELECT COUNT(*) FROM "reviews"
-                        WHERE DATE("createdDate") BETWEEN %s AND %s), 0) AS user_review,
+                        WHERE DATE("createdDate") BETWEEN %s AND %s), 0) AS listing_review,
                   COALESCE((
                     SELECT COUNT(*) FROM "producerReviews"
                         WHERE DATE("createdDate") BETWEEN %s AND %s), 0) AS producer_review,
@@ -1984,7 +1962,135 @@ def getReviewStats():
                                  start_date_str, end_date_str, start_date_str, end_date_str, start_date_str, end_date_str))
             final_result = cursor.fetchone() or {}
 
-        return jsonify(final_result), 200
+            cummulative_review = """
+                WITH baseline_counts AS (                    
+                    SELECT 
+                        'listing_reviews' as entity_type,
+                        COUNT(*) as baseline_count
+                    FROM "reviews"
+                    WHERE "createdDate" IS NOT NULL
+                    AND DATE("createdDate") < %s
+                    
+                    UNION ALL
+                    
+                    SELECT 
+                        'producer_reviews' as entity_type,
+                        COUNT(*) as baseline_count
+                    FROM "producerReviews"
+                    WHERE "createdDate" IS NOT NULL
+                    AND DATE("createdDate") < %s
+                    
+                    UNION ALL
+                    
+                    SELECT 
+                        'venue_reviews' as entity_type,
+                        COUNT(*) as baseline_count
+                    FROM "venueReviews"
+                    WHERE "createdDate" IS NOT NULL
+                    AND DATE("createdDate") < %s
+                ),
+                daily_reviews AS (
+                    SELECT
+                        DATE("createdDate") as review_date,
+                        'listing_reviews' as entity_type,
+                        COUNT(*) as daily_count
+                    FROM "reviews"
+                    WHERE "createdDate" IS NOT NULL
+                    AND DATE("createdDate") BETWEEN %s AND %s
+                    GROUP BY DATE("createdDate")
+
+                    UNION ALL
+
+                    SELECT
+                        DATE("createdDate") as review_date,
+                        'producer_reviews' as entity_type,
+                        COUNT(*) as daily_count
+                    FROM "producerReviews"
+                    WHERE "createdDate" IS NOT NULL
+                    AND DATE("createdDate") BETWEEN %s AND %s
+                    GROUP BY DATE("createdDate")
+                    
+                    UNION ALL
+
+                    SELECT
+                        DATE("createdDate") as review_date,
+                        'venue_reviews' as entity_type,
+                        COUNT(*) as daily_count
+                    FROM "venueReviews"
+                    WHERE "createdDate" IS NOT NULL
+                    AND DATE("createdDate") BETWEEN %s AND %s
+                    GROUP BY DATE("createdDate")
+                ),
+                all_dates AS (
+                    SELECT generate_series(
+                        %s::date,
+                        %s::date,
+                        '1 day'::interval
+                    )::date as review_date
+                ),
+                entity_types AS (
+                    SELECT unnest(ARRAY['listing_reviews', 'producer_reviews', 'venue_reviews']) as entity_type
+                ),
+                complete_data AS (
+                    SELECT
+                        ad.review_date,
+                        et.entity_type,
+                        COALESCE(dr.daily_count, 0) as daily_count
+                    FROM all_dates ad
+                    CROSS JOIN entity_types et
+                    LEFT JOIN daily_reviews dr ON ad.review_date = dr.review_date
+                                            AND et.entity_type = dr.entity_type
+                )
+                SELECT
+                    review_date,
+                    cd.entity_type,
+                    daily_count,
+                    SUM(daily_count) OVER (
+                        PARTITION BY cd.entity_type
+                        ORDER BY review_date
+                        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+                    ) + COALESCE(bc.baseline_count, 0) as cumulative_count
+                FROM complete_data cd
+                LEFT JOIN baseline_counts bc ON cd.entity_type = bc.entity_type
+                ORDER BY review_date DESC, cd.entity_type;
+            """
+            cursor.execute(cummulative_review, (start_date_str, start_date_str, 
+                                 start_date_str, start_date_str, end_date_str, 
+                                 start_date_str, end_date_str, start_date_str,
+                                 end_date_str, start_date_str, end_date_str))
+            all_data = cursor.fetchall()
+
+            # Process data by entity type
+            listing_review = []
+            producer_review = []
+            venue_review = []
+            
+            for row in all_data:
+                data_point = {
+                    "date": str(row['review_date']), 
+                    "count": row['daily_count'],
+                    "cumulative_count": row['cumulative_count']
+                }
+                
+                if row['entity_type'] == 'listing_reviews':
+                    listing_review.append(data_point)
+                elif row['entity_type'] == 'producer_reviews':
+                    producer_review.append(data_point)
+                elif row['entity_type'] == 'venue_reviews':
+                    venue_review.append(data_point)
+            
+            response = {
+                "listing_review": final_result.get("listing_review", 0),
+                "producer_review": final_result.get("producer_review", 0),
+                "venue_review": final_result.get("venue_review", 0),
+                "total_listings": final_result.get("total_listings", 0),
+                "total_clubs": final_result.get("total_clubs", 0),
+                "lr_counts": listing_review,
+                "pr_counts": producer_review,
+                "vr_counts": venue_review
+            }
+
+        return jsonify(response), 200
     
     except Exception as e:
         import traceback
@@ -2014,81 +2120,128 @@ def getClaimStats():
     
     try: 
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            # Single query to get both venues and producers stats
-            # combined_sql = """
-            #     SELECT
-            #         -- Venues percentages
-            #         ROUND(
-            #             ((SELECT COUNT(CASE WHEN "claimStatus" = TRUE THEN 1 END) FROM "venues") * 100.0 /
-            #              NULLIF((SELECT COUNT(CASE WHEN "claimStatus" IS NOT NULL THEN 1 END) FROM "venues"), 0)), 2
-            #         ) as venues_claimed_percentage,
-            #         ROUND(
-            #             ((SELECT COUNT(CASE WHEN "claimStatus" = FALSE THEN 1 END) FROM "venues") * 100.0 /
-            #              NULLIF((SELECT COUNT(CASE WHEN "claimStatus" IS NOT NULL THEN 1 END) FROM "venues"), 0)), 2
-            #         ) as venues_unclaimed_percentage,
-            #         -- Producers percentages
-            #         ROUND(
-            #             ((SELECT COUNT(CASE WHEN "claimStatus" = TRUE THEN 1 END) FROM "producers") * 100.0 /
-            #              NULLIF((SELECT COUNT(CASE WHEN "claimStatus" IS NOT NULL THEN 1 END) FROM "producers"), 0)), 2
-            #         ) as producers_claimed_percentage,
-            #         ROUND(
-            #             ((SELECT COUNT(CASE WHEN "claimStatus" = FALSE THEN 1 END) FROM "producers") * 100.0 /
-            #              NULLIF((SELECT COUNT(CASE WHEN "claimStatus" IS NOT NULL THEN 1 END) FROM "producers"), 0)), 2
-            #         ) as producers_unclaimed_percentage;
-            # """
-            combined_sql = """
-                WITH venues_filtered AS (
-                    SELECT "claimStatus"
+            # Get total reviews count
+            total_sql = """
+                SELECT 
+                    'Total Signups' as category,
+                    (
+                        COALESCE((SELECT COUNT(*) FROM "venues" 
+                                WHERE "claimStatusCheckDate" IS NOT NULL
+                                AND DATE("claimStatusCheckDate") BETWEEN %s AND %s), 0) +
+                        COALESCE((SELECT COUNT(*) FROM "producers" 
+                                WHERE "claimStatusCheckDate" IS NOT NULL
+                                AND DATE("claimStatusCheckDate") BETWEEN %s AND %s), 0)
+                    ) as "total_count";
+            """
+            cursor.execute(total_sql, (start_date_str, end_date_str, start_date_str, 
+                                       end_date_str))
+            total_result = cursor.fetchone()
+            total_signups = total_result['total_count'] if total_result else 0
+            
+            # Get daily signup data with cumulative counts and fill missing dates with 0
+            sql = """
+                WITH baseline_counts AS (                    
+                    SELECT 
+                        'venues' as entity_type,
+                        COUNT(*) as baseline_count
                     FROM "venues"
-                    WHERE DATE("claimStatusCheckDate") BETWEEN %s AND %s
-                    AND "claimStatus" IS NOT NULL
-                ),
-                producers_filtered AS (
-                    SELECT "claimStatus"
+                    WHERE "claimStatusCheckDate" IS NOT NULL
+                    AND DATE("claimStatusCheckDate") < %s
+                    
+                    UNION ALL
+                    
+                    SELECT 
+                        'producers' as entity_type,
+                        COUNT(*) as baseline_count
                     FROM "producers"
-                    WHERE DATE("claimStatusCheckDate") BETWEEN %s AND %s
-                    AND "claimStatus" IS NOT NULL
+                    WHERE "claimStatusCheckDate" IS NOT NULL
+                    AND DATE("claimStatusCheckDate") < %s
                 ),
-                venue_stats AS (
-                    SELECT 
-                        COUNT(CASE WHEN "claimStatus" = TRUE THEN 1 END) as claimed_count,
-                        COUNT(CASE WHEN "claimStatus" = FALSE THEN 1 END) as unclaimed_count,
-                        COUNT(*) as total_count
-                    FROM venues_filtered
+                daily_signups AS (
+                    SELECT
+                        DATE("claimStatusCheckDate") as signup_date,
+                        'venues' as entity_type,
+                        COUNT(*) as daily_count
+                    FROM "venues"
+                    WHERE "claimStatusCheckDate" IS NOT NULL
+                    AND DATE("claimStatusCheckDate") BETWEEN %s AND %s
+                    GROUP BY DATE("claimStatusCheckDate")
+
+                    UNION ALL
+
+                    SELECT
+                        DATE("claimStatusCheckDate") as signup_date,
+                        'producers' as entity_type,
+                        COUNT(*) as daily_count
+                    FROM "producers"
+                    WHERE "claimStatusCheckDate" IS NOT NULL
+                    AND DATE("claimStatusCheckDate") BETWEEN %s AND %s
+                    GROUP BY DATE("claimStatusCheckDate")
                 ),
-                producer_stats AS (
-                    SELECT 
-                        COUNT(CASE WHEN "claimStatus" = TRUE THEN 1 END) as claimed_count,
-                        COUNT(CASE WHEN "claimStatus" = FALSE THEN 1 END) as unclaimed_count,
-                        COUNT(*) as total_count
-                    FROM producers_filtered
+                all_dates AS (
+                    SELECT generate_series(
+                        %s::date,
+                        %s::date,
+                        '1 day'::interval
+                    )::date as signup_date
+                ),
+                entity_types AS (
+                    SELECT unnest(ARRAY['venues', 'producers']) as entity_type
+                ),
+                complete_data AS (
+                    SELECT
+                        ad.signup_date,
+                        et.entity_type,
+                        COALESCE(ds.daily_count, 0) as daily_count
+                    FROM all_dates ad
+                    CROSS JOIN entity_types et
+                    LEFT JOIN daily_signups ds ON ad.signup_date = ds.signup_date
+                                              AND et.entity_type = ds.entity_type
                 )
                 SELECT
-                    COALESCE(ROUND((v.claimed_count * 100.0 / NULLIF(v.total_count, 0)), 2), 0) as venues_claimed_percentage,
-                    COALESCE(ROUND((v.unclaimed_count * 100.0 / NULLIF(v.total_count, 0)), 2), 0) as venues_unclaimed_percentage,
-                    COALESCE(ROUND((p.claimed_count * 100.0 / NULLIF(p.total_count, 0)), 2), 0) as producers_claimed_percentage,
-                    COALESCE(ROUND((p.unclaimed_count * 100.0 / NULLIF(p.total_count, 0)), 2), 0) as producers_unclaimed_percentage
-                FROM venue_stats v, producer_stats p;
+                    signup_date,
+                    cd.entity_type, 
+                    daily_count,
+                    SUM(daily_count) OVER (
+                        PARTITION BY cd.entity_type 
+                        ORDER BY signup_date
+                        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+                    ) + COALESCE(bc.baseline_count, 0) as cumulative_count
+                FROM complete_data cd
+                LEFT JOIN baseline_counts bc ON cd.entity_type = bc.entity_type
+                ORDER BY signup_date DESC, cd.entity_type;
             """
-            cursor.execute(combined_sql, (
-                start_date_str, end_date_str,  # venues date range
-                start_date_str, end_date_str   # producers date range
-            ))
-            result = cursor.fetchone() or {}
-
-            # Format the result as requested (numeric values)
-            final_result = {
-                'venues': {
-                    'claimed': result.get('venues_claimed_percentage', 0),
-                    'unclaimed': result.get('venues_unclaimed_percentage', 0)
-                },
-                'producers': {
-                    'claimed': result.get('producers_claimed_percentage', 0),
-                    'unclaimed': result.get('producers_unclaimed_percentage', 0)
+            cursor.execute(sql, (start_date_str, start_date_str, 
+                                 start_date_str, end_date_str, start_date_str, 
+                                 end_date_str, start_date_str, end_date_str))
+            all_data = cursor.fetchall()
+            
+            # Process data by entity type
+            users_data = []
+            venues_data = []
+            producers_data = []
+            
+            for row in all_data:
+                data_point = {
+                    "date": str(row['signup_date']), 
+                    "count": row['daily_count'],
+                    "cumulative_count": row['cumulative_count']
                 }
+                
+                if row['entity_type'] == 'users':
+                    users_data.append(data_point)
+                elif row['entity_type'] == 'venues':
+                    venues_data.append(data_point)
+                elif row['entity_type'] == 'producers':
+                    producers_data.append(data_point)
+            
+            business_data = {
+                "total_signups": total_signups,
+                "producers": producers_data,
+                "venues": venues_data
             }
-
-        return jsonify(final_result), 200
+            
+            return jsonify(business_data)
     
     except Exception as e:
         import traceback
