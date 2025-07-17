@@ -1476,3 +1476,13 @@ neatening up front end font sizing
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 17 July
+
+Coder: Han
+
+Purpose of the changes:
+getting search listings / autocomplete to factor in producer name
+
+Nature of the changes (frontend / backend / database):
+backend

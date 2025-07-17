@@ -588,28 +588,30 @@ def getListingsBySearch():
     try:
         search = f'%{searchTerm}%'
 
-        # Searches for listings by name, origin country, drink type, or type category, starting from the lastID
-        # cursor.execute("""
-        #     SELECT * FROM "listings"
-        #     WHERE (
-        #         "listingName" ILIKE %s OR
-        #         "originCountry" ILIKE %s OR
-        #         "drinkType" ILIKE %s OR
-        #         "typeCategory" ILIKE %s
-        #     )
-        #     AND "id" > %s
-        #     ORDER BY "id" ASC
-        #     LIMIT 30
-        # """, (search, search, search, search, lastID))
+        offset = int(request.args.get('offset', 0))
         cursor.execute("""
-            SELECT *, similarity("listingName", %s) as sim_score
-            FROM "listings"
-            WHERE "listingName" %% %s
-            AND "id" > %s
-            ORDER BY sim_score DESC
-            LIMIT 30
-        """, (searchTerm, searchTerm, lastID))
+            SELECT 
+                l.*, 
+                p."producerName",
+                (similarity(l."listingName", %s) + 3 * similarity(p."producerName", %s)) AS combined_sim_score
+            FROM "listings" l
+            JOIN "producers" p ON l."producerID" = p."id"
+            WHERE l."listingName" %% %s
+            
+            UNION
+                       
+            SELECT 
+                l.*, 
+                p."producerName",
+                (similarity(l."listingName", %s) + 3 * similarity(p."producerName", %s)) AS combined_sim_score
+            FROM "listings" l
+            JOIN "producers" p ON l."producerID" = p."id"
+            WHERE p."producerName" %% %s      
 
+            ORDER BY combined_sim_score DESC
+            LIMIT 30 OFFSET %s
+        """, (searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, offset))
+                       
         listings_data = cursor.fetchall()
 
             
@@ -1427,17 +1429,40 @@ def get_bottle_listings():
             return jsonify([])
 
         # Optimized query using trigram index for fuzzy string matching
-        sql = """
-            SELECT "id", "listingName", "drinkType", "originCountry", "bottler",
-                "photo", similarity("listingName", %s) as sim_score
-            FROM listings
-            WHERE "listingName" %% %s
-            ORDER BY sim_score DESC
+        sql = """           
+            SELECT 
+                l."id", 
+                l."listingName", 
+                l."drinkType", 
+                l."originCountry", 
+                l."bottler",
+                l."photo",
+                p."producerName",
+                (similarity(l."listingName", %s) + 3 * similarity(p."producerName", %s)) AS combined_sim_score
+            FROM "listings" l
+            JOIN "producers" p ON l."producerID" = p."id"
+            WHERE l."listingName" %% %s
+            
+            UNION
+
+            SELECT 
+                l."id", 
+                l."listingName", 
+                l."drinkType", 
+                l."originCountry", 
+                l."bottler",
+                l."photo",
+                p."producerName",
+                (similarity(l."listingName", %s) + 3 * similarity(p."producerName", %s)) AS combined_sim_score
+            FROM "listings" l
+            JOIN "producers" p ON l."producerID" = p."id"
+            WHERE p."producerName" %% %s
+
+            ORDER BY combined_sim_score DESC
             LIMIT %s;
         """
-
         with conn.cursor() as cursor:
-            cursor.execute(sql, (query, query, limit))
+            cursor.execute(sql, (query, query, query, query, query, query, limit))
             rows = cursor.fetchall()
 
         # if nothing was found
