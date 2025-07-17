@@ -605,7 +605,8 @@
                 console.log('SubmitListingNew.vue loadData started');
                 console.log('Form Mode:', this.formMode);
                 console.log('Listing ID from route:', this.$route.params.listingID);
-               
+                console.log('Request ID from route:', this.$route.params.requestID);
+
                 // Clear cache if editing or duplicating
                 if (this.formMode === "edit" || this.formMode === "dup") {
                     localStorage.removeItem('cachedListingForm');
@@ -673,6 +674,7 @@
 
                 if (hasCache && !(this.formMode === "edit" || this.formMode === "dup")) 
                 {
+                    console.log("Returning early due to cached form data");
                     // Already restored in mounted()
                     this.fillForm = true; // Ensure form is visible after restoring cache
                     this.dataLoaded = true;
@@ -762,12 +764,14 @@
                     // [REQ / POWER NEW] Retrieve previously submitted new listing request data
                     if (this.formMode == "new") {
                         try {
+                            console.log('Calling /getData/getRequestListing/ with ID:', this.$route.params.requestID);
                             const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getRequestListing/` + this.$route.params.requestID);
                             
                             if (Array.isArray(response.data) && response.data.length == 0) {
                                 throw "Request not found!";
                             }
                             let previousData = await response.data;
+                            console.log('Response from /getData/getRequestListing:', previousData);
                             this.checkUserPermissions(previousData);
 
                             // If user is a producer, check if request producerID is the same as user producerID
@@ -902,6 +906,8 @@
                 console.log('Populating form with data:', previousData);
                
                 this.tempDrinkType = previousData.drinkType;
+                console.log('tempDrinkType:', this.tempDrinkType);
+                
                 this.getDrinkCategoryList();
 
                 // If typeCategory is not present, set it to '-'
@@ -910,6 +916,7 @@
                 } else {
                     this.tempTypeCategory = previousData.typeCategory;
                 }
+                console.log('tempTypeCategory:', this.tempTypeCategory);
 
                 this.getDrinkStyleList();
 
@@ -919,13 +926,25 @@
                 } else {
                     this.tempDrinkStyle = previousData.drinkStyle;
                 }
+                console.log('tempDrinkStyle:', this.tempDrinkStyle);
 
                 this.form["sourceLink"] = previousData.sourceLink;
+                console.log('form.sourceLink:', this.form["sourceLink"]);
+
                 this.form["listingName"] = previousData.listingName;
+                console.log('form.listingName:', this.form["listingName"]);
+
                 this.form["reviewLink"] = previousData.reviewLink;
+                console.log('form.reviewLink:', this.form["reviewLink"]);
+
                 this.form["originCountry"] = previousData.originCountry;
+                console.log('form.originCountry:', this.form["originCountry"]);
+
                 this.form["producerID"] = previousData.producerID;
+                console.log('form.producerID:', this.form["producerID"]);
+
                 this.form["photo"] = previousData.photo;
+                console.log('form.photo:', this.form["photo"]);
 
                 // // Check if producerID is blank
                 // if (this.form["producerID"] == "" || this.form["producerID"] == null) {
@@ -945,6 +964,7 @@
                     
                 // }
                 this.form["producerNew"] = previousData.producerNew;
+                console.log('form.producerNew:', this.form["producerNew"]);
 
                 // If independent bottler, fill in bottler
                 if (previousData.bottler != "OB" && previousData.bottler != "Original Bottling" && previousData.bottler != "Original Bottler") {
@@ -954,6 +974,9 @@
                 } else {
                     this.indOperator = false;
                 }
+                console.log('indOperator:', this.indOperator);
+                console.log('form.bottler:', this.form["bottler"]);
+                console.log('form.bottlerID:', this.form["bottlerID"]);
 
                 // If abv has % sign, remove it. Change abv to number.
                 if (toString(previousData.abv).includes("%")) {
@@ -961,11 +984,13 @@
                 } else {
                     this.form["abv"] = parseFloat(previousData.abv);
                 }
+                console.log('form.abv:', this.form["abv"]);
 
                 // If age has value, change age to number.
                 if (previousData.age) {
                     this.form["age"] = parseInt(previousData.age);
                 }
+                console.log('form.age:', this.form["age"]);
             },
 
             // Helper function to reset form (by refreshing page)
