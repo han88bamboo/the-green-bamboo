@@ -745,7 +745,10 @@ def getListingsByProducer(id):
     conn = g.db
 
     with conn.cursor() as cursor:
-        cursor.execute('SELECT * FROM "listings" WHERE "producerID" = %s', (id,))
+        cursor.execute('''
+            SELECT * FROM "listings"
+            WHERE "producerID" = %s OR "bottlerID" = %s
+        ''', (id, id))
         listings_data = cursor.fetchall()
 
     if not listings_data:

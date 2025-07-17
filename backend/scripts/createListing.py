@@ -4,7 +4,6 @@
 # -----------------------------------------------------------------------------------------
 
 import os
-import re
 import json
 import pytz
 import re
@@ -177,7 +176,6 @@ def createListings():
 
         # uploading as base64 image
         if rawBottle['photo'] is not None and rawBottle['photo'] != "":
-            import re
             base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', rawBottle['photo'])
             rawBottle['photo'] = s3Images.uploadBase64ImageToS3(base64_string)
         else:
@@ -188,9 +186,38 @@ def createListings():
         sql = f"INSERT INTO listings ({columns}) VALUES ({placeholders}) RETURNING id"
         
         cur.execute(sql, list(rawBottle.values()))
-        new_id = cur.fetchone()['id']  # Corrected to access the first element
+        new_id = cur.fetchone()['id']
 
-        # Notification logic
+        # NEW: Send approval notification to the original submitter
+        # First, find the original request from requestListings table
+        cur.execute(
+            'SELECT "userID" FROM "requestListings" WHERE "listingName" = %s',
+            (rawBottleName,)
+        )
+        original_request = cur.fetchone()
+        
+        if original_request and original_request['userID']:
+            submitter_id = original_request['userID']
+            
+            # Build URL slug for the approved listing
+            slug = re.sub(r'[^a-z0-9]+', '', rawBottleName.lower())
+            
+            # Create approval notification
+            approval_notification = {
+                "userId": submitter_id,
+                "userType": "user",  # Could be "user", "producer", or "venue" - you may want to store this in requestListings
+                "notiTabs": "forYou",
+                "notiType": "approvedListing",
+                "image": rawBottle.get('photo'),
+                "link": f"/listing/view/{new_id}/{slug}",
+                "message": f"Your listing request '{rawBottleName}' has been approved and is now live!",
+                "createdAt": current_time,
+            }
+            
+            print("Sending approval notification:", approval_notification)
+            notifications.add_notification_to_db(approval_notification)
+
+        # Existing notification logic for followers
         cutoff = datetime.now(pytz.timezone('Etc/GMT-8')) - timedelta(hours=24)
         
         cur.execute(
@@ -226,7 +253,7 @@ def createListings():
                 notification_data = {
                     "userId":   uid,
                     "userType": "user",
-                    "notiTabs": "venues & producers",                       # or "venues & producers"
+                    "notiTabs": "venues & producers",
                     "notiType": "newDrink",
                     "image":    rawBottle.get('photo'),
                     "link":     f"/listing/view/{new_id}/{slug}",
