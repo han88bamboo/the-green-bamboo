@@ -1628,7 +1628,7 @@
 
               <!-- detailed review modal start -->
               <div class="modal fade" id="detailedReviewModal" tabindex="-1" aria-labelledby="exampleModalLabel"
-                aria-hidden="true">
+                aria-hidden="true" @click="clearReviewFromUrl">
                 <div class="modal-dialog">
                   <div class="modal-content">
                     <div class="modal-header">
@@ -2987,14 +2987,18 @@ export default {
       if (this.dataLoaded != null) {
         this.dataLoaded = true;
 
-        // Call the meta update function from setup
-        await this.$nextTick();
-        const mainProducer = this.producers.find(p => p.id === this.producer_id);
-        this.updateAllMetaTags(
-          this.specified_listing,
-          mainProducer,
-          this.reviewStatistics
-        );
+        // Wait for next tick to ensure all computed properties are updated
+        this.$nextTick(() => {
+          const mainProducer = this.producers.find(p => p.id === this.producer_id);
+          this.updateAllMetaTags(
+            this.specified_listing,
+            mainProducer,
+            this.reviewStatistics
+          );
+          
+          // Check for review ID in URL after all data is loaded
+          this.checkForReviewInUrl();
+        });
       }
     },
 
@@ -3238,6 +3242,34 @@ export default {
       });
       return reviews;
     },
+
+    // Method to check for review ID in URL and open modal
+    checkForReviewInUrl() {
+      const reviewId = this.$route.query.reviewId;
+      if (reviewId) {
+        // Find the review with the matching ID
+        const review = this.reviews.find((r) => r.id === parseInt(reviewId));
+        if (review) {
+          this.detailedReview = review;
+          this.$nextTick(() => {
+            this.openDetailedReviewModal();
+          });
+        } else {
+          console.warn("Review not found for ID:", reviewId);
+        }
+      }
+    },
+
+    openDetailedReviewModal() {  
+      const modalTrigger = document.querySelector('[data-bs-target="#detailedReviewModal"]');
+      modalTrigger.click();
+    },
+
+    clearReviewFromUrl() {
+      const currentPath = this.$route.path;
+      this.$router.replace(currentPath);
+    },
+
     getLoggedUserReview() {
       const specificReview = this.filteredReviews.filter((review) => {
         return review["userID"] == this.userID;
@@ -3736,6 +3768,10 @@ export default {
     // view detailed review
     updateDetailedReview(review) {
       this.detailedReview = review;
+
+      const currentPath = this.$route.path;
+      const newPath = `${currentPath}?reviewId=${review.id}`;
+      this.$router.replace(newPath);
     },
 
     reloadRoute() {

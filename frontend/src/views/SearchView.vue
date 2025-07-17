@@ -693,29 +693,24 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                 // - [NOT IMPLEMENTED, TO BE CONSIDERED] Producers: producerName, originCountry
                 // - [NOT IMPLEMENTED, TO BE CONSIDERED] Venues: venueName, originCountry, address
 
-                // Drink Types
                 try {
-                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getDrinkTypes`);
-                    this.drinkTypeList = response.data;
+                    // Drink Types
+                    const drinkTypesResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getDrinkTypes`);
+                    this.drinkTypeList = drinkTypesResponse.data;
+
+                    // Wait for all search operations to complete
+                    await Promise.all([
+                        this.searchListings(this.searchTerm),
+                        this.searchProducers(this.searchTerm),
+                        this.searchVenues(this.searchTerm)
+                    ]);
+
+                    this.dataLoaded = true;
                 }
                 catch (error) {
                     console.error(error);
                     this.loadError = true;
                 }
-
-                // Listings
-                this.searchListings(this.searchTerm);
-                
-                // Producers
-                this.searchProducers(this.searchTerm);
-
-                // Venues
-                this.searchVenues(this.searchTerm);
-
-                // Users
-                
-
-                this.dataLoaded = true;
             },
 
             // Get user data
