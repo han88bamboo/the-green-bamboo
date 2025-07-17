@@ -583,6 +583,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
 
                 // lazy loading tracker last id 
                 noMoreListings: false,
+                offsetListings: 0,
                 lastListingID: 0,
                 noMoreProducers: false,
                 lastProducerID: 0,
@@ -751,15 +752,16 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
             // Search search term in listings 
             async searchListings(searchTerm) {
                 try {
-                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingsBySearch?searchTerm=${searchTerm}&lastID=0`);
+                    // Use offset=0 for the first search
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingsBySearch?searchTerm=${searchTerm}&offset=0`);
                     
                     // If listings result are less than recordsPerLoad, set noMoreListings to true
                     if (response.data.length <= this.recordsPerLoad - 1) {
                         this.noMoreListings = true;
                     } 
 
-                    // Update lastListingID to the last ID of the response
-                    this.lastListingID = response.data.length > 0 ? response.data[response.data.length - 1].id : 0;
+                    // Update offsetListings to the number of results loaded
+                    this.offsetListings = response.data.length;
 
                     // clear previous results
                     this.resultListings = response.data;
@@ -776,16 +778,16 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
             // Search search term in listings [lazy loading]
             async searchListingsLazy(searchTerm) {
                 try {
-                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingsBySearch?searchTerm=${searchTerm}&lastID=${this.lastListingID}`);
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingsBySearch?searchTerm=${searchTerm}&offset=${this.offsetListings}`);
                     
                     this.resultListings = this.resultListings.concat(response.data);
                     this.originalResults = this.originalResults.concat(response.data);
 
-                    // Update lastListingID to the last ID of the response
-                    this.lastListingID += response.data.length > 0 ? response.data[response.data.length - 1].id : 0;
+                    // Update offsetListings to the new total number of results loaded
+                    this.offsetListings += response.data.length;
 
                     // If no more listings, set noMoreListings to true
-                    if (response.data.length <= this.recordsPerLoad - 1) {
+                    if (response.data.length < this.recordsPerLoad) {
                         this.noMoreListings = true;
                     }
                 } 
