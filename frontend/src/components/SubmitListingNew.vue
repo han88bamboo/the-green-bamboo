@@ -947,7 +947,7 @@
                 this.form["producerNew"] = previousData.producerNew;
 
                 // If independent bottler, fill in bottler
-                if (previousData.bottler != "OB") {
+                if (previousData.bottler != "OB" && previousData.bottler != "Original Bottling" && previousData.bottler != "Original Bottler") {
                     this.indOperator = true;
                     this.form["bottler"] = previousData.bottler;
                     this.form["bottlerID"] = previousData.bottlerID;
@@ -1116,7 +1116,7 @@
 
 
                     // Validate Independent Bottler Name (if OB, will be handled by database writing method)
-                    if (!this.form["bottler"].trim() && this.indOperator == true) {
+                    if (this.indOperator === true && !(this.form["bottler"] || "").trim()) {
                         this.errors.push("Name of independent bottler is required.");
                     }
 
@@ -1195,14 +1195,14 @@
                             }
                             
                             submitData = {
-                                "sourceLink": this.form["sourceLink"].trim(),
-                                "listingName": this.form["listingName"].trim(),
-                                "reviewLink": this.form["reviewLink"].trim(),
-                                "producerNew": this.form["producerNew"].trim(),
-                                "bottler": this.form["bottler"].trim(),
-                                "originCountry": this.form["originCountry"].trim(),
-                                "abv": this.form["abv"].toString().trim(),
-                                "age": this.form["age"].toString().trim(),
+                                "sourceLink": (this.form["sourceLink"] || "").trim(),
+                                "listingName": (this.form["listingName"] || "").trim(),
+                                "reviewLink": (this.form["reviewLink"] || "").trim(),
+                                "producerNew": (this.form["producerNew"] || "").trim(),
+                                "bottler": (this.form["bottler"] || "").trim(),
+                                "originCountry": (this.form["originCountry"] || "").trim(),
+                                "abv": (this.form["abv"] || "").toString().trim(),
+                                "age": (this.form["age"] || "").toString().trim(),
                                 "brandRelation": this.form["brandRelation"],
 
                                 "userID": this.form["userID"],
@@ -1225,9 +1225,9 @@
                         else if (this.formMode == "edit" || this.formMode == "dup") {
                             submitAPI = `${process.env.VUE_APP_API_URL}/requestListing/requestEdits`
                             submitData = {
-                                "editDesc": this.form["editDesc"].trim(),
-                                "sourceLink": this.form["sourceLink"].trim(),
-                                "duplicateLink": this.form["duplicateLink"].trim(),
+                                "editDesc": (this.form["editDesc"] || "").trim(),
+                                "sourceLink": (this.form["sourceLink"] || "").trim(),
+                                "duplicateLink": (this.form["duplicateLink"] || "").trim(),
                                 "brandRelation": this.form["brandRelation"],
 
                                 "userID": this.form["userID"],
@@ -1251,21 +1251,21 @@
 
                         submitData = {
                             "sourceLink": (this.form["sourceLink"] || "").trim(),
-                            "listingName": this.form["listingName"].trim(),
-                            "officialDesc": this.form["officialDesc"].trim(),
-                            "reviewLink": this.form["reviewLink"].trim(),
-                            "bottler": this.form["bottler"].trim(),
-                            "originCountry": this.form["originCountry"].trim(),
-                            "abv": this.form["abv"].toString().trim(),
-                            "age": this.form["age"].toString().trim(),
+                            "listingName": (this.form["listingName"] || "").trim(),
+                            "officialDesc": (this.form["officialDesc"] || "").trim(),
+                            "reviewLink": (this.form["reviewLink"] || "").trim(),
+                            "bottler": (this.form["bottler"] || "").trim(),
+                            "originCountry": (this.form["originCountry"] || "").trim(),
+                            "abv": (this.form["abv"] || "").toString().trim(),
+                            "age": (this.form["age"] || "").toString().trim(),
                             
                             "producerID": this.form["producerID"],
                             "bottlerID": this.form["bottlerID"],
                             "photo": this.form["photo"],
 
-                            "drinkType": this.tempDrinkType.trim(),
+                            "drinkType": (this.tempDrinkType || "").trim(),
                             "typeCategory": (this.tempTypeCategory || "").trim(),
-                            "drinkStyle": this.tempDrinkStyle.trim(),
+                            "drinkStyle": (this.tempDrinkStyle || "").trim(),
                         }
 
                         // Listing Creation Mode
@@ -1297,7 +1297,7 @@
                     if (this.formType == "power" || this.formMode == "new") {
                         // If not independent bottler, set bottler to "OB"
                         if (this.indOperator == false) {
-                            submitData["bottler"] = "OB"
+                            submitData["bottler"] = "Original Bottling"
                         }
 
                         // If abv has value, add % sign

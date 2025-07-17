@@ -1486,3 +1486,14 @@ getting search listings / autocomplete to factor in producer name
 
 Nature of the changes (frontend / backend / database):
 frontend (searchView), backend
+
+
+# Update as of 17 July - deployed
+
+Coder: Han
+
+Purpose of the changes:
+fixing submission error for listing details on submitListingNew.vue
+
+Nature of the changes (frontend / backend / database):
+frontend 
