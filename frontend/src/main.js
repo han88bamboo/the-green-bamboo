@@ -15,7 +15,7 @@ import VueGoogleMaps from '@fawmi/vue-google-maps'
 import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
 import 'quill/dist/quill.snow.css';
-import VueGtag from "vue-gtag";
+import VueGtag from "vue-gtag-next";
 
 
 // Set up Axios as a global property in Vue prototype
@@ -31,12 +31,16 @@ app.use(head)
 
 //  Add Google Analytics (GA4)
 app.use(VueGtag, {
-  config: { id: "G-FBF3N4940Z" },
+  property: {
+    id: "G-FBF3N4940Z"
+  },
   appName: 'Drink-X',
   pageTrackerScreenviewEnabled: true,
-  enabled: true,
-  debug: true
+  isEnabled: true,
+  isDebug: true
 }, router);
+
+console.log("✅ GA plugin initialized");
 
 // Set up Google Maps
 app.use(VueGoogleMaps, {

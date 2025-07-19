@@ -1535,7 +1535,7 @@ frontend, backend
 Coder: Kai
 
 Purpose of the changes:
-adding Google analytics tag 
+adding Google analytics tag - Now tracking
 
 Nature of the changes (frontend / backend / database):
 frontend
