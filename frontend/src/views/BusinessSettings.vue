@@ -314,9 +314,8 @@ export default {
             user_id: null,
             user_type: null,
 
-            monthlyPriceId: "price_1Q2wvTILhk1xtKohjMfP1Gr0",
-            yearlyPriceId: "price_1Q2zOvILhk1xtKohtZSFuDeb",
-
+            monthlyPriceId: "price_1RfRV2ILhk1xtKohYsaHTvcR",
+            yearlyPriceId: "price_1RfRU0ILhk1xtKohvdKvI6du",
             business: null,
             businessName: null,
             photo: null,
