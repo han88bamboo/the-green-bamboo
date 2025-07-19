@@ -1083,7 +1083,7 @@
                   <!-- row 7B: all colours -->
                   <div class="row justify-content-start mb-1 text-start">
                     <!-- normal colours-->
-                    <div class="col-7 mobile-col-9">
+                    <div class="col-7 mobile-col-12"> <!--col-7 mobile-col-9-->
                       <button @click="displaySelectColour(colour)" v-for="(colour, i) in colours.slice(0, 14)" :key="i"
                         :value="colour" class="btn" data-bs-toggle="button" :style="{
                           width: '30px',
@@ -1096,7 +1096,7 @@
                         }"></button>
                     </div>
                     <!-- Special gradient -->
-                    <div class="col-md-5 col-12">
+                    <div class="col-5 mobile-col-12 mobile-mt-2"> <!--col-md-5 col-12-->
                       <button @click="displaySelectColour(key)" v-for="(value, key) in specialColours" :key="key"
                         type="button" :value="key" class="btn" data-bs-toggle="button" :style="{
                           width: '30px',
@@ -1108,6 +1108,29 @@
                         }"></button>
                     </div>
                   </div>
+
+                  <div class="row justify-content-start mb-1 text-start">
+                  <!--more colours-->
+                    <div class="col-7 mobile-col-12 mobile-mt-2">
+                        <button
+                          @click="displaySelectColour(colour)"
+                          v-for="(colour, i) in moreColours"
+                          :key="'more-' + i"
+                          :value="colour"
+                          class="btn"
+                          data-bs-toggle="button"
+                          :style="{
+                            width: '30px',
+                            height: '30px',
+                            backgroundColor: colour,
+                            color: colour,
+                            borderRadius: '0',
+                            borderColor: 'grey',
+                            borderWidth: '1px',
+                          }"
+                        ></button>
+                    </div>
+                  </div> 
 
                   <!-- row 8: aroma, taste and finish -->
                   <div class="row pt-2">
@@ -2419,6 +2442,7 @@ export default {
       reviewDesc: "",
       rating: 5,
       colours: [],
+      moreColours: [],
       specialColours: {},
       selectedColour: "",
       image64: null,
@@ -2763,6 +2787,20 @@ export default {
         console.error(error);
         this.dataLoaded = null;
       }
+
+      // moreColours
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getMoreColours`
+        );
+        for (let colour of response.data) {
+          this.moreColours.push(colour.hexcode);
+        }
+      } catch (error) {
+        console.error(error);
+        this.dataLoaded = null;
+      }
+
       // specialColours
       try {
         const response = await this.$axios.get(

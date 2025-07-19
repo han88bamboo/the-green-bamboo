@@ -15,6 +15,37 @@ INSERT INTO "colours" ("hexcode") VALUES
 ('#4A1C0C'),
 ('#000000');
 
+INSERT INTO "moreColours" ("hexcode") VALUES
+('#f6f8e9'),
+('#f6f8c9'),
+('#f6f3b8'),
+('#f4e48e'),
+('#f0e56c'),
+('#f5d760'),
+('#efc853'),
+('#ebcd35'),
+('#eea179'),
+('#e98063'),
+('#e06242'),
+('#d64641'),
+('#e31c37'),
+('#d53918'),
+('#7b212a'),
+('#711d24'),
+('#5c1620'),
+('#490c15'),
+('#490b18'),
+('#55111a'),
+('#6b101f'),
+('#7d1a28'),
+('#891923'),
+('#851d32'),
+('#811e38'),
+('#68192e'),
+('#500f23'),
+('#330710');
+
+
 -- Insert country values into the "countries" table
 INSERT INTO "countries" ("originCountry", "legalAge") VALUES
 ('Afghanistan', 21),

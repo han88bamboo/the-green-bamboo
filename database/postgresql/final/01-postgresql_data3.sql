@@ -19,6 +19,7 @@ DROP TABLE IF EXISTS "badgeRules" CASCADE;
 DROP TABLE IF EXISTS "badgeMappings" CASCADE;
 DROP TABLE IF EXISTS "userBadges" CASCADE;
 DROP TABLE IF EXISTS "colours" CASCADE;
+DROP TABLE IF EXISTS "moreColours" CASCADE;
 DROP TABLE IF EXISTS "countries" CASCADE;
 DROP TABLE IF EXISTS "drinkTypes" CASCADE;
 DROP TABLE IF EXISTS "flavourTags" CASCADE;
@@ -868,4 +869,9 @@ CREATE TABLE "latestUserFollowers" (
     "followingId" INTEGER REFERENCES "users"("id") ON DELETE CASCADE, -- User being followed
     "followDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Date when the follow occurred
     UNIQUE ("userId", "followingId") -- Ensure no duplicate follows
+);
+
+CREATE TABLE "moreColours" (
+    "id" SERIAL PRIMARY KEY,
+    "hexcode" VARCHAR(7)
 );

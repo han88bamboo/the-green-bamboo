@@ -4107,6 +4107,21 @@ def getColours():
     return jsonify(colours_data)
 
 # -----------------------------------------------------------------------------------------
+# [GET] moreColours
+@blueprint.route("/getMoreColours")
+def getMoreColours():
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "moreColours"')
+        more_colours_data = cursor.fetchall()
+
+    if not more_colours_data:
+        return jsonify([])
+
+    return jsonify(more_colours_data)
+
+# -----------------------------------------------------------------------------------------
 # [GET] specialColours
 @blueprint.route("/getSpecialColours")
 def getSpecialColours():
