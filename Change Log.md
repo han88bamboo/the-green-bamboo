@@ -1497,3 +1497,13 @@ fixing submission error for listing details on submitListingNew.vue
 
 Nature of the changes (frontend / backend / database):
 frontend 
+
+# Update as of 17 July - deployed
+
+Coder: Han
+
+Purpose of the changes:
+fixing error where requested listing details don't get populated
+
+Nature of the changes (frontend / backend / database):
+frontend 

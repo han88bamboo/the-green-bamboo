@@ -505,6 +505,7 @@
             // Check if route params "requestID" is present
             if (this.$route.params.requestID != "" && this.$route.params.requestID != undefined) {
                 this.prevListing = true;
+                console.log('this.prevListing set to', this.prevListing, 'in mounted()');
             }
 
             // Power user check
@@ -604,9 +605,10 @@
                
                 console.log('SubmitListingNew.vue loadData started');
                 console.log('Form Mode:', this.formMode);
+                 console.log('Form Type:', this.formType);
                 console.log('Listing ID from route:', this.$route.params.listingID);
                 console.log('Request ID from route:', this.$route.params.requestID);
-
+                console.log('this.prevListing at start of loadData:', this.prevListing);
                 // Clear cache if editing or duplicating
                 if (this.formMode === "edit" || this.formMode === "dup") {
                     localStorage.removeItem('cachedListingForm');
@@ -671,8 +673,8 @@
                         this.getProducerName();
                     }
 
-
-                if (hasCache && !(this.formMode === "edit" || this.formMode === "dup")) 
+                console.log('this.prevListing at cache check:', this.prevListing);
+                if (hasCache && !(this.formMode === "edit" || this.formMode === "dup") && !this.prevListing) 
                 {
                     console.log("Returning early due to cached form data");
                     // Already restored in mounted()
@@ -741,6 +743,8 @@
                             console.log('form[\'producerNew\']:', this.form['producerNew']);
                         }
                         
+                        console.log('Form type in edit/dup:', this.formType);
+
                         if (this.formType == "power") {
                             this.populateForm(this.targetListing);
                             this.form["officialDesc"] = this.targetListing.officialDesc;
