@@ -276,7 +276,7 @@
                         </div>
 
                         <!-- [POWER] Input: Drink Description -->
-                        <div class="form-group mb-3" v-if="formType == 'power'">
+                        <div class="form-group mb-3" > <!-- v-if="formType == 'power'"   shifted out to allow ordinary users to submit official descp too-->
                             <p class="text-start mb-1">Official Description <span class="text-danger">*</span></p>
                             <textarea rows=3 class="form-control" v-model="form['officialDesc']" id="officialDesc" placeholder="Enter description of bottle"></textarea>
                         </div>
@@ -970,6 +970,9 @@
                 this.form["producerNew"] = previousData.producerNew;
                 console.log('form.producerNew:', this.form["producerNew"]);
 
+                this.form["officialDesc"] = previousData.officialDesc;
+                console.log('form.officialDesc:', this.form["officialDesc"]);
+
                 // If independent bottler, fill in bottler
                 if (previousData.bottler != "OB" && previousData.bottler != "Original Bottling" && previousData.bottler != "Original Bottler") {
                     this.indOperator = true;
@@ -1243,8 +1246,13 @@
                                 "typeCategory": (this.tempTypeCategory || "").trim(),
                                 "reviewStatus": false,
                                 "drinkStyle": (this.tempDrinkStyle || "").trim(),
+                                "officialDesc": (this.form["officialDesc"] || "").trim(), 
                             }
-
+                            
+                            // Add this log before the API call:
+                            console.log("Submitting to API:", submitAPI);
+                            console.log("Payload being sent:", submitData);
+                            
                             if (this.prevListing) {
                                 submitAPI = `${process.env.VUE_APP_API_URL}/requestListing/requestListingModify/` + this.$route.params.requestID
                             }
