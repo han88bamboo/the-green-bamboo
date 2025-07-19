@@ -39,10 +39,10 @@
         <span class="visually-hidden">Loading...</span>
       </div>
     </div>
-    <div v-else-if="filteredRequests.length > 0" class="row g-3" style="max-height: 525px; overflow-y: auto;">
+    <div v-else-if="filteredRequests.length > 0" class="row g-3"> <!-- style="max-height: 525px; overflow-y: auto;" -->
       <div v-for="request in filteredRequests" :key="request.id" class="col-md-6 col-lg-4">
         <div class="card h-100" :class="request.cardClass">
-          <div class="card-header fw-bold">{{ request.businessName }}</div>
+          <div class="card-header fw-bold" :class="request.headerClass">{{ request.businessName }}</div>
           <div class="card-body">
             <h6 class="card-subtitle mb-2 text-muted">{{ 'Type: ' + request.businessType }}</h6>
             <h6 class="card-subtitle mb-2 text-muted">{{ 'Country: ' + request.country }}</h6>
@@ -159,6 +159,7 @@ export default {
           status,
           isPending: ['pendingApproval', 'pendingPayment'].includes(status),
           cardClass: statusInfo?.class.replace('alert', 'border') || 'border-secondary',
+          headerClass: statusInfo?.class.replace('alert', 'bg') || 'bg-secondary',
         };
       });
     },
