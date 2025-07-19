@@ -871,6 +871,7 @@ CREATE TABLE "latestUserFollowers" (
     UNIQUE ("userId", "followingId") -- Ensure no duplicate follows
 );
 
+-- ========== [NEW!] moreColours for reviews =========
 CREATE TABLE "moreColours" (
     "id" SERIAL PRIMARY KEY,
     "hexcode" VARCHAR(7)
