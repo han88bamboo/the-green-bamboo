@@ -59,10 +59,10 @@ def requestListing():
             INSERT INTO "requestListings" (
                 "listingName", bottler, "drinkType", "sourceLink", "brandRelation", 
                 "reviewStatus", "userID", photo, "originCountry", "producerID", 
-                "producerNew", "typeCategory", abv, age, "reviewLink", "drinkStyle", "bottlerID"
+                "bottlerID", "producerNew", "typeCategory", abv, age, "reviewLink", "drinkStyle", "officialDesc"
             ) VALUES (%s, %s, %s, %s, %s, 
                       %s, %s, %s, %s, %s, 
-                      %s, %s, %s, %s, %s, %s, %s)
+                      %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id;
         """, (
             rawRequestName,
@@ -75,13 +75,14 @@ def requestListing():
             rawRequest['photo'],
             rawRequest['originCountry'],
             producerId,
+            bottler_id,
             rawRequest['producerNew'],
             rawRequest['typeCategory'],
             rawRequest['abv'],
             rawRequest['age'],
             rawRequest['reviewLink'],
             rawRequest.get('drinkStyle', ''),
-            bottler_id
+            rawRequest.get('officialDesc', '')
         ))
 
         conn.commit()
@@ -156,13 +157,14 @@ def requestListingModify(requestID):
 
     producerId = rawRequest.get('producerID') or None
     userId = rawRequest.get('userID') or None
-
+    bottler_id = rawRequest.get('bottlerID') or None
+    
     try:
         cursor.execute("""
             UPDATE "requestListings"
             SET "listingName" = %s, bottler = %s, "drinkType" = %s, "sourceLink" = %s, "brandRelation" = %s, 
                 "reviewStatus" = %s, "userID" = %s, photo = %s, "originCountry" = %s, "producerID" = %s, 
-                "producerNew" = %s, "typeCategory" = %s, abv = %s, age = %s, "reviewLink" = %s
+                "bottlerID" = %s, "producerNew" = %s, "typeCategory" = %s, abv = %s, age = %s, "reviewLink" = %s, "drinkStyle" = %s, "officialDesc" = %s
             WHERE id = %s;
         """, (
             rawRequestName,
@@ -175,11 +177,14 @@ def requestListingModify(requestID):
             rawRequest['photo'],
             rawRequest['originCountry'],
             producerId,
+            bottler_id,
             rawRequest['producerNew'],
             rawRequest['typeCategory'],
             rawRequest['abv'],
             rawRequest['age'],
             rawRequest['reviewLink'],
+            rawRequest.get('drinkStyle', ''),
+            rawRequest.get('officialDesc', ''),  
             requestID
         ))
 

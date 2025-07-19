@@ -646,7 +646,8 @@ CREATE TABLE "requestListings" (
     "abv" VARCHAR(255),
     "age" VARCHAR(255),
     "reviewLink" VARCHAR(255),
-    "drinkStyle" VARCHAR(255) -- added by tzh 
+    "drinkStyle" VARCHAR(255), -- added by tzh
+    "officialDesc" TEXT -- added by tzh
 );
 
 -- ========= "requestEdits" =========
