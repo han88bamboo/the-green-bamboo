@@ -1529,3 +1529,13 @@ Improves producer account creation with better validation, error handling, and r
 
 Nature of the changes (frontend / backend / database):
 frontend, backend
+
+# Update as of 19 July 
+
+Coder: Kai
+
+Purpose of the changes:
+adding Google analytics tag 
+
+Nature of the changes (frontend / backend / database):
+frontend
