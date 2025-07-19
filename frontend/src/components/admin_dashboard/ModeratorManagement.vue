@@ -25,14 +25,19 @@
         <h3><b>Moderator Requests</b></h3>
       </div>
     </div>
-    <div v-if="requests.length > 0" class="row g-3" style="max-height: 650px; overflow-y: auto;">
+    <div v-if="isLoading" class="text-center my-4">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+    <div v-else-if="requests.length > 0" class="row g-3" style="max-height: 650px; overflow-y: auto;">
       <div v-for="request in requests" :key="request.id" class="col-md-6 col-lg-4">
         <div class="card h-100">
           <div class="card-body d-flex flex-column">
             <ul class="list-group list-group-flush text-start flex-grow-1">
               <li class="list-group-item">
                 <span class="fw-bold">Requested By:</span><br>
-                <router-link :to="`/profile/user/${request.userID}`">
+                <router-link :to="`/profile/user/${request.userID}/${getUserById(request.userID)?.username}`">
                   @{{ getUserById(request.userID)?.username || 'Unknown User' }}
                 </router-link>
               </li>
@@ -47,9 +52,14 @@
             </ul>
           </div>
           <div class="card-footer bg-transparent border-top-0">
-            <div class="d-grid gap-2 d-sm-flex justify-content-center">
-              <button class="btn btn-success btn-sm" @click="reviewRequest(request, 'approve')">Approve</button>
-              <button class="btn btn-danger btn-sm" @click="reviewRequest(request, 'reject')">Reject</button>
+            <div v-if="isReviewing === request.id" class="d-flex justify-content-center">
+              <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+            <div v-else class="d-grid gap-2 d-sm-flex justify-content-center">
+              <button :disabled="isReviewing" class="btn btn-success btn-sm" @click="reviewRequest(request, 'approve')">Approve</button>
+              <button :disabled="isReviewing" class="btn btn-danger btn-sm" @click="reviewRequest(request, 'reject')">Reject</button>
             </div>
           </div>
         </div>
@@ -65,6 +75,7 @@
       :mode="modalMode"
       :users="users"
       :moderators="moderators"
+      :drinkTypes="drinkTypes"
       @close="closeModal"
       @save="handleSave"
     />
@@ -82,6 +93,7 @@ export default {
         moderators: { type: Array, required: true },
         requests: { type: Array, required: true },
         drinkTypes: { type: Array, required: true },
+        isLoading: { type: Boolean, default: false },
     },
     components: {
         ModeratorUpdateModal,
@@ -120,7 +132,7 @@ export default {
 
         handleSave() {
             this.closeModal();
-            this.$emit('update-data');
+            this.$emit('update-moderators');
         },
 
         async reviewRequest(request, action) {
@@ -142,7 +154,7 @@ export default {
                 });
 
                 // Tell the parent to refresh all data
-                this.$emit('update-data');
+                this.$emit('update-moderators');
             } catch (error) {
                 console.error(`Failed to ${action} request`, error);
                 alert(`An error occurred while trying to ${action} the request.`);

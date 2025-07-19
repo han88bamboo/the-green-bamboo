@@ -16,9 +16,10 @@
               </div>
             </div>
             <div v-if="error" class="alert alert-danger">{{ error }}</div>
+            <div v-if="successMessage" class="alert alert-success">{{ successMessage }}</div>
 
             <!-- Step 1: Choose Family or Sub-Tag Management -->
-            <div v-if="!subMode && !isLoading" class="d-grid gap-3 col-md-8 mx-auto">
+            <div v-if="!subMode && !isLoading && !successMessage" class="d-grid gap-3 col-md-8 mx-auto">
               <button class="btn btn-lg btn-outline-primary" @click="subMode = 'family'">Manage Family Tags</button>
               <button class="btn btn-lg btn-outline-info" @click="subMode = 'sub'">Manage Sub-Tags</button>
             </div>
@@ -216,6 +217,7 @@ export default {
       // --- STATE ---
       isLoading: false,
       error: null,
+      successMessage: null,
       subMode: null, // 'family' or 'sub'
 
       // State for Add Mode
@@ -324,8 +326,12 @@ export default {
     async handleSave() {
       this.isLoading = true;
       this.error = null;
+      this.successMessage = null;
 
       try {
+        let operationSuccessful = false;
+        let message = "";
+
         // --- ADD LOGIC ---
         if (this.mode === 'add') {
           if (this.subMode === 'family') {
@@ -336,6 +342,7 @@ export default {
               familyTag: this.addFamilyForm.name,
               hexcode: '#' + this.addFamilyForm.hexcode,
             });
+            message = "Family tag created successfully!";
           } else if (this.subMode === 'sub') {
             if (!this.addSubForm.parentId || !this.addSubForm.name) {
               throw new Error("All fields are required.");
@@ -344,51 +351,61 @@ export default {
               familyTagId: this.addSubForm.parentId,
               subTag: this.addSubForm.name,
             });
+            message = "Sub-tag created successfully!";
           }
+          operationSuccessful = true;
         }
         // --- EDIT LOGIC ---
         else if (this.mode === 'edit') {
+          let changesMade = false;
           if (this.subMode === 'family') {
             const changes = this.editableTags.filter((tag, i) =>
               tag.familyTag !== this.tags[i].familyTag || tag.hexcode !== this.tags[i].hexcode
-            ).map(t => ({
-              id: t.id,
-              familyTag: t.familyTag,
-              hexcode: t.hexcode
-            }));
+            ).map(t => ({ id: t.id, familyTag: t.familyTag, hexcode: t.hexcode }));
 
             if (changes.length > 0) {
               await axios.put(`${this.API_URL}/adminFunctions/updateFamilyTag`, changes);
+              changesMade = true;
             }
           } else if (this.subMode === 'sub') {
             const changes = [];
             this.editableTags.forEach((family, i) => {
               family.subTag2.forEach((sub, j) => {
                 if (sub.subTag !== this.tags[i].subTag2[j]?.subTag) {
-                  changes.push({
-                    id: sub.id,
-                    subTag: sub.subTag
-                  });
+                  changes.push({ id: sub.id, subTag: sub.subTag });
                 }
               });
             });
 
             if (changes.length > 0) {
               await axios.put(`${this.API_URL}/adminFunctions/updateSubTag`, changes);
+              changesMade = true;
             }
           }
+          message = changesMade ? "Tags updated successfully!" : "No changes were made.";
+          operationSuccessful = true;
         }
         // --- DELETE LOGIC ---
         else if (this.mode === 'delete') {
           if (this.subMode === 'family' && this.familyToDelete) {
             await axios.delete(`${this.API_URL}/adminFunctions/deleteFamilyTag/${this.familyToDelete.id}`);
+            message = `Family tag '${this.familyToDelete.familyTag}' deleted successfully.`;
+            this.familyToDelete = null;
+            operationSuccessful = true;
           } else if (this.subMode === 'sub' && this.subTagToDelete) {
             await axios.delete(`${this.API_URL}/adminFunctions/deleteSubTag/${this.subTagToDelete.id}`);
-            this.subTagToDelete = null; // Clear the selected sub-tag after successful deletion
+            message = `Sub-tag '${this.subTagToDelete.subTag}' deleted successfully.`;
+            this.subTagToDelete = null;
+            operationSuccessful = true;
           }
         }
 
-        this.$emit('save'); // Signal success to parent to refetch data
+        if (operationSuccessful) {
+            this.successMessage = message;
+            setTimeout(() => {
+                this.$emit('save');
+            }, 1500);
+        }
       } catch (e) {
         console.error(e);
         this.error = e.response?.data?.message || e.message || "An unknown error occurred.";

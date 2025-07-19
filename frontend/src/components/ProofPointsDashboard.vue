@@ -176,6 +176,7 @@ export default {
     data() {
         return {
             dataLoaded: null, // Flag to check if data is loaded
+            loadError: false, // Flag to check if there was an error loading data
 
             rules: [], // List to hold the rules data
             editingRuleId: null, // Track the rule being edited
@@ -199,11 +200,14 @@ export default {
         async fetchRules() {
         try {
             const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/proofPoints/getPointSystemRules`);
-            this.rules = response.data; // Store the rules data in the component's state
+            // Sort rules by ID in ascending order
+            this.rules = response.data.sort((a, b) => a.id - b.id); 
             this.dataLoaded = true; // Set dataLoaded to true after fetching data
+            this.loadError = false; // Set loadError to false after successful data load
         } catch (error) {
             console.error('Error fetching rules:', error);
             this.dataLoaded = false; // Set dataLoaded to false on error
+            this.loadError = true; // Set loadError to true on error
             
         }
         },
@@ -233,7 +237,10 @@ export default {
                 });
 
                 if (response.status == 201) {
-                    this.fetchRules(); // Refresh the rules after saving
+                    const index = this.rules.findIndex(r => r.id === ruleId);
+                    if (index !== -1) {
+                        this.rules[index] = { ...this.rules[index], ...this.editingRule };
+                    }
                     this.editingRuleId = null; // Reset editing state after saving
                     const toast = useToast();
                     toast.success(

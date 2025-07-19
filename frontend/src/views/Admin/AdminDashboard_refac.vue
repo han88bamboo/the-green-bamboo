@@ -54,6 +54,7 @@
         <div class="tab-pane fade show active" id="nav-tag">
           <!-- Pass data down as props, listen for events up -->
           <TagManagement 
+            :is-loading="isLoading"
             :observation-tags="observationTags" 
             :flavour-tags="combinedFlavourTags"
             @update-tags="handleDataUpdate" 
@@ -61,6 +62,7 @@
         </div>
         <div class="tab-pane fade" id="nav-moderator">
           <ModeratorManagement 
+            :is-loading="isLoading"
             :users="users" 
             :moderators="moderators" 
             :requests="pendingModRequests"
@@ -70,6 +72,7 @@
         </div>
         <div class="tab-pane fade" id="nav-business">
           <BusinessManagement 
+            :is-loading="isLoading"
             :countries="countries"
             :requests="businessAccountRequests"
             :producers="producers"
@@ -281,7 +284,6 @@ export default {
                 this.venues = responses[7].data;
                 this.countries = responses[8].data;
                 this.drinkTypes = responses[9].data;
-
             } catch (error) {
                 console.error("Failed to load dashboard data:", error);
                 this.loadError = true;
@@ -327,7 +329,7 @@ export default {
          * make a change, ensuring the entire dashboard has fresh data.
          */
         handleDataUpdate() {
-            console.log('Child component requested a data refresh.');
+            // console.log('Child component requested a data refresh.');
             this.loadData(); // Pass false to prevent the loading screen
         },
 
@@ -337,7 +339,7 @@ export default {
         }, 
 
         handleRangeUpdate(range) {
-            console.log('New range selected:', range);
+            // console.log('New range selected:', range);
             this.selectedDates.startDate = range.startDate;
             this.selectedDates.endDate = range.endDate;
             this.loadStasData();
@@ -351,6 +353,28 @@ export default {
             month: '2-digit',
             year: 'numeric'
         }); // e.g., "15/05/2025"
+        },
+
+        openDocumentInNewTab(url) {
+            window.open(url, '_blank');
+        },
+
+        downloadCSV() {
+            let csvContent = "data:text/csv;charset=utf-8,";
+            let csvData = [
+                ['Business Type', 'Business Name', 'Temporary Password'],
+                [this.businessType, this.businessName, this.tempPassword]
+            ];
+            csvData.forEach(function(rowArray) {
+                let row = rowArray.join(",");
+                csvContent += row + "\n";
+            });
+            var encodedUri = encodeURI(csvContent);
+            var link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "business_login_details.csv");
+            document.body.appendChild(link); // Required for FF
+            link.click();
         }        
     }
 };

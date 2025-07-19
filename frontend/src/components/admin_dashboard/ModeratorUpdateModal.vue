@@ -36,11 +36,7 @@
                 <input class="form-control" list="drinkTypeDatalist" id="drinkTypeSelect"
                   placeholder="e.g., Whisky, Gin..." v-model="selectedDrinkType">
                 <datalist id="drinkTypeDatalist">
-                  <!-- This should be populated with available drink types from an API -->
-                  <option value="Whisky"></option>
-                  <option value="Gin"></option>
-                  <option value="Rum"></option>
-                  <option value="Tequila"></option>
+                  <option v-for="dt in drinkTypes" :key="dt.id" :value="dt.drinkType" />
                 </datalist>
               </div>
             </form>
@@ -59,8 +55,6 @@
 </template>
 
 <script>
-// import { api } from '@/services/api';
-
 export default {
   props: {
     mode: {
@@ -76,6 +70,10 @@ export default {
       type: Array,
       required: true
     },
+    drinkTypes: {
+        type: Array,
+        required: true
+    }
   },
 
   emits: ['close', 'save'],
@@ -122,54 +120,29 @@ export default {
       this.error = null;
 
       try {
-        // Find the selected user object
         const user = this.userList.find(u => u.username === this.selectedUsername);
         if (!user) {
           throw new Error("Selected user not found.");
         }
 
-        // Replace with your actual API calls
-        if (this.mode === 'add') {
-          // await api.addModerator(user.id, this.selectedDrinkType);
-          // console.log(`Adding ${user.username} as moderator for ${this.selectedDrinkType}`);
-          await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/updateModType`,
-            {
-              userID: user.id,
-              newModType: this.selectedDrinkType,
-            }, {
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          }).then(response => {
-            // Handle the response here
-            if (!response.data.code == 201) {
-              this.error = `Failed to add ${user.username} as moderator for ${this.selectedDrinkType}`
-            }
-          });
+        const apiEndpoint = this.mode === 'add' ? 'updateModType' : 'removeModType';
+        const payload = {
+            userID: user.id,
+            [this.mode === 'add' ? 'newModType' : 'removeModType']: this.selectedDrinkType,
+        };
 
-        } else {
-          // await api.removeModerator(user.id, this.selectedDrinkType);
-          // console.log(`Removing ${user.username} as moderator for ${this.selectedDrinkType}`);
-          await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/removeModType`,
-            {
-              userID: user.id,
-              removeModType: this.selectedDrinkType,
-            }, {
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          }).then(response => {
-           // Handle the response here
-            if (!response.data.code == 201) {
-              this.error = `Failed to remove ${user.username} as moderator for ${this.selectedDrinkType}`
-            }
-          });
+        const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editProfile/${apiEndpoint}`, payload, {
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (response.data.code !== 201) {
+            throw new Error(response.data.message || 'An unknown error occurred.');
         }
 
-        this.$emit('save'); // Signal success to the parent
+        this.$emit('save');
       } catch (e) {
         console.error(e);
-        this.error = `An error occurred. Please try again. (${e.message})`;
+        this.error = e.message || 'An error occurred. Please try again.';
       } finally {
         this.isLoading = false;
       }
@@ -179,7 +152,6 @@ export default {
 </script>
 
 <style scoped>
-/* The d-block class is used to make the modal visible without JS for this example */
 .modal.d-block {
   background-color: rgba(0, 0, 0, 0.5);
 }

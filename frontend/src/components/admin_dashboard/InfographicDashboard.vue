@@ -21,7 +21,7 @@
           <div class="spinner-border spinner-border-sm text-light me-2" role="status">
             <span class="visually-hidden">Loading...</span>
           </div>
-          <span class="text-muted fst-italic">Loading recent activity...</span>
+          <span class="text-muted fst-italic">Loading sign up data from database...</span>
         </div>
 
         <!-- Error state -->
@@ -58,7 +58,7 @@
           <div class="spinner-border spinner-border-sm text-light me-2" role="status">
             <span class="visually-hidden">Loading...</span>
           </div>
-          <span class="text-muted fst-italic">Loading recent activity...</span>
+          <span class="text-muted fst-italic">Loading business data from database...</span>
         </div>
 
         <!-- Error state -->
@@ -90,7 +90,7 @@
           <div class="spinner-border spinner-border-sm text-light me-2" role="status">
             <span class="visually-hidden">Loading...</span>
           </div>
-          <span class="text-muted fst-italic">Loading recent activity...</span>
+          <span class="text-muted fst-italic">Loading review data from database...</span>
         </div>
 
         <!-- Error state -->
@@ -136,7 +136,7 @@
           <div class="spinner-border spinner-border-sm text-light me-2" role="status">
             <span class="visually-hidden">Loading...</span>
           </div>
-          <span class="text-muted fst-italic">Loading recent activity...</span>
+          <span class="text-muted fst-italic">Loading event data from database...</span>
         </div>
 
         <!-- Error state -->

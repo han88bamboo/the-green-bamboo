@@ -9,6 +9,7 @@
             <button type="button" class="btn-close" @click="close" aria-label="Close"></button>
           </div>
           <div class="modal-body">
+        
             <!-- Success Message -->
             <div v-if="successMessage" class="alert alert-success">
               <p class="fw-bold">Business account created successfully!</p>
@@ -16,6 +17,7 @@
               <hr>
               <p><strong>Username:</strong> {{ createdBusiness.name }}</p>
               <p><strong>Password:</strong> {{ createdBusiness.tempPassword }}</p>
+              <button type="button" class="btn btn-sm btn-secondary" @click="downloadCSV">Download login details</button>
             </div>
 
             <!-- Error Message -->
@@ -34,6 +36,21 @@
                   <div class="form-check form-check-inline">
                     <input class="form-check-input" type="radio" id="typeVenue" value="venue" v-model="form.type">
                     <label class="form-check-label" for="typeVenue">Venue</label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Independent Bottler (Producer only) -->
+              <div v-if="form.type === 'producer'" class="mb-3">
+                <label class="form-label fw-bold">Independent Bottler <span class="text-danger">*</span></label>
+                <div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" id="independentBottlerYes" value="true" v-model="form.independentBottler">
+                    <label class="form-check-label" for="independentBottlerYes">Yes</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" id="independentBottlerNo" value="false" v-model="form.independentBottler">
+                    <label class="form-check-label" for="independentBottlerNo">No</label>
                   </div>
                 </div>
               </div>
@@ -58,6 +75,33 @@
                   <option v-for="c in countries" :key="c.originCountry" :value="c.originCountry">{{ c.originCountry }}</option>
                 </select>
               </div>
+
+              <!-- Address (Venue only) -->
+              <div v-if="form.type === 'venue'" class="mb-3">
+                <label for="venueAddress" class="form-label fw-bold">Address <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="venueAddress" v-model="form.address">
+              </div>
+
+              <!-- Venue Type (Venue only) -->
+              <div v-if="form.type === 'venue'" class="mb-3">
+                <label for="venueType" class="form-label fw-bold">Venue Type <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="venueType" v-model="form.venueType">
+              </div>
+
+              <!-- Claim Status -->
+              <div class="mb-3">
+                <label class="form-label fw-bold">Claim Status <span class="text-danger">*</span></label>
+                <div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" id="claimed" value="true" v-model="form.claimStatus">
+                    <label class="form-check-label" for="claimed">Claimed</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" id="unclaimed" value="false" v-model="form.claimStatus">
+                    <label class="form-check-label" for="unclaimed">Unclaimed</label>
+                  </div>
+                </div>
+              </div>
             </form>
           </div>
           <div class="modal-footer">
@@ -75,62 +119,174 @@
 </template>
 
 <script>
-// import { api } from '@/services/api';
-
 export default {
     name: 'AddBusinessModal',
     props: {
       countries: { type: Array, required: true },
     },
-    components: {
-    },
+    emits: ['close', 'save'],
     data() {
         return {
             isLoading: false,
             error: null,
-            successMessage: false,
-            createdBusiness: null,
+            successMessage: false, 
+            createdBusiness: {     // Initialize as object instead of null
+                name: '',
+                tempPassword: ''
+            },
+            tempPassword: "",
             
             form: {
                 type: 'producer',
                 name: '',
                 description: '',
                 country: '',
+                independentBottler: 'false',
+                address: '',
+                venueType: '',
+                claimStatus: 'false',
             },
         };
     },
-    computed: {
-    },
-    async mounted() {
-    },
     methods: {
+        resetForm() {
+            this.form = {
+                type: 'producer',
+                name: '',
+                description: '',
+                country: '',
+                independentBottler: 'false',
+                address: '',
+                venueType: '',
+                claimStatus: 'false',
+            };
+            this.isLoading = false;
+            this.error = null;
+            this.successMessage = false;
+            this.createdBusiness = null;
+            this.tempPassword = "";
+        },
         close() {
+            // If we successfully created a business, emit save to refresh parent data
+            if (this.successMessage) {
+                this.$emit('save');
+            }
+
+            this.resetForm();
             this.$emit('close');
         },
-
+        hashPassword(id, password) {
+            const combinedString = id.toString() + password;
+            let hash = 0;
+            for (let i = 0; i < combinedString.length; i++) {
+                const char = combinedString.charCodeAt(i);
+                hash = (hash << 5) - hash + char;
+                hash |= 0; // convert to 32-bit integer
+            }
+            return hash;
+        },
+        downloadCSV() {
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += `Username,Password
+`;
+            csvContent += `${this.createdBusiness.name},${this.createdBusiness.tempPassword}
+`;
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `${this.createdBusiness.name}_login_details.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        },
         async createBusiness() {
+            // Form validation
             if (!this.form.name || !this.form.description || !this.form.country) {
                 this.error = "Please fill in all required fields.";
+                return;
+            }
+            if (this.form.type === 'venue' && (!this.form.address || !this.form.venueType)) {
+                this.error = "Please fill in Address and Venue Type for venues.";
                 return;
             }
 
             this.isLoading = true;
             this.error = null;
 
-            try {
-                // const response = await api.createBusiness(this.form);
-                // Mock API response
-                const response = {
-                    name: this.form.name,
-                    tempPassword: `temp_${Math.random().toString(36).slice(-8)}`,
+            this.tempPassword = "admin1234"; // Or generate a random one
+            const hashedPassword = this.hashPassword(this.form.name, this.tempPassword);
+            
+            let apiURL = '';
+            let newBusinessData = {};
+
+            if (this.form.type === 'producer') {
+                apiURL = `${process.env.VUE_APP_API_URL}/createAccount/createProducerAccount`;
+                newBusinessData = {
+                    producerName: this.form.name,
+                    producerDesc: this.form.description,
+                    originCountry: this.form.country,
+                    isIndependentBottler: this.form.independentBottler === "true",
+                    statusOB: "",
+                    mainDrinks: [],
+                    photo: "",
+                    hashedPassword: hashedPassword,
+                    questionsAnswers: [],
+                    updates: [],
+                    username: this.form.name,
+                    producerLink: "",
+                    claimStatus: this.form.claimStatus === "true",
                 };
-                
-                this.createdBusiness = response;
-                this.successMessage = true;
-                this.$emit('save'); // Notify parent that data has changed
+            } else { // venue
+                apiURL = `${process.env.VUE_APP_API_URL}/createAccount/createVenueAccount`;
+                newBusinessData = {
+                    venueName: this.form.name,
+                    venueDesc: this.form.description,
+                    username: this.form.name,
+                    originLocation: this.form.country,
+                    address: this.form.address,
+                    venueType: this.form.venueType,
+                    menu: [],
+                    photo: "",
+                    hashedPassword: hashedPassword,
+                    questionsAnswers: [],
+                    updates: [],
+                    claimStatus: this.form.claimStatus === "true",
+                    openingHours: { Monday: ["", ""], Tuesday: ["", ""], Wednesday: ["", ""], Thursday: ["", ""], Friday: ["", ""], Saturday: ["", ""], Sunday: ["", ""], },
+                    publicHolidays: "",
+                    reservationDetails: "",
+                };
+            }
+
+            try {
+                const response = await this.$axios.post(apiURL, { newBusinessData }, {
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                // ADD THESE DEBUG LINES
+                console.log('Full API Response:', response);
+                console.log('Response Status:', response.status);
+                console.log('Response Data:', response.data);
+                console.log('Response Data Code:', response.data.code);
+
+                if (response.data.code === 201) {
+                    this.createdBusiness = {
+                        name: this.form.name,
+                        tempPassword: this.tempPassword,
+                    };
+                    
+                    this.successMessage = true;
+                    // Force Vue to update the DOM
+                    // this.$nextTick(() => {
+                    //     console.log('DOM should be updated now');
+                    // });
+                    // console.log('successMessage is now:', this.successMessage);
+                    // this.$emit('save'); // Notify parent that data has changed
+                } else {
+                    console.log('Success condition NOT met. Expected code 201, got:', response.data.code);
+                    this.error = response.data.message || "An unknown error occurred.";
+                }
             } catch (e) {
                 console.error(e);
-                this.error = "Failed to create business. Please try again.";
+                this.error = e.response?.data?.message || "Failed to create business. Please try again.";
             } finally {
                 this.isLoading = false;
             }

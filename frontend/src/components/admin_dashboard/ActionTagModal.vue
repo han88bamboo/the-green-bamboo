@@ -13,9 +13,10 @@
               <div class="spinner-border" role="status"></div>
             </div>
             <div v-if="error" class="alert alert-danger">{{ error }}</div>
+            <div v-if="successMessage" class="alert alert-success">{{ successMessage }}</div>
 
             <!-- Add Form -->
-            <form v-if="mode === 'add' && !isLoading" @submit.prevent="handleSave">
+            <form v-if="mode === 'add' && !isLoading && !successMessage" @submit.prevent="handleSave">
               <div class="mb-3">
                 <label for="newTagName" class="form-label">New Action Tag Name</label>
                 <input type="text" class="form-control" id="newTagName" v-model="newTagName" required>
@@ -23,7 +24,7 @@
             </form>
 
             <!-- Edit Form -->
-            <form v-if="mode === 'edit' && !isLoading" @submit.prevent="handleSave">
+            <form v-if="mode === 'edit' && !isLoading && !successMessage" @submit.prevent="handleSave">
               <p>Edit the names of existing action tags.</p>
               <div v-for="tag in editableTags" :key="tag.id" class="mb-2">
                 <input type="text" class="form-control" v-model="tag.observationTag">
@@ -31,7 +32,7 @@
             </form>
 
             <!-- Delete Form -->
-            <div v-if="mode === 'delete' && !isLoading">
+            <div v-if="mode === 'delete' && !isLoading && !successMessage">
               <p class="text-danger">Select an action tag to permanently delete it.</p>
               <div class="d-flex flex-wrap gap-2">
                 <button v-for="tag in tags" :key="tag.id" class="btn btn-outline-danger" @click="confirmDelete(tag)">
@@ -79,6 +80,7 @@ export default {
             // --- STATE ---
             isLoading: false,
             error: null, // A single string for all error messages
+            successMessage: null,
             
             // State for 'add' mode
             newTagName: '',
@@ -115,6 +117,7 @@ export default {
         async handleSave() {
             this.isLoading = true;
             this.error = null;
+            this.successMessage = null;
 
             try {
                 if (this.mode === 'add') {
@@ -122,6 +125,7 @@ export default {
                     await axios.post(`${this.API_URL}/adminFunctions/createObservationTag`, {
                         observationTag: this.newTagName
                     });
+                    this.successMessage = "Action tag created successfully!";
                 } else if (this.mode === 'edit') {
                     const changes = this.editableTags.filter((tag, index) => {
                         return tag.observationTag !== this.tags[index].observationTag;
@@ -133,14 +137,20 @@ export default {
 
                     if (changes.length > 0) {
                         await axios.put(`${this.API_URL}/adminFunctions/updateObservationTag`, changes);
+                        this.successMessage = "Action tags updated successfully!";
                     } else {
-                        // No changes, just close
+                        this.successMessage = "No changes were made.";
                     }
                 } else if (this.mode === 'delete' && this.tagToDelete) {
                     await axios.delete(`${this.API_URL}/adminFunctions/deleteObservationTag/${this.tagToDelete.id}`);
+                    this.successMessage = `Tag '${this.tagToDelete.observationTag}' deleted successfully.`;
                 }
 
-                this.$emit('save'); // Signal success to parent
+                // Instead of emitting straight away, show success message and then close
+                setTimeout(() => {
+                    this.$emit('save');
+                }, 1500); // Wait 1.5 seconds
+
             } catch (e) {
                 console.error(e);
                 this.error = e.response?.data?.message || e.message || "An unknown error occurred.";

@@ -1517,3 +1517,15 @@ extra colours for reviews
 
 Nature of the changes (frontend / backend / database):
 frontend, backend, database
+
+# Update as of 19 July - deployed
+
+Coder: MS
+
+Purpose of the changes:
+dashboard refector test code
+
+Improves producer account creation with better validation, error handling, and related table initialization in the backend. Updates admin dashboard modals to provide user feedback, success messages, and CSV download for login details. Refines business management UI with more detailed request info, loading states, and improved request review logic. Also includes minor bug fixes and consistency improvements across admin dashboard components.
+
+Nature of the changes (frontend / backend / database):
+frontend, backend

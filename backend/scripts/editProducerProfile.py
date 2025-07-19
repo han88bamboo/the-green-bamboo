@@ -489,7 +489,7 @@ def updateProducerStatus():
     producerID = int(data['businessID'])
     producerName = data['newBusinessData']["businessName"]
     producerDesc = data['newBusinessData']["businessDesc"]
-    originCountry = data['newBusinessData']["country"]
+    originCountry = data['newBusinessData']["originCountry"]
     image = data['newBusinessData']["photo"]
     hashedPassword = data['newBusinessData']["hashedPassword"]
     claimStatus = data['newBusinessData']["claimStatus"]
@@ -538,23 +538,20 @@ def updateProducerStatus():
             print("Sending notification:", notification_data)
             notifications.add_notification_to_db(notification_data)
 
-        return jsonify(
-            {
-                "code": 201,
-                "message": "Updated claim status successfully!"
-            }
-        ), 201
+        return jsonify({
+            "code": 201,
+            "message": "Updated claim status successfully!"
+        }), 201
     
     except Exception as e:
         conn.rollback()
-        print(str(e))
-        return jsonify(
-            {
-                "code": 500,
-                "data": data,
-                "message": "An error occurred updating claim status!"
-            }
-        ), 500
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            "code": 500,
+            "data": data,
+            "message": "An error occurred updating claim status!"
+        }), 500
     
     finally:
         cur.close()

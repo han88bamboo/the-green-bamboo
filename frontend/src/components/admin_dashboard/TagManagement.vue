@@ -20,18 +20,18 @@
     <!-- Action Tag Controls -->
     <div v-if="showObservationControl" class="p-3 border rounded">
       <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center">
-        <button class="btn btn-warning" @click="openModal('action', 'add')">Add Action Tag</button>
-        <button class="btn btn-primary" @click="openModal('action', 'edit')">Edit Action Tags</button>
-        <button class="btn btn-danger" @click="openModal('action', 'delete')">Delete Action Tags</button>
+        <button class="btn btn-warning" @click="openModal('action', 'add')" :disabled="isLoading">Add Action Tag</button>
+        <button class="btn btn-primary" @click="openModal('action', 'edit')" :disabled="isLoading">Edit Action Tags</button>
+        <button class="btn btn-danger" @click="openModal('action', 'delete')" :disabled="isLoading">Delete Action Tags</button>
       </div>
     </div>
 
     <!-- Flavour Tag Controls -->
     <div v-if="showFlavourControl" class="p-3 border rounded">
       <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center">
-        <button class="btn btn-warning" @click="openModal('flavour', 'add')">Add Flavour Tag</button>
-        <button class="btn btn-primary" @click="openModal('flavour', 'edit')">Edit Flavour Tags</button>
-        <button class="btn btn-danger" @click="openModal('flavour', 'delete')">Delete Flavour Tags</button>
+        <button class="btn btn-warning" @click="openModal('flavour', 'add')" :disabled="isLoading">Add Flavour Tag</button>
+        <button class="btn btn-primary" @click="openModal('flavour', 'edit')" :disabled="isLoading">Edit Flavour Tags</button>
+        <button class="btn btn-danger" @click="openModal('flavour', 'delete')" :disabled="isLoading">Delete Flavour Tags</button>
       </div>
     </div>
 
@@ -61,6 +61,7 @@ import FlavourTagModal from './FlavourTagModal.vue';
 export default {
     name: 'TagManagement',
     props: {
+        isLoading: { type: Boolean, required: true },
         observationTags: { type: Array, required: true },
         flavourTags: { type: Array, required: true },
     },

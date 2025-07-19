@@ -30,9 +30,9 @@ def editDetails():
     data = request.get_json()
 
     venueID = int(data['venueID'])
-    venueName = data['venueName']
-    venueType = data['venueType']
-    venueDesc = data['venueDesc']
+    venueName = data['businessName']
+    venueType = data['businessType']
+    venueDesc = data['businessDesc']
     originLocation = data['originLocation']
     image64 = data.get('image64', '')
     yearOpened = data.get('yearOpened', None)
@@ -924,7 +924,7 @@ def updateVenueStatus():
     venueID = int(data['businessID'])
     venueName = data['newBusinessData']["businessName"]
     venueDesc = data['newBusinessData']["businessDesc"]
-    originLocation = data['newBusinessData']["country"]
+    originLocation = data['newBusinessData']["originCountry"]
     image = data['newBusinessData']["photo"]
     hashedPassword = data['newBusinessData']["hashedPassword"]
     claimStatus = data['newBusinessData']["claimStatus"]
@@ -971,13 +971,12 @@ def updateVenueStatus():
     
     except Exception as e:
         conn.rollback()
-        print(str(e))
-        return jsonify(
-            {
+        import traceback
+        traceback.print_exc()
+        return jsonify({
                 "code": 500,
                 "message": "An error occurred updating claim status!"
-            }
-        ), 500
+        }), 500
     
     finally:
         cur.close()
