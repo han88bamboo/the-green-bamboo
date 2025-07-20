@@ -127,6 +127,17 @@ def requestListingModify(requestID):
     conn = g.db
     cursor = conn.cursor()
     rawRequest = request.get_json()
+    
+    # Ensure all required fields are present in rawRequest, set to None if missing
+    required_fields = [
+        "listingName", "bottler", "drinkType", "sourceLink", "brandRelation",
+        "reviewStatus", "userID", "photo", "originCountry", "producerID",
+        "bottlerID", "producerNew", "typeCategory", "abv", "age", "reviewLink",
+        "drinkStyle", "officialDesc"
+    ]
+    for field in required_fields:
+        if field not in rawRequest:
+            rawRequest[field] = None
 
     rawRequestName = rawRequest["listingName"]
     cursor.execute('SELECT id FROM listings WHERE "listingName" = %s', (rawRequestName,))
@@ -149,8 +160,11 @@ def requestListingModify(requestID):
         cursor.execute('SELECT photo FROM "requestListings" WHERE id = %s', (requestID,))
         existingRequest = cursor.fetchone()
 
-        if existingRequest:
-            s3Images.deleteImageFromS3(existingRequest)
+        if existingRequest and existingRequest['photo'] and existingRequest['photo'].strip():
+            try:
+                s3Images.deleteImageFromS3(existingRequest['photo'])
+            except Exception as e:
+                print(f"Warning: Failed to delete existing image from S3: {str(e)}")
         if rawRequest['photo']:
             base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', rawRequest['photo'])
             rawRequest['photo'] = s3Images.uploadBase64ImageToS3(base64_string)

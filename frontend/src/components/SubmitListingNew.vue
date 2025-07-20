@@ -485,6 +485,8 @@
             };
         },
         async mounted() {
+            console.log("Component mounted. Route params:", this.$route.params);
+    
             // Restore cached form data immediately
             const cachedForm = localStorage.getItem('cachedListingForm');
             if (cachedForm) {
@@ -605,7 +607,7 @@
                
                 console.log('SubmitListingNew.vue loadData started');
                 console.log('Form Mode:', this.formMode);
-                 console.log('Form Type:', this.formType);
+                console.log('Form Type:', this.formType);
                 console.log('Listing ID from route:', this.$route.params.listingID);
                 console.log('Request ID from route:', this.$route.params.requestID);
                 console.log('this.prevListing at start of loadData:', this.prevListing);
@@ -1113,6 +1115,7 @@
             // Function to submit form
             async submitFunction(){
                 this.errors = [];
+                console.log("submitFunction called. formType:", this.formType, "formMode:", this.formMode, "prevListing:", this.prevListing);
 
 
                 // Form Validation for Edit/Duplicate Request
@@ -1208,6 +1211,7 @@
                 }
 
                 if (this.errors.length > 0) {
+                    console.log("Form validation errors:", this.errors);
                     // If errors, alert user and return
                     return "Submission Incomplete"
                 } else {
@@ -1250,11 +1254,12 @@
                             }
                             
                             // Add this log before the API call:
-                            console.log("Submitting to API:", submitAPI);
+                            console.log("Request Creation Mode Submitting to API:", submitAPI);
                             console.log("Payload being sent:", submitData);
                             
                             if (this.prevListing) {
                                 submitAPI = `${process.env.VUE_APP_API_URL}/requestListing/requestListingModify/` + this.$route.params.requestID
+                                console.log("prevListing is true, switching to modify endpoint:", submitAPI);
                             }
                         }
 
@@ -1347,7 +1352,7 @@
                     if (this.prevListing && this.formType == "power") {
                         this.updateRequestStatus("approve")
                     }
-
+                    console.log("Calling writeListing with:", submitAPI, submitData);
                     this.writeListing(submitAPI, submitData)
                 }
             },
@@ -1359,12 +1364,17 @@
                 this.submitForm = true; // Display submission in progress message
                 let responseCode = "";
 
+                console.log("writeListing called. API:", submitAPI);
+                console.log("Payload being sent:", submitData);
+
                 const response = await this.$axios.post(submitAPI, submitData)
                 .then((response)=>{
                     responseCode = response.data.code
+                    console.log("API response received:", response.data);
                 })
                 .catch((error)=>{
                     responseCode = error.response.data.code
+                    console.error("API error response:", error.response.data);
                 });
 
                 // [Replace with Backend Fix] Response Code Transformation for Edit Listing
@@ -1400,6 +1410,7 @@
                         this.errorMessage = true // Display generic error message
                     }
                 }
+                console.log("writeListing finished. responseCode:", responseCode);
                 return response
             },
 
