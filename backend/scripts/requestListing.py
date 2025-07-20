@@ -9,7 +9,7 @@ import pytz
 import s3Images
 from bson import json_util
 from flask import Blueprint, g, request, jsonify
-from datetime import datetime
+from datetime import datetime, timedelta
 from scripts import pointsHelperFunc, badge_helpers, notifications
 import re
 
@@ -30,6 +30,11 @@ def requestListing():
     cursor = conn.cursor()
     rawRequest = request.get_json()
 
+    # Check current system setting for auto approval
+    cursor.execute('SELECT "settingValue" FROM "systemSettings" WHERE "settingName" = %s', ('autoListingApproval',))
+    auto_approve = cursor.fetchone()
+    auto_approve = auto_approve and auto_approve['settingValue'].lower() == 'true'
+
     rawRequestName = rawRequest["listingName"]
     cursor.execute('SELECT id FROM listings WHERE "listingName" = %s', (rawRequestName,))
     existingBottle = cursor.fetchone()
@@ -45,10 +50,16 @@ def requestListing():
             }
         ), 400
 
-    if rawRequest['photo']:
-        base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', rawRequest['photo'])
-        rawRequest['photo'] = s3Images.uploadBase64ImageToS3(base64_string)
-
+    try:
+        if rawRequest['photo'] and rawRequest['photo'] != "":
+            base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', rawRequest['photo'])
+            rawRequest['photo'] = s3Images.uploadBase64ImageToS3(base64_string)
+        else:
+            rawRequest['photo'] = "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
+    except Exception as e:
+        print(f"Warning: Failed to process image: {str(e)}")
+        rawRequest['photo'] = "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
+    
     # Handle nullable foreign keys
     producerId = rawRequest.get('producerID') or None
     userId = rawRequest.get('userID') or None
@@ -70,7 +81,7 @@ def requestListing():
             rawRequest['drinkType'],
             rawRequest['sourceLink'],
             rawRequest['brandRelation'],
-            rawRequest['reviewStatus'],
+            True if auto_approve else rawRequest['reviewStatus'],
             userId,
             rawRequest['photo'],
             rawRequest['originCountry'],
@@ -85,9 +96,146 @@ def requestListing():
             rawRequest.get('officialDesc', '')
         ))
 
-        conn.commit()
         newRequestId = cursor.fetchone()
+        conn.commit()
+        
+        # Auto-approve and create listing if setting is enabled
+        # This section automatically creates a listing when auto-approval is enabled
+        # It replicates the flow found in createListing.py to ensure consistency
+        if auto_approve:
+            # Create a new listing in the listings table
+            current_time = datetime.now(pytz.timezone('Etc/GMT-8'))
+            # Convert abv from string to float if necessary
+            abv_converted = None
+            if rawRequest['abv']:
+                try:
+                    abv_value = str(rawRequest['abv']).replace('%', '')  # Remove the '%' sign
+                    abv_converted = float(abv_value)
+                except (ValueError, TypeError):
+                    print(f"Warning: Could not convert ABV value '{rawRequest['abv']}' to float")
+            
+            cursor.execute("""
+                INSERT INTO "listings" (
+                    "listingName", "bottler", "drinkType", "sourceLink", 
+                    "producerID", "bottlerID", "originCountry", "typeCategory", 
+                    "abv", "age", "reviewLink", "drinkStyle", "officialDesc", 
+                    "allowMod", "addedDate", "photo"
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                RETURNING id;
+            """, (
+                rawRequestName,
+                rawRequest['bottler'],
+                rawRequest['drinkType'],
+                rawRequest['sourceLink'],
+                producerId,
+                bottler_id,
+                rawRequest['originCountry'],
+                rawRequest['typeCategory'],
+                abv_converted,
+                rawRequest['age'],
+                rawRequest['reviewLink'],
+                rawRequest.get('drinkStyle', ''),
+                rawRequest.get('officialDesc', ''),
+                True,  # allowMod
+                current_time,
+                rawRequest['photo']
+            ))
+            
+            listing_id = cursor.fetchone()['id']
+            
+            # Create notification for the submitter
+            if userId:
+                # Create a URL-safe slug
+                slug = re.sub(r'[^a-z0-9]+', '', rawRequestName.lower())
+                
+                # Insert notification
+                notification_data = {
+                    "userId": userId,
+                    "userType": "user",
+                    "notiTabs": "forYou",
+                    "notiType": "approvedListing",
+                    "image": rawRequest.get('photo'),
+                    "link": f"/listing/view/{listing_id}/{slug}",
+                    "message": f"Your listing request '{rawRequestName}' has been approved and is now live!",
+                    "createdAt": current_time,
+                }
+                
+                notifications.add_notification_to_db(notification_data)
+                
+                # Process any reward points or badges
+                if pointsHelperFunc.check_max_proof_points(userId) is False:
+                    # Add proof points for successful listing creation
+                    cursor.execute(
+                        'SELECT "proofPoints" FROM "pointSystemRules" WHERE id = 12;'
+                    )
+                    proof_points = cursor.fetchone()
+                    if proof_points:
+                        cursor.execute(
+                            'UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s AND "userType" = %s;',
+                            (proof_points['proofPoints'], userId, 'user')
+                        )
+                    
+                    # Process badge award
+                    badge_result = badge_helpers.process_new_drink_badge(conn, cursor, userId)
+                    if badge_result:
+                        badge_notification = {
+                            "userId": userId,
+                            "userType": "user",
+                            "notiTabs": "forYou",
+                            "notiType": "badge_earned",
+                            "image": None,
+                            "link": f"/profile/user/{userId}",
+                            "message": f"Congratulations! You earned a badge: {badge_result['badgeName']}.",
+                            "createdAt": current_time,
+                        }
+                        notifications.add_notification_to_db(badge_notification)
+            
+            # Notify producer followers about the new listing
+            if producerId:
+                # Check if this is the first listing in 24 hours for this producer
+                cutoff = datetime.now(pytz.timezone('Etc/GMT-8')) - timedelta(hours=24)
+                
+                cursor.execute(
+                    'SELECT COUNT(*) FROM "listings" '
+                    'WHERE "producerID" = %s AND "addedDate" >= %s',
+                    (producerId, cutoff)
+                )
+                recent_count_row = cursor.fetchone()
+                recent_count = recent_count_row['count'] if recent_count_row else 0
+                print(f"Recent count: {recent_count}")
 
+                cursor.execute(
+                    'SELECT "producerName" FROM "producers" WHERE id = %s',
+                    (producerId,)
+                )
+                producer_row = cursor.fetchone()
+                producer_name = producer_row['producerName'] if producer_row else "A producer"
+
+                if recent_count <= 2:
+                    # Build a URL-safe slug
+                    slug = re.sub(r'[^a-z0-9]+', '', rawRequestName.lower())
+
+                    # Fetch all users who follow this producer
+                    cursor.execute(
+                        'SELECT "userId" FROM "usersFollowLists" '
+                        'WHERE %s::text = ANY("producers")',
+                        (str(producerId),)
+                    )
+                    followers = [row['userId'] for row in cursor.fetchall()]
+
+                    # Send notifications to followers
+                    for uid in followers:
+                        notification_data = {
+                            "userId": uid,
+                            "userType": "user",
+                            "notiTabs": "venues & producers",
+                            "notiType": "newDrink",
+                            "image": rawRequest.get('photo'),
+                            "link": f"/listing/view/{listing_id}/{slug}",
+                            "message": f"{producer_name} added a new drink: {rawRequestName}",
+                            "createdAt": current_time,
+                        }
+                        notifications.add_notification_to_db(notification_data)
         if newRequestId is None:
             raise Exception("Failed to retrieve the new request ID after insert.")
 
@@ -96,7 +244,9 @@ def requestListing():
                 "code": 201,
                 "data": {
                     "listingName": rawRequestName,
-                    "requestId": newRequestId
+                    "requestId": newRequestId['id'],
+                    "listingId": listing_id if auto_approve else None,
+                    "autoApproved": auto_approve
                 }
             }
         ), 201

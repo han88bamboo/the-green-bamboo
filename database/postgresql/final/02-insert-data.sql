@@ -4063,3 +4063,8 @@ INSERT INTO "latestUserFollowers"(
     "userId", "followingId", "followDate")
 VALUES
     (5, 1, '2025-07-11 18:45:31.403');
+
+
+-- Insert default settings
+INSERT INTO "systemSettings" ("settingName", "settingValue", "settingDescription")
+VALUES ('autoListingApproval', 'false', 'When set to true, new listing requests are automatically approved and created');

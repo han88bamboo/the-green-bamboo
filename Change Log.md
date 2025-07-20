@@ -1552,3 +1552,13 @@ fixed:
 
 Nature of the changes (frontend / backend / database):
 frontend, backend, database
+
+# Update as of 19 July - deployed
+
+Coder: Han
+
+Purpose of the changes:
+logic for auto-approval of listing requests
+
+Nature of the changes (frontend / backend / database):
+frontend, backend, database

@@ -66,6 +66,7 @@ DROP TABLE IF EXISTS "pointSystemRules" CASCADE; -- ADDED BY SMU GROUP 3
 DROP TABLE IF EXISTS "venueReviews" CASCADE;
 DROP TABLE IF EXISTS "venueReviewsUserVotes" CASCADE;
 DROP TABLE IF EXISTS "userNotificationsRead" CASCADE;
+DROP TABLE IF EXISTS "systemSettings" CASCADE;
 
 -- to enable trigram index for fuzzy search
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
@@ -876,4 +877,14 @@ CREATE TABLE "latestUserFollowers" (
 CREATE TABLE "moreColours" (
     "id" SERIAL PRIMARY KEY,
     "hexcode" VARCHAR(7)
+);
+
+
+-- ========= "systemSettings" =========
+CREATE TABLE "systemSettings" (
+    "id" SERIAL PRIMARY KEY,
+    "settingName" VARCHAR(255) UNIQUE NOT NULL,
+    "settingValue" TEXT NOT NULL,
+    "settingDescription" TEXT,
+    "lastUpdated" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
