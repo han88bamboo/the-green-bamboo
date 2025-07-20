@@ -2272,44 +2272,51 @@
                     <!-- Example row for "Add Review" button and some preview images -->
                     <div class="row text-start" style="padding-left: 0.75em">
                         <div class="col">
-                        <div class="row justify-content-start align-items-start mt-2">
-                            <!-- Add new review button -->
-                            <div
-                            v-if="userType === 'user' && user_id !== 'defaultUser' && !inEdit"
-                            class="mobile-col-3 col-sm-6 col-md-4 col-lg-2 mobile-px-1"
-                            data-bs-toggle="modal"
-                            data-bs-target="#venueReviewModal"
-                            style="cursor: pointer"
-                            >
-                            <!-- Example plus icon (like in ProducerProfile) -->
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="#83A9E8"
-                                class="bi bi-plus-lg review-image"
-                                viewBox="0 0 16 16"
-                            >
-                                <path
-                                fill-rule="evenodd"
-                                d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0
-                                    1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0
-                                    1 0-1h5v-5A.5.5 0 0 1 8 2"
-                                />
-                            </svg>
-                            </div>
+                            <div class="row justify-content-start align-items-start mt-2">
+                                <!-- Add new review button -->
+                                <div
+                                    v-if="userType === 'user' && user_id !== 'defaultUser' && !inEdit"
+                                    class="mobile-col-3 col-sm-6 col-md-4 col-lg-2 mobile-px-1"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#venueReviewModal"
+                                    style="cursor: pointer"
+                                >
+                                <!-- Example plus icon (like in ProducerProfile) -->
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="#83A9E8"
+                                        class="bi bi-plus-lg review-image"
+                                        viewBox="0 0 16 16"
+                                    >
+                                        <path
+                                            fill-rule="evenodd"
+                                            d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0
+                                                1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0
+                                                1 0-1h5v-5A.5.5 0 0 1 8 2"
+                                        />
+                                    </svg>
+                                </div>
 
-                            
-
-                            <!-- (Optional) preview the first few review images -->
-                            <div
-                            v-for="reviewImage in filteredVenueReviewsWithImages.slice(0,5)"
-                            :key="reviewImage"
-                            class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 mobile-px-1"
-                            >
-                            <img :src="reviewImage || defaultPhoto" alt="" class="review-image" />
+                                <!-- Updated: Display combined images from both venue and bottle reviews -->
+                                <div
+                                    v-for="(imageData, index) in combinedReviewImages.slice(0,5)"
+                                    :key="`combined-${index}`"
+                                    class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 mobile-px-1"
+                                    style="position: relative;"
+                                    :style="{ cursor: imageData.reviewType === 'bottle' ? 'pointer' : 'default' }"
+                                    @click="imageData.reviewType === 'bottle' ? openDetailedReviewModal(imageData) : null"
+                                >
+                                    <img :src="imageData.photo || defaultPhoto" alt="" class="review-image" />
+                                    
+                                    <!-- Optional: Add a small badge to indicate review type -->
+                                    <div class="position-absolute top-0 end-0 m-1">
+                                        <span v-if="imageData.reviewType === 'venue'" class="badge bg-primary" style="font-size: 0.6rem;">V</span>
+                                        <span v-if="imageData.reviewType === 'bottle'" class="badge bg-success" style="font-size: 0.6rem;">B</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        </div>
-                    </div> 
+                    </div>
 
                     <hr />
 
@@ -3315,6 +3322,253 @@
         </div>
     </div>
     </div>
+
+    <button id="hiddenModalTrigger" data-bs-toggle="modal" data-bs-target="#detailedReviewModal" style="display: none;"></button>
+    <!-- Updated sections for venue profile page -->
+
+    <!-- Add this to the venue reviews section, replace the existing image click handler -->
+    <div
+    v-for="(imageData, index) in combinedReviewImages.slice(0,5)"
+    :key="`combined-${index}`"
+    class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 mobile-px-1"
+    style="position: relative;"
+    :style="{ cursor: imageData.reviewType === 'bottle' ? 'pointer' : 'default' }"
+    @click="imageData.reviewType === 'bottle' ? openDetailedReviewModal(imageData) : null"
+    >
+    <img :src="imageData.photo || defaultPhoto" alt="" class="review-image" />
+    
+    <!-- Optional: Add a small badge to indicate review type -->
+    <div class="position-absolute top-0 end-0 m-1">
+        <span v-if="imageData.reviewType === 'venue'" class="badge bg-primary" style="font-size: 0.6rem;">V</span>
+        <span v-if="imageData.reviewType === 'bottle'" class="badge bg-success" style="font-size: 0.6rem;">B</span>
+    </div>
+    </div>
+
+    <!-- Add this detailed review modal after your existing modals, before the closing template tag -->
+
+    <!-- Detailed Review Modal -->
+    <div class="modal fade" id="detailedReviewModal" tabindex="-1" aria-labelledby="detailedReviewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="detailedReviewModalLabel">
+                    {{ getBottleNameFromReview(selectedDetailedReview) }} Review
+                </h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-start">
+            
+            <!-- Username -->
+            <div class="row">
+                <div class="col-3">
+                    <b>Username</b>
+                </div>
+                <div class="col-9">
+                    <b>
+                        @<router-link :to="`/profile/user/${selectedDetailedReview.userID}/${getUsernameFromReview(selectedDetailedReview)}`"
+                            style="text-decoration-color: #535c72">
+                            <span class="default-clickable-text">
+                                {{ getUsernameFromReview(selectedDetailedReview) }}
+                            </span>
+                        </router-link>
+                        <span class="ms-2">
+                            {{ getUserPointsFromReview(selectedDetailedReview) }}
+                        </span>
+                        <span :style="{ color: getUserRankColor(selectedDetailedReview) }">
+                            {{ getUserRankFromReview(selectedDetailedReview) }}
+                        </span>
+                    </b>
+                </div>
+            </div>
+
+            <!-- Rating -->
+            <div class="row mt-2">
+                <div class="col-3">
+                    <b>Rating</b>
+                </div>
+                <div class="col-9">
+                    {{ selectedDetailedReview.rating }}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                        class="bi bi-star-fill me-3" viewBox="0 0 16 16">
+                    <path
+                        d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Review -->
+            <div class="row mt-2">
+                <div class="col-3">
+                    <b>Review</b>
+                </div>
+                <div class="col-9">
+                    {{ selectedDetailedReview.reviewDesc }}
+                </div>
+            </div>
+
+            <!-- Location -->
+            <div class="row mt-2">
+                <div class="col-3">
+                    <b>Location</b>
+                </div>
+                <div class="col-9">
+                    <span v-if="selectedDetailedReview.location">
+                        <router-link :to="`/profile/venue/${selectedDetailedReview.location}/${getVenueNameFromID(selectedDetailedReview.location)}`" 
+                            style="color: inherit">
+                            <b>{{ getVenueNameFromID(selectedDetailedReview.location) }}</b>
+                        </router-link>
+                    </span>
+                    <span v-else-if="selectedDetailedReview.address">
+                        <a :href="'https://www.google.com/maps/search/' + selectedDetailedReview.address" 
+                            style="color: inherit" target="_blank">
+                            <b>{{ selectedDetailedReview.address }}</b>
+                        </a>
+                    </span>
+                    <span v-else>-</span>
+                </div>
+            </div>
+
+            <!-- Feedback -->
+            <div class="row mt-2">
+                <div class="col-3">
+                    <b>Feedback</b>
+                </div>
+                <div class="col-9">
+                    <div v-if="selectedDetailedReview.willRecommend || selectedDetailedReview.wouldBuyAgain">
+                        <div v-if="selectedDetailedReview.willRecommend">
+                            Would Recommend
+                        </div>
+                        <div v-if="selectedDetailedReview.wouldBuyAgain">
+                            Would Buy Again
+                        </div>
+                    </div>
+                    <div v-else>-</div>
+                </div>
+            </div>
+
+            <!-- More information -->
+            <hr />
+            <h5 class="text-center">More Information</h5>
+            <hr />
+
+            <!-- Colour -->
+            <div class="row mt-2">
+                <div class="col-3">
+                    <b>Colour</b>
+                </div>
+                <div class="col-9">
+                    <div v-if="selectedDetailedReview.colour" :style="{
+                        width: '24px',
+                        height: '24px',
+                        backgroundColor: selectedDetailedReview.colour,
+                    }"></div>
+                    <div v-else>-</div>
+                </div>
+            </div>
+
+            <!-- Aroma -->
+            <div class="row mt-2">
+                <div class="col-3">
+                    <b>Aroma</b>
+                </div>
+                <div class="col-9">
+                    <div v-if="selectedDetailedReview.aroma">
+                        {{ selectedDetailedReview.aroma }}
+                    </div>
+                    <div v-else>-</div>
+                </div>
+            </div>
+
+            <!-- Taste -->
+            <div class="row mt-2">
+                <div class="col-3">
+                    <b>Taste</b>
+                </div>
+                <div class="col-9">
+                    <div v-if="selectedDetailedReview.taste">
+                        {{ selectedDetailedReview.taste }}
+                    </div>
+                    <div v-else>-</div>
+                </div>
+            </div>
+
+            <!-- Finish -->
+            <div class="row mt-2">
+                <div class="col-3">
+                    <b>Finish</b>
+                </div>
+                <div class="col-9">
+                    <div v-if="selectedDetailedReview.finish">
+                        {{ selectedDetailedReview.finish }}
+                    </div>
+                    <div v-else>-</div>
+                </div>
+            </div>
+            </div>
+
+            <!-- Tags -->
+            <hr />
+            <h5 class="text-center">Tags</h5>
+            <hr />
+
+            <!-- Friend Tags -->
+            <div class="row mt-2">
+            <div class="col-3">
+                <b>Friend Tags</b>
+            </div>
+            <div class="col-9">
+                <span v-for="(user, index) in selectedDetailedReview.taggedUsers" :key="index">
+                <b>
+                    @<router-link :to="`/profile/user/${user}`" style="text-decoration-color: #535c72">
+                    <span class="default-clickable-text">
+                        {{ getUsernameFromId(parseInt(user)) }}
+                    </span>
+                    </router-link>
+                </b>
+                <span v-if="index < selectedDetailedReview.taggedUsers.length - 1">, </span>
+                </span>
+            </div>
+            </div>
+
+            <!-- Flavour Tags -->
+            <div class="row mt-2">
+            <div class="col-3">
+                <b>Flavour Tags</b>
+            </div>
+            <div class="col-9">
+                <span v-for="(tag, index) in selectedDetailedReview.flavourTag" :key="index"
+                class="badge rounded-pill me-2" :style="{
+                    backgroundColor: getTagColor(parseInt(tag)),
+                }">{{ getTagName(parseInt(tag)) }}</span>
+            </div>
+            </div>
+
+            <!-- Observation Tags -->
+            <div class="row mt-2">
+            <div class="col-3">
+                <b>Action Tags</b>
+            </div>
+            <div class="col-9">
+                <span v-for="(tag, index) in selectedDetailedReview.observationTag" :key="index" 
+                class="badge rounded-pill me-2" style="background-color: #f0b358; color: black">{{ tag }}</span>
+            </div>
+            </div>
+
+            <div class="modal-footer">
+                <router-link 
+                    :to="`/listing/view/${selectedDetailedReview.reviewTarget}/${getBottleNameFromReview(selectedDetailedReview)}`" 
+                    class="btn btn-primary"
+                    @click="hideModal"
+                >
+                    View Listing Page
+                </router-link>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Close
+                </button>
+            </div>
+        </div>
+        </div>
+    </div>
     <FooterBar />
 </template>
 
@@ -3552,7 +3806,14 @@
                     }.bind(this)
                 },
 
-                menuSnapshot: null
+                menuSnapshot: null,
+
+                bottleReviews: [],
+                combinedReviewImages: [],
+
+                selectedDetailedReview: {},
+                bottleListings: {},
+                venues: []
             }
         },
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -3873,6 +4134,114 @@
                 }
             },
 
+            async loadBottleReviews() {
+                try {
+                    const response = await this.$axios.get(
+                        `${process.env.VUE_APP_API_URL}/getData/getBottleReviewsByVenueId/${this.targetVenue.id}`
+                    );
+                    this.bottleReviews = response.data;
+                    
+                    // Combine all review images after loading both venue and bottle reviews
+                    this.getCombinedReviewImages();
+                    
+                } catch (error) {
+                    console.error("Error fetching bottle reviews for venue:", error);
+                }
+            },
+
+            // Add this new method to combine images from both review types
+            getCombinedReviewImages() {
+                this.combinedReviewImages = [];
+                
+                // Add venue review images with metadata
+                this.filteredVenueReviews.forEach((review) => {
+                    if (review.photos && review.photos.length > 0) {
+                        review.photos.forEach((photo) => {
+                            this.combinedReviewImages.push({
+                                photo: photo,
+                                reviewType: 'venue',
+                                reviewId: review.id,
+                                reviewData: review
+                            });
+                        });
+                    }
+                });
+                
+                // Add bottle review images with metadata
+                this.bottleReviews.forEach((review) => {
+                    if (review.photo) {
+                        this.combinedReviewImages.push({
+                            photo: review.photo,
+                            reviewType: 'bottle', 
+                            reviewId: review.id,
+                            reviewData: review
+                        });
+                    }
+                });
+                
+                // Sort by creation date (newest first)
+                this.combinedReviewImages.sort((a, b) => 
+                    new Date(b.reviewData.createdDate) - new Date(a.reviewData.createdDate)
+                );
+            },
+
+            openDetailedReviewModal(imageData) {
+                console.log("Opening detailed review modal for image data:", imageData);
+                if (imageData.reviewType !== 'bottle') {
+                    return;
+                }
+                
+                this.selectedDetailedReview = {
+                    ...imageData.reviewData,
+                    reviewType: imageData.reviewType
+                };
+                
+                if (!this.bottleListings[imageData.reviewData.reviewTarget]) {
+                    this.fetchBottleDetails(imageData.reviewData.reviewTarget);
+                }
+                
+                // Use hidden trigger button
+                this.$nextTick(() => {
+                    const hiddenTrigger = document.getElementById('hiddenModalTrigger');
+                    console.log("Hidden trigger found:", hiddenTrigger);
+                    if (hiddenTrigger) {
+                        hiddenTrigger.click();
+                    }
+                });
+            },
+
+            hideModal() {
+                this.selectedDetailedReview = {};
+                this.bottleListings = {};
+                this.$nextTick(() => {
+                    const hiddenTrigger = document.getElementById('hiddenModalTrigger');
+                    if (hiddenTrigger) {
+                        hiddenTrigger.click();
+                    }
+                });
+
+            },
+
+            async fetchBottleDetails(listingId) {
+                try {
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListing/${listingId}`);
+                    if (response.data) {
+                    this.bottleListings[listingId] = response.data;
+                    }
+                } catch (error) {
+                    console.error('Error fetching bottle details:', error);
+                    this.bottleListings[listingId] = { listingName: 'Unknown Bottle' };
+                }
+            },
+
+            // Get bottle name from review data
+            getBottleNameFromReview(review) {
+                if (this.bottleListings[review.reviewTarget]) {
+                    return this.bottleListings[review.reviewTarget].listingName;
+                }
+                return 'Loading...';
+            },
+
             // to check if producer QnA should be shown
             checkToShowQnA() {
                 if (this.showQnA == true) {
@@ -4173,7 +4542,8 @@
                     } 
 
                     allUserIDs = this.filteredVenueReviews.map((review) => review.userID);
-                    this.getFilteredVenueReviewsWithImages();
+                    // this.getFilteredVenueReviewsWithImages();
+                    await this.loadBottleReviews();
                     this.specificReview = this.getLoggedUserReview();
 
                 } catch (error) {
@@ -5701,6 +6071,110 @@
                     this.filteredVenueReviewsWithImages.push(photo);
                     });
                 });
+
+                this.getCombinedReviewImages();
+            },
+
+            handleReviewImageClick(imageData) {
+                // Only handle bottle reviews that tag this venue
+                if (imageData.reviewType === 'bottle') {
+                    console.log('Clicked bottle review image:', imageData);
+                    this.openDetailedReviewModal(imageData);
+                }
+                // Do nothing for venue reviews - they don't open a modal
+            },
+
+            // Helper methods for tag display (needed for bottle reviews)
+            getTagName(tagId) {
+                // You may need to load flavor tags and subtags data if not already available
+                // This should match the implementation from your bottle listing page
+                const subTag = this.subTags?.find((subTag) => subTag.id === tagId);
+                if (subTag) {
+                    const familyTag = this.flavorTags?.find(
+                        (family) => subTag.familyTagId === family.id
+                    );
+                    if (familyTag) {
+                        return subTag.subTag;
+                    }
+                }
+                return "<deleted tag>";
+            },
+
+            getTagColor(tagId) {
+                const subTag = this.subTags?.find((subTag) => subTag.id === tagId);
+                if (subTag) {
+                    const familyTag = this.flavorTags?.find(
+                        (family) => subTag.familyTagId === family.id
+                    );
+                    if (familyTag) {
+                        return familyTag.hexcode;
+                    }
+                }
+                return "#030303";
+            },
+
+            getUsernameFromId(userId) {
+                const user = this.users.find((user) => user.id === userId);
+                return user ? user.username : "Unknown User";
+            },
+
+            // Get venue name from venue ID
+            getVenueNameFromID(venueID) {
+                // First check if it's the current venue
+                if (this.targetVenue && this.targetVenue.id == venueID) {
+                    return this.targetVenue.venueName;
+                }
+                
+                // If we have a venues array from loading other venues, check there
+                if (this.venues && this.venues.length > 0) {
+                    const venue = this.venues.find((venue) => venue.id == venueID);
+                    if (venue) {
+                        return venue.venueName;
+                    }
+                }
+                
+                // If venue not found, we might need to fetch it
+                this.fetchVenueNameById(venueID);
+                return "Loading venue...";
+            },
+
+            // Fetch venue name by ID if not already loaded
+            async fetchVenueNameById(venueID) {
+                try {
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenue/${venueID}`);
+                    if (response.data) {
+                        // Initialize venues array if it doesn't exist
+                        if (!this.venues) {
+                            this.venues = [];
+                        }
+                        // Add to venues array if not already there
+                        const existingVenue = this.venues.find(v => v.id == venueID);
+                        if (!existingVenue) {
+                            this.venues.push(response.data);
+                        }
+                        // Force reactivity update
+                        this.$forceUpdate();
+                    }
+                } catch (error) {
+                    console.error('Error fetching venue:', error);
+                }
+            },
+
+            async loadFlavorTagsForModal() {
+                try {
+                    if (!this.flavorTags || this.flavorTags.length === 0) {
+                        const flavorResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getFlavourTags`);
+                        this.flavorTags = flavorResponse.data;
+                    }
+                    
+                    // Load subtags if not already loaded
+                    if (!this.subTags || this.subTags.length === 0) {
+                        const subTagResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getSubTags`);
+                        this.subTags = subTagResponse.data;
+                    }
+                } catch (error) {
+                    console.error('Error loading flavor tags:', error);
+                }
             },
 
             getLoggedUserReview() {

@@ -339,23 +339,22 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                                 </router-link>
                                 <!-- Country of Origin -->
                                 <p class="m-0  mobile-fs-7">
-                                        <b> Origin: </b>
-                                        {{ producer['originCountry'] }}
+                                    <b> Origin: </b>
+                                    {{ producer['originCountry'] }}
                                 </p>
                                 <p class="m-0  mobile-fs-7">
                                     <b> Average Drink Rating: </b>
-                                    {{ producer["averageRating"] }} ★
+                                    {{ producer["averageDrinkRating"] || '-' }} ★
                                 </p>
                                 <p class="m-0  mobile-fs-7"><b>Average Tour & Experience Rating:&nbsp;</b>
-                                    {{ producer['averageRating'] }} ★
-                                    </p>
+                                    {{ producer['averageTourRating'] || '-' }} ★
+                                </p>
 
                                 <p class="mt-1 fst-italic scrollable-long mobile-fs-7">
                                 {{ producer["producerDesc"]?.length > 60 
                                     ? producer["producerDesc"].slice(0, 60) + '...' 
                                     : producer["producerDesc"] }}
                                 </p>
-
                             </div>
                             <!-- DESKTOP VIEW -->
                             <!-- Image -->
@@ -379,29 +378,14 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                                     </p>
                                     <p class="m-0">
                                         <b> Average Drink Rating: </b>
-                                        {{ producer['averageRating'] }} ★
+                                        {{ producer['averageDrinkRating'] || '-' }} ★
                                     </p>
                                     <p class="m-0"><b>Average Tour & Experience Rating:&nbsp;</b>
-                                    {{ producer['averageRating']}} ★
+                                    {{ producer['averageTourRating'] || '-' }} ★
                                     </p>
-                                    <!-- Main Drinks 
-                                    <div class="m-0">
-                                        <b> Main Drinks: </b>
-                                        <div class="d-inline" v-for="(drink, index) in producer['mainDrinks']" v-bind:key="drink">
-                                            {{ index > 0 ? ', ' : '' }}{{ drink }}
-                                        </div>
-                                    </div>-->
                                 </div>
                                 <div class="col-lg-4 col-12 text-xl-end text-start" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
-                                    <!-- Claim Status 
-                                    <div class="m-0 mt-2">
-                                        <div v-if="producer['claimStatus']"> 
-                                            <button type="button" class="btn secondary-btn-less-round"> Verified </button>
-                                        </div>
-                                        <div v-else>
-                                            <button type="button" class="btn primary-btn-less-round"> Unverified </button>
-                                        </div>
-                                    </div>-->
+                                    <!-- Additional content can go here -->
                                 </div>
                                 <!-- Description -->
                                 <p class="fst-italic scrollable-long">{{ producer["producerDesc"] }}</p>
@@ -612,6 +596,8 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                         'Alphabetical (Z - A)',
                         'Ratings (Highest - Lowest)',
                         'Ratings (Lowest - Highest)',
+                        'Tour & Experience Ratings (Highest - Lowest)',
+                        'Tour & Experience Ratings (Lowest - Highest)',
                     ],
                     venues: [
                         'Alphabetical (A - Z)',
@@ -964,19 +950,35 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                             return b.producerName.localeCompare(a.producerName);
                         });
                     }
-                    // #3: Ratings (Highest - Lowest)
-                    else if (category == 'Ratings (Highest - Lowest)') {
+                    // #3: Drink Ratings (Highest - Lowest)
+                    else if (category == 'Drink Ratings (Highest - Lowest)') {
                         this.producerListings.sort((a, b) => {
-                            const aRating = a.averageRating === '-' ? 0 : parseFloat(a.averageRating);
-                            const bRating = b.averageRating === '-' ? 0 : parseFloat(b.averageRating);
+                            const aRating = a.averageDrinkRating === '-' ? 0 : parseFloat(a.averageDrinkRating);
+                            const bRating = b.averageDrinkRating === '-' ? 0 : parseFloat(b.averageDrinkRating);
                             return bRating - aRating;
                         });
                     }
-                    // #4: Ratings (Lowest - Highest)
-                    else if (category == 'Ratings (Lowest - Highest)') {
+                    // #4: Drink Ratings (Lowest - Highest)
+                    else if (category == 'Drink Ratings (Lowest - Highest)') {
                         this.producerListings.sort((a, b) => {
-                            const aRating = a.averageRating === '-' ? 0 : parseFloat(a.averageRating);
-                            const bRating = b.averageRating === '-' ? 0 : parseFloat(b.averageRating);
+                            const aRating = a.averageDrinkRating === '-' ? 0 : parseFloat(a.averageDrinkRating);
+                            const bRating = b.averageDrinkRating === '-' ? 0 : parseFloat(b.averageDrinkRating);
+                            return aRating - bRating;
+                        });
+                    }
+                    // #5: Tour & Experience Ratings (Highest - Lowest)
+                    else if (category == 'Tour & Experience Ratings (Highest - Lowest)') {
+                        this.producerListings.sort((a, b) => {
+                            const aRating = a.averageTourRating === '-' ? 0 : parseFloat(a.averageTourRating);
+                            const bRating = b.averageTourRating === '-' ? 0 : parseFloat(b.averageTourRating);
+                            return bRating - aRating;
+                        });
+                    }
+                    // #6: Tour & Experience Ratings (Lowest - Highest)
+                    else if (category == 'Tour & Experience Ratings (Lowest - Highest)') {
+                        this.producerListings.sort((a, b) => {
+                            const aRating = a.averageTourRating === '-' ? 0 : parseFloat(a.averageTourRating);
+                            const bRating = b.averageTourRating === '-' ? 0 : parseFloat(b.averageTourRating);
                             return aRating - bRating;
                         });
                     }

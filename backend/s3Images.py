@@ -16,12 +16,15 @@ purpose = os.getenv('PURPOSE')
 print(f"Purpose: {purpose}")
 
 # For deployment (comment out for local launch)
-if purpose == 'production':
-    bucket_name = 'tf-drinkx-prod-fe-images'
-    region='ap-southeast-1'
-else:
-    bucket_name = 'drinkximages'
-    region='us-east-1'
+# if purpose == 'production':
+#     bucket_name = 'tf-drinkx-prod-fe-images'
+#     region='ap-southeast-1'
+# else:
+#     bucket_name = 'drinkximages'
+#     region='us-east-1'
+
+bucket_name = 'tf-drinkx-prod-fe-images'
+region='ap-southeast-1'
 
 
 def uploadBase64ImageToS3(base64_string):

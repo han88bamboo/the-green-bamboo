@@ -661,49 +661,69 @@
         <!-- Info + Buttons (Responsive Layout) -->
         <div class="row mt-3 mobile-mt-1">
           <!-- Info Fields (7 columns desktop, full width mobile) -->
-          <div class="col-12 col-lg-7 d-flex flex-wrap justify-content-start mobile-pe-0">
-            <!-- Year Founded -->
-            <div v-if="specified_producer.yearFounded" class="col-3 text-start text-color-black">
-              <h5 class="mobile-rating-smaller-text text-body-secondary rating-text mb-0">
-                <b>{{ specified_producer["yearFounded"] }}</b>
-              </h5>
-              <p class="mb-2 mobile-rating-smaller-text-2"><u>Year Founded</u></p>
-            </div>
+          <div class="col-12 col-lg-7">
+            <div class="row">
+              <!-- Average Rating -->
+              <div class="col-xl-3 col-lg-4 col-md-6 col-6 text-start text-color-black mb-2">
+                <h5 class="mobile-rating-smaller-text text-body-secondary rating-text mb-0">
+                  <b>{{ getAverageDrinkRating() }}<span style="color: #f0b358">★</span></b>
+                </h5>
+                <p class="mb-0 mobile-rating-smaller-text-2">
+                  <u>Average Rating</u>
+                </p>
+              </div>
 
-            <!-- Active Status -->
-            <div v-if="specified_producer.activeStatus" class="col-3 text-start text-color-black">
-              <h5 class="mobile-rating-smaller-text text-body-secondary rating-text mb-0" style="text-transform: capitalize;">
-                <b>{{ specified_producer["activeStatus"] }}</b>
-              </h5>
-              <p class="mb-2 mobile-rating-smaller-text-2"><u>Status</u></p>
-            </div>
+              <!-- Year Founded -->
+              <div v-if="specified_producer.yearFounded" class="col-xl-3 col-lg-4 col-md-6 col-6 text-start text-color-black mb-2">
+                <h5 class="mobile-rating-smaller-text text-body-secondary rating-text mb-0">
+                  <b>{{ specified_producer["yearFounded"] }}</b>
+                </h5>
+                <p class="mb-0 mobile-rating-smaller-text-2">
+                  <u>Year Founded</u>
+                </p>
+              </div>
 
-            <!-- Open for Tours -->
-            <div v-if="specified_producer.openForTours !== null && specified_producer.openForTours !== undefined"
-              class="col-3 text-start text-color-black">
-              <h5 class="mobile-rating-smaller-text text-body-secondary rating-text mb-0">
-                <b>{{ specified_producer["openForTours"] === true ? "Yes" : "No" }}</b>
-              </h5>
-              <p class="mb-2 mobile-rating-smaller-text-2"><u>Open for Tours?</u></p>
-            </div>
+              <!-- Active Status -->
+              <div v-if="specified_producer.activeStatus" class="col-xl-3 col-lg-4 col-md-6 col-6 text-start text-color-black mb-2">
+                <h5 class="mobile-rating-smaller-text text-body-secondary rating-text mb-0" style="text-transform: capitalize;">
+                  <b>{{ specified_producer["activeStatus"] }}</b>
+                </h5>
+                <p class="mb-0 mobile-rating-smaller-text-2">
+                  <u>Status</u>
+                </p>
+              </div>
 
-            <!-- Owner -->
-            <div v-if="specified_producer.owner" class="col-3 text-start text-color-black">
-              <h5 class="mobile-rating-smaller-text text-body-secondary rating-text mb-0">
-                <b>{{ specified_producer["owner"] }}</b>
-              </h5>
-              <p class="mb-2 mobile-rating-smaller-text-2"><u>Owner</u></p>
+              <!-- Open for Tours -->
+              <div v-if="specified_producer.openForTours !== null && specified_producer.openForTours !== undefined"
+                class="col-xl-3 col-lg-4 col-md-6 col-6 text-start text-color-black mb-2">
+                <h5 class="mobile-rating-smaller-text text-body-secondary rating-text mb-0">
+                  <b>{{ specified_producer["openForTours"] === true ? "Yes" : "No" }}</b>
+                </h5>
+                <p class="mb-0 mobile-rating-smaller-text-2">
+                  <u>Open for Tours?</u>
+                </p>
+              </div>
+
+              <!-- Owner -->
+              <div v-if="specified_producer.owner" class="col-xl-3 col-lg-4 col-md-6 col-6 text-start text-color-black mb-2">
+                <h5 class="mobile-rating-smaller-text text-body-secondary rating-text mb-0">
+                  <b>{{ specified_producer["owner"] }}</b>
+                </h5>
+                <p class="mb-0 mobile-rating-smaller-text-2">
+                  <u>Owner</u>
+                </p>
+              </div>
             </div>
           </div>
 
           <!-- Buttons (5 columns desktop, full width mobile) -->
-          <div class="col-12 col-lg-5 d-flex gap-2 justify-content-lg-end justify-content-start mt-3 mt-lg-0">
+          <div class="col-12 col-lg-5 d-flex flex-column flex-lg-row gap-2 justify-content-lg-end justify-content-start mt-3 mt-lg-0 align-items-start align-items-lg-center">
             <!-- Follow Button -->
             <button
               v-if="!following"
               class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
               @click="editFollow('follow')"
-              style="font-weight: bold;"
+              style="font-weight: bold; height: fit-content;"
             >
               + Follow
             </button>
@@ -711,7 +731,7 @@
               v-else
               class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
               @click="editFollow('unfollow')"
-              style="font-weight: bold; background-color: rgb(249, 115, 106);"
+              style="font-weight: bold; background-color: rgb(249, 115, 106); height: fit-content;"
             >
               Following
             </button>
@@ -722,7 +742,7 @@
               class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
               data-bs-toggle="modal"
               data-bs-target="#reviewModal"
-              style="font-weight: bold;"
+              style="font-weight: bold; height: fit-content;"
             >
               Review Producer
             </button>
@@ -730,14 +750,14 @@
             <button
               v-else-if="inEdit"
               class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
-              style="font-weight: bold; background-color: rgb(249, 115, 106);"
+              style="font-weight: bold; background-color: rgb(249, 115, 106); height: fit-content;"
             >
               Reviewed!
             </button>
             <button
               v-else
               class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
-              style="font-weight: bold;"
+              style="font-weight: bold; height: fit-content;"
               @click="$router.push('/login')"
             >
               Review Producer
@@ -4504,6 +4524,26 @@ export default {
         allProducerDrinkRatings[drink_name].push(rating);
       });
       this.drinkRatings = allProducerDrinkRatings;
+    },
+
+    getAverageDrinkRating() {
+      // Get all reviews for this producer's listings
+      const allDrinkReviews = this.reviews.filter(review => {
+        return this.allDrinksIDs.includes(review.reviewTarget);
+      });
+      
+      // If no reviews, return "-"
+      if (allDrinkReviews.length === 0) {
+        return "-";
+      }
+      
+      // Calculate average rating
+      const totalRating = allDrinkReviews.reduce((sum, review) => {
+        return sum + parseFloat(review.rating);
+      }, 0);
+      
+      const averageRating = totalRating / allDrinkReviews.length;
+      return averageRating.toFixed(1);
     },
 
     // get compiled dictionary of count of each type of drink
