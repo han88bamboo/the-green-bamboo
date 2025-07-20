@@ -1539,3 +1539,16 @@ adding Google analytics tag - Now tracking
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+
+# Update as of 19 July - deployed
+
+Coder: Han
+
+Purpose of the changes:
+fixed:
+–unable to allow ordinary users to submit drinks description in listing requests
+–unable to edit listing requests
+
+Nature of the changes (frontend / backend / database):
+frontend, backend, database
