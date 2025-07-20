@@ -6864,3 +6864,43 @@ def getUserNamesDynamic(search_term):
 
     finally:
         cur.close()
+
+
+# [GET] Get a specific system setting by name
+@blueprint.route("/getSystemSetting/<setting_name>", methods=['GET'])
+def getSystemSetting(setting_name):
+    conn = g.db
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute(
+            'SELECT * FROM "systemSettings" WHERE "settingName" = %s',
+            (setting_name,)
+        )
+        
+        setting = cursor.fetchone()
+        
+        if not setting:
+            return jsonify({
+                "code": 404,
+                "message": f"System setting '{setting_name}' not found."
+            }), 404
+        
+        return jsonify({
+            "code": 200,
+            "message": "System setting fetched successfully.",
+            "settingName": setting["settingName"],
+            "settingValue": setting["settingValue"],
+            "settingDescription": setting["settingDescription"],
+            "lastUpdated": setting["lastUpdated"]
+        })
+        
+    except Exception as e:
+        print(f"Error fetching system setting: {str(e)}")
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching the system setting."
+        }), 500
+    
+    finally:
+        cursor.close()

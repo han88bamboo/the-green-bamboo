@@ -6,8 +6,28 @@
 
     <!-- Main Content -->
     <div v-if="!loadError">
-      <h1 class="fw-bold fs-1 m-0">Admin Dashboard</h1>
-      
+    <h1 class="fw-bold fs-1 m-0">Admin Dashboard</h1>
+    <div class="mt-3 mb-4 d-flex align-items-center">
+        <span class="me-3 fw-bold">Auto-Approve Listings:</span>
+        <div class="form-check form-switch">
+            <input 
+            class="form-check-input" 
+            type="checkbox" 
+            role="switch" 
+            id="autoApprovalToggle" 
+            v-model="autoApproval" 
+            @change="updateAutoApproval"
+            >
+            <label class="form-check-label" for="autoApprovalToggle">
+            {{ autoApproval ? 'Enabled' : 'Disabled' }}
+            </label>
+        </div>
+        <span v-if="approvalLoading" class="ms-2">
+            <div class="spinner-border spinner-border-sm text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+            </div>
+        </span>
+    </div>
       <div>
         <DateRangePicker @date-range-selected="handleRangeUpdate" 
             :initial-start-date="selectedDates.startDate"
@@ -185,6 +205,9 @@ export default {
             venues: [],
             countries: [],
             drinkTypes: [],
+
+            autoApproval: false,
+            approvalLoading: false,
         };
     },
     computed: {        
@@ -228,6 +251,9 @@ export default {
             // 2. If authorized, load all dashboard data
             await this.loadStasData();
             await this.loadData();
+
+            // Load system settings
+            await this.loadSystemSettings();
 
         } catch (error) {
             console.error("Authentication or data loading failed:", error);
@@ -375,7 +401,34 @@ export default {
             link.setAttribute("download", "business_login_details.csv");
             document.body.appendChild(link); // Required for FF
             link.click();
-        }        
+        },
+
+          // Load system settings during component initialization
+        async loadSystemSettings() {
+            try {
+            const response = await axios.get(`${this.API_URL}/getData/getSystemSetting/autoListingApproval`);
+            this.autoApproval = response.data?.settingValue?.toLowerCase() === 'true';
+            } catch (error) {
+            console.error("Failed to load system settings:", error);
+            }
+        },
+
+        // Update auto approval setting when toggle is clicked
+        async updateAutoApproval() {
+            this.approvalLoading = true;
+            try {
+            await axios.post(`${this.API_URL}/adminFunctions/updateSystemSetting`, {
+                settingName: 'autoListingApproval',
+                settingValue: this.autoApproval ? 'true' : 'false'
+            });
+            } catch (error) {
+            console.error("Failed to update auto approval setting:", error);
+            // Revert UI if server update fails
+            this.autoApproval = !this.autoApproval;
+            } finally {
+            this.approvalLoading = false;
+            }
+        }
     }
 };
 </script>

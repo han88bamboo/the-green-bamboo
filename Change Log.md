@@ -1562,3 +1562,13 @@ logic for auto-approval of listing requests
 
 Nature of the changes (frontend / backend / database):
 frontend, backend, database
+
+# Update as of 20 July - deployed
+
+Coder: Han
+
+Purpose of the changes:
+frontend logic for auto-approval of listing requests toggle
+
+Nature of the changes (frontend / backend / database):
+frontend, backend
