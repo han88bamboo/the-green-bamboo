@@ -6296,7 +6296,7 @@ Please find my details below:
 
 Thank you!`
     );
-    window.location.href = `mailto:hellodrinkx@gmail.com?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:hello@drink-x.com?subject=${subject}&body=${body}`;
   }
   },
 };

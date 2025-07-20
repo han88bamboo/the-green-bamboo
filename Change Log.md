@@ -1572,3 +1572,14 @@ frontend logic for auto-approval of listing requests toggle
 
 Nature of the changes (frontend / backend / database):
 frontend, backend
+
+
+# Update as of 20 July - deployed
+
+Coder: Han
+
+Purpose of the changes:
+search bar modal for submission of requests for users
+
+Nature of the changes (frontend / backend / database):
+frontend, backend

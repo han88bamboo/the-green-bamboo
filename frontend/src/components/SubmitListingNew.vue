@@ -77,17 +77,32 @@
 
                 <!-- Form Title -->
                 <div class="d-grid gap-2">
-                    <div v-if="formType == 'req'">
-                        <p class="fw-bold fs-1" v-if="formMode == 'new'">Request New Bottle Listing</p>
+                    <div v-if="formType == 'req'"> 
+                        <p class="fw-bold fs-3" v-if="formMode == 'new'">Can't <span style="cursor: pointer; color: #027562;" data-bs-toggle="modal" data-bs-target="#searchModal">find your bottle on Drink-X</span>? Submit a new bottle listing!</p>
+                        <p class="fs-5 fw-bold mobile-rating-smaller-text-2" v-if="formMode == 'new'"><span style="cursor: pointer; color: #027562;" data-bs-toggle="modal" data-bs-target="#searchModal">Double check if it's already listed!</span></p>
                         <p class="fw-bold fs-1" v-if="formMode == 'edit'">Propose Edit to Bottle Listing</p>
                         <p class="fw-bold fs-1" v-if="formMode == 'dup'">Report Duplicate Bottle Listing</p>
+                
                     </div>
                     <div v-if="formType == 'power'">
                         <p class="fw-bold fs-1" v-if="formMode == 'new'">Create New Bottle Listing</p> 
                         <p class="fw-bold fs-1" v-if="formMode == 'edit'">Edit Bottle Listing</p>
                     </div>
                 </div>
-                
+                <!-- Search Modal -->
+                <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog" style="margin-top: 15vh;">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h6 class="modal-title" id="searchModalLabel">Let's check if your bottle is already on Drink-X!</h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <AutocompleteSearch @select="handleSelection" />
+                    </div>
+                    </div>
+                </div>
+                </div>
                 <!-- [REQ EDIT/DUP] Show Linked Bottle Listing Information -->
                 <div class="card mb-3 text-start" v-if="formType == 'req' && (formMode == 'edit' || formMode == 'dup')">
                     <div class="card-header fst-italic">
@@ -410,11 +425,28 @@
 </template>
 
 <script>
+    // import SearchBar from './SearchBar.vue';
+    import AutocompleteSearch from './AutocompleteSearch.vue';
+    import { useSearch } from '@/composables/navbar/useSearch'
+
     export default {
         name: "SubmitListingNew",
+        components: {
+            AutocompleteSearch
+        },
         props: {
             formType: String,
             formMode: String
+        },
+        setup() {
+            /* Searchbar handler functions stars here */
+            const { handleSelection } = useSearch()
+            /* Searchbar handler functions ends here */
+
+            return {
+            // Search functionality
+            handleSelection
+            }
         },
         data () {
             return {

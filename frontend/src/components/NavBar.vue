@@ -715,15 +715,15 @@
           </div>
           <div class="modal-body">
             <p>If you have any support queries, please email us at 
-              <a :href="'mailto:hellodrinkx@gmail.com?subject=Drink-X Support Request: &body=I am having trouble with...'">
-                hellodrinkx@gmail.com
+              <a :href="'mailto:hello@drink-x.com?subject=Drink-X Support Request: &body=I am having trouble with...'">
+                hello@drink-x.com
               </a> 
-              and we will respond as soon as we can within several days.
+              and we will respond as soon as we can..
             </p>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <a :href="'mailto:hellodrinkx@gmail.com?subject=Drink-X Support Request: &body=I am having trouble with...'" 
+            <a :href="'mailto:hello@drink-x.com?subject=Drink-X Support Request: &body=I am having trouble with...'" 
                class="btn btn-primary">
               Send Email
             </a>
