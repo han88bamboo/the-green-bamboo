@@ -1059,25 +1059,42 @@ def getProducersBySearch():
         if not producers_data:
             return jsonify([])
         
-        # Loop through the producers to get the average rating for each producer
+        # Loop through the producers to get both ratings for each producer
         for producer in producers_data:
-            # Get the average rating for the producer
+            # Get the average Tour & Experience rating for the producer (from producerReviews)
             cursor.execute("""
                 SELECT AVG("rating") AS "averageRating"
                 FROM "producerReviews"
                 WHERE "producerID" = %s 
             """, (producer['id'],))
 
-            # Check if the producer has reviews
-            avg_rating = cursor.fetchone()['averageRating']
-            if avg_rating is not None:
-                producer['averageRating'] = round(avg_rating, 1)
+            # Check if the producer has tour & experience reviews
+            avg_tour_rating = cursor.fetchone()['averageRating']
+            if avg_tour_rating is not None:
+                producer['averageTourRating'] = round(avg_tour_rating, 1)
             else:
-                producer['averageRating'] = '-'  
+                producer['averageTourRating'] = '-'
+
+            # Get the average Drink rating for the producer (from reviews of their listings)
+            cursor.execute("""
+                SELECT AVG(r."rating") AS "averageDrinkRating"
+                FROM "reviews" r
+                INNER JOIN "listings" l ON r."reviewTarget" = l."id"
+                WHERE l."producerID" = %s
+            """, (producer['id'],))
+
+            # Check if the producer has drink reviews
+            avg_drink_rating = cursor.fetchone()['averageDrinkRating']
+            if avg_drink_rating is not None:
+                producer['averageDrinkRating'] = round(avg_drink_rating, 1)
+            else:
+                producer['averageDrinkRating'] = '-'
+
+            # Keep the old 'averageRating' field for backward compatibility (use tour rating)
+            producer['averageRating'] = producer['averageTourRating']
 
             # Remove the hashed password and other sensitive fields
             producer.pop('hashedPassword', None)
-
 
         return jsonify(producers_data)
 
@@ -1393,29 +1410,34 @@ def getRecentListingReviews(id):
         del review["upvotes"]
         del review["downvotes"]
 
-    # Retrieve top 5 listings based on the review ratings by the user
+    # Get top 5 highest rated reviews by the user (changed from just listing IDs)
     with conn.cursor() as cursor:
         cursor.execute("""
-            SELECT "reviewTarget" FROM "reviews" WHERE "reviewType" = 'Listing' AND "userID" = %s
-            LIMIT 10
+            SELECT r.*, l."listingName", l."photo" as "listingPhoto", 
+                   p."producerName", v."venueName"
+            FROM "reviews" r
+            LEFT JOIN "listings" l ON r."reviewTarget" = l."id"
+            LEFT JOIN "producers" p ON l."producerID" = p."id"
+            LEFT JOIN "venues" v ON r."location" = v."id"
+            WHERE r."reviewType" = 'Listing' 
+            AND r."userID" = %s
+            AND r."rating" IS NOT NULL
+            ORDER BY r."rating" DESC, r."createdDate" DESC
+            LIMIT 5
         """, (id,))
-        top_listings_data = cursor.fetchall()
-
-    top_listings = []
-
-    # Convert the top listings data to a list
-    for listing in top_listings_data:
-        top_listings.append(listing["reviewTarget"])
+        
+        top_rated_reviews_data = cursor.fetchall()
 
     # Retrieve the number of reviews done by the user (number of unique listings reviewed)
     with conn.cursor() as cursor:
         cursor.execute('SELECT COUNT(DISTINCT "reviewTarget") FROM "reviews" WHERE "userID" = %s', (id,))
         drink_count = cursor.fetchone()
 
-
-    return jsonify({"recentReview" : reviews_data,
-                    "topListings" : top_listings,
-                    "drinkCount" : drink_count["count"]}), 200
+    return jsonify({
+        "recentReview": reviews_data,
+        "topRatedReviews": top_rated_reviews_data,  # top rated reviews
+        "drinkCount": drink_count["count"]
+    }), 200
     
 # [GET] Get all listings names test
 @blueprint.route('/bottle-listings', methods=['GET'])
@@ -2692,6 +2714,37 @@ def getVenueReviewsByVenueId(id, lastReviewID):
 
         return jsonify(reviews_data)
 
+@blueprint.route("/getBottleReviewsByVenueId/<id>", methods=['GET'])
+def getBottleReviewsByVenueId(id):
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        # Get bottle reviews where the location field matches the venue ID
+        cursor.execute("""
+            SELECT "reviews".*, "reviewsUserVotes"."upvotes", "reviewsUserVotes"."downvotes"
+            FROM "reviews"
+            LEFT JOIN "reviewsUserVotes" ON "reviews"."id" = "reviewsUserVotes"."reviewId"
+            WHERE "reviews"."location" = %s
+            AND "reviews"."photo" IS NOT NULL
+            AND "reviews"."photo" != ''
+            ORDER BY "reviews"."createdDate" DESC
+        """, (id,))
+
+        reviews_data = cursor.fetchall()
+
+        if not reviews_data:
+            return jsonify([])
+        
+        # Format the user votes data similar to venue reviews
+        for review in reviews_data:
+            review["userVotes"] = {
+                "upvotes": review["upvotes"] if review["upvotes"] else [],
+                "downvotes": review["downvotes"] if review["downvotes"] else []
+            }
+            del review["upvotes"]
+            del review["downvotes"]
+
+        return jsonify(reviews_data)
 
 # [GET] Producer Reviews by producer ID
 @blueprint.route("/getProducerReviewsByProducerId/<id>", methods=['GET'])

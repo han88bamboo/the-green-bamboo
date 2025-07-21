@@ -1949,8 +1949,10 @@
                 </div>
 
                 <ListingRowDisplayUserProfile
-                  :listingArr="top5ListingsData"
+                  :topRatedReviews="topRatedReviews"
                   :producers="producers"
+                  :subTags="subTags"
+                  :flavourTags="flavourTags"
                   displayName="Favourite Listings"
                   columnWidth="165px"
                 />
@@ -3531,6 +3533,8 @@ export default {
       currentProducerList: "",
       bookmarkProducerID: null,
 
+      topRatedReviews: [],
+
     };
   },
   mounted() {
@@ -3777,8 +3781,9 @@ export default {
           `${process.env.VUE_APP_API_URL}/getData/getRecentListingReviews/${this.displayUserID}`
         );
         // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getRecentListingReviews/${this.displayUserID}`);
-        this.top5Listings = response.data.topListings;
+        this.top5Listings = response.data.topListings || []; // Keeping for backward compatibility
         this.recentReviews = response.data.recentReview;
+        this.topRatedReviews = response.data.topRatedReviews || [];
 
         // get number of unique listings reviewed by user
         this.drinkCount = response.data.drinkCount;
@@ -3791,6 +3796,12 @@ export default {
             !this.listingIDs.includes(this.recentReviews[review].reviewTarget)
           ) {
             this.listingIDs.push(this.recentReviews[review].reviewTarget);
+          }
+        }
+
+        for (const review of this.topRatedReviews) {
+          if (!this.listingIDs.includes(review.reviewTarget)) {
+            this.listingIDs.push(review.reviewTarget);
           }
         }
 
@@ -3978,7 +3989,7 @@ export default {
     async getUserBadges() {
       try {
         const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getUserBadges/${this.userID}`
+          `${process.env.VUE_APP_API_URL}/getData/getUserBadges/${this.displayUserID}`
         );
         this.userBadges = response.data;
         this.userBadgesLoaded = true;

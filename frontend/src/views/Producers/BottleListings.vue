@@ -1597,6 +1597,14 @@
                     Detailed Review >
                   </a>
 
+                  <button @click="shareReview(review)" class="btn btn-link p-0 text-decoration-underline text-secondary me-3" 
+                    style="border: none; background: none; font-size: inherit;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-share me-1" viewBox="0 0 16 16">
+                      <path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.5 2.5 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5m-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3"/>
+                    </svg>
+                    Share
+                  </button>
+
                   <div class="dropdown text-end">
                     <button class="btn p-0 border-0 bg-transparent" type="button" data-bs-toggle="dropdown"
                       aria-expanded="false">
@@ -1923,6 +1931,44 @@
                 </div>
               </div>
               <!-- modal end -->
+
+              <div class="modal fade" id="shareReviewModal" tabindex="-1" aria-labelledby="shareReviewModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                  <!-- SHARE SUCCESS -->
+                  <div class="text-success fst-italic fw-bold fs-3 modal-content" v-if="shareSuccess">
+                    <div class="modal-body text-center p-4">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-check-circle mb-3" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                        <path d="m10.97 4.97-.02.022-3.473 4.425-2.093-2.094a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05"/>
+                      </svg>
+                      <br>
+                      <span>{{ shareSuccessMessage }}</span>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" @click="closeShareModal" data-bs-dismiss="modal">
+                        Close
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- SHARE ERROR -->
+                  <div class="text-danger fst-italic fw-bold fs-3 modal-content" v-if="shareError">
+                    <div class="modal-body text-center p-4">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-exclamation-circle mb-3" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                        <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z"/>
+                      </svg>
+                      <br>
+                      <span>{{ shareErrorMessage }}</span>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" @click="closeShareModal" data-bs-dismiss="modal">
+                        Close
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
 
@@ -2552,6 +2598,11 @@ export default {
 
       // venue with drink list
       venueWithDrinkList: [],
+
+      shareSuccess: false,
+      shareError: false,
+      shareSuccessMessage: "",
+      shareErrorMessage: ""
     };
   },
   mounted() {
@@ -3279,6 +3330,82 @@ export default {
         return review["reviewTarget"] == listing.id;
       });
       return reviews;
+    },
+
+    async shareReview(review) {
+      try {
+        const currentUrl = window.location.origin + window.location.pathname;
+        const shareUrl = `${currentUrl}?reviewId=${review.id}`;
+        
+        // Copy to clipboard
+        await navigator.clipboard.writeText(shareUrl);
+        
+        // Show success modal
+        this.shareSuccessMessage = "Review link copied! You can share it now";
+        this.shareSuccess = true;
+        this.shareError = false;
+        
+        // Show the modal using the same pattern as your openDetailedReviewModal
+        this.openShareModal();
+        
+      } catch (err) {
+        console.error('Failed to copy link: ', err);
+        
+        // Fallback for older browsers
+        try {
+          const textArea = document.createElement('textarea');
+          const currentUrl = window.location.origin + window.location.pathname;
+          const shareUrl = `${currentUrl}?reviewId=${review.id}`;
+          textArea.value = shareUrl;
+          document.body.appendChild(textArea);
+          textArea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textArea);
+          
+          // Show success modal
+          this.shareSuccessMessage = "Review link copied! You can share it now";
+          this.shareSuccess = true;
+          this.shareError = false;
+          
+          // Show the modal
+          this.openShareModal();
+          
+        } catch (fallbackErr) {
+          console.error('Fallback copy failed: ', fallbackErr);
+          
+          // Show error modal
+          this.shareErrorMessage = "Failed to copy link. Please copy the URL manually.";
+          this.shareError = true;
+          this.shareSuccess = false;
+          
+          // Show the modal
+          this.openShareModal();
+        }
+      }
+    },
+
+    openShareModal() {
+      // Use the same pattern as your openDetailedReviewModal
+      const modalTrigger = document.querySelector('[data-bs-target="#shareReviewModal"]');
+      if (modalTrigger) {
+        modalTrigger.click();
+      } else {
+        // Create a temporary trigger if one doesn't exist
+        const tempTrigger = document.createElement('button');
+        tempTrigger.setAttribute('data-bs-toggle', 'modal');
+        tempTrigger.setAttribute('data-bs-target', '#shareReviewModal');
+        tempTrigger.style.display = 'none';
+        document.body.appendChild(tempTrigger);
+        tempTrigger.click();
+        document.body.removeChild(tempTrigger);
+      }
+    },
+
+    closeShareModal() {
+      this.shareSuccess = false;
+      this.shareError = false;
+      this.shareSuccessMessage = "";
+      this.shareErrorMessage = "";
     },
 
     // Method to check for review ID in URL and open modal

@@ -3676,7 +3676,7 @@ INSERT INTO "badgeMappings" ("badgeId", "mappingType", "primaryValue") VALUES
 ((SELECT id FROM "badges" WHERE "badgeName" = 'Whisky Explorer'), 'DrinkType', 'Whiskey'),
 ((SELECT id FROM "badges" WHERE "badgeName" = 'El Tequila Supremo'), 'DrinkType', 'Tequila'),
 ((SELECT id FROM "badges" WHERE "badgeName" = 'A-Gave It All'), 'DrinkType', 'Mezcal'),
-((SELECT id FROM "badges" WHERE "badgeName" = 'Botanical Gin-ius! / Juniper Junkie'), 'DrinkType', 'Gin'),
+((SELECT id FROM "badges" WHERE "badgeName" = 'Botanical Gin-ius!'), 'DrinkType', 'Gin'),
 ((SELECT id FROM "badges" WHERE "badgeName" = 'Rumaniac'), 'DrinkType', 'Rum'),
 ((SELECT id FROM "badges" WHERE "badgeName" = 'Hop Head'), 'DrinkType', 'Beer'),
 ((SELECT id FROM "badges" WHERE "badgeName" = 'Sho-chu Love Shochu'), 'DrinkType', 'Shochu'),
