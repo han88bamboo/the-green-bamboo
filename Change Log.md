@@ -1583,3 +1583,14 @@ search bar modal for submission of requests for users
 
 Nature of the changes (frontend / backend / database):
 frontend, backend
+
+
+# Update as of 21 July - deployed
+
+Coder: Han
+
+Purpose of the changes:
+danish's work
+
+Nature of the changes (frontend / backend / database):
+frontend, backend
