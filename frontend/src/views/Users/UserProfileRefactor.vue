@@ -102,24 +102,7 @@
               >
                 Edit Profile
               </button>
-              <button
-                v-else-if="following && user"
-                type="button"
-                class="mt-2 btn primary-btn-less-round-blue"
-                @click="editFollow('unfollow')"
-                style="font-weight: bold"
-              >
-                Following
-              </button>
-              <button
-                v-else-if="user"
-                type="button"
-                class="mt-2 btn primary-btn-less-round-blue" 
-                @click="editFollow('follow')"
-                style="font-weight: bold"
-              >
-                + Follow User
-              </button>
+              
               <button
                 v-if="ownProfile && user"
                 type="button"
@@ -196,11 +179,11 @@
             </div>
 
             <!-- buttons -->
-            <div class="row mt-3">
+            <div class="row mt-3 ">
               <router-link
                 v-if="ownProfile && user"
                 :to="{ path: '/dashboard/user/' + userID }"
-                class="btn primary-btn-less-round-blue btn-lg mt-3"
+                class="btn primary-btn-less-round-blue btn-md mt-3"
                 style="font-weight: bold"
               >
                 View My Stats
@@ -1376,6 +1359,149 @@
               </div>
             </div>
 
+            <div v-if="ownProfile" class="mt-4">
+              <h5 class="mobile-view-hide" style="font-weight:bold">Recent Activity</h5>
+              <div v-if="ownProfile" class="row mt-3 ">
+                <button class="btn primary-btn-outline-less-round d-flex justify-content-between align-items-center " 
+                        type="button" 
+                        data-bs-toggle="collapse" 
+                        data-bs-target="#recentactivityCollapse"
+                        aria-expanded="false" 
+                        aria-controls="recentactivityCollapse">
+                  <span class="fw-bold">Recent Activity</span>
+                  <i class="bi bi-chevron-down"></i>
+                </button>
+              </div>
+              
+              <div class="mb-4 Xmobile-view-hide collapse d-lg-block" id="recentactivityCollapse">
+              <hr>
+                <div>
+                    <div class="square-inline">
+                        <p class="fw-bold text-start">Your Recent Activity</p>
+                    </div>
+                    <div class="feed-body mobile-rating-smaller-text-2 pb-2">
+                        <!-- Loading State -->
+                        <div v-if="loadingRecentUserActivity" class="text-center pb-1">
+                            <div class="spinner-border spinner-border-sm text-dark me-2" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <span class="text-muted">Loading recent activity...</span>
+                        </div>
+
+                        <!-- Error State -->
+                        <div v-else-if="errorRecentUserActivity" class="text-center pb-1">
+                            <div class="text-danger">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                {{ errorRecentUserActivity }}
+                            </div>
+                        </div>
+
+                        <!-- Empty State -->
+                        <div v-else-if="!recentUserActivity || recentUserActivity.length === 0" class="pb-1">
+                            No recent activity.
+                        </div>
+
+                        <!-- Activity List -->
+                        <div v-else class="overflow-auto" style="max-height: 100%;">
+                            <div v-for="activity in recentUserActivity" :key="activity.id || activity.date" class="py-1">
+                                <!-- Your Activity -->
+                                <div v-if="activity.type === 'review'">
+                                    You rated <b><router-link :to="listingUrl(activity)" class="primary-clickable-text" style="color: rgb(2, 117, 98)"><u>{{ activity.listingName }}</u></router-link> <span style="color: rgb(2, 117, 98)">{{ activity.rating }} stars</span></b> {{ getTimeDifference(activity.date) }}
+                                </div>
+                                <div v-else-if="activity.type === 'list_add'">
+                                    You added <b><router-link :to="listingUrl(activity)" class="primary-clickable-text" style="color: rgb(2, 117, 98)"><u>{{ activity.listingName }}</u></router-link></b> to your list: <b><router-link :to="listUrl(activity)" class="primary-clickable-text"><u><span style="color: rgb(2, 117, 98);">{{ activity.listName }}</span></u></router-link></b><br />{{ getTimeDifference(activity.date) }}
+                                </div>
+                                <div v-if="activity.type === 'follow'">
+                                    You started following
+                                    <router-link :to="profileUrl(activity)" class="reverse-clickable-text" style="color: rgb(2, 117, 98)">
+                                      @<b>{{ activity.username }}</b>
+                                    </router-link>
+                                    {{ getTimeDifference(activity.date) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="square-inline">
+                        <p class="fw-bold text-start">Recent Activity on Your Reviews</p>
+                    </div>
+                    <div class="feed-body mobile-rating-smaller-text-2 pb-2">
+                        <!-- Loading State -->
+                        <div v-if="loadingRecentReviewsActivity" class="text-center pb-1">
+                            <div class="spinner-border spinner-border-sm text-dark me-2" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <span class="text-muted fst-italic">Loading recent activity...</span>
+                        </div>
+
+                        <!-- Error State -->
+                        <div v-else-if="errorRecentReviewsActivity" class="text-center pb-1">
+                            <div class="text-danger">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                {{ errorRecentReviewsActivity }}
+                            </div>
+                        </div>
+
+                        <!-- Empty State -->
+                        <div v-else-if="!recentReviewsActivity || recentReviewsActivity.length === 0" class="pb-1">
+                            No recent activity.
+                        </div>
+
+                        <!-- Activity List -->
+                        <div v-else class="overflow-auto" style="max-height: 100%;">
+                            <div v-for="activity in recentReviewsActivity" :key="activity.id || activity.date" class="pb-2">
+                                <!-- Activity on Your Reviews -->
+                                <div v-if="activity.type === 'upvote' || activity.type === 'downvote'">
+                                    <router-link :to="profileUrl(activity)" class="primary-clickable-text" style="color: rgb(2, 117, 98)">@<b>{{ activity.username }}</b></router-link> <span :style="{ color: activity.type === 'upvote' ? '#90ee90' : 'black' }">{{ activity.type }}d</span> your review of <router-link :to="listingUrl(activity, activity.reviewTarget)" class="clickable-text" style="color: rgb(2, 117, 98)"><u>{{ activity.listingName }}</u></router-link> {{ getTimeDifference(activity.date) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="square-inline pb-2">
+                        <p class="fw-bold text-start">Recent Activity from Your Followers</p>
+                    </div>
+                    <div class="feed-body mobile-rating-smaller-text-2">
+                        <!-- Loading State -->
+                        <div v-if="loadingRecentFollowersActivity" class="text-center pb-1">
+                            <div class="spinner-border spinner-border-sm text-dark me-2" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <span class="text-muted">Loading recent activity...</span>
+                        </div>
+
+                        <!-- Error State -->
+                        <div v-else-if="errorRecentFollowersActivity" class="text-center pb-1">
+                            <div class="text-danger">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                {{ errorRecentFollowersActivity }}
+                            </div>
+                        </div>
+
+                        <!-- Empty State -->
+                        <div v-else-if="!recentFollowersActivity || recentFollowersActivity.length === 0" class="pb-1">
+                            No recent activity.
+                        </div>
+
+                        <!-- Activity List -->
+                        <div v-else class="overflow-auto" style="max-height: 100%;">
+                            <div v-for="activity in recentFollowersActivity" :key="activity.id || activity.date" class="pb-2">
+                                <!-- Follower Activity -->
+                                <div v-if="activity.type === 'follow'">
+                                    <router-link :to="profileUrl(activity)" class="primary-clickable-text" style="color: rgb(2, 117, 98)">@<b>{{ activity.username }}</b></router-link> started following you {{ getTimeDifference(activity.date) }}
+                                </div>
+                                <div v-else-if="activity.type === 'tag'">
+                                    <router-link :to="profileUrl(activity)" class="primary-clickable-text" style="color: rgb(2, 117, 98)">@<b>{{ activity.username }}</b></router-link> tagged you in a review of <router-link :to="listingUrl(activity)" class="primary-clickable-text" style="color: rgb(2, 117, 98)"><u>{{ activity.listingName }}</u></router-link> {{ getTimeDifference(activity.date) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>   
+              </div> 
+            </div>
+
             <!-- Events-->
             <div class="mt-3 mobile-view-hide">
               <EventBox
@@ -1942,135 +2068,7 @@
                   columnWidth="165px"
                 />
                 
-                <h5 class="text-body-secondary text-start py-2">
-                  <b> Recent Activity </b>
-                </h5>
-                <div>
-                  <div class="square-inline pb-2">
-                      <h5 class="square-inline text-start mr-auto">Your Recent Activity</h5>
-                  </div>
-                  <div class="feed-body">
-                      <!-- Loading State -->
-                      <div v-if="loadingRecentUserActivity" class="text-center py-2">
-                          <div class="spinner-border spinner-border-sm text-dark me-2" role="status">
-                              <span class="visually-hidden">Loading...</span>
-                          </div>
-                          <span class="text-muted fst-italic">Loading recent activity...</span>
-                      </div>
-
-                      <!-- Error State -->
-                      <div v-else-if="errorRecentUserActivity" class="text-center py-2">
-                          <div class="text-danger">
-                              <i class="fas fa-exclamation-triangle me-2"></i>
-                              {{ errorRecentUserActivity }}
-                          </div>
-                      </div>
-
-                      <!-- Empty State -->
-                      <div v-else-if="!recentUserActivity || recentUserActivity.length === 0" class="text-muted fst-italic">
-                          No recent activity.
-                      </div>
-
-                      <!-- Activity List -->
-                      <div v-else class="overflow-auto" style="max-height: 100%;">
-                          <div v-for="activity in recentUserActivity" :key="activity.id || activity.date" class="py-2">
-                              <!-- Your Activity -->
-                              <div v-if="activity.type === 'review'">
-                                  <i>You rated <b><router-link :to="listingUrl(activity)" class="clickable-text"><u>{{ activity.listingName }}</u></router-link> <span style="color: #F0B358">{{ activity.rating }} stars</span></b> {{ getTimeDifference(activity.date) }}</i>
-                              </div>
-                              <div v-else-if="activity.type === 'list_add'">
-                                  <i>You added <b><router-link :to="listingUrl(activity)" class="clickable-text"><u>{{ activity.listingName }}</u></router-link></b> to your list: <b><router-link :to="listUrl(activity)" class="clickable-text"><u><span style="color: #F0B358;">{{ activity.listName }}</span></u></router-link></b><br />{{ getTimeDifference(activity.date) }}</i>
-                              </div>
-                              <div v-if="activity.type === 'follow'">
-                                <i>
-                                  You are now following
-                                  <router-link :to="profileUrl(activity)" class="reverse-clickable-text">
-                                    @<b>{{ activity.username }}</b>
-                                  </router-link>
-                                  {{ getTimeDifference(activity.date) }}
-                                </i>
-                              </div>
-                          </div>
-                      </div>
-                  </div>
-                </div>
-                <div>
-                  <div class="square-inline pb-2">
-                      <h5 class="square-inline text-start mr-auto">Recent Activity on Your Reviews</h5>
-                  </div>
-                  <div class="feed-body">
-                      <!-- Loading State -->
-                      <div v-if="loadingRecentReviewsActivity" class="text-center py-2">
-                          <div class="spinner-border spinner-border-sm text-dark me-2" role="status">
-                              <span class="visually-hidden">Loading...</span>
-                          </div>
-                          <span class="text-muted fst-italic">Loading recent activity...</span>
-                      </div>
-
-                      <!-- Error State -->
-                      <div v-else-if="errorRecentReviewsActivity" class="text-center py-2">
-                          <div class="text-danger">
-                              <i class="fas fa-exclamation-triangle me-2"></i>
-                              {{ errorRecentReviewsActivity }}
-                          </div>
-                      </div>
-
-                      <!-- Empty State -->
-                      <div v-else-if="!recentReviewsActivity || recentReviewsActivity.length === 0" class="text-muted fst-italic">
-                          No recent activity.
-                      </div>
-
-                      <!-- Activity List -->
-                      <div v-else class="overflow-auto" style="max-height: 100%;">
-                          <div v-for="activity in recentReviewsActivity" :key="activity.id || activity.date" class="py-2">
-                              <!-- Activity on Your Reviews -->
-                              <div v-if="activity.type === 'upvote' || activity.type === 'downvote'">
-                                  <i><router-link :to="profileUrl(activity)" class="clickable-text">@<b>{{ activity.username }}</b></router-link> <span :style="{ color: activity.type === 'upvote' ? '#90ee90' : '#ff7f7f' }">{{ activity.type }}d</span> your review of <router-link :to="listingUrl(activity, activity.reviewTarget)" class="clickable-text"><u>{{ activity.listingName }}</u></router-link> {{ getTimeDifference(activity.date) }}</i>
-                              </div>
-                          </div>
-                      </div>
-                  </div>
-                </div>
-                <div>
-                  <div class="square-inline pb-2">
-                      <h5 class="square-inline text-start mr-auto">Recent Activity from Your Followers</h5>
-                  </div>
-                  <div class="feed-body">
-                      <!-- Loading State -->
-                      <div v-if="loadingRecentFollowersActivity" class="text-center py-2">
-                          <div class="spinner-border spinner-border-sm text-dark me-2" role="status">
-                              <span class="visually-hidden">Loading...</span>
-                          </div>
-                          <span class="text-muted fst-italic">Loading recent activity...</span>
-                      </div>
-
-                      <!-- Error State -->
-                      <div v-else-if="errorRecentFollowersActivity" class="text-center py-2">
-                          <div class="text-danger">
-                              <i class="fas fa-exclamation-triangle me-2"></i>
-                              {{ errorRecentFollowersActivity }}
-                          </div>
-                      </div>
-
-                      <!-- Empty State -->
-                      <div v-else-if="!recentFollowersActivity || recentFollowersActivity.length === 0" class="text-muted fst-italic">
-                          No recent activity.
-                      </div>
-
-                      <!-- Activity List -->
-                      <div v-else class="overflow-auto" style="max-height: 100%;">
-                          <div v-for="activity in recentFollowersActivity" :key="activity.id || activity.date" class="py-2">
-                              <!-- Follower Activity -->
-                              <div v-if="activity.type === 'follow'">
-                                  <i><router-link :to="profileUrl(activity)" class="clickable-text">@<b>{{ activity.username }}</b></router-link> started following you {{ getTimeDifference(activity.date) }}</i>
-                              </div>
-                              <div v-else-if="activity.type === 'tag'">
-                                  <i><router-link :to="profileUrl(activity)" class="clickable-text">@<b>{{ activity.username }}</b></router-link> tagged you in a review on <router-link :to="listingUrl(activity)" class="clickable-text"><u>{{ activity.listingName }}</u></router-link> {{ getTimeDifference(activity.date) }}</i>
-                              </div>
-                          </div>
-                      </div>
-                  </div>
-                </div>
+                
                 <br>
               </div>
 
@@ -3665,7 +3663,7 @@
             </div>
           </div>
         </div>
-
+        
         <!-- Bookmark Modal -->
         <BookmarkModal
           v-if="ownProfile"
@@ -6456,4 +6454,14 @@ export default {
 .welcome-toggle .bi-chevron-down {
   transition: transform 0.3s ease;
 }
+
+.welcome-toggle[aria-expanded="true"] .chevron-toggle {
+  transform: rotate(180deg);
+  transition: transform 0.3s ease;
+}
+
+.welcome-toggle .chevron-toggle {
+  transition: transform 0.3s ease;
+}
+
 </style>

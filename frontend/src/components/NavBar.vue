@@ -402,8 +402,15 @@
                 <li v-if="accType === 'producer'" class="text-start">
                   <router-link to="/listing/create" style="text-decoration: none;">Add New Product</router-link>
                 </li>
+                
                 <li v-if="accType === 'isAdmin || isModerator'" class="text-start">
                   <router-link to="/listing/create" style="text-decoration: none;">Add New Drink</router-link>
+                </li>
+
+                <li v-if="accType === 'user'" class="drawer-section-title pt-2 text-start">
+                  <span style="cursor: pointer" data-bs-toggle="modal" data-bs-target="#findFriendsModal">
+                    Find Friends
+                  </span>
                 </li>
 
                 <!-- Auth -->

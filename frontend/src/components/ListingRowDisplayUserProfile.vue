@@ -7,12 +7,12 @@
     <div class="">
         <!-- Top Rated Reviews Display (when topRatedReviews prop is provided) -->
         <div v-if="topRatedReviews && topRatedReviews.length > 0">
-            <div v-for="(review, index) in topRatedReviews" :key="review.id" class="review-card mb-4 p-3" style="border: 1px solid #e0e0e0; border-radius: 8px; background: #fff;">
+            <div v-for="(review, index) in topRatedReviews" :key="review.id" class="review-card mb-4 p-3 mobile-rating-smaller-text-2" style="border: 1px solid #e0e0e0; border-radius: 8px; background: #fff;">
                 
                 <!-- Rating and Listing Name (centered, full width) -->
                 <div class="review-header text-center mb-3" style="margin-right: 140px;">
                     <div class="rating-text mb-2" style="word-wrap: break-word; overflow-wrap: break-word;">
-                        <span style="color: #333; font-size: 1.1em;">rated ⭐</span>
+                        <span style="color: #333; font-size: 1.1em;">Rated ⭐</span>
                         <span class="fw-bold" style="color: #333; font-size: 1.1em;">{{ parseFloat(review.rating).toFixed(1) }}</span>
                         <span style="color: #333; font-size: 1.1em;"> Stars</span>
                         <span v-if="review.venueName" style="color: #333; font-size: 1.1em; font-weight: 600;"> at {{ review.venueName }}</span>
@@ -24,9 +24,9 @@
                             :to="{ path: '/listing/view/' + review.reviewTarget + '/' + encodeURIComponent(review.listingName || 'unknown-listing') }" 
                             class="text-decoration-none"
                         >
-                            <h5 class="fw-bold mb-0" style="color: #2a6959;">
+                            <h6 class="fw-bold mb-0" style="color: #2a6959;">
                                 {{ review.listingName || 'Unknown Listing' }}
-                            </h5>
+                            </h6>
                         </router-link>
                     </div>
                 </div>

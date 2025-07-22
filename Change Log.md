@@ -1605,3 +1605,15 @@ Added meta tags to various pages for SEO
 
 Nature of the changes (frontend / backend / database):
 front end 
+
+
+# Update as of 23rd July, 12:30am
+
+Coder: Kai
+
+Purpose of the changes:
+- Tweak frontend of the "Recent Activity" data
+- Tweak Navbar to include "Find a Friend" on mobile
+
+Nature of the changes (frontend / backend / database):
+front end 
