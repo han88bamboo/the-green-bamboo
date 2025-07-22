@@ -30,9 +30,9 @@ def editDetails():
     data = request.get_json()
 
     venueID = int(data['venueID'])
-    venueName = data['businessName']
-    venueType = data['businessType']
-    venueDesc = data['businessDesc']
+    venueName = data['venueName']
+    venueType = data['venueType']
+    venueDesc = data['venueDesc']
     originLocation = data['originLocation']
     image64 = data.get('image64', '')
     yearOpened = data.get('yearOpened', None)
