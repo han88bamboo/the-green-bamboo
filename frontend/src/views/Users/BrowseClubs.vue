@@ -447,6 +447,12 @@
 </template>
 
 <script>
+
+// important for SEO mangament
+import { useHead, useSeoMeta } from '@unhead/vue'
+import { computed } from 'vue'
+import { useSearch } from '@/composables/navbar/useSearch'; 
+
 // Import the necessary libraries
 import NavBar from '@/components/NavBar.vue';
 import { useToast } from 'vue-toastification';
@@ -458,6 +464,146 @@ export default {
         NavBar,
         FooterBar
     },
+    setup() {
+        // Computed property for structured data
+        const structuredData = computed(() => {
+            const data = {
+                "@context": "https://schema.org",
+                "@type": "CollectionPage",
+                "name": 'Drink-X Clubs | Create & Join Clubs And Find Drinking Buddies!',
+                "image": 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Drink-X_Banner_Image.png?v=1751344950',
+                "description": "It's not fun to drink alone! Join clubs on Drink-X and find drinking buddies!",
+                "url": 'https://drink-x.com/clubs/view',
+                "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://www.drink-x.com/search?q={search_term_string}",
+                "query-input": "required name=search_term_string"
+                }
+            }
+            return JSON.stringify(data)
+        })
+
+        // Computed property for dynamic robots content
+        const robotsContent = computed(() => {
+            const robots = []
+
+            // Basic indexing
+            robots.push('index')
+            robots.push('follow')
+
+            // Image indexing
+            robots.push('max-image-preview:large')
+
+            // Snippet control
+            robots.push('max-snippet:-1') // No limit on snippet length
+            robots.push('max-video-preview:-1') // No limit on video preview
+
+            return robots.join(', ')
+        })
+
+        /* SEO section Starts */
+        useHead({
+            title: 'Drink-X | Create & Join Clubs And Find Drinking Buddies!',
+            // Custom meta tags that useSeoMeta doesn't cover
+            meta: [
+                {
+                    name: 'keywords',
+                    content: 'drink reviews, drink-x clubs, join clubs, drink-x community, drink enthusiasts, bar reviews, drink recommendations, social drinking, club activities, drink-x events'
+                },
+                {
+                    name: 'author',
+                    content: 'drink-x'
+                },
+                {
+                    name: 'robots',
+                    content: robotsContent
+                },
+                {
+                    name: 'googlebot',
+                    content: robotsContent // Specific for Google
+                },
+                {
+                    name: 'bingbot',
+                    content: robotsContent // Specific for Bing
+                },
+                // Additional SEO meta tags
+                {
+                    name: 'distribution',
+                    content: 'global'
+                }
+            ],
+
+            // Link tags
+            link: [
+                {
+                    rel: 'canonical',
+                    href: 'https://drink-x.com/clubs/view'
+                },
+                {
+                    rel: 'preload',
+                    href: '../../Images/Background/landing_page_hero_image.webp',
+                    as: 'image'
+                }
+            ],
+
+            // JSON-LD structured data for rich snippets
+            script: [
+                {
+                    type: 'application/ld+json',
+                    innerHTML: structuredData
+                }
+            ],
+            htmlAttrs: { lang: 'en-US' }, // BCP 47 language code
+        }),
+            // useSeoMeta for SEO and social media optimization
+            useSeoMeta({
+                // Basic SEO
+                title: 'Drink-X | Create & Join Clubs And Find Drinking Buddies!',
+                description: "It's not fun to drink alone. Join Drink-X Clubs to find your crew — from whisky fans to natural wine lovers.",
+
+                // Open Graph (Facebook, LinkedIn, etc.)
+                ogTitle: 'Drink-X | Create & Join Clubs And Find Drinking Buddies!',
+                ogDescription: "It's not fun to drink alone. Join Drink-X Clubs to find your crew — from whisky fans to natural wine lovers.",
+                ogImage: 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Drink-X_Banner_Image.png?v=1751344950',
+                ogImageWidth: '1200',
+                ogImageHeight: '630',
+                ogUrl: 'https://drink-x.com/clubs/view',
+                ogType: 'website',
+                ogSiteName: 'drink-x',
+                ogLocale: 'en_US',
+
+                // Twitter Card
+                twitterCard: 'summary_large_image',
+                twitterSite: '@yourhandle',
+                twitterCreator: '@yourhandle',
+                twitterTitle: 'Join a Drinking Club Near You | Drink-X',
+                twitterDescription: 'Discover your next great drink! Sign up for free - log your drink reviews, discover new brands, and explore your next go-to bar.',
+                twitterImage: 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Drink-X_Banner_Image.png?v=1751344950',
+                twitterImageAlt: computed(() => `Drink-X banner`),
+
+                // Additional social platforms
+                articleAuthor: 'drink-x.com',
+                articlePublisher: '88bamboo.com',
+
+                // Canonical URL
+                canonical: 'https://drink-x.com/clubs/view',
+
+                // Robots
+                // robots: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
+                // Enhanced robots directive
+                robots: robotsContent
+        })
+        /* SEO section Ends */
+
+        /* Searchbar handler functions stars here */
+        const { handleSelection } = useSearch()
+        /* Searchbar handler functions ends here */    
+
+        return {
+            // Search functionality
+            handleSelection
+        }
+        },
     data() {
         return {
             // Variable to store the user ID

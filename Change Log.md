@@ -1594,3 +1594,14 @@ danish's work
 
 Nature of the changes (frontend / backend / database):
 frontend, backend
+
+
+# Update as of 22nd July
+
+Coder: Kai
+
+Purpose of the changes:
+Added meta tags to various pages for SEO 
+
+Nature of the changes (frontend / backend / database):
+front end 

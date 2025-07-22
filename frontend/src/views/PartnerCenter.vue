@@ -229,6 +229,12 @@
 </template>
 
 <script>
+
+// important for SEO mangament
+import { useHead, useSeoMeta } from '@unhead/vue'
+import { computed } from 'vue'
+import { useSearch } from '@/composables/navbar/useSearch'; 
+
 import NavBar from '@/components/NavBar.vue';
 import FooterBar from '@/components/FooterBar.vue';
 
@@ -238,6 +244,146 @@ export default {
     NavBar,
     FooterBar
   },
+  setup() {
+        // Computed property for structured data
+        const structuredData = computed(() => {
+            const data = {
+                "@context": "https://schema.org",
+                "@type": "WebSite",
+                "name": 'Drink-X for Brands & Venues | Partner Center!',
+                "image": 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Drink-X_Banner_Image.png?v=1751344950',
+                "description": 'Grow Your Brand or Venue With Drink-X. Tap into our community of drink lovers and unlock powerful tools to promote, engage, and connect with people who already love what you do - drink lovers actively searching for their next favourite bottle, bar, or experience.',
+                "url": 'https://www.drink-x.com/partner',
+                "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://www.drink-x.com/search?q={search_term_string}",
+                "query-input": "required name=search_term_string"
+                }
+            }
+            return JSON.stringify(data)
+        })
+
+        // Computed property for dynamic robots content
+        const robotsContent = computed(() => {
+            const robots = []
+
+            // Basic indexing
+            robots.push('index')
+            robots.push('follow')
+
+            // Image indexing
+            robots.push('max-image-preview:large')
+
+            // Snippet control
+            robots.push('max-snippet:-1') // No limit on snippet length
+            robots.push('max-video-preview:-1') // No limit on video preview
+
+            return robots.join(', ')
+        })
+
+        /* SEO section Starts */
+        useHead({
+            title: 'Drink-X for Brands & Venues | Partner Center!',
+            // Custom meta tags that useSeoMeta doesn't cover
+            meta: [
+                {
+                    name: 'keywords',
+                    content: 'drink-x for business, drink-x partner center, drink-x for venues, drink-x for brands, drink-x.com, spirits, whiskey, gin, rum, vodka, tequila, bars, producers, alcohol, beverages'
+                },
+                {
+                    name: 'author',
+                    content: 'drink-x'
+                },
+                {
+                    name: 'robots',
+                    content: robotsContent
+                },
+                {
+                    name: 'googlebot',
+                    content: robotsContent // Specific for Google
+                },
+                {
+                    name: 'bingbot',
+                    content: robotsContent // Specific for Bing
+                },
+                // Additional SEO meta tags
+                {
+                    name: 'distribution',
+                    content: 'global'
+                }
+            ],
+
+            // Link tags
+            link: [
+                {
+                    rel: 'canonical',
+                    href: 'https://drink-x.com/partner'
+                },
+                {
+                    rel: 'preload',
+                    href: '../../Images/Background/landing_page_hero_image.webp',
+                    as: 'image'
+                }
+            ],
+
+            // JSON-LD structured data for rich snippets
+            script: [
+                {
+                    type: 'application/ld+json',
+                    innerHTML: structuredData
+                }
+            ],
+            htmlAttrs: { lang: 'en-US' }, // BCP 47 language code
+        }),
+            // useSeoMeta for SEO and social media optimization
+            useSeoMeta({
+                // Basic SEO
+                title: 'Drink-X for Brands and Venue | Partner Center',
+                description: 'Grow Your Brand or Venue With Drink-X. Tap into our community of drink lovers and unlock powerful tools to promote, engage, and connect with people who already love what you do - drink lovers actively searching for their next favourite bottle, bar, or experience.',
+
+                // Open Graph (Facebook, LinkedIn, etc.)
+                ogTitle: 'Drink-X for Brands and Venue | Partner Center',
+                ogDescription: 'Grow Your Brand or Venue With Drink-X. Tap into our community of drink lovers and unlock powerful tools to promote, engage, and connect with people who already love what you do - drink lovers actively searching for their next favourite bottle, bar, or experience.',
+                ogImage: 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Drink-X_Banner_Image.png?v=1751344950',
+                ogImageWidth: '1200',
+                ogImageHeight: '630',
+                ogUrl: 'https://www.drink-x.com/partner',
+                ogType: 'website',
+                ogSiteName: 'drink-x',
+                ogLocale: 'en_US',
+
+                // Twitter Card
+                twitterCard: 'summary_large_image',
+                twitterSite: '@yourhandle',
+                twitterCreator: '@yourhandle',
+                twitterTitle: 'Drink-X for Brands & Venues | Partner Center',
+                twitterDescription: 'Grow Your Brand or Venue With Drink-X. Tap into our community of drink lovers and unlock powerful tools to promote, engage, and connect with people who already love what you do - drink lovers actively searching for their next favourite bottle, bar, or experience.',
+                twitterImage: 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Drink-X_Banner_Image.png?v=1751344950',
+                twitterImageAlt: computed(() => `Drink-X banner`),
+
+                // Additional social platforms
+                articleAuthor: 'drink-x.com',
+                articlePublisher: '88bamboo.com',
+
+                // Canonical URL
+                canonical: 'https://drink-x.com/partner',
+
+                // Robots
+                // robots: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
+                // Enhanced robots directive
+                robots: robotsContent
+            })
+        /* SEO section Ends */
+
+        /* Searchbar handler functions stars here */
+        const { handleSelection } = useSearch()
+        /* Searchbar handler functions ends here */    
+
+        return {
+            // Search functionality
+            handleSelection
+        }
+    },
   data() {
     return {
       activeDropdown: 'brands', // will be 'brands', 'venues', or 'festival'

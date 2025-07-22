@@ -143,6 +143,11 @@
 </template>
 
 <script>
+// important for SEO mangament
+import { useHead, useSeoMeta } from '@unhead/vue'
+import { computed } from 'vue'
+import { useSearch } from '@/composables/navbar/useSearch'; 
+
 import NavBar from "@/components/NavBar.vue";
 import FooterBar from "@/components/FooterBar.vue";
 import BestOfCard from "@/components/BestOfCard.vue";
@@ -154,6 +159,146 @@ export default {
         FooterBar,
         BestOfCard,
     }, 
+    setup() {
+        // Computed property for structured data
+        const structuredData = computed(() => {
+            const data = {
+                "@context": "https://schema.org",
+                "@type": "CollectionPage",
+                "name": 'The Best of Drink-X! | Up & Coming Drinks, As Voted by the Community',
+                "image": 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Drink-X_Banner_Image.png?v=1751344950',
+                "description": 'Up & Coming drinks, as voted by the community - across wine, beer whisky, rum, gin, tequila, and more!',
+                "url": 'https://www.drink-x.com/best-of',
+                "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://www.drink-x.com/search?q={search_term_string}",
+                "query-input": "required name=search_term_string"
+                }
+            }
+            return JSON.stringify(data)
+        })
+
+        // Computed property for dynamic robots content
+        const robotsContent = computed(() => {
+            const robots = []
+
+            // Basic indexing
+            robots.push('index')
+            robots.push('follow')
+
+            // Image indexing
+            robots.push('max-image-preview:large')
+
+            // Snippet control
+            robots.push('max-snippet:-1') // No limit on snippet length
+            robots.push('max-video-preview:-1') // No limit on video preview
+
+            return robots.join(', ')
+        })
+
+        /* SEO section Starts */
+        useHead({
+            title: 'Drink-X | A World of Drinks - Just Look It Up!',
+            // Custom meta tags that useSeoMeta doesn't cover
+            meta: [
+                {
+                    name: 'keywords',
+                    content: 'drink reviews, best drinks, top rated drinks, cocktail recipes, spirits, whiskey, gin, rum, vodka, tequila, bars, producers, alcohol, beverages'
+                },
+                {
+                    name: 'author',
+                    content: 'drink-x'
+                },
+                {
+                    name: 'robots',
+                    content: robotsContent
+                },
+                {
+                    name: 'googlebot',
+                    content: robotsContent // Specific for Google
+                },
+                {
+                    name: 'bingbot',
+                    content: robotsContent // Specific for Bing
+                },
+                // Additional SEO meta tags
+                {
+                    name: 'distribution',
+                    content: 'global'
+                }
+            ],
+
+            // Link tags
+            link: [
+                {
+                    rel: 'canonical',
+                    href: 'https://drink-x.com/best-of'
+                },
+                {
+                    rel: 'preload',
+                    href: '../../Images/Background/landing_page_hero_image.webp',
+                    as: 'image'
+                }
+            ],
+
+            // JSON-LD structured data for rich snippets
+            script: [
+                {
+                    type: 'application/ld+json',
+                    innerHTML: structuredData
+                }
+            ],
+            htmlAttrs: { lang: 'en-US' }, // BCP 47 language code
+        }),
+            // useSeoMeta for SEO and social media optimization
+            useSeoMeta({
+                // Basic SEO
+                title: 'Drink-X | A World of Drinks - Just Look It Up!',
+                description: 'Discover your next great drink! Sign up for free - log your drink reviews, discover new brands, and explore your next go-to bar.',
+
+                // Open Graph (Facebook, LinkedIn, etc.)
+                ogTitle: 'Drink-X | A World of Drinks - Just Look It Up!',
+                ogDescription: 'Discover your next great drink! Sign up for free - log your drink reviews, discover new brands, and explore your next go-to bar.',
+                ogImage: 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Drink-X_Banner_Image.png?v=1751344950',
+                ogImageWidth: '1200',
+                ogImageHeight: '630',
+                ogUrl: 'https://www.drink-x.com/best-of',
+                ogType: 'website',
+                ogSiteName: 'drink-x',
+                ogLocale: 'en_US',
+
+                // Twitter Card
+                twitterCard: 'summary_large_image',
+                twitterSite: '@yourhandle',
+                twitterCreator: '@yourhandle',
+                twitterTitle: 'https://www.drink-x.com/best-of',
+                twitterDescription: 'Discover your next great drink! Sign up for free - log your drink reviews, discover new brands, and explore your next go-to bar.',
+                twitterImage: 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Drink-X_Banner_Image.png?v=1751344950',
+                twitterImageAlt: computed(() => `Drink-X banner`),
+
+                // Additional social platforms
+                articleAuthor: 'drink-x.com',
+                articlePublisher: '88bamboo.com',
+
+                // Canonical URL
+                canonical: 'https://drink-x.com/best-of',
+
+                // Robots
+                // robots: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
+                // Enhanced robots directive
+                robots: robotsContent
+        })
+        /* SEO section Ends */
+
+        /* Searchbar handler functions stars here */
+        const { handleSelection } = useSearch()
+        /* Searchbar handler functions ends here */    
+
+        return {
+            // Search functionality
+            handleSelection
+        }
+        },
     data() {
         return {
             dataLoaded: false,
