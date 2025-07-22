@@ -163,6 +163,87 @@ def updateProducerBookmark():
         }), 500
     
 # -----------------------------------------------------------------------------------------
+# [POST] Update user venue bookmark
+# - Update user venue bookmark with new details
+# - Possible return codes: 201 (Updated), 500 (Error during update)
+@blueprint.route('/updateVenueBookmark', methods=['POST'])
+def updateVenueBookmark():
+    conn = g.db
+    data = request.get_json()
+    userID = int(data['userID'])
+    bookmark = data['bookmark']
+
+    try:
+        cursor = conn.cursor()
+
+        # Fetch existing venue lists for the user
+        cursor.execute('SELECT "id", "listName" FROM "userVenueLists" WHERE "userId" = %s', (userID,))
+        existing_lists = {row['listName']: row['id'] for row in cursor.fetchall()}
+
+        bookmark_list_names = set(bookmark.keys())
+        existing_list_names = set(existing_lists.keys())
+
+        # Identify lists to delete
+        lists_to_delete = existing_list_names - bookmark_list_names
+        for listName in lists_to_delete:
+            cursor.execute('DELETE FROM "userVenueLists" WHERE "userId" = %s AND "listName" = %s', (userID, listName))
+
+        for listName, listData in bookmark.items():
+            listItems = listData["listItems"]
+
+            if listName in existing_lists:
+                list_id = existing_lists[listName]
+                cursor.execute(
+                    'UPDATE "userVenueLists" SET "listDesc" = %s WHERE "id" = %s',
+                    (listData["listDesc"], list_id)
+                )
+            else:
+                cursor.execute(
+                    'INSERT INTO "userVenueLists" ("userId", "listName", "listDesc") VALUES (%s, %s, %s) RETURNING "id"',
+                    (userID, listName, listData["listDesc"],)
+                )
+                list_id = cursor.fetchone()["id"]
+
+            # Delete existing items in the list
+            cursor.execute('DELETE FROM "userVenueListItems" WHERE "listId" = %s', (list_id,))
+
+            # Insert new venues
+            for item in listItems:
+                added_date = item.get("addedDate", None)
+                if added_date:
+                    cursor.execute(
+                        'INSERT INTO "userVenueListItems" ("listId", "venueId", "addedDate") VALUES (%s, %s, %s)',
+                        (list_id, item["venueId"], added_date)
+                    )
+                else:
+                    cursor.execute(
+                        'INSERT INTO "userVenueListItems" ("listId", "venueId", "addedDate") VALUES (%s, %s, NOW())',
+                        (list_id, item["venueId"])
+                    )
+
+        conn.commit()
+        cursor.close()
+        return jsonify({
+            "code": 201,
+            "data": {
+                "userID": userID,
+                "bookmark": bookmark
+            }
+        }), 201
+
+    except Exception as e:
+        print("Update venue bookmark error:", str(e))
+        conn.rollback()
+        return jsonify({
+            "code": 500,
+            "data": {
+                "userID": userID,
+                "bookmark": bookmark
+            },
+            "message": "An error occurred updating the venue lists."
+        }), 500
+    
+# -----------------------------------------------------------------------------------------
 # [POST] Update user bookmark
 # - Update user bookmark with new details
 # - Possible return codes: 201 (Updated), 500 (Error during update)

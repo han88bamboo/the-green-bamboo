@@ -437,6 +437,24 @@ CREATE TABLE "userProducerListItems" (
     UNIQUE ("listId", "producerId")
 );
 
+-- ========= "userVenueLists" =========
+CREATE TABLE "userVenueLists" (
+    "id" SERIAL PRIMARY KEY,
+    "userId" INTEGER REFERENCES "users"("id") ON DELETE SET NULL,
+    "listName" TEXT,
+    "listDesc" TEXT,
+    UNIQUE ("userId", "listName")
+);
+
+-- ========= "userVenueListItems" =========
+CREATE TABLE "userVenueListItems" (
+    "id" SERIAL PRIMARY KEY,
+    "listId" INTEGER REFERENCES "userVenueLists"("id") ON DELETE CASCADE,
+    "venueId" INTEGER REFERENCES "venues"("id") ON DELETE CASCADE,
+    "addedDate" TIMESTAMP,
+    UNIQUE ("listId", "venueId")
+);
+
 -- ========= "reviews" =========
 CREATE TABLE "reviews" (
     "id" SERIAL PRIMARY KEY,

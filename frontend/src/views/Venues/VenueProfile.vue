@@ -697,16 +697,16 @@
                         <button v-else class="btn inactive-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile" @click="contentMode = 'overview'"> Venue Overview </button>
                         <!-- Toggle Venue Reviews -->
                         <button 
-                        v-if="contentMode == 'venueReviews'" 
-                        class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile"
-                        @click="contentMode = 'venueReviews'"
+                            v-if="contentMode == 'venueReviews'" 
+                            class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile"
+                            @click="contentMode = 'venueReviews'"
                         >
-                        Venue Reviews
+                            Venue Reviews
                         </button>
                         <button 
-                        v-else 
-                        class="btn inactive-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile"
-                        @click="contentMode = 'venueReviews'"
+                            v-else 
+                            class="btn inactive-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile"
+                            @click="contentMode = 'venueReviews'"
                         >
                         Venue Reviews
                         </button>
@@ -2269,7 +2269,6 @@
                         <span style="color: #f0b358">★</span>
                     </h4>
 
-                    <!-- Example row for "Add Review" button and some preview images -->
                     <div class="row text-start" style="padding-left: 0.75em">
                         <div class="col">
                             <div class="row justify-content-start align-items-start mt-2">
@@ -3323,30 +3322,8 @@
     </div>
     </div>
 
-    <button id="hiddenModalTrigger" data-bs-toggle="modal" data-bs-target="#detailedReviewModal" style="display: none;"></button>
-    <!-- Updated sections for venue profile page -->
-
-    <!-- Add this to the venue reviews section, replace the existing image click handler -->
-    <div
-    v-for="(imageData, index) in combinedReviewImages.slice(0,5)"
-    :key="`combined-${index}`"
-    class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 mobile-px-1"
-    style="position: relative;"
-    :style="{ cursor: imageData.reviewType === 'bottle' ? 'pointer' : 'default' }"
-    @click="imageData.reviewType === 'bottle' ? openDetailedReviewModal(imageData) : null"
-    >
-    <img :src="imageData.photo || defaultPhoto" alt="" class="review-image" />
-    
-    <!-- Optional: Add a small badge to indicate review type -->
-    <div class="position-absolute top-0 end-0 m-1">
-        <span v-if="imageData.reviewType === 'venue'" class="badge bg-primary" style="font-size: 0.6rem;">V</span>
-        <span v-if="imageData.reviewType === 'bottle'" class="badge bg-success" style="font-size: 0.6rem;">B</span>
-    </div>
-    </div>
-
-    <!-- Add this detailed review modal after your existing modals, before the closing template tag -->
-
     <!-- Detailed Review Modal -->
+    <button id="hiddenModalTrigger" data-bs-toggle="modal" data-bs-target="#detailedReviewModal" style="display: none;"></button>
     <div class="modal fade" id="detailedReviewModal" tabindex="-1" aria-labelledby="detailedReviewModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -3448,7 +3425,7 @@
 
             <!-- More information -->
             <hr />
-            <h5 class="text-center">More Information</h5>
+            <h5 class="text-start">More Information</h5> <!-- Changed from text-center to text-start -->
             <hr />
 
             <!-- Colour -->
@@ -3504,55 +3481,54 @@
                     <div v-else>-</div>
                 </div>
             </div>
-            </div>
 
-            <!-- Tags -->
             <hr />
-            <h5 class="text-center">Tags</h5>
+            <h5 class="text-start">Tags</h5> <!-- Changed from text-center to text-start -->
             <hr />
-
-            <!-- Friend Tags -->
             <div class="row mt-2">
-            <div class="col-3">
-                <b>Friend Tags</b>
-            </div>
-            <div class="col-9">
-                <span v-for="(user, index) in selectedDetailedReview.taggedUsers" :key="index">
-                <b>
-                    @<router-link :to="`/profile/user/${user}`" style="text-decoration-color: #535c72">
-                    <span class="default-clickable-text">
-                        {{ getUsernameFromId(parseInt(user)) }}
+                <div class="col-3">
+                    <b>Friend Tags</b>
+                </div>
+                <div class="col-9 text-start"> <!-- Added text-start class -->
+                    <span v-for="(user, index) in selectedDetailedReview.taggedUsers" :key="index">
+                    <b>
+                        @<router-link :to="`/profile/user/${user}`" style="text-decoration-color: #535c72">
+                        <span class="default-clickable-text">
+                            {{ getUsernameFromId(parseInt(user)) }}
+                        </span>
+                        </router-link>
+                    </b>
+                    <span v-if="index < selectedDetailedReview.taggedUsers.length - 1">, </span>
                     </span>
-                    </router-link>
-                </b>
-                <span v-if="index < selectedDetailedReview.taggedUsers.length - 1">, </span>
-                </span>
-            </div>
+                </div>
             </div>
 
-            <!-- Flavour Tags -->
+            <!-- Flavour Tags - Fixed alignment -->
             <div class="row mt-2">
-            <div class="col-3">
-                <b>Flavour Tags</b>
-            </div>
-            <div class="col-9">
-                <span v-for="(tag, index) in selectedDetailedReview.flavourTag" :key="index"
-                class="badge rounded-pill me-2" :style="{
-                    backgroundColor: getTagColor(parseInt(tag)),
-                }">{{ getTagName(parseInt(tag)) }}</span>
-            </div>
+                <div class="col-3">
+                    <b>Flavour Tags</b>
+                </div>
+                <div class="col-9 text-start"> <!-- Added text-start class -->
+                    <span v-for="(tag, index) in selectedDetailedReview.flavourTag" :key="index"
+                    class="badge rounded-pill me-2 mb-1" :style="{
+                        backgroundColor: getTagColor(parseInt(tag)),
+                    }">{{ getTagName(parseInt(tag)) }}</span>
+                </div>
             </div>
 
-            <!-- Observation Tags -->
+            <!-- Observation Tags - Fixed alignment -->
             <div class="row mt-2">
-            <div class="col-3">
-                <b>Action Tags</b>
+                <div class="col-3">
+                    <b>Action Tags</b>
+                </div>
+                <div class="col-9 text-start"> <!-- Added text-start class -->
+                    <span v-for="(tag, index) in selectedDetailedReview.observationTag" :key="index" 
+                    class="badge rounded-pill me-2 mb-1" style="background-color: #f0b358; color: black">{{ tag }}</span>
+                </div>
             </div>
-            <div class="col-9">
-                <span v-for="(tag, index) in selectedDetailedReview.observationTag" :key="index" 
-                class="badge rounded-pill me-2" style="background-color: #f0b358; color: black">{{ tag }}</span>
+
             </div>
-            </div>
+
 
             <div class="modal-footer">
                 <router-link 
@@ -3807,6 +3783,9 @@
                 },
 
                 menuSnapshot: null,
+
+                subTags: [],
+                flavorTags: [],
 
                 bottleReviews: [],
                 combinedReviewImages: [],
@@ -4558,6 +4537,26 @@
                     this.users = response.data;
                 } catch (error) {
                     console.error("Error fetching users:", error);
+                }
+                
+                // Get subTags data
+                try {
+                    const response = await this.$axios.get(
+                        `${process.env.VUE_APP_API_URL}/getData/getSubTags`
+                    );
+                    this.subTags = response.data;
+                } catch (error) {
+                    console.error("Error loading subTags:", error);
+                }
+
+                // Get flavorTags data
+                try {
+                    const response = await this.$axios.get(
+                        `${process.env.VUE_APP_API_URL}/getData/getFlavourTags`
+                    );
+                    this.flavorTags = response.data;
+                } catch (error) {
+                    console.error("Error loading flavorTags:", error);
                 }
                 
             },
@@ -6086,8 +6085,6 @@
 
             // Helper methods for tag display (needed for bottle reviews)
             getTagName(tagId) {
-                // You may need to load flavor tags and subtags data if not already available
-                // This should match the implementation from your bottle listing page
                 const subTag = this.subTags?.find((subTag) => subTag.id === tagId);
                 if (subTag) {
                     const familyTag = this.flavorTags?.find(

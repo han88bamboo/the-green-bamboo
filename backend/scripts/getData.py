@@ -243,6 +243,46 @@ def fetch_producer_lists(cursor, user_id):
         traceback.print_exc()
         # print("something went wrong" + str(e), flush=True)
         return result
+    
+def fetch_venue_lists(cursor, user_id):
+    result = {}
+    try: 
+        cursor.execute("""
+            SELECT 
+                uvl."id" as list_id,
+                uvl."listName",
+                uvl."listDesc",
+                uvli."venueId",
+                uvli."addedDate"
+            FROM "userVenueLists" uvl
+            LEFT JOIN "userVenueListItems" uvli ON uvl."id" = uvli."listId"
+            WHERE uvl."userId" = %s
+            ORDER BY uvl."listName", uvli."addedDate" DESC
+        """, (user_id,))
+
+        rows = cursor.fetchall()
+
+        for row in rows:
+            list_name = row["listName"]
+
+            if list_name not in result:
+                result[list_name] = {
+                    "listDesc": row["listDesc"],
+                    "listItems": []
+                }
+
+            if row["venueId"] is not None:
+                result[list_name]["listItems"].append({
+                    "venueId": row["venueId"],
+                    "addedDate": row["addedDate"]
+                })
+
+        return result
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return result
 
 
 # Helper function to fetch follow lists for a user
@@ -1293,7 +1333,22 @@ def getAllProducers():
     
     return jsonify(producers_data)
 
-
+# [GET] All venues with basic info needed for listings
+@blueprint.route('/getAllVenues', methods=['GET'])
+def getAllVenues():
+    conn = g.db
+    try:
+        cursor = conn.cursor()
+        cursor.execute('SELECT "id", "venueName", "address", "venueType", "originLocation", "photo", "username" FROM "venues"')
+        venues = cursor.fetchall()
+        cursor.close()
+        return jsonify(venues), 200
+    except Exception as e:
+        print("Get all venues error:", str(e))
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred retrieving venues."
+        }), 500
 
 # ----------------------
 # [NEW] TO BE ADDED:
@@ -2898,7 +2953,7 @@ def getVenuesBySearch():
             
             # Search for venues by name or origin location
             cursor.execute("""
-                SELECT "id", "venueName", "originLocation", "photo", "website"
+                SELECT "id", "venueName", "address", "venueType", "originLocation", "photo", "username", "website"
                 FROM "venues"
                 WHERE ("venueName" ILIKE %s OR "originLocation" ILIKE %s)
                 AND "id" > %s
@@ -2994,6 +3049,7 @@ def getUsers():
                 
                 user_data["drinkLists"] = fetch_drink_lists(cursor, user_id)
                 user_data["producerLists"] = fetch_producer_lists(cursor, user_id)
+                user_data["venueLists"] = fetch_venue_lists(cursor, id)
                 user_data["followLists"] = fetch_follow_lists(cursor, user_id)
 
 
@@ -3105,6 +3161,7 @@ def getUser(id):
 
             user_data["drinkLists"] = fetch_drink_lists(cursor, id)
             user_data["producerLists"] = fetch_producer_lists(cursor, id)
+            user_data["venueLists"] = fetch_venue_lists(cursor, id)
             user_data["followLists"] = fetch_follow_lists(cursor, id)
             user_data['proofRank'] = pointsHelperFunc.get_rank_by_user_id(id)
             user_data['currentPoints'] = pointsHelperFunc.get_current_proof_points(id)
@@ -3166,6 +3223,7 @@ def getUserByUsername(username):
 
             user_data["drinkLists"] = fetch_drink_lists(cursor, user_id)
             user_data["producerLists"] = fetch_producer_lists(cursor, user_id) 
+            user_data["venueLists"] = fetch_venue_lists(cursor, id)
             user_data["followLists"] = fetch_follow_lists(cursor, user_id)
 
         return jsonify(user_data), 200
