@@ -3954,6 +3954,7 @@ export default {
       this.$router.push("/"); // Navigate to root
     },
     getTagName(tag) {
+      if (!tag) return "";
       const subTag = this.subTags.find((subTag) => subTag.id === tag);
       if (subTag) {
         const familyTag = this.flavorTags.find(

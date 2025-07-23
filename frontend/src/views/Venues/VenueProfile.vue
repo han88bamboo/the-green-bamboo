@@ -4523,6 +4523,10 @@
                     allUserIDs = this.filteredVenueReviews.map((review) => review.userID);
                     // this.getFilteredVenueReviewsWithImages();
                     await this.loadBottleReviews();
+
+                    const bottleReviewUserIDs = this.bottleReviews.map((review) => review.userID);
+                    allUserIDs = [...new Set([...allUserIDs, ...bottleReviewUserIDs])];
+                    
                     this.specificReview = this.getLoggedUserReview();
 
                 } catch (error) {

@@ -239,7 +239,7 @@ export default {
 
     // Tag-related methods (updated to match working reference)
     getTagName(tag) {
-      if (!this.subTags || !this.flavourTags) {
+      if (!this.subTags || !this.flavourTags || !tag) {
         return "";
       }
 
