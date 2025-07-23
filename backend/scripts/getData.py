@@ -455,7 +455,7 @@ def getListingsByIDs():
         return jsonify({"error": str(e)}), 500
 
 # -----------------------------------------------------------------------------------------
-# [GET] Get Listings from db where id> last item in list
+# [GET] Get Listings from db where id> last item in list [discovery tab]
 @blueprint.route("/getNext30/<id>")
 def getNext30(id):
     conn = g.db
@@ -463,6 +463,23 @@ def getNext30(id):
     with conn.cursor() as cursor:
         cursor.execute('SELECT * FROM "listings" where "id" > %s LIMIT 30', (id,))
         listings_data = cursor.fetchall()
+
+        if listings_data:
+                # Loop through the listings to get the average rating for each listing and producer name
+                for listing in listings_data:
+                    # Get the average rating for the listing
+                    cursor.execute("""
+                        SELECT AVG("rating") AS "averageRating"
+                        FROM "reviews"
+                        WHERE "reviewTarget" = %s
+                    """, (listing['id'],))
+
+                    avg_rating = cursor.fetchone()['averageRating']
+
+                    if avg_rating is not None:
+                        listing['rating'] = round(avg_rating, 1)
+                    else:
+                        listing['rating'] = '-'
     
     if not listings_data:
         return jsonify([])
@@ -470,7 +487,7 @@ def getNext30(id):
     return jsonify(listings_data)
 
 # -----------------------------------------------------------------------------------------
-# [GET] Listings from db when filter is applied for next 30 in discovery tab
+# [GET] Listings from db when filter is applied for next 30 in discovery tab [discover tab]
 @blueprint.route("/getFiltered30/<id>")
 def getFiltered30(id):
     conn = g.db
@@ -493,7 +510,7 @@ def getFiltered30(id):
     return jsonify(listings_data)
 
 # -----------------------------------------------------------------------------------------
-# [POST] Get Listings from next in following list for both venue and producer
+# [POST] Get Listings from next in following list for both venue and producer [following tab]
 @blueprint.route("/getNextFollowing30", methods=['POST'])
 def getNextFollowing30():
     conn = g.db
