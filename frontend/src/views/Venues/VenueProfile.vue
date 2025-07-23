@@ -4643,10 +4643,14 @@
                     const file = event.target.files[0];
                     const reader = new FileReader;
                     
-                    reader.onload = () => {
+                    reader.onloadend = () => {
                         this.selectedImage=reader.result;
-                        const base64String = reader.result.split(',')[1];
-                        this.editProfilePhoto = base64String
+                        // const base64String = reader.result.split(',')[1];
+                        // this.editProfilePhoto = base64String
+                        const base64String = reader.result.replace("data:", "").replace(/^.+,/, "");
+                        this.editProfilePhoto = base64String;
+
+                        console.log("Image processed successfully, length:", base64String.length);
                     };
                     
                     reader.readAsDataURL(file);
@@ -4839,34 +4843,75 @@
             // Save Profile Edits
             async saveProfileEdits() {
 
+                // Log the state before making changes
+                console.log("Starting profile edit with the following values:");
+                console.log("venueID:", this.targetVenue['id']);
+                console.log("image64 type:", typeof this.editProfilePhoto);
+                console.log("image64 length:", this.editProfilePhoto ? this.editProfilePhoto.length : 0);
+                console.log("venueName:", this.editVenueName);
+                console.log("venueType:", this.editVenueType);
+                console.log("venueDesc:", this.editVenueDesc);
+                console.log("originLocation:", this.editCountry);
+                console.log("yearOpened:", this.editYearOpened);
+                console.log("openForReservations:", this.editOpenForReservations);
+                console.log("website:", this.editWebsite);
+
                 this.editProfile = false;
 
+
+                // Create the payload object for debugging
+                const payload = {
+                    venueID: this.targetVenue['id'],
+                    venueName: this.editVenueName,
+                    venueType: this.editVenueType,
+                    venueDesc: this.editVenueDesc,
+                    originLocation: this.editCountry,
+                    yearOpened: this.editYearOpened,
+                    openForReservations: this.editOpenForReservations,
+                    website: this.editWebsite,
+                };
+                console.log("Payload object sans image:", payload);
+
+
+                // Add image data conditionally:
+                // If selectedImage is set, it means user has selected a new image
+                if (this.selectedImage) {
+                    payload.image64 = this.editProfilePhoto;
+                    console.log("Sending new image to backend");
+                } else {
+                    // Send null to tell backend to keep the existing image
+                    payload.image64 = null;
+                    console.log("No image change - sending null to backend");
+                }
+
+                console.log("Full payload object:", payload);
+
+                
                 try {
-                    await this.$axios.post(`${process.env.VUE_APP_API_URL}/editVenueProfile/editDetails`, 
-                        {
-                            venueID: this.targetVenue['id'],
-                            image64: this.editProfilePhoto,
-                            venueName: this.editVenueName,
-                            venueType: this.editVenueType,
-                            venueDesc: this.editVenueDesc,
-                            originLocation: this.editCountry,
-                            yearOpened: this.editYearOpened,
-                            openForReservations: this.editOpenForReservations,
-                            website: this.editWebsite,
-                        },
+                    console.log("Making API request to:", `${process.env.VUE_APP_API_URL}/editVenueProfile/editDetails`);
+       
+                    const response = await this.$axios.post(
+                        `${process.env.VUE_APP_API_URL}/editVenueProfile/editDetails`, 
+                        payload,
                         {
                         headers: {
                             'Content-Type': 'application/json'
                         }
-                    });
+                        }
+                    );
+
+                    console.log("API response:", response.data);
+                    console.log("Status code:", response.status);
+
+                    console.log("Refreshing page...");
+                    this.$router.go(0);
                 }
                 catch (error) {
                     alert("An error occurred while attempting to save your changes, please try again!");
-                    // console.error(error);
+                    console.error(error);
                 }
 
                 // Refresh page
-                this.$router.go(0);
             },
 
             // Submit New Update

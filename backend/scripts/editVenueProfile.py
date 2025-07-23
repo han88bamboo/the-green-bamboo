@@ -45,12 +45,17 @@ def editDetails():
         existingVenue = cur.fetchone()
 
         if existingVenue:
-            if existingVenue['photo']:
-                s3Images.deleteImageFromS3(existingVenue['photo'])
-            if image64:
-                base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', image64)
+            if data.get('image64'):  # Only process image if one was provided
+                # Only delete old image if we're replacing it
+                if existingVenue['photo']:
+                    s3Images.deleteImageFromS3(existingVenue['photo'])
+                
+                # Process and upload the new image
+                base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', data['image64'])
                 image64 = s3Images.uploadBase64ImageToS3(base64_string)
-
+            else:
+                # Keep existing photo if no new one was provided
+                image64 = existingVenue['photo']
             # Update the venue details in the database
             cur.execute(
                 """
