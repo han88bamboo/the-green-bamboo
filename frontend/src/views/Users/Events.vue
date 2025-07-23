@@ -1006,6 +1006,7 @@ export default {
             catch (error) {
                 if (error.response.status == 404) {
                     this.upcomingEventsError = "No upcoming events found.";
+                    this.dataLoaded = true;
                 }
                 else {
                     this.upcomingEventsError = "Error loading upcoming events.";
@@ -1025,6 +1026,7 @@ export default {
 
                 if (error.response.status == 404) {
                     this.pastEventsError = "No past events found.";
+                    this.dataLoaded = true;
                 }
                 else {
                     this.pastEventsError = "Sign up or log in to view your event history!";
@@ -1043,6 +1045,7 @@ export default {
             catch (error) {
                 if (error.response.status == 404) {
                     this.recommendedEventsError = "No recommended events found.";
+                    this.dataLoaded = true;
                 }
                 else {
                     this.recommendedEventsError = "Failed to retrieve recommended events.";
@@ -1061,6 +1064,7 @@ export default {
             catch (error) {
                 if (error.response.status == 404) {
                     this.trendingEventsError = "No trending events found.";
+                    this.dataLoaded = true;
                 }
                 else {
                     this.trendingEventsError = "Error retrieving trending events";
@@ -1079,6 +1083,7 @@ export default {
             catch (error) {
                  if (error.response.status == 404) {
                     this.followedEventsError = "No followed events found.";
+                    this.dataLoaded = true;
                 }
                 else {
                     this.followedEventsError = "Sign up or log in to view events from brands and venues you follow!";
@@ -1101,6 +1106,7 @@ export default {
             catch (error) {
                 if (error.response && error.response.status === 404) {
                     this.organisingEventsError = "No events found that you're organising.";
+                    this.dataLoaded = true;
                 }
                 else {
                     this.organisingEventsError = "Failed to retrieve events you're organising.";
@@ -1118,6 +1124,7 @@ export default {
             catch (error) {
                 if (error.response && error.response.status === 404) {
                     this.attendingEventsError = "No events found that you're attending.";
+                    this.dataLoaded = true;
                 }
                 else {
                     this.attendingEventsError = "Failed to retrieve events you're attending.";
