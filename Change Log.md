@@ -1617,3 +1617,17 @@ Purpose of the changes:
 
 Nature of the changes (frontend / backend / database):
 front end 
+
+
+
+# Update as of 23rd July, 10am
+
+Coder: Kai
+
+Purpose of the changes:
+- Tweak sizing of post-submission buttons 
+- correct front end errors in "Recent Acitivity" toggle button 
+
+Nature of the changes (frontend / backend / database):
+front end 
+

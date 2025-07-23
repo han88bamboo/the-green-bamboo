@@ -25,9 +25,9 @@
         </div>
         
         <!-- Display when bottle listing is successfully submitted -->
-        <div class="text-success fst-italic fw-bold fs-3" v-if="successSubmission"> 
+        <div class="text-success fw-bold fs-5" v-if="successSubmission"> 
             <div v-if="formType == 'req'">
-                <span v-if="formMode == 'new'">The request has successfully been submitted!</span>
+                <span v-if="formMode == 'new'">The request has successfully been submitted! Please search for the listing now and add your review! 😉 </span>
                 <span v-if="formMode == 'edit'">The edit request has successfully been submitted!</span>
                 <span v-if="formMode == 'dup'">The duplicate report has successfully been submitted!</span>
             </div>
@@ -38,31 +38,31 @@
             </div>
             <br>
             <button class="btn primary-btn btn-sm" @click="reset" v-if="formMode == 'new'">
-                <span class="fs-5 fst-italic"> Submit another bottle listing here! </span>
+                <span class="fs-6"> Submit another bottle listing here! </span>
             </button>
             <button class="btn primary-btn btn-sm" @click="goBack" v-if="formMode != 'new'">
-                <span class="fs-5 fst-italic"> Return to previous page </span>
+                <span class="fs-6"> Return to previous page </span>
             </button>
             <router-link :to="'/request/view'" class="mx-1">
                 <button class="btn primary-btn btn-sm">
-                    <span class="fs-5 fst-italic"> View Requests </span>
+                    <span class="fs-6"> View Requests </span>
                 </button>
             </router-link>
             <router-link :to="'/'" class="mx-1">
                 <button class="btn primary-btn btn-sm">
-                    <span class="fs-5 fst-italic"> Go to Home page </span>
+                    <span class="fs-6"> Go to Home page </span>
                 </button>
             </router-link>
         </div>
         
         <!-- Display when bottle listing submission encounters an error -->
-        <div class="text-danger fst-italic fw-bold fs-3" v-if="errorSubmission"> 
+        <div class="text-danger  fw-bold fs-5" v-if="errorSubmission"> 
             <span v-if="errorMessage">An error occurred while attempting to submit, please try again!</span>
             <span v-if="invalidListing">Your request is not linked to a valid listing, please try again!</span>
             <span v-if="duplicateEntry">The bottle listing you are trying to submit already exists.</span>
             <br>
             <button class="btn primary-btn btn-sm" @click="reset">
-                <span class="fs-5 fst-italic"> Retry your submission here! </span>
+                <span class="fs-5"> Retry your submission here! </span>
             </button>
         </div>
 

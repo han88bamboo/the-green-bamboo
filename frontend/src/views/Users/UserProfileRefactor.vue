@@ -1361,7 +1361,7 @@
 
             <div v-if="ownProfile" class="mt-4">
               <h5 class="mobile-view-hide" style="font-weight:bold">Recent Activity</h5>
-              <div v-if="ownProfile" class="row mt-3 ">
+              <div v-if="ownProfile" class="row mt-3 mobile-view-show">
                 <button class="btn primary-btn-outline-less-round d-flex justify-content-between align-items-center " 
                         type="button" 
                         data-bs-toggle="collapse" 
