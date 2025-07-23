@@ -2156,6 +2156,10 @@ button.primary-square:hover {
   width: 100%;
   display: flex;
   justify-content: space-between;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  pointer-events: none;
 }
 
 .tick {
@@ -2163,6 +2167,10 @@ button.primary-square:hover {
   top: 0;
   transform: translateY(-76%);
   font-size: 17px;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  pointer-events: none;
 }
 
 .modal-header {

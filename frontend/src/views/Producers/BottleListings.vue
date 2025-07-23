@@ -1170,18 +1170,25 @@
                         <div class="slider-container" style="position: relative">
                           <input v-model="rating" type="range" class="form-range" min="1" max="10" step="0.1"
                             id="customRange" />
-                          <div class="tickmarks">
-                            <span class="tick" style="left: 5%">|</span>
-                            <span class="tick" style="left: 15%">|</span>
-                            <span class="tick" style="left: 25%">|</span>
-                            <span class="tick" style="left: 35%">|</span>
-                            <span class="tick" style="left: 45%">|</span>
-                            <span class="tick" style="left: 55%">|</span>
-                            <span class="tick" style="left: 65%">|</span>
-                            <span class="tick" style="left: 75%">|</span>
-                            <span class="tick" style="left: 85%">|</span>
-                            <span class="tick" style="left: 95%">|</span>
-                          </div>
+                            <div class="tickmarks">
+                              <span class="tick mobile-view-hide" style="left:11.6%;">|</span>
+                              <span class="tick mobile-view-hide" style="left:22.6%;">|</span>
+                              <span class="tick mobile-view-hide" style="left:33.4%;">|</span>
+                              <span class="tick mobile-view-hide" style="left:44.4%;">|</span>
+                              <span class="tick mobile-view-hide" style="left:55.1%;">|</span>
+                              <span class="tick mobile-view-hide" style="left:66%;">|</span>
+                              <span class="tick mobile-view-hide" style="left:76.9%;">|</span>
+                              <span class="tick mobile-view-hide" style="left:87.65%;">|</span>
+                              
+                              <span class="tick mobile-view-show" style="left:12.9%;">|</span>
+                              <span class="tick mobile-view-show" style="left:23.3%;">|</span>
+                              <span class="tick mobile-view-show" style="left:33.5%;">|</span>
+                              <span class="tick mobile-view-show" style="left:44.1%;">|</span>
+                              <span class="tick mobile-view-show" style="left:54.5%;">|</span>
+                              <span class="tick mobile-view-show" style="left:64.7%;">|</span>
+                              <span class="tick mobile-view-show" style="left:75.1%;">|</span>
+                              <span class="tick mobile-view-show" style="left:85.7%;">|</span>
+                            </div>
                         </div>
                       </div>
                       <div class="col-auto">
