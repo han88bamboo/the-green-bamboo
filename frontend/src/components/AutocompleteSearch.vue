@@ -127,11 +127,14 @@
 
 <script>
 import { ref, reactive, watch, computed } from 'vue'
+import { useRouter } from 'vue-router'
+
 
 export default {
   name: 'AutocompleteSearch',
   emits: ['select'],
   setup(props, { emit }) {
+    const router = useRouter()
     const listingsReturnCount = 6
     const venuesReturnCount = 3
     const producersReturnCount = 3
@@ -400,29 +403,56 @@ export default {
       }
     }
 
-    // Handle item selection
+    // // Handle item selection - execute as search query
+    // const selectItem = (item, type, event) => {
+    //   if (event) {
+    //     event.preventDefault()
+    //   }
+
+    //   emit('select', { item, type })
+      
+    //   let name = ''
+    //   if (type === 'listings') {
+    //     name = item.listingName
+    //   } else if (type === 'venues') {
+    //     name = item.venueName
+    //   } else if (type === 'producers') {
+    //     name = item.producerName
+    //   }
+    //   searchQuery.value = name
+
+    //   showResults.value = false
+    //   isMousedOverResults.value = false // Reset the flag
+    //   searchInput.value.blur()
+    // }
+
+    // // Handle item selection - directly go to bottling page
+
     const selectItem = (item, type, event) => {
       if (event) {
         event.preventDefault()
       }
-
-      emit('select', { item, type })
       
-      let name = ''
+      // Navigate directly based on type with correct URL patterns
       if (type === 'listings') {
-        name = item.listingName
+        // Use the correct listing view route with slug if available
+        const slug = item.listingName ? '/' + item.listingName.toLowerCase().replace(/\s+/g, '') : ''
+        router.push(`/listing/view/${item.id}${slug}`)
       } else if (type === 'venues') {
-        name = item.venueName
+        // Use the correct venue profile route with name slug if available
+        const slug = item.venueName ? '/' + item.venueName.toLowerCase().replace(/\s+/g, '') : ''
+        router.push(`/profile/venue/${item.id}${slug}`)
       } else if (type === 'producers') {
-        name = item.producerName
+        // Use the correct producer profile route with name slug if available
+        const slug = item.producerName ? '/' + item.producerName.toLowerCase().replace(/\s+/g, '') : ''
+        router.push(`/profile/producer/${item.id}${slug}`)
       }
-      searchQuery.value = name
 
       showResults.value = false
       isMousedOverResults.value = false // Reset the flag
       searchInput.value.blur()
     }
-
+    
     return {
       searchInput,
       searchQuery,
