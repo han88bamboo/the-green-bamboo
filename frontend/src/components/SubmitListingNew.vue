@@ -205,13 +205,30 @@
                                 </option>
                             </datalist>
 
-                            <!-- Redirect to CreateProducer page to create a producer -->
+                            <!-- [admins] Redirect to Admin page to create a producer -->
                             <p v-if="!isProducer && formType == 'power'" class="text-start text-muted pt-2" style="font-size: 14px;">Can't find a producer?
                                 <router-link :to="'/admin/dashboard'" class="text-decoration-none">
                                     Click here to create!
                                 </router-link>
                             </p>
                             
+
+                            
+                            <!-- [non-admins] Create Producer Modal Trigger -->
+                            <p v-if="formType != 'power'" class="text-start text-muted pt-2" style="font-size: 14px;">Can't find a producer?
+                                <a href="#" @click.prevent="showCreateProducerModal = true" class="text-decoration-none">
+                                    Click here to create!
+                                </a>
+                            </p>
+                            
+                            <!-- Create Producer Modal -->
+                            <CreateProducerModal 
+                                v-if="showCreateProducerModal"
+                                :countries="countries"
+                                @close="showCreateProducerModal = false"
+                                @producerCreated="handleNewProducer"
+                            />
+
                                 
                         </div>
 
@@ -427,12 +444,14 @@
 <script>
     // import SearchBar from './SearchBar.vue';
     import AutocompleteSearch from './AutocompleteSearch.vue';
+    import CreateProducerModal from './CreateProducerModal.vue';
     import { useSearch } from '@/composables/navbar/useSearch'
 
     export default {
         name: "SubmitListingNew",
         components: {
-            AutocompleteSearch
+            AutocompleteSearch,
+            CreateProducerModal
         },
         props: {
             formType: String,
@@ -462,6 +481,7 @@
                 errorSubmission: false,
                 fillForm: false,
                 requestRemoval: false,
+                showCreateProducerModal: false,
 
                 // Error-specific flags
                 errorMessage: false,
@@ -1123,6 +1143,27 @@
                     this.form['producerID'] = "";
                 }
             },
+
+            // Handle newly created producer from modal
+            handleNewProducer(producer) {
+                // Add the new producer to producerList
+                if (!Array.isArray(this.producerList)) {
+                    this.producerList = [];
+                }
+                this.producerList.push({
+                    id: producer.id,
+                    producerName: producer.name,
+                    isIndependentBottler: producer.isIndependentBottler
+                });
+                
+                // Select the newly created producer
+                this.form['producerNew'] = producer.name;
+                this.form['producerID'] = producer.id;
+                
+                // Close the modal
+                this.showCreateProducerModal = false;
+            },
+
 
             getBottlerID() {
                 // Validate that bottlersList is an array and form.bottler is a non-empty string

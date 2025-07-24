@@ -106,7 +106,6 @@ def create_routes():
                 )
                 print(f"Registered blueprint: /{script_name.replace('_', '-')}")
 
-
 # FUNCTION TO CLOSE CONNECTION WITH POSTGRESQL
 # NEW
 @app.teardown_request
