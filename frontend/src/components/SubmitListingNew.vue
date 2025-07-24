@@ -186,16 +186,16 @@
                     <div v-if="formType == 'power' || formMode == 'new'">
 
                         <!-- Input: Producer Name -->
-                        <!-- [IF] Producer is creating listing, lock Producer selection -->
+                        <!-- [IF] Producer is creating listing, lock Producer selection - COMMENTED OUT for now 
                         <div class="form-group mb-3" v-if="isProducer != false">
                             <p class="text-start mb-1">Producer Name <span class="text-danger">*</span></p>
                             <select class="form-select" disabled>
                                 <option selected>{{ isProducer }}</option>
                             </select>
-                        </div>
+                        </div>-->
                         <!-- [ELSE] Dropdown menu tied to producerID, show producerNew textbox only if "Other" selected (no producerID). -->
                         <!-- set name only, then before submitting request, put the id, save computation -->
-                        <div class="form-group mb-3" v-else>
+                        <div class="form-group mb-3" > <!--removed v-else-->
                             <p class="text-start mb-1">New Producer Name <span class="text-danger">*</span></p>
                             <input list="producer-names" v-model="form['producerNew']" autocomplete="off" class="form-control" id="bottleName" placeholder="Enter Producer Name" @input="getProducerID">
                             <datalist id="producer-names">
@@ -298,7 +298,7 @@
 
                         <!-- Input: Link to website or source (optional for actual listing, mandatory for request) -->
                         <div class="form-group mb-3">
-                            <p class="text-start mb-1">Link to website or source <span class="text-danger" v-if="formType == 'req'">*</span></p>
+                            <p class="text-start mb-1">Link to website or source </p> <!--<span class="text-danger" v-if="formType == 'req'">*</span>-->
                             <input type="text" class="form-control" v-model="form['sourceLink']" id="sourceLink" placeholder="Enter source link">
                         </div>
 
@@ -1187,31 +1187,31 @@
                         this.errors.push("Name of independent bottler is required.");
                     }
 
-                    // Validation ONLY FOR REQUEST
-                    if (this.formType == "req") {
+                    // // Validation ONLY FOR REQUEST - removed requirement for source link 
+                    // if (this.formType == "req") {
 
-                        // Validate Source Link
-                        if (!this.form["sourceLink"].trim()) {
-                            this.errors.push("Link to website or source is required.");
-                        }
+                    //     // Validate Source Link
+                    //     if (!this.form["sourceLink"].trim()) {
+                    //         this.errors.push("Link to website or source is required.");
+                    //     }
 
-                        // Validate Producer Name
-                        if (this.form['producerID']) {
-                            // If producerID is blank, check if producerNew is blank
-                            if (!this.form["producerNew"]) {
-                                this.errors.push("Producer Name is required.");
-                            }
-                        } else {
-                            // Check if producerNew is blank
-                            if (!this.form["producerNew"].trim()) {
-                                this.errors.push("Producer Name is required.");
-                            }
-                        }
+                    //     // Validate Producer Name
+                    //     if (this.form['producerID']) {
+                    //         // If producerID is blank, check if producerNew is blank
+                    //         if (!this.form["producerNew"]) {
+                    //             this.errors.push("Producer Name is required.");
+                    //         }
+                    //     } else {
+                    //         // Check if producerNew is blank
+                    //         if (!this.form["producerNew"].trim()) {
+                    //             this.errors.push("Producer Name is required.");
+                    //         }
+                    //     }
 
-                    }
+                    // }
 
-                    // Validation ONLY FOR ACTUAL LISTING
-                    if (this.formType == "power") {
+                    // Validation ONLY FOR ACTUAL LISTING - removed the condition that it only applies to power user - now it applies to all.
+                    // if (this.formType == "power") {
 
                         // Validate Official Description
                         if (!this.form["officialDesc"] || !this.form["officialDesc"].trim()) {
@@ -1238,7 +1238,7 @@
                             this.errors.push("Alcohol Strength is required.");
                         }
                         
-                    }
+                    // }
                     
                 }
 
