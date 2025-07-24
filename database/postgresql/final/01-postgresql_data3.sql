@@ -71,6 +71,8 @@ DROP TABLE IF EXISTS "systemSettings" CASCADE;
 -- to enable trigram index for fuzzy search
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
+CREATE EXTENSION IF NOT EXISTS unaccent;
+
 -- CREATE TABLES -- 
 -- ========= "accountRequests" =========
 CREATE TABLE "accountRequests" (

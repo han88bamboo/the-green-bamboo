@@ -650,20 +650,20 @@ def getListingsBySearch():
             SELECT 
                 l.*, 
                 p."producerName",
-                (similarity(l."listingName", %s) + 3 * similarity(p."producerName", %s)) AS combined_sim_score
+                (similarity(unaccent(l."listingName"), unaccent(%s)) + 3 * similarity(unaccent(p."producerName"), unaccent(%s))) AS combined_sim_score
             FROM "listings" l
             JOIN "producers" p ON l."producerID" = p."id"
-            WHERE l."listingName" %% %s
+            WHERE unaccent(l."listingName") %% unaccent(%s)
             
             UNION
                        
             SELECT 
                 l.*, 
                 p."producerName",
-                (similarity(l."listingName", %s) + 3 * similarity(p."producerName", %s)) AS combined_sim_score
+                (similarity(unaccent(l."listingName"), unaccent(%s)) + 3 * similarity(unaccent(p."producerName"), unaccent(%s))) AS combined_sim_score
             FROM "listings" l
             JOIN "producers" p ON l."producerID" = p."id"
-            WHERE p."producerName" %% %s      
+            WHERE unaccent(p."producerName") %% unaccent(%s)
 
             ORDER BY combined_sim_score DESC
             LIMIT 30 OFFSET %s
@@ -854,9 +854,9 @@ def get_producer_listings():
         # Optimized query using trigram index for fuzzy string matching
         sql = """
             SELECT "id", "producerName", "originCountry",
-                similarity("producerName", %s) as sim_score
+                similarity(unaccent("producerName"), unaccent(%s)) as sim_score
             FROM producers
-            WHERE "producerName" %% %s
+            WHERE unaccent("producerName") %% unaccent(%s)
             ORDER BY sim_score DESC
             LIMIT %s;
         """
@@ -1535,10 +1535,10 @@ def get_bottle_listings():
                 l."bottler",
                 l."photo",
                 p."producerName",
-                (similarity(l."listingName", %s) + 3 * similarity(p."producerName", %s)) AS combined_sim_score
+                (similarity(unaccent(l."listingName"), unaccent(%s)) + 3 * similarity(unaccent(p."producerName"), unaccent(%s))) AS combined_sim_score
             FROM "listings" l
             JOIN "producers" p ON l."producerID" = p."id"
-            WHERE l."listingName" %% %s
+            WHERE unaccent(l."listingName") %% unaccent(%s)
             
             UNION
 
@@ -1550,10 +1550,10 @@ def get_bottle_listings():
                 l."bottler",
                 l."photo",
                 p."producerName",
-                (similarity(l."listingName", %s) + 3 * similarity(p."producerName", %s)) AS combined_sim_score
+                (similarity(unaccent(l."listingName"), unaccent(%s)) + 3 * similarity(unaccent(p."producerName"), unaccent(%s))) AS combined_sim_score
             FROM "listings" l
             JOIN "producers" p ON l."producerID" = p."id"
-            WHERE p."producerName" %% %s
+            WHERE unaccent(p."producerName") %% unaccent(%s)
 
             ORDER BY combined_sim_score DESC
             LIMIT %s;
@@ -2925,9 +2925,9 @@ def get_venue_listings():
         # Optimized query using trigram index for fuzzy string matching
         sql = """
             SELECT "id", "venueName", "originLocation",
-                similarity("venueName", %s) as sim_score
+                similarity(unaccent("venueName"), unaccent(%s)) as sim_score
             FROM venues
-            WHERE "venueName" %% %s
+            WHERE unaccent("venueName") %% unaccent(%s)
             ORDER BY sim_score DESC
             LIMIT %s;
         """
