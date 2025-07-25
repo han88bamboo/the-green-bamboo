@@ -12,7 +12,7 @@
 -->
 
 <template>
-    <div class="container pt-3">
+    <div class="container pt-3 pb-5">
 
         <!-- Display when data is still loading / form is being submitted -->
         <div class="text-info-emphasis fst-italic fw-bold fs-5" v-if="submitForm || !dataLoaded">
@@ -43,11 +43,11 @@
             <button class="btn primary-btn btn-sm" @click="goBack" v-if="formMode != 'new'">
                 <span class="fs-6"> Return to previous page </span>
             </button>
-            <router-link :to="'/request/view'" class="mx-1">
+            <!-- <router-link :to="'/request/view'" class="mx-1">
                 <button class="btn primary-btn btn-sm">
                     <span class="fs-6"> View Requests </span>
                 </button>
-            </router-link>
+            </router-link> commented out because not necessry now that we've enabled auto-listing approvals-->
             <router-link :to="'/'" class="mx-1">
                 <button class="btn primary-btn btn-sm">
                     <span class="fs-6"> Go to Home page </span>
