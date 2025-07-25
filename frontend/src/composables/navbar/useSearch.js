@@ -36,8 +36,8 @@ export function useSearch() {
     }
 
     // Remove any '/' from search input
-    //const cleanItemName = itemName.replace(/\//g, "")
-    const cleanItemName = encodeURIComponent(itemName.trim())
+    //const cleanItemName = itemName.replace(/\//g, "") - First handle dots explicitly, then apply encodeURIComponent for other characters
+    const cleanItemName = encodeURIComponent(itemName.trim().replace(/\./g, '%2E'))
     // console.log('Clean item name:', cleanItemName)
 
     // If already on search page, refresh the page with new search input
