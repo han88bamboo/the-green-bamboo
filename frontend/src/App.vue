@@ -26,7 +26,7 @@ nav a {
 }
 
 nav a.router-link-exact-active {
-  color: #rgb(2, 117, 98);
+  color: rgb(2, 117, 98);
 }
 
 .hover-underline {

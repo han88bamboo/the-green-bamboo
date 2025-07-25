@@ -309,7 +309,7 @@
 
                         <!-- [POWER] Input: Drink Description -->
                         <div class="form-group mb-3" > <!-- v-if="formType == 'power'"   shifted out to allow ordinary users to submit official descp too-->
-                            <p class="text-start mb-1">Official Description <span class="text-danger">*</span></p>
+                            <p class="text-start mb-1">Official Description</p>
                             <textarea rows=3 class="form-control" v-model="form['officialDesc']" id="officialDesc" placeholder="Enter description of bottle"></textarea>
                         </div>
 
@@ -1254,10 +1254,10 @@
                     // Validation ONLY FOR ACTUAL LISTING - removed the condition that it only applies to power user - now it applies to all.
                     // if (this.formType == "power") {
 
-                        // Validate Official Description
-                        if (!this.form["officialDesc"] || !this.form["officialDesc"].trim()) {
-                            this.errors.push("Official Description is required.");
-                        }
+                        // // Validate Official Description - removed so it doesnt insist you fill in official description
+                        // if (!this.form["officialDesc"] || !this.form["officialDesc"].trim()) {
+                        //     this.errors.push("Official Description is required.");
+                        // }
 
                         // Validate Producer ID
                         if (!this.form["producerID"]) {
