@@ -196,7 +196,7 @@
                         <!-- [ELSE] Dropdown menu tied to producerID, show producerNew textbox only if "Other" selected (no producerID). -->
                         <!-- set name only, then before submitting request, put the id, save computation -->
                         <div class="form-group mb-3" > <!--removed v-else-->
-                            <p class="text-start mb-1">New Producer Name <span class="text-danger">*</span></p>
+                            <p class="text-start mb-1">Producer Name <span class="text-danger">*</span> <span class="text-muted" style="font-size: 14px;">(Just begin typing, then select from the drop-down suggestions.)</span></p> 
                             <input list="producer-names" v-model="form['producerNew']" autocomplete="off" class="form-control" id="bottleName" placeholder="Enter Producer Name" @input="getProducerID">
                             <datalist id="producer-names">
                                 {{ producerList }}
@@ -207,7 +207,7 @@
 
                             <!-- [admins] Redirect to Admin page to create a producer -->
                             <p v-if="!isProducer && formType == 'power'" class="text-start text-muted pt-2" style="font-size: 14px;">Can't find a producer?
-                                <router-link :to="'/admin/dashboard'" class="text-decoration-none">
+                                <router-link :to="'/admin/dashboard'" class="fw-bold">
                                     Click here to create!
                                 </router-link>
                             </p>
