@@ -896,8 +896,8 @@
                         <img :src="selectedImage || image64" alt="" id="output" class="py-2 review-preview-photo" />
                       </div>
                     </label>
-                    <div class="row justify-content-start mb-2">
-                      <div class="col-md-4 text-start">
+                    <div class="row justify-content-center mb-2">
+                      <div class="col-sm-7 text-center mt-2">
                         <button v-if="image64 !== null" class="btn tertiary-square-btn mb-1" @click="clearPhoto">
                           Clear Photo
                         </button>
