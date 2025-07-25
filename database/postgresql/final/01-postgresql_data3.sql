@@ -382,6 +382,14 @@ CREATE TABLE "listings" (
 -- Create a GIN index on listingName for trigram fuzzy search
 CREATE INDEX idx_listings_name_trgm ON "listings" USING gin ("listingName" gin_trgm_ops);
 
+-- ========= "listingVariants" ========= to store user's favourite
+-- CREATE TABLE "listingVariants" (
+--     "listing_id" INTEGER REFERENCES "listings"("id") ON DELETE CASCADE,
+--     "variant" SMALLINT, -- 2 bytes per row, Handles years from -32,768 to 32,767
+--     -- "user_id" INTEGER REFERENCES "users"("id") ON DELETE CASCADE, if we ever want to track user
+--     "added_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- );
+
 -- ========= "modRequests" =========
 CREATE TABLE "modRequests" (
     "id" SERIAL PRIMARY KEY,
@@ -459,7 +467,8 @@ CREATE TABLE "reviews" (
     "location" INTEGER REFERENCES "venues"("id") ON DELETE SET NULL, -- [!] references "venues" FK
     "taste" VARCHAR(750),
     "observationTag" TEXT[], -- Contains "observationTags"("id")s
-    "address" VARCHAR(255)
+    "address" VARCHAR(255),
+    "variant" SMALLINT DEFAULT NULL -- 2 bytes per row, Handles years from -32,768 to 32,767
 );
 
 -- ========= "reviewsUserVotes" =========

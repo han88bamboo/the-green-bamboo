@@ -52,10 +52,27 @@ def createReviews():
     user_id = int(raw_review['userID'])
     created_date = datetime.strptime(raw_review['createdDate'], "%Y-%m-%dT%H:%M:%S.%fZ")
 
+    # Handle nullable variant field
+    variant = raw_review.get('variant')
+    if variant and str(variant).strip():
+        variant = int(variant)
+    else:
+        variant = None
+
     # Checking for duplicate review
-    cur.execute("""
-        SELECT * FROM "reviews" WHERE "reviewTarget" = %s AND "userID" = %s
-    """, (review_target, user_id))
+    if variant is None: 
+        cur.execute("""
+            SELECT * FROM "reviews" 
+                WHERE "reviewTarget" = %s 
+                AND "userID" = %s
+        """, (review_target, user_id))
+    else: 
+        cur.execute("""
+            SELECT * FROM "reviews" 
+                WHERE "reviewTarget" = %s 
+                AND "variant" = %s    
+                AND "userID" = %s
+        """, (review_target, variant, user_id))
 
     if cur.fetchone() is not None:
         return jsonify({
@@ -108,15 +125,26 @@ def createReviews():
 
 
     # Prepare the insert SQL for reviews
-    insert_review_sql = """INSERT INTO reviews ("userID", "reviewTarget", "rating", "reviewDesc", "reviewType", "createdDate", 
-                          language, finish, "willRecommend", "wouldBuyAgain", "taggedUsers", "flavourTag", photo, colour, 
-                          aroma, taste, "observationTag", location, address)
-                          VALUES (%s, %s, %s::DECIMAL(3,1), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
-    review_values = (user_id, review_target, float(raw_review['rating']), raw_review['reviewDesc'], raw_review['reviewType'],
-                     created_date, raw_review['language'], raw_review['finish'], will_recommend,
-                     would_buy_again, tagged_users, flavour_tags, raw_review['photo'],
-                     raw_review['colour'], raw_review['aroma'], raw_review['taste'],
-                     observation_tags, venue_id, raw_review['address'])
+    if variant is None: 
+        insert_review_sql = """INSERT INTO reviews ("userID", "reviewTarget", "rating", "reviewDesc", "reviewType", "createdDate", 
+                            language, finish, "willRecommend", "wouldBuyAgain", "taggedUsers", "flavourTag", photo, colour, 
+                            aroma, taste, "observationTag", location, address)
+                            VALUES (%s, %s, %s::DECIMAL(3,1), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+        review_values = (user_id, review_target, float(raw_review['rating']), raw_review['reviewDesc'], raw_review['reviewType'],
+                        created_date, raw_review['language'], raw_review['finish'], will_recommend,
+                        would_buy_again, tagged_users, flavour_tags, raw_review['photo'],
+                        raw_review['colour'], raw_review['aroma'], raw_review['taste'],
+                        observation_tags, venue_id, raw_review['address'])
+    else :
+        insert_review_sql = """INSERT INTO reviews ("userID", "reviewTarget", "rating", "reviewDesc", "reviewType", "createdDate", 
+                                "language", "finish", "willRecommend", "wouldBuyAgain", "taggedUsers", "flavourTag", "photo", "colour", 
+                                "aroma", "taste", "observationTag", "location", "address", "variant")
+                                VALUES (%s, %s, %s::DECIMAL(3,1), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+        review_values = (user_id, review_target, float(raw_review['rating']), raw_review['reviewDesc'], raw_review['reviewType'],
+                        created_date, raw_review['language'], raw_review['finish'], will_recommend,
+                        would_buy_again, tagged_users, flavour_tags, raw_review['photo'],
+                        raw_review['colour'], raw_review['aroma'], raw_review['taste'],
+                        observation_tags, venue_id, raw_review['address'], variant)
 
     try:
         cur.execute(insert_review_sql, review_values)
@@ -328,7 +356,8 @@ def createReviews():
                 "proofPointsEarned": total_points,
             }), 201
     except Exception as e:
-        print(str(e))
+        import traceback
+        traceback.print_exc()
         conn.rollback()
         return jsonify({
             "code": 500,

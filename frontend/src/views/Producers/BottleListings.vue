@@ -48,7 +48,8 @@
                 aspect-ratio: 1 / 1;
                 box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.4);
               ">
-              <img :src="specified_listing['photo'] || defaultPhoto" class="img-fluid w-100 h-100 object-fit-cover" />
+              <img :src="specified_listing['photo'] || defaultPhoto" class="img-fluid h-100 object-fit-cover"
+                loading="lazy" />
             </div>
           </div>
 
@@ -398,11 +399,11 @@
                                     }}
                                     <!-- [if] there is a cover image for the post-->
                                     <img v-if="ogImage != null" :src="ogImage[specified_listing.reviewLink]
-                                      " alt="OG Image" style="width: 80px; height: 80px" />
+                                      " alt="OG Image" style="width: 80px; height: 80px" loading="lazy" />
                                     <!-- [else] there is no cover image for the post (put 88 bamboo's logo) -->
                                     <img v-else
                                       src="https://88bamboo.co/cdn/shop/files/88B_New_Logo_-_white_face_transparent_background_180x.png?v=1655894111"
-                                      style="width: 80px; height: 80px" />
+                                      style="width: 80px; height: 80px" loading="lazy" />
                                   </div>
                                   <div class="col-lg-8 col-md-12">
                                     {{ deepDiveLinkFormatted }}
@@ -596,13 +597,14 @@
 
               <!-- age -->
               <div class="col-6 col-lg-2 px-1 text-start mobile-view-hide text-color-black">
-                <div v-if="specified_listing['drinkType'] == 'Wine'">
+                <!-- <div v-if="specified_listing['drinkType'] == 'Wine'">
                   <h5 class="text-body-secondary mb-1">
                     <b> {{ specified_listing["age"] }} </b>
                   </h5>
                   <p class="mb-3"><u> Vintage (Year)</u></p>
                 </div>
-                <div v-else>
+                <div v-else> -->
+                <div v-if="specified_listing['drinkType'] != 'Wine'">
                   <h5 class="text-body-secondary mb-1">
                     <b> {{ specified_listing["age"] }} </b>
                   </h5>
@@ -732,22 +734,38 @@
           <!-- ADD YOUR REVIEW & BOOKMARK -->
           <div class="col-4 d-flex align-items-center mobile-view-hide me-0">
             <!-- Logged-in users -->
-            <div v-if="userType === 'user' && userID !== 'defaultUser'">
-              <button v-if="!inEdit" class="btn primary-btn-less-round-blue btn-lg" data-bs-toggle="modal"
-                data-bs-target="#reviewModal" style="font-weight: bold;">
-                Add Your Review
-              </button>
-              <button v-else class="btn primary-btn-less-round-blue btn-lg" style="font-weight: bold;">
-                Review Added!
-              </button>
+            <div v-if="specified_listing.drinkType == 'Wine'"> 
+              <div v-if="userType === 'user' && userID !== 'defaultUser'">
+                <button class="btn primary-btn-less-round-blue btn-lg" data-bs-toggle="modal"
+                  data-bs-target="#reviewModal" style="font-weight: bold;"> <!--v-if="!inEdit"-->
+                  Add Your Review
+                </button>
+              </div>
+              <!-- Logged-out users -->
+              <div v-else>
+                <button class="btn primary-btn-less-round-blue btn-lg" @click="$router.push('/login')"
+                  style="font-weight: bold;">
+                  Add Your Review
+                </button>
+              </div>
             </div>
-
-            <!-- Logged-out users -->
             <div v-else>
-              <button class="btn primary-btn-less-round-blue btn-lg" @click="$router.push('/login')"
-                style="font-weight: bold;">
-                Add Your Review
-              </button>
+              <div v-if="userType === 'user' && userID !== 'defaultUser'">
+                <button v-if="!inEdit" class="btn primary-btn-less-round-blue btn-lg" data-bs-toggle="modal"
+                  data-bs-target="#reviewModal" style="font-weight: bold;">
+                  Add Your Review
+                </button>
+                <button v-else class="btn primary-btn-less-round-blue btn-lg" style="font-weight: bold;">
+                  Review Added!
+                </button>
+              </div>
+              <!-- Logged-out users -->
+              <div v-else>
+                <button class="btn primary-btn-less-round-blue btn-lg" @click="$router.push('/login')"
+                  style="font-weight: bold;">
+                  Add Your Review
+                </button>
+              </div>
             </div>
 
             <!-- Bookmark icon -->
@@ -894,7 +912,8 @@
                       </div>
                     </label>
                     <div class="row">
-                      <img :src="selectedImage || image64" alt="" id="output" class="py-2 review-preview-photo" />
+                      <img :src="selectedImage || image64" alt="" id="output" class="py-2 review-preview-photo"
+                        loading="lazy" />
                     </div>
                     <div class="row justify-content-start mb-2">
                       <div class="col-md-4 text-start">
@@ -921,10 +940,9 @@
                             </div>
                           </div>
                         </div>
-                        
+
                         <input list="filteredFollowList" v-model="friendTag" class="form-control input-with-icon"
-                          id="friendTag" placeholder="Tag friends"
-                          v-on:input="updateFriendTag" />
+                          id="friendTag" placeholder="Tag friends" v-on:input="updateFriendTag" />
                         <p class="text-start fs-7" style="color:grey">To start tagging friends, follow them first!</p>
                         <datalist id="filteredFollowList">
                           <option v-for="user in filteredUsers" :key="user.id" :value="user.username">
@@ -954,8 +972,8 @@
                         </div>
                         <div class="row">
                           <div class="col-6 col-md-12 d-flex justify-content-start">
-                            <button v-if="selectedLocation !== ''" class="btn tertiary-square-btn mb-1 mobile-rating-smaller-text-2"
-                               @click="clearLocation">
+                            <button v-if="selectedLocation !== ''"
+                              class="btn tertiary-square-btn mb-1 mobile-rating-smaller-text-2" @click="clearLocation">
                               Clear Selection
                             </button>
                           </div>
@@ -1015,7 +1033,8 @@
                   <!-- Buttons to expand -->
                   <div v-if="!extendReview" class="col justify-content-start mb-3 text-start">
                     <div class="col-md-12 text-center">
-                      <button class="btn primary-btn-less-round-blue btn-md fw-bold" style="color:white" @click="controlModal" >
+                      <button class="btn primary-btn-less-round-blue btn-md fw-bold" style="color:white"
+                        @click="controlModal">
                         Extend Review &#9660;
                       </button>
                     </div>
@@ -1023,7 +1042,8 @@
                   <!-- Button to collapse -->
                   <div v-if="extendReview" class="col justify-content-start mb-3 text-start">
                     <div class="col-md-12 text-center">
-                      <button class="btn primary-btn-less-round-blue btn-md fw-bold" style="color:white" @click="controlModal">
+                      <button class="btn primary-btn-less-round-blue btn-md fw-bold" style="color:white"
+                        @click="controlModal">
                         Condense Review &#9650;
                       </button>
                     </div>
@@ -1042,6 +1062,7 @@
 
                 <!-- TOGGLEABLE SECTION -->
                 <div v-if="extendReview">
+
                   <!-- row 7: colours -->
                   <div class="row">
                     <div class="col-6 col-md-12 justify-content-start">
@@ -1110,31 +1131,28 @@
                   </div>
 
                   <div class="row justify-content-start mb-1 text-start">
-                  <!--more colours-->
+                    <!--more colours-->
                     <div class="col-7 mobile-col-12 mobile-mt-2">
-                        <button
-                          @click="displaySelectColour(colour)"
-                          v-for="(colour, i) in moreColours"
-                          :key="'more-' + i"
-                          :value="colour"
-                          class="btn"
-                          data-bs-toggle="button"
-                          :style="{
-                            width: '30px',
-                            height: '30px',
-                            backgroundColor: colour,
-                            color: colour,
-                            borderRadius: '0',
-                            borderColor: 'grey',
-                            borderWidth: '1px',
-                          }"
-                        ></button>
+                      <button @click="displaySelectColour(colour)" v-for="(colour, i) in moreColours" :key="'more-' + i"
+                        :value="colour" class="btn" data-bs-toggle="button" :style="{
+                          width: '30px',
+                          height: '30px',
+                          backgroundColor: colour,
+                          color: colour,
+                          borderRadius: '0',
+                          borderColor: 'grey',
+                          borderWidth: '1px',
+                        }"></button>
                     </div>
-                  </div> 
+                  </div>
 
                   <!-- row 8: aroma, taste and finish -->
                   <div class="row pt-2">
                     <div class="col justify-content-start mb-3">
+                      <div v-if="specified_listing.drinkType == 'Wine'" class="form-group mb-3">
+                        <p class="text-start mb-2 fw-bold">Vintage</p>
+                        <input v-model="variant" type="text" class="form-control" id="aroma" />
+                      </div>
                       <div class="form-group mb-3">
                         <p class="text-start mb-2 fw-bold">Aroma</p>
                         <input v-model="aroma" type="text" class="form-control" id="aroma" />
@@ -1371,23 +1389,32 @@
                   Close
                 </button>
                 <!--tzh removed btn-secondary added secondary-btn-less-round-inverse-->
-                <button v-if="!inEdit" type="button" @click="addReview" class="btn secondary-btn-less-round">
-                  Submit Review
-                </button>
-                <button v-else type="button" @click="editReview" class="btn secondary-btn-less-round">
-                  Update Review
-                </button>
+                <div v-if="specified_listing.drinkType !== 'Wine'"> 
+                  <button v-if="!inEdit" type="button" @click="addReview" class="btn secondary-btn-less-round">
+                    Submit Reviewsssss
+                  </button>
+                  <button v-else type="button" @click="editReview" class="btn secondary-btn-less-round">
+                    Update Reviewsssss
+                  </button>
+                </div>
+                <div v-else>
+                  <button type="button" @click="addReview" class="btn secondary-btn-less-round">
+                    Submit Review
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
         <!-- END OF MODAL -->
 
+        <VintageList :loading="vintage_listings.loading" :error="vintage_listings.error"
+          :drinkType="specified_listing.drinkType" :listings="vintage_listings.listings" />
+
         <!-- reviews -->
         <!-- TODO  EDIT MODAL IF NOT DOING COMPONENT-->
         <div class="container no-right-padding-large-screen">
           <hr />
-
           <!-- photos posted by other users -->
           <h5 class="text-start" style="font-weight: bold; color: black">
             In Photos
@@ -1409,12 +1436,9 @@
                       </svg>
                     </div>
                   </div>
-                  <div
-                    v-for="review in filteredReviewsWithImages"
-                    :key="review.id"
-                    class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 mobile-px-1"
-                  >
-                    <img :src="review.photo" alt="Review photo" class="review-image" />
+                  <div v-for="review in filteredReviewsWithImages" :key="review.id"
+                    class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 mobile-px-1">
+                    <img :src="review.photo" alt="Review photo" class="review-image" loading="lazy" />
                   </div>
 
                 </div>
@@ -1433,7 +1457,8 @@
                   <!-- Display up to 5 photos -->
                   <div v-for="review in filteredReviewsWithImages.slice(0, 5)" :key="review"
                     class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 mobile-px-1">
-                    <img :src="review['photo'] || defaultPhoto" alt="" class="review-image shadow-effect" />
+                    <img :src="review['photo'] || defaultPhoto" alt="" class="review-image shadow-effect"
+                      loading="lazy" />
                   </div>
                 </div>
 
@@ -1441,7 +1466,8 @@
                 <div v-else class="row">
                   <div v-for="review in filteredReviewsWithImages.slice(0, 5)" :key="review"
                     class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 p-0 mobile-px-1">
-                    <img :src="review['photo'] || defaultPhoto" alt="" class="review-image shadow-effect" />
+                    <img :src="review['photo'] || defaultPhoto" alt="" class="review-image shadow-effect"
+                      loading="lazy" />
                   </div>
                 </div>
               </div>
@@ -1478,7 +1504,7 @@
                         {{ getUserRankFromReview(review) }}
                       </span>
                       &nbsp;rated <span style="color: #f0b358">★</span>
-                      <b>{{ review["rating"] }}</b> Stars
+                      <b>{{ review["rating"] }}</b> Stars <b>{{ review["variant"] ? " - " + review["variant"] + " Vintage": "" }}</b>
 
                       <!-- Location -->
                       <span v-if="review.location && checkVenue(review.address) !== ''">
@@ -1511,7 +1537,7 @@
                         style="background-color: #f0b358; color: black">
                         Moderator
                       </span>
-                      
+
                       <!-- User Title (ambassador) -->
                       <span v-if="checkAmbassadorFromUserID(review.userID)" class="badge rounded-pill ms-2"
                         style="background-color: #ff3e31; color: white">
@@ -1597,10 +1623,13 @@
                     Detailed Review >
                   </a>
 
-                  <button @click="shareReview(review)" class="btn btn-link p-0 text-decoration-underline text-secondary me-3" 
+                  <button @click="shareReview(review)"
+                    class="btn btn-link p-0 text-decoration-underline text-secondary me-3"
                     style="border: none; background: none; font-size: inherit;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-share me-1" viewBox="0 0 16 16">
-                      <path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.5 2.5 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5m-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3"/>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                      class="bi bi-share me-1" viewBox="0 0 16 16">
+                      <path
+                        d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.5 2.5 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5m-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3" />
                     </svg>
                     Share
                   </button>
@@ -1780,6 +1809,18 @@
                           <div v-else>-</div>
                         </div>
                       </div>
+                      <!-- Variant -->
+                      <div v-if="specified_listing.drinkType == 'Wine'" class="row mt-2">
+                        <div class="col-3">
+                          <b>Vintage</b>
+                        </div>
+                        <div class="col-9">
+                          <div v-if="detailedReview.variant">
+                            {{ detailedReview.variant }}
+                          </div>
+                          <div v-else>-</div>
+                        </div>
+                      </div>
                       <!-- aroma -->
                       <div class="row mt-2">
                         <div class="col-3">
@@ -1792,7 +1833,7 @@
                           <div v-else>-</div>
                         </div>
                       </div>
-                      <!-- aroma -->
+                      <!-- Taste -->
                       <div class="row mt-2">
                         <div class="col-3">
                           <b>Taste</b>
@@ -1855,10 +1896,9 @@
                           <b>Action Tags</b>
                         </div>
                         <div class="col-9">
-                          <span v-for="(
-                            tag, index
-                            ) in detailedReview.observationTag" :key="index" class="badge rounded-pill me-2"
-                            style="background-color: #f0b358; color: black">{{ tag }}</span>
+                          <span v-for="(tag, index) in detailedReview.observationTag" :key="index"
+                            class="badge rounded-pill me-2" style="background-color: #f0b358; color: black">{{ tag
+                            }}</span>
                           <!--tzh changed grey to #F0B358-->
                         </div>
                       </div>
@@ -1932,14 +1972,17 @@
               </div>
               <!-- modal end -->
 
-              <div class="modal fade" id="shareReviewModal" tabindex="-1" aria-labelledby="shareReviewModalLabel" aria-hidden="true">
+              <div class="modal fade" id="shareReviewModal" tabindex="-1" aria-labelledby="shareReviewModalLabel"
+                aria-hidden="true">
                 <div class="modal-dialog">
                   <!-- SHARE SUCCESS -->
                   <div class="text-success fst-italic fw-bold fs-3 modal-content" v-if="shareSuccess">
                     <div class="modal-body text-center p-4">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-check-circle mb-3" viewBox="0 0 16 16">
-                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                        <path d="m10.97 4.97-.02.022-3.473 4.425-2.093-2.094a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05"/>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor"
+                        class="bi bi-check-circle mb-3" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                        <path
+                          d="m10.97 4.97-.02.022-3.473 4.425-2.093-2.094a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05" />
                       </svg>
                       <br>
                       <span>{{ shareSuccessMessage }}</span>
@@ -1954,9 +1997,11 @@
                   <!-- SHARE ERROR -->
                   <div class="text-danger fst-italic fw-bold fs-3 modal-content" v-if="shareError">
                     <div class="modal-body text-center p-4">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-exclamation-circle mb-3" viewBox="0 0 16 16">
-                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                        <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z"/>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor"
+                        class="bi bi-exclamation-circle mb-3" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                        <path
+                          d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z" />
                       </svg>
                       <br>
                       <span>{{ shareErrorMessage }}</span>
@@ -2047,7 +2092,8 @@
                 <!-- [else] user allows location -->
                 <div v-else>
                   <div v-for="([venueID]) in nearestBars" v-bind:key="venueID">
-                    <router-link :to="{ path: '/profile/venue/' + venueID + '/' + getVenueNameFromID(venueID) }" class="reverse-clickable-text">
+                    <router-link :to="{ path: '/profile/venue/' + venueID + '/' + getVenueNameFromID(venueID) }"
+                      class="reverse-clickable-text">
                       <p class="mb-4">
                         <u> {{ getVenueNameFromID(venueID) }} </u>
                         <br />
@@ -2161,6 +2207,7 @@ import BookmarkIcon from "@/components/BookmarkIcon.vue";
 import BookmarkModal from "@/components/BookmarkModal.vue";
 import FooterBar from "@/components/FooterBar.vue";
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
+import VintageList from "@/components/bottle_listings/VintageList.vue"
 
 export default {
   components: {
@@ -2169,6 +2216,7 @@ export default {
     BookmarkModal,
     FooterBar,
     LoadingWithFunFact,
+    VintageList,
   },
   setup() {
     // Create reactive references for meta data
@@ -2454,6 +2502,17 @@ export default {
       bottler_id: null,
       correctProducer: false,
 
+      vintage_listings: {
+        loading: true,
+        error: null,
+        listings: [],
+      },
+      /* 
+      { year: 2019, avgRating: 3.8, recommendPercent: 30, drinkAgainPercent: 30 },
+      { year: 2017, avgRating: 3.9, recommendPercent: 30, drinkAgainPercent: 30 },
+      { year: 1993, avgRating: 3.8, recommendPercent: 30, drinkAgainPercent: 30 },
+      */
+
       // check whether user is moderator, whether correct type and whether listing allows mod
       correctModerator: false,
 
@@ -2500,6 +2559,7 @@ export default {
       subTags: [],
       selectedFlavourTags: [],
       finalSelectedFlavourTags: [],
+      variant: "",
       aroma: "",
       taste: "",
       finish: "",
@@ -2658,11 +2718,13 @@ export default {
     }
   },
   watch: {
+    // caching should be disabled for wines
     // Watch all relevant fields and cache them
     reviewDesc: 'cacheReviewForm',
     selectedLanguage: 'cacheReviewForm',
     rating: 'cacheReviewForm',
     selectedColour: 'cacheReviewForm',
+    variant: 'cacheReviewForm',
     aroma: 'cacheReviewForm',
     taste: 'cacheReviewForm',
     finish: 'cacheReviewForm',
@@ -2876,6 +2938,8 @@ export default {
         this.specified_listing = response.data;
         this.producer_id = this.specified_listing.producerID; // find specified producer
         this.bottler_id = this.specified_listing.bottlerID; // find specified bottler
+        // console.log(this.specified_listing)
+        // console.log(this.specified_listing.drinkType)
 
         if (this.venueWithDrinkList != []) {
           this.whereToTry(); // find where to try specified listing [RE-ENABLE WHEN VENUES HAVE MENU ATTRIBUTE]
@@ -2892,7 +2956,12 @@ export default {
         //     "Woody#3357FF": 2
         // };
         this.getObservationTagCounts(); // to get the observation tag counts
-        this.specificReview = this.getLoggedUserReview();
+
+        // remove caching for wine type due to variants 
+        if (this.specified_listing.drinkType !== 'Wine') {
+          this.specificReview = this.getLoggedUserReview();
+        } 
+
         this.formatDeepDiveLink();
       } catch (error) {
         console.error(error);
@@ -2957,8 +3026,6 @@ export default {
               this.drinkList.wantToTry = this.drinkList.wantToTry.map(item => item.drinkId);
             }
           }
-
-
 
           // Get follow list user details 
           const response = await this.$axios.post(
@@ -3049,6 +3116,13 @@ export default {
       // catch (error) {
       //     console.error(error);
       // }
+
+      // get variant review stats 
+      if (this.specified_listing.drinkType == 'Wine') {
+        this.vintage_listings = await this.retrieveStats(`${process.env.VUE_APP_API_URL}/getData/getVintageAgg/${this.specified_listing.id}`, this.vintage_listings)
+        console.log(this.vintage_listings)
+      }
+
       this.specificReviewRating = this.getRatings(this.specified_listing);
       this.willRecommend = this.getWillRecommend(this.specified_listing);
       this.willDrinkAgain = this.getWillDrinkAgain(this.specified_listing);
@@ -3084,7 +3158,7 @@ export default {
             mainProducer,
             this.reviewStatistics
           );
-          
+
           // Check for review ID in URL after all data is loaded
           this.checkForReviewInUrl();
         });
@@ -3336,21 +3410,21 @@ export default {
       try {
         const currentUrl = window.location.origin + window.location.pathname;
         const shareUrl = `${currentUrl}?reviewId=${review.id}`;
-        
+
         // Copy to clipboard
         await navigator.clipboard.writeText(shareUrl);
-        
+
         // Show success modal
         this.shareSuccessMessage = "Review link copied! You can share it now";
         this.shareSuccess = true;
         this.shareError = false;
-        
+
         // Show the modal using the same pattern as your openDetailedReviewModal
         this.openShareModal();
-        
+
       } catch (err) {
         console.error('Failed to copy link: ', err);
-        
+
         // Fallback for older browsers
         try {
           const textArea = document.createElement('textarea');
@@ -3361,23 +3435,23 @@ export default {
           textArea.select();
           document.execCommand('copy');
           document.body.removeChild(textArea);
-          
+
           // Show success modal
           this.shareSuccessMessage = "Review link copied! You can share it now";
           this.shareSuccess = true;
           this.shareError = false;
-          
+
           // Show the modal
           this.openShareModal();
-          
+
         } catch (fallbackErr) {
           console.error('Fallback copy failed: ', fallbackErr);
-          
+
           // Show error modal
           this.shareErrorMessage = "Failed to copy link. Please copy the URL manually.";
           this.shareError = true;
           this.shareSuccess = false;
-          
+
           // Show the modal
           this.openShareModal();
         }
@@ -3425,7 +3499,7 @@ export default {
       }
     },
 
-    openDetailedReviewModal() {  
+    openDetailedReviewModal() {
       const modalTrigger = document.querySelector('[data-bs-target="#detailedReviewModal"]');
       modalTrigger.click();
     },
@@ -3614,6 +3688,9 @@ export default {
       if (this.photo !== null) {
         this.photo = this.photo.trim();
       }
+      if (this.variant !== "") {
+        this.variant = this.variant.trim();        
+      }
       if (this.aroma !== "") {
         this.aroma = this.aroma.trim();
       }
@@ -3638,6 +3715,7 @@ export default {
         photo: this.image64,
         colour: this.selectedColour,
         language: this.selectedLanguage,
+        variant: this.variant,
         aroma: this.aroma,
         taste: this.taste,
         finish: this.finish,
@@ -3762,7 +3840,7 @@ export default {
       if (this.reviewResponseCode == 201) {
         this.successSubmission = true; // Display success message
         this.addingReview = false; // Hide submission in progress message
-        this.clearReviewCache(); 
+        this.clearReviewCache();
       } else {
         this.errorSubmission = true; // Display error message
         this.addingReview = false; // Hide submission in progress message
@@ -4011,14 +4089,14 @@ export default {
     },
 
     reset() {
-        // Restore cached review data
-        this.restoreReviewCache();
-        // Reset error flags so the modal shows the form again
-        this.errorSubmission = false;
-        this.errorMessage = false;
-        this.duplicateEntry = false;
-        this.addingReview = true;
-      },
+      // Restore cached review data
+      this.restoreReviewCache();
+      // Reset error flags so the modal shows the form again
+      this.errorSubmission = false;
+      this.errorMessage = false;
+      this.duplicateEntry = false;
+      this.addingReview = true;
+    },
 
     async updateToggle() {
       let responseCode = "";
@@ -4523,57 +4601,93 @@ export default {
       }
     },
     restoreReviewCache() {
-        const cacheKey = `reviewCache_${this.listing_id}_${this.userID}`;
-        const cached = localStorage.getItem(cacheKey);
-        if (cached && !this.inEdit) {
-          try {
-            const data = JSON.parse(cached);
-            // Only restore if not in edit mode (or as needed)
-            this.selectedLanguage = data.selectedLanguage || "English";
-            this.reviewDesc = data.reviewDesc || "";
-            this.rating = data.rating || 5;
-            this.selectedColour = data.selectedColour || "";
-            this.aroma = data.aroma || "";
-            this.taste = data.taste || "";
-            this.finish = data.finish || "";
-            this.wouldRecommend = data.wouldRecommend;
-            this.wouldBuyAgain = data.wouldBuyAgain;
-            this.selectedFlavourTags = data.selectedFlavourTags || [];
-            this.finalSelectedFlavourTags = data.finalSelectedFlavourTags || [];
-            this.selectedObservations = data.selectedObservations || [];
-            this.friendTagList = data.friendTagList || [];
-            this.showFriendTagList = data.showFriendTagList || [];
-            this.selectedLocation = data.selectedLocation || "";
-            this.selectedLocationAddress = data.selectedLocationAddress || "";
-            this.image64 = data.image64 || null;
-          } catch (e) {
-            // If cache is corrupted, ignore
-          }
+      const cacheKey = `reviewCache_${this.listing_id}_${this.userID}`;
+      const cached = localStorage.getItem(cacheKey);
+      if (cached && !this.inEdit) {
+        try {
+          const data = JSON.parse(cached);
+          // Only restore if not in edit mode (or as needed)
+          this.selectedLanguage = data.selectedLanguage || "English";
+          this.reviewDesc = data.reviewDesc || "";
+          this.rating = data.rating || 5;
+          this.selectedColour = data.selectedColour || "";
+          this.aroma = data.aroma || "";
+          this.taste = data.taste || "";
+          this.finish = data.finish || "";
+          this.wouldRecommend = data.wouldRecommend;
+          this.wouldBuyAgain = data.wouldBuyAgain;
+          this.selectedFlavourTags = data.selectedFlavourTags || [];
+          this.finalSelectedFlavourTags = data.finalSelectedFlavourTags || [];
+          this.selectedObservations = data.selectedObservations || [];
+          this.friendTagList = data.friendTagList || [];
+          this.showFriendTagList = data.showFriendTagList || [];
+          this.selectedLocation = data.selectedLocation || "";
+          this.selectedLocationAddress = data.selectedLocationAddress || "";
+          this.image64 = data.image64 || null;
+        } catch (e) {
+          // If cache is corrupted, ignore
         }
-      },
-    cacheReviewForm() {
-        const cacheKey = `reviewCache_${this.listing_id}_${this.userID}`;
-        const data = {
-          selectedLanguage: this.selectedLanguage,
-          reviewDesc: this.reviewDesc,
-          rating: this.rating,
-          selectedColour: this.selectedColour,
-          aroma: this.aroma,
-          taste: this.taste,
-          finish: this.finish,
-          wouldRecommend: this.wouldRecommend,
-          wouldBuyAgain: this.wouldBuyAgain,
-          selectedFlavourTags: this.selectedFlavourTags,
-          finalSelectedFlavourTags: this.finalSelectedFlavourTags,
-          selectedObservations: this.selectedObservations,
-          friendTagList: this.friendTagList,
-          showFriendTagList: this.showFriendTagList,
-          selectedLocation: this.selectedLocation,
-          selectedLocationAddress: this.selectedLocationAddress,
-          image64: this.image64
-        };
-        localStorage.setItem(cacheKey, JSON.stringify(data));
       }
+    },
+    // cacheReviewForm() {
+    //   const cacheKey = `reviewCache_${this.listing_id}_${this.userID}`;
+    //   const data = {
+    //     selectedLanguage: this.selectedLanguage,
+    //     reviewDesc: this.reviewDesc,
+    //     rating: this.rating,
+    //     selectedColour: this.selectedColour,
+    //     variant: this.variant,
+    //     aroma: this.aroma,
+    //     taste: this.taste,
+    //     finish: this.finish,
+    //     wouldRecommend: this.wouldRecommend,
+    //     wouldBuyAgain: this.wouldBuyAgain,
+    //     selectedFlavourTags: this.selectedFlavourTags,
+    //     finalSelectedFlavourTags: this.finalSelectedFlavourTags,
+    //     selectedObservations: this.selectedObservations,
+    //     friendTagList: this.friendTagList,
+    //     showFriendTagList: this.showFriendTagList,
+    //     selectedLocation: this.selectedLocation,
+    //     selectedLocationAddress: this.selectedLocationAddress,
+    //     image64: this.image64
+    //   };
+    //   localStorage.setItem(cacheKey, JSON.stringify(data));
+    // },
+
+    async retrieveStats(url, api_data) {
+      api_data.loading = true
+      api_data.error = ''
+
+      try {
+        const response = await this.$axios.get(url);
+        api_data.listings = response.data;
+      } catch (error) {
+        //console.error("Failed to load recent activity:", error);
+        api_data.error = "Failed to load recent activity. Please try again later.";
+
+        // Specific error handling
+        if (!navigator.onLine) {
+          api_data.error = "No internet connection. Please check your connection and try again.";
+        } else if (error.response) {
+          // Server responded but with error status
+          //if (error.response.status === 404) {
+          //  api_data.error = "Data not found.";
+          //} else 
+          if (error.response.status >= 500) {
+            api_data.error = "Server error. Please try again later.";
+          }
+        } else if (error.code === "ECONNABORTED") {
+          api_data.error = "Request timed out. Please try again.";
+        } else if (error.message.includes("Network Error") || error.message.includes("ERR_CONNECTION_REFUSED")) {
+          api_data.error = "Unable to connect to the server.";
+        }
+      } finally {
+        api_data.loading = false;
+      }
+
+      return api_data
+    },
+
   },
 };
 </script>

@@ -2868,7 +2868,8 @@ INSERT INTO "listings" (
     ('Absolut Vodka', 19, 'Absolut', 'Sweden', 'Vodka', 40, 'A famous Swedish vodka made with 100% natural ingredients.', true, '2024-02-02', 'Vodka', NULL, '', '', '', ''),
     ('Tiger Beer', 20, 'Tiger Brewery', 'Singapore', 'Beer', 5, 'A crisp, refreshing lager brewed in Singapore.', true, '2024-02-02', 'Lager - All Styles', NULL, '', '', '', 'Pilsner'),
     ('Tiger Crystal', 20, 'Tiger Brewery', 'Singapore', 'Beer', 4.6, 'A smooth, lighter version of the classic Tiger Beer.', true, '2024-02-02', 'Lager - All Styles', NULL, '', '', '', 'Helles'),
-    ('Tiger Black', 20, 'Tiger Brewery', 'Singapore', 'Beer', 6.9, 'A full-bodied, stronger version of Tiger Beer.', true, '2024-02-02', 'Lager - All Styles', NULL, '', '', '', 'Vienna Lager');
+    ('Tiger Black', 20, 'Tiger Brewery', 'Singapore', 'Beer', 6.9, 'A full-bodied, stronger version of Tiger Beer.', true, '2024-02-02', 'Lager - All Styles', NULL, '', '', '', 'Vienna Lager'),
+    ('Vina Garugele', 20, 'OB', 'Spain', 'Wine', 13.5, 'Carlos Moro Viña Garugele is a premium Rioja wine produced by Bodega Carlos Moro, a Spanish winery founded in 2014 by Carlos Moro. The wine is made from grapes grown in the Viña Garugele vineyard, which was planted in 1940 and personally selected by Carlo', true, '2024-02-02', 'Red Wine', NULL, '', '', 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProducerProfilePhoto.png?v=1748434998', 'Spanish Rioja Red');
 
 INSERT INTO "usersFollowLists" (
     "userId", "users", "producers", "venues")

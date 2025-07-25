@@ -1677,6 +1677,49 @@ def getBookmarkListings():
 
     return jsonify(return_data), 200
 
+
+# [GET] Get aggregated reviews score from user reviews
+@blueprint.route("/getVintageAgg/<reviewTarget>")
+def getVintageAgg(reviewTarget):
+    conn = g.db 
+
+    sql = """
+        SELECT 
+            "variant" as year,
+            ROUND(AVG("rating"), 1) as avgRating,
+            ROUND(
+                (COUNT(CASE WHEN "willRecommend" = true THEN 1 END) * 100.0 / 
+                COUNT(CASE WHEN "willRecommend" IS NOT NULL THEN 1 END)), 0
+            ) as recommendPercent,
+            ROUND(
+                (COUNT(CASE WHEN "wouldBuyAgain" = true THEN 1 END) * 100.0 / 
+                COUNT(CASE WHEN "wouldBuyAgain" IS NOT NULL THEN 1 END)), 0
+            ) as drinkAgainPercent
+        FROM "reviews"
+        WHERE "reviewTarget" = %s
+        AND "variant" IS NOT NULL
+        AND "rating" IS NOT NULL
+        GROUP BY "variant"
+        ORDER BY "variant" DESC;
+    """
+
+    try: 
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.execute(sql, (reviewTarget, ))
+            variant_data = cursor.fetchall()
+
+        if not variant_data:
+            return jsonify([])
+        
+        return jsonify(variant_data)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        # Log the error appropriately
+        print(f"Error in getVintageAgg: {str(e)}")
+        return jsonify({"error": "Failed to fetch review statistics"}), 500
+
+
 # [GET] Get user's review summary
 @blueprint.route("/getUserReviewSummary/<id>")
 def getUserReviewSummary(id):
@@ -2372,6 +2415,7 @@ def getReviewsByListingIDs():
         return jsonify([])
 
     return jsonify(reviews_data)
+        
 
 # [GET] Specific Reviews by reviewTarget
 @blueprint.route("/getReviewByTarget/<id>/<last_review_id>")
