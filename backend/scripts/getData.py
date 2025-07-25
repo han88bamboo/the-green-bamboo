@@ -1721,13 +1721,16 @@ def getRecentlyAddedListings():
 @blueprint.route("/getBookmarkListings", methods=['POST'])
 def getBookmarkListings():
     conn = g.db
-    listing_ids = [listing["drinkId"] for listing in request.json.get('listingIDs', [])]
+    listing_ids = request.json.get('listingIDs', [])
 
     if not listing_ids:
         return jsonify({
             "code": 404,
             "message": "At least one listing ID is required."
         }), 404
+
+    # Convert to integers in case they come as strings
+    listing_ids = [int(id) for id in listing_ids]
 
     # Retrieve listing information based on the provided IDs
     with conn.cursor() as cursor:

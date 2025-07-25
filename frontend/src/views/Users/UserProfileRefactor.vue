@@ -2217,7 +2217,7 @@
                           :src="
                             bookmarkList.listItems.length > 0
                               ? bookedMarkedListings[
-                                  bookmarkList.listItems[0]?.drinkId
+                                  bookmarkList.listItems[0]?.drinkId || bookmarkList.listItems[0]
                                 ]?.photo || defaultDrinkImage
                               : defaultDrinkImage
                           "
@@ -2483,7 +2483,7 @@
                   </div>
 
                   <!-- Individual Drinks List View -->
-                  <div v-if="activeTab === 'list' && displayUser.drinkLists" id="list">
+                  <div v-if="activeTab === 'list' && displayUserBookmarks[currentList]" id="list">
                     <!-- list name, back to lists & add drink to list & share button -->
                     <div class="row mb-4 mobile-mt-2">
                       <div class="col-5 mobile-col-7">
@@ -2491,9 +2491,7 @@
                           <b>Drinks List: {{ currentList }}</b>
                         </h5>
                       </div>
-                      <div
-                        class="col-7 mobile-col-5 text-end d-flex gap-2 justify-content-end"
-                      >
+                      <div class="col-7 mobile-col-5 text-end d-flex gap-2 justify-content-end">
                         <button
                           v-if="ownProfile"
                           type="button"
@@ -2567,187 +2565,16 @@
                           </svg>
                           <span class="mobile-view-hide">&nbsp;Back to Drinks Lists</span>
                         </button>
-
-                        <!-- Share Menu Modal (QR Code) -->
-                        <div
-                          class="modal fade"
-                          id="shareListModal"
-                          tabindex="-1"
-                          aria-labelledby="shareListModalLabel"
-                          aria-hidden="true"
-                        >
-                          <div class="modal-dialog">
-                            <div class="modal-content">
-                              <div class="modal-header">
-                                <h1
-                                  class="modal-title fs-5"
-                                  id="shareMenuModalLabel"
-                                >
-                                  Drinks List QR Code
-                                </h1>
-                                <button
-                                  type="button"
-                                  class="btn-close"
-                                  data-bs-dismiss="modal"
-                                  aria-label="Close"
-                                ></button>
-                              </div>
-                              <div class="modal-body">
-                                <div class="centered">
-                                  <qr-code
-                                    v-bind:text="currentURL"
-                                    ref="qrCode"
-                                  ></qr-code>
-                                </div>
-                                <div class="input-group pt-3">
-                                  <input
-                                    type="text"
-                                    class="form-control"
-                                    aria-label="Link"
-                                    aria-describedby="button-addon2"
-                                    v-bind:value="currentURL"
-                                    disabled
-                                  />
-                                  <button
-                                    class="btn btn-outline-secondary"
-                                    type="button"
-                                    id="button-addon2"
-                                    @click="copyToClipboard(currentURL)"
-                                  >
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      width="16"
-                                      height="16"
-                                      fill="currentColor"
-                                      class="bi bi-clipboard"
-                                      viewBox="0 0 16 16"
-                                    >
-                                      <path
-                                        d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"
-                                      />
-                                      <path
-                                        d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"
-                                      />
-                                    </svg>
-                                  </button>
-                                </div>
-                                <p class="text-start pt-2" v-if="clipboardItem">
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="25"
-                                    height="25"
-                                    fill="currentColor"
-                                    class="bi bi-check"
-                                    viewBox="0 0 16 16"
-                                  >
-                                    <path
-                                      d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"
-                                    />
-                                  </svg>
-                                  Copied to clipboard!
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- add drink modal -->
-                    <div
-                      class="modal fade"
-                      id="exampleModal"
-                      tabindex="-1"
-                      aria-labelledby="exampleModalLabel"
-                      aria-hidden="true"
-                    >
-                      <div
-                        class="modal-dialog modal-dialog-centered modal-dialog-scrollable"
-                      >
-                        <div class="modal-content">
-                          <div class="modal-header">
-                            <h5>Add Drink to List: {{ currentList }}</h5>
-                            <button
-                              type="button"
-                              class="btn-close"
-                              data-bs-dismiss="modal"
-                              aria-label="Close"
-                            ></button>
-                          </div>
-                          <div class="modal-body" style="height: 400px">
-                            <!-- search -->
-                            <div>
-                              <!-- search bar  -->
-                              <div class="input-group mb-3">
-                                <input
-                                  type="text"
-                                  class="form-control"
-                                  placeholder="Search for drink"
-                                  aria-label="Recipient's username"
-                                  aria-describedby="button-addon2"
-                                  v-model="drinkSearch"
-                                  @keyup="searchResult"
-                                />
-                              </div>
-                              <!-- search results -->
-                              <div
-                                class="overflow-auto"
-                                :style="{
-                                  height:
-                                    drinksToAdd.length > 0 ? '200px' : '300px',
-                                }"
-                              >
-                                <div
-                                  class="form-check"
-                                  v-for="(drinkName, index) in drinkSearchResults"
-                                  :key="index"
-                                >
-                                  <input
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    :value="drinkName"
-                                    :id="'drinkCheckbox' + index"
-                                    v-model="drinksToAdd"
-                                  />
-                                  <label
-                                    class="form-check-label"
-                                    :for="'drinkCheckbox' + index"
-                                  >
-                                    {{ drinkName }}
-                                  </label>
-                                </div>
-                              </div>
-                            </div>
-                            <!-- selected results -->
-                            <div v-if="drinksToAdd.length > 0" class="mt-2">
-                              <hr />
-                              <div class="overflow-auto" style="height: 75px">
-                                <b>Selected Drinks: </b>
-                                {{ drinksToAdd.join(", ") }}
-                              </div>
-                            </div>
-                          </div>
-                          <div class="modal-footer">
-                            <button
-                              type="button"
-                              class="btn btn-primary"
-                              @click="addDrinkToList(currentList)"
-                            >
-                              Add to List
-                            </button>
-                          </div>
-                        </div>
                       </div>
                     </div>
 
                     <!-- list details -->
                     <div
                       class="row"
-                      v-for="(listing, index) in displayUser.drinkLists"
+                      v-for="(listing, index) in displayUserBookmarks[currentList].listItems"
                       :key="index"
                     >
                       <div class="col-10 pe-0" style="display: flex">
-                        <!-- <img :src=" 'data:image/png;base64,' + ( getListingFromID(listingID[1]).photo || defaultDrinkImage )" alt="" style="width:130px; height:130px;" class="bottle-img me-3"> -->
                         <img
                           :src="
                             bookedMarkedListings[listing?.drinkId]?.photo ||
@@ -2770,7 +2597,7 @@
                           >
                             <h5 class="mobile-fs-6"><b>
                               {{
-                                bookedMarkedListings[listing?.drinkId]?.listingName
+                                bookedMarkedListings[listing?.drinkId]?.listingName || 'Loading...'
                               }}
                             </b></h5>
                           </a>
@@ -2784,7 +2611,7 @@
                             "
                           >
                             {{
-                              bookedMarkedListings[listing?.drinkId]?.officialDesc
+                              bookedMarkedListings[listing?.drinkId]?.officialDesc || 'No description available'
                             }}
                           </p>
                           <div
@@ -2808,7 +2635,6 @@
                                 viewBox="0 0 384 512"
                                 style="fill: #FF3E31"
                               >
-                                <!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc. -->
                                 <path
                                   d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"
                                 />
@@ -2816,7 +2642,6 @@
                               Delete from list
                             </a>
                           </div>
-                          
                         </div>
                       </div>
                       <div class="col-2 text-center ps-0" style="color:rgb(240, 179, 88)">
@@ -2869,7 +2694,7 @@
                                 <b
                                   ><i>{{
                                     bookedMarkedListings[listing?.drinkId]
-                                      ?.listingName
+                                      ?.listingName || 'this item'
                                   }}</i></b
                                 >
                                 from
@@ -4271,23 +4096,30 @@ export default {
     async getBookmarkListings() {
       let listing_ids = [];
       for (const list in this.displayUserBookmarks) {
-        for (const listingID of this.displayUserBookmarks[list].listItems) {
-          if (!listing_ids.includes(listingID)) {
-            listing_ids.push(listingID);
+        for (const listingItem of this.displayUserBookmarks[list].listItems) {
+          // Handle both old format (direct ID) and new format (object with drinkId)
+          const drinkId = listingItem.drinkId || listingItem;
+          if (!listing_ids.includes(drinkId)) {
+            listing_ids.push(drinkId);
           }
         }
+      }
+
+      // If no listing IDs found, mark as loaded
+      if (listing_ids.length === 0) {
+        this.bookedMarkedListingsLoaded = true;
+        return;
       }
 
       try {
         const response = await this.$axios.post(
           `${process.env.VUE_APP_API_URL}/getData/getBookmarkListings`,
-          { listingIDs: listing_ids }
+          { listingIDs: listing_ids } // Send simple array of IDs
         );
-        // const response = await this.$axios.post(`http://127.0.0.1:5000/getData/getBookmarkListings`, { 'listingIDs': listing_ids });
         this.bookedMarkedListings = response.data;
         this.bookedMarkedListingsLoaded = true;
       } catch (error) {
-        console.error(error);
+        console.error("Error fetching bookmark listings:", error);
         if (error.status === 404) {
           this.bookedMarkedListingsLoaded = true;
         } else {
