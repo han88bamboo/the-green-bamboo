@@ -8,6 +8,7 @@ from flask import Blueprint, g, request, jsonify
 from scripts import pointsHelperFunc, badge_helpers, notifications
 from datetime import datetime
 import re
+from scripts import notifications
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -493,6 +494,31 @@ def updateFollowList():
                         (userID, followerID)
                     )
 
+                    # ADD NOTIFICATION CODE HERE
+                    # Get follower username (User A's name)
+                    cur.execute('SELECT "username", "photo" FROM "users" WHERE "id" = %s', (userID,))
+                    follower_user = cur.fetchone()
+                    follower_username = follower_user['username'] if follower_user else "Someone"
+                    follower_photo = follower_user['photo']  # User A's photo
+                    
+                    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    
+                    # Create notification for User B
+                    notification_data = {
+                        "userId": followerID,  # User B (person being followed)
+                        "userType": "user",
+                        "notiTabs": "forYou",
+                        "notiType": "new_follower",
+                        "image": follower_photo,  # User A's photo
+                        "link": f"/profile/user/{userID}/{follower_username}",
+                        "message": f"@{follower_username} followed you!",
+                        "createdAt": current_time
+                    }
+
+                    #Send notification to User B
+                    print("Sending notification:", notification_data)
+                    notifications.add_notification_to_db(notification_data)
+        
         if row:
             cur.execute(
                 """
