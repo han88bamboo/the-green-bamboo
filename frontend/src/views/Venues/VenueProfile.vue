@@ -1501,7 +1501,7 @@
 
                                             <!-- Item Image -->
                                             <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName }" class="default-text-no-background">
-                                                <img :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" >
+                                                <img :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image"  loading="lazy">
                                             </router-link>
 
                                             <!-- Item Rating (below image) -->
@@ -1576,7 +1576,7 @@
                                         <div class="col-lg-2 col-12 text-center mb-3 mb-lg-0">
                                             <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName  }" class="default-text-no-background">
                                                 <!-- <img :src=" 'data:image/jpeg;base64,' + (sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" style="width: 150px; height: 150px;"> -->
-                                                <img :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image">
+                                                <img :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" loading="lazy">
                                             </router-link>
                                         </div>
 
@@ -2305,7 +2305,7 @@
                                     :style="{ cursor: imageData.reviewType === 'bottle' ? 'pointer' : 'default' }"
                                     @click="imageData.reviewType === 'bottle' ? openDetailedReviewModal(imageData) : null"
                                 >
-                                    <img :src="imageData.photo || defaultPhoto" alt="" class="review-image" />
+                                    <img :src="imageData.photo || defaultPhoto" alt="" class="review-image" loading="lazy"  />
                                     
                                     <!-- Optional: Add a small badge to indicate review type -->
                                     <div class="position-absolute top-0 end-0 m-1">
