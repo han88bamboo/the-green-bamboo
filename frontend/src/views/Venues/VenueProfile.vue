@@ -2547,6 +2547,117 @@
                     <div class="d-flex justify-content-center mb-3" v-if="filteredVenueReviews.length > 0 && !noMoreReviews">
                         <button class="btn primary-btn btn-lg" @click="loadMoreReviews">Load More Reviews</button>
                     </div>
+<!-- Reviews of drinks tasted here -->
+                    <h4
+                        class="text-start text-body-secondary fs-4 fw-bold m-0 mobile-fs-6 mb-2 mt-4"
+                        style="font-weight: bold; color: black;"
+                    >
+                        Reviews of Drinks Tasted Here
+                    </h4>
+
+                    <div v-if="bottleReviews && bottleReviews.length > 0">
+                        <!-- Loop through each bottle review that tags this venue -->
+                        <div class="row mb-3" v-for="review in bottleReviews" v-bind:key="review.id">
+                            <div class="col-12 col-lg-9">
+                                <div class="row">
+                                    <div class="text-start mb-3">
+                                        <div class="row align-items-center">
+                                            <!-- Profile Photo -->
+                                            <div class="col-12 col-lg-1 mobile-col-2 text-start">
+                                                <router-link :to="`/profile/user/${review.userID}`">
+                                                    <img :src="getPhotoFromReview(review) || defaultProfilePhoto" alt="" class="profile-image" />
+                                                </router-link>
+                                            </div>
+
+                                            <!-- Username and Rating -->
+                                            <div class="col-10 pe-0 mobile-fs-6 mobile-ps-4">
+                                                <router-link :to="`/profile/user/${review.userID}`"
+                                                    class="text-decoration-none text-dark">
+                                                    <b>@{{ getUsernameFromReview(review) }}</b>
+                                                </router-link>
+                                                <span class="ms-2">
+                                                    {{ getUserPointsFromReview(review) }}
+                                                </span>
+                                                <span :style="{ color: getUserRankColor(review) }">
+                                                    {{ getUserRankFromReview(review) }}
+                                                </span>
+                                                &nbsp;rated <span style="color: #f0b358">★</span>
+                                                <b>{{ review.rating }}</b> Stars
+
+                                                <!-- Drink Name -->
+                                                <span>
+                                                    for
+                                                    <router-link
+                                                        :to="'/bottle/' + review.reviewTarget"
+                                                        class="text-decoration-none text-dark">
+                                                        <b>{{ getBottleNameFromReview(review) }} </b>
+                                                    </router-link>
+                                                </span>
+
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- User's Review -->
+                                    <div class="text-start mb-2">
+                                        {{ review.reviewDesc }}
+                                    </div>
+
+                                    <!-- Detailed Review Button Only -->
+                                    <div class="text-start mb-3" style="display: flex !important">
+                                        <a href="#" class="text-decoration-underline text-secondary me-3" 
+                                            @click="openDetailedReviewModal({reviewType: 'bottle', reviewData: review})">
+                                            Detailed Review >
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Review photo (desktop view) -->
+                            <div class="col-3 xcol-lg-3 text-end mobile-view-hide">
+                                <div data-bs-toggle="modal" :data-bs-target="`#bottleReviewImageModal${getUsernameFromReview(review)}`" 
+                                    style="cursor: pointer">
+                                    <img :src="review.photo || defaultPhoto" alt="" class="review-image"
+                                        style="width: 125px; height: 125px" />
+                                </div>
+                            </div>
+
+                            <!-- Modal for review image -->
+                            <div class="modal fade" :id="`bottleReviewImageModal${getUsernameFromReview(review)}`" tabindex="-1"
+                                aria-labelledby="reviewModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-lg d-flex align-items-center" style="height: 100vh">
+                                    <div class="modal-content">
+                                        <div class="modal-body p-4">
+                                            <img :src="review.photo || defaultPhoto" alt="" style="width: 100%; height: auto" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Review photo (mobile view) -->
+                            <div class="row">
+                                <div class="col-3 xcol-lg-3 text-start mobile-view-show">
+                                    <div data-bs-toggle="modal" :data-bs-target="`#bottleReviewImageModal${getUsernameFromReview(review)}`"
+                                        style="cursor: pointer">
+                                        <img :src="review.photo || defaultPhoto" alt="" class="review-image"
+                                            style="width: 200%; height: 200%" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr class="mt-4 mb-2" />
+                        </div>
+
+                        <!-- Load More Button -->
+                        <div class="d-flex justify-content-center mb-3" v-if="bottleReviews.length > 0 && !noMoreBottleReviews">
+                            <button class="btn primary-btn btn-lg" @click="loadMoreBottleReviews">Load More Drink Reviews</button>
+                        </div>
+                    </div>
+                    
+                    <!-- No reviews message -->
+                    <div v-else class="text-center py-4">
+                        <p class="text-secondary">No drink reviews found for this venue yet.</p>
+                    </div>
 
                     <!-- Example "Delete Review" Modal (similar to ProducerProfile) -->
                     <div
