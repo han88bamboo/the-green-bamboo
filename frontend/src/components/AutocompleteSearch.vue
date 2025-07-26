@@ -56,7 +56,10 @@
             role="button"
           >
             <div class="d-flex justify-content-between align-items-center w-100">
-              <span class="fw-small text-dark item-name">{{ item.listingName }}</span>
+              <div class="d-flex flex-column">
+                <span class="fw-small text-dark item-name">{{ item.listingName }}</span>
+                <small class="text-muted producer-name">{{ item.producerName || "Unknown Producer" }}</small>
+              </div>
               <small class="text-muted item-detail">{{ item.originCountry || item.drinkType }}</small>
             </div>
           </div>
@@ -513,6 +516,11 @@ export default {
   color: white;
 }
 
+.search-item.active .producer-name {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+
 .search-item.active .text-muted,
 .search-item.active .item-detail {
   color: rgba(255, 255, 255, 0.8) !important;
@@ -580,7 +588,7 @@ export default {
   }
   
   .search-item {
-    padding: 0.75rem 1rem !important;
+    padding: 0.5rem 1rem !important;
     min-height: 48px;
   }
   
@@ -606,4 +614,14 @@ export default {
     min-height: 44px;
   }
 }
+
+.producer-name {
+  font-size: 0.75rem;
+  margin-left: 1rem;
+  margin-top: 2px;
+  display: block;
+  color: #6c757d;
+}
+
+
 </style>

@@ -1573,7 +1573,8 @@ def get_bottle_listings():
                 "drinkType": row.get("drinkType", ""),
                 "originCountry": row.get("originCountry", ""),
                 "photo": row.get("photo", ""),
-                "bottler": row.get("bottler", "")
+                "bottler": row.get("bottler", ""),
+                "producerName": row.get("producerName", "")
             } 
             for row in rows
         ]
