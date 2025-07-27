@@ -1898,9 +1898,10 @@
                           <b>Action Tags</b>
                         </div>
                         <div class="col-9">
-                          <span v-for="(tag, index) in detailedReview.observationTag" :key="index"
-                            class="badge rounded-pill me-2" style="background-color: #f0b358; color: black">{{ tag
-                            }}</span>
+                          <span v-for="(
+                            tag, index
+                            ) in detailedReview.observationTag" :key="index" class="badge rounded-pill me-2"
+                            style="background-color: #f0b358; color: black">{{ tag }}</span>
                           <!--tzh changed grey to #F0B358-->
                         </div>
                       </div>
@@ -1974,17 +1975,14 @@
               </div>
               <!-- modal end -->
 
-              <div class="modal fade" id="shareReviewModal" tabindex="-1" aria-labelledby="shareReviewModalLabel"
-                aria-hidden="true">
+              <div class="modal fade" id="shareReviewModal" tabindex="-1" aria-labelledby="shareReviewModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
                   <!-- SHARE SUCCESS -->
                   <div class="text-success fst-italic fw-bold fs-3 modal-content" v-if="shareSuccess">
                     <div class="modal-body text-center p-4">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor"
-                        class="bi bi-check-circle mb-3" viewBox="0 0 16 16">
-                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                        <path
-                          d="m10.97 4.97-.02.022-3.473 4.425-2.093-2.094a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05" />
+                      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-check-circle mb-3" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                        <path d="m10.97 4.97-.02.022-3.473 4.425-2.093-2.094a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05"/>
                       </svg>
                       <br>
                       <span>{{ shareSuccessMessage }}</span>
@@ -1999,11 +1997,9 @@
                   <!-- SHARE ERROR -->
                   <div class="text-danger fst-italic fw-bold fs-3 modal-content" v-if="shareError">
                     <div class="modal-body text-center p-4">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor"
-                        class="bi bi-exclamation-circle mb-3" viewBox="0 0 16 16">
-                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                        <path
-                          d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z" />
+                      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-exclamation-circle mb-3" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                        <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z"/>
                       </svg>
                       <br>
                       <span>{{ shareErrorMessage }}</span>
@@ -2094,8 +2090,7 @@
                 <!-- [else] user allows location -->
                 <div v-else>
                   <div v-for="([venueID]) in nearestBars" v-bind:key="venueID">
-                    <router-link :to="{ path: '/profile/venue/' + venueID + '/' + getVenueNameFromID(venueID) }"
-                      class="reverse-clickable-text">
+                    <router-link :to="{ path: '/profile/venue/' + venueID + '/' + getVenueNameFromID(venueID) }" class="reverse-clickable-text">
                       <p class="mb-4">
                         <u> {{ getVenueNameFromID(venueID) }} </u>
                         <br />
