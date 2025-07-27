@@ -358,7 +358,7 @@
                         <!-- Input: Alcohol Strength (% ABV) + Alcohol Age / Vintage (years old / Year Bottled) -->
                         <div class="row mb-3">
                             <div class="form-group col-6">
-                                <p class="text-start mb-1">Strength <span class="text-danger" v-if="formType == 'power'">*</span></p>
+                                <p class="text-start mb-1">Strength</p> <!--<span class="text-danger" v-if="formType == 'power'">*</span>-->
                                 <div class="form-group row">
                                     <div class="col-6 pe-1">
                                         <input type="number" v-model="form['abv']" class="form-control" id="abv" min="0" max="100" step="0.1">
@@ -534,6 +534,8 @@
                     "listingID": "",
                     "photo": "",
                 },
+                producerDebounceTimer: null,
+                bottlerDebounceTimer: null,
             };
         },
         async mounted() {
@@ -591,13 +593,13 @@
             // Watch for changes in formMode and formType to load data accordingly
             'form.bottler'(newVal) {
                 if (newVal && newVal.length >= 2) {
-                    this.fetchBottlerSuggestions(newVal);
+                    this.debouncedFetchBottlers(newVal);
                 }
             },
             // Watch for changes in producerNew to fetch suggestions
             'form.producerNew'(newVal) {
                 if (newVal && newVal.length >= 2) {
-                    this.fetchProducerSuggestions(newVal);
+                    this.debouncedFetchProducers(newVal);
                 }
             },
         },
@@ -919,6 +921,14 @@
                 }
             },
 
+            // Debounced function to fetch producer suggestions
+            debouncedFetchProducers(query) {
+                clearTimeout(this.producerDebounceTimer);
+                this.producerDebounceTimer = setTimeout(() => {
+                    this.fetchProducerSuggestions(query);
+                }, 300); // 300ms debounce delay
+            },
+
             // Function to get producer names dynamically (lazy loading to avoid loading all producers at once)
             async fetchProducerSuggestions(query) {
                 try {
@@ -930,6 +940,14 @@
                         this.producerList = ["No producers with this search term found. Please try again with a different term."];
                     } 
                 }
+            },
+
+            // Debounced function to fetch bottler suggestions
+            debouncedFetchBottlers(query) {
+                clearTimeout(this.bottlerDebounceTimer);
+                this.bottlerDebounceTimer = setTimeout(() => {
+                    this.fetchBottlerSuggestions(query);
+                }, 300); // 300ms debounce delay
             },
 
             // Function to get bottler names dynamically (lazy loading to avoid loading all bottlers at once)
@@ -1274,10 +1292,10 @@
                             this.errors.push("Country of Origin is required.");
                         }
 
-                        // Validate Alcohol Strength (% ABV)
-                        if (!this.form["abv"].toString().trim()) {
-                            this.errors.push("Alcohol Strength is required.");
-                        }
+                        // // Validate Alcohol Strength (% ABV)
+                        // if (!this.form["abv"].toString().trim()) {
+                        //     this.errors.push("Alcohol Strength is required.");
+                        // }
                         
                     // }
                     

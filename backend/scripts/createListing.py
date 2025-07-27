@@ -172,7 +172,11 @@ def createListings():
         # Convert abv from string to float if necessary
         if 'abv' in rawBottle:
             abv_value = rawBottle['abv'].replace('%', '')  # Remove the '%' sign
-            rawBottle['abv'] = float(abv_value)
+            if abv_value.strip():  # Check if the string is not empty
+                rawBottle['abv'] = float(abv_value)
+            else:
+                # Handle empty ABV - set to NULL in database
+                rawBottle['abv'] = None
 
         # uploading as base64 image
         if rawBottle['photo'] is not None and rawBottle['photo'] != "":
