@@ -2928,7 +2928,7 @@ def get_venue_listings():
         
         # Optimized query using trigram index for fuzzy string matching
         sql = """
-            SELECT "id", "venueName", "originLocation",
+            SELECT "id", "venueName", "originLocation", "address",
                 similarity(unaccent("venueName"), unaccent(%s)) as sim_score
             FROM venues
             WHERE unaccent("venueName") %% unaccent(%s)
@@ -2948,7 +2948,8 @@ def get_venue_listings():
             {
                 "id": row["id"], 
                 "venueName": row["venueName"], 
-                "originLocation": row["originLocation"]
+                "originLocation": row["originLocation"],
+                "address": row["address"]
             } 
             for row in rows
         ]

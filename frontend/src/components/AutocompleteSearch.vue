@@ -84,7 +84,10 @@
             role="button"
           >
             <div class="d-flex justify-content-between align-items-center w-100">
-              <span class="fw-small text-dark item-name">{{ item.venueName }}</span>
+              <div class="d-flex flex-column">
+                <span class="fw-small text-dark item-name">{{ item.venueName }}</span>
+                <small class="text-muted venue-address">{{ item.address || "No address" }}</small>
+              </div>
               <small class="text-muted item-detail">{{ item.originLocation || "unknown" }}</small>
             </div>
           </div>
@@ -516,7 +519,7 @@ export default {
   color: white;
 }
 
-.search-item.active .producer-name {
+.search-item.active .producer-name .venue-address {
   color: rgba(255, 255, 255, 0.8) !important;
 }
 
@@ -623,5 +626,12 @@ export default {
   color: #6c757d;
 }
 
+.venue-address{
+  font-size: 0.75rem;
+  margin-left: 1rem;
+  margin-top: 2px;
+  display: block;
+  color: #6c757d;
+}
 
 </style>
