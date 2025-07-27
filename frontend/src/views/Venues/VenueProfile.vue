@@ -2043,7 +2043,7 @@
                                                 
                                                 <!-- [input] bottle name -->
                                                 <div class="form-group mb-3">
-                                                    <p class="text-start mb-1">Bottle Listing ID (Search by Name) <span class="text-danger">*</span></p>
+                                                    <p class="text-start mb-1">Drink Name<span class="text-danger">*</span> <span class="text-muted" style="font-size: 14px;">(Just begin typing, then select from the drop-down suggestions.)</span></p>
 
                                                     <input
                                                         type="text"
@@ -2060,7 +2060,12 @@
                                                         class="list-group-item list-group-item-action"
                                                         @click="selectListingMultiple(listing, itemIndex)"
                                                         >
-                                                        {{ listing.listingName }} (Producer: {{ listing.producerName }})
+                                                        {{ listing.listingName }} 
+                                                        <small class="text-muted">
+                                                            (Producer: {{ listing.producerName }} | 
+                                                            Type: {{ listing.drinkType }} | 
+                                                            Country: {{ listing.originCountry }})
+                                                        </small>
                                                         </li>
                                                     </ul>
 
@@ -2109,7 +2114,7 @@
                                                             <div class="row">
 
                                                                 <!-- Item Producer / Drink Type / Type Category / ABV / Country / Description -->
-                                                                <div class="col-10">
+                                                                <div class="col-12">
                                                                     <p class="text-start mb-1" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
                                                                         <span v-if="item.newMenuItemTarget.producerName">{{ item.newMenuItemTarget.producerName }} | </span>
                                                                         <span v-if="item.newMenuItemTarget.drinkType">{{ item.newMenuItemTarget.drinkType }} | </span>
@@ -2123,13 +2128,13 @@
                                                                     </p>
                                                                 </div>
 
-                                                                <!-- Item Rating -->
+                                                                <!-- Item Rating - commented out for time being
                                                                 <div class="col-2">
                                                                     <p class="fs-3 fw-bold rating-text text-start">
                                                                         {{ item.newMenuItemTarget.avgRating }}  ★
                                                                     </p>
                                                                 </div>
-
+                                                                        -->
                                                             </div>
 
                                                             <!-- Item Menu Details -->

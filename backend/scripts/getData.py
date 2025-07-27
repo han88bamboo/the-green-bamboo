@@ -761,16 +761,44 @@ def getListingNamesDynamicSearch(searchTerm):
 
     try:
         # Searches for listings by name, starting from the lastID
-        cursor.execute("""
+        cursor.execute(""" 
             SELECT 
                 l."id", 
                 l."listingName", 
-                p."producerName"
+                l."photo",
+                p."producerName",
+                l."drinkType",
+                l."typeCategory",
+                l."abv",
+                l."originCountry",
+                l."officialDesc",
+                COALESCE((SELECT AVG(r."rating") FROM "reviews" r WHERE r."reviewTarget" = l."id"), 0) as "avgRating",
+                (similarity(unaccent(l."listingName"), unaccent(%s)) + 3 * similarity(unaccent(p."producerName"), unaccent(%s))) AS combined_sim_score
             FROM "listings" l
             JOIN "producers" p ON l."producerID" = p."id"
-            WHERE l."listingName" ILIKE %s
-            ORDER BY l."id" ASC
-        """, ('%' + searchTerm + '%',))
+            WHERE unaccent(l."listingName") %% unaccent(%s)
+            
+            UNION
+            
+            SELECT 
+                l."id", 
+                l."listingName", 
+                l."photo",
+                p."producerName",
+                l."drinkType",
+                l."typeCategory",
+                l."abv",
+                l."originCountry",
+                l."officialDesc",
+                COALESCE((SELECT AVG(r."rating") FROM "reviews" r WHERE r."reviewTarget" = l."id"), 0) as "avgRating",
+                (similarity(unaccent(l."listingName"), unaccent(%s)) + 3 * similarity(unaccent(p."producerName"), unaccent(%s))) AS combined_sim_score
+            FROM "listings" l
+            JOIN "producers" p ON l."producerID" = p."id"
+            WHERE unaccent(p."producerName") %% unaccent(%s)
+            
+            ORDER BY combined_sim_score DESC
+            LIMIT 30
+        """, (searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm))
 
         listings_data = cursor.fetchall()
 
@@ -779,7 +807,15 @@ def getListingNamesDynamicSearch(searchTerm):
             listing_dict = {
                 "id": listing["id"],
                 "listingName": listing["listingName"],
-                "producerName": listing["producerName"]
+                "producerName": listing["producerName"],
+                "photo": listing["photo"],
+                "drinkType": listing["drinkType"],
+                "typeCategory": listing["typeCategory"],
+                "abv": listing["abv"],
+                "originCountry": listing["originCountry"],
+                "officialDesc": listing["officialDesc"],
+                "avgRating": listing["avgRating"],
+                "similarity": listing["combined_sim_score"]
             }
             # Convert Decimal to float if necessary
             for key, value in listing_dict.items():
