@@ -21,7 +21,7 @@
       <div class="header">
         <h5 class="text-start" style="font-weight: bold; color: black">By Vintage</h5>
         <div class="filter-dropdown">
-          <select>
+          <select @change="handleChange($event)">
             <option selected>Show All</option>
             <option v-for="vintage in listings" :key="vintage.year">{{ vintage.year }}</option>
           </select>
@@ -63,6 +63,12 @@ export default {
     drinkType: { type: String, default: null },
     listings: { type: Array, default: () => [] }
   },
+  methods: {
+    handleChange(event) {
+      const selectedValue = event.target.value;
+      this.$emit('vintage-selected', selectedValue); 
+    }
+  }
 }
 </script>
 

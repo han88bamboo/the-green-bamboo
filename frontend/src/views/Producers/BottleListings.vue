@@ -1409,7 +1409,9 @@
         <!-- END OF MODAL -->
 
         <VintageList :loading="vintage_listings.loading" :error="vintage_listings.error"
-          :drinkType="specified_listing.drinkType" :listings="vintage_listings.listings" />
+          :drinkType="specified_listing.drinkType" :listings="vintage_listings.listings" 
+          @vintage-selected="onVintageSelected"  
+        />
 
         <!-- reviews -->
         <!-- TODO  EDIT MODAL IF NOT DOING COMPONENT-->
@@ -2479,7 +2481,7 @@ export default {
       searchInput: "",
       searchTerm: "",
       searchResults: [],
-      filteredReviews: [],
+      // filteredReviews: [],
       filteredReviewsWithImages: [],
 
       // specified listing listing_id used for createReview
@@ -2502,6 +2504,7 @@ export default {
       bottler_id: null,
       correctProducer: false,
 
+      selectedVintage: 'Show All',
       vintage_listings: {
         loading: true,
         error: null,
@@ -2702,6 +2705,15 @@ export default {
     venueLink() {
       return `/profile/venue/${this.detailedReview.location}/${this.getVenueNameFromID(this.detailedReview.location)}`;
     },
+    filteredReviews() {
+      if (!this.selectedVintage || this.selectedVintage === 'Show All') {
+        return this.reviews; // or whatever your base review list is
+      }
+      
+      return this.reviews.filter(review => 
+        review.variant === parseInt(this.selectedVintage)
+      );
+    },
     // Add computed for review statistics
     reviewStatistics() {
       if (!this.filteredReviews || this.filteredReviews.length === 0) {
@@ -2716,6 +2728,7 @@ export default {
         averageRating: Math.round(averageRating * 10) / 10 // Round to 1 decimal
       }
     }
+  
   },
   watch: {
     // caching should be disabled for wines
@@ -2945,9 +2958,10 @@ export default {
           this.whereToTry(); // find where to try specified listing [RE-ENABLE WHEN VENUES HAVE MENU ATTRIBUTE]
         }
 
-        this.filteredReviews = this.getReviewsForListing(
-          this.specified_listing
-        );
+        // console.log(this.reviews)
+        // this.filteredReviews = this.getReviewsForListing(
+        //   this.specified_listing
+        // );
         this.getFilteredReviewsWithImages(); // to get only those filtered reviews with photos
         this.getFlavorTagCounts(); // to get the flavor tag counts
         // this.sorted_flavorTagCounts = {
@@ -3120,7 +3134,6 @@ export default {
       // get variant review stats 
       if (this.specified_listing.drinkType == 'Wine') {
         this.vintage_listings = await this.retrieveStats(`${process.env.VUE_APP_API_URL}/getData/getVintageAgg/${this.specified_listing.id}`, this.vintage_listings)
-        console.log(this.vintage_listings)
       }
 
       this.specificReviewRating = this.getRatings(this.specified_listing);
@@ -3400,10 +3413,11 @@ export default {
     },
 
     getReviewsForListing(listing) {
-      const reviews = this.reviews.filter((review) => {
-        return review["reviewTarget"] == listing.id;
+      return this.reviews.filter((review) => {
+        const isTargetMatch = review["reviewTarget"] === listing.id;
+        const isVariantMatch = this.selectedVintage === 'Show All' || review["variant"] === this.selectedVintage;
+        return isTargetMatch && isVariantMatch;
       });
-      return reviews;
     },
 
     async shareReview(review) {
@@ -4687,6 +4701,10 @@ export default {
 
       return api_data
     },
+
+    onVintageSelected(value) {
+      this.selectedVintage = value;
+    }
 
   },
 };
