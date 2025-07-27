@@ -1631,3 +1631,13 @@ Purpose of the changes:
 Nature of the changes (frontend / backend / database):
 front end 
 
+Coder: MS 
+
+Purpose of the changes:
+- fix image not showing properly on bottlelistings
+- add lazy loading to add image elements
+- introduce vintage list table for bottle listing and add basic filtering option for vintage reviews.
+
+Nature of the changes (frontend / backend / database):
+front end 
+
