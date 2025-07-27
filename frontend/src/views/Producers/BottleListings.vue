@@ -4643,30 +4643,30 @@ export default {
         }
       }
     },
-    // cacheReviewForm() {
-    //   const cacheKey = `reviewCache_${this.listing_id}_${this.userID}`;
-    //   const data = {
-    //     selectedLanguage: this.selectedLanguage,
-    //     reviewDesc: this.reviewDesc,
-    //     rating: this.rating,
-    //     selectedColour: this.selectedColour,
-    //     variant: this.variant,
-    //     aroma: this.aroma,
-    //     taste: this.taste,
-    //     finish: this.finish,
-    //     wouldRecommend: this.wouldRecommend,
-    //     wouldBuyAgain: this.wouldBuyAgain,
-    //     selectedFlavourTags: this.selectedFlavourTags,
-    //     finalSelectedFlavourTags: this.finalSelectedFlavourTags,
-    //     selectedObservations: this.selectedObservations,
-    //     friendTagList: this.friendTagList,
-    //     showFriendTagList: this.showFriendTagList,
-    //     selectedLocation: this.selectedLocation,
-    //     selectedLocationAddress: this.selectedLocationAddress,
-    //     image64: this.image64
-    //   };
-    //   localStorage.setItem(cacheKey, JSON.stringify(data));
-    // },
+    cacheReviewForm() {
+      const cacheKey = `reviewCache_${this.listing_id}_${this.userID}`;
+      const data = {
+        selectedLanguage: this.selectedLanguage,
+        reviewDesc: this.reviewDesc,
+        rating: this.rating,
+        selectedColour: this.selectedColour,
+        variant: this.variant,
+        aroma: this.aroma,
+        taste: this.taste,
+        finish: this.finish,
+        wouldRecommend: this.wouldRecommend,
+        wouldBuyAgain: this.wouldBuyAgain,
+        selectedFlavourTags: this.selectedFlavourTags,
+        finalSelectedFlavourTags: this.finalSelectedFlavourTags,
+        selectedObservations: this.selectedObservations,
+        friendTagList: this.friendTagList,
+        showFriendTagList: this.showFriendTagList,
+        selectedLocation: this.selectedLocation,
+        selectedLocationAddress: this.selectedLocationAddress,
+        image64: this.image64
+      };
+      localStorage.setItem(cacheKey, JSON.stringify(data));
+    },
 
     async retrieveStats(url, api_data) {
       api_data.loading = true
